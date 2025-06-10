@@ -1,41 +1,3 @@
-<!doctype html>
-<html lang="en" data-bs-theme="blue-theme">
-
-
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>HEADQUATERS | Admin Dashboard</title>
-    <!--favicon-->
-    <link rel="icon" href="assets/images/favicon-32x32.png" type="image/png">
-    <!-- loader-->
-    <link href="assets/css/pace.min.css" rel="stylesheet">
-    <script src="assets/js/pace.min.js"></script>
-
-    <!--plugins-->
-    <link href="assets/plugins/perfect-scrollbar/css/perfect-scrollbar.css" rel="stylesheet">
-    <link rel="stylesheet" type="text/css" href="assets/plugins/metismenu/metisMenu.min.css">
-    <link rel="stylesheet" type="text/css" href="assets/plugins/metismenu/mm-vertical.css">
-    <link rel="stylesheet" type="text/css" href="assets/plugins/simplebar/css/simplebar.css">
-    <!--bootstrap css-->
-    <link href="assets/css/bootstrap.min.css" rel="stylesheet">
-    <link href="assets/plugins/datatable/css/dataTables.bootstrap5.min.css" rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@300;400;500;600&amp;display=swap"
-        rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css?family=Material+Icons+Outlined" rel="stylesheet">
-    <!--main css-->
-    <link href="assets/css/bootstrap-extended.css" rel="stylesheet">
-    <link href="sass/main.css" rel="stylesheet">
-    <link href="sass/dark-theme.css" rel="stylesheet">
-    <link href="sass/blue-theme.css" rel="stylesheet">
-    <link href="sass/semi-dark.css" rel="stylesheet">
-    <link href="sass/bordered-theme.css" rel="stylesheet">
-    <link href="sass/responsive.css" rel="stylesheet">
-
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-
-</head>
-
 <body>
 
     <?php include 'header.php'; ?>
@@ -138,224 +100,534 @@
                 </div>
             </div><!--end row-->
 
-            <div class="card mt-5">
+            <div class="card mt-4">
                 <div class="card-body">
-                    <div class="table-responsive">
-                        <table id="example2" class="table table-striped table-bordered">
-                            <thead>
-                                <tr>
-                                    <th>Vendor Name</th>
-                                    <th>Phone No</th>
-                                    <th>Email Id</th>
-                                    <th>Location</th>
-                                    <th>Status</th>
-                                    <th>Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>Rahul Sharma</td>
-                                    <td>9876543210</td>
-                                    <td>rahul.sharma@email.com</td>
-                                    <td>Mumbai</td>
-                                    <td>Active</td>
-                                    <td class="text-center"><button class="btn"><i class="text-primary" data-feather="eye"></i></button>
-                                    <button class="btn"><i class="text-primary" data-feather="edit"></i></button>
-                                    <button class="btn"><i class="text-primary" data-feather="trash-2"></i></button>
-                                </td>
-                                </tr>
-                                <tr>
-                                    <td>Priya Verma</td>
-                                    <td>9823456710</td>
-                                    <td>priya.verma@email.com</td>
-                                    <td>Delhi</td>
-                                    <td>Inactive</td>
-                                    <td class="text-center"><button class="btn"><i class="text-primary" data-feather="eye"></i></button>
-                                    <button class="btn"><i class="text-primary" data-feather="edit"></i></button>
-                                    <button class="btn"><i class="text-primary" data-feather="trash-2"></i></button>
-                                </td>
-                                </tr>
-                                <tr>
-                                    <td>Amit Patel</td>
-                                    <td>9898765432</td>
-                                    <td>amit.patel@email.com</td>
-                                    <td>Ahmedabad</td>
-                                    <td>Active</td>
-                                    <td class="text-center"><button class="btn"><i class="text-primary" data-feather="eye"></i></button>
-                                    <button class="btn"><i class="text-primary" data-feather="edit"></i></button>
-                                    <button class="btn"><i class="text-primary" data-feather="trash-2"></i></button>
-                                </td>
-                                </tr>
-                                <tr>
-                                    <td>Sneha Iyer</td>
-                                    <td>9812345678</td>
-                                    <td>sneha.iyer@email.com</td>
-                                    <td>Chennai</td>
-                                    <td>Active</td>
-                                    <td class="text-center"><button class="btn"><i class="text-primary" data-feather="eye"></i></button>
-                                    <button class="btn"><i class="text-primary" data-feather="edit"></i></button>
-                                    <button class="btn"><i class="text-primary" data-feather="trash-2"></i></button>
-                                </td>
-                                </tr>
-                                <tr>
-                                    <td>Vikram Desai</td>
-                                    <td>9988776655</td>
-                                    <td>vikram.desai@email.com</td>
-                                    <td>Pune</td>
-                                    <td>Inactive</td>
-                                    <td class="text-center"><button class="btn"><i class="text-primary" data-feather="eye"></i></button>
-                                    <button class="btn"><i class="text-primary" data-feather="edit"></i></button>
-                                    <button class="btn"><i class="text-primary" data-feather="trash-2"></i></button>
-                                </td>
-                                </tr>
-                                <tr>
-                                    <td>Kavita Mehta</td>
-                                    <td>9900112233</td>
-                                    <td>kavita.mehta@email.com</td>
-                                    <td>Jaipur</td>
-                                    <td>Active</td>
-                                    <td class="text-center"><button class="btn"><i class="text-primary" data-feather="eye"></i></button>
-                                    <button class="btn"><i class="text-primary" data-feather="edit"></i></button>
-                                    <button class="btn"><i class="text-primary" data-feather="trash-2"></i></button>
-                                </td>
-                                </tr>
-                                <tr>
-                                    <td>Arjun Reddy</td>
-                                    <td>9871234560</td>
-                                    <td>arjun.reddy@email.com</td>
-                                    <td>Hyderabad</td>
-                                    <td>Active</td>
-                                    <td class="text-center"><button class="btn"><i class="text-primary" data-feather="eye"></i></button>
-                                    <button class="btn"><i class="text-primary" data-feather="edit"></i></button>
-                                    <button class="btn"><i class="text-primary" data-feather="trash-2"></i></button>
-                                </td>
-                                </tr>
-                                <tr>
-                                    <td>Neha Kapoor</td>
-                                    <td>9911223344</td>
-                                    <td>neha.kapoor@email.com</td>
-                                    <td>Kolkata</td>
-                                    <td>Inactive</td>
-                                    <td class="text-center"><button class="btn"><i class="text-primary" data-feather="eye"></i></button>
-                                    <button class="btn"><i class="text-primary" data-feather="edit"></i></button>
-                                    <button class="btn"><i class="text-primary" data-feather="trash-2"></i></button>
-                                </td>
-                                </tr>
-                                <tr>
-                                    <td>Rohan Gupta</td>
-                                    <td>9822334455</td>
-                                    <td>rohan.gupta@email.com</td>
-                                    <td>Surat</td>
-                                    <td>Active</td>
-                                    <td class="text-center"><button class="btn"><i class="text-primary" data-feather="eye"></i></button>
-                                    <button class="btn"><i class="text-primary" data-feather="edit"></i></button>
-                                    <button class="btn"><i class="text-primary" data-feather="trash-2"></i></button>
-                                </td>
-                                </tr>
-                                <tr>
-                                    <td>Anjali Nair</td>
-                                    <td>9845123456</td>
-                                    <td>anjali.nair@email.com</td>
-                                    <td>Thiruvananthapuram</td>
-                                    <td>Active</td>
-                                    <td class="text-center"><button class="btn"><i class="text-primary" data-feather="eye"></i></button>
-                                    <button class="btn"><i class="text-primary" data-feather="edit"></i></button>
-                                    <button class="btn"><i class="text-primary" data-feather="trash-2"></i></button>
-                                </td>
-                                </tr>
+                    <div class="customer-table">
+                        <div class="table-responsive white-space-nowrap">
+                            <table id="example2" class="table table-striped">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>
+                                            <input class="form-check-input" type="checkbox">
+                                        </th>
+                                        <th>Vendor Name</th>
+                                        <th>Email</th>
+                                        <th>Contact Number</th>
+                                        <th>Orders</th>
+                                        <th>Location</th>
+                                        <th>Joined At</th>
+                                        <th>Status</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            <input class="form-check-input" type="checkbox">
+                                        </td>
+                                        <td>
+                                            <a class="d-flex align-items-center gap-3" href="vendor-detail.php">
+                                                <div class="customer-pic">
+                                                    <img src="assets/images/avatars/02.png" class="rounded-circle" width="40" height="40" alt="">
+                                                </div>
+                                                <p class="mb-0 customer-name fw-bold">Manish Carry</p>
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <a href="javascript:;" class="font-text1">abcexample.com</a>
+                                        </td>
+                                        <td>8080721003</td>
+                                        <td>142</td>
+                                        <td>England</td>
 
+                                        <td>Nov 12, 10:45 PM</td>
+                                        <td>
+                                            <div class=" form-switch form-check-success">
+                                                <input class="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckSuccess" checked="">
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <a aria-label="anchor" href="#" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye text-primary">
+                                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                                    <circle cx="12" cy="12" r="3"></circle>
+                                                </svg>
+                                            </a>
+                                            <a aria-label="anchor" href="#" class="btn btn-icon btn-sm bg-warning-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="Edit">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-edit text-warning">
+                                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                                </svg>
+                                            </a>
+                                            <a aria-label="anchor" class="btn btn-icon btn-sm bg-danger-subtle delete-row" data-bs-toggle="tooltip" data-bs-original-title="Delete">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trash-2 text-danger">
+                                                    <polyline points="3 6 5 6 21 6"></polyline>
+                                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                                    <line x1="10" y1="11" x2="10" y2="17"></line>
+                                                    <line x1="14" y1="11" x2="14" y2="17"></line>
+                                                </svg>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <input class="form-check-input" type="checkbox">
+                                        </td>
+                                        <td>
+                                            <a class="d-flex align-items-center gap-3" href="vendor-detail.php">
+                                                <div class="customer-pic">
+                                                    <img src="assets/images/avatars/01.png" class="rounded-circle" width="40" height="40" alt="">
+                                                </div>
+                                                <p class="mb-0 customer-name fw-bold">Andrew Carry</p>
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <a href="javascript:;" class="font-text1">abcexample.com</a>
+                                        </td>
+                                        <td>8080721003</td>
+                                        <td>142</td>
 
+                                        <td>England</td>
 
-                                <tr>
-                                    <td>Deepak Joshi</td>
-                                    <td>9765432109</td>
-                                    <td>deepak.joshi@email.com</td>
-                                    <td>Indore</td>
-                                    <td>Active</td>
-                                    <td class="text-center"><button class="btn"><i class="text-primary" data-feather="eye"></i></button>
-                                    <button class="btn"><i class="text-primary" data-feather="edit"></i></button>
-                                    <button class="btn"><i class="text-primary" data-feather="trash-2"></i></button>
-                                </td>
-                                </tr>
-                                <tr>
-                                    <td>Meena Kumari</td>
-                                    <td>9756432189</td>
-                                    <td>meena.kumari@email.com</td>
-                                    <td>Lucknow</td>
-                                    <td>Inactive</td>
-                                    <td class="text-center"><button class="btn"><i class="text-primary" data-feather="eye"></i></button>
-                                    <button class="btn"><i class="text-primary" data-feather="edit"></i></button>
-                                    <button class="btn"><i class="text-primary" data-feather="trash-2"></i></button>
-                                </td>
-                                </tr>
-                                <tr>
-                                    <td>Alok Mishra</td>
-                                    <td>9743210897</td>
-                                    <td>alok.mishra@email.com</td>
-                                    <td>Bhopal</td>
-                                    <td>Active</td>
-                                    <td class="text-center"><a href="vendor-detail.php"><button class="btn"><i class="text-primary" data-feather="eye"></i></button></a>
-                                    <button class="btn"><i class="text-primary" data-feather="edit"></i></button>
-                                    <button class="btn"><i class="text-primary" data-feather="trash-2"></i></button>
-                                </td>
-                                </tr>
-                                <tr>
-                                    <td>Swati Singh</td>
-                                    <td>9723456781</td>
-                                    <td>swati.singh@email.com</td>
-                                    <td>Patna</td>
-                                    <td>Inactive</td>
-                                    <td class="text-center"><button class="btn"><i class="text-primary" data-feather="eye"></i></button>
-                                    <button class="btn"><i class="text-primary" data-feather="edit"></i></button>
-                                    <button class="btn"><i class="text-primary" data-feather="trash-2"></i></button>
-                                </td>
-                                </tr>
-                                <tr>
-                                    <td>Rajeev Chauhan</td>
-                                    <td>9712345672</td>
-                                    <td>rajeev.chauhan@email.com</td>
-                                    <td>Gurgaon</td>
-                                    <td>Active</td>
-                                    <td class="text-center"><button class="btn"><i class="text-primary" data-feather="eye"></i></button>
-                                    <button class="btn"><i class="text-primary" data-feather="edit"></i></button>
-                                    <button class="btn"><i class="text-primary" data-feather="trash-2"></i></button>
-                                </td>
-                                </tr>
-                                <tr>
-                                    <td>Ishita Banerjee</td>
-                                    <td>9909876543</td>
-                                    <td>ishita.banerjee@email.com</td>
-                                    <td>Kolkata</td>
-                                    <td>Active</td>
-                                    <td class="text-center"><button class="btn"><i class="text-primary" data-feather="eye"></i></button>
-                                    <button class="btn"><i class="text-primary" data-feather="edit"></i></button>
-                                    <button class="btn"><i class="text-primary" data-feather="trash-2"></i></button>
-                                </td>
-                                </tr>
-                                <tr>
-                                    <td>Manish Kumar</td>
-                                    <td>9890123456</td>
-                                    <td>manish.kumar@email.com</td>
-                                    <td>Noida</td>
-                                    <td>Inactive</td>
-                                    <td class="text-center"><button class="btn"><i class="text-primary" data-feather="eye"></i></button>
-                                    <button class="btn"><i class="text-primary" data-feather="edit"></i></button>
-                                    <button class="btn"><i class="text-primary" data-feather="trash-2"></i></button>
-                                </td>
-                                </tr>
+                                        <td>Nov 12, 10:45 PM</td>
+                                        <td>
+                                            <div class=" form-switch form-check-success">
+                                                <input class="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckSuccess" checked="">
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <a aria-label="anchor" href="#" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye text-primary">
+                                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                                    <circle cx="12" cy="12" r="3"></circle>
+                                                </svg>
+                                            </a>
+                                            <a aria-label="anchor" href="#" class="btn btn-icon btn-sm bg-warning-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="Edit">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-edit text-warning">
+                                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                                </svg>
+                                            </a>
+                                            <a aria-label="anchor" class="btn btn-icon btn-sm bg-danger-subtle delete-row" data-bs-toggle="tooltip" data-bs-original-title="Delete">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trash-2 text-danger">
+                                                    <polyline points="3 6 5 6 21 6"></polyline>
+                                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                                    <line x1="10" y1="11" x2="10" y2="17"></line>
+                                                    <line x1="14" y1="11" x2="14" y2="17"></line>
+                                                </svg>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <input class="form-check-input" type="checkbox">
+                                        </td>
+                                        <td>
+                                            <a class="d-flex align-items-center gap-3" href="vendor-detail.php">
+                                                <div class="customer-pic">
+                                                    <img src="assets/images/avatars/03.png" class="rounded-circle" width="40" height="40" alt="">
+                                                </div>
+                                                <p class="mb-0 customer-name fw-bold">Andrew Carry</p>
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <a href="javascript:;" class="font-text1">abcexample.com</a>
+                                        </td>
+                                        <td>8080721003</td>
+                                        <td>142</td>
 
+                                        <td>England</td>
 
+                                        <td>Nov 12, 10:45 PM</td>
+                                        <td>
+                                            <div class=" form-switch form-check-success">
+                                                <input class="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckSuccess" checked="">
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <a aria-label="anchor" href="#" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye text-primary">
+                                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                                    <circle cx="12" cy="12" r="3"></circle>
+                                                </svg>
+                                            </a>
+                                            <a aria-label="anchor" href="#" class="btn btn-icon btn-sm bg-warning-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="Edit">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-edit text-warning">
+                                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                                </svg>
+                                            </a>
+                                            <a aria-label="anchor" class="btn btn-icon btn-sm bg-danger-subtle delete-row" data-bs-toggle="tooltip" data-bs-original-title="Delete">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trash-2 text-danger">
+                                                    <polyline points="3 6 5 6 21 6"></polyline>
+                                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                                    <line x1="10" y1="11" x2="10" y2="17"></line>
+                                                    <line x1="14" y1="11" x2="14" y2="17"></line>
+                                                </svg>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <input class="form-check-input" type="checkbox">
+                                        </td>
+                                        <td>
+                                            <a class="d-flex align-items-center gap-3" href="vendor-detail.php">
+                                                <div class="customer-pic">
+                                                    <img src="assets/images/avatars/04.png" class="rounded-circle" width="40" height="40" alt="">
+                                                </div>
+                                                <p class="mb-0 customer-name fw-bold">Andrew Carry</p>
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <a href="javascript:;" class="font-text1">abcexample.com</a>
+                                        </td>
+                                        <td>8080721003</td>
+                                        <td>142</td>
 
-                            </tbody>
+                                        <td>England</td>
 
-                        </table>
+                                        <td>Nov 12, 10:45 PM</td>
+                                        <td>
+                                            <div class=" form-switch form-check-success">
+                                                <input class="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckSuccess" checked="">
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <a aria-label="anchor" href="#" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye text-primary">
+                                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                                    <circle cx="12" cy="12" r="3"></circle>
+                                                </svg>
+                                            </a>
+                                            <a aria-label="anchor" href="#" class="btn btn-icon btn-sm bg-warning-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="Edit">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-edit text-warning">
+                                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                                </svg>
+                                            </a>
+                                            <a aria-label="anchor" class="btn btn-icon btn-sm bg-danger-subtle delete-row" data-bs-toggle="tooltip" data-bs-original-title="Delete">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trash-2 text-danger">
+                                                    <polyline points="3 6 5 6 21 6"></polyline>
+                                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                                    <line x1="10" y1="11" x2="10" y2="17"></line>
+                                                    <line x1="14" y1="11" x2="14" y2="17"></line>
+                                                </svg>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <input class="form-check-input" type="checkbox">
+                                        </td>
+                                        <td>
+                                            <a class="d-flex align-items-center gap-3" href="vendor-detail.php">
+                                                <div class="customer-pic">
+                                                    <img src="assets/images/avatars/05.png" class="rounded-circle" width="40" height="40" alt="">
+                                                </div>
+                                                <p class="mb-0 customer-name fw-bold">Andrew Carry</p>
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <a href="javascript:;" class="font-text1">abcexample.com</a>
+                                        </td>
+                                        <td>8080721003</td>
+                                        <td>142</td>
+
+                                        <td>England</td>
+
+                                        <td>Nov 12, 10:45 PM</td>
+                                        <td>
+                                            <div class=" form-switch form-check-success">
+                                                <input class="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckSuccess" checked="">
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <a aria-label="anchor" href="#" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye text-primary">
+                                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                                    <circle cx="12" cy="12" r="3"></circle>
+                                                </svg>
+                                            </a>
+                                            <a aria-label="anchor" href="#" class="btn btn-icon btn-sm bg-warning-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="Edit">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-edit text-warning">
+                                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                                </svg>
+                                            </a>
+                                            <a aria-label="anchor" class="btn btn-icon btn-sm bg-danger-subtle delete-row" data-bs-toggle="tooltip" data-bs-original-title="Delete">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trash-2 text-danger">
+                                                    <polyline points="3 6 5 6 21 6"></polyline>
+                                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                                    <line x1="10" y1="11" x2="10" y2="17"></line>
+                                                    <line x1="14" y1="11" x2="14" y2="17"></line>
+                                                </svg>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <input class="form-check-input" type="checkbox">
+                                        </td>
+                                        <td>
+                                            <a class="d-flex align-items-center gap-3" href="vendor-detail.php">
+                                                <div class="customer-pic">
+                                                    <img src="assets/images/avatars/06.png" class="rounded-circle" width="40" height="40" alt="">
+                                                </div>
+                                                <p class="mb-0 customer-name fw-bold">Andrew Carry</p>
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <a href="javascript:;" class="font-text1">abcexample.com</a>
+                                        </td>
+                                        <td>8080721003</td>
+                                        <td>142</td>
+
+                                        <td>England</td>
+
+                                        <td>Nov 12, 10:45 PM</td>
+                                        <td>
+                                            <div class=" form-switch form-check-success">
+                                                <input class="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckSuccess" checked="">
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <a aria-label="anchor" href="#" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye text-primary">
+                                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                                    <circle cx="12" cy="12" r="3"></circle>
+                                                </svg>
+                                            </a>
+                                            <a aria-label="anchor" href="#" class="btn btn-icon btn-sm bg-warning-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="Edit">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-edit text-warning">
+                                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                                </svg>
+                                            </a>
+                                            <a aria-label="anchor" class="btn btn-icon btn-sm bg-danger-subtle delete-row" data-bs-toggle="tooltip" data-bs-original-title="Delete">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trash-2 text-danger">
+                                                    <polyline points="3 6 5 6 21 6"></polyline>
+                                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                                    <line x1="10" y1="11" x2="10" y2="17"></line>
+                                                    <line x1="14" y1="11" x2="14" y2="17"></line>
+                                                </svg>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <input class="form-check-input" type="checkbox">
+                                        </td>
+                                        <td>
+                                            <a class="d-flex align-items-center gap-3" href="vendor-detail.php">
+                                                <div class="customer-pic">
+                                                    <img src="assets/images/avatars/07.png" class="rounded-circle" width="40" height="40" alt="">
+                                                </div>
+                                                <p class="mb-0 customer-name fw-bold">Andrew Carry</p>
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <a href="javascript:;" class="font-text1">abcexample.com</a>
+                                        </td>
+                                        <td>8080721003</td>
+                                        <td>142</td>
+
+                                        <td>England</td>
+
+                                        <td>Nov 12, 10:45 PM</td>
+                                        <td>
+                                            <div class=" form-switch form-check-success">
+                                                <input class="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckSuccess" checked="">
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <a aria-label="anchor" href="#" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye text-primary">
+                                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                                    <circle cx="12" cy="12" r="3"></circle>
+                                                </svg>
+                                            </a>
+                                            <a aria-label="anchor" href="#" class="btn btn-icon btn-sm bg-warning-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="Edit">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-edit text-warning">
+                                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                                </svg>
+                                            </a>
+                                            <a aria-label="anchor" class="btn btn-icon btn-sm bg-danger-subtle delete-row" data-bs-toggle="tooltip" data-bs-original-title="Delete">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trash-2 text-danger">
+                                                    <polyline points="3 6 5 6 21 6"></polyline>
+                                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                                    <line x1="10" y1="11" x2="10" y2="17"></line>
+                                                    <line x1="14" y1="11" x2="14" y2="17"></line>
+                                                </svg>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <input class="form-check-input" type="checkbox">
+                                        </td>
+                                        <td>
+                                            <a class="d-flex align-items-center gap-3" href="vendor-detail.php">
+                                                <div class="customer-pic">
+                                                    <img src="assets/images/avatars/08.png" class="rounded-circle" width="40" height="40" alt="">
+                                                </div>
+                                                <p class="mb-0 customer-name fw-bold">Andrew Carry</p>
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <a href="javascript:;" class="font-text1">abcexample.com</a>
+                                        </td>
+                                        <td>8080721003</td>
+                                        <td>142</td>
+
+                                        <td>England</td>
+
+                                        <td>Nov 12, 10:45 PM</td>
+                                        <td>
+                                            <div class=" form-switch form-check-success">
+                                                <input class="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckSuccess" checked="">
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <a aria-label="anchor" href="#" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye text-primary">
+                                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                                    <circle cx="12" cy="12" r="3"></circle>
+                                                </svg>
+                                            </a>
+                                            <a aria-label="anchor" href="#" class="btn btn-icon btn-sm bg-warning-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="Edit">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-edit text-warning">
+                                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                                </svg>
+                                            </a>
+                                            <a aria-label="anchor" class="btn btn-icon btn-sm bg-danger-subtle delete-row" data-bs-toggle="tooltip" data-bs-original-title="Delete">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trash-2 text-danger">
+                                                    <polyline points="3 6 5 6 21 6"></polyline>
+                                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                                    <line x1="10" y1="11" x2="10" y2="17"></line>
+                                                    <line x1="14" y1="11" x2="14" y2="17"></line>
+                                                </svg>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <input class="form-check-input" type="checkbox">
+                                        </td>
+                                        <td>
+                                            <a class="d-flex align-items-center gap-3" href="vendor-detail.php">
+                                                <div class="customer-pic">
+                                                    <img src="assets/images/avatars/09.png" class="rounded-circle" width="40" height="40" alt="">
+                                                </div>
+                                                <p class="mb-0 customer-name fw-bold">Andrew Carry</p>
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <a href="javascript:;" class="font-text1">abcexample.com</a>
+                                        </td>
+                                        <td>8080721003</td>
+                                        <td>142</td>
+
+                                        <td>England</td>
+
+                                        <td>Nov 12, 10:45 PM</td>
+                                        <td>
+                                            <div class=" form-switch form-check-success">
+                                                <input class="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckSuccess" checked="">
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <a aria-label="anchor" href="#" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye text-primary">
+                                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                                    <circle cx="12" cy="12" r="3"></circle>
+                                                </svg>
+                                            </a>
+                                            <a aria-label="anchor" href="#" class="btn btn-icon btn-sm bg-warning-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="Edit">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-edit text-warning">
+                                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                                </svg>
+                                            </a>
+                                            <a aria-label="anchor" class="btn btn-icon btn-sm bg-danger-subtle delete-row" data-bs-toggle="tooltip" data-bs-original-title="Delete">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trash-2 text-danger">
+                                                    <polyline points="3 6 5 6 21 6"></polyline>
+                                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                                    <line x1="10" y1="11" x2="10" y2="17"></line>
+                                                    <line x1="14" y1="11" x2="14" y2="17"></line>
+                                                </svg>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <input class="form-check-input" type="checkbox">
+                                        </td>
+                                        <td>
+                                            <a class="d-flex align-items-center gap-3" href="vendor-detail.php">
+                                                <div class="customer-pic">
+                                                    <img src="assets/images/avatars/10.png" class="rounded-circle" width="40" height="40" alt="">
+                                                </div>
+                                                <p class="mb-0 customer-name fw-bold">Andrew Carry</p>
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <a href="javascript:;" class="font-text1">abcexample.com</a>
+                                        </td>
+                                        <td>8080721003</td>
+                                        <td>142</td>
+
+                                        <td>England</td>
+
+                                        <td>Nov 12, 10:45 PM</td>
+                                        <td>
+                                            <div class=" form-switch form-check-success">
+                                                <input class="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckSuccess" checked="">
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <a aria-label="anchor" href="#" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye text-primary">
+                                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                                    <circle cx="12" cy="12" r="3"></circle>
+                                                </svg>
+                                            </a>
+                                            <a aria-label="anchor" href="#" class="btn btn-icon btn-sm bg-warning-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="Edit">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-edit text-warning">
+                                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                                </svg>
+                                            </a>
+                                            <a aria-label="anchor" class="btn btn-icon btn-sm bg-danger-subtle delete-row" data-bs-toggle="tooltip" data-bs-original-title="Delete">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trash-2 text-danger">
+                                                    <polyline points="3 6 5 6 21 6"></polyline>
+                                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                                    <line x1="10" y1="11" x2="10" y2="17"></line>
+                                                    <line x1="14" y1="11" x2="14" y2="17"></line>
+                                                </svg>
+                                            </a>
+                                        </td>
+                                    </tr>
+
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
 
+
         </div>
     </main>
     <!--end main wrapper-->
+
+    <!--start footer-->
+    <footer class="page-footer">
+        <p class="mb-0">Copyright © 2025. All right reserved.</p>
+    </footer>
+    <!--top footer-->
 
 
     <!--bootstrap js-->
@@ -368,7 +640,7 @@
     <script src="assets/plugins/metismenu/metisMenu.min.js"></script>
     <script src="assets/plugins/datatable/js/jquery.dataTables.min.js"></script>
     <script src="assets/plugins/datatable/js/dataTables.bootstrap5.min.js"></script>
-    <script>
+    <!-- <script>
         $(document).ready(function() {
             $('#example').DataTable();
         });
@@ -383,13 +655,13 @@
             table.buttons().container()
                 .appendTo('#example2_wrapper .col-md-6:eq(0)');
         });
-    </script>
+    </script> -->
     <script src="assets/plugins/simplebar/js/simplebar.min.js"></script>
     <script src="assets/js/main.js"></script>
     <script src="https://unpkg.com/feather-icons"></script>
-	<script>
-		feather.replace()
-	</script>
+    <script>
+        feather.replace()
+    </script>
 
 
 </body>
