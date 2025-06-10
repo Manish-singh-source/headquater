@@ -1,4 +1,3 @@
-
 <body>
 
     <?php include 'header.php'; ?>
@@ -40,21 +39,22 @@
             <div class="row">
                 <div class="col-12">
                     <div class="card w-100 d-flex flex-row">
-                        <div class="col-4 card-body">
-                            <div class="position-relative">
-                                <img src="assets/images/gallery/18.png" class="img-fluid rounded" alt="">
-                                <div class="position-absolute top-100 start-50 translate-middle">
+                        <div class="col-1 card-body d-flex">
+                            <div class="position-relative justify-content-center">
+                                <img src="assets/images/avatars/02.png" class="img-fluid rounded" alt="">
+                                <!-- <div class="position-absolute top-100 start-50 translate-middle">
                                     <img src="assets/images/avatars/02.png" width="100" height="100"
                                         class="rounded-circle raised p-1 bg-white" alt="">
+                                </div> -->
+                                <div class="text-center my-2 pt-2">
+                                    <h4 class="mb-1">Manish Carry</h4>
+                                    <p class="mb-0">Marketing Excutive</p>
                                 </div>
                             </div>
-                            <div class="text-center my-5 pt-4">
-                                <h4 class="mb-1">Manish Carry</h4>
-                                <p class="mb-0">Marketing Excutive</p>
-                            </div>
+
 
                         </div>
-                        <ul class="col-8 list-group list-group-flush">
+                        <ul class="col-10 list-group list-group-flush">
                             <li class="list-group-item">
                                 <b>Phone No</b>
                                 <br>
@@ -96,7 +96,7 @@
 
                                 RATN0000053
                             </li>
-                            
+
 
 
                         </ul>
