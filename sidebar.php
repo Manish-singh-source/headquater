@@ -35,6 +35,13 @@
             </a>
           </li>
           <li>
+            <a href="Warehouse.php">
+              <div class="parent-icon"><i class="material-icons-outlined">home</i>
+              </div>
+              <div class="menu-title">Warehouse</div>
+            </a>
+          </li>
+          <li>
             <a href="javascript:;" class="has-arrow">
               <div class="parent-icon"><i class="material-icons-outlined">widgets</i>
               </div>
