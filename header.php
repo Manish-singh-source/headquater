@@ -27,7 +27,22 @@
   <link href="sass/semi-dark.css" rel="stylesheet">
   <link href="sass/bordered-theme.css" rel="stylesheet">
   <link href="sass/responsive.css" rel="stylesheet">
-
+  <style>
+    .form-control:focus {
+    color: var(--bs-body-color);
+    background-color: var(--bs-body-bg);
+    border-color: #86b7fe;
+    outline: 0;
+    box-shadow: 0 0 0 -1.75rem rgba(13, 110, 253, .25);
+}
+.form-select:focus {
+    color: var(--bs-body-color);
+    background-color: var(--bs-body-bg);
+    border-color: #86b7fe;
+    outline: 0;
+    box-shadow: 0 0 0 -1.75rem rgba(13, 110, 253, .25);
+}
+  </style>
 </head>
 
 <body>
