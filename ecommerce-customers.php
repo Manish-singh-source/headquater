@@ -116,7 +116,7 @@
                       <input class="form-check-input" type="checkbox">
                     </td>
                     <td>
-                      <a class="d-flex align-items-center gap-3" href="ecommerce-customer-details.php">
+                      <a class="d-flex align-items-center gap-3" href="customer-detail.php">
                         <div class="customer-pic">
                           <img src="assets/images/avatars/01.png" class="rounded-circle" width="40" height="40" alt="">
                         </div>
@@ -137,7 +137,7 @@
                       </div>
                     </td>
                     <td>
-                      <a aria-label="anchor" href="#" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
+                      <a aria-label="anchor" href="customer-detail.php" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
                         <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye text-primary"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
                       </a>
                       <a aria-label="anchor" href="#" class="btn btn-icon btn-sm bg-warning-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="Edit">
@@ -153,7 +153,7 @@
                       <input class="form-check-input" type="checkbox">
                     </td>
                     <td>
-                      <a class="d-flex align-items-center gap-3" href="ecommerce-customer-details.php">
+                      <a class="d-flex align-items-center gap-3" href="customer-detail.php">
                         <div class="customer-pic">
                           <img src="assets/images/avatars/02.png" class="rounded-circle" width="40" height="40" alt="">
                         </div>
@@ -175,7 +175,7 @@
                       </div>
                     </td>
                     <td>
-                      <a aria-label="anchor" href="#" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
+                      <a aria-label="anchor" href="customer-detail.php" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
                         <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye text-primary"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
                       </a>
                       <a aria-label="anchor" href="#" class="btn btn-icon btn-sm bg-warning-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="Edit">
@@ -191,7 +191,7 @@
                       <input class="form-check-input" type="checkbox">
                     </td>
                     <td>
-                      <a class="d-flex align-items-center gap-3" href="ecommerce-customer-details.php">
+                      <a class="d-flex align-items-center gap-3" href="customer-detail.php">
                         <div class="customer-pic">
                           <img src="assets/images/avatars/03.png" class="rounded-circle" width="40" height="40" alt="">
                         </div>
@@ -213,7 +213,7 @@
                       </div>
                     </td>
                     <td>
-                      <a aria-label="anchor" href="#" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
+                      <a aria-label="anchor" href="customer-detail.php" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
                         <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye text-primary"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
                       </a>
                       <a aria-label="anchor" href="#" class="btn btn-icon btn-sm bg-warning-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="Edit">
@@ -229,7 +229,7 @@
                       <input class="form-check-input" type="checkbox">
                     </td>
                     <td>
-                      <a class="d-flex align-items-center gap-3" href="ecommerce-customer-details.php">
+                      <a class="d-flex align-items-center gap-3" href="customer-detail.php">
                         <div class="customer-pic">
                           <img src="assets/images/avatars/04.png" class="rounded-circle" width="40" height="40" alt="">
                         </div>
@@ -251,7 +251,7 @@
                       </div>
                     </td>
                     <td>
-                      <a aria-label="anchor" href="#" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
+                      <a aria-label="anchor" href="customer-detail.php" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
                         <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye text-primary"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
                       </a>
                       <a aria-label="anchor" href="#" class="btn btn-icon btn-sm bg-warning-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="Edit">
@@ -267,7 +267,7 @@
                       <input class="form-check-input" type="checkbox">
                     </td>
                     <td>
-                      <a class="d-flex align-items-center gap-3" href="ecommerce-customer-details.php">
+                      <a class="d-flex align-items-center gap-3" href="customer-detail.php">
                         <div class="customer-pic">
                           <img src="assets/images/avatars/05.png" class="rounded-circle" width="40" height="40" alt="">
                         </div>
@@ -289,7 +289,7 @@
                       </div>
                     </td>
                     <td>
-                      <a aria-label="anchor" href="#" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
+                      <a aria-label="anchor" href="customer-detail.php" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
                         <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye text-primary"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
                       </a>
                       <a aria-label="anchor" href="#" class="btn btn-icon btn-sm bg-warning-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="Edit">
@@ -305,7 +305,7 @@
                       <input class="form-check-input" type="checkbox">
                     </td>
                     <td>
-                      <a class="d-flex align-items-center gap-3" href="ecommerce-customer-details.php">
+                      <a class="d-flex align-items-center gap-3" href="customer-detail.php">
                         <div class="customer-pic">
                           <img src="assets/images/avatars/06.png" class="rounded-circle" width="40" height="40" alt="">
                         </div>
@@ -327,7 +327,7 @@
                       </div>
                     </td>
                     <td>
-                      <a aria-label="anchor" href="#" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
+                      <a aria-label="anchor" href="customer-detail.php" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
                         <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye text-primary"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
                       </a>
                       <a aria-label="anchor" href="#" class="btn btn-icon btn-sm bg-warning-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="Edit">
@@ -343,7 +343,7 @@
                       <input class="form-check-input" type="checkbox">
                     </td>
                     <td>
-                      <a class="d-flex align-items-center gap-3" href="ecommerce-customer-details.php">
+                      <a class="d-flex align-items-center gap-3" href="customer-detail.php">
                         <div class="customer-pic">
                           <img src="assets/images/avatars/07.png" class="rounded-circle" width="40" height="40" alt="">
                         </div>
@@ -365,7 +365,7 @@
                       </div>
                     </td>
                     <td>
-                      <a aria-label="anchor" href="#" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
+                      <a aria-label="anchor" href="customer-detail.php" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
                         <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye text-primary"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
                       </a>
                       <a aria-label="anchor" href="#" class="btn btn-icon btn-sm bg-warning-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="Edit">
@@ -381,7 +381,7 @@
                       <input class="form-check-input" type="checkbox">
                     </td>
                     <td>
-                      <a class="d-flex align-items-center gap-3" href="ecommerce-customer-details.php">
+                      <a class="d-flex align-items-center gap-3" href="customer-detail.php">
                         <div class="customer-pic">
                           <img src="assets/images/avatars/08.png" class="rounded-circle" width="40" height="40" alt="">
                         </div>
@@ -403,7 +403,7 @@
                       </div>
                     </td>
                     <td>
-                      <a aria-label="anchor" href="#" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
+                      <a aria-label="anchor" href="customer-detail.php" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
                         <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye text-primary"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
                       </a>
                       <a aria-label="anchor" href="#" class="btn btn-icon btn-sm bg-warning-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="Edit">
@@ -419,7 +419,7 @@
                       <input class="form-check-input" type="checkbox">
                     </td>
                     <td>
-                      <a class="d-flex align-items-center gap-3" href="ecommerce-customer-details.php">
+                      <a class="d-flex align-items-center gap-3" href="customer-detail.php">
                         <div class="customer-pic">
                           <img src="assets/images/avatars/09.png" class="rounded-circle" width="40" height="40" alt="">
                         </div>
@@ -441,7 +441,7 @@
                       </div>
                     </td>
                     <td>
-                      <a aria-label="anchor" href="#" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
+                      <a aria-label="anchor" href="customer-detail.php" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
                         <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye text-primary"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
                       </a>
                       <a aria-label="anchor" href="#" class="btn btn-icon btn-sm bg-warning-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="Edit">
@@ -457,7 +457,7 @@
                       <input class="form-check-input" type="checkbox">
                     </td>
                     <td>
-                      <a class="d-flex align-items-center gap-3" href="ecommerce-customer-details.php">
+                      <a class="d-flex align-items-center gap-3" href="customer-detail.php">
                         <div class="customer-pic">
                           <img src="assets/images/avatars/10.png" class="rounded-circle" width="40" height="40" alt="">
                         </div>
@@ -479,7 +479,7 @@
                       </div>
                     </td>
                     <td>
-                      <a aria-label="anchor" href="#" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
+                      <a aria-label="anchor" href="customer-detail.php" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
                         <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye text-primary"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
                       </a>
                       <a aria-label="anchor" href="#" class="btn btn-icon btn-sm bg-warning-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="Edit">
