@@ -10,7 +10,7 @@
       <div class="sidebar-close">
         <span class="material-icons-outlined">close</span>
       </div>
-    </div>
+    </div>  
     <div class="sidebar-nav">
         <!--navigation-->
         <ul class="metismenu" id="sidenav">
@@ -77,11 +77,11 @@
               <div class="menu-title">eCommerce</div>
             </a>
             <ul>
-              <li><a href="ecommerce-add-product.html"><i class="material-icons-outlined">arrow_right</i>Add Product</a>
+              <li><a href="products.php"><i class="material-icons-outlined">arrow_right</i>Products</a>
               </li>
-              <li><a href="ecommerce-products.html"><i class="material-icons-outlined">arrow_right</i>Products</a>
+              <li><a href="customer.php"><i class="material-icons-outlined">arrow_right</i>Customers</a>
               </li>
-              <li><a href="ecommerce-customers.html"><i class="material-icons-outlined">arrow_right</i>Customers</a>
+              <li><a href="vendor.php"><i class="material-icons-outlined">arrow_right</i>Vendor</a>
               </li>
               <li><a href="ecommerce-customer-details.html"><i class="material-icons-outlined">arrow_right</i>Customer Details</a>
               </li>
