@@ -18,18 +18,7 @@
             </ol>
           </nav>
         </div>
-        <div class="ms-auto">
-          <div class="btn-group">
-            <button type="button" class="btn btn-primary">Settings</button>
-            <button type="button" class="btn btn-primary split-bg-primary dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown"> <span class="visually-hidden">Toggle Dropdown</span>
-            </button>
-            <div class="dropdown-menu dropdown-menu-right dropdown-menu-lg-end"> <a class="dropdown-item" href="javascript:;">Action</a>
-              <a class="dropdown-item" href="javascript:;">Another action</a>
-              <a class="dropdown-item" href="javascript:;">Something else here</a>
-              <div class="dropdown-divider"></div> <a class="dropdown-item" href="javascript:;">Separated link</a>
-            </div>
-          </div>
-        </div>
+        
       </div>
       <!--end breadcrumb-->
 
@@ -102,8 +91,8 @@
 
                 <div class="col-md-12">
                   <div class="d-md-flex d-grid align-items-center gap-3">
-                    <button type="submit" class="btn btn-grd-primary px-4">Create Customer</button>
-                    <button type="reset" class="btn btn-grd-royal px-4">Reset</button>
+                    <button type="submit" class="btn btn-primary px-4">Submit</button>
+                   
                   </div>
                 </div>
               </form>
