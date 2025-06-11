@@ -100,7 +100,7 @@
                                         <div class="border rounded p-3">
                                             <div class="d-flex align-items-center justify-content-between mb-3">
                                                 <h6 class="mb-0">
-                                                    Language
+                                                    Vendor
                                                 </h6>
                                             </div>
 
@@ -108,7 +108,178 @@
                                                 <div class="col-md-6">
                                                     <div class="d-flex align-items-center justify-content-between gap-3 form-control p-2">
                                                         <label class="mb-0">
-                                                            View Languages
+                                                            View Vendor
+                                                        </label>
+                                                        <div class="form-check form-switch">
+                                                            <input type="checkbox" value="view_admin" name="permission[admin][view_admin] " class="form-check-input" id="view_admin">
+                                                            <label class="form-check-label" for="view_admin"></label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="d-flex align-items-center justify-content-between gap-3 form-control p-2">
+                                                        <label class="mb-0">
+                                                            Update Vendor
+                                                        </label>
+                                                        <div class="form-check form-switch">
+                                                            <input type="checkbox" value="update_profile" name="permission[admin][update_profile] " class="form-check-input" id="update_profile">
+                                                            <label class="form-check-label" for="update_profile"></label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="d-flex align-items-center justify-content-between gap-3 form-control p-2">
+                                                        <label class="mb-0">
+                                                            Create Vendor
+                                                        </label>
+                                                        <div class="form-check form-switch">
+                                                            <input type="checkbox" value="create_admin" name="permission[admin][create_admin] " class="form-check-input" id="create_admin">
+                                                            <label class="form-check-label" for="create_admin"></label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="d-flex align-items-center justify-content-between gap-3 form-control p-2">
+                                                        <label class="mb-0">
+                                                            Delete Vendor
+                                                        </label>
+                                                        <div class="form-check form-switch">
+                                                            <input type="checkbox" value="delete_admin" name="permission[admin][delete_admin] " class="form-check-input" id="delete_admin">
+                                                            <label class="form-check-label" for="delete_admin"></label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-xl-6">
+                                        <div class="border rounded p-3">
+                                            <div class="d-flex align-items-center justify-content-between mb-3">
+                                                <h6 class="mb-0">
+                                                    Customer
+                                                </h6>
+                                            </div>
+
+                                            <div class="row g-3">
+                                                <div class="col-md-6">
+                                                    <div class="d-flex align-items-center justify-content-between gap-3 form-control p-2">
+                                                        <label class="mb-0">
+                                                            View Customer
+                                                        </label>
+                                                        <div class="form-check form-switch">
+                                                            <input type="checkbox" value="view_admin" name="permission[admin][view_admin] " class="form-check-input" id="view_admin">
+                                                            <label class="form-check-label" for="view_admin"></label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="d-flex align-items-center justify-content-between gap-3 form-control p-2">
+                                                        <label class="mb-0">
+                                                            Update Customer
+                                                        </label>
+                                                        <div class="form-check form-switch">
+                                                            <input type="checkbox" value="update_profile" name="permission[admin][update_profile] " class="form-check-input" id="update_profile">
+                                                            <label class="form-check-label" for="update_profile"></label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="d-flex align-items-center justify-content-between gap-3 form-control p-2">
+                                                        <label class="mb-0">
+                                                            Create Customer
+                                                        </label>
+                                                        <div class="form-check form-switch">
+                                                            <input type="checkbox" value="create_admin" name="permission[admin][create_admin] " class="form-check-input" id="create_admin">
+                                                            <label class="form-check-label" for="create_admin"></label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="d-flex align-items-center justify-content-between gap-3 form-control p-2">
+                                                        <label class="mb-0">
+                                                            Delete Customer
+                                                        </label>
+                                                        <div class="form-check form-switch">
+                                                            <input type="checkbox" value="delete_admin" name="permission[admin][delete_admin] " class="form-check-input" id="delete_admin">
+                                                            <label class="form-check-label" for="delete_admin"></label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-xl-6">
+                                        <div class="border rounded p-3">
+                                            <div class="d-flex align-items-center justify-content-between mb-3">
+                                                <h6 class="mb-0">
+                                                    Warehouse
+                                                </h6>
+                                            </div>
+
+                                            <div class="row g-3">
+                                                <div class="col-md-6">
+                                                    <div class="d-flex align-items-center justify-content-between gap-3 form-control p-2">
+                                                        <label class="mb-0">
+                                                            View Warehouse
+                                                        </label>
+                                                        <div class="form-check form-switch">
+                                                            <input type="checkbox" value="view_admin" name="permission[admin][view_admin] " class="form-check-input" id="view_admin">
+                                                            <label class="form-check-label" for="view_admin"></label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="d-flex align-items-center justify-content-between gap-3 form-control p-2">
+                                                        <label class="mb-0">
+                                                            Update Warehouse
+                                                        </label>
+                                                        <div class="form-check form-switch">
+                                                            <input type="checkbox" value="update_profile" name="permission[admin][update_profile] " class="form-check-input" id="update_profile">
+                                                            <label class="form-check-label" for="update_profile"></label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="d-flex align-items-center justify-content-between gap-3 form-control p-2">
+                                                        <label class="mb-0">
+                                                            Create Warehouse
+                                                        </label>
+                                                        <div class="form-check form-switch">
+                                                            <input type="checkbox" value="create_admin" name="permission[admin][create_admin] " class="form-check-input" id="create_admin">
+                                                            <label class="form-check-label" for="create_admin"></label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="d-flex align-items-center justify-content-between gap-3 form-control p-2">
+                                                        <label class="mb-0">
+                                                            Delete Warehouse
+                                                        </label>
+                                                        <div class="form-check form-switch">
+                                                            <input type="checkbox" value="delete_admin" name="permission[admin][delete_admin] " class="form-check-input" id="delete_admin">
+                                                            <label class="form-check-label" for="delete_admin"></label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-xl-6">
+                                        <div class="border rounded p-3">
+                                            <div class="d-flex align-items-center justify-content-between mb-3">
+                                                <h6 class="mb-0">
+                                                    Products
+                                                </h6>
+                                            </div>
+
+                                            <div class="row g-3">
+                                                <div class="col-md-6">
+                                                    <div class="d-flex align-items-center justify-content-between gap-3 form-control p-2">
+                                                        <label class="mb-0">
+                                                            View Products
                                                         </label>
                                                         <div class="form-check form-switch">
                                                             <input type="checkbox" value="view_languages" name="permission[language][view_languages] " class="form-check-input" id="view_languages">
@@ -119,7 +290,7 @@
                                                 <div class="col-md-6">
                                                     <div class="d-flex align-items-center justify-content-between gap-3 form-control p-2">
                                                         <label class="mb-0">
-                                                            Create Languages
+                                                            Create Products
                                                         </label>
                                                         <div class="form-check form-switch">
                                                             <input type="checkbox" value="create_languages" name="permission[language][create_languages] " class="form-check-input" id="create_languages">
@@ -130,7 +301,7 @@
                                                 <div class="col-md-6">
                                                     <div class="d-flex align-items-center justify-content-between gap-3 form-control p-2">
                                                         <label class="mb-0">
-                                                            Update Languages
+                                                            Update Products
                                                         </label>
                                                         <div class="form-check form-switch">
                                                             <input type="checkbox" value="update_languages" name="permission[language][update_languages] " class="form-check-input" id="update_languages">
@@ -141,7 +312,64 @@
                                                 <div class="col-md-6">
                                                     <div class="d-flex align-items-center justify-content-between gap-3 form-control p-2">
                                                         <label class="mb-0">
-                                                            Delete Languages
+                                                            Delete Products
+                                                        </label>
+                                                        <div class="form-check form-switch">
+                                                            <input type="checkbox" value="delete_languages" name="permission[language][delete_languages] " class="form-check-input" id="delete_languages">
+                                                            <label class="form-check-label" for="delete_languages"></label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-xl-6">
+                                        <div class="border rounded p-3">
+                                            <div class="d-flex align-items-center justify-content-between mb-3">
+                                                <h6 class="mb-0">
+                                                    Order
+                                                </h6>
+                                            </div>
+
+                                            <div class="row g-3">
+                                                <div class="col-md-6">
+                                                    <div class="d-flex align-items-center justify-content-between gap-3 form-control p-2">
+                                                        <label class="mb-0">
+                                                            View Order
+                                                        </label>
+                                                        <div class="form-check form-switch">
+                                                            <input type="checkbox" value="view_languages" name="permission[language][view_languages] " class="form-check-input" id="view_languages">
+                                                            <label class="form-check-label" for="view_languages"></label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="d-flex align-items-center justify-content-between gap-3 form-control p-2">
+                                                        <label class="mb-0">
+                                                            Create Order
+                                                        </label>
+                                                        <div class="form-check form-switch">
+                                                            <input type="checkbox" value="create_languages" name="permission[language][create_languages] " class="form-check-input" id="create_languages">
+                                                            <label class="form-check-label" for="create_languages"></label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="d-flex align-items-center justify-content-between gap-3 form-control p-2">
+                                                        <label class="mb-0">
+                                                            Update Order
+                                                        </label>
+                                                        <div class="form-check form-switch">
+                                                            <input type="checkbox" value="update_languages" name="permission[language][update_languages] " class="form-check-input" id="update_languages">
+                                                            <label class="form-check-label" for="update_languages"></label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="d-flex align-items-center justify-content-between gap-3 form-control p-2">
+                                                        <label class="mb-0">
+                                                            Delete Order
                                                         </label>
                                                         <div class="form-check form-switch">
                                                             <input type="checkbox" value="delete_languages" name="permission[language][delete_languages] " class="form-check-input" id="delete_languages">
