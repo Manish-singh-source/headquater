@@ -10,8 +10,7 @@
     <div class="main-content">
       <!--breadcrumb-->
       <div class="page-breadcrumb d-none d-sm-flex align-items-center mb-3">
-        <div class="breadcrumb-title pe-3">eCommerce</div>
-        <div class="ps-3">
+        <div>
           <nav aria-label="breadcrumb">
             <ol class="breadcrumb mb-0 p-0">
               <li class="breadcrumb-item"><a href="javascript:;"><i class="bx bx-home-alt"></i></a>
@@ -20,20 +19,7 @@
             </ol>
           </nav>
         </div>
-        <div class="ms-auto">
-          <div class="btn-group">
-            <button type="button" class="btn btn-primary">Settings</button>
-            <button type="button" class="btn btn-primary split-bg-primary dropdown-toggle dropdown-toggle-split"
-              data-bs-toggle="dropdown"> <span class="visually-hidden">Toggle Dropdown</span>
-            </button>
-            <div class="dropdown-menu dropdown-menu-right dropdown-menu-lg-end"> <a class="dropdown-item"
-                href="javascript:;">Action</a>
-              <a class="dropdown-item" href="javascript:;">Another action</a>
-              <a class="dropdown-item" href="javascript:;">Something else here</a>
-              <div class="dropdown-divider"></div> <a class="dropdown-item" href="javascript:;">Separated link</a>
-            </div>
-          </div>
-        </div>
+       
       </div>
       <!--end breadcrumb-->
 
@@ -101,7 +87,7 @@
         <div class="col-auto">
           <div class="d-flex align-items-center gap-2 justify-content-lg-end">
             <button class="btn btn-filter px-4"><i class="bi bi-box-arrow-right me-2"></i>Export</button>
-            <button class="btn btn-primary px-4"><i class="bi bi-plus-lg me-2"></i>Add Product</button>
+            <a href="add-product.php" class="btn btn-primary px-4"><i class="bi bi-plus-lg me-2"></i>Add Product</a>
           </div>
         </div>
       </div><!--end row-->
@@ -116,13 +102,13 @@
                     <th>
                       <input class="form-check-input" type="checkbox">
                     </th>
+                    <th>Warehouse</th>
                     <th>Product Name</th>
+                    <th>SKU</th>
                     <th>Price</th>
-                    <th>Category</th>
-                    <th>Tags</th>
-                    <th>Rating</th>
-                    <th>Vendor</th>
+                    <th>Quantity</th>
                     <th>Date</th>
+                    <th>Status</th>
                     <th>Action</th>
                   </tr>
                 </thead>
@@ -131,460 +117,271 @@
                     <td>
                       <input class="form-check-input" type="checkbox">
                     </td>
+                    <td>Baroda</td>
                     <td>
                       <div class="d-flex align-items-center gap-3">
-                        <div class="product-box">
-                          <img src="assets/images/orders/01.png" width="70" class="rounded-3" alt="">
-                        </div>
+                        
                         <div class="product-info">
                           <a href="javascript:;" class="product-title">Women Pink Floral Printed</a>
-                          <p class="mb-0 product-category">Category : Fashion</p>
+                          
                         </div>
                       </div>
                     </td>
+                    <td>BOK4897984</td>
                     <td>$49</td>
-                    <td>Palazzos</td>
+                   
+                    
                     <td>
-                      <div class="product-tags">
-                        <a href="javascript:;" class="btn-tags">Jeans</a>
-                        <a href="javascript:;" class="btn-tags">iPhone</a>
-                        <a href="javascript:;" class="btn-tags">Laptops</a>
-                        <a href="javascript:;" class="btn-tags">Mobiles</a>
-                        <a href="javascript:;" class="btn-tags">Wallets</a>
-                      </div>
-                    </td>
-                    <td>
-                      <div class="product-rating">
-                        <i class="bi bi-star-fill text-warning me-2"></i><span>5.0</span>
-                      </div>
-                    </td>
-                    <td>
-                      <a href="javascript:;">Michle Shoes England</a>
+                      150
                     </td>
                     <td>
                       Nov 12, 10:45 PM
                     </td>
-                    <td>
-                      <div class="dropdown">
-                        <button class="btn btn-sm btn-filter dropdown-toggle dropdown-toggle-nocaret"
-                          type="button" data-bs-toggle="dropdown">
-                          <i class="bi bi-three-dots"></i>
-                        </button>
-                        <ul class="dropdown-menu">
-                          <li><a class="dropdown-item" href="#">Action</a></li>
-                          <li><a class="dropdown-item" href="#">Another action</a></li>
-                          <li><a class="dropdown-item" href="#">Something else here</a></li>
-                        </ul>
-                      </div>
-                    </td>
+                    <td>Hold</td>
+                    <td><a aria-label="anchor" class="btn btn-icon btn-sm bg-danger-subtle delete-row" data-bs-toggle="tooltip" data-bs-original-title="Delete">
+                       <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trash-2 text-danger"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                      </a></td>
+                    
                   </tr>
                   <tr>
                     <td>
                       <input class="form-check-input" type="checkbox">
                     </td>
+                    <td>Baroda</td>
                     <td>
                       <div class="d-flex align-items-center gap-3">
-                        <div class="product-box">
-                          <img src="assets/images/orders/02.png" width="70" class="rounded-3" alt="">
-                        </div>
+                        
                         <div class="product-info">
                           <a href="javascript:;" class="product-title">Women Pink Floral Printed</a>
-                          <p class="mb-0 product-category">Category : Fashion</p>
+                          
                         </div>
                       </div>
                     </td>
+                    <td>BOK4897984</td>
                     <td>$49</td>
-                    <td>Palazzos</td>
+                   
+                    
                     <td>
-                      <div class="product-tags">
-                        <a href="javascript:;" class="btn-tags">Jeans</a>
-                        <a href="javascript:;" class="btn-tags">iPhone</a>
-                        <a href="javascript:;" class="btn-tags">Laptops</a>
-                        <a href="javascript:;" class="btn-tags">Mobiles</a>
-                        <a href="javascript:;" class="btn-tags">Wallets</a>
-                      </div>
-                    </td>
-                    <td>
-                      <div class="product-rating">
-                        <i class="bi bi-star-fill text-warning me-2"></i><span>5.0</span>
-                      </div>
-                    </td>
-                    <td>
-                      <a href="javascript:;">Michle Shoes England</a>
+                      150
                     </td>
                     <td>
                       Nov 12, 10:45 PM
                     </td>
-                    <td>
-                      <div class="dropdown">
-                        <button class="btn btn-sm btn-filter dropdown-toggle dropdown-toggle-nocaret"
-                          type="button" data-bs-toggle="dropdown">
-                          <i class="bi bi-three-dots"></i>
-                        </button>
-                        <ul class="dropdown-menu">
-                          <li><a class="dropdown-item" href="#">Action</a></li>
-                          <li><a class="dropdown-item" href="#">Another action</a></li>
-                          <li><a class="dropdown-item" href="#">Something else here</a></li>
-                        </ul>
-                      </div>
-                    </td>
+                    <td>Hold</td>
+                    <td><a aria-label="anchor" class="btn btn-icon btn-sm bg-danger-subtle delete-row" data-bs-toggle="tooltip" data-bs-original-title="Delete">
+                       <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trash-2 text-danger"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                      </a></td>
+                    
                   </tr>
                   <tr>
                     <td>
                       <input class="form-check-input" type="checkbox">
                     </td>
+                    <td>Baroda</td>
                     <td>
                       <div class="d-flex align-items-center gap-3">
-                        <div class="product-box">
-                          <img src="assets/images/orders/03.png" width="70" class="rounded-3" alt="">
-                        </div>
+                        
                         <div class="product-info">
                           <a href="javascript:;" class="product-title">Women Pink Floral Printed</a>
-                          <p class="mb-0 product-category">Category : Fashion</p>
+                          
                         </div>
                       </div>
                     </td>
+                    <td>BOK4897984</td>
                     <td>$49</td>
-                    <td>Palazzos</td>
+                   
+                    
                     <td>
-                      <div class="product-tags">
-                        <a href="javascript:;" class="btn-tags">Jeans</a>
-                        <a href="javascript:;" class="btn-tags">iPhone</a>
-                        <a href="javascript:;" class="btn-tags">Laptops</a>
-                        <a href="javascript:;" class="btn-tags">Mobiles</a>
-                        <a href="javascript:;" class="btn-tags">Wallets</a>
-                      </div>
-                    </td>
-                    <td>
-                      <div class="product-rating">
-                        <i class="bi bi-star-fill text-warning me-2"></i><span>5.0</span>
-                      </div>
-                    </td>
-                    <td>
-                      <a href="javascript:;">Michle Shoes England</a>
+                      150
                     </td>
                     <td>
                       Nov 12, 10:45 PM
                     </td>
-                    <td>
-                      <div class="dropdown">
-                        <button class="btn btn-sm btn-filter dropdown-toggle dropdown-toggle-nocaret"
-                          type="button" data-bs-toggle="dropdown">
-                          <i class="bi bi-three-dots"></i>
-                        </button>
-                        <ul class="dropdown-menu">
-                          <li><a class="dropdown-item" href="#">Action</a></li>
-                          <li><a class="dropdown-item" href="#">Another action</a></li>
-                          <li><a class="dropdown-item" href="#">Something else here</a></li>
-                        </ul>
-                      </div>
-                    </td>
+                    <td>Hold</td>
+                    <td><a aria-label="anchor" class="btn btn-icon btn-sm bg-danger-subtle delete-row" data-bs-toggle="tooltip" data-bs-original-title="Delete">
+                       <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trash-2 text-danger"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                      </a></td>
+                    
                   </tr>
                   <tr>
                     <td>
                       <input class="form-check-input" type="checkbox">
                     </td>
+                    <td>Baroda</td>
                     <td>
                       <div class="d-flex align-items-center gap-3">
-                        <div class="product-box">
-                          <img src="assets/images/orders/04.png" width="70" class="rounded-3" alt="">
-                        </div>
+                        
                         <div class="product-info">
                           <a href="javascript:;" class="product-title">Women Pink Floral Printed</a>
-                          <p class="mb-0 product-category">Category : Fashion</p>
+                          
                         </div>
                       </div>
                     </td>
+                    <td>BOK4897984</td>
                     <td>$49</td>
-                    <td>Palazzos</td>
+                   
+                    
                     <td>
-                      <div class="product-tags">
-                        <a href="javascript:;" class="btn-tags">Jeans</a>
-                        <a href="javascript:;" class="btn-tags">iPhone</a>
-                        <a href="javascript:;" class="btn-tags">Laptops</a>
-                        <a href="javascript:;" class="btn-tags">Mobiles</a>
-                        <a href="javascript:;" class="btn-tags">Wallets</a>
-                      </div>
-                    </td>
-                    <td>
-                      <div class="product-rating">
-                        <i class="bi bi-star-fill text-warning me-2"></i><span>5.0</span>
-                      </div>
-                    </td>
-                    <td>
-                      <a href="javascript:;">Michle Shoes England</a>
+                      150
                     </td>
                     <td>
                       Nov 12, 10:45 PM
                     </td>
-                    <td>
-                      <div class="dropdown">
-                        <button class="btn btn-sm btn-filter dropdown-toggle dropdown-toggle-nocaret"
-                          type="button" data-bs-toggle="dropdown">
-                          <i class="bi bi-three-dots"></i>
-                        </button>
-                        <ul class="dropdown-menu">
-                          <li><a class="dropdown-item" href="#">Action</a></li>
-                          <li><a class="dropdown-item" href="#">Another action</a></li>
-                          <li><a class="dropdown-item" href="#">Something else here</a></li>
-                        </ul>
-                      </div>
-                    </td>
+                    <td>Hold</td>
+                    <td><a aria-label="anchor" class="btn btn-icon btn-sm bg-danger-subtle delete-row" data-bs-toggle="tooltip" data-bs-original-title="Delete">
+                       <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trash-2 text-danger"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                      </a></td>
+                    
                   </tr>
                   <tr>
                     <td>
                       <input class="form-check-input" type="checkbox">
                     </td>
+                    <td>Baroda</td>
                     <td>
                       <div class="d-flex align-items-center gap-3">
-                        <div class="product-box">
-                          <img src="assets/images/orders/05.png" width="70" class="rounded-3" alt="">
-                        </div>
+                        
                         <div class="product-info">
                           <a href="javascript:;" class="product-title">Women Pink Floral Printed</a>
-                          <p class="mb-0 product-category">Category : Fashion</p>
+                          
                         </div>
                       </div>
                     </td>
+                    <td>BOK4897984</td>
                     <td>$49</td>
-                    <td>Palazzos</td>
+                   
+                    
                     <td>
-                      <div class="product-tags">
-                        <a href="javascript:;" class="btn-tags">Jeans</a>
-                        <a href="javascript:;" class="btn-tags">iPhone</a>
-                        <a href="javascript:;" class="btn-tags">Laptops</a>
-                        <a href="javascript:;" class="btn-tags">Mobiles</a>
-                        <a href="javascript:;" class="btn-tags">Wallets</a>
-                      </div>
-                    </td>
-                    <td>
-                      <div class="product-rating">
-                        <i class="bi bi-star-fill text-warning me-2"></i><span>5.0</span>
-                      </div>
-                    </td>
-                    <td>
-                      <a href="javascript:;">Michle Shoes England</a>
+                      150
                     </td>
                     <td>
                       Nov 12, 10:45 PM
                     </td>
-                    <td>
-                      <div class="dropdown">
-                        <button class="btn btn-sm btn-filter dropdown-toggle dropdown-toggle-nocaret"
-                          type="button" data-bs-toggle="dropdown">
-                          <i class="bi bi-three-dots"></i>
-                        </button>
-                        <ul class="dropdown-menu">
-                          <li><a class="dropdown-item" href="#">Action</a></li>
-                          <li><a class="dropdown-item" href="#">Another action</a></li>
-                          <li><a class="dropdown-item" href="#">Something else here</a></li>
-                        </ul>
-                      </div>
-                    </td>
+                    <td>Hold</td>
+                    <td><a aria-label="anchor" class="btn btn-icon btn-sm bg-danger-subtle delete-row" data-bs-toggle="tooltip" data-bs-original-title="Delete">
+                       <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trash-2 text-danger"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                      </a></td>
+                    
                   </tr>
                   <tr>
                     <td>
                       <input class="form-check-input" type="checkbox">
                     </td>
+                    <td>Baroda</td>
                     <td>
                       <div class="d-flex align-items-center gap-3">
-                        <div class="product-box">
-                          <img src="assets/images/orders/06.png" width="70" class="rounded-3" alt="">
-                        </div>
+                        
                         <div class="product-info">
                           <a href="javascript:;" class="product-title">Women Pink Floral Printed</a>
-                          <p class="mb-0 product-category">Category : Fashion</p>
+                          
                         </div>
                       </div>
                     </td>
+                    <td>BOK4897984</td>
                     <td>$49</td>
-                    <td>Palazzos</td>
+                   
+                    
                     <td>
-                      <div class="product-tags">
-                        <a href="javascript:;" class="btn-tags">Jeans</a>
-                        <a href="javascript:;" class="btn-tags">iPhone</a>
-                        <a href="javascript:;" class="btn-tags">Laptops</a>
-                        <a href="javascript:;" class="btn-tags">Mobiles</a>
-                        <a href="javascript:;" class="btn-tags">Wallets</a>
-                      </div>
-                    </td>
-                    <td>
-                      <div class="product-rating">
-                        <i class="bi bi-star-fill text-warning me-2"></i><span>5.0</span>
-                      </div>
-                    </td>
-                    <td>
-                      <a href="javascript:;">Michle Shoes England</a>
+                      150
                     </td>
                     <td>
                       Nov 12, 10:45 PM
                     </td>
-                    <td>
-                      <div class="dropdown">
-                        <button class="btn btn-sm btn-filter dropdown-toggle dropdown-toggle-nocaret"
-                          type="button" data-bs-toggle="dropdown">
-                          <i class="bi bi-three-dots"></i>
-                        </button>
-                        <ul class="dropdown-menu">
-                          <li><a class="dropdown-item" href="#">Action</a></li>
-                          <li><a class="dropdown-item" href="#">Another action</a></li>
-                          <li><a class="dropdown-item" href="#">Something else here</a></li>
-                        </ul>
-                      </div>
-                    </td>
+                    <td>Hold</td>
+                    <td><a aria-label="anchor" class="btn btn-icon btn-sm bg-danger-subtle delete-row" data-bs-toggle="tooltip" data-bs-original-title="Delete">
+                       <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trash-2 text-danger"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                      </a></td>
+                    
                   </tr>
                   <tr>
                     <td>
                       <input class="form-check-input" type="checkbox">
                     </td>
+                    <td>Baroda</td>
                     <td>
                       <div class="d-flex align-items-center gap-3">
-                        <div class="product-box">
-                          <img src="assets/images/orders/07.png" width="70" class="rounded-3" alt="">
-                        </div>
+                        
                         <div class="product-info">
                           <a href="javascript:;" class="product-title">Women Pink Floral Printed</a>
-                          <p class="mb-0 product-category">Category : Fashion</p>
+                          
                         </div>
                       </div>
                     </td>
+                    <td>BOK4897984</td>
                     <td>$49</td>
-                    <td>Palazzos</td>
+                   
+                    
                     <td>
-                      <div class="product-tags">
-                        <a href="javascript:;" class="btn-tags">Jeans</a>
-                        <a href="javascript:;" class="btn-tags">iPhone</a>
-                        <a href="javascript:;" class="btn-tags">Laptops</a>
-                        <a href="javascript:;" class="btn-tags">Mobiles</a>
-                        <a href="javascript:;" class="btn-tags">Wallets</a>
-                      </div>
-                    </td>
-                    <td>
-                      <div class="product-rating">
-                        <i class="bi bi-star-fill text-warning me-2"></i><span>5.0</span>
-                      </div>
-                    </td>
-                    <td>
-                      <a href="javascript:;">Michle Shoes England</a>
+                      150
                     </td>
                     <td>
                       Nov 12, 10:45 PM
                     </td>
-                    <td>
-                      <div class="dropdown">
-                        <button class="btn btn-sm btn-filter dropdown-toggle dropdown-toggle-nocaret"
-                          type="button" data-bs-toggle="dropdown">
-                          <i class="bi bi-three-dots"></i>
-                        </button>
-                        <ul class="dropdown-menu">
-                          <li><a class="dropdown-item" href="#">Action</a></li>
-                          <li><a class="dropdown-item" href="#">Another action</a></li>
-                          <li><a class="dropdown-item" href="#">Something else here</a></li>
-                        </ul>
-                      </div>
-                    </td>
+                    <td>Hold</td>
+                    <td><a aria-label="anchor" class="btn btn-icon btn-sm bg-danger-subtle delete-row" data-bs-toggle="tooltip" data-bs-original-title="Delete">
+                       <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trash-2 text-danger"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                      </a></td>
+                    
                   </tr>
                   <tr>
                     <td>
                       <input class="form-check-input" type="checkbox">
                     </td>
+                    <td>Baroda</td>
                     <td>
                       <div class="d-flex align-items-center gap-3">
-                        <div class="product-box">
-                          <img src="assets/images/orders/08.png" width="70" class="rounded-3" alt="">
-                        </div>
+                        
                         <div class="product-info">
                           <a href="javascript:;" class="product-title">Women Pink Floral Printed</a>
-                          <p class="mb-0 product-category">Category : Fashion</p>
+                          
                         </div>
                       </div>
                     </td>
+                    <td>BOK4897984</td>
                     <td>$49</td>
-                    <td>Palazzos</td>
+                   
+                    
                     <td>
-                      <div class="product-tags">
-                        <a href="javascript:;" class="btn-tags">Jeans</a>
-                        <a href="javascript:;" class="btn-tags">iPhone</a>
-                        <a href="javascript:;" class="btn-tags">Laptops</a>
-                        <a href="javascript:;" class="btn-tags">Mobiles</a>
-                        <a href="javascript:;" class="btn-tags">Wallets</a>
-                      </div>
-                    </td>
-                    <td>
-                      <div class="product-rating">
-                        <i class="bi bi-star-fill text-warning me-2"></i><span>5.0</span>
-                      </div>
-                    </td>
-                    <td>
-                      <a href="javascript:;">Michle Shoes England</a>
+                      150
                     </td>
                     <td>
                       Nov 12, 10:45 PM
                     </td>
-                    <td>
-                      <div class="dropdown">
-                        <button class="btn btn-sm btn-filter dropdown-toggle dropdown-toggle-nocaret"
-                          type="button" data-bs-toggle="dropdown">
-                          <i class="bi bi-three-dots"></i>
-                        </button>
-                        <ul class="dropdown-menu">
-                          <li><a class="dropdown-item" href="#">Action</a></li>
-                          <li><a class="dropdown-item" href="#">Another action</a></li>
-                          <li><a class="dropdown-item" href="#">Something else here</a></li>
-                        </ul>
-                      </div>
-                    </td>
+                    <td>Hold</td>
+                    <td><a aria-label="anchor" class="btn btn-icon btn-sm bg-danger-subtle delete-row" data-bs-toggle="tooltip" data-bs-original-title="Delete">
+                       <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trash-2 text-danger"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                      </a></td>
+                    
                   </tr>
                   <tr>
                     <td>
                       <input class="form-check-input" type="checkbox">
                     </td>
+                    <td>Baroda</td>
                     <td>
                       <div class="d-flex align-items-center gap-3">
-                        <div class="product-box">
-                          <img src="assets/images/orders/09.png" width="70" class="rounded-3" alt="">
-                        </div>
+                        
                         <div class="product-info">
                           <a href="javascript:;" class="product-title">Women Pink Floral Printed</a>
-                          <p class="mb-0 product-category">Category : Fashion</p>
+                          
                         </div>
                       </div>
                     </td>
+                    <td>BOK4897984</td>
                     <td>$49</td>
-                    <td>Palazzos</td>
+                   
+                    
                     <td>
-                      <div class="product-tags">
-                        <a href="javascript:;" class="btn-tags">Jeans</a>
-                        <a href="javascript:;" class="btn-tags">iPhone</a>
-                        <a href="javascript:;" class="btn-tags">Laptops</a>
-                        <a href="javascript:;" class="btn-tags">Mobiles</a>
-                        <a href="javascript:;" class="btn-tags">Wallets</a>
-                      </div>
-                    </td>
-                    <td>
-                      <div class="product-rating">
-                        <i class="bi bi-star-fill text-warning me-2"></i><span>5.0</span>
-                      </div>
-                    </td>
-                    <td>
-                      <a href="javascript:;">Michle Shoes England</a>
+                      150
                     </td>
                     <td>
                       Nov 12, 10:45 PM
                     </td>
-                    <td>
-                      <div class="dropdown">
-                        <button class="btn btn-sm btn-filter dropdown-toggle dropdown-toggle-nocaret"
-                          type="button" data-bs-toggle="dropdown">
-                          <i class="bi bi-three-dots"></i>
-                        </button>
-                        <ul class="dropdown-menu">
-                          <li><a class="dropdown-item" href="#">Action</a></li>
-                          <li><a class="dropdown-item" href="#">Another action</a></li>
-                          <li><a class="dropdown-item" href="#">Something else here</a></li>
-                        </ul>
-                      </div>
-                    </td>
+                    <td>Hold</td>
+                    <td><a aria-label="anchor" class="btn btn-icon btn-sm bg-danger-subtle delete-row" data-bs-toggle="tooltip" data-bs-original-title="Delete">
+                       <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trash-2 text-danger"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                      </a></td>
+                    
                   </tr>
 
                 </tbody>
@@ -741,69 +538,6 @@
   </div>
   <!--end cart-->
 
-
-
-  <!--start switcher-->
-  <button class="btn btn-grd btn-grd-primary position-fixed bottom-0 end-0 m-3 d-flex align-items-center gap-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#staticBackdrop">
-    <i class="material-icons-outlined">tune</i>Customize
-  </button>
-  
-  <div class="offcanvas offcanvas-end" data-bs-scroll="true" tabindex="-1" id="staticBackdrop">
-    <div class="offcanvas-header border-bottom h-70">
-      <div class="">
-        <h5 class="mb-0">Theme Customizer</h5>
-        <p class="mb-0">Customize your theme</p>
-      </div>
-      <a href="javascript:;" class="primaery-menu-close" data-bs-dismiss="offcanvas">
-        <i class="material-icons-outlined">close</i>
-      </a>
-    </div>
-    <div class="offcanvas-body">
-      <div>
-        <p>Theme variation</p>
-
-        <div class="row g-3">
-          <div class="col-12 col-xl-6">
-            <input type="radio" class="btn-check" name="theme-options" id="BlueTheme" checked>
-            <label class="btn btn-outline-secondary d-flex flex-column gap-1 align-items-center justify-content-center p-4" for="BlueTheme">
-              <span class="material-icons-outlined">contactless</span>
-              <span>Blue</span>
-            </label>
-          </div>
-          <div class="col-12 col-xl-6">
-            <input type="radio" class="btn-check" name="theme-options" id="LightTheme">
-            <label class="btn btn-outline-secondary d-flex flex-column gap-1 align-items-center justify-content-center p-4" for="LightTheme">
-              <span class="material-icons-outlined">light_mode</span>
-              <span>Light</span>
-            </label>
-          </div>
-          <div class="col-12 col-xl-6">
-            <input type="radio" class="btn-check" name="theme-options" id="DarkTheme">
-            <label class="btn btn-outline-secondary d-flex flex-column gap-1 align-items-center justify-content-center p-4" for="DarkTheme">
-              <span class="material-icons-outlined">dark_mode</span>
-              <span>Dark</span>
-            </label>
-          </div>
-          <div class="col-12 col-xl-6">
-            <input type="radio" class="btn-check" name="theme-options" id="SemiDarkTheme">
-            <label class="btn btn-outline-secondary d-flex flex-column gap-1 align-items-center justify-content-center p-4" for="SemiDarkTheme">
-              <span class="material-icons-outlined">contrast</span>
-              <span>Semi Dark</span>
-            </label>
-          </div>
-          <div class="col-12 col-xl-6">
-            <input type="radio" class="btn-check" name="theme-options" id="BoderedTheme">
-            <label class="btn btn-outline-secondary d-flex flex-column gap-1 align-items-center justify-content-center p-4" for="BoderedTheme">
-              <span class="material-icons-outlined">border_style</span>
-              <span>Bordered</span>
-            </label>
-          </div>
-        </div><!--end row-->
-
-      </div>
-    </div>
-  </div>
-  <!--start switcher-->
 
   <!--bootstrap js-->
   <script src="assets/js/bootstrap.bundle.min.js"></script>
