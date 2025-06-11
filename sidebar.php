@@ -61,42 +61,15 @@
               </div>
               <div class="menu-title">Warehouse</div>
             </a>
-          </li>
+          </li>  
           <li>
-            <a href="javascript:;" class="has-arrow">
-              <div class="parent-icon"><i class="material-icons-outlined">widgets</i>
+            <a href="order.php">
+              <div class="parent-icon"><i class="material-icons-outlined">home</i>
               </div>
-              <div class="menu-title">Widgets</div>
+              <div class="menu-title">Order</div>
             </a>
-            <ul>
-              <li><a href="widgets-data.php"><i class="material-icons-outlined">arrow_right</i>Data</a>
-              </li>
-              <li><a href="widgets-static.php"><i class="material-icons-outlined">arrow_right</i>Static</a>
-              </li>
-            </ul>
           </li>
-          <li>
-            <a class="has-arrow" href="javascript:;">
-              <div class="parent-icon"><i class="material-icons-outlined">apps</i>
-              </div>
-              <div class="menu-title">Apps</div>
-            </a>
-            <ul>
-              <li><a href="app-emailbox.php"><i class="material-icons-outlined">arrow_right</i>Email Box</a>
-              </li>
-              <li><a href="app-emailread.php"><i class="material-icons-outlined">arrow_right</i>Email Read</a>
-              </li>
-              <li><a href="app-chat-box.php"><i class="material-icons-outlined">arrow_right</i>Chat</a>
-              </li>
-              <li><a href="app-fullcalender.php"><i class="material-icons-outlined">arrow_right</i>Calendar</a>
-              </li>
-              <li><a href="app-to-do.php"><i class="material-icons-outlined">arrow_right</i>To do</a>
-              </li>
-              <li><a href="app-invoice.php"><i class="material-icons-outlined">arrow_right</i>Invoice</a>
-              </li>
-            </ul>
-          </li>
-         
+        
           <li class="menu-label">Others</li>
           <li>
             <a class="has-arrow" href="javascript:;">
