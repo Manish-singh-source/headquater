@@ -28,6 +28,19 @@
             </ul>
           </li>
           <li>
+            <a href="javascript:;" class="has-arrow">
+              <div class="parent-icon"><i class="material-icons-outlined">key</i>
+              </div>
+              <div class="menu-title">Access Control</div>
+            </a>
+            <ul>
+              <li><a href="staff.php"><i class="material-icons-outlined">arrow_right</i>Staff</a>
+              </li>
+              <li><a href="index2.php"><i class="material-icons-outlined">arrow_right</i>Role</a>
+              </li>
+            </ul>
+          </li>
+          <li>
             <a href="ecommerce-customers.php">
               <div class="parent-icon"><i class="material-icons-outlined">people</i>
               </div>
