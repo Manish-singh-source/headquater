@@ -63,6 +63,13 @@
             </a>
           </li>
           <li>
+            <a href="order.php">
+              <div class="parent-icon"><i class="material-icons-outlined">home</i>
+              </div>
+              <div class="menu-title">Order</div>
+            </a>
+          </li>
+          <li>
             <a href="javascript:;" class="has-arrow">
               <div class="parent-icon"><i class="material-icons-outlined">widgets</i>
               </div>
