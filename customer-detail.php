@@ -24,49 +24,49 @@
 
             <div class="row">
                 <div class="col-12">
-                    <div class="card w-100 d-flex flex-row">
-                        <div class="col-1 card-body d-flex">
-                            <div class="position-relative justify-content-center">
-                                <img src="assets/images/avatars/02.png" class="img-fluid rounded" alt="">
-                                <!-- <div class="position-absolute top-100 start-50 translate-middle">
+                    <div class="card w-100 d-flex  flex-sm-row flex-col">
+        <div class="col card-body d-flex">
+          <div class="position-relative justify-content-center">
+            <img src="assets/images/avatars/02.png" class="img-fluid rounded" alt="">
+            <!-- <div class="position-absolute top-100 start-50 translate-middle">
                                     <img src="assets/images/avatars/02.png" width="100" height="100"
                                         class="rounded-circle raised p-1 bg-white" alt="">
                                 </div> -->
-                                <div class="text-center my-2 pt-2">
-                                    <h4 class="mb-1">Manish Carry</h4>
-                                    <p class="mb-0">Marketing Excutive</p>
-                                </div>
-                            </div>
+            <div class="text-center my-2 pt-2">
+              <h4 class="mb-1">Manish Carry</h4>
+              <p class="mb-0">Marketing Excutive</p>
+            </div>
+          </div>
 
 
-                        </div>
-                        <ul class="col-10 list-group list-group-flush">
-                            <li class="list-group-item">
-                                <b>Phone No</b>
-                                <br>
-                                +91-XXX XXX XXXX
-                            </li>
-                            <li class="list-group-item">
-                                <b>Email</b>
-                                <br>
-                                mail.com
-                            </li>
-                            <li class="list-group-item">
-                                <b>GST No</b>
-                                <br>
-                                -
-                            </li>
-                            <li class="list-group-item">
-                                <b>PAN No</b>
-                                <br>
-                                -
-                            </li>
-                            <li class="list-group-item border-top">
-                                <b>Address</b>
-                                <br>
-                                Office No. 501, 5th Floor, Ghanshyam Enclave, Next To Laljipada Police Station, Laljipada, Link Road, Kandivali (West), Mumbai - 400067. Maharashtra - India
-                            </li>
-                            <!-- <li class="list-group-item border-top">
+        </div>
+        <ul class="col-10 list-group list-group-flush">
+          <li class="list-group-item">
+            <b>Phone No</b>
+            <br>
+            +91-XXX XXX XXXX
+          </li>
+          <li class="list-group-item">
+            <b>Email</b>
+            <br>
+            mail.com
+          </li>
+          <li class="list-group-item">
+            <b>GST No</b>
+            <br>
+            -
+          </li>
+          <li class="list-group-item">
+            <b>PAN No</b>
+            <br>
+            -
+          </li>
+          <li class="list-group-item border-top">
+            <b>Address</b>
+            <br>
+            Office No. 501, 5th Floor, Ghanshyam Enclave, Next To Laljipada Police Station, Laljipada, Link Road, Kandivali (West), Mumbai - 400067. Maharashtra - India
+          </li>
+          <!-- <li class="list-group-item border-top">
                                 <b>Bank Name</b>
                                 <br>
                                 RBL Bank
@@ -85,10 +85,10 @@
 
 
 
-                        </ul>
+        </ul>
 
 
-                    </div>
+      </div>
                 </div>
 
             </div><!--end row-->
@@ -461,69 +461,6 @@
     </div>
     <!--end cart-->
 
-
-
-    <!--start switcher-->
-    <button class="btn btn-grd btn-grd-primary position-fixed bottom-0 end-0 m-3 d-flex align-items-center gap-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#staticBackdrop">
-        <i class="material-icons-outlined">tune</i>Customize
-    </button>
-
-    <div class="offcanvas offcanvas-end" data-bs-scroll="true" tabindex="-1" id="staticBackdrop">
-        <div class="offcanvas-header border-bottom h-70">
-            <div class="">
-                <h5 class="mb-0">Theme Customizer</h5>
-                <p class="mb-0">Customize your theme</p>
-            </div>
-            <a href="javascript:;" class="primaery-menu-close" data-bs-dismiss="offcanvas">
-                <i class="material-icons-outlined">close</i>
-            </a>
-        </div>
-        <div class="offcanvas-body">
-            <div>
-                <p>Theme variation</p>
-
-                <div class="row g-3">
-                    <div class="col-12 col-xl-6">
-                        <input type="radio" class="btn-check" name="theme-options" id="BlueTheme" checked>
-                        <label class="btn btn-outline-secondary d-flex flex-column gap-1 align-items-center justify-content-center p-4" for="BlueTheme">
-                            <span class="material-icons-outlined">contactless</span>
-                            <span>Blue</span>
-                        </label>
-                    </div>
-                    <div class="col-12 col-xl-6">
-                        <input type="radio" class="btn-check" name="theme-options" id="LightTheme">
-                        <label class="btn btn-outline-secondary d-flex flex-column gap-1 align-items-center justify-content-center p-4" for="LightTheme">
-                            <span class="material-icons-outlined">light_mode</span>
-                            <span>Light</span>
-                        </label>
-                    </div>
-                    <div class="col-12 col-xl-6">
-                        <input type="radio" class="btn-check" name="theme-options" id="DarkTheme">
-                        <label class="btn btn-outline-secondary d-flex flex-column gap-1 align-items-center justify-content-center p-4" for="DarkTheme">
-                            <span class="material-icons-outlined">dark_mode</span>
-                            <span>Dark</span>
-                        </label>
-                    </div>
-                    <div class="col-12 col-xl-6">
-                        <input type="radio" class="btn-check" name="theme-options" id="SemiDarkTheme">
-                        <label class="btn btn-outline-secondary d-flex flex-column gap-1 align-items-center justify-content-center p-4" for="SemiDarkTheme">
-                            <span class="material-icons-outlined">contrast</span>
-                            <span>Semi Dark</span>
-                        </label>
-                    </div>
-                    <div class="col-12 col-xl-6">
-                        <input type="radio" class="btn-check" name="theme-options" id="BoderedTheme">
-                        <label class="btn btn-outline-secondary d-flex flex-column gap-1 align-items-center justify-content-center p-4" for="BoderedTheme">
-                            <span class="material-icons-outlined">border_style</span>
-                            <span>Bordered</span>
-                        </label>
-                    </div>
-                </div><!--end row-->
-
-            </div>
-        </div>
-    </div>
-    <!--start switcher-->
 
     <!--bootstrap js-->
     <script src="assets/js/bootstrap.bundle.min.js"></script>
