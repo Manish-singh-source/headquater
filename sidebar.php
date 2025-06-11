@@ -36,7 +36,7 @@
             <ul>
               <li><a href="staff.php"><i class="material-icons-outlined">arrow_right</i>Staff</a>
               </li>
-              <li><a href="index2.php"><i class="material-icons-outlined">arrow_right</i>Role</a>
+              <li><a href="role.php"><i class="material-icons-outlined">arrow_right</i>Role</a>
               </li>
             </ul>
           </li>
