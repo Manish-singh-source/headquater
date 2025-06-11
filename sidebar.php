@@ -59,7 +59,14 @@
               </div>
               <div class="menu-title">Warehouse</div>
             </a>
-          </li>  
+          </li>
+          <li>
+            <a href="order.php">
+              <div class="parent-icon"><i class="material-icons-outlined">home</i>
+              </div>
+              <div class="menu-title">Order</div>
+            </a>
+          </li>
           <li>
             <a href="products.php">
               <div class="parent-icon"><i class="material-icons-outlined">shopping_bag</i>
