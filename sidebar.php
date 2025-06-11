@@ -2,11 +2,15 @@
    <aside class="sidebar-wrapper" data-simplebar="true">
     <div class="sidebar-header">
       <div class="logo-icon">
+        <a href="index.php">
         <img src="assets/images/logo-icon.png" class="logo-img" alt="">
+        </a>
       </div>
+       <a href="index.php">
       <div class="logo-name flex-grow-1">
         <h5 class="mb-0">HEADQUATERS</h5>
       </div>
+      </a>
       <div class="sidebar-close">
         <span class="material-icons-outlined">close</span>
       </div>
@@ -15,17 +19,11 @@
         <!--navigation-->
         <ul class="metismenu" id="sidenav">
           <li>
-            <a href="javascript:;" class="has-arrow">
-              <div class="parent-icon"><i class="material-icons-outlined">home</i>
+            <a href="index.php">
+               <div class="parent-icon"><i class="material-icons-outlined">home</i>
               </div>
               <div class="menu-title">Dashboard</div>
             </a>
-            <ul>
-              <li><a href="index.php"><i class="material-icons-outlined">arrow_right</i>Analysis</a>
-              </li>
-              <li><a href="index2.php"><i class="material-icons-outlined">arrow_right</i>eCommerce</a>
-              </li>
-            </ul>
           </li>
           <li>
             <a href="javascript:;" class="has-arrow">
@@ -49,7 +47,7 @@
           </li>
           <li>
             <a href="vendor.php">
-              <div class="parent-icon"><i class="material-icons-outlined">people</i>
+              <div class="parent-icon"><i class="material-icons-outlined">storefront</i>
               </div>
               <div class="menu-title">Vendor</div>
             </a>
@@ -57,18 +55,19 @@
          
           <li>
             <a href="Warehouse.php">
-              <div class="parent-icon"><i class="material-icons-outlined">home</i>
+              <div class="parent-icon"><i class="material-icons-outlined">store</i>
               </div>
               <div class="menu-title">Warehouse</div>
             </a>
           </li>  
           <li>
-            <a href="order.php">
-              <div class="parent-icon"><i class="material-icons-outlined">home</i>
+            <a href="products.php">
+              <div class="parent-icon"><i class="material-icons-outlined">shopping_bag</i>
               </div>
-              <div class="menu-title">Order</div>
+              <div class="menu-title">Products</div>
             </a>
-          </li>
+          </li>  
+          
         
           <li class="menu-label">Others</li>
           <li>
