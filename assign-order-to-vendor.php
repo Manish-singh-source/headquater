@@ -16,7 +16,7 @@
                                     <div class="row g-4 align-items-center">
                                         <div class="col-sm">
                                             <h5 class="card-title mb-0">
-                                                Add New Products
+                                                Add New Order
                                             </h5>
                                         </div>
                                     </div>
@@ -25,14 +25,9 @@
                                 <div class="card-body">
                                     <div class="row g-3">
                                         <div class="col-12 col-lg-3">
-                                            <label for="marital" class="form-label">Warehouse
+                                            <label for="marital" class="form-label">Order id
                                                 <span class="text-danger">*</span></label>
-                                            <select class="form-control" name="marital" id="marital">
-                                                <option selected="" disabled="" value="">-- Select --</option>
-                                                <option value="Active">Baroda</option>
-
-
-                                            </select>
+                                            <input disabled type="" name="" id="" class="form-control" value="" required="" placeholder="#001">
                                         </div>
                                         <div class="col-12 col-lg-3">
                                             <label for="marital" class="form-label">Vendor Id
@@ -66,7 +61,7 @@
 
                             <div class="card">
                                 <div class="card-body">
-                                    <h5 class="mb-3">Available Products</h5>
+                                    <h5 class="mb-3">Products List</h5>
                                     <div class="product-table">
                                         <div class="table-responsive white-space-nowrap">
                                             <table class="table align-middle">
@@ -77,7 +72,8 @@
                                                         <th>SKU Code</th>
                                                         <th>Title</th>
                                                         <th>MRP</th>
-                                                        <th>Qty</th>
+                                                        <th>Qty Requirement</th>
+                                                        <th>Qty Available</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -87,6 +83,7 @@
                                                         <td>TP-260</td>
                                                         <td>Yera 260ml Glass Parabolic Tumbler Set</td>
                                                         <td>315</td>
+                                                        <td>64</td>
                                                         <td>40</td>
                                                     </tr>
                                                     <tr>
@@ -95,6 +92,7 @@
                                                         <td>JR2KG</td>
                                                         <td>Yera Glass Jar with Plastic Lid - 2425ml</td>
                                                         <td>330</td>
+                                                        <td>9</td>
                                                         <td>0</td>
                                                     </tr>
                                                     <tr>
@@ -103,6 +101,7 @@
                                                         <td>B9OFL</td>
                                                         <td>Yera Ice Cream Delight 250 ml Glass Bowl Set of 6</td>
                                                         <td>280</td>
+                                                        <td>64</td>
                                                         <td>50</td>
                                                     </tr>
                                                     <tr>
@@ -111,6 +110,7 @@
                                                         <td>TC8P17</td>
                                                         <td>Yera Conical Glass Tumbler Set - 215 ml</td>
                                                         <td>230</td>
+                                                        <td>144</td>
                                                         <td>100</td>
                                                     </tr>
                                                     <tr>
@@ -120,6 +120,7 @@
                                                         <td>Yera Glass Tumbler Transparent 285 ml</td>
                                                         <td>240</td>
                                                         <td>64</td>
+                                                        <td>64</td>
                                                     </tr>
                                                     <tr>
                                                         <td>OPS/2025/2276</td>
@@ -127,6 +128,7 @@
                                                         <td>JS-4</td>
                                                         <td>Yera Glass Aahaar Jars, 1800 ml</td>
                                                         <td>190</td>
+                                                        <td>144</td>
                                                         <td>14</td>
                                                     </tr>
                                                     <tr>
@@ -135,6 +137,7 @@
                                                         <td>T9AHB</td>
                                                         <td>Yera Glass Tumblers - 250 ml, Set of 6</td>
                                                         <td>250</td>
+                                                        <td>64</td>
                                                         <td>34</td>
                                                     </tr>
                                                     <tr>
@@ -143,6 +146,7 @@
                                                         <td>JR-3</td>
                                                         <td>Yera Glass Aahaar Jars Storage Container, 3600 ML</td>
                                                         <td>225</td>
+                                                        <td>360</td>
                                                         <td>200</td>
                                                     </tr>
                                                     <tr>
@@ -151,6 +155,7 @@
                                                         <td>CT9-P0</td>
                                                         <td>Yera Transparent Glass Mug with Handle 240 ml</td>
                                                         <td>340</td>
+                                                        <td>128</td>
                                                         <td>0</td>
                                                     </tr>
                                                     <tr>
@@ -159,6 +164,7 @@
                                                         <td>JR-2</td>
                                                         <td>Yera Glass Aahaar Jars Storage Container, 2425 ML</td>
                                                         <td>185</td>
+                                                        <td>216</td>
                                                         <td>100</td>
                                                     </tr>
                                                 </tbody>
@@ -170,14 +176,11 @@
 
                             <div class="col-lg-12">
                                 <div class="text-end mb-3">
-
-                                    <a href="products.php" type="" class="btn btn-success w-sm waves ripple-light">
-                                        Save
+                                    <a href="assign-order.php" class="btn btn-success w-sm waves ripple-light">
+                                        Assign Order
                                     </a>
                                 </div>
                             </div>
-
-
 
                         </div>
 
