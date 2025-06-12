@@ -90,7 +90,7 @@
            </a>
          </li>
          <li>
-           <a href="#">
+           <a href="packaging-list.php">
              <div class="parent-icon"><i class="material-icons-outlined">store</i>
              </div>
              <div class="menu-title">Packaging List</div>
