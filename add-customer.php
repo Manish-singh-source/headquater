@@ -18,7 +18,7 @@
             </ol>
           </nav>
         </div>
-        
+
       </div>
       <!--end breadcrumb-->
 
@@ -26,16 +26,16 @@
         <div class="col-12">
           <div class="card">
             <div class="card-body p-4">
-              <h5 class="mb-4">Create Customer</h5>
+              <h5 class="mb-4">Customer details</h5>
               <form class="row g-3">
                 <div class="col-md-6">
-                  <label for="companyName" class="form-label">Company Name</label>
-                   <input type="text" class="form-control" id="customerName" placeholder="Enter Company Name">
+                  <label for="firstName" class="form-label">First Name</label>
+                  <input type="text" class="form-control" id="firstName" placeholder="Enter First Name">
                 </div>
 
                 <div class="col-md-6">
-                  <label for="customerName" class="form-label">Customer Name</label>
-                  <input type="text" class="form-control" id="customerName" placeholder="Enter Customer Name">
+                  <label for="lastName" class="form-label">Last Name</label>
+                  <input type="text" class="form-control" id="lastName" placeholder="Enter Last Name">
                 </div>
 
                 <div class="col-md-6">
@@ -48,40 +48,74 @@
                   <input type="text" class="form-control" id="phone" placeholder="Enter Phone Number">
                 </div>
 
-                <div class="col-md-12">
-                  <label for="address" class="form-label">Address</label>
-                  <textarea class="form-control" id="address" placeholder="Enter Full Address" rows="3"></textarea>
-                </div>
+                <h5 class="mt-4">Company details</h5>
 
                 <div class="col-md-6">
-                  <label for="customerType" class="form-label">Customer Type</label>
-                  <select id="customerType" class="form-select">
-                    <option selected disabled>Select Type</option>
-                    <option>Retail</option>
-                    <option>Wholesale</option>
-                    <option>Distributor</option>
-                  </select>
+                  <label for="companyName" class="form-label">Company Name</label>
+                  <input type="text" class="form-control" id="customerName" placeholder="Enter Company Name">
                 </div>
 
                 <div class="col-md-6">
                   <label for="gstNumber" class="form-label">GST Number</label>
-                  <input type="text" class="form-control" id="gstNumber" placeholder="Enter GST Number (Optional)">
+                  <input type="text" class="form-control" id="gstNumber" placeholder="Enter GST Number">
                 </div>
 
                 <div class="col-md-6">
+                  <label for="panNumber" class="form-label">PAN Number</label>
+                  <input type="text" class="form-control" id="panNumber" placeholder="Enter PAN Number">
+                </div>
+                
+                <div class="col-md-12">
+                  <label for="address" class="form-label">Shipping Address</label>
+                  <textarea class="form-control" id="address" placeholder="Enter Full Address" rows="3"></textarea>
+                </div>                
+
+                <div class="col-md-3">
                   <label for="customerCode" class="form-label">Country</label>
                   <input type="text" class="form-control" id="customerCode" placeholder="Enter Country Name">
                 </div>
-                <div class="col-md-6">
+
+                <div class="col-md-3">
                   <label for="customerCode" class="form-label">State</label>
                   <input type="text" class="form-control" id="customerCode" placeholder="Enter State Name">
                 </div>
-                <div class="col-md-6">
+
+                <div class="col-md-3">
                   <label for="customerCode" class="form-label">City</label>
                   <input type="text" class="form-control" id="customerCode" placeholder="Enter City Name">
                 </div>
 
-                <div class="col-md-6">
+                <div class="col-md-3">
+                  <label for="pinCode" class="form-label">Pin Code</label>
+                  <input type="text" class="form-control" id="pinCode" placeholder="Enter Pin Code">
+                </div>
+
+                <div class="col-md-12">
+                  <label for="address" class="form-label">Billing  Address</label>
+                  <textarea class="form-control" id="address" placeholder="Enter Full Address" rows="3"></textarea>
+                </div>                
+
+                <div class="col-md-3">
+                  <label for="customerCode" class="form-label">Country</label>
+                  <input type="text" class="form-control" id="customerCode" placeholder="Enter Country Name">
+                </div>
+
+                <div class="col-md-3">
+                  <label for="customerCode" class="form-label">State</label>
+                  <input type="text" class="form-control" id="customerCode" placeholder="Enter State Name">
+                </div>
+
+                <div class="col-md-3">
+                  <label for="customerCode" class="form-label">City</label>
+                  <input type="text" class="form-control" id="customerCode" placeholder="Enter City Name">
+                </div>
+
+                <div class="col-md-3">
+                  <label for="pinCode" class="form-label">Pin Code</label>
+                  <input type="text" class="form-control" id="pinCode" placeholder="Enter Pin Code">
+                </div>
+
+                <div class="col-md-3">
                   <label for="status" class="form-label">Status</label>
                   <select id="status" class="form-select">
                     <option selected>Active</option>
@@ -92,7 +126,7 @@
                 <div class="col-md-12">
                   <div class="d-md-flex d-grid align-items-center gap-3">
                     <a href="ecommerce-customers.php" type="submit" class="btn btn-primary px-4">Submit</a>
-                   
+
                   </div>
                 </div>
               </form>
