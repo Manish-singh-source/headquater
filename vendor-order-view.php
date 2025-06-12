@@ -502,7 +502,7 @@
                     <div class="row g-3">
                         <div class="col-12 col-lg-2 text-end">
                     <select id="input9" class="form-select">
-                        <option selected="" disabled>Payment State</option>
+                        <option selected="" disabled>Payment Status</option>
                         <option>Pending</option>
                         <option>Rejected</option>
                         <option>Completed</option>
