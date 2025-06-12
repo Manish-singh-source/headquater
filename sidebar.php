@@ -74,6 +74,13 @@
               <div class="menu-title">Products</div>
             </a>
           </li>  
+          <li>
+            <a href="assign-order.php">
+              <div class="parent-icon"><i class="material-icons-outlined">handshake</i>
+              </div>
+              <div class="menu-title">Assign Order</div>
+            </a>
+          </li>  
           
         
           <li class="menu-label">Others</li>
