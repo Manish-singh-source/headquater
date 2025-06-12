@@ -1,15 +1,23 @@
+<?php include 'header.php'; ?>
+<?php include 'sidebar.php'; ?>
 
-
-    <?php include 'header.php'; ?>
-    <?php include 'sidebar.php'; ?>
 <body>
     <!--start main wrapper-->
     <main class="main-wrapper">
         <div class="main-content">
             <!--breadcrumb-->
             <div class="page-breadcrumb d-none d-sm-flex align-items-center mb-3">
-                <div class="breadcrumb-title pe-3">Components</div>
-                <div class="ps-3">
+                <!-- <div class="breadcrumb-title pe-3">Components</div> -->
+                <!-- <div class="ps-3">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb mb-0 p-0">
+                            <li class="breadcrumb-item"><a href="javascript:;"><i class="bx bx-home-alt"></i></a>
+                            </li>
+                            <li class="breadcrumb-item active" aria-current="page">Vendors</li>
+                        </ol>
+                    </nav>
+                </div> -->
+                <div>
                     <nav aria-label="breadcrumb">
                         <ol class="breadcrumb mb-0 p-0">
                             <li class="breadcrumb-item"><a href="javascript:;"><i class="bx bx-home-alt"></i></a>
@@ -18,7 +26,7 @@
                         </ol>
                     </nav>
                 </div>
-                <div class="ms-auto">
+                <!-- <div class="ms-auto">
                     <div class="btn-group">
                         <button type="button" class="btn btn-primary">Settings</button>
                         <button type="button" class="btn btn-primary split-bg-primary dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown"> <span class="visually-hidden">Toggle Dropdown</span>
@@ -29,23 +37,23 @@
                             <div class="dropdown-divider"></div> <a class="dropdown-item" href="javascript:;">Separated link</a>
                         </div>
                     </div>
-                </div>
+                </div> -->
             </div>
             <!--end breadcrumb-->
 
-            <div class="product-count d-flex align-items-center gap-3 gap-lg-4 mb-4 fw-bold flex-wrap font-text1">
+            <!-- <div class="product-count d-flex align-items-center gap-3 gap-lg-4 mb-4 fw-bold flex-wrap font-text1">
                 <a href="javascript:;"><span class="me-1">All</span><span class="text-secondary">(85472)</span></a>
                 <a href="javascript:;"><span class="me-1">New</span><span class="text-secondary">(145)</span></a>
                 <a href="javascript:;"><span class="me-1">Checkouts</span><span class="text-secondary">(89)</span></a>
                 <a href="javascript:;"><span class="me-1">Locals</span><span class="text-secondary">(5872)</span></a>
                 <a href="javascript:;"><span class="me-1">Subscribers</span><span class="text-secondary">(163)</span></a>
                 <a href="javascript:;"><span class="me-1">Top Reviews</span><span class="text-secondary">(8)</span></a>
-            </div>
+            </div> -->
 
             <div class="row g-3">
                 <div class="col-auto">
                     <div class="position-relative">
-                        <input class="form-control px-5" type="search" placeholder="Search Customers">
+                        <input class="form-control px-5" type="search" placeholder="Search Vendors">
                         <span class="material-icons-outlined position-absolute ms-3 translate-middle-y start-0 top-50 fs-5">search</span>
                     </div>
                 </div>
@@ -53,43 +61,33 @@
                     <div class="btn-group position-static">
                         <div class="btn-group position-static">
                             <button type="button" class="btn btn-filter dropdown-toggle px-4" data-bs-toggle="dropdown" aria-expanded="false">
-                                Country
+                                Sort
                             </button>
                             <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="javascript:;">Action</a></li>
-                                <li><a class="dropdown-item" href="javascript:;">Another action</a></li>
-                                <li>
-                                    <hr class="dropdown-divider">
-                                </li>
-                                <li><a class="dropdown-item" href="javascript:;">Something else here</a></li>
+                                <li><a class="dropdown-item" href="javascript:;">Sort By Name</a></li>
+                                <li><a class="dropdown-item" href="javascript:;">Sort By Email</a></li>
+                                <li><a class="dropdown-item" href="javascript:;">Sort By Orders</a></li>
+                                <li><a class="dropdown-item" href="javascript:;">Sort By Location</a></li>
                             </ul>
                         </div>
                         <div class="btn-group position-static">
                             <button type="button" class="btn btn-filter dropdown-toggle px-4" data-bs-toggle="dropdown" aria-expanded="false">
-                                Source
+                                Status
                             </button>
                             <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="javascript:;">Action</a></li>
-                                <li><a class="dropdown-item" href="javascript:;">Another action</a></li>
-                                <li>
-                                    <hr class="dropdown-divider">
-                                </li>
-                                <li><a class="dropdown-item" href="javascript:;">Something else here</a></li>
+                                <li><a class="dropdown-item" href="javascript:;">Active</a></li>
+                                <li><a class="dropdown-item" href="javascript:;">Inactive</a></li>
                             </ul>
                         </div>
-                        <div class="btn-group position-static">
+                        <!-- <div class="btn-group position-static">
                             <button type="button" class="btn btn-filter dropdown-toggle px-4" data-bs-toggle="dropdown" aria-expanded="false">
-                                More Filters
+                                Date
                             </button>
                             <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="javascript:;">Action</a></li>
-                                <li><a class="dropdown-item" href="javascript:;">Another action</a></li>
-                                <li>
-                                    <hr class="dropdown-divider">
-                                </li>
-                                <li><a class="dropdown-item" href="javascript:;">Something else here</a></li>
+                                <li><a class="dropdown-item" href="javascript:;">Active</a></li>
+                                <li><a class="dropdown-item" href="javascript:;">Inactive</a></li>
                             </ul>
-                        </div>
+                        </div> -->
                     </div>
                 </div>
                 <div class="col-auto">
@@ -138,7 +136,7 @@
                                         </td>
                                         <td>8080721003</td>
                                         <td>142</td>
-                                        <td>England</td>
+                                        <td>Mumbai</td>
 
                                         <td>Nov 12, 10:45 PM</td>
                                         <td>
@@ -147,7 +145,7 @@
                                             </div>
                                         </td>
                                         <td>
-                                            <a aria-label="anchor" href="#" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
+                                            <a aria-label="anchor" href="vendor-detail.php" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye text-primary">
                                                     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                                                     <circle cx="12" cy="12" r="3"></circle>
@@ -187,7 +185,7 @@
                                         <td>8080721003</td>
                                         <td>142</td>
 
-                                        <td>England</td>
+                                        <td>Mumbai</td>
 
                                         <td>Nov 12, 10:45 PM</td>
                                         <td>
@@ -196,7 +194,7 @@
                                             </div>
                                         </td>
                                         <td>
-                                            <a aria-label="anchor" href="#" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
+                                            <a aria-label="anchor" href="vendor-detail.php" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye text-primary">
                                                     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                                                     <circle cx="12" cy="12" r="3"></circle>
@@ -236,7 +234,7 @@
                                         <td>8080721003</td>
                                         <td>142</td>
 
-                                        <td>England</td>
+                                        <td>Mumbai</td>
 
                                         <td>Nov 12, 10:45 PM</td>
                                         <td>
@@ -245,7 +243,7 @@
                                             </div>
                                         </td>
                                         <td>
-                                            <a aria-label="anchor" href="#" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
+                                            <a aria-label="anchor" href="vendor-detail.php" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye text-primary">
                                                     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                                                     <circle cx="12" cy="12" r="3"></circle>
@@ -285,7 +283,7 @@
                                         <td>8080721003</td>
                                         <td>142</td>
 
-                                        <td>England</td>
+                                        <td>Mumbai</td>
 
                                         <td>Nov 12, 10:45 PM</td>
                                         <td>
@@ -294,7 +292,7 @@
                                             </div>
                                         </td>
                                         <td>
-                                            <a aria-label="anchor" href="#" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
+                                            <a aria-label="anchor" href="vendor-detail.php" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye text-primary">
                                                     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                                                     <circle cx="12" cy="12" r="3"></circle>
@@ -334,7 +332,7 @@
                                         <td>8080721003</td>
                                         <td>142</td>
 
-                                        <td>England</td>
+                                        <td>Mumbai</td>
 
                                         <td>Nov 12, 10:45 PM</td>
                                         <td>
@@ -343,7 +341,7 @@
                                             </div>
                                         </td>
                                         <td>
-                                            <a aria-label="anchor" href="#" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
+                                            <a aria-label="anchor" href="vendor-detail.php" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye text-primary">
                                                     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                                                     <circle cx="12" cy="12" r="3"></circle>
@@ -383,7 +381,7 @@
                                         <td>8080721003</td>
                                         <td>142</td>
 
-                                        <td>England</td>
+                                        <td>Mumbai</td>
 
                                         <td>Nov 12, 10:45 PM</td>
                                         <td>
@@ -392,7 +390,7 @@
                                             </div>
                                         </td>
                                         <td>
-                                            <a aria-label="anchor" href="#" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
+                                            <a aria-label="anchor" href="vendor-detail.php" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye text-primary">
                                                     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                                                     <circle cx="12" cy="12" r="3"></circle>
@@ -432,7 +430,7 @@
                                         <td>8080721003</td>
                                         <td>142</td>
 
-                                        <td>England</td>
+                                        <td>Mumbai</td>
 
                                         <td>Nov 12, 10:45 PM</td>
                                         <td>
@@ -441,7 +439,7 @@
                                             </div>
                                         </td>
                                         <td>
-                                            <a aria-label="anchor" href="#" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
+                                            <a aria-label="anchor" href="vendor-detail.php" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye text-primary">
                                                     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                                                     <circle cx="12" cy="12" r="3"></circle>
@@ -481,7 +479,7 @@
                                         <td>8080721003</td>
                                         <td>142</td>
 
-                                        <td>England</td>
+                                        <td>Mumbai</td>
 
                                         <td>Nov 12, 10:45 PM</td>
                                         <td>
@@ -490,7 +488,7 @@
                                             </div>
                                         </td>
                                         <td>
-                                            <a aria-label="anchor" href="#" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
+                                            <a aria-label="anchor" href="vendor-detail.php" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye text-primary">
                                                     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                                                     <circle cx="12" cy="12" r="3"></circle>
@@ -530,7 +528,7 @@
                                         <td>8080721003</td>
                                         <td>142</td>
 
-                                        <td>England</td>
+                                        <td>Mumbai</td>
 
                                         <td>Nov 12, 10:45 PM</td>
                                         <td>
@@ -539,7 +537,7 @@
                                             </div>
                                         </td>
                                         <td>
-                                            <a aria-label="anchor" href="#" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
+                                            <a aria-label="anchor" href="vendor-detail.php" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye text-primary">
                                                     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                                                     <circle cx="12" cy="12" r="3"></circle>
@@ -579,7 +577,7 @@
                                         <td>8080721003</td>
                                         <td>142</td>
 
-                                        <td>England</td>
+                                        <td>Mumbai</td>
 
                                         <td>Nov 12, 10:45 PM</td>
                                         <td>
@@ -588,7 +586,7 @@
                                             </div>
                                         </td>
                                         <td>
-                                            <a aria-label="anchor" href="#" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
+                                            <a aria-label="anchor" href="vendor-detail.php" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye text-primary">
                                                     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                                                     <circle cx="12" cy="12" r="3"></circle>
