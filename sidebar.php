@@ -104,7 +104,7 @@
            </a>
          </li>
          <li>
-           <a href="#">
+           <a href="ready-to-ship.php">
              <div class="parent-icon"><i class="material-icons-outlined">local_shipping</i> 
              </div>
              <div class="menu-title">Ready To Ship</div>
