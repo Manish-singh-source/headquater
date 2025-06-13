@@ -110,42 +110,6 @@
              <div class="menu-title">Ready To Ship</div>
            </a>
          </li>
-         <li class="menu-label">Others</li>
-         <li>
-           <a class="has-arrow" href="javascript:;">
-             <div class="parent-icon"><i class="material-icons-outlined">face_5</i>
-             </div>
-             <div class="menu-title">Menu Levels</div>
-           </a>
-           <ul>
-             <li><a class="has-arrow" href="javascript:;"><i class="material-icons-outlined">arrow_right</i>Level
-                 One</a>
-               <ul>
-                 <li><a class="has-arrow" href="javascript:;"><i class="material-icons-outlined">arrow_right</i>Level
-                     Two</a>
-                   <ul>
-                     <li><a href="javascript:;"><i class="material-icons-outlined">arrow_right</i>Level Three</a>
-                     </li>
-                   </ul>
-                 </li>
-               </ul>
-             </li>
-           </ul>
-         </li>
-         <li>
-           <a href="javascrpt:;">
-             <div class="parent-icon"><i class="material-icons-outlined">description</i>
-             </div>
-             <div class="menu-title">Documentation</div>
-           </a>
-         </li>
-         <li>
-           <a href="javascrpt:;">
-             <div class="parent-icon"><i class="material-icons-outlined">support</i>
-             </div>
-             <div class="menu-title">Support</div>
-           </a>
-         </li>
        </ul>
        <!--end navigation-->
      </div>
