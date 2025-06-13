@@ -36,10 +36,10 @@
                         <div class="col">
                             <h6 class="mb-3">PO Table</h6>
                         </div>
-                        <div class="col-12 col-lg-1 text-end">
-                            <button type="" class="btn btn-success w-sm waves ripple-light">
+                        <div class="col-12 col-lg-2 text-end">
+                            <a href="raise-a-ticket-form.php" type="" class="btn btn-success w-sm waves ripple-light">
                                 Raise A Ticket
-                            </button>
+                            </a>
                         </div>
                         <div class="col-12 col-lg-1 text-end">
                             <button class="form-select" onclick="poTable()">Hide Table</button>
