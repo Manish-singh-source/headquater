@@ -91,21 +91,21 @@
          </li>
          <li>
            <a href="packaging-list.php">
-             <div class="parent-icon"><i class="material-icons-outlined">store</i>
+             <div class="parent-icon"><i class="material-icons-outlined">all_inbox</i>
              </div>
              <div class="menu-title">Packaging List</div>
            </a>
          </li>
          <li>
            <a href="raise-a-ticket.php">
-             <div class="parent-icon"><i class="material-icons-outlined">store</i>
+             <div class="parent-icon"><i class="material-icons-outlined">confirmation_number</i>
              </div>
              <div class="menu-title">Tickets</div>
            </a>
          </li>
          <li>
            <a href="#">
-             <div class="parent-icon"><i class="material-icons-outlined">store</i>
+             <div class="parent-icon"><i class="material-icons-outlined">local_shipping</i> 
              </div>
              <div class="menu-title">Ready To Ship</div>
            </a>
