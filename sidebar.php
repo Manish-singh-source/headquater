@@ -97,7 +97,7 @@
            </a>
          </li>
          <li>
-           <a href="#">
+           <a href="raise-a-ticket.php">
              <div class="parent-icon"><i class="material-icons-outlined">store</i>
              </div>
              <div class="menu-title">Tickets</div>
