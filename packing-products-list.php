@@ -23,11 +23,11 @@
                 <div class="col">
                     <h5 class="mb-3">#2056</h5>
                 </div>
-                <div class="col text-end">
+                <!-- <div class="col text-end">
                     <a href="packaging-list.php" class="btn btn-success w-sm waves ripple-light">
                         Ready to Ship
                     </a>
-                </div>
+                </div> -->
             </div>
 
             <div class="card">
@@ -41,9 +41,9 @@
                                 Raise A Ticket
                             </a>
                         </div>
-                        <div class="col-12 col-lg-1 text-end">
+                        <!-- <div class="col-12 col-lg-1 text-end">
                             <button class="form-select" onclick="poTable()">Hide Table</button>
-                        </div>
+                        </div> -->
                     </div>
                     <div class="product-table" id="poTable">
                         <div class="table-responsive white-space-nowrap">
@@ -152,10 +152,15 @@
                 </div>
             </div>
 
-            <div class="div d-flex my-2">
-                <div class="col text-end">
+            <div class="d-flex justify-content-end gap-2 my-2">
+                <div class="text-end">
+                    <a href="packaging-list.php" class="btn btn-success w-sm waves ripple-light">
+                        Ready to Ship
+                    </a>
+                </div>
+                <div class="text-end">
                     <a href="invoices-details.php" class="btn btn-success w-sm waves ripple-light">
-                        Generate Invoice    
+                        Generate Invoice
                     </a>
                 </div>
             </div>

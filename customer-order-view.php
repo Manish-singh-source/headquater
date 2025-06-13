@@ -25,7 +25,7 @@
                 </div>
                 <div class="col-12 col-lg-1 text-end">
                     <select id="input9" class="form-select">
-                        <option selected="" disabled>State</option>
+                        <option selected="" disabled>Status</option>
                         <option>Pending</option>
                         <option>Confirm</option>
                         <option>Receive</option>
@@ -41,7 +41,7 @@
                             <h6 class="mb-3">PO Table</h6>
                         </div>
                         <div class="col-12 col-lg-1 text-end">
-                            <button class="form-select" onclick="poTable()">Hide Table</button>
+                            <span class="badge bg-danger-subtle text-danger fw-semibold">Pending</span>
                         </div>
                     </div>
                     <div class="product-table" id="poTable">
@@ -142,11 +142,11 @@
                             </table>
                         </div>
 
-                        <div class="col-12 text-end">
+                        <!-- <div class="col-12 text-end">
                             <button type="" class="btn btn-success w-sm waves ripple-light">
                                 Save
                             </button>
-                        </div>
+                        </div> -->
                     </div>
                 </div>
             </div>
@@ -164,14 +164,13 @@
 
                 <div class="card-body">
                     <div class="row g-3">
-                        <div class="col-12 col-lg-2">
+                        <!-- <div class="col-12 col-lg-2">
                             <th>
                                 <input id="checkbox1" class="form-check-input" type="checkbox">
                                 <label for="checkbox1" class="form-label">Assign Warehouse</label>
-
                             </th>
-                        </div>
-                        <div class="col-12 col-lg-3">
+                        </div> -->
+                        <!-- <div class="col-12 col-lg-3">
                             <label for="marital" class="form-label">Warehouse Id
                                 <span class="text-danger">*</span></label>
                             <select class="form-control" name="marital" id="marital">
@@ -181,9 +180,9 @@
                                 <option value="#003 ">#003 </option>
                                 <option value="#004 ">#004 </option>
                             </select>
-                        </div>
+                        </div> -->
                         <div class="col-12 col-lg-3">
-                            <label for="marital" class="form-label">Warehouse Id
+                            <label for="marital" class="form-label">Warehouse Location
                                 <span class="text-danger">*</span></label>
                             <select class="form-control" name="marital" id="marital">
                                 <option selected="" disabled="" value="">-- Select --</option>
@@ -195,22 +194,22 @@
                         </div>
                         <div class="col-12 col-lg-4 text-end">
                             <button type="" class="btn btn-success w-sm waves ripple-light text-end mt-4">
-                                Upload
+                                Submit
                             </button>
                         </div>
                     </div>
                 </div>
-                <div class="card-body">
+                <!-- <div class="card-body">
                     <div class="row g-3">
                         <div class="col-12 col-lg-2">
                             <th>
-                                <input id="checkbox1" class="form-check-input" type="checkbox">
-                                <label for="checkbox1" class="form-label">Assign Vendor</label>
+                                <input id="checkbox2" class="form-check-input" type="checkbox">
+                                <label for="checkbox2" class="form-label">Assign Vendor</label>
 
                             </th>
                         </div>
                         <div class="col-12 col-lg-3">
-                            <label for="marital" class="form-label">Vendor Id
+                            <label for="marital" class="form-label">Vendor Name
                                 <span class="text-danger">*</span></label>
                             <select class="form-control" name="marital" id="marital">
                                 <option selected="" disabled="" value="">-- Select --</option>
@@ -236,7 +235,7 @@
                             </button>
                         </div>
                     </div>
-                </div>
+                </div> -->
             </div>
 
             <div class="card">

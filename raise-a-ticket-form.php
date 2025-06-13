@@ -24,7 +24,7 @@
 
                                 <div class="card-body">
                                     <div class="row g-3">
-                                        <div class="col-12">
+                                        <!-- <div class="col-12">
                                             <label for="marital" class="form-label">Issues
                                                 <span class="text-danger">*</span></label>
                                             <div>
@@ -37,7 +37,7 @@
                                                     <label for="marital" class="form-label ms-1">Product Damage</label>
                                                 </span>
                                             </div>
-                                        </div>
+                                        </div> -->
                                         <div class="col-md-12">
                                             <label for="ticket-reason" class="form-label">Ticket Reason</label>
                                             <textarea class="form-control" id="ticket-reason" placeholder="Enter Ticket Reason" rows="3"></textarea>
@@ -58,7 +58,13 @@
                                                             <th>Qty Requirement</th>
                                                             <th>Qty Available</th>
                                                             <th>
-                                                                Not Available Product
+                                                                Not Found
+                                                            </th>
+                                                            <th>
+                                                                Damaged
+                                                            </th>
+                                                            <th>
+                                                                Quantity
                                                             </th>
                                                         </tr>
                                                     </thead>
@@ -71,9 +77,15 @@
                                                             <td>315</td>
                                                             <td>64</td>
                                                             <td>40</td>
-                                                            <th>
+                                                            <td>
                                                                 <input class="form-check-input" type="checkbox">
-                                                            </th>
+                                                            </td>
+                                                            <td>
+                                                                <input class="form-check-input" type="checkbox">
+                                                            </td>
+                                                            <td>
+                                                                <input class="form-input" type="text">
+                                                            </td>
                                                         </tr>
                                                         <tr>
                                                             <td>OPS/2025/2276</td>
@@ -83,9 +95,15 @@
                                                             <td>330</td>
                                                             <td>9</td>
                                                             <td>0</td>
-                                                            <th>
+                                                            <td>
                                                                 <input class="form-check-input" type="checkbox">
-                                                            </th>
+                                                            </td>
+                                                            <td>
+                                                                <input class="form-check-input" type="checkbox">
+                                                            </td>
+                                                            <td>
+                                                                <input class="form-input" type="text">
+                                                            </td>
                                                         </tr>
                                                         <tr>
                                                             <td>OPS/2025/2276</td>
@@ -95,9 +113,15 @@
                                                             <td>280</td>
                                                             <td>64</td>
                                                             <td>50</td>
-                                                            <th>
+                                                            <td>
                                                                 <input class="form-check-input" type="checkbox">
-                                                            </th>
+                                                            </td>
+                                                            <td>
+                                                                <input class="form-check-input" type="checkbox">
+                                                            </td>
+                                                            <td>
+                                                                <input class="form-input" type="text">
+                                                            </td>
                                                         </tr>
                                                         <tr>
                                                             <td>OPS/2025/2276</td>
@@ -107,9 +131,15 @@
                                                             <td>230</td>
                                                             <td>144</td>
                                                             <td>100</td>
-                                                            <th>
+                                                            <td>
                                                                 <input class="form-check-input" type="checkbox">
-                                                            </th>
+                                                            </td>
+                                                            <td>
+                                                                <input class="form-check-input" type="checkbox">
+                                                            </td>
+                                                            <td>
+                                                                <input class="form-input" type="text">
+                                                            </td>
                                                         </tr>
                                                         <tr>
                                                             <td>OPS/2025/2276</td>
@@ -119,9 +149,15 @@
                                                             <td>240</td>
                                                             <td>64</td>
                                                             <td>64</td>
-                                                            <th>
+                                                            <td>
                                                                 <input class="form-check-input" type="checkbox">
-                                                            </th>
+                                                            </td>
+                                                            <td>
+                                                                <input class="form-check-input" type="checkbox">
+                                                            </td>
+                                                            <td>
+                                                                <input class="form-input" type="text">
+                                                            </td>
                                                         </tr>
                                                         <tr>
                                                             <td>OPS/2025/2276</td>
@@ -131,9 +167,15 @@
                                                             <td>190</td>
                                                             <td>144</td>
                                                             <td>14</td>
-                                                            <th>
+                                                            <td>
                                                                 <input class="form-check-input" type="checkbox">
-                                                            </th>
+                                                            </td>
+                                                            <td>
+                                                                <input class="form-check-input" type="checkbox">
+                                                            </td>
+                                                            <td>
+                                                                <input class="form-input" type="text">
+                                                            </td>
                                                         </tr>
                                                         <tr>
                                                             <td>OPS/2025/2276</td>
@@ -143,9 +185,15 @@
                                                             <td>250</td>
                                                             <td>64</td>
                                                             <td>34</td>
-                                                            <th>
+                                                            <td>
                                                                 <input class="form-check-input" type="checkbox">
-                                                            </th>
+                                                            </td>
+                                                            <td>
+                                                                <input class="form-check-input" type="checkbox">
+                                                            </td>
+                                                            <td>
+                                                                <input class="form-input" type="text">
+                                                            </td>
                                                         </tr>
                                                         <tr>
                                                             <td>OPS/2025/2276</td>
@@ -155,9 +203,15 @@
                                                             <td>225</td>
                                                             <td>360</td>
                                                             <td>200</td>
-                                                            <th>
+                                                            <td>
                                                                 <input class="form-check-input" type="checkbox">
-                                                            </th>
+                                                            </td>
+                                                            <td>
+                                                                <input class="form-check-input" type="checkbox">
+                                                            </td>
+                                                            <td>
+                                                                <input class="form-input" type="text">
+                                                            </td>
                                                         </tr>
                                                         <tr>
                                                             <td>OPS/2025/2276</td>
@@ -167,9 +221,15 @@
                                                             <td>340</td>
                                                             <td>128</td>
                                                             <td>0</td>
-                                                            <th>
+                                                            <td>
                                                                 <input class="form-check-input" type="checkbox">
-                                                            </th>
+                                                            </td>
+                                                            <td>
+                                                                <input class="form-check-input" type="checkbox">
+                                                            </td>
+                                                            <td>
+                                                                <input class="form-input" type="text">
+                                                            </td>
                                                         </tr>
                                                         <tr>
                                                             <td>OPS/2025/2276</td>
@@ -179,9 +239,15 @@
                                                             <td>185</td>
                                                             <td>216</td>
                                                             <td>100</td>
-                                                            <th>
+                                                            <td>
                                                                 <input class="form-check-input" type="checkbox">
-                                                            </th>
+                                                            </td>
+                                                            <td>
+                                                                <input class="form-check-input" type="checkbox">
+                                                            </td>
+                                                            <td>
+                                                                <input class="form-input" type="text">
+                                                            </td>
                                                         </tr>
                                                     </tbody>
                                                 </table>

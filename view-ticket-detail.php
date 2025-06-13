@@ -7,29 +7,19 @@
     <main class="main-wrapper">
         <div class="main-content">
 
-            <div class="div d-flex text-end my-2 ">
-                <div class="col-12 col-lg-1 text-end">
-                    <select id="input9" class="form-select">
-                        <option selected="" disabled>Status</option>
-                        <option>Pending</option>
-                        <option>Confirm</option>
-                        <option>Receive</option>
-                        <option>Completed</option>
-                    </select>
-                </div>
-            </div>
-
             <div class="card">
 
                 <div class="card-header border-bottom-dashed">
                     <div class="d-flex">
                         <h5 class="card-title flex-grow-1 mb-0">
-                            Ticket Detail
+                            Ticket Detail <b class="fs-5">(TC001)</b>
                         </h5>
                         <div>
-                            <b class="fs-4">
-                                TC001
-                            </b>
+                            <select id="input9" class="form-select">
+                                <option selected="" disabled>Status</option>
+                                <option>In Review</option>
+                                <option>Completed</option>
+                            </select>
                         </div>
                     </div>
                 </div>
@@ -55,14 +45,10 @@
                                 </li>
 
                                 <li class="list-group-item border-0  gap-3 flex-wrap">
-                                    <p class="fw-semibold text-break">Issues :
+                                    <p class="fw-semibold text-break">Issues Reason :
                                     </p>
-                                    <ul>
-                                        <li>Product Missing</li>
-                                        <li>Product Damage</li>
-                                    </ul>
+                                    <p> Lorem ipsum dolor sit amet consectetur adipisicing elit. Magni error tempore expedita alias. Fuga, hic? </p>
                                 </li>
-
                             </ul>
                         </div>
                         <div class="col-lg-6">
@@ -83,12 +69,6 @@
                                     </span>
                                 </li>
 
-                                <li class="list-group-item border-0  gap-3 flex-wrap">
-                                    <p class="fw-semibold text-break">Issues Reason :
-                                    </p>
-                                    <p> Lorem ipsum dolor sit amet consectetur adipisicing elit. Magni error tempore expedita alias. Fuga, hic? </p>
-
-                                </li>
 
                             </ul>
                         </div>
@@ -106,7 +86,8 @@
                                                 <th>MRP</th>
                                                 <th>Qty Requirement</th>
                                                 <th>Qty Unavailable</th>
-
+                                                <th>Issue</th>
+                                                <th>Quantity</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -118,6 +99,8 @@
                                                 <td>315</td>
                                                 <td>64</td>
                                                 <td>40</td>
+                                                <td>Not Found</td>
+                                                <td>10</td>
                                             </tr>
                                             <tr>
                                                 <td>OPS/2025/2276</td>
@@ -126,6 +109,8 @@
                                                 <td>Yera Glass Jar with Plastic Lid - 2425ml</td>
                                                 <td>330</td>
                                                 <td>9</td>
+                                                <td>10</td>
+                                                <td>Damaged</td>
                                                 <td>10</td>
                                             </tr>
                                             <tr>
@@ -136,6 +121,8 @@
                                                 <td>280</td>
                                                 <td>64</td>
                                                 <td>50</td>
+                                                <td>Not Found</td>
+                                                <td>10</td>
                                             </tr>
                                             <tr>
                                                 <td>OPS/2025/2276</td>
@@ -145,6 +132,8 @@
                                                 <td>230</td>
                                                 <td>144</td>
                                                 <td>100</td>
+                                                <td>Not Found</td>
+                                                <td>10</td>
                                             </tr>
                                             <tr>
                                                 <td>OPS/2025/2276</td>
@@ -154,6 +143,8 @@
                                                 <td>240</td>
                                                 <td>64</td>
                                                 <td>64</td>
+                                                <td>Damaged</td>
+                                                <td>10</td>
                                             </tr>
                                             <tr>
                                                 <td>OPS/2025/2276</td>
@@ -163,6 +154,8 @@
                                                 <td>190</td>
                                                 <td>144</td>
                                                 <td>14</td>
+                                                <td>Not Found</td>
+                                                <td>10</td>
                                             </tr>
                                             <tr>
                                                 <td>OPS/2025/2276</td>
@@ -172,6 +165,8 @@
                                                 <td>250</td>
                                                 <td>64</td>
                                                 <td>34</td>
+                                                <td>Damaged</td>
+                                                <td>10</td>
                                             </tr>
                                             <tr>
                                                 <td>OPS/2025/2276</td>
@@ -181,6 +176,8 @@
                                                 <td>225</td>
                                                 <td>360</td>
                                                 <td>200</td>
+                                                <td>Not Found</td>
+                                                <td>10</td>
                                             </tr>
                                             <tr>
                                                 <td>OPS/2025/2276</td>
@@ -190,6 +187,8 @@
                                                 <td>340</td>
                                                 <td>128</td>
                                                 <td>50</td>
+                                                <td>Damaged</td>
+                                                <td>10</td>
                                             </tr>
                                             <tr>
                                                 <td>OPS/2025/2276</td>
@@ -199,6 +198,8 @@
                                                 <td>185</td>
                                                 <td>216</td>
                                                 <td>100</td>
+                                                <td>Not Found</td>
+                                                <td>10</td>
                                             </tr>
                                         </tbody>
                                     </table>
