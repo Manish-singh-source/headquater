@@ -45,51 +45,26 @@
                     <div class="btn-group position-static">
                         <div class="btn-group position-static">
                             <button type="button" class="btn btn-filter dropdown-toggle px-4" data-bs-toggle="dropdown" aria-expanded="false">
-                                Country
+                                Sort
                             </button>
                             <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="javascript:;">Action</a></li>
-                                <li><a class="dropdown-item" href="javascript:;">Another action</a></li>
-                                <li>
-                                    <hr class="dropdown-divider">
-                                </li>
-                                <li><a class="dropdown-item" href="javascript:;">Something else here</a></li>
+                                <li><a class="dropdown-item" href="javascript:;">Sort By Name</a></li>
+                                <li><a class="dropdown-item" href="javascript:;">Sort By Email</a></li>
+                                <li><a class="dropdown-item" href="javascript:;">Sort By Orders</a></li>
+                                <li><a class="dropdown-item" href="javascript:;">Sort By Location</a></li>
                             </ul>
                         </div>
                         <div class="btn-group position-static">
                             <button type="button" class="btn btn-filter dropdown-toggle px-4" data-bs-toggle="dropdown" aria-expanded="false">
-                                Source
+                                Status
                             </button>
                             <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="javascript:;">Action</a></li>
-                                <li><a class="dropdown-item" href="javascript:;">Another action</a></li>
-                                <li>
-                                    <hr class="dropdown-divider">
-                                </li>
-                                <li><a class="dropdown-item" href="javascript:;">Something else here</a></li>
-                            </ul>
-                        </div>
-                        <div class="btn-group position-static">
-                            <button type="button" class="btn btn-filter dropdown-toggle px-4" data-bs-toggle="dropdown" aria-expanded="false">
-                                More Filters
-                            </button>
-                            <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="javascript:;">Action</a></li>
-                                <li><a class="dropdown-item" href="javascript:;">Another action</a></li>
-                                <li>
-                                    <hr class="dropdown-divider">
-                                </li>
-                                <li><a class="dropdown-item" href="javascript:;">Something else here</a></li>
+                                <li><a class="dropdown-item" href="javascript:;">Active</a></li>
+                                <li><a class="dropdown-item" href="javascript:;">Inactive</a></li>
                             </ul>
                         </div>
                     </div>
                 </div>
-                <!-- <div class="col-auto">
-                    <div class="d-flex align-items-center gap-2 justify-content-lg-end">
-                        <button class="btn btn-filter px-4"><i class="bi bi-box-arrow-right me-2"></i>Export</button>
-                        <a href="add-order.php"><button class="btn btn-primary px-4"><i class="bi bi-plus-lg me-2"></i>New Order</button></a>
-                    </div>
-                </div> -->
             </div><!--end row-->
 
             <div class="card mt-4">
@@ -143,7 +118,7 @@
                                             <p class="mb-0 customer-name fw-bold">XYZ</p>
                                         </td>
                                         <td>
-                                           2025-04-11
+                                            2025-04-11
                                         </td>
                                         <td>BK158.pdf</td>
                                         <td class="text-primary">Pending</td>

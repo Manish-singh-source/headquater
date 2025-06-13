@@ -211,10 +211,15 @@
                 </div>
 
             </div>
-            <div class="div d-flex my-2">
-                <div class="col text-end">
-                    <a href="" class="btn btn-success w-sm waves ripple-light">
+            <div class="d-flex justify-content-end gap-2 my-2">
+                <div class="text-end">
+                    <a href="invoices-details.php" class="btn btn-success w-sm waves ripple-light">
                         Download
+                    </a>
+                </div>
+                <div class="text-end">
+                    <a href="raise-a-ticket.php" class="btn btn-success w-sm waves ripple-light">
+                        Save
                     </a>
                 </div>
             </div>

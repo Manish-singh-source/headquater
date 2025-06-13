@@ -45,43 +45,33 @@
                     <div class="btn-group position-static">
                         <div class="btn-group position-static">
                             <button type="button" class="btn btn-filter dropdown-toggle px-4" data-bs-toggle="dropdown" aria-expanded="false">
-                                Country
+                                Sort
                             </button>
                             <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="javascript:;">Action</a></li>
-                                <li><a class="dropdown-item" href="javascript:;">Another action</a></li>
-                                <li>
-                                    <hr class="dropdown-divider">
-                                </li>
-                                <li><a class="dropdown-item" href="javascript:;">Something else here</a></li>
+                                <li><a class="dropdown-item" href="javascript:;">Sort By Name</a></li>
+                                <li><a class="dropdown-item" href="javascript:;">Sort By Email</a></li>
+                                <li><a class="dropdown-item" href="javascript:;">Sort By Orders</a></li>
+                                <li><a class="dropdown-item" href="javascript:;">Sort By Location</a></li>
                             </ul>
                         </div>
                         <div class="btn-group position-static">
                             <button type="button" class="btn btn-filter dropdown-toggle px-4" data-bs-toggle="dropdown" aria-expanded="false">
-                                Source
+                                Status
                             </button>
                             <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="javascript:;">Action</a></li>
-                                <li><a class="dropdown-item" href="javascript:;">Another action</a></li>
-                                <li>
-                                    <hr class="dropdown-divider">
-                                </li>
-                                <li><a class="dropdown-item" href="javascript:;">Something else here</a></li>
+                                <li><a class="dropdown-item" href="javascript:;">Active</a></li>
+                                <li><a class="dropdown-item" href="javascript:;">Inactive</a></li>
                             </ul>
                         </div>
-                        <div class="btn-group position-static">
+                        <!-- <div class="btn-group position-static">
                             <button type="button" class="btn btn-filter dropdown-toggle px-4" data-bs-toggle="dropdown" aria-expanded="false">
-                                More Filters
+                                Date
                             </button>
                             <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="javascript:;">Action</a></li>
-                                <li><a class="dropdown-item" href="javascript:;">Another action</a></li>
-                                <li>
-                                    <hr class="dropdown-divider">
-                                </li>
-                                <li><a class="dropdown-item" href="javascript:;">Something else here</a></li>
+                                <li><a class="dropdown-item" href="javascript:;">Active</a></li>
+                                <li><a class="dropdown-item" href="javascript:;">Inactive</a></li>
                             </ul>
-                        </div>
+                        </div> -->
                     </div>
                 </div>
                 <div class="col-auto">
@@ -136,7 +126,7 @@
                                         <td>TC002</td>
                                         <td>#002</td>
                                         <td>
-                                           2025-04-11
+                                            2025-04-11
                                         </td>
                                         <td class="text-primary">Pending</td>
                                         <td>
@@ -157,7 +147,7 @@
                                         <td>
                                             2025-04-11
                                         </td>
-                                        <td class="text-danger">Issue</td>
+                                        <td class="text-warning">In Review</td>
                                         <td>
                                             <a aria-label="anchor" href="view-ticket-detail.php" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye text-primary">

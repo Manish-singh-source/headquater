@@ -154,13 +154,13 @@
 
             <div class="d-flex justify-content-end gap-2 my-2">
                 <div class="text-end">
-                    <a href="packaging-list.php" class="btn btn-success w-sm waves ripple-light">
-                        Ready to Ship
+                    <a href="invoices-details.php" class="btn btn-success w-sm waves ripple-light">
+                        Generate Invoice
                     </a>
                 </div>
                 <div class="text-end">
-                    <a href="invoices-details.php" class="btn btn-success w-sm waves ripple-light">
-                        Generate Invoice
+                    <a href="packaging-list.php" class="btn btn-success w-sm waves ripple-light">
+                        Ready to Ship
                     </a>
                 </div>
             </div>
