@@ -8,8 +8,7 @@
         <div class="main-content">
             <!--breadcrumb-->
             <div class="page-breadcrumb d-none d-sm-flex align-items-center mb-3">
-                <div class="breadcrumb-title pe-3">Components</div>
-                <div class="ps-3">
+                <div class="">
                     <nav aria-label="breadcrumb">
                         <ol class="breadcrumb mb-0 p-0">
                             <li class="breadcrumb-item"><a href="javascript:;"><i class="bx bx-home-alt"></i></a>
@@ -32,15 +31,6 @@
                 </div>
             </div>
             <!--end breadcrumb-->
-
-            <div class="product-count d-flex align-items-center gap-3 gap-lg-4 mb-4 fw-bold flex-wrap font-text1">
-                <a href="javascript:;"><span class="me-1">All</span><span class="text-secondary">(85472)</span></a>
-                <a href="javascript:;"><span class="me-1">New</span><span class="text-secondary">(145)</span></a>
-                <a href="javascript:;"><span class="me-1">Checkouts</span><span class="text-secondary">(89)</span></a>
-                <a href="javascript:;"><span class="me-1">Locals</span><span class="text-secondary">(5872)</span></a>
-                <a href="javascript:;"><span class="me-1">Subscribers</span><span class="text-secondary">(163)</span></a>
-                <a href="javascript:;"><span class="me-1">Top Reviews</span><span class="text-secondary">(8)</span></a>
-            </div>
 
             <div class="row g-3">
                 <div class="col-auto">
@@ -135,7 +125,7 @@
                                             Storage Hub
                                         </td>
                                         <td>Mumbai</td>
-                                        <td>Ram Raj</td>
+                                        <td>Manish</td>
                                         <td>8080721001</td>
 
                                         <td>Baroda</td>
@@ -145,7 +135,7 @@
                                             </div>
                                         </td>
                                         <td>
-                                            <a aria-label="anchor" href="#" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
+                                            <a aria-label="anchor" href="warehouse-detail.php" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye text-primary">
                                                     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                                                     <circle cx="12" cy="12" r="3"></circle>
@@ -179,7 +169,7 @@
                                             Return Center
                                         </td>
                                         <td>Mumbai</td>
-                                        <td>Andrew Carry</td>
+                                        <td>	Ram Raj</td>
 
                                         <td>8080721002</td>
 
@@ -190,7 +180,7 @@
                                             </div>
                                         </td>
                                         <td>
-                                            <a aria-label="anchor" href="#" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
+                                            <a aria-label="anchor" href="warehouse-detail.php" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye text-primary">
                                                     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                                                     <circle cx="12" cy="12" r="3"></circle>
@@ -235,7 +225,7 @@
                                             </div>
                                         </td>
                                         <td>
-                                            <a aria-label="anchor" href="#" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
+                                            <a aria-label="anchor" href="warehouse-detail.php" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye text-primary">
                                                     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                                                     <circle cx="12" cy="12" r="3"></circle>
