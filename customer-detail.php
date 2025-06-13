@@ -1,14 +1,13 @@
+<?php include 'header.php'; ?>
+<?php include 'sidebar.php'; ?>
 
-
-    <?php include 'header.php'; ?>
-    <?php include 'sidebar.php'; ?>
 <body>
     <!--start main wrapper-->
     <main class="main-wrapper">
         <div class="main-content">
             <!--breadcrumb-->
             <div class="page-breadcrumb d-none d-sm-flex align-items-center mb-3">
-                <div >
+                <div>
                     <nav aria-label="breadcrumb">
                         <ol class="breadcrumb mb-0 p-0">
                             <li class="breadcrumb-item"><a href="javascript:;"><i class="bx bx-home-alt"></i></a>
@@ -17,7 +16,7 @@
                         </ol>
                     </nav>
                 </div>
-                
+
             </div>
             <!--end breadcrumb-->
 
@@ -25,48 +24,48 @@
             <div class="row">
                 <div class="col-12">
                     <div class="card w-100 d-flex  flex-sm-row flex-col">
-        <div class="col card-body d-flex">
-          <div class="position-relative justify-content-center">
-            <img src="assets/images/avatars/02.png" class="img-fluid rounded" alt="">
-            <!-- <div class="position-absolute top-100 start-50 translate-middle">
+                        <div class="col card-body d-flex">
+                            <div class="position-relative justify-content-center">
+                                <img src="assets/images/avatars/02.png" class="img-fluid rounded" alt="">
+                                <!-- <div class="position-absolute top-100 start-50 translate-middle">
                                     <img src="assets/images/avatars/02.png" width="100" height="100"
                                         class="rounded-circle raised p-1 bg-white" alt="">
                                 </div> -->
-            <div class="text-center my-2 pt-2">
-              <h4 class="mb-1">Manish Carry</h4>
-              <p class="mb-0">Marketing Excutive</p>
-            </div>
-          </div>
+                                <div class="text-center my-2 pt-2">
+                                    <h4 class="mb-1">Manish Carry</h4>
+                                    <p class="mb-0">Marketing Excutive</p>
+                                </div>
+                            </div>
 
 
-        </div>
-        <ul class="col-10 list-group list-group-flush">
-          <li class="list-group-item">
-            <b>Phone No</b>
-            <br>
-            +91-XXX XXX XXXX
-          </li>
-          <li class="list-group-item">
-            <b>Email</b>
-            <br>
-            mail.com
-          </li>
-          <li class="list-group-item">
-            <b>GST No</b>
-            <br>
-            -
-          </li>
-          <li class="list-group-item">
-            <b>PAN No</b>
-            <br>
-            -
-          </li>
-          <li class="list-group-item border-top">
-            <b>Address</b>
-            <br>
-            Office No. 501, 5th Floor, Ghanshyam Enclave, Next To Laljipada Police Station, Laljipada, Link Road, Kandivali (West), Mumbai - 400067. Maharashtra - India
-          </li>
-          <!-- <li class="list-group-item border-top">
+                        </div>
+                        <ul class="col-10 list-group list-group-flush">
+                            <li class="list-group-item">
+                                <b>Phone No</b>
+                                <br>
+                                +91-XXX XXX XXXX
+                            </li>
+                            <li class="list-group-item">
+                                <b>Email</b>
+                                <br>
+                                mail.com
+                            </li>
+                            <li class="list-group-item">
+                                <b>GST No</b>
+                                <br>
+                                -
+                            </li>
+                            <li class="list-group-item">
+                                <b>PAN No</b>
+                                <br>
+                                -
+                            </li>
+                            <li class="list-group-item border-top">
+                                <b>Address</b>
+                                <br>
+                                Office No. 501, 5th Floor, Ghanshyam Enclave, Next To Laljipada Police Station, Laljipada, Link Road, Kandivali (West), Mumbai - 400067. Maharashtra - India
+                            </li>
+                            <!-- <li class="list-group-item border-top">
                                 <b>Bank Name</b>
                                 <br>
                                 RBL Bank
@@ -85,10 +84,10 @@
 
 
 
-        </ul>
+                        </ul>
 
 
-      </div>
+                    </div>
                 </div>
 
             </div><!--end row-->
@@ -122,13 +121,13 @@
                                         <td>Cash on delivery</td>
                                         <td>Jun 12, 12:56 PM</td>
                                         <td>
-                                            <a aria-label="anchor" href="order-view.php" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
+                                            <a aria-label="anchor" href="customer-order-view.php" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye text-primary">
                                                     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                                                     <circle cx="12" cy="12" r="3"></circle>
                                                 </svg>
                                             </a>
-                                            
+
                                             <a aria-label="anchor" class="btn btn-icon btn-sm bg-danger-subtle delete-row" data-bs-toggle="tooltip" data-bs-original-title="Delete">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trash-2 text-danger">
                                                     <polyline points="3 6 5 6 21 6"></polyline>
@@ -150,13 +149,13 @@
                                         <td>Cash on delivery</td>
                                         <td>Jun 12, 12:56 PM</td>
                                         <td>
-                                            <a aria-label="anchor" href="order-view.php" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
+                                            <a aria-label="anchor" href="customer-order-view.php" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye text-primary">
                                                     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                                                     <circle cx="12" cy="12" r="3"></circle>
                                                 </svg>
                                             </a>
-                                            
+
                                             <a aria-label="anchor" class="btn btn-icon btn-sm bg-danger-subtle delete-row" data-bs-toggle="tooltip" data-bs-original-title="Delete">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trash-2 text-danger">
                                                     <polyline points="3 6 5 6 21 6"></polyline>
@@ -178,13 +177,13 @@
                                         <td>Cash on delivery</td>
                                         <td>Jun 12, 12:56 PM</td>
                                         <td>
-                                            <a aria-label="anchor" href="order-view.php" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
+                                            <a aria-label="anchor" href="customer-order-view.php" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye text-primary">
                                                     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                                                     <circle cx="12" cy="12" r="3"></circle>
                                                 </svg>
                                             </a>
-                                            
+
                                             <a aria-label="anchor" class="btn btn-icon btn-sm bg-danger-subtle delete-row" data-bs-toggle="tooltip" data-bs-original-title="Delete">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trash-2 text-danger">
                                                     <polyline points="3 6 5 6 21 6"></polyline>
@@ -206,13 +205,13 @@
                                         <td>Cash on delivery</td>
                                         <td>Jun 12, 12:56 PM</td>
                                         <td>
-                                            <a aria-label="anchor" href="order-view.php" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
+                                            <a aria-label="anchor" href="customer-order-view.php" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye text-primary">
                                                     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                                                     <circle cx="12" cy="12" r="3"></circle>
                                                 </svg>
                                             </a>
-                                            
+
                                             <a aria-label="anchor" class="btn btn-icon btn-sm bg-danger-subtle delete-row" data-bs-toggle="tooltip" data-bs-original-title="Delete">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trash-2 text-danger">
                                                     <polyline points="3 6 5 6 21 6"></polyline>
@@ -234,13 +233,13 @@
                                         <td>Cash on delivery</td>
                                         <td>Jun 12, 12:56 PM</td>
                                         <td>
-                                            <a aria-label="anchor" href="order-view.php" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
+                                            <a aria-label="anchor" href="customer-order-view.php" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye text-primary">
                                                     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                                                     <circle cx="12" cy="12" r="3"></circle>
                                                 </svg>
                                             </a>
-                                            
+
                                             <a aria-label="anchor" class="btn btn-icon btn-sm bg-danger-subtle delete-row" data-bs-toggle="tooltip" data-bs-original-title="Delete">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trash-2 text-danger">
                                                     <polyline points="3 6 5 6 21 6"></polyline>
@@ -262,13 +261,13 @@
                                         <td>Cash on delivery</td>
                                         <td>Jun 12, 12:56 PM</td>
                                         <td>
-                                            <a aria-label="anchor" href="order-view.php" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
+                                            <a aria-label="anchor" href="customer-order-view.php" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye text-primary">
                                                     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                                                     <circle cx="12" cy="12" r="3"></circle>
                                                 </svg>
                                             </a>
-                                            
+
                                             <a aria-label="anchor" class="btn btn-icon btn-sm bg-danger-subtle delete-row" data-bs-toggle="tooltip" data-bs-original-title="Delete">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trash-2 text-danger">
                                                     <polyline points="3 6 5 6 21 6"></polyline>
@@ -290,13 +289,13 @@
                                         <td>Cash on delivery</td>
                                         <td>Jun 12, 12:56 PM</td>
                                         <td>
-                                            <a aria-label="anchor" href="order-view.php" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
+                                            <a aria-label="anchor" href="customer-order-view.php" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye text-primary">
                                                     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                                                     <circle cx="12" cy="12" r="3"></circle>
                                                 </svg>
                                             </a>
-                                            
+
                                             <a aria-label="anchor" class="btn btn-icon btn-sm bg-danger-subtle delete-row" data-bs-toggle="tooltip" data-bs-original-title="Delete">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trash-2 text-danger">
                                                     <polyline points="3 6 5 6 21 6"></polyline>

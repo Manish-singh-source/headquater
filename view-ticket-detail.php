@@ -8,16 +8,16 @@
         <div class="main-content">
 
             <div class="div d-flex text-end my-2 ">
-                    <div class="col-12 col-lg-1 text-end">
-                        <select id="input9" class="form-select">
-                            <option selected="" disabled>Status</option>
-                            <option>Pending</option>
-                            <option>Confirm</option>
-                            <option>Receive</option>
-                            <option>Completed</option>
-                        </select>
-                    </div>
+                <div class="col-12 col-lg-1 text-end">
+                    <select id="input9" class="form-select">
+                        <option selected="" disabled>Status</option>
+                        <option>Pending</option>
+                        <option>Confirm</option>
+                        <option>Receive</option>
+                        <option>Completed</option>
+                    </select>
                 </div>
+            </div>
 
             <div class="card">
 
@@ -36,8 +36,6 @@
 
                 <div class="card-body">
                     <div class="row">
-
-
                         <div class="col-lg-6">
                             <ul class="list-group list-group-flush ">
                                 <li class="list-group-item border-0 d-flex align-items-center gap-3 flex-wrap">
@@ -209,6 +207,14 @@
                         </div>
 
                     </div>
+                </div>
+
+            </div>
+            <div class="div d-flex my-2">
+                <div class="col text-end">
+                    <a href="" class="btn btn-success w-sm waves ripple-light">
+                        Download
+                    </a>
                 </div>
             </div>
 

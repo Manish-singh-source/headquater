@@ -244,6 +244,63 @@
                     <div class="row g-4 align-items-center">
                         <div class="col-sm">
                             <h5 class="card-title mb-0">
+                                Upload Invoices and E-Way Bill
+                            </h5>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-body">
+                    <div class="row g-3 py-2">
+                        <div class="col-12 col-lg-2">
+                            <th>
+                                <input id="checkbox3" class="form-check-input" type="checkbox">
+                                <label for="checkbox3" class="form-label">Upload Invoice</label>
+
+                            </th>
+                        </div>
+                        <div class="col-12 col-lg-3">
+                            <!-- <label for="document_image" class="form-label">Upload Excel <span class="text-danger">*</span></label> -->
+                            <input type="file" name="document_image" id="document_image" class="form-control" value="" required="" placeholder="Upload ID Document">
+                        </div>
+                        <div class="col-12 col-lg-1 d-flex gap-2">
+                            <button type="" class="btn btn-success w-sm waves ripple-light">
+                                Upload
+                            </button>
+                            <a href="invoices-details.php" type="" class="btn btn-success w-sm waves ripple-light">
+                                Previous
+                            </a>
+                        </div>
+                    </div>
+                    <div class="row g-3 py-2">
+                        <div class="col-12 col-lg-2">
+                            <th>
+                                <input id="checkbox3" class="form-check-input" type="checkbox">
+                                <label for="checkbox3" class="form-label">Upload E-Way Bill</label>
+
+                            </th>
+                        </div>
+                        <div class="col-12 col-lg-3">
+                            <!-- <label for="document_image" class="form-label">Upload Excel <span class="text-danger">*</span></label> -->
+                            <input type="file" name="document_image" id="document_image" class="form-control" value="" required="" placeholder="Upload ID Document">
+                        </div>
+                        <div class="col-12 col-lg-1 d-flex gap-2">
+                            <button type="" class="btn btn-success w-sm waves ripple-light">
+                                Upload
+                            </button>
+                            <a href="invoices-details.php" type="" class="btn btn-success w-sm waves ripple-light">
+                                Previous
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header border-bottom-dashed">
+                    <div class="row g-4 align-items-center">
+                        <div class="col-sm">
+                            <h5 class="card-title mb-0">
                                 Delivery Note
                             </h5>
                         </div>
@@ -302,7 +359,7 @@
                 </div>
             </div>
 
-             <div class="card">
+            <div class="card">
                 <div class="card-header border-bottom-dashed">
                     <div class="row g-4 align-items-center">
                         <div class="col-sm">
@@ -319,7 +376,7 @@
                             <th>
                                 <input id="checkbox3" class="form-check-input" type="checkbox">
                                 <label for="checkbox3" class="form-label">Upload GRN</label>
-                                
+
                             </th>
                         </div>
                         <div class="col-12 col-lg-3">
@@ -352,13 +409,13 @@
                 <div class="card-body">
                     <div class="row g-3">
                         <div class="col-12 col-lg-2 text-end">
-                    <select id="input9" class="form-select">
-                        <option selected="" disabled>Payment Status</option>
-                        <option>Pending</option>
-                        <option>Rejected</option>
-                        <option>Completed</option>
-                    </select>
-                </div>
+                            <select id="input9" class="form-select">
+                                <option selected="" disabled>Payment Status</option>
+                                <option>Pending</option>
+                                <option>Rejected</option>
+                                <option>Completed</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
             </div>

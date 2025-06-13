@@ -152,6 +152,14 @@
                 </div>
             </div>
 
+            <div class="div d-flex my-2">
+                <div class="col text-end">
+                    <a href="invoices-details.php" class="btn btn-success w-sm waves ripple-light">
+                        Generate Invoice    
+                    </a>
+                </div>
+            </div>
+
 
         </div>
     </main>
