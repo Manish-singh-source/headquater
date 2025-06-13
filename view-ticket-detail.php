@@ -87,7 +87,6 @@
                                                 <th>Qty Requirement</th>
                                                 <th>Qty Unavailable</th>
                                                 <th>Issue</th>
-                                                <th>Quantity</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -100,7 +99,6 @@
                                                 <td>64</td>
                                                 <td>40</td>
                                                 <td>Not Found</td>
-                                                <td>10</td>
                                             </tr>
                                             <tr>
                                                 <td>OPS/2025/2276</td>
@@ -111,7 +109,6 @@
                                                 <td>9</td>
                                                 <td>10</td>
                                                 <td>Damaged</td>
-                                                <td>10</td>
                                             </tr>
                                             <tr>
                                                 <td>OPS/2025/2276</td>
@@ -122,7 +119,6 @@
                                                 <td>64</td>
                                                 <td>50</td>
                                                 <td>Not Found</td>
-                                                <td>10</td>
                                             </tr>
                                             <tr>
                                                 <td>OPS/2025/2276</td>
@@ -133,7 +129,6 @@
                                                 <td>144</td>
                                                 <td>100</td>
                                                 <td>Not Found</td>
-                                                <td>10</td>
                                             </tr>
                                             <tr>
                                                 <td>OPS/2025/2276</td>
@@ -144,7 +139,6 @@
                                                 <td>64</td>
                                                 <td>64</td>
                                                 <td>Damaged</td>
-                                                <td>10</td>
                                             </tr>
                                             <tr>
                                                 <td>OPS/2025/2276</td>
@@ -155,7 +149,6 @@
                                                 <td>144</td>
                                                 <td>14</td>
                                                 <td>Not Found</td>
-                                                <td>10</td>
                                             </tr>
                                             <tr>
                                                 <td>OPS/2025/2276</td>
@@ -166,7 +159,6 @@
                                                 <td>64</td>
                                                 <td>34</td>
                                                 <td>Damaged</td>
-                                                <td>10</td>
                                             </tr>
                                             <tr>
                                                 <td>OPS/2025/2276</td>
@@ -177,7 +169,6 @@
                                                 <td>360</td>
                                                 <td>200</td>
                                                 <td>Not Found</td>
-                                                <td>10</td>
                                             </tr>
                                             <tr>
                                                 <td>OPS/2025/2276</td>
@@ -188,7 +179,6 @@
                                                 <td>128</td>
                                                 <td>50</td>
                                                 <td>Damaged</td>
-                                                <td>10</td>
                                             </tr>
                                             <tr>
                                                 <td>OPS/2025/2276</td>
@@ -199,7 +189,6 @@
                                                 <td>216</td>
                                                 <td>100</td>
                                                 <td>Not Found</td>
-                                                <td>10</td>
                                             </tr>
                                         </tbody>
                                     </table>

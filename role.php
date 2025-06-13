@@ -1,7 +1,7 @@
+<body>
 <?php include 'header.php'; ?>
 <?php include 'sidebar.php'; ?>
 
-<body>
 
     <!--start main wrapper-->
     <main class="main-wrapper">
@@ -267,8 +267,6 @@
     <!--top footer-->
 
 
-
-
     <!--bootstrap js-->
     <script src="assets/js/bootstrap.bundle.min.js"></script>
 
@@ -277,10 +275,18 @@
     <!--plugins-->
     <script src="assets/plugins/perfect-scrollbar/js/perfect-scrollbar.js"></script>
     <script src="assets/plugins/metismenu/metisMenu.min.js"></script>
+    <script src="assets/plugins/datatable/js/jquery.dataTables.min.js"></script>
+    <script src="assets/plugins/datatable/js/dataTables.bootstrap5.min.js"></script>
     <script src="assets/plugins/simplebar/js/simplebar.min.js"></script>
     <script src="assets/js/main.js"></script>
+    <script src="https://unpkg.com/feather-icons"></script>
+    <script>
+        feather.replace()
+    </script>
 
 
 </body>
+
+
 
 </html>

@@ -25,7 +25,7 @@
                 </div>
                 <div class="col-12 col-lg-1 text-end">
                     <select id="input9" class="form-select">
-                        <option selected="" disabled>State</option>
+                        <option selected="" disabled>Status</option>
                         <option>Pending</option>
                         <option>Confirm</option>
                         <option>Receive</option>
