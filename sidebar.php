@@ -75,7 +75,7 @@
            </a>
          </li>
          <li>
-           <a href="#">
+           <a href="invoices.php">
              <div class="parent-icon"><i class="material-icons-outlined">store</i>
              </div>
              <div class="menu-title">Invoices</div>
