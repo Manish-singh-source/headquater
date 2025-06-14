@@ -65,13 +65,21 @@
           </div> -->
           <div class="form-body mt-4">
             <form class="row g-3">
-              <div class="col-12">
-                <label for="inputUsername" class="form-label">Username</label>
-                <input type="email" class="form-control" id="inputUsername" placeholder="Manish">
+              <div class="col-6">
+                <label for="inputfirstname" class="form-label">First Name</label>
+                <input type="text" class="form-control" id="inputfirstname" placeholder="Manish">
               </div>
-              <div class="col-12">
-                <label for="inputEmailAddress" class="form-label">Email Address</label>
+              <div class="col-6">
+                <label for="inputLastname" class="form-label">Last name</label>
+                <input type="text" class="form-control" id="inputLastname" placeholder="Singh">
+              </div>
+              <div class="col-6">
+                <label for="inputEmailAddress" class="form-label">Email Id</label>
                 <input type="email" class="form-control" id="inputEmailAddress" placeholder="example@user.com">
+              </div>
+              <div class="col-6">
+                <label for="inputphoneno" class="form-label">Phone No</label>
+                <input type="email" class="form-control" id="inputphoneno" placeholder="+91 123 456 7895">
               </div>
               <div class="col-12">
                 <label for="inputChoosePassword" class="form-label">Password</label>
