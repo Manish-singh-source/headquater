@@ -87,7 +87,7 @@
                     <p class="text-dark mb-1">Total Customers</p>
                     <div class="d-inline-flex align-items-center flex-wrap gap-2">
                       <h4 class="text-dark">2.3K</h4>
-                      <span class="badge badge-soft-primary text-dark"><i class="ti ti-arrow-up me-1"></i>+22%</span>
+                      <!-- <span class="badge badge-soft-primary text-dark"><i class="ti ti-arrow-up me-1"></i>+22%</span> -->
                     </div>
                   </div>
                 </div>
@@ -102,8 +102,40 @@
                   <div class="ms-2">
                     <p class="text-dark mb-1">Total Vendors</p>
                     <div class="d-inline-flex align-items-center flex-wrap gap-2">
-                      <h4 class="text-dark">48,988,078₹</h4>
-                      <span class="badge badge-soft-primary text-dark"><i class="ti ti-arrow-up me-1"></i>+22%</span>
+                      <h4 class="text-dark">400</h4>
+                      <!-- <span class="badge badge-soft-primary text-dark"><i class="ti ti-arrow-up me-1"></i>+22%</span> -->
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-xl-6 col-sm-6 col-12 d-flex">
+              <div class="card bg-white sale-widget flex-fill">
+                <div class="card-body d-flex align-items-center">
+                  <span class="sale-icon bg-white text-primary">
+                    <i class="ti ti-file-text fs-24"></i>
+                  </span>
+                  <div class="ms-2">
+                    <p class="text-dark mb-1">Total Customer Orders</p>
+                    <div class="d-inline-flex align-items-center flex-wrap gap-2">
+                      <h4 class="text-dark">158</h4>
+                      <!-- <span class="badge badge-soft-primary text-dark"><i class="ti ti-arrow-up me-1"></i>+22%</span> -->
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-xl-6 col-sm-6 col-12 d-flex">
+              <div class="card bg-white sale-widget flex-fill">
+                <div class="card-body d-flex align-items-center">
+                  <span class="sale-icon bg-white text-primary">
+                    <i class="ti ti-file-text fs-24"></i>
+                  </span>
+                  <div class="ms-2">
+                    <p class="text-dark mb-1">Total Vendor Orders</p>
+                    <div class="d-inline-flex align-items-center flex-wrap gap-2">
+                      <h4 class="text-dark">88</h4>
+                      <!-- <span class="badge badge-soft-primary text-dark"><i class="ti ti-arrow-up me-1"></i>+22%</span> -->
                     </div>
                   </div>
                 </div>
@@ -112,6 +144,7 @@
           </div>
 
         </div>
+
         <div class="col-xl-6 col-xxl-8 d-flex align-items-stretch">
           <div class="card w-100 rounded-4">
             <div class="card-body">
@@ -142,10 +175,10 @@
                     <i class="ti ti-file-text fs-24"></i>
                   </span>
                   <div class="ms-2">
-                    <p class="text-dark mb-1">Total Customer Orders</p>
+                    <p class="text-dark mb-1">Total Products</p>
                     <div class="d-inline-flex align-items-center flex-wrap gap-2">
-                      <h4 class="text-dark">2.3K</h4>
-                      <span class="badge badge-soft-primary text-dark"><i class="ti ti-arrow-up me-1"></i>+22%</span>
+                      <h4 class="text-dark">2916</h4>
+                      <!-- <span class="badge badge-soft-primary text-dark"><i class="ti ti-arrow-up me-1"></i>+22%</span> -->
                     </div>
                   </div>
                 </div>
@@ -158,10 +191,10 @@
                     <i class="ti ti-file-text fs-24"></i>
                   </span>
                   <div class="ms-2">
-                    <p class="text-dark mb-1">Total Customer Sales</p>
+                    <p class="text-dark mb-1">Total Warehouses</p>
                     <div class="d-inline-flex align-items-center flex-wrap gap-2">
-                      <h4 class="text-dark">48,988,078₹</h4>
-                      <span class="badge badge-soft-primary text-dark"><i class="ti ti-arrow-up me-1"></i>+22%</span>
+                      <h4 class="text-dark">1</h4>
+                      <!-- <span class="badge badge-soft-primary text-dark"><i class="ti ti-arrow-up me-1"></i>+22%</span> -->
                     </div>
                   </div>
                 </div>
@@ -174,10 +207,10 @@
                     <i class="ti ti-file-text fs-24"></i>
                   </span>
                   <div class="ms-2">
-                    <p class="text-dark mb-1">Total Vendor Orders</p>
+                    <p class="text-dark mb-1">Total Invoices</p>
                     <div class="d-inline-flex align-items-center flex-wrap gap-2">
-                      <h4 class="text-dark">2.3K</h4>
-                      <span class="badge badge-soft-primary text-dark"><i class="ti ti-arrow-up me-1"></i>+22%</span>
+                      <h4 class="text-dark">895</h4>
+                      <!-- <span class="badge badge-soft-primary text-dark"><i class="ti ti-arrow-up me-1"></i>+22%</span> -->
                     </div>
                   </div>
                 </div>
@@ -190,10 +223,74 @@
                     <i class="ti ti-file-text fs-24"></i>
                   </span>
                   <div class="ms-2">
-                    <p class="text-dark mb-1">Total Purchase</p>
+                    <p class="text-dark mb-1">Packaging List</p>
                     <div class="d-inline-flex align-items-center flex-wrap gap-2">
-                      <h4 class="text-dark">48,988,078₹</h4>
-                      <span class="badge badge-soft-primary text-dark"><i class="ti ti-arrow-up me-1"></i>+22%</span>
+                      <h4 class="text-dark">10 Orders</h4>
+                      <!-- <span class="badge badge-soft-primary text-dark"><i class="ti ti-arrow-up me-1"></i>+22%</span> -->
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-xl-6 col-sm-6 col-12 d-flex">
+              <div class="card bg-white sale-widget flex-fill">
+                <div class="card-body d-flex align-items-center">
+                  <span class="sale-icon bg-white text-primary">
+                    <i class="ti ti-file-text fs-24"></i>
+                  </span>
+                  <div class="ms-2">
+                    <p class="text-dark mb-1">Ready To Ship</p>
+                    <div class="d-inline-flex align-items-center flex-wrap gap-2">
+                      <h4 class="text-dark">15 Orders</h4>
+                      <!-- <span class="badge badge-soft-primary text-dark"><i class="ti ti-arrow-up me-1"></i>+22%</span> -->
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-xl-6 col-sm-6 col-12 d-flex">
+              <div class="card bg-white sale-widget flex-fill">
+                <div class="card-body d-flex align-items-center">
+                  <span class="sale-icon bg-white text-primary">
+                    <i class="ti ti-file-text fs-24"></i>
+                  </span>
+                  <div class="ms-2">
+                    <p class="text-dark mb-1">Damaged Products</p>
+                    <div class="d-inline-flex align-items-center flex-wrap gap-2">
+                      <h4 class="text-dark">545</h4>
+                      <!-- <span class="badge badge-soft-primary text-dark"><i class="ti ti-arrow-up me-1"></i>+22%</span> -->
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-xl-6 col-sm-6 col-12 d-flex">
+              <div class="card bg-white sale-widget flex-fill">
+                <div class="card-body d-flex align-items-center">
+                  <span class="sale-icon bg-white text-primary">
+                    <i class="ti ti-file-text fs-24"></i>
+                  </span>
+                  <div class="ms-2">
+                    <p class="text-dark mb-1">Missing Products</p>
+                    <div class="d-inline-flex align-items-center flex-wrap gap-2">
+                      <h4 class="text-dark">24</h4>
+                      <!-- <span class="badge badge-soft-primary text-dark"><i class="ti ti-arrow-up me-1"></i>+22%</span> -->
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-xl-6 col-sm-6 col-12 d-flex">
+              <div class="card bg-white sale-widget flex-fill">
+                <div class="card-body d-flex align-items-center">
+                  <span class="sale-icon bg-white text-primary">
+                    <i class="ti ti-file-text fs-24"></i>
+                  </span>
+                  <div class="ms-2">
+                    <p class="text-dark mb-1">Total Tickets</p>
+                    <div class="d-inline-flex align-items-center flex-wrap gap-2">
+                      <h4 class="text-dark">48</h4>
+                      <!-- <span class="badge badge-soft-primary text-dark"><i class="ti ti-arrow-up me-1"></i>+22%</span> -->
                     </div>
                   </div>
                 </div>
@@ -202,6 +299,7 @@
           </div>
 
         </div>
+
         <div class="col-lg-12 col-xxl-6 d-flex align-items-stretch">
           <div class="card w-100 rounded-4">
             <div class="card-body">
@@ -310,6 +408,7 @@
             </div>
           </div>
         </div>
+
         <div class="col-lg-12 col-xxl-6 d-flex align-items-stretch">
           <div class="card w-100 rounded-4">
             <div class="card-body">
@@ -417,6 +516,227 @@
                   </tbody>
                 </table>
               </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-12 col-xxl-6 d-flex align-items-stretch">
+          <div class="card w-100 rounded-4">
+            <div class="card-body">
+              <div class="d-flex align-items-start justify-content-between mb-3">
+                <div class="">
+                  <h5 class="mb-0">Packaging List</h5>
+                </div>
+                <div class="dropdown">
+                  <a href="javascript:;" class="dropdown-toggle-nocaret options dropdown-toggle"
+                    data-bs-toggle="dropdown">
+                    <span class="material-icons-outlined fs-5">more_vert</span>
+                  </a>
+                  <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="javascript:;">Action</a></li>
+                    <li><a class="dropdown-item" href="javascript:;">Another action</a></li>
+                    <li><a class="dropdown-item" href="javascript:;">Something else here</a></li>
+                  </ul>
+                </div>
+              </div>
+              <table id="example2" class="table table-striped">
+                <thead class="table-light">
+                  <tr>
+                    <th>
+                      <input class="form-check-input" type="checkbox">
+                    </th>
+                    <th>Order Id</th>
+                    <th>Customer Name</th>
+                    <th>Ordered Date</th>
+                    <th>Package Pdf</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>
+                      <input class="form-check-input" type="checkbox">
+                    </td>
+                    <td>#001</td>
+                    <td>
+                      <p class="mb-0 customer-name fw-bold">ABC</p>
+
+                    </td>
+                    <td>
+                      2025-04-11
+                    </td>
+                    <td>BK159.pdf</td>
+                    <td class="text-success">Completed</td>
+                    <td>
+                      <a aria-label="anchor" href="packing-products-list.php" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye text-primary">
+                          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                          <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                      </a>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <input class="form-check-input" type="checkbox">
+                    </td>
+                    <td>#002</td>
+                    <td>
+                      <p class="mb-0 customer-name fw-bold">XYZ</p>
+                    </td>
+                    <td>
+                      2025-04-11
+                    </td>
+                    <td>BK158.pdf</td>
+                    <td class="text-primary">Pending</td>
+                    <td>
+                      <a aria-label="anchor" href="packing-products-list.php" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye text-primary">
+                          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                          <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                      </a>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <input class="form-check-input" type="checkbox">
+                    </td>
+                    <td>#003</td>
+                    <td>
+                      <p class="mb-0 customer-name fw-bold">EFG</p>
+                    </td>
+                    <td>
+                      2025-04-11
+                    </td>
+                    <td>BK157.pdf</td>
+                    <td class="text-danger">Issue</td>
+                    <td>
+                      <a aria-label="anchor" href="packing-products-list.php" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye text-primary">
+                          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                          <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                      </a>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-12 col-xxl-6 d-flex align-items-stretch">
+          <div class="card w-100 rounded-4">
+            <div class="card-body">
+              <div class="d-flex align-items-start justify-content-between mb-3">
+                <div class="">
+                  <h5 class="mb-0">Ready To Ship</h5>
+
+                </div>
+                <div class="dropdown">
+                  <a href="javascript:;" class="dropdown-toggle-nocaret options dropdown-toggle"
+                    data-bs-toggle="dropdown">
+                    <span class="material-icons-outlined fs-5">more_vert</span>
+                  </a>
+                  <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="javascript:;">Action</a></li>
+                    <li><a class="dropdown-item" href="javascript:;">Another action</a></li>
+                    <li><a class="dropdown-item" href="javascript:;">Something else here</a></li>
+                  </ul>
+                </div>
+              </div>
+               <table id="example2" class="table table-striped">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>
+                                            <input class="form-check-input" type="checkbox">
+                                        </th>
+                                        <th>Order Id</th>
+                                        <th>Customer Name</th>
+                                        <th>Ordered Date</th>
+                                        <th>Delivery Date</th>
+                                        <th>Status</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            <input class="form-check-input" type="checkbox">
+                                        </td>
+                                        <td>#001</td>
+                                        <td>
+                                            <p class="mb-0 customer-name fw-bold">ABC</p>
+
+                                        </td>
+                                        <td>
+                                            2025-04-11
+                                        </td>
+                                        <td>
+                                            2025-05-15
+                                        </td>
+                                        <td class="text-success">Completed</td>
+                                        <td>
+                                            <a aria-label="anchor" href="ready-to-ship-detail.php" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye text-primary">
+                                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                                    <circle cx="12" cy="12" r="3"></circle>
+                                                </svg>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <input class="form-check-input" type="checkbox">
+                                        </td>
+                                        <td>#002</td>
+                                        <td>
+                                            <p class="mb-0 customer-name fw-bold">XYZ</p>
+                                        </td>
+                                        <td>
+                                            2025-04-11
+                                        </td>
+                                        <td>
+                                            2025-05-15
+                                        </td>
+                                        <td class="text-primary">Delivered</td>
+                                        <td>
+                                            <a aria-label="anchor" href="ready-to-ship-detail.php" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye text-primary">
+                                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                                    <circle cx="12" cy="12" r="3"></circle>
+                                                </svg>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <input class="form-check-input" type="checkbox">
+                                        </td>
+                                        <td>#003</td>
+                                        <td>
+                                            <p class="mb-0 customer-name fw-bold">EFG</p>
+                                        </td>
+                                        <td>
+                                            2025-04-11
+                                        </td>
+                                        <td>
+                                            2025-05-15
+                                        </td>
+                                        <td class="text-Secondary">Out For Delivery</td>
+                                        <td>
+                                            <a aria-label="anchor" href="ready-to-ship-detail.php" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye text-primary">
+                                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                                    <circle cx="12" cy="12" r="3"></circle>
+                                                </svg>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
             </div>
           </div>
         </div>
