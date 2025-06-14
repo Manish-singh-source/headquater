@@ -317,7 +317,7 @@ chart.render();
     var options = {
         series: [{
             name: "Desktops",
-            data: [14, 41, 35, 51, 25, 18, 21, 35, 15]
+            data: [14, 41, 35, 51, 25, 18, 21, 35, 15, 23, 43, 34]
         }],
         chart: {
             foreColor: "#9ba7b2",
@@ -367,7 +367,7 @@ chart.render();
             borderColor: 'rgba(255, 255, 255, 0.1)',
         },
         xaxis: {
-            categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep'],
+            categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
         },
         tooltip: {
             theme: "dark",

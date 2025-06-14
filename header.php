@@ -66,7 +66,7 @@
                   <span class="material-icons-outlined position-absolute me-3 translate-middle-y end-0 top-50 mobile-search-close">close</span>
                  </div>
               </div>
-              <div class="card-body search-content">
+              <!-- <div class="card-body search-content">
                 <p class="search-title">Recent Searches</p>
                 <div class="d-flex align-items-start flex-wrap gap-2 kewords-wrapper">
                   <a href="javascript:;" class="kewords"><span>Angular Template</span><i
@@ -149,7 +149,7 @@
               </div>
               <div class="card-footer text-center bg-transparent">
                 <a href="javascript:;" class="btn w-100">See All Search Results</a>
-              </div>
+              </div> -->
             </div>
           </div>
         </div>
