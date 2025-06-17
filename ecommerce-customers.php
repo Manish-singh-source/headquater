@@ -108,9 +108,6 @@
                                         </td>
                                         <td>
                                             <a class="d-flex align-items-center gap-3" href="customer-detail.php">
-                                                <div class="customer-pic">
-                                                    <img src="assets/images/avatars/01.png" class="rounded-circle" width="40" height="40" alt="">
-                                                </div>
                                                 <p class="mb-0 customer-name fw-bold">manish Carry</p>
                                             </a>
                                         </td>
@@ -156,9 +153,6 @@
                                         </td>
                                         <td>
                                             <a class="d-flex align-items-center gap-3" href="customer-detail.php">
-                                                <div class="customer-pic">
-                                                    <img src="assets/images/avatars/02.png" class="rounded-circle" width="40" height="40" alt="">
-                                                </div>
                                                 <p class="mb-0 customer-name fw-bold">Andrew Carry</p>
                                             </a>
                                         </td>
@@ -205,9 +199,6 @@
                                         </td>
                                         <td>
                                             <a class="d-flex align-items-center gap-3" href="customer-detail.php">
-                                                <div class="customer-pic">
-                                                    <img src="assets/images/avatars/03.png" class="rounded-circle" width="40" height="40" alt="">
-                                                </div>
                                                 <p class="mb-0 customer-name fw-bold">Andrew Carry</p>
                                             </a>
                                         </td>
@@ -254,9 +245,6 @@
                                         </td>
                                         <td>
                                             <a class="d-flex align-items-center gap-3" href="customer-detail.php">
-                                                <div class="customer-pic">
-                                                    <img src="assets/images/avatars/04.png" class="rounded-circle" width="40" height="40" alt="">
-                                                </div>
                                                 <p class="mb-0 customer-name fw-bold">Andrew Carry</p>
                                             </a>
                                         </td>
@@ -303,9 +291,6 @@
                                         </td>
                                         <td>
                                             <a class="d-flex align-items-center gap-3" href="customer-detail.php">
-                                                <div class="customer-pic">
-                                                    <img src="assets/images/avatars/05.png" class="rounded-circle" width="40" height="40" alt="">
-                                                </div>
                                                 <p class="mb-0 customer-name fw-bold">Andrew Carry</p>
                                             </a>
                                         </td>
@@ -352,9 +337,6 @@
                                         </td>
                                         <td>
                                             <a class="d-flex align-items-center gap-3" href="customer-detail.php">
-                                                <div class="customer-pic">
-                                                    <img src="assets/images/avatars/06.png" class="rounded-circle" width="40" height="40" alt="">
-                                                </div>
                                                 <p class="mb-0 customer-name fw-bold">Andrew Carry</p>
                                             </a>
                                         </td>
@@ -401,9 +383,6 @@
                                         </td>
                                         <td>
                                             <a class="d-flex align-items-center gap-3" href="customer-detail.php">
-                                                <div class="customer-pic">
-                                                    <img src="assets/images/avatars/07.png" class="rounded-circle" width="40" height="40" alt="">
-                                                </div>
                                                 <p class="mb-0 customer-name fw-bold">Andrew Carry</p>
                                             </a>
                                         </td>
@@ -450,9 +429,6 @@
                                         </td>
                                         <td>
                                             <a class="d-flex align-items-center gap-3" href="customer-detail.php">
-                                                <div class="customer-pic">
-                                                    <img src="assets/images/avatars/08.png" class="rounded-circle" width="40" height="40" alt="">
-                                                </div>
                                                 <p class="mb-0 customer-name fw-bold">Andrew Carry</p>
                                             </a>
                                         </td>
@@ -499,9 +475,6 @@
                                         </td>
                                         <td>
                                             <a class="d-flex align-items-center gap-3" href="customer-detail.php">
-                                                <div class="customer-pic">
-                                                    <img src="assets/images/avatars/09.png" class="rounded-circle" width="40" height="40" alt="">
-                                                </div>
                                                 <p class="mb-0 customer-name fw-bold">Andrew Carry</p>
                                             </a>
                                         </td>
@@ -548,9 +521,6 @@
                                         </td>
                                         <td>
                                             <a class="d-flex align-items-center gap-3" href="customer-detail.php">
-                                                <div class="customer-pic">
-                                                    <img src="assets/images/avatars/10.png" class="rounded-circle" width="40" height="40" alt="">
-                                                </div>
                                                 <p class="mb-0 customer-name fw-bold">Andrew Carry</p>
                                             </a>
                                         </td>
