@@ -95,7 +95,7 @@
                                         </td>
                                         <td>#001</td>
                                         <td>
-                                            <p class="mb-0 customer-name fw-bold">ABC</p>
+                                            <p class="mb-0 customer-name fw-bold">Blinkit, Moonstone</p>
 
                                         </td>
                                         <td>
@@ -132,7 +132,7 @@
                                         </td>
                                         <td>#002</td>
                                         <td>
-                                            <p class="mb-0 customer-name fw-bold">XYZ</p>
+                                            <p class="mb-0 customer-name fw-bold">Amazon</p>
                                         </td>
                                         <td>
                                             On Hold
@@ -168,7 +168,7 @@
                                         </td>
                                         <td>#003</td>
                                         <td>
-                                            <p class="mb-0 customer-name fw-bold">EFG</p>
+                                            <p class="mb-0 customer-name fw-bold">Blinkit</p>
                                         </td>
                                         <td>
                                             Pending
