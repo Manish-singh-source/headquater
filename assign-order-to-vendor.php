@@ -32,7 +32,7 @@
                                         <div class="col-12 col-lg-3">
                                             <label for="marital" class="form-label">Vendor Name
                                                 <span class="text-danger">*</span></label>
-                                            <select class="form-control" name="marital" id="marital">
+                                            <!-- <select class="form-control" name="marital" id="marital">
                                                 <option selected="" disabled="" value="">-- Select --</option>
                                                 <option value="Active">Active</option>
                                                 <option value="Emily ">Emily </option>
@@ -43,7 +43,11 @@
                                                 <option value="Smith">Smith</option>
                                                 <option value="Brown">Brown</option>
                                                 <option value="Wilson">Wilson</option>
-
+                                            </select> -->
+                                            <select class="form-select" id="ms1" multiple="multiple" style="width: 100%">
+                                                <option value="0">Blinkit</option>
+                                                <option value="1">Moonstone</option>
+                                                <option value="2">Amazon</option>
                                             </select>
                                         </div>
                                         <div class="col-12 col-lg-3">
@@ -216,6 +220,22 @@
     <script src="assets/js/main.js"></script>
     <script>
         new PerfectScrollbar(".customer-notes")
+    </script>
+
+    <!-- Include jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- Include Select2 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+    <!-- Initialize Select2 -->
+    <script>
+        $(document).ready(function() {
+            $('#ms1').select2({
+                placeholder: "Select Vendors",
+                allowClear: true
+            });
+        });
     </script>
 
 
