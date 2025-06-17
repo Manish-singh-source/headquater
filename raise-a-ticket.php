@@ -104,7 +104,7 @@
                                             <input class="form-check-input" type="checkbox">
                                         </td>
                                         <td>TC001</td>
-                                        <td>#001</td>
+                                        <td>#C001</td>
                                         </td>
                                         <td>
                                             2025-04-11
@@ -124,7 +124,7 @@
                                             <input class="form-check-input" type="checkbox">
                                         </td>
                                         <td>TC002</td>
-                                        <td>#002</td>
+                                        <td>#C002</td>
                                         <td>
                                             2025-04-11
                                         </td>
@@ -143,7 +143,65 @@
                                             <input class="form-check-input" type="checkbox">
                                         </td>
                                         <td>TC003</td>
-                                        <td>#003</td>
+                                        <td>#V001</td>
+                                        <td>
+                                            2025-04-11
+                                        </td>
+                                        <td class="text-warning">In Review</td>
+                                        <td>
+                                            <a aria-label="anchor" href="view-ticket-detail.php" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye text-primary">
+                                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                                    <circle cx="12" cy="12" r="3"></circle>
+                                                </svg>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <input class="form-check-input" type="checkbox">
+                                        </td>
+                                        <td>TC004</td>
+                                        <td>#V002</td>
+                                        </td>
+                                        <td>
+                                            2025-04-11
+                                        </td>
+                                        <td class="text-success">Completed</td>
+                                        <td>
+                                            <a aria-label="anchor" href="view-ticket-detail.php" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye text-primary">
+                                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                                    <circle cx="12" cy="12" r="3"></circle>
+                                                </svg>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <input class="form-check-input" type="checkbox">
+                                        </td>
+                                        <td>TC005</td>
+                                        <td>#V003</td>
+                                        <td>
+                                            2025-04-11
+                                        </td>
+                                        <td class="text-primary">Pending</td>
+                                        <td>
+                                            <a aria-label="anchor" href="view-ticket-detail.php" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye text-primary">
+                                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                                    <circle cx="12" cy="12" r="3"></circle>
+                                                </svg>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <input class="form-check-input" type="checkbox">
+                                        </td>
+                                        <td>TC006</td>
+                                        <td>#C003</td>
                                         <td>
                                             2025-04-11
                                         </td>

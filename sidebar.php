@@ -90,6 +90,13 @@
            </a>
          </li>
          <li>
+           <a href="received-products.php">
+             <div class="parent-icon"><i class="material-icons-outlined">store</i>
+             </div>
+             <div class="menu-title">Received Products</div>
+           </a>
+         </li>
+         <li>
            <a href="packaging-list.php">
              <div class="parent-icon"><i class="material-icons-outlined">all_inbox</i>
              </div>
