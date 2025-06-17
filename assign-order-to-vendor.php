@@ -30,7 +30,7 @@
                                             <input disabled type="" name="" id="" class="form-control" value="" required="" placeholder="#001">
                                         </div>
                                         <div class="col-12 col-lg-3">
-                                            <label for="marital" class="form-label">Vendor Id
+                                            <label for="marital" class="form-label">Vendor Name
                                                 <span class="text-danger">*</span></label>
                                             <select class="form-control" name="marital" id="marital">
                                                 <option selected="" disabled="" value="">-- Select --</option>

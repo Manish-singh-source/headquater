@@ -30,43 +30,55 @@
                 <div class="col-12">
                     <div class="row">
                         <div class="col">
-                            <div class="card">
+                            <div class="card customer-inputs">
                                 <div class="card-header border-bottom-dashed">
-                                    <div class="row d-flex g-4 align-items-center justify-content-between">
-                                        <div class="col-sm">
+                                    <div class="d-flex g-4 flex-row align-items-center justify-content-between">
+                                        <div>
                                             <h5 class="card-title mb-0">
                                                 Add New Order
                                             </h5>
                                         </div>
-                                        <!-- <div class="col-sm">
-                                            New Customer
-                                        </div> -->
+                                        <div>
+                                            <b>
+                                                #0081
+                                            </b>
+                                        </div>
                                     </div>
                                 </div>
 
                                 <div class="card-body">
                                     <div class="row g-3 align-items-end">
-                                        <div class="col-12 col-lg-2">
-                                            <label for="marital" class="form-label">Order id
-                                                <span class="text-danger">*</span></label>
-                                            <input disabled type="" name="" id="" class="form-control" value="#0081" required="" placeholder="#001">
+                                        <div class="col-12">
+                                            <span><b>Group:</b></span>
                                         </div>
                                         <div class="col-12 col-lg-3">
-                                            <label for="marital" class="form-label">Customer Name
+                                            <label for="marital" class="form-label">Customer Group Name
                                                 <span class="text-danger">*</span></label>
-                                            <select class="form-control" name="marital" id="marital">
+                                            <input type="text" name="" class="form-control" placeholder="Enter Group Name" id="groupName">
+                                        </div>
+                                        <div class="col-12">
+                                            <span><b>Select Customers</b></span>
+                                        </div>
+                                        <div class="col-12 col-lg-3">
+                                            <label for="customerName" class="form-label">Customer Name
+                                                <span class="text-danger">*</span></label>
+                                            <select class="form-control" name="customerName" id="customerName">
                                                 <option selected="" disabled="" value="">-- Select --</option>
-                                                <option value="Emily ">Emily </option>
-                                                <option value="John ">John </option>
-                                                <option value="Michael ">Michael </option>
-                                                <option value="Sarah ">Sarah </option>
-                                                <option value="Davis">Davis</option>
-                                                <option value="Smith">Smith</option>
-                                                <option value="Brown">Brown</option>
-                                                <option value="Wilson">Wilson</option>
-
+                                                <option value="Blinkit">Blinkit</option>
+                                                <option value="Moonstone">Moonstone</option>
+                                                <option value="Amazon">Amazon</option>
                                             </select>
                                         </div>
+                                        <div class="col-12 col-lg-3">
+                                            <label for="subCustomerName" class="form-label">Sub Customer Name
+                                                <span class="text-danger">*</span></label>
+                                            <select class="form-control" name="subCustomerName" id="subCustomerName">
+                                                <option selected="" disabled="" value="">-- Select --</option>
+                                                <option value="Abc">Abc</option>
+                                                <option value="Xyz">Xyz</option>
+                                            </select>
+                                        </div>
+                                        <!-- 
                                         <div class="col-12 col-lg-3">
                                             <label for="pick-date" class="form-label">Ordered Date</label>
                                             <input type="date" class="form-control" name="orderedDate" id="pick-date">
@@ -75,6 +87,54 @@
                                             <label for="document_image" class="form-label">Upload Excel <span class="text-danger">*</span></label>
                                             <input type="file" name="document_image" id="document_image" class="form-control" value="" required="" placeholder="Upload ID Document">
                                         </div>
+                                        -->
+                                        <!-- <div class="col-12 col-lg-1">
+                                            <button class="btn btn-primary" id="orderStatus">Submit</button>
+                                        </div> -->
+                                        <div class="col-12 col-lg-1">
+                                            <button class="btn btn-primary" id="add-customer">Add</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="card customer-groups">
+                                <div class="card-body">
+                                    <h5 class="mb-3">Customers Group - <span id="groupTitle">Blinkit</span></h5>
+                                    <div class="product-table">
+                                        <div class="table-responsive white-space-nowrap">
+                                            <table id="customerGroupTable" class="table align-middle">
+                                                <thead class="table-light">
+                                                    <tr>
+                                                        <th>Customer Name</th>
+                                                        <th>Sub Customer Name</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+
+                                    <div class="d-flex justify-content-end">
+                                        <button class="btn btn-primary" id="save-customers">Save</button>
+                                    </div>
+
+                                </div>
+                            </div>
+
+                            <div class="card po-uploads">
+                                <div class="card-body">
+                                    <div class="row align-items-end">
+                                        <div class="col-12 col-lg-3">
+                                            <label for="pick-date" class="form-label">Ordered Date</label>
+                                            <input type="date" class="form-control" name="orderedDate" id="pick-date">
+                                        </div>
+                                        <div class="col-12 col-lg-3">
+                                            <label for="document_image" class="form-label">Upload Excel <span class="text-danger">*</span></label>
+                                            <input type="file" name="document_image" id="document_image" class="form-control" value="" required="" placeholder="Upload ID Document" multiple>
+                                        </div>
+
                                         <div class="col-12 col-lg-1">
                                             <button class="btn btn-primary" id="orderStatus">Submit</button>
                                         </div>
@@ -410,6 +470,48 @@
                     location.pathname = '/headquater/order.php';
                 }, 2000);
             });
+
+            $(".customer-groups").hide();
+            // $("#add-customer").on("click", function() {
+            //     $(".customer-groups").show();
+            //     let groupName = $("#groupName").val();
+            //     let customerName = $("#customerName").val();
+            //     let subCustomerName = $("#subCustomerName").val();
+
+            //     let row = document.createElement("tr");
+            //     let td = document.createElement("td");
+            //     let table = $("#customerGroupTable tbody").append(row).append(td).html(groupName);
+            // });
+
+            $("#add-customer").on("click", function() {
+                $(".customer-groups").show();
+
+                let groupName = $("#groupName").val();
+                let customerName = $("#customerName").val();
+                let subCustomerName = $("#subCustomerName").val();
+
+                // Create table row with 3 td cells
+                let row = `
+                        <tr>
+                            <td>${customerName}</td>
+                            <td>${subCustomerName}</td>
+                        </tr>
+                    `;
+
+                // Append to table body
+                $("#groupTitle").html(groupName);
+                $("#customerGroupTable tbody").append(row);
+            });
+
+            $("#orderStatus").hide();
+            $(".po-uploads").hide();
+            $("#save-customers").on("click", function() {
+                $(".customer-inputs").hide();
+                $(".po-uploads").show();
+                $("#orderStatus").show();
+                $(this).hide();
+            });
+
         });
     </script>
 

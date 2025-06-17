@@ -23,7 +23,7 @@
                 <div class="col">
                     <h5 class="mb-3">#2056</h5>
                 </div>
-                <div class="col-12 col-lg-1 text-end">
+                <!-- <div class="col-12 col-lg-1 text-end">
                     <select id="input9" class="form-select">
                         <option selected="" disabled>Status</option>
                         <option>Pending</option>
@@ -31,7 +31,7 @@
                         <option>Receive</option>
                         <option>Completed</option>
                     </select>
-                </div>
+                </div> -->
             </div>
 
             <div class="card">
@@ -40,9 +40,9 @@
                         <div class="col">
                             <h6 class="mb-3">PO Table</h6>
                         </div>
-                        <div class="col-12 col-lg-1 text-end">
+                        <!-- <div class="col-12 col-lg-1 text-end">
                             <button class="form-select" onclick="poTable()">Hide Table</button>
-                        </div>
+                        </div> -->
                     </div>
                     <div class="product-table" id="poTable">
                         <div class="table-responsive white-space-nowrap">
@@ -164,13 +164,13 @@
 
                 <div class="card-body">
                     <div class="row g-3">
-                        <div class="col-12 col-lg-2">
+                        <!-- <div class="col-12 col-lg-2">
                             <th>
                                 <input id="checkbox1" class="form-check-input" type="checkbox" >
                                 <label for="checkbox1" class="form-label">Upload PI</label>
                                 
                             </th>
-                        </div>
+                        </div> -->
                         <div class="col-12 col-lg-3">
                             <!-- <label for="document_image" class="form-label">Upload Excel <span class="text-danger">*</span></label> -->
                             <input type="file" name="document_image" id="document_image" class="form-control" value="" required="" placeholder="Upload ID Document" multiple>

@@ -91,7 +91,9 @@
                                         <th>Product Name</th>
                                         <th>SKU</th>
                                         <th>Price</th>
-                                        <th>Quantity</th>
+                                        <th>Total Quantity</th>
+                                        <th>Available Quantity</th>
+                                        <th>Hold Quantity</th>
                                         <th>Date</th>
                                         <th>Status</th>
                                         <th>Action</th>
@@ -119,10 +121,11 @@
                                         <td>
                                             150
                                         </td>
+                                        <td>110</td>
+                                        <td>40</td>
                                         <td>
                                             Nov 12, 10:45 PM
                                         </td>
-                                        <td>Available</td>
                                         <td><a aria-label="anchor" class="btn btn-icon btn-sm bg-danger-subtle delete-row" data-bs-toggle="tooltip" data-bs-original-title="Delete">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trash-2 text-danger">
                                                     <polyline points="3 6 5 6 21 6"></polyline>
@@ -154,10 +157,11 @@
                                         <td>
                                             150
                                         </td>
+                                        <td>110</td>
+                                        <td>40</td>
                                         <td>
                                             Nov 12, 10:45 PM
                                         </td>
-                                        <td>Available</td>
                                         <td><a aria-label="anchor" class="btn btn-icon btn-sm bg-danger-subtle delete-row" data-bs-toggle="tooltip" data-bs-original-title="Delete">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trash-2 text-danger">
                                                     <polyline points="3 6 5 6 21 6"></polyline>
@@ -189,10 +193,11 @@
                                         <td>
                                             150
                                         </td>
+                                        <td>110</td>
+                                        <td>40</td>
                                         <td>
                                             Nov 12, 10:45 PM
                                         </td>
-                                        <td>Available</td>
                                         <td><a aria-label="anchor" class="btn btn-icon btn-sm bg-danger-subtle delete-row" data-bs-toggle="tooltip" data-bs-original-title="Delete">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trash-2 text-danger">
                                                     <polyline points="3 6 5 6 21 6"></polyline>
@@ -224,10 +229,11 @@
                                         <td>
                                             150
                                         </td>
+                                        <td>110</td>
+                                        <td>40</td>
                                         <td>
                                             Nov 12, 10:45 PM
                                         </td>
-                                        <td>Hold</td>
                                         <td><a aria-label="anchor" class="btn btn-icon btn-sm bg-danger-subtle delete-row" data-bs-toggle="tooltip" data-bs-original-title="Delete">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trash-2 text-danger">
                                                     <polyline points="3 6 5 6 21 6"></polyline>
@@ -259,10 +265,11 @@
                                         <td>
                                             150
                                         </td>
+                                        <td>110</td>
+                                        <td>40</td>
                                         <td>
                                             Nov 12, 10:45 PM
                                         </td>
-                                        <td>Hold</td>
                                         <td><a aria-label="anchor" class="btn btn-icon btn-sm bg-danger-subtle delete-row" data-bs-toggle="tooltip" data-bs-original-title="Delete">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trash-2 text-danger">
                                                     <polyline points="3 6 5 6 21 6"></polyline>
@@ -294,10 +301,11 @@
                                         <td>
                                             150
                                         </td>
+                                        <td>110</td>
+                                        <td>40</td>
                                         <td>
                                             Nov 12, 10:45 PM
                                         </td>
-                                        <td>Hold</td>
                                         <td><a aria-label="anchor" class="btn btn-icon btn-sm bg-danger-subtle delete-row" data-bs-toggle="tooltip" data-bs-original-title="Delete">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trash-2 text-danger">
                                                     <polyline points="3 6 5 6 21 6"></polyline>
@@ -329,10 +337,11 @@
                                         <td>
                                             150
                                         </td>
+                                        <td>110</td>
+                                        <td>40</td>
                                         <td>
                                             Nov 12, 10:45 PM
                                         </td>
-                                        <td>Hold</td>
                                         <td><a aria-label="anchor" class="btn btn-icon btn-sm bg-danger-subtle delete-row" data-bs-toggle="tooltip" data-bs-original-title="Delete">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trash-2 text-danger">
                                                     <polyline points="3 6 5 6 21 6"></polyline>
@@ -364,10 +373,11 @@
                                         <td>
                                             150
                                         </td>
+                                        <td>110</td>
+                                        <td>40</td>
                                         <td>
                                             Nov 12, 10:45 PM
                                         </td>
-                                        <td>Hold</td>
                                         <td><a aria-label="anchor" class="btn btn-icon btn-sm bg-danger-subtle delete-row" data-bs-toggle="tooltip" data-bs-original-title="Delete">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trash-2 text-danger">
                                                     <polyline points="3 6 5 6 21 6"></polyline>
@@ -399,10 +409,11 @@
                                         <td>
                                             150
                                         </td>
+                                        <td>110</td>
+                                        <td>40</td>
                                         <td>
                                             Nov 12, 10:45 PM
                                         </td>
-                                        <td>Hold</td>
                                         <td><a aria-label="anchor" class="btn btn-icon btn-sm bg-danger-subtle delete-row" data-bs-toggle="tooltip" data-bs-original-title="Delete">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trash-2 text-danger">
                                                     <polyline points="3 6 5 6 21 6"></polyline>

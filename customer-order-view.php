@@ -251,13 +251,13 @@
 
                 <div class="card-body">
                     <div class="row g-3 py-2">
-                        <div class="col-12 col-lg-2">
+                        <!-- <div class="col-12 col-lg-2">
                             <th>
                                 <input id="checkbox3" class="form-check-input" type="checkbox">
                                 <label for="checkbox3" class="form-label">Upload Invoice</label>
 
                             </th>
-                        </div>
+                        </div> -->
                         <div class="col-12 col-lg-3">
                             <!-- <label for="document_image" class="form-label">Upload Excel <span class="text-danger">*</span></label> -->
                             <input type="file" name="document_image" id="document_image" class="form-control" value="" required="" placeholder="Upload ID Document">
@@ -272,13 +272,13 @@
                         </div>
                     </div>
                     <div class="row g-3 py-2">
-                        <div class="col-12 col-lg-2">
+                        <!-- <div class="col-12 col-lg-2">
                             <th>
                                 <input id="checkbox3" class="form-check-input" type="checkbox">
                                 <label for="checkbox3" class="form-label">Upload E-Way Bill</label>
 
                             </th>
-                        </div>
+                        </div> -->
                         <div class="col-12 col-lg-3">
                             <!-- <label for="document_image" class="form-label">Upload Excel <span class="text-danger">*</span></label> -->
                             <input type="file" name="document_image" id="document_image" class="form-control" value="" required="" placeholder="Upload ID Document">
@@ -338,13 +338,13 @@
 
                 <div class="card-body">
                     <div class="row g-3">
-                        <div class="col-12 col-lg-2">
+                        <!-- <div class="col-12 col-lg-2">
                             <th>
                                 <input id="checkbox1" class="form-check-input" type="checkbox">
                                 <label for="checkbox1" class="form-label">Upload POD</label>
 
                             </th>
-                        </div>
+                        </div> -->
                         <div class="col-12 col-lg-4">
                             <label for="document_image" class="form-label">Upload POD <span class="text-danger">*</span></label>
                             <input type="file" name="document_image" id="document_image" class="form-control" value="" required="" placeholder="Upload ID Document">
@@ -371,13 +371,13 @@
 
                 <div class="card-body">
                     <div class="row g-3">
-                        <div class="col-12 col-lg-2">
+                        <!-- <div class="col-12 col-lg-2">
                             <th>
                                 <input id="checkbox3" class="form-check-input" type="checkbox">
                                 <label for="checkbox3" class="form-label">Upload GRN</label>
 
                             </th>
-                        </div>
+                        </div> -->
                         <div class="col-12 col-lg-3">
                             <!-- <label for="document_image" class="form-label">Upload Excel <span class="text-danger">*</span></label> -->
                             <input type="file" name="document_image" id="document_image" class="form-control" value="" required="" placeholder="Upload ID Document">
