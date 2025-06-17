@@ -105,12 +105,35 @@
          </li>
          <li>
            <a href="ready-to-ship.php">
-             <div class="parent-icon"><i class="material-icons-outlined">local_shipping</i> 
+             <div class="parent-icon"><i class="material-icons-outlined">local_shipping</i>
              </div>
              <div class="menu-title">Ready To Ship</div>
            </a>
          </li>
+         <li class="menu-label">Reports</li>
+         <li>
+           <a href="vendor-purchase-history.php">
+             <div class="parent-icon"><i class="material-icons-outlined">local_shipping</i>
+             </div>
+             <div class="menu-title">Vendor Purchase</div>
+           </a>
+         </li>
+         <li>
+           <a href="ready-to-ship.php">
+             <div class="parent-icon"><i class="material-icons-outlined">local_shipping</i>
+             </div>
+             <div class="menu-title">Inventory Stock</div>
+           </a>
+         </li>
+         <li>
+           <a href="ready-to-ship.php">
+             <div class="parent-icon"><i class="material-icons-outlined">local_shipping</i>
+             </div>
+             <div class="menu-title">Customer Sales</div>
+           </a>
+         </li>
        </ul>
+
        <!--end navigation-->
      </div>
    </aside>

@@ -16,26 +16,32 @@
     <main class="main-wrapper">
         <div class="main-content">
 
+            <div class="div my-2">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card w-100 d-flex  flex-sm-row flex-col">
+                            <ul class="col-12 list-group list-group-flush">
+                                <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
+                                    <span><b>Order Id</b></span>
+
+                                    <span>#2056</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
+                                    <span><b>Customer Name</b></span>
+                                    <span> <b>Blinkit</b>, <b>Big Bazar</b>, <b>Amazon</b> </span>
+                                </li>
+                            </ul>
 
 
-
-            <div class="div d-flex my-2">
-                <div class="col">
-                    <h5 class="mb-3">#2056</h5>
-                </div>
-                <div class="col-12 col-lg-1 text-end">
-                    <select id="input9" class="form-select">
-                        <option selected="" disabled>Status</option>
-                        <option>Pending</option>
-                        <option>Confirm</option>
-                        <option>Receive</option>
-                        <option>Completed</option>
-                    </select>
+                        </div>
+                    </div>
                 </div>
             </div>
 
             <div class="card">
                 <div class="card-body">
+
+
                     <div class="div d-flex my-2">
                         <div class="col">
                             <h6 class="mb-3">PO Table</h6>
@@ -43,6 +49,17 @@
                         <div class="col-12 col-lg-1 text-end">
                             <span class="badge bg-danger-subtle text-danger fw-semibold">Pending</span>
                         </div>
+                    </div>
+                    <!-- Tabs Navigation -->
+                    <div class="div d-flex my-3">
+                        <ul class="nav nav-tabs" id="vendorTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active bg-success text-white mx-1" id="customer1-tab" data-bs-toggle="tab" data-bs-target="#customer1" type="button" role="tab">Customer 1</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link bg-success text-white mx-1" id="customer2-tab" data-bs-toggle="tab" data-bs-target="#customer2" type="button" role="tab">Customer 2</button>
+                            </li>
+                        </ul>
                     </div>
                     <div class="product-table" id="poTable">
                         <div class="table-responsive white-space-nowrap">
@@ -151,7 +168,7 @@
                 </div>
             </div>
 
-            <div class="card">
+            <!-- <div class="card">
                 <div class="card-header border-bottom-dashed">
                     <div class="row g-4 align-items-center">
                         <div class="col-sm">
@@ -164,23 +181,6 @@
 
                 <div class="card-body">
                     <div class="row g-3">
-                        <!-- <div class="col-12 col-lg-2">
-                            <th>
-                                <input id="checkbox1" class="form-check-input" type="checkbox">
-                                <label for="checkbox1" class="form-label">Assign Warehouse</label>
-                            </th>
-                        </div> -->
-                        <!-- <div class="col-12 col-lg-3">
-                            <label for="marital" class="form-label">Warehouse Id
-                                <span class="text-danger">*</span></label>
-                            <select class="form-control" name="marital" id="marital">
-                                <option selected="" disabled="" value="">-- Select --</option>
-                                <option value="#001">#001</option>
-                                <option value="#002 ">#002 </option>
-                                <option value="#003 ">#003 </option>
-                                <option value="#004 ">#004 </option>
-                            </select>
-                        </div> -->
                         <div class="col-12 col-lg-3">
                             <label for="marital" class="form-label">Warehouse Location
                                 <span class="text-danger">*</span></label>
@@ -199,44 +199,7 @@
                         </div>
                     </div>
                 </div>
-                <!-- <div class="card-body">
-                    <div class="row g-3">
-                        <div class="col-12 col-lg-2">
-                            <th>
-                                <input id="checkbox2" class="form-check-input" type="checkbox">
-                                <label for="checkbox2" class="form-label">Assign Vendor</label>
-
-                            </th>
-                        </div>
-                        <div class="col-12 col-lg-3">
-                            <label for="marital" class="form-label">Vendor Name
-                                <span class="text-danger">*</span></label>
-                            <select class="form-control" name="marital" id="marital">
-                                <option selected="" disabled="" value="">-- Select --</option>
-                                <option value="Active">Active</option>
-                                <option value="Emily ">Emily </option>
-                                <option value="John ">John </option>
-                                <option value="Michael ">Michael </option>
-                                <option value="Sarah ">Sarah </option>
-                                <option value="Davis">Davis</option>
-                                <option value="Smith">Smith</option>
-                                <option value="Brown">Brown</option>
-                                <option value="Wilson">Wilson</option>
-
-                            </select>
-                        </div>
-                        <div class="col-12 col-lg-3">
-                            <label for="document_image" class="form-label">Upload Excel <span class="text-danger">*</span></label>
-                            <input type="file" name="document_image" id="document_image" class="form-control" value="" required="" placeholder="Upload ID Document">
-                        </div>
-                        <div class="col-12 col-lg-4 text-end">
-                            <button type="" class="btn btn-success w-sm waves ripple-light text-center  mt-4">
-                                Upload
-                            </button>
-                        </div>
-                    </div>
-                </div> -->
-            </div>
+            </div> -->
 
             <div class="card">
                 <div class="card-header border-bottom-dashed">
@@ -267,7 +230,7 @@
                                 Upload
                             </button>
                             <a href="invoices-details.php" type="" class="btn btn-success w-sm waves ripple-light">
-                                Previous
+                                Preview
                             </a>
                         </div>
                     </div>
@@ -288,7 +251,7 @@
                                 Upload
                             </button>
                             <a href="invoices-details.php" type="" class="btn btn-success w-sm waves ripple-light">
-                                Previous
+                                Preview
                             </a>
                         </div>
                     </div>
