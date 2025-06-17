@@ -24,7 +24,7 @@
 
                                 <div class="card-body">
                                     <div class="row g-3">
-                                        <div class="col-12 col-lg-3">
+                                        <!-- <div class="col-12 col-lg-3">
                                             <label for="marital" class="form-label">Warehouse
                                                 <span class="text-danger">*</span></label>
                                             <select class="form-control" name="marital" id="marital">
@@ -33,7 +33,7 @@
 
 
                                             </select>
-                                        </div>
+                                        </div> -->
                                         <div class="col-12 col-lg-3">
                                             <label for="marital" class="form-label">Vendor Id
                                                 <span class="text-danger">*</span></label>

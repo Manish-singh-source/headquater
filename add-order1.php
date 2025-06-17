@@ -136,13 +136,29 @@
                                         </div>
 
                                         <div class="col-12 col-lg-1">
-                                            <button class="btn btn-primary" id="orderStatus">Submit</button>
+                                            <button class="btn btn-primary" id="upload-excel">Submit</button>
                                         </div>
+                                        <!-- <div class="col-12 col-lg-1">
+                                            <button class="btn btn-primary" id="orderStatus">Submit</button>
+                                        </div> -->
                                     </div>
                                 </div>
                             </div>
-
+                            
                             <div class="card available-product">
+                                <div class="card-body">
+                                    <ul class="nav nav-tabs">
+                                        <li class="nav-item">
+                                            <a class="nav-link active" aria-current="page" href="#">Blinkit</a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link" href="#">Big Bazar</a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link" href="#">Amazon</a>
+                                        </li>
+                                    </ul>
+                                </div>
                                 <div class="card-body">
                                     <h5 class="mb-3">Available Products</h5>
                                     <div class="product-table">
@@ -501,6 +517,38 @@
                 // Append to table body
                 $("#groupTitle").html(groupName);
                 $("#customerGroupTable tbody").append(row);
+            });
+
+            $("#upload-excel").on("click", function() {
+                $(".customer-groups").show();
+
+                let orderedDate = $("#pick-date").val();
+                let document_image = $("#document_image").val();
+
+                console.log(orderedDate);
+                console.log(document_image);
+                // Create table row with 3 td cells
+                let rowHeading = `
+                        <th>Ordered Date</th>
+                        <th>Document Image</th>
+                    `;
+                let row = `
+                        <td>${orderedDate}</td>
+                        <td>${document_image}</td>
+                    `;
+
+                // Append to table bod
+                $("#customerGroupTable thead tr").append(rowHeading);
+                $("#customerGroupTable tbody tr").append(row);
+
+                $(".loader").show();
+
+                setTimeout(function() {
+                    $(".po-uploads").hide();
+                    $(".loader").hide();
+                    $(".available-product").show();
+                    $(".unavailable-product").show();
+                }, 3000);
             });
 
             $("#orderStatus").hide();
