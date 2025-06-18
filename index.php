@@ -539,6 +539,7 @@
                   </ul>
                 </div>
               </div>
+              <div class="table-responsive">
               <table id="example2" class="table table-striped">
                 <thead class="table-light">
                   <tr>
@@ -623,6 +624,7 @@
                   </tr>
                 </tbody>
               </table>
+              </div>
             </div>
           </div>
         </div>
@@ -647,6 +649,7 @@
                   </ul>
                 </div>
               </div>
+              <div class="table-responsive">
               <table id="example2" class="table table-striped">
                 <thead class="table-light">
                   <tr>
@@ -737,6 +740,7 @@
                   </tr>
                 </tbody>
               </table>
+              </div>
             </div>
           </div>
         </div>
@@ -761,6 +765,7 @@
                   </ul>
                 </div>
               </div>
+              <div class="table-responsive">
               <table id="example2" class="table table-striped">
                 <thead class="table-light">
                   <tr>
@@ -851,6 +856,7 @@
                   </tr>
                 </tbody>
               </table>
+              </div>
             </div>
           </div>
         </div>
@@ -874,6 +880,7 @@
                   </ul>
                 </div>
               </div>
+              <div class="table-responsive">
               <table id="example2" class="table table-striped">
                 <thead class="table-light">
                   <tr>
@@ -964,6 +971,7 @@
                   </tr>
                 </tbody>
               </table>
+              </div>
             </div>
           </div>
         </div>
@@ -987,6 +995,7 @@
                   </ul>
                 </div>
               </div>
+              <div class="table-responsive">
               <table id="example2" class="table table-striped">
                 <thead class="table-light">
                   <tr>
@@ -1077,6 +1086,7 @@
                   </tr>
                 </tbody>
               </table>
+              </div>
             </div>
           </div>
         </div>
@@ -1100,6 +1110,7 @@
                   </ul>
                 </div>
               </div>
+              <div class="table-responsive">
               <table id="example2" class="table table-striped">
                 <thead class="table-light">
                   <tr>
@@ -1190,6 +1201,7 @@
                   </tr>
                 </tbody>
               </table>
+              </div>
             </div>
           </div>
         </div>
