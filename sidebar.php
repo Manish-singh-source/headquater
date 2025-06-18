@@ -76,7 +76,7 @@
          </li>
          <li>
            <a href="invoices.php">
-             <div class="parent-icon"><i class="material-icons-outlined">store</i>
+             <div class="parent-icon"><i class="material-icons-outlined">receipt_long</i>
              </div>
              <div class="menu-title">Invoices</div>
            </a>
@@ -91,7 +91,7 @@
          </li>
          <li>
            <a href="received-products.php">
-             <div class="parent-icon"><i class="material-icons-outlined">store</i>
+             <div class="parent-icon"><i class="material-icons-outlined">move_to_inbox</i>
              </div>
              <div class="menu-title">Received Products</div>
            </a>
@@ -119,7 +119,7 @@
          </li>
          <li>
            <a href="track-order.php">
-             <div class="parent-icon"><i class="material-icons-outlined">local_shipping</i>
+             <div class="parent-icon"><i class="material-icons-outlined">search</i>
              </div>
              <div class="menu-title">Track Order</div>
            </a>
@@ -127,21 +127,21 @@
          <li class="menu-label">Reports</li>
          <li>
            <a href="vendor-purchase-history.php">
-             <div class="parent-icon"><i class="material-icons-outlined">local_shipping</i>
+             <div class="parent-icon"><i class="material-icons-outlined">store</i>
              </div>
              <div class="menu-title">Vendor Purchase</div>
            </a>
          </li>
          <li>
            <a href="inventory-stock-history.php">
-             <div class="parent-icon"><i class="material-icons-outlined">local_shipping</i>
+             <div class="parent-icon"><i class="material-icons-outlined">inventory_2</i>
              </div>
              <div class="menu-title">Inventory Stock</div>
            </a>
          </li>
          <li>
            <a href="customer-sales-history.php">
-             <div class="parent-icon"><i class="material-icons-outlined">local_shipping</i>
+             <div class="parent-icon"><i class="material-icons-outlined">point_of_sale</i>
              </div>
              <div class="menu-title">Customer Sales</div>
            </a>
