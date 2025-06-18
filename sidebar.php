@@ -117,6 +117,13 @@
              <div class="menu-title">Ready To Ship</div>
            </a>
          </li>
+         <li>
+           <a href="track-order.php">
+             <div class="parent-icon"><i class="material-icons-outlined">local_shipping</i>
+             </div>
+             <div class="menu-title">Track Order</div>
+           </a>
+         </li>
          <li class="menu-label">Reports</li>
          <li>
            <a href="vendor-purchase-history.php">
