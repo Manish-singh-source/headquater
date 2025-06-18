@@ -97,7 +97,7 @@
                                         <div class="mb-3">
                                             <label class="form-label">Choose Date</label>
                                             <div class="input-icon-start position-relative">
-                                                <input type="text" class="form-control date-range bookingrange" placeholder="dd/mm/yyyy - dd/mm/yyyy">
+                                                <input type="date" class="form-control date-range bookingrange" placeholder="dd/mm/yyyy - dd/mm/yyyy">
                                                 <span class="input-icon-left">
                                                     <i class="ti ti-calendar"></i>
                                                 </span>
