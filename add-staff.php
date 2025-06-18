@@ -24,7 +24,7 @@
 
                                 <div class="card-body">
                                     <div class="row g-3">
-                                        <div class="col-6">
+                                        <div class="col-12 col-md-6">
                                             <label for="marital" class="form-label">Role
                                                 <span class="text-danger">*</span></label>
                                             <select class="form-control" name="marital" id="marital">
@@ -34,7 +34,7 @@
                                                 <option value="Operation Manager">Operation Manager</option>
                                             </select>
                                         </div>
-                                        <div class="col-6">
+                                        <div class="col-12 col-md-6">
                                             <label for="marital" class="form-label">Status
                                                 <span class="text-danger">*</span></label>
                                             <select class="form-control" name="marital" id="marital">
@@ -59,33 +59,33 @@
 
                                 <div class="card-body">
                                     <div class="row g-3">
-                                        <div class="col-6">
+                                        <div class="col-12 col-md-6">
                                             <label for="firstname" class="form-label">First Name <span class="text-danger">*</span></label>
                                             <input type="text" name="firstname" id="firstname" class="form-control" value="" required="" placeholder="Enter First Name">
                                         </div>
 
-                                        <div class="col-6">
+                                        <div class="col-12 col-md-6">
                                             <label for="lastname" class="form-label">Last Name <span class="text-danger">*</span></label>
                                             <input type="text" name="lastname" id="lastname" class="form-control" value="" required="" placeholder="Enter Last Name">
                                         </div>
 
-                                        <div class="col-6">
+                                        <div class="col-12 col-md-6">
                                             <label for="phone" class="form-label">Phone number <span class="text-danger">*</span></label>
                                             <input type="text" required="" name="phone" id="phone" class="form-control" value="" placeholder="Enter Phone number">
                                         </div>
 
 
-                                        <div class="col-6">
+                                        <div class="col-12 col-md-6">
                                             <label for="email" class="form-label">E-mail address <span class="text-danger">*</span></label>
                                             <input type="email" name="email" id="email" class="form-control" value="" placeholder="Enter Email id" required="">
                                         </div>
 
-                                        <div class="col-6">
+                                        <div class="col-12 col-md-6">
                                             <label for="dob" class="form-label">Date of Birth <span class="text-danger">*</span></label>
                                             <input type="date" name="dob" id="dob" class="form-control" value="" placeholder="Enter Date of Birth" required="">
                                         </div>
 
-                                        <div class="col-6">
+                                        <div class="col-12 col-md-6">
                                             <label for="gender" class="form-label">Gender <span class="text-danger">*</span></label>
                                             <select class="form-control" name="gender" id="gender">
                                                 <option selected="" disabled="" value="">-- Select --</option>
@@ -95,7 +95,7 @@
                                             </select>
                                         </div>
 
-                                        <div class="col-6">
+                                        <div class="col-12 col-md-6">
                                             <label for="marital" class="form-label">Marital Status
                                                 <span class="text-danger">*</span></label>
                                             <select class="form-control" name="marital" id="marital">
@@ -118,32 +118,32 @@
 
                                 <div class="card-body">
                                     <div class="row g-3">
-                                        <div class="col-6">
+                                        <div class="col-12 col-md-6">
                                             <label for="current-address" class="form-label">Current Address <span class="text-danger">*</span></label>
                                             <textarea name="current-address" id="current-address" class="form-control" value="" required="" placeholder="Enter Current Address"></textarea>
                                         </div>
 
-                                        <div class="col-6">
+                                        <div class="col-12 col-md-6">
                                             <label for="permanent-address" class="form-label">Permanent Address </label>
                                             <textarea name="permanent-address" id="permanent-address" class="form-control" value="" placeholder="Enter Permanent Address"></textarea>
                                         </div>
 
-                                        <div class="col-6">
+                                        <div class="col-12 col-md-6">
                                             <label for="city" class="form-label">City<span class="text-danger">*</span></label>
                                             <input type="text" required="" name="city" id="city" class="form-control" value="" placeholder="Enter City">
                                         </div>
 
-                                        <div class="col-6">
+                                        <div class="col-12 col-md-6">
                                             <label for="state" class="form-label">State <span class="text-danger">*</span></label>
                                             <input type="text" name="state" id="state" class="form-control" value="" placeholder="Enter State" required="">
                                         </div>
 
-                                        <div class="col-6">
+                                        <div class="col-12 col-md-6">
                                             <label for="country" class="form-label">Country <span class="text-danger">*</span></label>
                                             <input type="text" name="country" id="country" class="form-control" value="" required="" placeholder="Enter Country">
                                         </div>
 
-                                        <div class="col-6">
+                                        <div class="col-12 col-md-6">
                                             <label for="pincode" class="form-label">Pincode<span class="text-danger">*</span></label>
                                             <input type="text" name="pincode" id="pincode" class="form-control" value="" required="" placeholder="Enter Pincode">
                                         </div>
@@ -160,12 +160,12 @@
 
                                 <div class="card-body">
                                     <div class="row g-3">
-                                        <div class="col-6">
+                                        <div class="col-12 col-md-6">
                                             <label for="emp_id" class="form-label">Employee ID <span class="text-danger">*</span></label>
                                             <input type="text" name="emp_id" id="emp_id" class="form-control" value="" required="" placeholder="Enter Employee ID">
                                         </div>
 
-                                        <div class="col-6">
+                                        <div class="col-12 col-md-6">
                                             <label for="Department" class="form-label">Department/Role <span class="text-danger">*</span></label>
                                             <select class="form-control" name="Department" id="Department">
                                                 <option selected="" disabled="" value="">-- Select --</option>
@@ -175,17 +175,17 @@
                                             </select>
                                         </div>
 
-                                        <div class="col-6">
+                                        <div class="col-12 col-md-6">
                                             <label for="designation" class="form-label">Designation/Position <span class="text-danger">*</span></label>
                                             <input type="text" name="designation" id="designation" class="form-control" value="" required="" placeholder="Enter Designation/Position">
                                         </div>
 
-                                        <div class="col-6">
+                                        <div class="col-12 col-md-6">
                                             <label for="join_date" class="form-label">Joining Date <span class="text-danger">*</span></label>
                                             <input type="date" name="join_date" id="join_date" class="form-control" value="" required="" placeholder="Enter Joining Date">
                                         </div>
 
-                                        <div class="col-6">
+                                        <div class="col-12 col-md-6">
                                             <label for="shift_timing" class="form-label">Shift Timing <span class="text-danger">*</span></label>
                                             <select class="form-control" name="shift_timing" id="shift_timing">
                                                 <option selected="" disabled="" value="">-- Select --</option>
@@ -195,12 +195,12 @@
                                             </select>
                                         </div>
 
-                                        <div class="col-6">
+                                        <div class="col-12 col-md-6">
                                             <label for="work_location" class="form-label">Work Location <span class="text-danger">*</span></label>
                                             <input type="text" name="work_location" id="work_location" class="form-control" value="" required="" placeholder="Enter Work Location">
                                         </div>
 
-                                        <div class="col-6">
+                                        <div class="col-12 col-md-6">
                                             <label for="supervisor" class="form-label">Supervisor/Manager Name <span class="text-danger">*</span></label>
                                             <input type="text" name="supervisor" id="supervisor" class="form-control" value="" required="" placeholder="Enter Supervisor/Manager Name">
                                         </div>

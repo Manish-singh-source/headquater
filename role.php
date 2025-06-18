@@ -21,13 +21,13 @@
             <!--end breadcrumb-->
 
             <div class="row g-3">
-                <div class="col-auto">
+                <div class="col-12 col-md-2">
                     <div class="position-relative">
                         <input class="form-control px-5" type="search" placeholder="Search Role">
                         <span class="material-icons-outlined position-absolute ms-3 translate-middle-y start-0 top-50 fs-5">search</span>
                     </div>
                 </div>
-                <div class="col-auto flex-grow-1 overflow-auto">
+                <div class="col-12 col-md-2 flex-grow-1 overflow-auto">
                     <div class="btn-group position-static">
                         <div class="btn-group position-static">
                             <button type="button" class="btn btn-filter dropdown-toggle px-4" data-bs-toggle="dropdown" aria-expanded="false">
@@ -60,7 +60,7 @@
                         </div> -->
                     </div>
                 </div>
-                <div class="col-auto">
+                <div class="col-12 col-md-2">
                     <div class="d-flex align-items-center gap-2 justify-content-lg-end">
                         <button class="btn btn-filter px-4"><i class="bi bi-box-arrow-right me-2"></i>Export</button>
                         <a href="add-role.php" class="btn btn-primary px-4"><i class="bi bi-plus-lg me-2"></i>Add Role</a>
@@ -101,7 +101,8 @@
                                         </td>
                                         <td>Super Admin</td>
                                         <td>
-                                            <a aria-label="anchor" href="#" class="btn btn-icon btn-sm bg-warning-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="Edit">
+                                            <div class="d-flex">
+                                                <a aria-label="anchor" href="#" class="btn btn-icon btn-sm bg-warning-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="Edit">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-edit text-warning">
                                                     <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
                                                     <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
@@ -115,6 +116,7 @@
                                                     <line x1="14" y1="11" x2="14" y2="17"></line>
                                                 </svg>
                                             </a>
+                                            </div>
                                         </td>
                                     </tr>
                                     <tr>
@@ -134,7 +136,8 @@
                                         </td>
                                         <td>Super Admin</td>
                                         <td>
-                                            <a aria-label="anchor" href="#" class="btn btn-icon btn-sm bg-warning-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="Edit">
+                                            <div class="d-flex">
+                                                <a aria-label="anchor" href="#" class="btn btn-icon btn-sm bg-warning-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="Edit">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-edit text-warning">
                                                     <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
                                                     <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
@@ -148,6 +151,7 @@
                                                     <line x1="14" y1="11" x2="14" y2="17"></line>
                                                 </svg>
                                             </a>
+                                            </div>
                                         </td>
                                     </tr>
                                     <tr>
@@ -167,7 +171,8 @@
                                         </td>
                                         <td>Super Admin</td>
                                         <td>
-                                            <a aria-label="anchor" href="#" class="btn btn-icon btn-sm bg-warning-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="Edit">
+                                            <div class="d-flex">
+                                                <a aria-label="anchor" href="#" class="btn btn-icon btn-sm bg-warning-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="Edit">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-edit text-warning">
                                                     <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
                                                     <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
@@ -181,6 +186,7 @@
                                                     <line x1="14" y1="11" x2="14" y2="17"></line>
                                                 </svg>
                                             </a>
+                                            </div>
                                         </td>
                                     </tr>
                                     <tr>
@@ -200,7 +206,8 @@
                                         </td>
                                         <td>Super Admin</td>
                                         <td>
-                                            <a aria-label="anchor" href="#" class="btn btn-icon btn-sm bg-warning-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="Edit">
+                                            <div class="d-flex">
+                                                <a aria-label="anchor" href="#" class="btn btn-icon btn-sm bg-warning-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="Edit">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-edit text-warning">
                                                     <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
                                                     <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
@@ -214,6 +221,7 @@
                                                     <line x1="14" y1="11" x2="14" y2="17"></line>
                                                 </svg>
                                             </a>
+                                            </div>
                                         </td>
                                     </tr>
                                     <tr>
@@ -233,7 +241,8 @@
                                         </td>
                                         <td>Super Admin</td>
                                         <td>
-                                            <a aria-label="anchor" href="#" class="btn btn-icon btn-sm bg-warning-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="Edit">
+                                            <div class="d-flex">
+                                                <a aria-label="anchor" href="#" class="btn btn-icon btn-sm bg-warning-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="Edit">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-edit text-warning">
                                                     <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
                                                     <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
@@ -247,6 +256,7 @@
                                                     <line x1="14" y1="11" x2="14" y2="17"></line>
                                                 </svg>
                                             </a>
+                                            </div>
                                         </td>
                                     </tr>
                                 </tbody>

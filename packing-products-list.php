@@ -36,7 +36,7 @@
                         <div class="col">
                             <h6 class="mb-3">PO Table</h6>
                         </div>
-                        <div class="col-12 col-lg-2 text-end">
+                        <div class="col-6 col-lg-2 text-end">
                             <a href="raise-a-ticket-form.php" type="" class="btn btn-success w-sm waves ripple-light">
                                 Raise A Ticket
                             </a>
@@ -159,7 +159,7 @@
                     </a>
                 </div>
                 <div class="text-end">
-                    <a href="packaging-list.php" class="btn btn-success w-sm waves ripple-light">
+                    <a href="ready-to-ship.php" class="btn btn-success w-sm waves ripple-light">
                         Ready to Ship
                     </a>
                 </div>

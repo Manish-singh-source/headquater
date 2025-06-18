@@ -35,13 +35,13 @@
 
 
             <div class="row g-3">
-                <div class="col-auto">
+                <div class="col-12 col-md-2">
                     <div class="position-relative">
                         <input class="form-control px-5" type="search" placeholder="Search Order">
                         <span class="material-icons-outlined position-absolute ms-3 translate-middle-y start-0 top-50 fs-5">search</span>
                     </div>
                 </div>
-                <div class="col-auto flex-grow-1 overflow-auto">
+                <div class="col-12 col-md-2 flex-grow-1 overflow-auto">
                     <div class="btn-group position-static">
                         <div class="btn-group position-static">
                             <button type="button" class="btn btn-filter dropdown-toggle px-4" data-bs-toggle="dropdown" aria-expanded="false">
@@ -73,7 +73,7 @@
                         </div> -->
                     </div>
                 </div>
-                <div class="col-auto">
+                <div class="col-12 col-md-auto">
                     <div class="d-flex align-items-center gap-2 justify-content-lg-end">
                         <button class="btn btn-filter px-4"><i class="bi bi-box-arrow-right me-2"></i>Export</button>
                         <a href="add-order.php"><button class="btn btn-primary px-4"><i class="bi bi-plus-lg me-2"></i>New Order</button></a>
@@ -115,7 +115,8 @@
                                         <td>2025-04-11</td>
                                         <td>Baroda</td>
                                         <td>
-                                            <a aria-label="anchor" href="customer-order-view.php" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
+                                            <div class="d-flex">
+                                                <a aria-label="anchor" href="customer-order-view.php" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye text-primary">
                                                     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                                                     <circle cx="12" cy="12" r="3"></circle>
@@ -135,6 +136,7 @@
                                                     <line x1="14" y1="11" x2="14" y2="17"></line>
                                                 </svg>
                                             </a>
+                                            </div>
                                         </td>
                                     </tr>
                                     <tr>
@@ -151,7 +153,8 @@
                                         <td>2025-04-11</td>
                                         <td>Baroda</td>
                                         <td>
-                                            <a aria-label="anchor" href="customer-order-view.php" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
+                                            <div class="d-flex">
+                                                <a aria-label="anchor" href="customer-order-view.php" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye text-primary">
                                                     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                                                     <circle cx="12" cy="12" r="3"></circle>
@@ -171,6 +174,7 @@
                                                     <line x1="14" y1="11" x2="14" y2="17"></line>
                                                 </svg>
                                             </a>
+                                            </div>
                                         </td>
                                     </tr>
                                     <tr>
@@ -187,7 +191,8 @@
                                         <td>2025-04-11</td>
                                         <td>Baroda</td>
                                         <td>
-                                            <a aria-label="anchor" href="customer-order-view.php" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
+                                            <div class="d-flex">
+                                                <a aria-label="anchor" href="customer-order-view.php" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye text-primary">
                                                     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                                                     <circle cx="12" cy="12" r="3"></circle>
@@ -207,6 +212,7 @@
                                                     <line x1="14" y1="11" x2="14" y2="17"></line>
                                                 </svg>
                                             </a>
+                                            </div>
                                         </td>
                                     </tr>
                                 </tbody>

@@ -55,8 +55,8 @@
                                             <label for="document_image" class="form-label">Upload Excel <span class="text-danger">*</span></label>
                                             <input type="file" name="document_image" id="document_image" class="form-control" value="" required="" placeholder="Upload ID Document">
                                         </div>
-                                        <div class="col-12 col-lg-3 text-end">
-                                            <button type="" class="btn btn-success w-sm waves ripple-light text-center  mt-4">
+                                        <div class="col-12 col-lg-3 text-start">
+                                            <button type="" class="btn btn-success w-sm waves ripple-light text-center mt-md-4">
                                                 Upload
                                             </button>
                                         </div>

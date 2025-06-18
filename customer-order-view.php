@@ -46,7 +46,7 @@
                         <div class="col">
                             <h6 class="mb-3">PO Table</h6>
                         </div>
-                        <div class="col-12 col-lg-1 text-end">
+                        <div class="col-6 col-lg-1 text-end">
                             <span class="badge bg-danger-subtle text-danger fw-semibold">Pending</span>
                         </div>
                     </div>
@@ -270,16 +270,16 @@
                 </div>
 
                 <div class="card-body">
-                    <div class="row g-3">
-                        <div class="col-2">
+                    <div class="row">
+                        <div class="col-12 col-md-2">
                             <label for="dn amount" class="form-label">DN Amount<span class="text-danger">*</span></label>
                             <input type="text" name="dn amount" id="dn amount" class="form-control" value="" required="" placeholder="Enter DN Amount">
                         </div>
-                        <div class="col-8">
+                        <div class="col-12 col-md-4">
                             <label for="dn reason" class="form-label">DN Reason<span class="text-danger">*</span></label>
                             <input type="text" name="dn reason" id="dn reason" class="form-control" value="" required="" placeholder="Enter DN Reason">
                         </div>
-                        <div class="col-2 text-end">
+                        <div class="col-12 col-md-4 text-start">
                             <button type="" class="btn btn-success w-sm waves ripple-light text-end mt-4">
                                 Save
                             </button>
@@ -300,7 +300,7 @@
                 </div>
 
                 <div class="card-body">
-                    <div class="row g-3">
+                    <div class="row">
                         <!-- <div class="col-12 col-lg-2">
                             <th>
                                 <input id="checkbox1" class="form-check-input" type="checkbox">
@@ -312,7 +312,7 @@
                             <label for="document_image" class="form-label">Upload POD <span class="text-danger">*</span></label>
                             <input type="file" name="document_image" id="document_image" class="form-control" value="" required="" placeholder="Upload ID Document">
                         </div>
-                        <div class="col-12 col-lg-6 text-end">
+                        <div class="col-12 col-lg-6 text-start">
                             <button type="" class="btn btn-success w-sm waves ripple-light text-end mt-4">
                                 Upload
                             </button>

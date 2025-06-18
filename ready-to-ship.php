@@ -35,13 +35,13 @@
 
 
             <div class="row g-3">
-                <div class="col-auto">
+                <div class="col-12 col-md-2">
                     <div class="position-relative">
                         <input class="form-control px-5" type="search" placeholder="Search Order">
                         <span class="material-icons-outlined position-absolute ms-3 translate-middle-y start-0 top-50 fs-5">search</span>
                     </div>
                 </div>
-                <div class="col-auto flex-grow-1 overflow-auto">
+                <div class="col-12 col-md-2 flex-grow-1 overflow-auto">
                     <div class="btn-group position-static">
                         <div class="btn-group position-static">
                             <button type="button" class="btn btn-filter dropdown-toggle px-4" data-bs-toggle="dropdown" aria-expanded="false">

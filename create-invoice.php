@@ -103,7 +103,7 @@
                                     <input type="text" class="form-control" id="pinCode" placeholder="Enter Pin Code">
                                 </div>
 
-                                <div class="col-4 ">
+                                <div class="col-md-4">
                                     <label for="document_image" class="form-label">Upload Excel <span class="text-danger">*</span></label>
                                     <input type="file" name="document_image" id="document_image" class="form-control" value="" required="" placeholder="Upload ID Document">
                                 </div>

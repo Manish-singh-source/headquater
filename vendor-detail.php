@@ -8,8 +8,7 @@
         <div class="main-content">
             <!--breadcrumb-->
             <div class="page-breadcrumb d-none d-sm-flex align-items-center mb-3">
-                <div class="breadcrumb-title pe-3">Components</div>
-                <div class="ps-3">
+                <div >
                     <nav aria-label="breadcrumb">
                         <ol class="breadcrumb mb-0 p-0">
                             <li class="breadcrumb-item"><a href="javascript:;"><i class="bx bx-home-alt"></i></a>
@@ -18,7 +17,7 @@
                         </ol>
                     </nav>
                 </div>
-                <div class="ms-auto">
+                <!-- <div class="ms-auto">
                     <div class="btn-group">
                         <button type="button" class="btn btn-primary">Settings</button>
                         <button type="button" class="btn btn-primary split-bg-primary dropdown-toggle dropdown-toggle-split"
@@ -31,15 +30,15 @@
                             <div class="dropdown-divider"></div> <a class="dropdown-item" href="javascript:;">Separated link</a>
                         </div>
                     </div>
-                </div>
+                </div> -->
             </div>
             <!--end breadcrumb-->
 
 
             <div class="row">
                 <div class="col-12">
-                    <div class="card w-100 d-flex flex-row">
-                        <div class="col-1 card-body d-flex">
+                    <div class="card w-100 d-flex flex-sm-row flex-col">
+                        <div class="col card-body d-flex">
                             <div class="position-relative justify-content-center">
                                 <img src="assets/images/avatars/02.png" class="img-fluid rounded" alt="">
                                 <!-- <div class="position-absolute top-100 start-50 translate-middle">
@@ -136,7 +135,8 @@
                                         <td>Cash on delivery</td>
                                         <td>Jun 12, 12:56 PM</td>
                                         <td>
-                                            <a aria-label="anchor" href="vendor-order-view.php" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
+                                            <div class="d-flex">
+                                                <a aria-label="anchor" href="vendor-order-view.php" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye text-primary">
                                                     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                                                     <circle cx="12" cy="12" r="3"></circle>
@@ -151,6 +151,7 @@
                                                     <line x1="14" y1="11" x2="14" y2="17"></line>
                                                 </svg>
                                             </a>
+                                            </div>
                                         </td>
                                     </tr>
                                     <tr>
@@ -164,7 +165,8 @@
                                         <td>Cash on delivery</td>
                                         <td>Jun 12, 12:56 PM</td>
                                         <td>
-                                            <a aria-label="anchor" href="vendor-order-view.php" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
+                                            <div class="d-flex">
+                                                <a aria-label="anchor" href="vendor-order-view.php" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye text-primary">
                                                     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                                                     <circle cx="12" cy="12" r="3"></circle>
@@ -179,6 +181,7 @@
                                                     <line x1="14" y1="11" x2="14" y2="17"></line>
                                                 </svg>
                                             </a>
+                                            </div>
                                         </td>
                                     </tr>
                                     <tr>
@@ -192,7 +195,8 @@
                                         <td>Cash on delivery</td>
                                         <td>Jun 12, 12:56 PM</td>
                                         <td>
-                                            <a aria-label="anchor" href="vendor-order-view.php" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
+                                            <div class="d-flex">
+                                                <a aria-label="anchor" href="vendor-order-view.php" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye text-primary">
                                                     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                                                     <circle cx="12" cy="12" r="3"></circle>
@@ -207,6 +211,7 @@
                                                     <line x1="14" y1="11" x2="14" y2="17"></line>
                                                 </svg>
                                             </a>
+                                            </div>
                                         </td>
                                     </tr>
                                     <tr>
@@ -220,7 +225,8 @@
                                         <td>Cash on delivery</td>
                                         <td>Jun 12, 12:56 PM</td>
                                         <td>
-                                            <a aria-label="anchor" href="vendor-order-view.php" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
+                                            <div class="d-flex">
+                                                <a aria-label="anchor" href="vendor-order-view.php" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye text-primary">
                                                     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                                                     <circle cx="12" cy="12" r="3"></circle>
@@ -235,6 +241,7 @@
                                                     <line x1="14" y1="11" x2="14" y2="17"></line>
                                                 </svg>
                                             </a>
+                                            </div>
                                         </td>
                                     </tr>
                                     <tr>
@@ -248,7 +255,8 @@
                                         <td>Cash on delivery</td>
                                         <td>Jun 12, 12:56 PM</td>
                                         <td>
-                                            <a aria-label="anchor" href="vendor-order-view.php" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
+                                            <div class="d-flex">
+                                                <a aria-label="anchor" href="vendor-order-view.php" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye text-primary">
                                                     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                                                     <circle cx="12" cy="12" r="3"></circle>
@@ -263,6 +271,7 @@
                                                     <line x1="14" y1="11" x2="14" y2="17"></line>
                                                 </svg>
                                             </a>
+                                            </div>
                                         </td>
                                     </tr>
                                     <tr>
@@ -276,7 +285,8 @@
                                         <td>Cash on delivery</td>
                                         <td>Jun 12, 12:56 PM</td>
                                         <td>
-                                            <a aria-label="anchor" href="vendor-order-view.php" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
+                                            <div class="d-flex">
+                                                <a aria-label="anchor" href="vendor-order-view.php" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye text-primary">
                                                     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                                                     <circle cx="12" cy="12" r="3"></circle>
@@ -291,6 +301,7 @@
                                                     <line x1="14" y1="11" x2="14" y2="17"></line>
                                                 </svg>
                                             </a>
+                                            </div>
                                         </td>
                                     </tr>
                                     <tr>
@@ -304,7 +315,8 @@
                                         <td>Cash on delivery</td>
                                         <td>Jun 12, 12:56 PM</td>
                                         <td>
-                                            <a aria-label="anchor" href="vendor-order-view.php" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
+                                            <div class="d-flex">
+                                                <a aria-label="anchor" href="vendor-order-view.php" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye text-primary">
                                                     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                                                     <circle cx="12" cy="12" r="3"></circle>
@@ -319,6 +331,7 @@
                                                     <line x1="14" y1="11" x2="14" y2="17"></line>
                                                 </svg>
                                             </a>
+                                            </div>
                                         </td>
                                     </tr>
 
