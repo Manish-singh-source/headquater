@@ -144,7 +144,7 @@
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <div class="card available-product">
                                 <div class="card-body">
                                     <ul class="nav nav-tabs">
@@ -277,9 +277,33 @@
                                     <button type="" onclick="exportTableToExcel('unavailable-product-list')" class="btn btn-success w-sm waves ripple-light">
                                         Download Excel File
                                     </button>
-                                    <button type="" id="holdOrder" class="btn btn-success w-sm waves ripple-light">
+                                    <button type="button" class="btn btn-success w-sm waves ripple-light" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
                                         Hold Products
                                     </button>
+
+                                    <!-- Modal -->
+                                    <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h1 class="modal-title fs-5" id="staticBackdropLabel">Hold Products</h1>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <form>
+                                                        <div class="mb-3">
+                                                            <label for="message-text" class="d-flex">Reason:</label>
+                                                            <textarea class="form-control" id="message-text"></textarea>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                                    <button type="button" id="holdOrder" class="btn btn-primary">Submit</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                     <button type="" id="submitOrder" class="btn btn-success w-sm waves ripple-light">
                                         Submit
                                     </button>
