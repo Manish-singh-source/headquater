@@ -30,14 +30,14 @@
       </div> -->
 
             <div class="row g-3">
-                <div class="col-auto">
+                <div class="col-12 col-md-2">
                     <div class="position-relative">
                         <input class="form-control px-5" type="search" placeholder="Search Products">
                         <span
                             class="material-icons-outlined position-absolute ms-3 translate-middle-y start-0 top-50 fs-5">search</span>
                     </div>
                 </div>
-                <div class="col-auto flex-grow-1 overflow-auto">
+                <div class="col-12 col-md-2 flex-grow-1 overflow-auto">
                     <div class="btn-group position-static">
                         <div class="btn-group position-static">
                             <button type="button" class="btn btn-filter dropdown-toggle px-4" data-bs-toggle="dropdown" aria-expanded="false">
@@ -69,7 +69,7 @@
                         </div> -->
                     </div>
                 </div>
-                <div class="col-auto">
+                <div class="col-12 col-md-auto">
                     <div class="d-flex align-items-center gap-2 justify-content-lg-end">
                         <button class="btn btn-filter px-4"><i class="bi bi-box-arrow-right me-2"></i>Export</button>
                         <a href="add-product.php" class="btn btn-primary px-4"><i class="bi bi-plus-lg me-2"></i>Add Product</a>
@@ -95,7 +95,6 @@
                                         <th>Available Quantity</th>
                                         <th>Hold Quantity</th>
                                         <th>Date</th>
-                                        <th>Status</th>
                                         <th>Action</th>
                                     </tr>
                                 </thead>

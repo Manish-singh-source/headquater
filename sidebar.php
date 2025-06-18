@@ -71,7 +71,7 @@
            <a href="assign-order.php">
              <div class="parent-icon"><i class="material-icons-outlined">handshake</i>
              </div>
-             <div class="menu-title">Assign Order</div>
+             <div class="menu-title">Place Order</div>
            </a>
          </li>
          <li>
