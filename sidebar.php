@@ -126,14 +126,14 @@
            </a>
          </li>
          <li>
-           <a href="ready-to-ship.php">
+           <a href="inventory-stock-history.php">
              <div class="parent-icon"><i class="material-icons-outlined">local_shipping</i>
              </div>
              <div class="menu-title">Inventory Stock</div>
            </a>
          </li>
          <li>
-           <a href="ready-to-ship.php">
+           <a href="customer-sales-history.php">
              <div class="parent-icon"><i class="material-icons-outlined">local_shipping</i>
              </div>
              <div class="menu-title">Customer Sales</div>

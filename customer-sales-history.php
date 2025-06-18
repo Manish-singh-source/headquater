@@ -11,7 +11,7 @@
                         <ol class="breadcrumb mb-0 p-0">
                             <li class="breadcrumb-item"><a href="javascript:;"><i class="bx bx-home-alt"></i></a>
                             </li>
-                            <li class="breadcrumb-item active" aria-current="page">Vendor Purchase Report</li>
+                            <li class="breadcrumb-item active" aria-current="page">Customer Purchase Report</li>
                         </ol>
                     </nav>
                 </div>
@@ -26,7 +26,7 @@
                                     <i class="ti ti-file-text fs-24"></i>
                                 </span>
                                 <div class="ms-2">
-                                    <p class="text-dark mb-1">Total Vendor Orders</p>
+                                    <p class="text-dark mb-1">Total Customer Orders</p>
                                     <div class="d-inline-flex align-items-center flex-wrap gap-2">
                                         <h4 class="text-dark">3</h4>
                                         <!-- <span class="badge badge-soft-primary text-dark"><i class="ti ti-arrow-up me-1"></i>+22%</span> -->
@@ -106,7 +106,7 @@
                                     </div>
                                     <div class="col-md-3">
                                         <div class="mb-3">
-                                            <label class="form-label">Vendor Name</label>
+                                            <label class="form-label">Customer Name</label>
                                             <select id="status" class="form-select">
                                                 <option disabled selected>-- Select --</option>
                                                 <option>Carl</option>
@@ -164,10 +164,10 @@
                                             <input class="form-check-input" type="checkbox">
                                         </th>
                                         <th>Reference</th>
-                                        <th>Vendor Id</th>
-                                        <th>Vendor Name</th>
+                                        <th>Customer Id</th>
+                                        <th>Customer Name</th>
                                         <th>Ordered Date</th>
-                                        <th>Received Date</th>
+                                        <th>Delivery Date</th>
                                         <th>Total Amount</th>
                                         <th>Paid</th>
                                         <th>Due</th>
