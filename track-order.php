@@ -18,8 +18,8 @@
                 </div>
 
                 <div class="card-body">
-                    <div class="d-flex gap-3 justify-content-start align-items-end g-3">
-                        <div class="col-4">
+                    <div class="d-flex gap-3 justify-content-start align-items-end">
+                        <div class="col-9 ">
                             <label for="dn amount" class="form-label">Track Order Id<span class="text-danger">*</span></label>
                             <input type="text" name="dn amount" id="dn amount" class="form-control" value="" required="" placeholder="Enter Track Order Id">
                         </div>
