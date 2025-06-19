@@ -168,6 +168,32 @@
                 </div>
             </div>
 
+            <div class="card">
+                <div class="card-header border-bottom-dashed">
+                    <div class="row g-4 align-items-center">
+                        <div class="col-sm">
+                            <h5 class="card-title mb-0">
+                                Appointments Date
+                            </h5>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-12 col-md-3">
+                            <label for="dn amount" class="form-label">Appointments Date<span class="text-danger">*</span></label>
+                            <input type="date" name="dn amount" id="dn amount" class="form-control" value="" required="" placeholder="Enter DN Amount">
+                        </div>
+                        <div class="col-12 col-md-4 text-start">
+                            <button type="" class="btn btn-success w-sm waves ripple-light text-end mt-4">
+                                Save
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- <div class="card">
                 <div class="card-header border-bottom-dashed">
                     <div class="row g-4 align-items-center">
