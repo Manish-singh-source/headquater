@@ -83,7 +83,7 @@
          </li>
          <li class="menu-label">Warehouse</li>
          <li>
-           <a href="Warehouse.php">
+           <a href="warehouse.php">
              <div class="parent-icon"><i class="material-icons-outlined">store</i>
              </div>
              <div class="menu-title">Warehouses</div>
