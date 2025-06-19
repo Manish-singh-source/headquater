@@ -278,7 +278,7 @@
                             <h6 class="mb-3">PI Table</h6>
                         </div>
                     </div>
-                  
+
                     <!-- Tabs Navigation -->
                     <div class="div d-flex my-3">
                         <ul class="nav nav-tabs" id="vendorTabs" role="tablist">
