@@ -317,7 +317,7 @@
            </a>
          </li>
          <li>
-           <a href="products.php">
+           <a href="{{ route('products') }}">
              <div class="parent-icon"><i class="material-icons-outlined">shopping_bag</i>
              </div>
              <div class="menu-title">Products</div>
