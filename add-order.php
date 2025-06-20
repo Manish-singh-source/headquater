@@ -56,7 +56,11 @@
                                                 <span class="text-danger">*</span></label>
                                             <input type="text" name="" class="form-control" placeholder="Enter Group Name" id="groupName">
                                         </div>
-                                        <div class="col-12">
+                                        <div class="col-12 col-lg-3">
+                                            <label for="document_image" class="form-label">Upload Excel <span class="text-danger">*</span></label>
+                                            <input type="file" name="document_image" id="document_image" class="form-control" value="" required="" placeholder="Upload ID Document" multiple>
+                                        </div>
+                                        <!-- <div class="col-12">
                                             <span><b>Select Customers</b></span>
                                         </div>
                                         <div class="col-12 col-lg-3">
@@ -77,7 +81,7 @@
                                                 <option value="Abc">Abc</option>
                                                 <option value="Xyz">Xyz</option>
                                             </select>
-                                        </div>
+                                        </div> -->
                                         <!-- 
                                         <div class="col-12 col-lg-3">
                                             <label for="pick-date" class="form-label">Ordered Date</label>
@@ -111,6 +115,14 @@
                                                     </tr>
                                                 </thead>
                                                 <tbody>
+                                                    <tr>
+                                                        <td>Blinkit</td>
+                                                        <td>Mark</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>Blinkit</td>
+                                                        <td>Thornton</td>
+                                                    </tr>
                                                 </tbody>
                                             </table>
                                         </div>
@@ -322,7 +334,7 @@
                                 </div>
                             </div>
 
-                            <div class="card unavailable-product">
+                            <!-- <div class="card unavailable-product">
                                 <div class="card-body">
                                     <h5 class="mb-3">Unavailable Products</h5>
                                     <div class="product-table">
@@ -435,14 +447,14 @@
                                         </div>
                                     </div>
                                 </div>
-                            </div>
+                            </div> -->
 
 
                             <div class="col-lg-12 available-product">
                                 <div class="text-end mb-3">
-                                    <button type="" onclick="exportTableToExcel('unavailable-product-list')" class="btn btn-success w-sm waves ripple-light">
+                                    <!-- <button type="" onclick="exportTableToExcel('unavailable-product-list')" class="btn btn-success w-sm waves ripple-light">
                                         Download Excel File
-                                    </button>
+                                    </button> -->
                                     <!-- 
                                     <button type="" id="holdOrder" class="btn btn-success w-sm waves ripple-light">
                                         Hold Products
@@ -543,12 +555,12 @@
                 let subCustomerName = $("#subCustomerName").val();
 
                 // Create table row with 3 td cells
-                let row = `
-                        <tr>
-                            <td>${customerName}</td>
-                            <td>${subCustomerName}</td>
-                        </tr>
-                    `;
+                //let row = `
+                //        <tr>
+                //            <td>${customerName}</td>
+                //            <td>${subCustomerName}</td>
+                //        </tr>
+                //    `;
 
                 // Append to table body
                 $("#groupTitle").html(groupName);
