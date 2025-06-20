@@ -6,7 +6,8 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('index');
-})->name('home');
+})->name('index');
+
 
 Route::get('/login', [AuthController::class, 'loginCustomer'])->name('login');
 Route::post('/login', [AuthController::class, 'loginAuthCheckCustomerData'])->name('login.auth.check');
