@@ -382,21 +382,21 @@
          </li>
          <li class="menu-label">Reports</li>
          <li>
-           <a href="vendor-purchase-history.php">
+           <a href="{{route('vendor-purchase-history') }}">
              <div class="parent-icon"><i class="material-icons-outlined">store</i>
              </div>
              <div class="menu-title">Vendor Purchase</div>
            </a>
          </li>
          <li>
-           <a href="inventory-stock-history.php">
+           <a href="{{route('inventory-stock-history') }}">
              <div class="parent-icon"><i class="material-icons-outlined">inventory_2</i>
              </div>
              <div class="menu-title">Inventory Stock</div>
            </a>
          </li>
          <li>
-           <a href="customer-sales-history.php">
+           <a href="{{route('customer-sales-history') }}">
              <div class="parent-icon"><i class="material-icons-outlined">point_of_sale</i>
              </div>
              <div class="menu-title">Customer Sales</div>
