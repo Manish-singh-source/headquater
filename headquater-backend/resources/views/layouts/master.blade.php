@@ -242,10 +242,10 @@
             <a class="dropdown-item d-flex align-items-center gap-2 py-2" href="user-profile.php"><i
               class="material-icons-outlined">person_outline</i>Profile</a>
            
-            <a class="dropdown-item d-flex align-items-center gap-2 py-2" href="index.php"><i
+            <a class="dropdown-item d-flex align-items-center gap-2 py-2" href="{{ route('index') }}"><i
               class="material-icons-outlined">dashboard</i>Dashboard</a>
             <hr class="dropdown-divider">
-            <a class="dropdown-item d-flex align-items-center gap-2 py-2" href="login.php"><i
+            <a class="dropdown-item d-flex align-items-center gap-2 py-2" href="{{ route('logout') }}"><i
             class="material-icons-outlined">power_settings_new</i>Logout</a>
           </div>
         </li>
@@ -258,11 +258,11 @@
    <aside class="sidebar-wrapper" data-simplebar="true">
      <div class="sidebar-header">
        <div class="logo-icon">
-         <a href="index.php">
+         <a href="{{ route('index') }}">
            <img src="assets/images/logo-icon.png" class="logo-img" alt="">
          </a>
        </div>
-       <a href="index.php">
+       <a href="{{ route('index') }}">
          <div class="logo-name flex-grow-1">
            <h5 class="mb-0">HEADQUATERS</h5>
          </div>
@@ -275,7 +275,7 @@
        <!--navigation-->
        <ul class="metismenu" id="sidenav">
          <li>
-           <a href="index.php">
+           <a href="{{ route('index') }}">
              <div class="parent-icon"><i class="material-icons-outlined">home</i>
              </div>
              <div class="menu-title">Dashboard</div>

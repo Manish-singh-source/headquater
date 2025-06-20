@@ -9,11 +9,12 @@ Route::get('/', function () {
     return view('index');
 })->name('index');
 
-
+// Authentication
 Route::get('/login', [AuthController::class, 'loginCustomer'])->name('login');
 Route::post('/login', [AuthController::class, 'loginAuthCheckCustomerData'])->name('login.auth.check');
 Route::get('/register', [AuthController::class, 'registerCustomer'])->name('register');
 Route::post('/register', [AuthController::class, 'registerCustomerData'])->name('register.store');
+Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
 
 // All Vendor List Page 
 Route::get('/vendor', [VendorController::class, 'vendorList'])->name('vendor');
@@ -33,7 +34,7 @@ Route::get('/assign-order-to-vendor', [PlaceOrderController::class, 'assignOrder
 // Customer
 Route::get('/ecommerce-customers', function () {
     return view('ecommerce-customers');
-})->name('ecommerce-customers');;
+})->name('ecommerce-customers');
 Route::get('/add-customer', function () {
     return view('add-customer');
 })->name('add-customer');

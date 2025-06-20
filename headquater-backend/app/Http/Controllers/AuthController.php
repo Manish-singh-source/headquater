@@ -52,8 +52,6 @@ class AuthController extends Controller
 
     public function loginAuthCheckCustomerData(Request $request)
     {
-
-        // dd($request->all());
         $validator = Validator::make(
             $request->all(),
             [
@@ -63,14 +61,20 @@ class AuthController extends Controller
         );
 
         if ($validator->fails()) {
-            // dd($validator->failed());
             return redirect()->route('login')->withErrors($validator);
         }
 
         if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
-            return redirect()->route('home');
-        } else {
-            return redirect()->route('login')->with('error', 'Either email/password is incorrect.');
+            return redirect()->route('index');
         }
+
+        // flash()->success('Item added to cart Successfully');
+        return redirect()->back()->with('error', 'Login credentials failed');
+    }
+
+    public function logout()
+    {
+        Auth::logout();
+        return redirect()->route('login');
     }
 }
