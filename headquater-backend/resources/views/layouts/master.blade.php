@@ -295,14 +295,14 @@
            </ul>
          </li>
          <li>
-           <a href="ecommerce-customers.php">
+           <a href="{{ route('ecommerce-customers') }}">
              <div class="parent-icon"><i class="material-icons-outlined">people</i>
              </div>
              <div class="menu-title">Customers</div>
            </a>
          </li>
          <li>
-           <a href="vendor.php">
+           <a href="{{ route('vendor') }}">
              <div class="parent-icon"><i class="material-icons-outlined">storefront</i>
              </div>
              <div class="menu-title">Vendor</div>
