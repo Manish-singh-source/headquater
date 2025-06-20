@@ -26,7 +26,7 @@ Route::get('/vendor-order-view', [VendorController::class, 'vendorOrderView'])->
 // Customer 
 Route::get('/ecommerce-customers', function () {
     return view('ecommerce-customers');
-})->name('ecommerce-customers');;
+})->name('ecommerce-customers');
 Route::get('/add-customer', function () {
     return view('add-customer');
 })->name('add-customer');
