@@ -8,11 +8,12 @@ Route::get('/', function () {
     return view('index');
 })->name('index');
 
-
+// Authentication
 Route::get('/login', [AuthController::class, 'loginCustomer'])->name('login');
 Route::post('/login', [AuthController::class, 'loginAuthCheckCustomerData'])->name('login.auth.check');
 Route::get('/register', [AuthController::class, 'registerCustomer'])->name('register');
 Route::post('/register', [AuthController::class, 'registerCustomerData'])->name('register.store');
+Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
 
 // All Vendor List Page 
 Route::get('/vendor', [VendorController::class, 'vendorList'])->name('vendor');

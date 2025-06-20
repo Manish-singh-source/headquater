@@ -1,6 +1,5 @@
 @extends('layouts.master')
 @section('main-content')
-
     <!--start main wrapper-->
     <main class="main-wrapper">
         <div class="main-content">
@@ -23,15 +22,15 @@
                                 <div class="card-body">
                                     <div class="row g-3">
                                         <!-- <div class="col-12 col-lg-3">
-                                            <label for="marital" class="form-label">Warehouse
-                                                <span class="text-danger">*</span></label>
-                                            <select class="form-control" name="marital" id="marital">
-                                                <option selected="" disabled="" value="">-- Select --</option>
-                                                <option value="Active">Baroda</option>
+                                                <label for="marital" class="form-label">Warehouse
+                                                    <span class="text-danger">*</span></label>
+                                                <select class="form-control" name="marital" id="marital">
+                                                    <option selected="" disabled="" value="">-- Select --</option>
+                                                    <option value="Active">Baroda</option>
 
 
-                                            </select>
-                                        </div> -->
+                                                </select>
+                                            </div> -->
                                         <div class="col-12 col-lg-3">
                                             <label for="marital" class="form-label">Vendor Id
                                                 <span class="text-danger">*</span></label>
@@ -50,11 +49,15 @@
                                             </select>
                                         </div>
                                         <div class="col-12 col-lg-3">
-                                            <label for="document_image" class="form-label">Upload Excel <span class="text-danger">*</span></label>
-                                            <input type="file" name="document_image" id="document_image" class="form-control" value="" required="" placeholder="Upload ID Document">
+                                            <label for="document_image" class="form-label">Upload Excel <span
+                                                    class="text-danger">*</span></label>
+                                            <input type="file" name="document_image" id="document_image"
+                                                class="form-control" value="" required=""
+                                                placeholder="Upload ID Document">
                                         </div>
                                         <div class="col-12 col-lg-3 text-start">
-                                            <button type="" class="btn btn-success w-sm waves ripple-light text-center mt-md-4">
+                                            <button type=""
+                                                class="btn btn-success w-sm waves ripple-light text-center mt-md-4">
                                                 Upload
                                             </button>
                                         </div>
@@ -169,7 +172,8 @@
                             <div class="col-lg-12">
                                 <div class="text-end mb-3">
 
-                                    <a href="{{ route('products') }}" type="" class="btn btn-success w-sm waves ripple-light">
+                                    <a href="{{ route('products') }}" type=""
+                                        class="btn btn-success w-sm waves ripple-light">
                                         Save
                                     </a>
                                 </div>
@@ -186,6 +190,4 @@
         </div>
     </main>
     <!--end main wrapper-->
-
-
-    @endsection
+@endsection
