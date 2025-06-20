@@ -1,5 +1,6 @@
 @extends('layouts.master')
-@section('main-content')
+
+@section('main-content'
   <!--start main wrapper-->
 
   <main class="main-wrapper">
