@@ -324,7 +324,7 @@
            </a>
          </li>
          <li>
-           <a href="assign-order.php">
+           <a href="{{route('assign-order')}}">
              <div class="parent-icon"><i class="material-icons-outlined">handshake</i>
              </div>
              <div class="menu-title">Place Order</div>
@@ -565,7 +565,7 @@
     <script src="assets/plugins/simplebar/js/simplebar.min.js"></script>
     <script src="assets/js/main.js"></script>
 
-
+@yield('script')
 </body>
 
 </html>
