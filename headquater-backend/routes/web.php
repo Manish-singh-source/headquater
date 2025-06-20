@@ -18,7 +18,7 @@ Route::get('/create-vendor', [VendorController::class, 'createVendor'])->name('c
 Route::get('/vendor-details', [VendorController::class, 'vendorDetails'])->name('vendor-details');
 // Vendor Order View
 Route::get('/vendor-order-view', [VendorController::class, 'vendorOrderView'])->name('vendor-order-view');
-
+// Customer 
 Route::get('/ecommerce-customers', function () {
     return view('ecommerce-customers');
 })->name('ecommerce-customers');;
@@ -31,3 +31,12 @@ Route::get('/customer-detail', function () {
 Route::get('/customer-order-view', function () {
     return view('customer-order-view');
 })->name('customer-order-view');
+
+
+// Product
+Route::get('/products', function () {
+    return view('products');
+})->name('products');
+Route::get('/add-product', function () {
+    return view('add-product');
+})->name('add-product');
