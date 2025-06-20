@@ -339,7 +339,7 @@
          </li>
          <li class="menu-label">Warehouse</li>
          <li>
-           <a href="warehouse.php">
+           <a href="{{route('warehouse') }}">
              <div class="parent-icon"><i class="material-icons-outlined">store</i>
              </div>
              <div class="menu-title">Warehouses</div>

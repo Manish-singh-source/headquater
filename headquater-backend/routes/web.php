@@ -3,6 +3,8 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PlaceOrderController;
 use App\Http\Controllers\VendorController;
+use App\Http\Controllers\Warehouse;
+use App\Http\Controllers\WarehouseController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -25,10 +27,18 @@ Route::get('/vendor-details', [VendorController::class, 'vendorDetails'])->name(
 // Vendor Order View
 Route::get('/vendor-order-view', [VendorController::class, 'vendorOrderView'])->name('vendor-order-view');
 
+
 // Place Order
 Route::get('/assign-order', [PlaceOrderController::class, 'assignOrder'])->name('assign-order');
 // Place Order To Vendor
 Route::get('/assign-order-to-vendor', [PlaceOrderController::class, 'assignOrderToVendor'])->name('assign-order-to-vendor');
+
+// Warehouse List
+Route::get('/warehouse', [WarehouseController::class, 'warehouseList'])->name('warehouse');
+// Create Warehouse List
+Route::get('/create-warehouse', [WarehouseController::class, 'createWarehouse'])->name('create-warehouse');
+// Warehouse Details List
+Route::get('/warehouse-detail', [WarehouseController::class, 'warehouseDetail'])->name('warehouse-detail');
 
 
 // Customer
