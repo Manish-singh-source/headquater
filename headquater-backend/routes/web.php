@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\PlaceOrderController;
 use App\Http\Controllers\VendorController;
 use Illuminate\Support\Facades\Route;
 
@@ -22,7 +23,14 @@ Route::get('/create-vendor', [VendorController::class, 'createVendor'])->name('c
 Route::get('/vendor-details', [VendorController::class, 'vendorDetails'])->name('vendor-details');
 // Vendor Order View
 Route::get('/vendor-order-view', [VendorController::class, 'vendorOrderView'])->name('vendor-order-view');
-// Customer 
+
+// Place Order
+Route::get('/assign-order', [PlaceOrderController::class, 'assignOrder'])->name('assign-order');
+// Place Order To Vendor
+Route::get('/assign-order-to-vendor', [PlaceOrderController::class, 'assignOrderToVendor'])->name('assign-order-to-vendor');
+
+
+// Customer
 Route::get('/ecommerce-customers', function () {
     return view('ecommerce-customers');
 })->name('ecommerce-customers');;
