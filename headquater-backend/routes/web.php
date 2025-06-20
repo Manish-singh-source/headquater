@@ -10,7 +10,6 @@ Route::get('/', function () {
 
 Route::get('/login', [AuthController::class, 'loginCustomer']);
 
-
 // All Vendor List Page 
 Route::get('/vendor', [VendorController::class, 'vendorList'])->name('vendor');
 // Create Vendor
@@ -19,3 +18,16 @@ Route::get('/create-vendor', [VendorController::class, 'createVendor'])->name('c
 Route::get('/vendor-details', [VendorController::class, 'vendorDetails'])->name('vendor-details');
 // Vendor Order View
 Route::get('/vendor-order-view', [VendorController::class, 'vendorOrderView'])->name('vendor-order-view');
+
+Route::get('/ecommerce-customers', function () {
+    return view('ecommerce-customers');
+})->name('ecommerce-customers');;
+Route::get('/add-customer', function () {
+    return view('add-customer');
+})->name('add-customer');
+Route::get('/customer-detail', function () {
+    return view('customer-detail');
+})->name('customer-detail');
+Route::get('/customer-order-view', function () {
+    return view('customer-order-view');
+})->name('customer-order-view');
