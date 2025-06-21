@@ -310,7 +310,7 @@
          </li>
 
          <li>
-           <a href="order.php">
+           <a href="{{ route('order') }}">
              <div class="parent-icon"><i class="material-icons-outlined">home</i>
              </div>
              <div class="menu-title">Order</div>
