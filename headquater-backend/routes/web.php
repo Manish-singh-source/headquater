@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AccessController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PlaceOrderController;
@@ -19,6 +20,18 @@ Route::post('/login', [AuthController::class, 'loginAuthCheckCustomerData'])->na
 Route::get('/register', [AuthController::class, 'registerCustomer'])->name('register');
 Route::post('/register', [AuthController::class, 'registerCustomerData'])->name('register.store');
 Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
+
+//Access Control
+// Staff List
+Route::get('/staff',[AccessController::class, 'staffList'])->name('staff');
+// Add Staff 
+Route::get('/add-staff',[AccessController::class, 'addStaff'])->name('add-staff');
+// Staff  Detail
+Route::get('/staff-detail',[AccessController::class, 'staffDetail'])->name('staff-detail');
+// Role List
+Route::get('/role',[AccessController::class, 'roleList'])->name('role');
+// Add Role 
+Route::get('/add-role',[AccessController::class, 'addRole'])->name('add-role');
 
 // All Vendor List Page 
 Route::get('/vendor', [VendorController::class, 'vendorList'])->name('vendor');
