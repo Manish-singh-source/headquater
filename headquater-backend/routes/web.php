@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PlaceOrderController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\VendorController;
@@ -42,7 +43,13 @@ Route::get('/create-warehouse', [WarehouseController::class, 'createWarehouse'])
 Route::get('/warehouse-detail', [WarehouseController::class, 'warehouseDetail'])->name('warehouse-detail');
 
 
-// Warehouse Details List
+// All Order page
+Route::get('/order',[OrderController::class, 'orderList'])->name('order');
+// Add Order page
+Route::get('/add-order',[OrderController::class, 'addOrder'])->name('add-order');
+
+
+// Report Details List
 Route::get('/vendor-purchase-history', [ReportController::class, 'vendorPurchaseHistory'])->name('vendor-purchase-history');
 Route::get('/inventory-stock-history', [ReportController::class, 'inventoryStockHistory'])->name('inventory-stock-history');
 Route::get('/customer-sales-history', [ReportController::class, 'customerSalesHistory'])->name('customer-sales-history');

@@ -183,95 +183,6 @@
                 </div>
             </div>
 
-            <!-- <div class="card">
-                <div class="card-header border-bottom-dashed">
-                    <div class="row g-4 align-items-center">
-                        <div class="col-sm">
-                            <h5 class="card-title mb-0">
-                                Order Sended to Warehouse / Vendor
-                            </h5>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="card-body">
-                    <div class="row g-3">
-                        <div class="col-12 col-lg-3">
-                            <label for="marital" class="form-label">Warehouse Location
-                                <span class="text-danger">*</span></label>
-                            <select class="form-control" name="marital" id="marital">
-                                <option selected="" disabled="" value="">-- Select --</option>
-                                <option value="Baroda">Baroda</option>
-                                <option value="Mumbai ">Mumbai </option>
-                                <option value="Up ">Up </option>
-                                <option value="Bihar ">Bihar </option>
-                            </select>
-                        </div>
-                        <div class="col-12 col-lg-4 text-end">
-                            <button type="" class="btn btn-success w-sm waves ripple-light text-end mt-4">
-                                Submit
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div> -->
-
-            <div class="card">
-                <div class="card-header border-bottom-dashed">
-                    <div class="row g-4 align-items-center">
-                        <div class="col-sm">
-                            <h5 class="card-title mb-0">
-                                Upload Invoices and E-Way Bill
-                            </h5>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="card-body">
-                    <div class="row g-3 py-2">
-                        <!-- <div class="col-12 col-lg-2">
-                            <th>
-                                <input id="checkbox3" class="form-check-input" type="checkbox">
-                                <label for="checkbox3" class="form-label">Upload Invoice</label>
-
-                            </th>
-                        </div> -->
-                        <div class="col-12 col-lg-3">
-                            <!-- <label for="document_image" class="form-label">Upload Excel <span class="text-danger">*</span></label> -->
-                            <input type="file" name="document_image" id="document_image" class="form-control" value="" required="" placeholder="Upload ID Document">
-                        </div>
-                        <div class="col-12 col-lg-1 d-flex gap-2">
-                            <button type="" class="btn btn-success w-sm waves ripple-light">
-                                Upload
-                            </button>
-                            <a href="invoices-details.php" type="" class="btn btn-success w-sm waves ripple-light">
-                                Preview
-                            </a>
-                        </div>
-                    </div>
-                    <div class="row g-3 py-2">
-                        <!-- <div class="col-12 col-lg-2">
-                            <th>
-                                <input id="checkbox3" class="form-check-input" type="checkbox">
-                                <label for="checkbox3" class="form-label">Upload E-Way Bill</label>
-
-                            </th>
-                        </div> -->
-                        <div class="col-12 col-lg-3">
-                            <!-- <label for="document_image" class="form-label">Upload Excel <span class="text-danger">*</span></label> -->
-                            <input type="file" name="document_image" id="document_image" class="form-control" value="" required="" placeholder="Upload ID Document">
-                        </div>
-                        <div class="col-12 col-lg-1 d-flex gap-2">
-                            <button type="" class="btn btn-success w-sm waves ripple-light">
-                                Upload
-                            </button>
-                            <a href="invoices-details.php" type="" class="btn btn-success w-sm waves ripple-light">
-                                Preview
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
 
             <div class="card">
                 <div class="card-header border-bottom-dashed">
@@ -288,116 +199,15 @@
                     <div class="row">
                         <div class="col-12 col-md-2">
                             <label for="dn amount" class="form-label">DN Amount<span class="text-danger">*</span></label>
-                            <input type="text" name="dn amount" id="dn amount" class="form-control" value="" required="" placeholder="Enter DN Amount">
+                            <p>10,000 Rupess</p>
                         </div>
-                        <div class="col-12 col-md-4">
+                        <div class="col-12 col-md-6">
                             <label for="dn reason" class="form-label">DN Reason<span class="text-danger">*</span></label>
-                            <input type="text" name="dn reason" id="dn reason" class="form-control" value="" required="" placeholder="Enter DN Reason">
-                        </div>
-                        <div class="col-12 col-md-4 text-start">
-                            <button type="" class="btn btn-success w-sm waves ripple-light text-end mt-4">
-                                Save
-                            </button>
+                            <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. mollitia possimus.</p>
                         </div>
                     </div>
                 </div>
             </div>
-
-            <div class="card">
-                <div class="card-header border-bottom-dashed">
-                    <div class="row g-4 align-items-center">
-                        <div class="col-sm">
-                            <h5 class="card-title mb-0">
-                                Get POD
-                            </h5>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="card-body">
-                    <div class="row">
-                        <!-- <div class="col-12 col-lg-2">
-                            <th>
-                                <input id="checkbox1" class="form-check-input" type="checkbox">
-                                <label for="checkbox1" class="form-label">Upload POD</label>
-
-                            </th>
-                        </div> -->
-                        <div class="col-12 col-lg-4">
-                            <label for="document_image" class="form-label">Upload POD <span class="text-danger">*</span></label>
-                            <input type="file" name="document_image" id="document_image" class="form-control" value="" required="" placeholder="Upload ID Document">
-                        </div>
-                        <div class="col-12 col-lg-6 text-start">
-                            <button type="" class="btn btn-success w-sm waves ripple-light text-end mt-4">
-                                Upload
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card">
-                <div class="card-header border-bottom-dashed">
-                    <div class="row g-4 align-items-center">
-                        <div class="col-sm">
-                            <h5 class="card-title mb-0">
-                                Add GRN
-                            </h5>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="card-body">
-                    <div class="row g-3">
-                        <!-- <div class="col-12 col-lg-2">
-                            <th>
-                                <input id="checkbox3" class="form-check-input" type="checkbox">
-                                <label for="checkbox3" class="form-label">Upload GRN</label>
-
-                            </th>
-                        </div> -->
-                        <div class="col-12 col-lg-3">
-                            <!-- <label for="document_image" class="form-label">Upload Excel <span class="text-danger">*</span></label> -->
-                            <input type="file" name="document_image" id="document_image" class="form-control" value="" required="" placeholder="Upload ID Document">
-                        </div>
-                        <div class="col-12 col-lg-1 d-flex gap-2">
-                            <button type="" class="btn btn-success w-sm waves ripple-light">
-                                Upload
-                            </button>
-                            <button type="" class="btn btn-success w-sm waves ripple-light">
-                                Pervious
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card">
-                <div class="card-header border-bottom-dashed">
-                    <div class="row g-4 align-items-center">
-                        <div class="col-sm">
-                            <h5 class="card-title mb-0">
-                                Payment Status
-                            </h5>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="card-body">
-                    <div class="row g-3">
-                        <div class="col-12 col-lg-2 text-end">
-                            <select id="input9" class="form-select">
-                                <option selected="" disabled>Payment Status</option>
-                                <option>Pending</option>
-                                <option>Rejected</option>
-                                <option>Completed</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-
         </div>
     </main>
     <!--end main wrapper-->
