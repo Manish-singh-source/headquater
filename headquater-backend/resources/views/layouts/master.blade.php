@@ -288,9 +288,9 @@
              <div class="menu-title">Access Control</div>
            </a>
            <ul>
-             <li><a href="staff.php"><i class="material-icons-outlined">arrow_right</i>Staff</a>
+             <li><a href="{{ route('staff') }}"><i class="material-icons-outlined">arrow_right</i>Staff</a>
              </li>
-             <li><a href="role.php"><i class="material-icons-outlined">arrow_right</i>Role</a>
+             <li><a href="{{ route('role') }}"><i class="material-icons-outlined">arrow_right</i>Role</a>
              </li>
            </ul>
          </li>
