@@ -41,6 +41,16 @@ Route::get('/create-vendor', [VendorController::class, 'createVendor'])->name('c
 Route::get('/vendor-details', [VendorController::class, 'vendorDetails'])->name('vendor-details');
 // Vendor Order View
 Route::get('/vendor-order-view', [VendorController::class, 'vendorOrderView'])->name('vendor-order-view');
+// Form fill to store in database and after display on main List
+Route::post('/vendor/add', [VendorController::class, 'addVendor'])->name('add_vendor');
+// Edit Vendor {id}
+Route::get('/vendor/edit/{id}', [VendorController::class, 'editVendor'])->name('edit-vendor');
+// Update Vendor {id}
+Route::put('/vendor/update/{id}', [VendorController::class, 'updateVendor'])->name('update-vendor');
+// Delet Vendor {id}
+Route::delete('/vendor/delete/{id}', [VendorController::class, 'deleteVendor'])->name('delete-vendor');
+// Vendor Detail {id}
+Route::get('/vendor/{id}', [VendorController::class, 'detailVendor'])->name('detail-vendor');
 
 
 // Place Order

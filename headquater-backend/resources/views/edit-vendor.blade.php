@@ -34,40 +34,40 @@
                 <div class="card">
                     <div class="card-body p-4">
                         <h5 class="mb-4">Create Vendor</h5>
-                        <form class="row g-3" action="{{route('add_vendor') }}" method="POST">
+                        <form class="row g-3" action="{{ route('update-vendor', $vendor->id) }}" method="POST">
                             @csrf
-                            @method('POST')
+                            @method('PUT')
                             <div class="col-md-6">
                                 <label for="input1" class="form-label">First Name</label>
-                                <input type="text" class="form-control" id="input1" placeholder="First Name" name="firstName">
+                                <input type="text" class="form-control" id="input1" placeholder="First Name" name="firstName" value="{{ $vendor->first_name }}">
                             </div>
                             <div class="col-md-6">
                                 <label for="input2" class="form-label">Last Name</label>
-                                <input type="text" class="form-control" id="input2" placeholder="Last Name" name="lastName">
+                                <input type="text" class="form-control" id="input2" placeholder="Last Name" name="lastName" value="{{ $vendor->last_name }}">
                             </div>
                             <div class="col-md-6">
                                 <label for="input3" class="form-label">Phone</label>
-                                <input type="text" class="form-control" id="input3" placeholder="Phone" name="phone">
+                                <input type="text" class="form-control" id="input3" placeholder="Phone" name="phone" value="{{ $vendor->phone }}">
                             </div>
                             <div class="col-md-6">
                                 <label for="input4" class="form-label">Email</label>
-                                <input type="email" class="form-control" id="input4" placeholder="Email Id" name="email">
+                                <input type="email" class="form-control" id="input4" placeholder="Email Id" name="email" value="{{ $vendor->email }}">
                             </div>
                             <div class="col-md-6">
                                 <label for="input5" class="form-label">GST NO</label>
-                                <input type="text" class="form-control" id="input5" placeholder="GST NO" name="gstNo">
+                                <input type="text" class="form-control" id="input5" placeholder="GST NO" name="gstNo" value="{{ $vendor->gstNo }}">
                             </div>
                             <div class="col-md-6">
                                 <label for="input6" class="form-label">PAN NO</label>
-                                <input type="text" class="form-control" id="input6" placeholder="PAN NO" name="panNo">
+                                <input type="text" class="form-control" id="input6" placeholder="PAN NO" name="panNo" value="{{ $vendor->panNo }}">
                             </div>
                             <div class="col-md-12">
                                 <label for="input11" class="form-label">Address</label>
-                                <textarea class="form-control" id="input11" placeholder="Address ..." rows="3" name="address"></textarea>
+                                <textarea class="form-control" id="input11" placeholder="Address ..." rows="3" name="address" >{{ $vendor->address }}</textarea>
                             </div>
                             <div class="col-md-4">
                                 <label for="input9" class="form-label">State</label>
-                                <select id="input9" class="form-select" name="state">
+                                <select id="input9" class="form-select" name="state" value="{{ $vendor->state }}">
                                     <option selected="" disabled>Choose...</option>
                                     <option>One</option>
                                     <option>Two</option>
@@ -76,29 +76,29 @@
                             </div>
                             <div class="col-md-4">
                                 <label for="input8" class="form-label">City</label>
-                                <input type="text" class="form-control" id="input8" placeholder="City" name="city">
+                                <input type="text" class="form-control" id="input8" placeholder="City" name="city" value="{{ $vendor->city }}">
                             </div>
                             <div class="col-md-4">
                                 <label for="input8" class="form-label">Pin Code</label>
-                                <input type="text" class="form-control" id="input8" placeholder="Pin Code" name="pinCode">
+                                <input type="text" class="form-control" id="input8" placeholder="Pin Code" name="pinCode" value="{{ $vendor->pin_code }}">
                             </div>
                             <div class="col-md-4">
                                 <label for="input10" class="form-label">Account No</label>
-                                <input type="text" class="form-control" id="input10" placeholder="Account No" name="accountNo">
+                                <input type="text" class="form-control" id="input10" placeholder="Account No" name="accountNo" value="{{ $vendor->account_no }}">
                             </div>
                             <div class="col-md-4">
                                 <label for="input8" class="form-label">IFSC Code</label>
-                                <input type="text" class="form-control" id="input8" placeholder="IFSC Code" name="ifscCode">
+                                <input type="text" class="form-control" id="input8" placeholder="IFSC Code" name="ifscCode" value="{{ $vendor->ifsc_code }}">
                             </div>
                             <div class="col-md-4">
                                 <label for="input8" class="form-label">Bank Name</label>
-                                <input type="text" class="form-control" id="input8" placeholder="Bank Name" name="bankName">
+                                <input type="text" class="form-control" id="input8" placeholder="Bank Name" name="bankName" value="{{ $vendor->bank_name }}">
                             </div>
 
 
                             <div class="col-md-4">
                                 <label for="input9" class="form-label">Status</label>
-                                <select id="input9" class="form-select" name="status">
+                                <select id="input9" class="form-select" name="status" value="{{ $vendor->status }}">
                                     <option selected="" disabled>Choose any one</option>
                                     <option>Active</option>
                                     <option>Inactive</option>
@@ -107,7 +107,7 @@
                             <div class="col-md-12">
                                 <div class="d-md-flex d-grid align-items-center gap-3">
                                     <!-- <a href="{{ route('vendor') }}" type="submit" class="btn btn-primary px-4">Submit</a> -->
-                                    <button type="submit"  class="btn btn-primary px-4">Submit</button>
+                                    <button type="submit"  class="btn btn-primary px-4">Update</button>
                                 </div>
                             </div>
                         </form>
