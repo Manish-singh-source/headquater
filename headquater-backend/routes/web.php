@@ -38,10 +38,13 @@ Route::get('/assign-order-to-vendor', [PlaceOrderController::class, 'assignOrder
 // Warehouse List
 Route::get('/warehouse', [WarehouseController::class, 'warehouseList'])->name('warehouse');
 // Create Warehouse List
-Route::get('/create-warehouse', [WarehouseController::class, 'createWarehouse'])->name('create-warehouse');
+Route::get('/create-warehouse', [WarehouseController::class, 'createWarehouse'])->name('warehouse.create');
+Route::post('/create-warehouse', [WarehouseController::class, 'storeWarehouse'])->name('warehouse.store');
 // Warehouse Details List
-Route::get('/warehouse-detail', [WarehouseController::class, 'warehouseDetail'])->name('warehouse-detail');
-
+Route::get('/warehouse-detail/{id}', [WarehouseController::class, 'warehouseDetail'])->name('warehouse.detail');
+Route::delete('/warehouse/delete/{id}', [WarehouseController::class, 'deleteWarehouse'])->name('warehouse.delete');
+Route::get('/warehouse-edit/{id}', [WarehouseController::class, 'warehouseEdit'])->name('warehouse.edit');
+Route::put('/warehouse-update/{id}', [WarehouseController::class, 'warehouseUpdate'])->name('warehouse.update');
 
 // All Order page
 Route::get('/order',[OrderController::class, 'orderList'])->name('order');
