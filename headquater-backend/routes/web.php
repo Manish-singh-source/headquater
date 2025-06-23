@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AccessController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PlaceOrderController;
 use App\Http\Controllers\ReportController;
@@ -79,15 +80,24 @@ Route::get('/customer-sales-history', [ReportController::class, 'customerSalesHi
 
 
 // Customer
-Route::get('/ecommerce-customers', function () {
-    return view('ecommerce-customers');
-})->name('ecommerce-customers');
+Route::get('/customers', [CustomerController::class, 'customerList'])->name('ecommerce-customers');
+// Add Customer
+Route::post('/customers/add', [CustomerController::class, 'addCustomer'])->name('add_customer');
+// Customer detail {id}
+Route::get('/customer/{id}', [CustomerController::class, 'detailCustomer'])->name('customer-detail');
+// Edit Customer {id}
+Route::get('/customers/edit/{id}', [CustomerController::class, 'editCustomer'])->name('edit_customer');
+// Update Customer {id}
+Route::put('/customer/update/{id}', [CustomerController::class, 'updateCustomer'])->name('update-customer');
+// Delete Customer {id}
+Route::delete('/customers/delete/{id}', [CustomerController::class, 'deleteCustomer'])->name('delete-customer');
+
 Route::get('/add-customer', function () {
     return view('add-customer');
 })->name('add-customer');
-Route::get('/customer-detail', function () {
-    return view('customer-detail');
-})->name('customer-detail');
+// Route::get('/customer-detail', function () {
+//     return view('customer-detail');
+// })->name('customer-detail');
 Route::get('/customer-order-view', function () {
     return view('customer-order-view');
 })->name('customer-order-view');

@@ -31,72 +31,56 @@
         </div>
         <!--end breadcrumb-->
 
-
         <div class="row">
             <div class="col-12">
-                <div class="card w-100 d-flex flex-sm-row flex-col">
-                    <div class="col card-body d-flex">
-                        <div class="position-relative justify-content-center">
-                            <img src="assets/images/avatars/02.png" class="img-fluid rounded" alt="">
-                            <!-- <div class="position-absolute top-100 start-50 translate-middle">
-                                    <img src="assets/images/avatars/02.png" width="100" height="100"
-                                        class="rounded-circle raised p-1 bg-white" alt="">
-                                </div> -->
-                            <div class="text-center my-2 pt-2">
-                                <h4 class="mb-1">Manish Carry</h4>
-                                <p class="mb-0">Marketing Excutive</p>
-                            </div>
-                        </div>
-
-
-                    </div>
-                    <ul class="col-10 list-group list-group-flush">
-                        <li class="list-group-item">
-                            <b>Phone No</b>
-                            <br>
-                            {{ $vendor->phone }}
+                <div class="card w-100 d-flex  flex-sm-row flex-col">
+                    <ul class="col-12 list-group list-group-flush">
+                        <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
+                            <span><b>Name</b></span>
+                            <span>{{ $vendor->first_name }}</span>
                         </li>
-                        <li class="list-group-item">
-                            <b>Email</b>
-                            <br>
-                            {{ $vendor->email }}
+                        <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
+                            <span><b>Last Name</b></span>
+                            <span> {{ $vendor->last_name }}</span>
                         </li>
-                        <li class="list-group-item">
-                            <b>GST No</b>
-                            <br>
-                            {{ $vendor->gst_no }}
+                        <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
+                            <span><b>Phone No</b></span>
+                            <span>{{ $vendor->phone }}</span>
                         </li>
-                        <li class="list-group-item">
-                            <b>PAN No</b>
-                            <br>
-                            {{ $vendor->pan_no }}
+                        <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
+                            <span><b>Email</b></span>
+                            <span>{{ $vendor->email }}</span>
                         </li>
-                        <li class="list-group-item border-top">
-                            <b>Address</b>
-                            <br>
-                            {{ $vendor->address }}
+                        <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
+                            <span><b>GST No</b></span>
+                            <span>{{ $vendor->gst_no }}</span>
                         </li>
-                        <li class="list-group-item border-top">
-                            <b>Bank Name</b>
-                            <br>
-                            {{ $vendor->bank_name }}
+                        <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
+                            <span><b>PAN No</b></span>
+                            <span>{{ $vendor->pan_no }}</span>
                         </li>
-                        <li class="list-group-item border-top">
-                            <b>Account No</b>
-                            <br>
-                            {{ $vendor->account_no }}
+                        <li class="list-group-item d-flex justify-content-between align-items-center  mb-2 pe-3">
+                            <span><b>Address</b></span>
+                            <span>{{ $vendor->address }}</span>
                         </li>
-                        <li class="list-group-item border-top">
-                            <b>IFSC Code</b>
-                            <br>
-                            {{ $vendor->ifsc_code }}
+                        <li class="list-group-item d-flex justify-content-between align-items-center  mb-2 pe-3">
+                            <span><b>Bank Name</b></span>
+                            <span>{{ $vendor->bank_name }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
+                            <span><b>Account No</b></span>
+                            <span>{{ $vendor->account_no }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
+                            <span><b>IFSC Code</b></span>
+                            <span>{{ $vendor->ifsc_code }}</span>
                         </li>
                     </ul>
-
                 </div>
             </div>
 
         </div><!--end row-->
+
 
 
         <div class="card">
