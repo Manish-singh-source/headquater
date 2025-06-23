@@ -39,8 +39,8 @@ class VendorController extends Controller
         $vendor->last_name = $request->lastName;
         $vendor->phone = $request->phone;
         $vendor->email = $request->email;
-        $vendor->gst_no = $request->gst_no;
-        $vendor->pan_no = $request->pan_no;
+        $vendor->gst_no = $request->gstNo;
+        $vendor->pan_no = $request->panNo;
         $vendor->address = $request->address;
         $vendor->state = $request->state;
         $vendor->city = $request->city;
