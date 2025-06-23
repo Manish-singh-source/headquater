@@ -29,27 +29,27 @@
                             </li>
                             <li class="list-group-item d-flex justify-content-between align-items-center border-bottom mb-2 pe-3">
                                 <span><b>Warehouse Location</b></span>
-                                <span> Baroda</span>
+                                <span>{{ $warehouse->city }}</span>
                             </li>
                             <li class="list-group-item d-flex justify-content-between align-items-center border-bottom mb-2 pe-3">
                                 <span><b>Contact Name</b></span>
-                                <span> Manish</span>
+                                <span>{{ $warehouse->contact_person_name }}</span>
                             </li>
                             <li class="list-group-item d-flex justify-content-between align-items-center border-bottom mb-2 pe-3">
                                 <span><b>Phone No</b></span>
-                                <span> +91-XXX XXX XXXX</span>
+                                <span> {{ $warehouse->contact_person_phone_no }}</span>
                             </li>
                             <li class="list-group-item d-flex justify-content-between align-items-center border-bottom mb-2 pe-3">
                                 <span><b>Email</b></span>
-                                <span> manish@gmail.com</span>
+                                <span> {{ $warehouse->contact_person_email }}</span>
                             </li>
                             <li class="list-group-item d-flex justify-content-between align-items-center border-bottom mb-2 pe-3">
                                 <span><b>GST No</b></span>
-                                <span> HGTW459164</span>
+                                <span> {{ $warehouse->gst_no }}</span>
                             </li>
                             <li class="list-group-item d-flex justify-content-between align-items-center  mb-2 pe-3">
                                 <span><b>Address</b></span>
-                                <span> Office No. 501, 5th Floor, Ghanshyam Enclave, Next To Laljipada Police Station, Laljipada, Link Road, Kandivali (West), Mumbai - 400067. Maharashtra - India</span>
+                                <span> {{ $warehouse->address_line_1 }} {{ $warehouse->address_line_2  }}</span>
                             </li>
                         </ul>
 
