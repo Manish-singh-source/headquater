@@ -332,7 +332,7 @@
            </a>
          </li>
          <li>
-           <a href="invoices.php">
+           <a href="{{route('invoices')}}">
              <div class="parent-icon"><i class="material-icons-outlined">receipt_long</i>
              </div>
              <div class="menu-title">Invoices</div>
@@ -347,35 +347,35 @@
            </a>
          </li>
          <li>
-           <a href="received-products.php">
+           <a href="{{route('received-products') }}">
              <div class="parent-icon"><i class="material-icons-outlined">move_to_inbox</i>
              </div>
              <div class="menu-title">Received Products</div>
            </a>
          </li>
          <li>
-           <a href="packaging-list.php">
+           <a href="{{route('packaging-list') }}">
              <div class="parent-icon"><i class="material-icons-outlined">all_inbox</i>
              </div>
              <div class="menu-title">Packaging List</div>
            </a>
          </li>
          <li>
-           <a href="raise-a-ticket.php">
+           <a href="{{route('raise-a-ticket') }}">
              <div class="parent-icon"><i class="material-icons-outlined">confirmation_number</i>
              </div>
              <div class="menu-title">Tickets</div>
            </a>
          </li>
          <li>
-           <a href="ready-to-ship.php">
+           <a href="{{route('ready-to-ship') }}">
              <div class="parent-icon"><i class="material-icons-outlined">local_shipping</i>
              </div>
              <div class="menu-title">Ready To Ship</div>
            </a>
          </li>
          <li>
-           <a href="track-order.php">
+           <a href="{{route('track-order') }}">
              <div class="parent-icon"><i class="material-icons-outlined">search</i>
              </div>
              <div class="menu-title">Track Order</div>

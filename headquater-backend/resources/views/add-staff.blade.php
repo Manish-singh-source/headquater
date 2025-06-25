@@ -6,6 +6,9 @@
             <div class="row">
 
                 <div class="col-12">
+                    <form action="" method="post" enctype="multipart/form-data">
+                        @csrf
+                        @method('POST')
                     <div class="row">
                         <div class="col-lg-8">
                             <div class="card">
@@ -24,7 +27,7 @@
                                         <div class="col-12 col-md-6">
                                             <label for="marital" class="form-label">Role
                                                 <span class="text-danger">*</span></label>
-                                            <select class="form-control" name="marital" id="marital">
+                                            <select class="form-control" name="role" id="marital">
                                                 <option selected="" disabled="" value="">-- Select --</option>
                                                 <option value="Admin">Admin</option>
                                                 <option value="Sales Person">Sales Person</option>
@@ -34,7 +37,7 @@
                                         <div class="col-12 col-md-6">
                                             <label for="marital" class="form-label">Status
                                                 <span class="text-danger">*</span></label>
-                                            <select class="form-control" name="marital" id="marital">
+                                            <select class="form-control" name="status" id="marital">
                                                 <option selected="" disabled="" value="">-- Select --</option>
                                                 <option value="Active">Active</option>
                                                 <option value="Inactive">Inactive</option>
@@ -58,12 +61,12 @@
                                     <div class="row g-3">
                                         <div class="col-12 col-md-6">
                                             <label for="firstname" class="form-label">First Name <span class="text-danger">*</span></label>
-                                            <input type="text" name="firstname" id="firstname" class="form-control" value="" required="" placeholder="Enter First Name">
+                                            <input type="text" name="fname" id="firstname" class="form-control" value="" required="" placeholder="Enter First Name">
                                         </div>
 
                                         <div class="col-12 col-md-6">
                                             <label for="lastname" class="form-label">Last Name <span class="text-danger">*</span></label>
-                                            <input type="text" name="lastname" id="lastname" class="form-control" value="" required="" placeholder="Enter Last Name">
+                                            <input type="text" name="lname" id="lastname" class="form-control" value="" required="" placeholder="Enter Last Name">
                                         </div>
 
                                         <div class="col-12 col-md-6">
@@ -117,12 +120,12 @@
                                     <div class="row g-3">
                                         <div class="col-12 col-md-6">
                                             <label for="current-address" class="form-label">Current Address <span class="text-danger">*</span></label>
-                                            <textarea name="current-address" id="current-address" class="form-control" value="" required="" placeholder="Enter Current Address"></textarea>
+                                            <textarea name="current-address" id="current_address" class="form-control" value="" placeholder="Enter Current Address"></textarea>
                                         </div>
 
                                         <div class="col-12 col-md-6">
                                             <label for="permanent-address" class="form-label">Permanent Address </label>
-                                            <textarea name="permanent-address" id="permanent-address" class="form-control" value="" placeholder="Enter Permanent Address"></textarea>
+                                            <textarea name="permanent-address" id="permanent_address" class="form-control" value="" placeholder="Enter Permanent Address"></textarea>
                                         </div>
 
                                         <div class="col-12 col-md-6">
@@ -164,7 +167,7 @@
 
                                         <div class="col-12 col-md-6">
                                             <label for="Department" class="form-label">Department/Role <span class="text-danger">*</span></label>
-                                            <select class="form-control" name="Department" id="Department">
+                                            <select class="form-control" name="department" id="Department">
                                                 <option selected="" disabled="" value="">-- Select --</option>
                                                 <option value="">Sales</option>
                                                 <option value="">Support</option>
@@ -302,7 +305,7 @@
 
                                         <div class="">
                                             <label for="payment-mode" class="form-label">Payment Mode <span class="text-danger">*</span></label>
-                                            <select class="form-control" name="payment-mode" id="payment-mode">
+                                            <select class="form-control" name="payment_mode" id="payment-mode">
                                                 <option selected="" disabled="" value="">-- Select --</option>
                                                 <option value=""> Bank Transfer</option>
                                                 <option value="">Cash</option>
@@ -333,12 +336,13 @@
 
                         <div class="col-lg-12">
                             <div class="text-start mb-3">
-                                <a href="{{ route('staff') }}" class="btn btn-success w-sm waves ripple-light">
+                                <button type="submit" class="btn btn-success w-sm waves ripple-light">
                                     Submit
-                                </a>
+                                </button>
                             </div>
                         </div>
                     </div>
+                    </form>
                 </div>
             </div>
         </div>

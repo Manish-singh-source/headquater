@@ -6,6 +6,7 @@ use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PlaceOrderController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\StaffController;
 use App\Http\Controllers\VendorController;
 use App\Http\Controllers\Warehouse;
 use App\Http\Controllers\WarehouseController;
@@ -113,3 +114,41 @@ Route::get('/products', function () {
 Route::get('/add-product', function () {
     return view('add-product');
 })->name('add-product');
+
+// invoice
+Route::get('/invoices', function () {
+    return view('invoices');
+})->name('invoices');
+Route::get('/create-invoice', function () {
+    return view('create-invoice');
+})->name('create-invoice');
+Route::get('/invoices-details', function () {
+    return view('invoices-details');
+})->name('invoices-details');
+
+// recev products
+Route::get('/received-products', function () {
+    return view('received-products');
+})->name('received-products');
+Route::get('/packaging-list', function () {
+    return view('packaging-list');
+})->name('packaging-list');
+Route::get('/packing-products-list', function () {
+    return view('packing-products-list');
+})->name('packing-products-list');
+Route::get('/raise-a-ticket-form', function () {
+    return view('raise-a-ticket-form');
+})->name('raise-a-ticket-form');
+Route::get('/ready-to-ship', function () {
+    return view('ready-to-ship');
+})->name('ready-to-ship');
+Route::get('/ready-to-ship-detail', function () {
+    return view('ready-to-ship-detail');
+})->name('ready-to-ship-detail');
+Route::get('/raise-a-ticket', function () {
+    return view('raise-a-ticket');
+})->name('raise-a-ticket');
+Route::get('/track-order', function () {
+    return view('track-order');
+})->name('track-order');
+
