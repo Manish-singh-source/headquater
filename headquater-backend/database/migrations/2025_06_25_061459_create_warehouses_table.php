@@ -1,0 +1,49 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('warehouses', function (Blueprint $table) {
+            $table->id(); // INT AUTO_INCREMENT PRIMARY KEY
+
+            $table->string('name', 70);
+            $table->string('type', 70);
+            $table->string('contact_person_name', 70);
+            $table->string('phone', 70);
+            $table->string('alt_phone', 70);
+            $table->string('email', 70);
+            $table->string('gst_number', 255);
+            $table->string('pan_number', 255);
+            $table->string('address_line_1', 255);
+            $table->string('address_line_2', 255);
+            $table->text('licence_doc');
+            $table->unsignedBigInteger('max_storage_capacity'); // corrected field name (see note)
+
+            $table->integer('city');
+            $table->integer('state');
+            $table->integer('country');
+            $table->integer('pincode');
+            $table->integer('operations');
+
+            $table->enum('status', ['0', '1'])->default('1')->comment('Active : 1,Inactive : 0');
+
+            $table->timestamps(); // created_at, updated_at
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('warehouses');
+    }
+};

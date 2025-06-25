@@ -30,10 +30,18 @@ Route::get('/staff',[AccessController::class, 'staffList'])->name('staff');
 Route::get('/add-staff',[AccessController::class, 'addStaff'])->name('add-staff');
 // Staff  Detail
 Route::get('/staff-detail',[AccessController::class, 'staffDetail'])->name('staff-detail');
+
+
+
 // Role List
 Route::get('/role',[AccessController::class, 'roleList'])->name('role');
-// Add Role 
 Route::get('/add-role',[AccessController::class, 'addRole'])->name('add-role');
+Route::post('/store-role',[AccessController::class, 'storeRole'])->name('store.role');
+Route::delete('/role-delete/{id}', [AccessController::class, 'roleDelete'])->name('role.delete');
+Route::get('/role-edit/{id}', [AccessController::class, 'roleEdit'])->name('role.edit');
+Route::put('/role-update/{id}', [AccessController::class, 'roleUpdate'])->name('role.update');
+
+
 
 // All Vendor List Page 
 Route::get('/vendor', [VendorController::class, 'vendorList'])->name('vendor');
