@@ -1,7 +1,6 @@
 @extends('layouts.master')
 @section('main-content')
-
-<style>
+    <style>
         .loader {
             position: absolute;
             top: 50%;
@@ -20,7 +19,7 @@
     <!-- Loader Element -->
     <div class="loader">Loading...</div>
 
- <!--start main wrapper-->
+    <!--start main wrapper-->
     <main class="main-wrapper">
         <div class="main-content">
             <div class="row">
@@ -52,11 +51,15 @@
                                         <div class="col-12 col-lg-3">
                                             <label for="marital" class="form-label">Customer Group Name
                                                 <span class="text-danger">*</span></label>
-                                            <input type="text" name="" class="form-control" placeholder="Enter Group Name" id="groupName">
+                                            <input type="text" name="" class="form-control"
+                                                placeholder="Enter Group Name" id="groupName">
                                         </div>
                                         <div class="col-12 col-lg-3">
-                                            <label for="document_image" class="form-label">Upload Excel <span class="text-danger">*</span></label>
-                                            <input type="file" name="document_image" id="document_image" class="form-control" value="" required="" placeholder="Upload ID Document" multiple>
+                                            <label for="document_image" class="form-label">Upload Excel <span
+                                                    class="text-danger">*</span></label>
+                                            <input type="file" name="document_image" id="document_image"
+                                                class="form-control" value="" required=""
+                                                placeholder="Upload ID Document" multiple>
                                         </div>
                                         <div class="col-12 col-lg-1">
                                             <button class="btn btn-primary" id="add-customer">Add</button>
@@ -102,8 +105,11 @@
                                 <div class="card-body">
                                     <div class="row align-items-end">
                                         <div class="col-12 col-lg-3">
-                                            <label for="document_image" class="form-label">Upload Excel <span class="text-danger">*</span></label>
-                                            <input type="file" name="document_image" id="document_image" class="form-control" value="" required="" placeholder="Upload ID Document" multiple>
+                                            <label for="document_image" class="form-label">Upload Excel <span
+                                                    class="text-danger">*</span></label>
+                                            <input type="file" name="document_image" id="document_image"
+                                                class="form-control" value="" required=""
+                                                placeholder="Upload ID Document" multiple>
                                         </div>
 
                                         <div class="col-12 col-lg-3">
@@ -144,128 +150,91 @@
                                             <table class="table align-middle">
                                                 <thead class="table-light">
                                                     <tr>
-                                                        <th>Order No</th>
-                                                        <th>Portal Code</th>
-                                                        <th>SKU Code</th>
-                                                        <th>Title</th>
-                                                        <th>MRP</th>
-                                                        <th>Qty Requirement</th>
+                                                        <th>po_number</th>
+                                                        <th>facility_name</th>
+                                                        <th>manufacturer_name</th>
+                                                        <th>entity_vendor_legal_name</th>
+                                                        <th>vendor_name</th>
+                                                        <th>order_date</th>
+                                                        <th>appointment_date</th>
+                                                        <th>expiry_date</th>
+                                                        <th>po_state</th>
+                                                        <th>item_id</th>
+                                                        <th>name</th>
+                                                        <th>uom_text</th>
+                                                        <th>upc</th>
+                                                        <th>units_ordered</th>
+                                                        <th>remaining_quantity</th>
+                                                        <th>landing_rate</th>
+                                                        <th>cost_price</th>
+                                                        <th>margin_percentage</th>
+                                                        <th>cess_value</th>
+                                                        <th>sgst_value</th>
+                                                        <th>igst_value</th>
+                                                        <th>cgst_value</th>
+                                                        <th>tax_value</th>
+                                                        <th>total_amount</th>
+                                                        <th>mrp</th>
                                                         <th>Qty Available</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
                                                     <tr>
-                                                        <td contenteditable="true">OPS/2025/2276</td>
-                                                        <td contenteditable="true">BOCRDVF87G</td>
-                                                        <td contenteditable="true">TP-260</td>
-                                                        <td contenteditable="true">Yera 260ml Glass Parabolic Tumbler Set</td>
-                                                        <td contenteditable="true">315</td>
-                                                        <td contenteditable="true">64</td>
-                                                        <td contenteditable="true">40</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td contenteditable="true">OPS/2025/2276</td>
-                                                        <td contenteditable="true">BOCRDL1L94</td>
-                                                        <td contenteditable="true">JR2KG</td>
-                                                        <td contenteditable="true">Yera Glass Jar with Plastic Lid - 2425ml</td>
-                                                        <td contenteditable="true">330</td>
-                                                        <td contenteditable="true">9</td>
-                                                        <td contenteditable="true">0</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td contenteditable="true">OPS/2025/2276</td>
-                                                        <td contenteditable="true">BOCRDJH5YZ</td>
-                                                        <td contenteditable="true">B9OFL</td>
-                                                        <td contenteditable="true">Yera Ice Cream Delight 250 ml Glass Bowl Set of 6</td>
-                                                        <td contenteditable="true">280</td>
-                                                        <td contenteditable="true">64</td>
-                                                        <td contenteditable="true">50</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td contenteditable="true">OPS/2025/2276</td>
-                                                        <td contenteditable="true">BOCR6N9ZL7</td>
-                                                        <td contenteditable="true">TC8P17</td>
-                                                        <td contenteditable="true">Yera Conical Glass Tumbler Set - 215 ml</td>
-                                                        <td contenteditable="true">230</td>
-                                                        <td contenteditable="true">144</td>
-                                                        <td contenteditable="true">100</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td contenteditable="true">OPS/2025/2276</td>
-                                                        <td contenteditable="true">B07T2DJ6JR</td>
-                                                        <td contenteditable="true">TS10-P0</td>
-                                                        <td contenteditable="true">Yera Glass Tumbler Transparent 285 ml</td>
-                                                        <td contenteditable="true">240</td>
-                                                        <td contenteditable="true">64</td>
-                                                        <td contenteditable="true">64</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td contenteditable="true">OPS/2025/2276</td>
-                                                        <td contenteditable="true">B07T2D5P2L</td>
-                                                        <td contenteditable="true">JS-4</td>
-                                                        <td contenteditable="true">Yera Glass Aahaar Jars, 1800 ml</td>
-                                                        <td contenteditable="true">190</td>
-                                                        <td contenteditable="true">144</td>
-                                                        <td contenteditable="true">14</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td contenteditable="true">OPS/2025/2276</td>
-                                                        <td contenteditable="true">B07T1CN9SX</td>
-                                                        <td contenteditable="true">T9AHB</td>
-                                                        <td contenteditable="true">Yera Glass Tumblers - 250 ml, Set of 6</td>
-                                                        <td contenteditable="true">250</td>
-                                                        <td contenteditable="true">64</td>
-                                                        <td contenteditable="true">34</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td contenteditable="true">OPS/2025/2276</td>
-                                                        <td contenteditable="true">B07T1CM6S3</td>
-                                                        <td contenteditable="true">JR-3</td>
-                                                        <td contenteditable="true">Yera Glass Aahaar Jars Storage Container, 3600 ML</td>
-                                                        <td contenteditable="true">225</td>
-                                                        <td contenteditable="true">360</td>
-                                                        <td contenteditable="true">200</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td contenteditable="true">OPS/2025/2276</td>
-                                                        <td contenteditable="true">B07T1CM6N6</td>
-                                                        <td contenteditable="true">CT9-P0</td>
-                                                        <td contenteditable="true">Yera Transparent Glass Mug with Handle 240 ml</td>
-                                                        <td contenteditable="true">340</td>
-                                                        <td contenteditable="true">128</td>
-                                                        <td contenteditable="true">0</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td contenteditable="true">OPS/2025/2276</td>
-                                                        <td contenteditable="true">B07SZ867XZ</td>
-                                                        <td contenteditable="true">JR-2</td>
-                                                        <td contenteditable="true">Yera Glass Aahaar Jars Storage Container, 2425 ML</td>
-                                                        <td contenteditable="true">185</td>
-                                                        <td contenteditable="true">216</td>
-                                                        <td contenteditable="true">100</td>
+                                                        <td>2549210015180</td>
+                                                        <td>Nagpur N1 - Feeder Warehouse</td>
+                                                        <td>Ocean Glass Public Company Ltd.</td>
+                                                        <td>Moonstone Ventures LLP</td>
+                                                        <td>INOVIZ IDEAS PVT LTD</td>
+                                                        <td>2025-06-19 06:14:26+00:00</td>
+                                                        <td></td>
+                                                        <td>2025-07-19T18:29:59Z</td>
+                                                        <td>Created</td>
+                                                        <td>10063772</td>
+                                                        <td>Ocean Glass (290 ml, Transparent)(Pack)</td>
+                                                        <td>1 unit</td>
+                                                        <td>8.85022E+12</td>
+                                                        <td>12</td>
+                                                        <td>12</td>
+                                                        <td>417.28</td>
+                                                        <td>353.63</td>
+                                                        <td>35.31</td>
+                                                        <td>0</td>
+                                                        <td>9</td>
+                                                        <td>18</td>
+                                                        <td>9</td>
+                                                        <td>18</td>
+                                                        <td>5007.36</td>
+                                                        <td>645</td>
                                                     </tr>
                                                 </tbody>
                                             </table>
+
                                         </div>
                                     </div>
                                 </div>
                             </div>
                             <div class="col-lg-12 available-product">
                                 <div class="text-end mb-3">
-                                    <button type="" onclick="exportTableToExcel('unavailable-product-list')" class="btn btn-success w-sm waves ripple-light">
+                                    <button type="" onclick="exportTableToExcel('unavailable-product-list')"
+                                        class="btn btn-success w-sm waves ripple-light">
                                         Download Excel File
                                     </button>
-                                    <button type="button" class="btn btn-success w-sm waves ripple-light" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
+                                    <button type="button" class="btn btn-success w-sm waves ripple-light"
+                                        data-bs-toggle="modal" data-bs-target="#staticBackdrop">
                                         Hold Products
                                     </button>
 
                                     <!-- Modal -->
-                                    <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                                    <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static"
+                                        data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel"
+                                        aria-hidden="true">
                                         <div class="modal-dialog">
                                             <div class="modal-content">
                                                 <div class="modal-header">
-                                                    <h1 class="modal-title fs-5" id="staticBackdropLabel">Hold Products</h1>
-                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                    <h1 class="modal-title fs-5" id="staticBackdropLabel">Hold Products
+                                                    </h1>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                        aria-label="Close"></button>
                                                 </div>
                                                 <div class="modal-body">
                                                     <form>
@@ -276,13 +245,16 @@
                                                     </form>
                                                 </div>
                                                 <div class="modal-footer">
-                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                                    <button type="button" id="holdOrder" class="btn btn-primary">Submit</button>
+                                                    <button type="button" class="btn btn-secondary"
+                                                        data-bs-dismiss="modal">Close</button>
+                                                    <button type="button" id="holdOrder"
+                                                        class="btn btn-primary">Submit</button>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
-                                    <a href="{{ route('order') }}" id="submitOrder" class="btn btn-success w-sm waves ripple-light">
+                                    <a href="{{ route('order') }}" id="submitOrder"
+                                        class="btn btn-success w-sm waves ripple-light">
                                         Submit
                                     </a>
                                 </div>
@@ -297,14 +269,14 @@
     </main>
     <!--end main wrapper-->
 @endsection
-    
 
-   
+
+
 @section('script')
     <script>
         new PerfectScrollbar(".customer-notes")
     </script>
-  
+
 
     <script>
         $(document).ready(function() {
@@ -359,11 +331,11 @@
 
                 // Create table row with 3 td cells
                 //let row = `
-                //        <tr>
-                //            <td>${customerName}</td>
-                //            <td>${subCustomerName}</td>
-                //        </tr>
-                //    `;
+            //        <tr>
+            //            <td>${customerName}</td>
+            //            <td>${subCustomerName}</td>
+            //        </tr>
+            //    `;
 
                 // Append to table body
                 $("#groupTitle").html(groupName);
@@ -430,6 +402,4 @@
             document.body.removeChild(downloadLink);
         }
     </script>
-
-    @endsection
-
+@endsection
