@@ -78,10 +78,8 @@
                                             <input class="form-check-input" type="checkbox">
                                         </th>
                                         <th>Order Id</th>
-                                        <th>Customer Name</th>
+                                        <th>Group Name</th>
                                         <th>Ordered Date</th>
-                                        <th>Delivery Date</th>
-                                        <th>Package Pdf</th>
                                         <th>Status</th>
                                         <th>Action</th>
                                     </tr>
@@ -99,10 +97,8 @@
                                         <td>
                                             2025-04-11
                                         </td>
-                                        <td>
-                                            2025-05-11
-                                        </td>
-                                        <td>BK159.pdf</td>
+                                        
+                                        
                                         <td class="text-success">Completed</td>
                                         <td>
                                             <a aria-label="anchor" href="packing-products-list.php" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
@@ -124,10 +120,7 @@
                                         <td>
                                             2025-04-11
                                         </td>
-                                        <td>
-                                            2025-05-11
-                                        </td>
-                                        <td>BK158.pdf</td>
+                                        
                                         <td class="text-primary">Pending</td>
                                         <td>
                                             <a aria-label="anchor" href="packing-products-list.php" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
@@ -149,10 +142,7 @@
                                         <td>
                                             2025-04-11
                                         </td>
-                                        <td>
-                                            2025-05-11
-                                        </td>
-                                        <td>-</td>
+                                        
                                         <td class="text-danger">Issue</td>
                                         <td>
                                             <a aria-label="anchor" href="packing-products-list.php" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">

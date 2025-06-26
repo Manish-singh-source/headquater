@@ -19,21 +19,109 @@
             <div class="div my-2">
                 <div class="row">
                     <div class="col-12">
-                        <div class="card w-100 d-flex  flex-sm-row flex-col">
-                            <ul class="col-12 list-group list-group-flush">
-                                <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
-                                    <span><b>Order Id</b></span>
-
-                                    <span>#2056</span>
-                                </li>
-                                <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
-                                    <span><b>Customer Name</b></span>
-                                    <span> <b>Blinkit</b>, <b>Big Bazar</b>, <b>Amazon</b> </span>
-                                </li>
-                            </ul>
-
-
+                        
+                        <div class="card">
+                    <div class="card-header border-bottom-dashed">
+                        <div class="d-flex">
+                            <h5 class="card-title flex-grow-1 mb-0">
+                                Order Details
+                            </h5>
+                            <div class="fw-bold text-dark">
+                                #1001
+                            </div>
                         </div>
+                    </div>
+
+                    <div class="card-body">
+                        <div class="row">
+
+
+                            <div class="col-lg-6">
+                                <ul class="list-group list-group-flush ">
+
+                                    <li class="list-group-item border-0 d-flex align-items-center gap-3 flex-wrap">
+                                        <span class="fw-semibold text-break">Customer Name :
+                                        </span>
+                                        <span>
+                                            Blinkit, Big Bazar, Amazon
+                                        </span>
+                                    </li>
+
+                                    <li class="list-group-item border-0 d-flex align-items-center gap-3 flex-wrap">
+                                        <span class="fw-semibold text-break">Appointments Date :
+                                        </span>
+                                        <span>
+                                            25/04/2005
+                                        </span>
+                                    </li>
+
+                                    <li class="list-group-item border-0 d-flex align-items-center gap-3 flex-wrap">
+                                        <span class="fw-semibold text-break">Invoices and E-Way Bill :
+                                        </span>
+                                        <span>
+                                            <a href="invoices-details.php" type="" class="btn btn-primary w-sm waves ripple-light">
+                                View
+                            </a>
+                                        </span>
+                                    </li>
+                                    <li class="list-group-item border-0 d-flex align-items-center gap-3 flex-wrap">
+                                        <span class="fw-semibold text-break">DN Amount :
+                                        </span>
+                                        <span>
+                                            45000
+                                        </span>
+                                    </li>
+
+
+                                </ul>
+                            </div>
+                            <div class="col-lg-6">
+                                <ul class="list-group list-group-flush ">
+
+                                    <li class="list-group-item border-0 d-flex align-items-center gap-3 flex-wrap">
+                                        <span class="fw-semibold text-break">DN Reason :
+                                        </span>
+                                        <span>
+                                            Damaged Goods
+                                        </span>
+                                    </li>
+
+                                    <li class="list-group-item border-0 d-flex align-items-center gap-3 flex-wrap">
+                                        <span class="fw-semibold text-break">POD :
+                                        </span>
+                                        <span>
+                                            Lalji Pada , Kandivali West, Mumbai, Maharashtra 400067
+                                        </span>
+                                    </li>
+
+                                    <li class="list-group-item border-0 d-flex align-items-center gap-3 flex-wrap">
+                                        <span class="fw-semibold text-break">GRN :
+                                        </span>
+                                        <span>
+                                           <button type="" class="btn btn-primary w-sm waves ripple-light">
+                                View
+                            </button>
+                                        </span>
+                                    </li>
+                                     <li class="list-group-item border-0 d-flex align-items-center gap-3 flex-wrap">
+                                        <span class="fw-semibold text-break">status :
+                                        </span>
+                                        <span>
+                                            <span class="badge bg-danger-subtle text-danger fw-semibold">Hold</span>
+                                        </span>
+                                    </li>
+                                    <!-- <li class="list-group-item border-0 d-flex align-items-center gap-3 flex-wrap">
+                                        <span class="fw-semibold text-break">PO :
+                                        </span>
+                                        <span>
+                                            <button class="btn btn-success btn-sm">View</button>
+                                        </span>
+                                    </li> -->
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                     </div>
                 </div>
             </div>
@@ -46,117 +134,66 @@
                         <div class="col">
                             <h6 class="mb-3">PO Table</h6>
                         </div>
-                        <div class="col-6 col-lg-1 text-end">
-                            <span class="badge bg-danger-subtle text-danger fw-semibold">Pending</span>
-                        </div>
                     </div>
                     <!-- Tabs Navigation -->
-                    <div class="div d-flex my-3">
-                        <ul class="nav nav-tabs" id="vendorTabs" role="tablist">
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link active bg-success text-white mx-1" id="customer1-tab" data-bs-toggle="tab" data-bs-target="#customer1" type="button" role="tab">Customer 1</button>
-                            </li>
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link bg-success text-white mx-1" id="customer2-tab" data-bs-toggle="tab" data-bs-target="#customer2" type="button" role="tab">Customer 2</button>
-                            </li>
-                        </ul>
-                    </div>
+                   
                     <div class="product-table" id="poTable">
                         <div class="table-responsive white-space-nowrap">
-                            <table class="table align-middle">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th>Order No</th>
-                                        <th>Portal Code</th>
-                                        <th>SKU Code</th>
-                                        <th>Title</th>
-                                        <th>MRP</th>
-                                        <th>Qty Requirement</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td>OPS/2025/2276</td>
-                                        <td>BOCRDVF87G</td>
-                                        <td>TP-260</td>
-                                        <td>Yera 260ml Glass Parabolic Tumbler Set</td>
-                                        <td>315</td>
-                                        <td>64</td>
-                                    </tr>
-                                    <tr>
-                                        <td>OPS/2025/2276</td>
-                                        <td>BOCRDL1L94</td>
-                                        <td>JR2KG</td>
-                                        <td>Yera Glass Jar with Plastic Lid - 2425ml</td>
-                                        <td>330</td>
-                                        <td>9</td>
-                                    </tr>
-                                    <tr>
-                                        <td>OPS/2025/2276</td>
-                                        <td>BOCRDJH5YZ</td>
-                                        <td>B9OFL</td>
-                                        <td>Yera Ice Cream Delight 250 ml Glass Bowl Set of 6</td>
-                                        <td>280</td>
-                                        <td>64</td>
-                                    </tr>
-                                    <tr>
-                                        <td>OPS/2025/2276</td>
-                                        <td>BOCR6N9ZL7</td>
-                                        <td>TC8P17</td>
-                                        <td>Yera Conical Glass Tumbler Set - 215 ml</td>
-                                        <td>230</td>
-                                        <td>144</td>
-                                    </tr>
-                                    <tr>
-                                        <td>OPS/2025/2276</td>
-                                        <td>B07T2DJ6JR</td>
-                                        <td>TS10-P0</td>
-                                        <td>Yera Glass Tumbler Transparent 285 ml</td>
-                                        <td>240</td>
-                                        <td>64</td>
-                                    </tr>
-                                    <tr>
-                                        <td>OPS/2025/2276</td>
-                                        <td>B07T2D5P2L</td>
-                                        <td>JS-4</td>
-                                        <td>Yera Glass Aahaar Jars, 1800 ml</td>
-                                        <td>190</td>
-                                        <td>144</td>
-                                    </tr>
-                                    <tr>
-                                        <td>OPS/2025/2276</td>
-                                        <td>B07T1CN9SX</td>
-                                        <td>T9AHB</td>
-                                        <td>Yera Glass Tumblers - 250 ml, Set of 6</td>
-                                        <td>250</td>
-                                        <td>64</td>
-                                    </tr>
-                                    <tr>
-                                        <td>OPS/2025/2276</td>
-                                        <td>B07T1CM6S3</td>
-                                        <td>JR-3</td>
-                                        <td>Yera Glass Aahaar Jars Storage Container, 3600 ML</td>
-                                        <td>225</td>
-                                        <td>360</td>
-                                    </tr>
-                                    <tr>
-                                        <td>OPS/2025/2276</td>
-                                        <td>B07T1CM6N6</td>
-                                        <td>CT9-P0</td>
-                                        <td>Yera Transparent Glass Mug with Handle 240 ml</td>
-                                        <td>340</td>
-                                        <td>128</td>
-                                    </tr>
-                                    <tr>
-                                        <td>OPS/2025/2276</td>
-                                        <td>B07SZ867XZ</td>
-                                        <td>JR-2</td>
-                                        <td>Yera Glass Aahaar Jars Storage Container, 2425 ML</td>
-                                        <td>185</td>
-                                        <td>216</td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                           <table class="table align-middle">
+                                                <thead class="table-light">
+                                                    <tr>
+                                                        <th>Order_No</th>
+                                                        <th>Customer</th>
+                                                        <th>Po_number</th>
+                                                        <th>Facility_Name</th>
+                                                        <th>Facility_Location</th>
+                                                        <th>Po_Date</th>
+                                                        <th>Po_Expiry_Date</th>
+                                                        <th>HSN</th>
+                                                        <th>Item_Code</th>
+                                                        <th>Description</th>
+                                                        <th>Basic_Rate</th>
+                                                        <th>GST</th>
+                                                        <th>Net_Landing_Rate</th>
+                                                        <th>MRP</th>
+                                                        <th>Rate_Confirmation</th>
+                                                        <th>Po_Qty</th>
+                                                        <th>Case_Pack_Qty</th>
+                                                        <th>Available</th>
+                                                        <th>Unavailable_Qty</th>
+                                                        <th>Block</th>
+                                                        <th>Purchase_Order_Qty</th>
+                                                        <th>Vendor_Code</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr>
+                                                        <td>ORD12345</td>
+                                                        <td>John Doe Enterprises</td>
+                                                        <td>PO987654</td> 
+                                                        <td>Sunrise Facility</td>
+                                                        <td>Mumbai</td> 
+                                                        <td>2025-06-01</td>
+                                                        <td>2025-12-01</td> 
+                                                        <td>30049011</td> 
+                                                        <td>ITM001</td> 
+                                                        <td>Sanitizer 500ml</td> 
+                                                        <td>75.00</td> 
+                                                        <td>18%</td> 
+                                                        <td>88.50</td> 
+                                                        <td>120.00</td> 
+                                                        <td>Confirmed</td> 
+                                                        <td>1000</td>
+                                                        <td>24</td> 
+                                                        <td>800</td>
+                                                        <td>200</td> 
+                                                        <td>No</td> 
+                                                        <td>1000</td> 
+                                                        <td>VEND123</td> 
+                                                    </tr>
+
+                                                </tbody>
+                                            </table>
                         </div>
 
                         <!-- <div class="col-12 text-end">
@@ -168,31 +205,7 @@
                 </div>
             </div>
 
-            <div class="card">
-                <div class="card-header border-bottom-dashed">
-                    <div class="row g-4 align-items-center">
-                        <div class="col-sm">
-                            <h5 class="card-title mb-0">
-                                Appointments Date
-                            </h5>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-12 col-md-3">
-                            <label for="dn amount" class="form-label">Appointments Date<span class="text-danger">*</span></label>
-                            <input type="date" name="dn amount" id="dn amount" class="form-control" value="" required="" placeholder="Enter DN Amount">
-                        </div>
-                        <div class="col-12 col-md-4 text-start">
-                            <button type="" class="btn btn-success w-sm waves ripple-light text-end mt-4">
-                                Save
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            
 
             <!-- <div class="card">
                 <div class="card-header border-bottom-dashed">
@@ -227,187 +240,7 @@
                 </div>
             </div> -->
 
-            <div class="card">
-                <div class="card-header border-bottom-dashed">
-                    <div class="row g-4 align-items-center">
-                        <div class="col-sm">
-                            <h5 class="card-title mb-0">
-                                Upload Invoices and E-Way Bill
-                            </h5>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="card-body">
-                    <div class="row g-3 py-2">
-                        <!-- <div class="col-12 col-lg-2">
-                            <th>
-                                <input id="checkbox3" class="form-check-input" type="checkbox">
-                                <label for="checkbox3" class="form-label">Upload Invoice</label>
-
-                            </th>
-                        </div> -->
-                        <div class="col-12 col-lg-3">
-                            <!-- <label for="document_image" class="form-label">Upload Excel <span class="text-danger">*</span></label> -->
-                            <input type="file" name="document_image" id="document_image" class="form-control" value="" required="" placeholder="Upload ID Document">
-                        </div>
-                        <div class="col-12 col-lg-1 d-flex gap-2">
-                            <button type="" class="btn btn-success w-sm waves ripple-light">
-                                Upload
-                            </button>
-                            <a href="invoices-details.php" type="" class="btn btn-success w-sm waves ripple-light">
-                                Preview
-                            </a>
-                        </div>
-                    </div>
-                    <div class="row g-3 py-2">
-                        <!-- <div class="col-12 col-lg-2">
-                            <th>
-                                <input id="checkbox3" class="form-check-input" type="checkbox">
-                                <label for="checkbox3" class="form-label">Upload E-Way Bill</label>
-
-                            </th>
-                        </div> -->
-                        <div class="col-12 col-lg-3">
-                            <!-- <label for="document_image" class="form-label">Upload Excel <span class="text-danger">*</span></label> -->
-                            <input type="file" name="document_image" id="document_image" class="form-control" value="" required="" placeholder="Upload ID Document">
-                        </div>
-                        <div class="col-12 col-lg-1 d-flex gap-2">
-                            <button type="" class="btn btn-success w-sm waves ripple-light">
-                                Upload
-                            </button>
-                            <a href="invoices-details.php" type="" class="btn btn-success w-sm waves ripple-light">
-                                Preview
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card">
-                <div class="card-header border-bottom-dashed">
-                    <div class="row g-4 align-items-center">
-                        <div class="col-sm">
-                            <h5 class="card-title mb-0">
-                                Delivery Note
-                            </h5>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-12 col-md-2">
-                            <label for="dn amount" class="form-label">DN Amount<span class="text-danger">*</span></label>
-                            <input type="text" name="dn amount" id="dn amount" class="form-control" value="" required="" placeholder="Enter DN Amount">
-                        </div>
-                        <div class="col-12 col-md-4">
-                            <label for="dn reason" class="form-label">DN Reason<span class="text-danger">*</span></label>
-                            <input type="text" name="dn reason" id="dn reason" class="form-control" value="" required="" placeholder="Enter DN Reason">
-                        </div>
-                        <div class="col-12 col-md-4 text-start">
-                            <button type="" class="btn btn-success w-sm waves ripple-light text-end mt-4">
-                                Save
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card">
-                <div class="card-header border-bottom-dashed">
-                    <div class="row g-4 align-items-center">
-                        <div class="col-sm">
-                            <h5 class="card-title mb-0">
-                                Get POD
-                            </h5>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="card-body">
-                    <div class="row">
-                        <!-- <div class="col-12 col-lg-2">
-                            <th>
-                                <input id="checkbox1" class="form-check-input" type="checkbox">
-                                <label for="checkbox1" class="form-label">Upload POD</label>
-
-                            </th>
-                        </div> -->
-                        <div class="col-12 col-lg-4">
-                            <label for="document_image" class="form-label">Upload POD <span class="text-danger">*</span></label>
-                            <input type="file" name="document_image" id="document_image" class="form-control" value="" required="" placeholder="Upload ID Document">
-                        </div>
-                        <div class="col-12 col-lg-6 text-start">
-                            <button type="" class="btn btn-success w-sm waves ripple-light text-end mt-4">
-                                Upload
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card">
-                <div class="card-header border-bottom-dashed">
-                    <div class="row g-4 align-items-center">
-                        <div class="col-sm">
-                            <h5 class="card-title mb-0">
-                                Add GRN
-                            </h5>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="card-body">
-                    <div class="row g-3">
-                        <!-- <div class="col-12 col-lg-2">
-                            <th>
-                                <input id="checkbox3" class="form-check-input" type="checkbox">
-                                <label for="checkbox3" class="form-label">Upload GRN</label>
-
-                            </th>
-                        </div> -->
-                        <div class="col-12 col-lg-3">
-                            <!-- <label for="document_image" class="form-label">Upload Excel <span class="text-danger">*</span></label> -->
-                            <input type="file" name="document_image" id="document_image" class="form-control" value="" required="" placeholder="Upload ID Document">
-                        </div>
-                        <div class="col-12 col-lg-1 d-flex gap-2">
-                            <button type="" class="btn btn-success w-sm waves ripple-light">
-                                Upload
-                            </button>
-                            <button type="" class="btn btn-success w-sm waves ripple-light">
-                                Pervious
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card">
-                <div class="card-header border-bottom-dashed">
-                    <div class="row g-4 align-items-center">
-                        <div class="col-sm">
-                            <h5 class="card-title mb-0">
-                                Payment Status
-                            </h5>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="card-body">
-                    <div class="row g-3">
-                        <div class="col-12 col-lg-2 text-end">
-                            <select id="input9" class="form-select">
-                                <option selected="" disabled>Payment Status</option>
-                                <option>Pending</option>
-                                <option>Rejected</option>
-                                <option>Completed</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
+          
 
         </div>
     </main>
