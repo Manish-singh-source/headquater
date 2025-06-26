@@ -28,7 +28,7 @@
                                     <h5>
                                         Permissions
                                     </h5>
-                                    
+
                                     <div class="row g-3">
                                         <div class="col-xl-6">
                                             <div class="border rounded p-3">
@@ -47,12 +47,13 @@
                                                         <div
                                                             class="d-flex align-items-center justify-content-between gap-3 form-control p-2">
                                                             <label class="mb-0">
-                                                                View Admin 
+                                                                View Admin
                                                             </label>
                                                             <div class="form-check form-switch">
                                                                 <input type="checkbox" value="view_admin"
                                                                     name="permission[admin][view_admin]"
-                                                                    class="form-check-input" id="view_admin" @if(isset($permissions['admin']['view_admin'])) checked @endif>
+                                                                    class="form-check-input" id="view_admin"
+                                                                    @if (isset($permissions['admin']['view_admin'])) checked @endif>
                                                                 <label class="form-check-label" for="view_admin"></label>
                                                             </div>
                                                         </div>
@@ -66,7 +67,8 @@
                                                             <div class="form-check form-switch">
                                                                 <input type="checkbox" value="update_profile"
                                                                     name="permission[admin][update_profile]"
-                                                                    class="form-check-input" id="update_profile" @if(isset($permissions['admin']['update_profile'])) checked @endif>
+                                                                    class="form-check-input" id="update_profile"
+                                                                    @if (isset($permissions['admin']['update_profile'])) checked @endif>
                                                                 <label class="form-check-label"
                                                                     for="update_profile"></label>
                                                             </div>
@@ -81,8 +83,9 @@
                                                             <div class="form-check form-switch">
                                                                 <input type="checkbox" value="create_admin"
                                                                     name="permission[admin][create_admin]"
-                                                                    class="form-check-input" id="create_admin">
-                                                                <label class="form-check-label" for="create_admin" @if(isset($permissions['admin']['create_admin'])) checked @endif></label>
+                                                                    class="form-check-input" id="create_admin"
+                                                                    @if (isset($permissions['admin']['create_admin'])) checked @endif>
+                                                                <label class="form-check-label" for="create_admin"></label>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -95,8 +98,9 @@
                                                             <div class="form-check form-switch">
                                                                 <input type="checkbox" value="update_admin"
                                                                     name="permission[admin][update_admin]"
-                                                                    class="form-check-input" id="update_admin">
-                                                                <label class="form-check-label" for="update_admin" @if(isset($permissions['admin']['update_admin'])) checked @endif></label>
+                                                                    class="form-check-input" id="update_admin"
+                                                                    @if (isset($permissions['admin']['update_admin'])) checked @endif>
+                                                                <label class="form-check-label" for="update_admin"></label>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -109,8 +113,9 @@
                                                             <div class="form-check form-switch">
                                                                 <input type="checkbox" value="delete_admin"
                                                                     name="permission[admin][delete_admin]"
-                                                                    class="form-check-input" id="delete_admin">
-                                                                <label class="form-check-label" for="delete_admin" @if(isset($permissions['admin']['delete_admin'])) checked @endif></label>
+                                                                    class="form-check-input" id="delete_admin"
+                                                                    @if (isset($permissions['admin']['delete_admin'])) checked @endif>
+                                                                <label class="form-check-label" for="delete_admin"></label>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -136,7 +141,8 @@
                                                             <div class="form-check form-switch">
                                                                 <input type="checkbox" value="view_vendor"
                                                                     name="permission[vendor][view_vendor]"
-                                                                    class="form-check-input" id="view_vendor" @if(isset($permissions['vendor']['view_vendor'])) checked @endif>
+                                                                    class="form-check-input" id="view_vendor"
+                                                                    @if (isset($permissions['vendor']['view_vendor'])) checked @endif>
                                                                 <label class="form-check-label" for="view_vendor"></label>
                                                             </div>
                                                         </div>
@@ -150,7 +156,8 @@
                                                             <div class="form-check form-switch">
                                                                 <input type="checkbox" value="update_vendor"
                                                                     name="permission[vendor][update_vendor]"
-                                                                    class="form-check-input" id="update_vendor" @if(isset($permissions['vendor']['update_vendor'])) checked @endif>
+                                                                    class="form-check-input" id="update_vendor"
+                                                                    @if (isset($permissions['vendor']['update_vendor'])) checked @endif>
                                                                 <label class="form-check-label"
                                                                     for="update_vendor"></label>
                                                             </div>
@@ -165,7 +172,8 @@
                                                             <div class="form-check form-switch">
                                                                 <input type="checkbox" value="create_vendor"
                                                                     name="permission[vendor][create_vendor]"
-                                                                    class="form-check-input" id="create_vendor" @if(isset($permissions['vendor']['create_vendor'])) checked @endif>
+                                                                    class="form-check-input" id="create_vendor"
+                                                                    @if (isset($permissions['vendor']['create_vendor'])) checked @endif>
                                                                 <label class="form-check-label"
                                                                     for="create_vendor"></label>
                                                             </div>
@@ -180,7 +188,8 @@
                                                             <div class="form-check form-switch">
                                                                 <input type="checkbox" value="delete_vendor"
                                                                     name="permission[vendor][delete_vendor]]"
-                                                                    class="form-check-input" id="delete_vendor" @if(isset($permissions['vendor']['delete_vendor'])) checked @endif>
+                                                                    class="form-check-input" id="delete_vendor"
+                                                                    @if (isset($permissions['vendor']['delete_vendor'])) checked @endif>
                                                                 <label class="form-check-label" for="delete_vendor">
                                                                 </label>
                                                             </div>
@@ -208,7 +217,8 @@
                                                             <div class="form-check form-switch">
                                                                 <input type="checkbox" value="view_customer"
                                                                     name="permission[customer][view_customer]"
-                                                                    class="form-check-input" id="view_customer" @if(isset($permissions['customer']['view_customer'])) checked @endif>
+                                                                    class="form-check-input" id="view_customer"
+                                                                    @if (isset($permissions['customer']['view_customer'])) checked @endif>
                                                                 <label class="form-check-label"
                                                                     for="view_customer"></label>
                                                             </div>
@@ -223,7 +233,8 @@
                                                             <div class="form-check form-switch">
                                                                 <input type="checkbox" value="update_customer"
                                                                     name="permission[customer][update_customer]"
-                                                                    class="form-check-input" id="update_customer" @if(isset($permissions['customer']['update_customer'])) checked @endif>
+                                                                    class="form-check-input" id="update_customer"
+                                                                    @if (isset($permissions['customer']['update_customer'])) checked @endif>
                                                                 <label class="form-check-label"
                                                                     for="update_customer"></label>
                                                             </div>
@@ -238,7 +249,8 @@
                                                             <div class="form-check form-switch">
                                                                 <input type="checkbox" value="create_customer"
                                                                     name="permission[customer][create_customer]"
-                                                                    class="form-check-input" id="create_customer" @if(isset($permissions['customer']['create_customer'])) checked @endif>
+                                                                    class="form-check-input" id="create_customer"
+                                                                    @if (isset($permissions['customer']['create_customer'])) checked @endif>
                                                                 <label class="form-check-label"
                                                                     for="create_customer"></label>
                                                             </div>
@@ -253,7 +265,8 @@
                                                             <div class="form-check form-switch">
                                                                 <input type="checkbox" value="delete_customer"
                                                                     name="permission[customer][delete_customer]"
-                                                                    class="form-check-input" id="delete_customer" @if(isset($permissions['customer']['delete_customer'])) checked @endif>
+                                                                    class="form-check-input" id="delete_customer"
+                                                                    @if (isset($permissions['customer']['delete_customer'])) checked @endif>
                                                                 <label class="form-check-label"
                                                                     for="delete_customer"></label>
                                                             </div>
@@ -281,7 +294,8 @@
                                                             <div class="form-check form-switch">
                                                                 <input type="checkbox" value="view_warehouse"
                                                                     name="permission[warehouse][view_warehouse]"
-                                                                    class="form-check-input" id="view_warehouse" @if(isset($permissions['warehouse']['view_warehouse'])) checked @endif>
+                                                                    class="form-check-input" id="view_warehouse"
+                                                                    @if (isset($permissions['warehouse']['view_warehouse'])) checked @endif>
                                                                 <label class="form-check-label"
                                                                     for="view_warehouse"></label>
                                                             </div>
@@ -296,7 +310,8 @@
                                                             <div class="form-check form-switch">
                                                                 <input type="checkbox" value="update_warehouse"
                                                                     name="permission[warehouse][update_warehouse]"
-                                                                    class="form-check-input" id="update_warehouse" @if(isset($permissions['warehouse']['update_warehouse'])) checked @endif>
+                                                                    class="form-check-input" id="update_warehouse"
+                                                                    @if (isset($permissions['warehouse']['update_warehouse'])) checked @endif>
                                                                 <label class="form-check-label"
                                                                     for="update_warehouse"></label>
                                                             </div>
@@ -311,7 +326,8 @@
                                                             <div class="form-check form-switch">
                                                                 <input type="checkbox" value="create_warehouse"
                                                                     name="permission[warehouse][create_warehouse]"
-                                                                    class="form-check-input" id="create_warehouse" @if(isset($permissions['warehouse']['create_warehouse'])) checked @endif>
+                                                                    class="form-check-input" id="create_warehouse"
+                                                                    @if (isset($permissions['warehouse']['create_warehouse'])) checked @endif>
                                                                 <label class="form-check-label"
                                                                     for="create_warehouse"></label>
                                                             </div>
@@ -326,7 +342,8 @@
                                                             <div class="form-check form-switch">
                                                                 <input type="checkbox" value="delete_warehouse"
                                                                     name="permission[warehouse][delete_warehouse]"
-                                                                    class="form-check-input" id="delete_warehouse" @if(isset($permissions['warehouse']['delete_warehouse'])) checked @endif>
+                                                                    class="form-check-input" id="delete_warehouse"
+                                                                    @if (isset($permissions['warehouse']['delete_warehouse'])) checked @endif>
                                                                 <label class="form-check-label"
                                                                     for="delete_warehouse"></label>
                                                             </div>
@@ -354,7 +371,8 @@
                                                             <div class="form-check form-switch">
                                                                 <input type="checkbox" value="view_product"
                                                                     name="permission[products][view_product]"
-                                                                    class="form-check-input" id="view_product" @if(isset($permissions['products']['view_product'])) checked @endif>
+                                                                    class="form-check-input" id="view_product"
+                                                                    @if (isset($permissions['products']['view_product'])) checked @endif>
                                                                 <label class="form-check-label"
                                                                     for="view_product"></label>
                                                             </div>
@@ -369,7 +387,8 @@
                                                             <div class="form-check form-switch">
                                                                 <input type="checkbox" value="create_product"
                                                                     name="permission[products][create_product]"
-                                                                    class="form-check-input" id="create_product" @if(isset($permissions['products']['create_product'])) checked @endif>
+                                                                    class="form-check-input" id="create_product"
+                                                                    @if (isset($permissions['products']['create_product'])) checked @endif>
                                                                 <label class="form-check-label"
                                                                     for="create_product"></label>
                                                             </div>
@@ -384,7 +403,8 @@
                                                             <div class="form-check form-switch">
                                                                 <input type="checkbox" value="update_product"
                                                                     name="permission[products][update_product]"
-                                                                    class="form-check-input" id="update_product" @if(isset($permissions['products']['update_product'])) checked @endif>
+                                                                    class="form-check-input" id="update_product"
+                                                                    @if (isset($permissions['products']['update_product'])) checked @endif>
                                                                 <label class="form-check-label"
                                                                     for="update_product"></label>
                                                             </div>
@@ -399,7 +419,8 @@
                                                             <div class="form-check form-switch">
                                                                 <input type="checkbox" value="delete_product"
                                                                     name="permission[products][delete_product]"
-                                                                    class="form-check-input" id="delete_product" @if(isset($permissions['products']['delete_product'])) checked @endif>
+                                                                    class="form-check-input" id="delete_product"
+                                                                    @if (isset($permissions['products']['delete_product'])) checked @endif>
                                                                 <label class="form-check-label"
                                                                     for="delete_product"></label>
                                                             </div>
@@ -427,7 +448,8 @@
                                                             <div class="form-check form-switch">
                                                                 <input type="checkbox" value="view_order"
                                                                     name="permission[order][view_order]"
-                                                                    class="form-check-input" id="view_order" @if(isset($permissions['order']['view_order'])) checked @endif>
+                                                                    class="form-check-input" id="view_order"
+                                                                    @if (isset($permissions['order']['view_order'])) checked @endif>
                                                                 <label class="form-check-label" for="view_order"></label>
                                                             </div>
                                                         </div>
@@ -441,7 +463,8 @@
                                                             <div class="form-check form-switch">
                                                                 <input type="checkbox" value="create_order"
                                                                     name="permission[order][create_order]"
-                                                                    class="form-check-input" id="create_order" @if(isset($permissions['order']['create_order'])) checked @endif>
+                                                                    class="form-check-input" id="create_order"
+                                                                    @if (isset($permissions['order']['create_order'])) checked @endif>
                                                                 <label class="form-check-label"
                                                                     for="create_order"></label>
                                                             </div>
@@ -456,7 +479,8 @@
                                                             <div class="form-check form-switch">
                                                                 <input type="checkbox" value="update_order"
                                                                     name="permission[order][update_order]"
-                                                                    class="form-check-input" id="update_order" @if(isset($permissions['order']['update_order'])) checked @endif>
+                                                                    class="form-check-input" id="update_order"
+                                                                    @if (isset($permissions['order']['update_order'])) checked @endif>
                                                                 <label class="form-check-label"
                                                                     for="update_order"></label>
                                                             </div>
@@ -471,7 +495,8 @@
                                                             <div class="form-check form-switch">
                                                                 <input type="checkbox" value="delete_order"
                                                                     name="permission[order][delete_order]"
-                                                                    class="form-check-input" id="delete_order" @if(isset($permissions['order']['delete_order'])) checked @endif>
+                                                                    class="form-check-input" id="delete_order"
+                                                                    @if (isset($permissions['order']['delete_order'])) checked @endif>
                                                                 <label class="form-check-label"
                                                                     for="delete_order"></label>
                                                             </div>
@@ -499,7 +524,8 @@
                                                             <div class="form-check form-switch">
                                                                 <input type="checkbox" value="view_roles"
                                                                     name="permission[role][view_roles]"
-                                                                    class="form-check-input" id="view_roles" @if(isset($permissions['role']['view_roles'])) checked @endif>
+                                                                    class="form-check-input" id="view_roles"
+                                                                    @if (isset($permissions['role']['view_roles'])) checked @endif>
                                                                 <label class="form-check-label" for="view_roles"></label>
                                                             </div>
                                                         </div>
@@ -513,7 +539,8 @@
                                                             <div class="form-check form-switch">
                                                                 <input type="checkbox" value="create_roles"
                                                                     name="permission[role][create_roles]"
-                                                                    class="form-check-input" id="create_roles" @if(isset($permissions['role']['create_roles'])) checked @endif>
+                                                                    class="form-check-input" id="create_roles"
+                                                                    @if (isset($permissions['role']['create_roles'])) checked @endif>
                                                                 <label class="form-check-label"
                                                                     for="create_roles"></label>
                                                             </div>
@@ -528,7 +555,8 @@
                                                             <div class="form-check form-switch">
                                                                 <input type="checkbox" value="update_roles"
                                                                     name="permission[role][update_roles]"
-                                                                    class="form-check-input" id="update_roles" @if(isset($permissions['role']['update_roles'])) checked @endif>
+                                                                    class="form-check-input" id="update_roles"
+                                                                    @if (isset($permissions['role']['update_roles'])) checked @endif>
                                                                 <label class="form-check-label"
                                                                     for="update_roles"></label>
                                                             </div>
@@ -543,7 +571,8 @@
                                                             <div class="form-check form-switch">
                                                                 <input type="checkbox" value="delete_roles"
                                                                     name="permission[role][delete_roles]"
-                                                                    class="form-check-input" id="delete_roles" @if(isset($permissions['role']['delete_roles'])) checked @endif>
+                                                                    class="form-check-input" id="delete_roles"
+                                                                    @if (isset($permissions['role']['delete_roles'])) checked @endif>
                                                                 <label class="form-check-label"
                                                                     for="delete_roles"></label>
                                                             </div>
@@ -571,7 +600,8 @@
                                                             <div class="form-check form-switch">
                                                                 <input type="checkbox" value="view_dashboard"
                                                                     name="permission[dashboard][view_dashboard]"
-                                                                    class="form-check-input" id="view_dashboard" @if(isset($permissions['dashboard']['view_dashboard'])) checked @endif>
+                                                                    class="form-check-input" id="view_dashboard"
+                                                                    @if (isset($permissions['dashboard']['view_dashboard'])) checked @endif>
                                                                 <label class="form-check-label"
                                                                     for="view_dashboard"></label>
                                                             </div>

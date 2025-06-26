@@ -76,12 +76,29 @@
                                                             </label>
                                                             <div class="form-check form-switch">
                                                                 <input type="checkbox" value="create_admin"
-                                                                    name="permission[admin][create_admin] "
+                                                                    name="permission[admin][create_admin]"
+                                                                    class="form-check-input" id="create_admin">
+                                                                <label class="form-check-label"
+                                                                    for="create_admin"></label>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    {{-- 
+                                                    <div class="col-md-6">
+                                                        <div
+                                                            class="d-flex align-items-center justify-content-between gap-3 form-control p-2">
+                                                            <label class="mb-0">
+                                                                Create Admin
+                                                            </label>
+                                                            <div class="form-check form-switch">
+                                                                <input type="checkbox" value="create_admin"
+                                                                    name="permission[admin][create_admin]"
                                                                     class="form-check-input" id="create_admin">
                                                                 <label class="form-check-label" for="create_admin"></label>
                                                             </div>
                                                         </div>
-                                                    </div>
+                                                    </div> 
+                                                    --}}
                                                     <div class="col-md-6">
                                                         <div
                                                             class="d-flex align-items-center justify-content-between gap-3 form-control p-2">
@@ -90,7 +107,7 @@
                                                             </label>
                                                             <div class="form-check form-switch">
                                                                 <input type="checkbox" value="update_admin"
-                                                                    name="permission[admin][update_admin] "
+                                                                    name="permission[admin][update_admin]"
                                                                     class="form-check-input" id="update_admin">
                                                                 <label class="form-check-label" for="update_admin"></label>
                                                             </div>
@@ -104,7 +121,7 @@
                                                             </label>
                                                             <div class="form-check form-switch">
                                                                 <input type="checkbox" value="delete_admin"
-                                                                    name="permission[admin][delete_admin] "
+                                                                    name="permission[admin][delete_admin]"
                                                                     class="form-check-input" id="delete_admin">
                                                                 <label class="form-check-label" for="delete_admin"></label>
                                                             </div>
@@ -131,7 +148,7 @@
                                                             </label>
                                                             <div class="form-check form-switch">
                                                                 <input type="checkbox" value="view_vendor"
-                                                                    name="permission[vendor][view_vendor] "
+                                                                    name="permission[vendor][view_vendor]"
                                                                     class="form-check-input" id="view_vendor">
                                                                 <label class="form-check-label" for="view_vendor"></label>
                                                             </div>
@@ -145,7 +162,7 @@
                                                             </label>
                                                             <div class="form-check form-switch">
                                                                 <input type="checkbox" value="update_vendor"
-                                                                    name="permission[vendor][update_vendor] "
+                                                                    name="permission[vendor][update_vendor]"
                                                                     class="form-check-input" id="update_vendor">
                                                                 <label class="form-check-label"
                                                                     for="update_vendor"></label>
@@ -160,7 +177,7 @@
                                                             </label>
                                                             <div class="form-check form-switch">
                                                                 <input type="checkbox" value="create_vendor"
-                                                                    name="permission[vendor][create_vendor] "
+                                                                    name="permission[vendor][create_vendor]"
                                                                     class="form-check-input" id="create_vendor">
                                                                 <label class="form-check-label"
                                                                     for="create_vendor"></label>
@@ -175,10 +192,10 @@
                                                             </label>
                                                             <div class="form-check form-switch">
                                                                 <input type="checkbox" value="delete_vendor"
-                                                                    name="permission[vendor][delete_vendor]] "
-                                                                    class="form-check-input" id="delete_vendor">">
+                                                                    name="permission[vendor][delete_vendor]"
+                                                                    class="form-check-input" id="delete_vendor">
                                                                 <label class="form-check-label"
-                                                                    for="delete_vendor"></"></label>
+                                                                    for="delete_vendor"></label>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -203,7 +220,7 @@
                                                             </label>
                                                             <div class="form-check form-switch">
                                                                 <input type="checkbox" value="view_customer"
-                                                                    name="permission[customer][view_customer] "
+                                                                    name="permission[customer][view_customer]"
                                                                     class="form-check-input" id="view_customer">
                                                                 <label class="form-check-label" for="view_customer"></label>
                                                             </div>
@@ -217,7 +234,7 @@
                                                             </label>
                                                             <div class="form-check form-switch">
                                                                 <input type="checkbox" value="update_customer"
-                                                                    name="permission[customer][update_customer] "
+                                                                    name="permission[customer][update_customer]"
                                                                     class="form-check-input" id="update_customer">
                                                                 <label class="form-check-label"
                                                                     for="update_customer"></label>
@@ -232,7 +249,7 @@
                                                             </label>
                                                             <div class="form-check form-switch">
                                                                 <input type="checkbox" value="create_customer"
-                                                                    name="permission[customer][create_customer] "
+                                                                    name="permission[customer][create_customer]"
                                                                     class="form-check-input" id="create_customer">
                                                                 <label class="form-check-label"
                                                                     for="create_customer"></label>
@@ -247,7 +264,7 @@
                                                             </label>
                                                             <div class="form-check form-switch">
                                                                 <input type="checkbox" value="delete_customer"
-                                                                    name="permission[customer][delete_customer] "
+                                                                    name="permission[customer][delete_customer]"
                                                                     class="form-check-input" id="delete_customer">
                                                                 <label class="form-check-label"
                                                                     for="delete_customer"></label>
@@ -275,7 +292,7 @@
                                                             </label>
                                                             <div class="form-check form-switch">
                                                                 <input type="checkbox" value="view_warehouse"
-                                                                    name="permission[warehouse][view_warehouse] "
+                                                                    name="permission[warehouse][view_warehouse]"
                                                                     class="form-check-input" id="view_warehouse">
                                                                 <label class="form-check-label" for="view_warehouse"></label>
                                                             </div>
@@ -289,7 +306,7 @@
                                                             </label>
                                                             <div class="form-check form-switch">
                                                                 <input type="checkbox" value="update_warehouse"
-                                                                    name="permission[warehouse][update_warehouse] "
+                                                                    name="permission[warehouse][update_warehouse]"
                                                                     class="form-check-input" id="update_warehouse">
                                                                 <label class="form-check-label"
                                                                     for="update_warehouse"></label>
@@ -304,7 +321,7 @@
                                                             </label>
                                                             <div class="form-check form-switch">
                                                                 <input type="checkbox" value="create_warehouse"
-                                                                    name="permission[warehouse][create_warehouse] "
+                                                                    name="permission[warehouse][create_warehouse]"
                                                                     class="form-check-input" id="create_warehouse">
                                                                 <label class="form-check-label"
                                                                     for="create_warehouse"></label>
@@ -319,7 +336,7 @@
                                                             </label>
                                                             <div class="form-check form-switch">
                                                                 <input type="checkbox" value="delete_warehouse"
-                                                                    name="permission[warehouse][delete_warehouse] "
+                                                                    name="permission[warehouse][delete_warehouse]"
                                                                     class="form-check-input" id="delete_warehouse">
                                                                 <label class="form-check-label"
                                                                     for="delete_warehouse"></label>
@@ -347,7 +364,7 @@
                                                             </label>
                                                             <div class="form-check form-switch">
                                                                 <input type="checkbox" value="view_product"
-                                                                    name="permission[products][view_product] "
+                                                                    name="permission[products][view_product]"
                                                                     class="form-check-input" id="view_product">
                                                                 <label class="form-check-label"
                                                                     for="view_product"></label>
@@ -362,7 +379,7 @@
                                                             </label>
                                                             <div class="form-check form-switch">
                                                                 <input type="checkbox" value="create_product"
-                                                                    name="permission[products][create_product] "
+                                                                    name="permission[products][create_product]"
                                                                     class="form-check-input" id="create_product">
                                                                 <label class="form-check-label"
                                                                     for="create_product"></label>
@@ -377,7 +394,7 @@
                                                             </label>
                                                             <div class="form-check form-switch">
                                                                 <input type="checkbox" value="update_product"
-                                                                    name="permission[products][update_product] "
+                                                                    name="permission[products][update_product]"
                                                                     class="form-check-input" id="update_product">
                                                                 <label class="form-check-label"
                                                                     for="update_product"></label>
@@ -392,7 +409,7 @@
                                                             </label>
                                                             <div class="form-check form-switch">
                                                                 <input type="checkbox" value="delete_product"
-                                                                    name="permission[products][delete_product] "
+                                                                    name="permission[products][delete_product]"
                                                                     class="form-check-input" id="delete_product">
                                                                 <label class="form-check-label"
                                                                     for="delete_product"></label>
@@ -420,7 +437,7 @@
                                                             </label>
                                                             <div class="form-check form-switch">
                                                                 <input type="checkbox" value="view_order"
-                                                                    name="permission[order][view_order] "
+                                                                    name="permission[order][view_order]"
                                                                     class="form-check-input" id="view_order">
                                                                 <label class="form-check-label"
                                                                     for="view_order"></label>
@@ -435,7 +452,7 @@
                                                             </label>
                                                             <div class="form-check form-switch">
                                                                 <input type="checkbox" value="create_order"
-                                                                    name="permission[order][create_order] "
+                                                                    name="permission[order][create_order]"
                                                                     class="form-check-input" id="create_order">
                                                                 <label class="form-check-label"
                                                                     for="create_order"></label>
@@ -450,7 +467,7 @@
                                                             </label>
                                                             <div class="form-check form-switch">
                                                                 <input type="checkbox" value="update_order"
-                                                                    name="permission[order][update_order] "
+                                                                    name="permission[order][update_order]"
                                                                     class="form-check-input" id="update_order">
                                                                 <label class="form-check-label"
                                                                     for="update_order"></label>
@@ -465,7 +482,7 @@
                                                             </label>
                                                             <div class="form-check form-switch">
                                                                 <input type="checkbox" value="delete_order"
-                                                                    name="permission[order][delete_order] "
+                                                                    name="permission[order][delete_order]"
                                                                     class="form-check-input" id="delete_order">
                                                                 <label class="form-check-label"
                                                                     for="delete_order"></label>
@@ -493,7 +510,7 @@
                                                             </label>
                                                             <div class="form-check form-switch">
                                                                 <input type="checkbox" value="view_roles"
-                                                                    name="permission[role][view_roles] "
+                                                                    name="permission[role][view_roles]"
                                                                     class="form-check-input" id="view_roles">
                                                                 <label class="form-check-label" for="view_roles"></label>
                                                             </div>
@@ -507,7 +524,7 @@
                                                             </label>
                                                             <div class="form-check form-switch">
                                                                 <input type="checkbox" value="create_roles"
-                                                                    name="permission[role][create_roles] "
+                                                                    name="permission[role][create_roles]"
                                                                     class="form-check-input" id="create_roles">
                                                                 <label class="form-check-label"
                                                                     for="create_roles"></label>
@@ -522,7 +539,7 @@
                                                             </label>
                                                             <div class="form-check form-switch">
                                                                 <input type="checkbox" value="update_roles"
-                                                                    name="permission[role][update_roles] "
+                                                                    name="permission[role][update_roles]"
                                                                     class="form-check-input" id="update_roles">
                                                                 <label class="form-check-label"
                                                                     for="update_roles"></label>
@@ -537,7 +554,7 @@
                                                             </label>
                                                             <div class="form-check form-switch">
                                                                 <input type="checkbox" value="delete_roles"
-                                                                    name="permission[role][delete_roles] "
+                                                                    name="permission[role][delete_roles]"
                                                                     class="form-check-input" id="delete_roles">
                                                                 <label class="form-check-label"
                                                                     for="delete_roles"></label>
@@ -565,7 +582,7 @@
                                                             </label>
                                                             <div class="form-check form-switch">
                                                                 <input type="checkbox" value="view_dashboard"
-                                                                    name="permission[dashboard][view_dashboard] "
+                                                                    name="permission[dashboard][view_dashboard]"
                                                                     class="form-check-input" id="view_dashboard">
                                                                 <label class="form-check-label"
                                                                     for="view_dashboard"></label>

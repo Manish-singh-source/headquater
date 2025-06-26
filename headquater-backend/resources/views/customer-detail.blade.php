@@ -14,7 +14,6 @@
                     </ol>
                 </nav>
             </div>
-
         </div>
         <!--end breadcrumb-->
 
@@ -41,11 +40,11 @@
                         </li>
                         <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                             <span><b>Shipping Address</b></span>
-                            <span>{{ $customer->shipping_address}}, {{ $customer->shipping_state}}, {{ $customer->shipping_city}}, {{ $customer->shipping_pin_code}}, {{ $customer->shipping_country}}</span>
+                            <span>{{ $customer->shipping_address}}, {{ $customer->shipping_state}}, {{ $customer->shipping_city}}, {{ $customer->shipping_pin_code}}, {{ $customer->shippingCountry->name}}</span>
                         </li>
                         <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                             <span><b>Billing Address</b></span>
-                            <span>{{ $customer->billing_address}}, {{ $customer->billing_state}}, {{ $customer->billing_city}}, {{ $customer->billing_pin_code}}, {{ $customer->billing_country}}</span>
+                            <span>{{ $customer->billing_address}}, {{ $customer->billing_state}}, {{ $customer->billing_city}}, {{ $customer->billing_pin_code}}, {{ $customer->billingCountry->name}}</span>
                         </li>
                     </ul>
                 </div>

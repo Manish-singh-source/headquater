@@ -16,6 +16,8 @@ Route::get('/', function () {
     return view('index');
 })->name('index');
 
+
+
 // Authentication
 Route::get('/login', [AuthController::class, 'loginCustomer'])->name('login');
 Route::post('/login', [AuthController::class, 'loginAuthCheckCustomerData'])->name('login.auth.check');
@@ -23,44 +25,40 @@ Route::get('/register', [AuthController::class, 'registerCustomer'])->name('regi
 Route::post('/register', [AuthController::class, 'registerCustomerData'])->name('register.store');
 Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
 
+
+
 //Access Control
 // Staff List
-Route::get('/staff',[AccessController::class, 'staffList'])->name('staff');
-// Add Staff 
-Route::get('/add-staff',[AccessController::class, 'addStaff'])->name('add-staff');
-// Staff  Detail
-Route::get('/staff-detail',[AccessController::class, 'staffDetail'])->name('staff-detail');
+Route::get('/staff', [AccessController::class, 'staffList'])->name('staff');
+Route::get('/add-staff', [AccessController::class, 'addStaff'])->name('add-staff');
+Route::get('/staff-detail', [AccessController::class, 'staffDetail'])->name('staff-detail');
 
 
 
 // Role List
-Route::get('/role',[AccessController::class, 'roleList'])->name('role');
-Route::get('/add-role',[AccessController::class, 'addRole'])->name('add-role');
-Route::post('/store-role',[AccessController::class, 'storeRole'])->name('store.role');
+Route::get('/role', [AccessController::class, 'roleList'])->name('role');
+Route::get('/add-role', [AccessController::class, 'addRole'])->name('add-role');
+Route::post('/store-role', [AccessController::class, 'storeRole'])->name('store.role');
 Route::delete('/role-delete/{id}', [AccessController::class, 'roleDelete'])->name('role.delete');
 Route::get('/role-edit/{id}', [AccessController::class, 'roleEdit'])->name('role.edit');
 Route::put('/role-update/{id}', [AccessController::class, 'roleUpdate'])->name('role.update');
 
 
 
+
+
 // All Vendor List Page 
 Route::get('/vendor', [VendorController::class, 'vendorList'])->name('vendor');
-// Create Vendor
 Route::get('/create-vendor', [VendorController::class, 'createVendor'])->name('create-vendor');
-// Vendor Details Page
 Route::get('/vendor-details', [VendorController::class, 'vendorDetails'])->name('vendor-details');
-// Vendor Order View
 Route::get('/vendor-order-view', [VendorController::class, 'vendorOrderView'])->name('vendor-order-view');
-// Form fill to store in database and after display on main List
 Route::post('/vendor/add', [VendorController::class, 'addVendor'])->name('add_vendor');
-// Edit Vendor {id}
 Route::get('/vendor/edit/{id}', [VendorController::class, 'editVendor'])->name('edit-vendor');
-// Update Vendor {id}
 Route::put('/vendor/update/{id}', [VendorController::class, 'updateVendor'])->name('update-vendor');
-// Delet Vendor {id}
 Route::delete('/vendor/delete/{id}', [VendorController::class, 'deleteVendor'])->name('delete-vendor');
-// Vendor Detail {id}
 Route::get('/vendor/{id}', [VendorController::class, 'detailVendor'])->name('detail-vendor');
+
+
 
 
 // Place Order
@@ -80,9 +78,8 @@ Route::get('/warehouse-edit/{id}', [WarehouseController::class, 'warehouseEdit']
 Route::put('/warehouse-update/{id}', [WarehouseController::class, 'warehouseUpdate'])->name('warehouse.update');
 
 // All Order page
-Route::get('/order',[OrderController::class, 'orderList'])->name('order');
-// Add Order page
-Route::get('/add-order',[OrderController::class, 'addOrder'])->name('add-order');
+Route::get('/order', [OrderController::class, 'orderList'])->name('order');
+Route::get('/add-order', [OrderController::class, 'addOrder'])->name('add-order');
 
 
 // Report Details List
@@ -91,22 +88,19 @@ Route::get('/inventory-stock-history', [ReportController::class, 'inventoryStock
 Route::get('/customer-sales-history', [ReportController::class, 'customerSalesHistory'])->name('customer-sales-history');
 
 
+
 // Customer
-Route::get('/customers', [CustomerController::class, 'customerList'])->name('ecommerce-customers');
-// Add Customer
-Route::post('/customers/add', [CustomerController::class, 'addCustomer'])->name('add_customer');
-// Customer detail {id}
-Route::get('/customer/{id}', [CustomerController::class, 'detailCustomer'])->name('customer-detail');
-// Edit Customer {id}
+Route::get('/customers', [CustomerController::class, 'customerList'])->name('customers');
+Route::get('/add-customer', [CustomerController::class, 'addCustomer'])->name('add-customer');
+Route::post('/customers/store', [CustomerController::class, 'storeCustomer'])->name('store_customer');
+Route::get('/customer/detail/{id}', [CustomerController::class, 'detailCustomer'])->name('customer-detail');
+
 Route::get('/customers/edit/{id}', [CustomerController::class, 'editCustomer'])->name('edit_customer');
-// Update Customer {id}
 Route::put('/customer/update/{id}', [CustomerController::class, 'updateCustomer'])->name('update-customer');
-// Delete Customer {id}
 Route::delete('/customers/delete/{id}', [CustomerController::class, 'deleteCustomer'])->name('delete-customer');
 
-Route::get('/add-customer', function () {
-    return view('add-customer');
-})->name('add-customer');
+
+
 // Route::get('/customer-detail', function () {
 //     return view('customer-detail');
 // })->name('customer-detail');
@@ -159,4 +153,3 @@ Route::get('/raise-a-ticket', function () {
 Route::get('/track-order', function () {
     return view('track-order');
 })->name('track-order');
-
