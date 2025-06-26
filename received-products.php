@@ -3,6 +3,7 @@
     <?php include 'header.php'; ?>
     <?php include 'sidebar.php'; ?>
 
+
     <!--start main wrapper-->
     <main class="main-wrapper">
         <div class="main-content">
@@ -200,8 +201,7 @@
     </main>
     <!--end main wrapper-->
 
-
-    <!--start overlay-->
+   <!--start overlay-->
     <div class="overlay btn-toggle"></div>
     <!--end overlay-->
 
@@ -225,7 +225,132 @@
     <script>
         new PerfectScrollbar(".customer-notes")
     </script>
+    <!-- <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script> -->
 
+    <script>
+        $(document).ready(function() {
+            $(".available-product").hide();
+            $(".unavailable-product").hide();
+            $(".loader").hide();
+
+            $("#orderStatus").on("click", function() {
+                $(".loader").show();
+
+                setTimeout(function() {
+                    $(".loader").hide();
+                    $(".available-product").show();
+                    $(".unavailable-product").show();
+                }, 3000);
+            });
+
+            $("#holdOrder").on("click", function() {
+                $(".loader").show();
+                setTimeout(function() {
+                    $(".loader").hide();
+                    location.pathname = '/headquater/order.php';
+                }, 2000);
+            });
+
+            $("#submitOrder").on("click", function() {
+                $(".loader").show();
+                setTimeout(function() {
+                    $(".loader").hide();
+                    location.pathname = '/headquater/order.php';
+                }, 2000);
+            });
+
+            $(".customer-groups").hide();
+            // $("#add-customer").on("click", function() {
+            //     $(".customer-groups").show();
+            //     let groupName = $("#groupName").val();
+            //     let customerName = $("#customerName").val();
+            //     let subCustomerName = $("#subCustomerName").val();
+
+            //     let row = document.createElement("tr");
+            //     let td = document.createElement("td");
+            //     let table = $("#customerGroupTable tbody").append(row).append(td).html(groupName);
+            // });
+
+            $("#add-customer").on("click", function() {
+                $(".customer-groups").show();
+
+                let groupName = $("#groupName").val();
+                let customerName = $("#customerName").val();
+                let subCustomerName = $("#subCustomerName").val();
+
+                // Create table row with 3 td cells
+                //let row = `
+                //        <tr>
+                //            <td>${customerName}</td>
+                //            <td>${subCustomerName}</td>
+                //        </tr>
+                //    `;
+
+                // Append to table body
+                $("#groupTitle").html(groupName);
+                $("#customerGroupTable tbody").append(row);
+            });
+
+            $("#upload-excel").on("click", function() {
+                $(".customer-groups").show();
+
+                let document_image = $("#document_image").val();
+                let warehouseLocation = $("#warehouseLocation").val();
+
+                console.log(document_image);
+                console.log(warehouseLocation);
+                // Create table row with 3 td cells
+                let rowHeading = `
+                        <th>Document File</th>
+                        <th>Warehouse Location</th>
+                    `;
+                let row = `
+                        <td>${document_image}</td>
+                        <td>${warehouseLocation}</td>
+                    `;
+
+                // Append to table bod
+                $("#customerGroupTable thead tr").append(rowHeading);
+                $("#customerGroupTable tbody tr").append(row);
+
+                $(".loader").show();
+
+                setTimeout(function() {
+                    $(".po-uploads").hide();
+                    $(".loader").hide();
+                    $(".available-product").show();
+                    $(".unavailable-product").show();
+                }, 3000);
+            });
+
+            $("#orderStatus").hide();
+            $(".po-uploads").hide();
+            $("#save-customers").on("click", function() {
+                $(".customer-inputs").hide();
+                $(".po-uploads").show();
+                $("#orderStatus").show();
+                $(this).hide();
+            });
+
+        });
+    </script>
+
+    <script>
+        function exportTableToExcel(tableID, filename = 'table_data.xls') {
+            const dataType = 'application/vnd.ms-excel';
+            const tableSelect = document.getElementById(tableID);
+            const tableHTML = tableSelect.outerHTML.replace(/ /g, '%20');
+
+            // Create download link element
+            const downloadLink = document.createElement("a");
+            document.body.appendChild(downloadLink);
+
+            downloadLink.href = 'data:' + dataType + ', ' + tableHTML;
+            downloadLink.download = filename;
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
+        }
+    </script>
 
 </body>
 

@@ -39,41 +39,81 @@
            </ul>
          </li>
          <li>
+           <a href="javascript:;" class="has-arrow">
+             <div class="parent-icon"><i class="material-icons-outlined">category</i>
+             </div>
+             <div class="menu-title">Master</div>
+           </a>
+           <ul>
+             <li><a href="ecommerce-customers.php"><i class="material-icons-outlined">arrow_right</i>Customers</a>
+             </li>
+             <li><a href="vendor.php"><i class="material-icons-outlined">arrow_right</i>Vendor</a>
+             </li>
+             <li><a href="Products.php"><i class="material-icons-outlined">arrow_right</i>Products</a>
+             </li>
+             <li><a href="Warehouse.php"><i class="material-icons-outlined">arrow_right</i>Warehouses</a>
+             </li>
+           </ul>
+         </li>
+         <!-- <li>
            <a href="ecommerce-customers.php">
              <div class="parent-icon"><i class="material-icons-outlined">people</i>
              </div>
              <div class="menu-title">Customers</div>
            </a>
-         </li>
-         <li>
+         </li> -->
+         <!-- <li>
            <a href="vendor.php">
              <div class="parent-icon"><i class="material-icons-outlined">storefront</i>
              </div>
              <div class="menu-title">Vendor</div>
            </a>
-         </li>
-
+         </li> -->
          <li>
+           <a href="javascript:;" class="has-arrow">
+             <div class="parent-icon"><i class="material-icons-outlined">shopping_cart</i>
+             </div>
+             <div class="menu-title">Purchase</div>
+           </a>
+           <ul>
+             <li><a href="assign-order.php"><i class="material-icons-outlined">arrow_right</i>Purchase Order</a>
+             </li>
+             <li><a href="#"><i class="material-icons-outlined">arrow_right</i>Purchase in Word</a>
+             </li>
+           </ul>
+         </li>
+          <li>
+           <a href="javascript:;" class="has-arrow">
+             <div class="parent-icon"><i class="material-icons-outlined">sell</i>
+             </div>
+             <div class="menu-title">Sales</div>
+           </a>
+           <ul>
+             <li><a href="order.php"><i class="material-icons-outlined">arrow_right</i>Sales Order</a>
+             </li>
+           </ul>
+         </li>
+         <!-- <li>
            <a href="order.php">
              <div class="parent-icon"><i class="material-icons-outlined">home</i>
              </div>
-             <div class="menu-title">Order</div>
+             <div class="menu-title">Sales Order</div>
            </a>
-         </li>
-         <li>
+         </li> -->
+         <!-- <li>
            <a href="products.php">
              <div class="parent-icon"><i class="material-icons-outlined">shopping_bag</i>
              </div>
              <div class="menu-title">Products</div>
            </a>
-         </li>
-         <li>
+         </li> -->
+         <!-- <li>
            <a href="assign-order.php">
              <div class="parent-icon"><i class="material-icons-outlined">handshake</i>
              </div>
-             <div class="menu-title">Place Order</div>
+             <div class="menu-title">Puraches Order</div>
            </a>
-         </li>
+         </li> -->
          <li>
            <a href="invoices.php">
              <div class="parent-icon"><i class="material-icons-outlined">receipt_long</i>
@@ -82,13 +122,13 @@
            </a>
          </li>
          <li class="menu-label">Warehouse</li>
-         <li>
+         <!-- <li>
            <a href="warehouse.php">
              <div class="parent-icon"><i class="material-icons-outlined">store</i>
              </div>
              <div class="menu-title">Warehouses</div>
            </a>
-         </li>
+         </li> -->
          <li>
            <a href="received-products.php">
              <div class="parent-icon"><i class="material-icons-outlined">move_to_inbox</i>
