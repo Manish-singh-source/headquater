@@ -79,21 +79,21 @@
 
                                 <div class="col-md-3">
                                     <label for="shippingCountry" class="form-label">Country</label>
-                                    <select id="shippingCountry" class="form-select">
+                                    <select id="shippingCountry" class="form-select" name="shippingCountry">
                                         <option value="">Select Country</option>
                                     </select>
                                 </div>
 
                                 <div class="col-md-3">
                                     <label for="shippingState" class="form-label">State</label>
-                                    <select id="shippingState" class="form-select">
+                                    <select id="shippingState" class="form-select" name="shippingState">
                                         <option value="">Select State</option>
                                     </select>
                                 </div>
 
                                 <div class="col-md-3">
                                     <label for="shippingCity" class="form-label">City</label>
-                                    <select id="shippingCity" class="form-select">
+                                    <select id="shippingCity" class="form-select" name="shippingCity">
                                         <option value="">Select City</option>
                                     </select>
                                 </div>
@@ -113,30 +113,21 @@
                                 <div class="col-md-3">
                                     <label for="billingCountry" class="form-label">Country</label>
                                     <select id="billingCountry" class="form-select" name="billingCountry">
-                                        <option selected disabled>Select Country</option>
-                                        @foreach ($countries as $country)
-                                            <option value="{{ $country->id }}">{{ $country->name }}</option>
-                                        @endforeach
+                                        <option value="">Select Country</option>
                                     </select>
                                 </div>
 
                                 <div class="col-md-3">
                                     <label for="billingState" class="form-label">State</label>
                                     <select id="billingState" class="form-select" name="billingState">
-                                        <option selected disabled>Select State</option>
-                                        @foreach ($states as $state)
-                                            <option value="{{ $state->id }}">{{ $state->name }}</option>
-                                        @endforeach
+                                        <option value="">Select State</option>
                                     </select>
                                 </div>
 
                                 <div class="col-md-3">
                                     <label for="billingCity" class="form-label">City</label>
                                     <select id="billingCity" class="form-select" name="billingCity">
-                                        <option selected disabled>Select City</option>
-                                        @foreach ($cities as $city)
-                                            <option value="{{ $city->id }}">{{ $city->name }}</option>
-                                        @endforeach
+                                        <option value="">Select City</option>
                                     </select>
                                 </div>
 

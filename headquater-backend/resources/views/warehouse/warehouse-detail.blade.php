@@ -24,12 +24,11 @@
                         <ul class="col-12 list-group list-group-flush">
                             <li class="list-group-item d-flex justify-content-between align-items-center border-bottom mb-2 pe-3">
                                 <span><b>Warehouse Id</b></span>
-                              
                                 <span>#001</span>
                             </li>
                             <li class="list-group-item d-flex justify-content-between align-items-center border-bottom mb-2 pe-3">
                                 <span><b>Warehouse Location</b></span>
-                                <span>{{ $warehouse->city }}</span>
+                                <span>{{ $warehouse->cities->name }}</span>
                             </li>
                             <li class="list-group-item d-flex justify-content-between align-items-center border-bottom mb-2 pe-3">
                                 <span><b>Contact Name</b></span>
@@ -37,15 +36,15 @@
                             </li>
                             <li class="list-group-item d-flex justify-content-between align-items-center border-bottom mb-2 pe-3">
                                 <span><b>Phone No</b></span>
-                                <span> {{ $warehouse->contact_person_phone_no }}</span>
+                                <span> {{ $warehouse->phone }}</span>
                             </li>
                             <li class="list-group-item d-flex justify-content-between align-items-center border-bottom mb-2 pe-3">
                                 <span><b>Email</b></span>
-                                <span> {{ $warehouse->contact_person_email }}</span>
+                                <span> {{ $warehouse->email }}</span>
                             </li>
                             <li class="list-group-item d-flex justify-content-between align-items-center border-bottom mb-2 pe-3">
                                 <span><b>GST No</b></span>
-                                <span> {{ $warehouse->gst_no }}</span>
+                                <span> {{ $warehouse->gst_number }}</span>
                             </li>
                             <li class="list-group-item d-flex justify-content-between align-items-center  mb-2 pe-3">
                                 <span><b>Address</b></span>

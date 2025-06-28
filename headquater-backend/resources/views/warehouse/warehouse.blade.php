@@ -86,14 +86,14 @@
                                             </td>
                                             <td>{{ $warehouse->id }} </td>
                                             <td>
-                                                <p class="mb-0 customer-name fw-bold">{{ $warehouse->warehouse_name }}</p>
+                                                <p class="mb-0 customer-name fw-bold">{{ $warehouse->name }}</p>
                                             </td>
                                             <td>
-                                                {{ $warehouse->warehouse_type }}
+                                                {{ $warehouse->type }}
                                             </td>
-                                            <td>{{ $warehouse->city }}</td>
+                                            <td>{{ $warehouse->cities->name }}</td>
                                             <td>{{ $warehouse->contact_person_name }}</td>
-                                            <td>{{ $warehouse->contact_person_phone_no }}</td>
+                                            <td>{{ $warehouse->phone }}</td>
 
                                             <td>{{ $warehouse->default_warehouse ?? 'NA' }}</td>
                                             <td>

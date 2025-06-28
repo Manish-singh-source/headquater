@@ -66,7 +66,7 @@ class VendorController extends Controller
         $validator = Validator::make($request->all(), [
             'firstName' => 'required|min:3',
             'lastName' => 'required|min:3',
-            'email' => 'required|email|unique:users,email,' . $id,
+            'email' => 'required|email|unique:vendors,email,' . $id,
         ]);
 
         if ($validator->fails()) {
@@ -76,17 +76,18 @@ class VendorController extends Controller
         $vendor = Vendor::findOrFail($id);
         $vendor->first_name = $request->firstName;
         $vendor->last_name = $request->lastName;
-        $vendor->phone = $request->phone;
+        $vendor->phone_number = $request->phone;
         $vendor->email = $request->email;
-        $vendor->gst_no = $request->gst_no;
-        $vendor->pan_no = $request->pan_no;
+        $vendor->gst_number = $request->gstNo;
+        $vendor->pan_number = $request->panNo;
         $vendor->address = $request->address;
         $vendor->state = $request->state;
         $vendor->city = $request->city;
+        $vendor->country = $request->country;
         $vendor->pin_code = $request->pinCode;
-        $vendor->account_no = $request->accountNo;
-        $vendor->ifsc_code = $request->ifscCode;
-        $vendor->bank_name = $request->bankName;
+        $vendor->bank_account_number = $request->accountNo;
+        $vendor->ifsc_number = $request->ifscCode;
+        $vendor->bank_number = $request->bankName;
         $vendor->status = $request->status;
         $vendor->save();
 
@@ -105,11 +106,6 @@ class VendorController extends Controller
     {
         $vendor = Vendor::findOrFail($id);
         return view('vendor-details', compact('vendor'));
-    }
-
-    public function vendorDetails()
-    {
-        return view('vendor-details');
     }
 
     public function vendorOrderView()

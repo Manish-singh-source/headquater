@@ -38,7 +38,6 @@ class CustomerController extends Controller
         ]);
 
         if ($validator->fails()) {
-            dd($validator->fails());
             return back()->withErrors($validator)->withInput();
         }
 
@@ -78,7 +77,7 @@ class CustomerController extends Controller
             'firstName' => 'required|min:3',
             'lastName' => 'required|min:3',
             'phone' => 'required|min:10',
-            'email' => 'required|email|unique:users,email,' . $id,
+            'email' => 'required|email|unique:customers,email,' . $id,
         ]);
 
         if ($validator->fails()) {
@@ -91,18 +90,18 @@ class CustomerController extends Controller
         $customer->email = $request->email;
         $customer->phone = $request->phone;
         $customer->company_name = $request->companyName;
-        $customer->gst_no = $request->gstNo;
-        $customer->pan_no = $request->panNo;
+        $customer->gst_number = $request->gstNo;
+        $customer->pan_number = $request->panNo;
         $customer->shipping_address = $request->shippingAddress;
         $customer->shipping_country = $request->shippingCountry;
         $customer->shipping_state = $request->shippingState;
         $customer->shipping_city = $request->shippingCity;
-        $customer->shipping_pin_code = $request->shippingPinCode;
+        $customer->shipping_pincode = $request->shippingPinCode;
         $customer->billing_address = $request->billingAddress;
         $customer->billing_country = $request->billingCountry;
         $customer->billing_state = $request->billingState;
         $customer->billing_city = $request->billingCity;
-        $customer->billing_pin_code = $request->billingPinCode;
+        $customer->billing_pincode = $request->billingPinCode;
         $customer->status = $request->status;
         $customer->save();
 

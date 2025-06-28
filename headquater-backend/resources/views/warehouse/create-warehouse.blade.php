@@ -51,8 +51,8 @@
                                     <label for="input9" class="form-label">Warehouse Type</label>
                                     <select id="input9" class="form-select" name="warehouse_type">
                                         <option selected="" disabled>Choose...</option>
-                                        <option>Storage Hub</option>
-                                        <option>Return Center</option>
+                                        <option value="storage hub">Storage Hub</option>
+                                        <option value="return center">Return Center</option>
                                     </select>
                                 </div>
                                 <div class="col-md-6">
@@ -104,19 +104,22 @@
                                         id="input8" placeholder="Max storage capacity">
                                 </div>
                                 <div class="col-md-2">
-                                    <label for="input8" class="form-label">City</label>
-                                    <input type="text" class="form-control" name="city" id="input8"
-                                        placeholder="City">
+                                    <label for="shippingCountry" class="form-label">Country</label>
+                                    <select id="shippingCountry" class="form-select" name="country">
+                                        <option value="">Select Country</option>
+                                    </select>
                                 </div>
                                 <div class="col-md-2">
-                                    <label for="input8" class="form-label">State </label>
-                                    <input type="text" class="form-control" name="state" id="input8"
-                                        placeholder="State ">
+                                    <label for="shippingState" class="form-label">State</label>
+                                    <select id="shippingState" class="form-select" name="state">
+                                        <option value="">Select State</option>
+                                    </select>
                                 </div>
                                 <div class="col-md-2">
-                                    <label for="input8" class="form-label">Country </label>
-                                    <input type="text" class="form-control" name="country" id="input8"
-                                        placeholder="Country  ">
+                                    <label for="shippingCity" class="form-label">City</label>
+                                    <select id="shippingCity" class="form-select" name="city">
+                                        <option value="">Select City</option>
+                                    </select>
                                 </div>
                                 <div class="col-md-2">
                                     <label for="input8" class="form-label">Pin Code</label>
@@ -127,23 +130,25 @@
                                     <label for="input9" class="form-label">Status</label>
                                     <select id="input9" name="status" class="form-select">
                                         <option selected="" disabled>Choose any one</option>
-                                        <option>Active</option>
-                                        <option>Inactive</option>
+                                        <option value="1">Active</option>
+                                        <option value="0">Inactive</option>
                                     </select>
                                 </div>
                                 <div class="col-md-2">
                                     <label for="input9" class="form-label">Supported Operations</label>
                                     <select id="input9" name="supported_operations" class="form-select">
                                         <option selected="" disabled>Choose any one</option>
-                                        <option>Inbound</option>
-                                        <option>Outbound</option>
-                                        <option>Return</option>
+                                        <option value="inbound">Inbound</option>
+                                        <option value="outbount">Outbound</option>
+                                        <option value="return">Return</option>
                                     </select>
                                 </div>
+                                {{-- 
                                 <div class="col-md-2">
                                     <input class="form-check-input" name="default_warehouse" type="checkbox">
                                     <label for="input8"class="form-label">Default Warehouse</label>
-                                </div>
+                                </div> 
+                                --}}
                                 <div class="col-md-12">
                                     <div class="d-md-flex d-grid align-items-center gap-3">
                                         <button type="submit" class="btn btn-primary px-4">Submit</button>
@@ -158,4 +163,75 @@
         </div>
     </main>
     <!--end main wrapper-->
+@endsection
+
+
+@section('script')
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"
+        integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <script>
+        $(document).ready(function() {
+
+            function getLocationData(url, id, tag, data = null) {
+                $.ajax({
+                    url: url,
+                    method: 'GET',
+                    data: data,
+                    success: function(data) {
+                        console.log(data.data);
+                        $(id).empty().append(
+                            `<option value="">Select ${tag}</option>`);
+                        data.data.map(function(country) {
+                            $(id).append(
+                                $('<option>', {
+                                    value: country.id,
+                                    text: country.name
+                                })
+                            );
+                        });
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error:', error);
+                    }
+                });
+            }
+
+            getLocationData("/countries", '#shippingCountry', "Country");
+
+            $("#shippingCountry").on("change", function() {
+                let countryId = $(this).val();
+                console.log(countryId);
+                getLocationData("/states", "#shippingState", "State", {
+                    countryId: countryId
+                });
+            });
+
+            $("#shippingState").on("change", function() {
+                let stateId = $(this).val();
+                console.log(stateId);
+                getLocationData("/cities", "#shippingCity", "City", {
+                    stateId: stateId
+                });
+            });
+
+            getLocationData("/countries", '#billingCountry', "Country");
+
+            $("#billingCountry").on("change", function() {
+                let countryId = $(this).val();
+                console.log(countryId);
+                getLocationData("/states", "#billingState", "State", {
+                    countryId: countryId
+                });
+            });
+
+            $("#billingState").on("change", function() {
+                let stateId = $(this).val();
+                console.log(stateId);
+                getLocationData("/cities", "#billingCity", "City", {
+                    stateId: stateId
+                });
+            });
+
+        });
+    </script>
 @endsection

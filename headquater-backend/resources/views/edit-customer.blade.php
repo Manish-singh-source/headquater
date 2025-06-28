@@ -63,13 +63,13 @@
                                 <div class="col-md-6">
                                     <label for="gstNumber" class="form-label">GST Number</label>
                                     <input type="text" class="form-control" id="gstNumber" placeholder="Enter GST Number"
-                                        name="gstNo" value="{{ $customer->gst_no }}">
+                                        name="gstNo" value="{{ $customer->gst_number }}">
                                 </div>
 
                                 <div class="col-md-6">
                                     <label for="panNumber" class="form-label">PAN Number</label>
                                     <input type="text" class="form-control" id="panNumber" placeholder="Enter PAN Number"
-                                        name="panNo" value="{{ $customer->pan_no }}">
+                                        name="panNo" value="{{ $customer->pan_number }}">
                                 </div>
 
                                 <div class="col-md-12">
@@ -80,30 +80,28 @@
 
                                 <div class="col-md-3">
                                     <label for="shippingCountry" class="form-label">Country</label>
-                                    <input type="text" class="form-control" id="shippingCountry"
-                                        placeholder="Enter Country Name" name="shippingCountry"
-                                        value="{{ $customer->shipping_country }}">
+                                    <select id="shippingCountry" class="form-select" name="country">
+                                        <option value="">Select Country</option>
+                                    </select>
                                 </div>
-
                                 <div class="col-md-3">
                                     <label for="shippingState" class="form-label">State</label>
-                                    <input type="text" class="form-control" id="shippingState"
-                                        placeholder="Enter State Name" name="shippingState"
-                                        value="{{ $customer->shipping_state }}">
+                                    <select id="shippingState" class="form-select" name="state">
+                                        <option value="">Select State</option>
+                                    </select>
                                 </div>
-
                                 <div class="col-md-3">
                                     <label for="shippingCity" class="form-label">City</label>
-                                    <input type="text" class="form-control" id="shippingCity"
-                                        placeholder="Enter City Name" name="shippingCity"
-                                        value="{{ $customer->shipping_city }}">
+                                    <select id="shippingCity" class="form-select" name="city">
+                                        <option value="">Select City</option>
+                                    </select>
                                 </div>
 
                                 <div class="col-md-3">
                                     <label for="shippingPinCode" class="form-label">Pin Code</label>
                                     <input type="text" class="form-control" id="shippingPinCode"
                                         placeholder="Enter Pin Code" name="shippingPinCode"
-                                        value="{{ $customer->shipping_pin_code }}">
+                                        value="{{ $customer->shipping_pincode }}">
                                 </div>
 
                                 <div class="col-md-12">
@@ -114,45 +112,45 @@
 
                                 <div class="col-md-3">
                                     <label for="billingCountry" class="form-label">Country</label>
-                                    <input type="text" class="form-control" id="billingCountry"
-                                        placeholder="Enter Country Name" name="billingCountry"
-                                        value="{{ $customer->billing_country }}">
+                                    <select id="billingCountry" class="form-select" name="country">
+                                        <option value="">Select Country</option>
+                                    </select>
                                 </div>
-
                                 <div class="col-md-3">
                                     <label for="billingState" class="form-label">State</label>
-                                    <input type="text" class="form-control" id="billingState"
-                                        placeholder="Enter State Name" name="billingState"
-                                        value="{{ $customer->billing_state }}">
+                                    <select id="billingState" class="form-select" name="state">
+                                        <option value="">Select State</option>
+                                    </select>
                                 </div>
-
                                 <div class="col-md-3">
                                     <label for="billingCity" class="form-label">City</label>
-                                    <input type="text" class="form-control" id="billingCity"
-                                        placeholder="Enter City Name" name="billingCity"
-                                        value="{{ $customer->billing_city }}">
+                                    <select id="billingCity" class="form-select" name="city">
+                                        <option value="">Select City</option>
+                                    </select>
                                 </div>
 
                                 <div class="col-md-3">
                                     <label for="billingPinCode" class="form-label">Pin Code</label>
                                     <input type="text" class="form-control" id="billingPinCode"
                                         placeholder="Enter Pin Code" name="billingPinCode"
-                                        value="{{ $customer->billing_pin_code }}">
+                                        value="{{ $customer->billing_pincode }}">
                                 </div>
 
                                 <div class="col-md-3">
-                                    <label for="status" class="form-label">Status</label>
-                                    <select id="status" class="form-select" name="status"
-                                        value="{{ $customer->status }}">
-                                        <option selected>Active</option>
-                                        <option>Inactive</option>
+                                    <label for="input9" class="form-label">Status</label>
+                                    <select id="input9" class="form-select" name="status">
+                                        <option selected="" disabled>Choose any one</option>
+                                        <option value="1" {{ $customer->status == '1' ? 'selected' : '' }}>Active
+                                        </option>
+                                        <option value="0" {{ $customer->status == '0' ? 'selected' : '' }}>Inactive
+                                        </option>
                                     </select>
                                 </div>
 
                                 <div class="col-md-12">
                                     <div class="d-md-flex d-grid align-items-center gap-3">
                                         <!-- <a href="{{ route('customers') }}" type="submit"
-                                            class="btn btn-primary px-4">Submit</a> -->
+                                                            class="btn btn-primary px-4">Submit</a> -->
                                         <button type="submit" class="btn btn-primary px-4">Submit</button>
                                     </div>
                                 </div>
@@ -165,4 +163,75 @@
         </div>
     </main>
     <!--end main wrapper-->
+@endsection
+
+
+@section('script')
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"
+        integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <script>
+        $(document).ready(function() {
+
+            function getLocationData(url, id, tag, data = null) {
+                $.ajax({
+                    url: url,
+                    method: 'GET',
+                    data: data,
+                    success: function(data) {
+                        console.log(data.data);
+                        $(id).empty().append(
+                            `<option value="">Select ${tag}</option>`);
+                        data.data.map(function(country) {
+                            $(id).append(
+                                $('<option>', {
+                                    value: country.id,
+                                    text: country.name
+                                })
+                            );
+                        });
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error:', error);
+                    }
+                });
+            }
+
+            getLocationData("/countries", '#shippingCountry', "Country");
+
+            $("#shippingCountry").on("change", function() {
+                let countryId = $(this).val();
+                console.log(countryId);
+                getLocationData("/states", "#shippingState", "State", {
+                    countryId: countryId
+                });
+            });
+
+            $("#shippingState").on("change", function() {
+                let stateId = $(this).val();
+                console.log(stateId);
+                getLocationData("/cities", "#shippingCity", "City", {
+                    stateId: stateId
+                });
+            });
+
+            getLocationData("/countries", '#billingCountry', "Country");
+
+            $("#billingCountry").on("change", function() {
+                let countryId = $(this).val();
+                console.log(countryId);
+                getLocationData("/states", "#billingState", "State", {
+                    countryId: countryId
+                });
+            });
+
+            $("#billingState").on("change", function() {
+                let stateId = $(this).val();
+                console.log(stateId);
+                getLocationData("/cities", "#billingCity", "City", {
+                    stateId: stateId
+                });
+            });
+
+        });
+    </script>
 @endsection
