@@ -1,21 +1,26 @@
 <?php
 
-use App\Http\Controllers\AccessController;
-use App\Http\Controllers\AuthController;
-use App\Http\Controllers\CustomerController;
-use App\Http\Controllers\OrderController;
-use App\Http\Controllers\PlaceOrderController;
-use App\Http\Controllers\ReportController;
-use App\Http\Controllers\StaffController;
-use App\Http\Controllers\VendorController;
 use App\Http\Controllers\Warehouse;
-use App\Http\Controllers\WarehouseController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\OrderController;
+use App\Http\Controllers\StaffController;
+use App\Http\Controllers\AccessController;
+use App\Http\Controllers\ReportController;
+use App\Http\Controllers\VendorController;
+use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\LocationController;
+use App\Http\Controllers\WarehouseController;
+use App\Http\Controllers\PlaceOrderController;
 
 Route::get('/', function () {
     return view('index');
 })->name('index');
 
+
+Route::get('/countries', [LocationController::class, 'getCountries']);
+Route::get('/states', [LocationController::class, 'getStates']);
+Route::get('/cities', [LocationController::class, 'getCities']);
 
 
 // Authentication
@@ -49,10 +54,11 @@ Route::put('/role-update/{id}', [AccessController::class, 'roleUpdate'])->name('
 
 // All Vendor List Page 
 Route::get('/vendor', [VendorController::class, 'vendorList'])->name('vendor');
-Route::get('/create-vendor', [VendorController::class, 'createVendor'])->name('create-vendor');
+Route::get('/create-vendor', [VendorController::class, 'createVendor'])->name('vendor.create');
+Route::post('/vendor/add', [VendorController::class, 'addVendor'])->name('vendor.add');
+
 Route::get('/vendor-details', [VendorController::class, 'vendorDetails'])->name('vendor-details');
 Route::get('/vendor-order-view', [VendorController::class, 'vendorOrderView'])->name('vendor-order-view');
-Route::post('/vendor/add', [VendorController::class, 'addVendor'])->name('add_vendor');
 Route::get('/vendor/edit/{id}', [VendorController::class, 'editVendor'])->name('edit-vendor');
 Route::put('/vendor/update/{id}', [VendorController::class, 'updateVendor'])->name('update-vendor');
 Route::delete('/vendor/delete/{id}', [VendorController::class, 'deleteVendor'])->name('delete-vendor');

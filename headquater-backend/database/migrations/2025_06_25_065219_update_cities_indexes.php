@@ -24,7 +24,7 @@ return new class extends Migration
     {
         Schema::table('cities', function (Blueprint $table) {
             //
-            $table->dropIndex('cities_state_id_foreign');
+            $table->dropForeign('cities_state_id_foreign');
         });
     }
 };

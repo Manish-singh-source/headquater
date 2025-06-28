@@ -79,37 +79,22 @@
 
                                 <div class="col-md-3">
                                     <label for="shippingCountry" class="form-label">Country</label>
-                                    {{-- <input type="text" class="form-control" id="shippingCountry"
-                                        placeholder="Enter Country Name" name="shippingCountry"> --}}
-                                    <select id="shippingCountry" class="form-select" name="shippingCountry">
-                                        <option selected disabled>Select Country</option>
-                                        @foreach ($countries as $country)
-                                            <option value="{{ $country->id }}">{{ $country->name }}</option>
-                                        @endforeach
+                                    <select id="shippingCountry" class="form-select">
+                                        <option value="">Select Country</option>
                                     </select>
                                 </div>
 
                                 <div class="col-md-3">
                                     <label for="shippingState" class="form-label">State</label>
-                                    {{-- <input type="text" class="form-control" id="shippingState"
-                                        placeholder="Enter State Name" name="shippingState"> --}}
-                                    <select id="shippingState" class="form-select" name="shippingState">
-                                        <option selected disabled>Select State</option>
-                                        @foreach ($states as $state)
-                                            <option value="{{ $state->id }}">{{ $state->name }}</option>
-                                        @endforeach
+                                    <select id="shippingState" class="form-select">
+                                        <option value="">Select State</option>
                                     </select>
                                 </div>
 
                                 <div class="col-md-3">
                                     <label for="shippingCity" class="form-label">City</label>
-                                    {{-- <input type="text" class="form-control" id="shippingCity"
-                                        placeholder="Enter City Name" name="shippingCity"> --}}
-                                    <select id="shippingCity" class="form-select" name="shippingCity">
-                                        <option selected disabled>Select City</option>
-                                        @foreach ($cities as $city)
-                                            <option value="{{ $city->id }}">{{ $city->name }}</option>
-                                        @endforeach
+                                    <select id="shippingCity" class="form-select">
+                                        <option value="">Select City</option>
                                     </select>
                                 </div>
 
@@ -127,8 +112,6 @@
 
                                 <div class="col-md-3">
                                     <label for="billingCountry" class="form-label">Country</label>
-                                    {{-- <input type="text" class="form-control" id="billingCountry"
-                                        placeholder="Enter Country Name" name="billingCountry"> --}}
                                     <select id="billingCountry" class="form-select" name="billingCountry">
                                         <option selected disabled>Select Country</option>
                                         @foreach ($countries as $country)
@@ -139,8 +122,6 @@
 
                                 <div class="col-md-3">
                                     <label for="billingState" class="form-label">State</label>
-                                    {{-- <input type="text" class="form-control" id="billingState"
-                                        placeholder="Enter State Name" name="billingState"> --}}
                                     <select id="billingState" class="form-select" name="billingState">
                                         <option selected disabled>Select State</option>
                                         @foreach ($states as $state)
@@ -151,8 +132,6 @@
 
                                 <div class="col-md-3">
                                     <label for="billingCity" class="form-label">City</label>
-                                    {{-- <input type="text" class="form-control" id="billingCity"
-                                        placeholder="Enter City Name" name="billingCity"> --}}
                                     <select id="billingCity" class="form-select" name="billingCity">
                                         <option selected disabled>Select City</option>
                                         @foreach ($cities as $city)
@@ -177,8 +156,6 @@
 
                                 <div class="col-md-12">
                                     <div class="d-md-flex d-grid align-items-center gap-3">
-                                        <!-- <a href="{{ route('customers') }}" type="submit"
-                                                                        class="btn btn-primary px-4">Submit</a> -->
                                         <button type="submit" class="btn btn-primary px-4">Submit</button>
                                     </div>
                                 </div>
@@ -191,4 +168,74 @@
         </div>
     </main>
     <!--end main wrapper-->
+@endsection
+
+@section('script')
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"
+        integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <script>
+        $(document).ready(function() {
+
+            function getLocationData(url, id, tag, data = null) {
+                $.ajax({
+                    url: url,
+                    method: 'GET',
+                    data: data,
+                    success: function(data) {
+                        console.log(data.data);
+                        $(id).empty().append(
+                            `<option value="">Select ${tag}</option>`);
+                        data.data.map(function(country) {
+                            $(id).append(
+                                $('<option>', {
+                                    value: country.id,
+                                    text: country.name
+                                })
+                            );
+                        });
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error:', error);
+                    }
+                });
+            }
+
+            getLocationData("/countries", '#shippingCountry', "Country");
+
+            $("#shippingCountry").on("change", function() {
+                let countryId = $(this).val();
+                console.log(countryId);
+                getLocationData("/states", "#shippingState", "State", {
+                    countryId: countryId
+                });
+            });
+
+            $("#shippingState").on("change", function() {
+                let stateId = $(this).val();
+                console.log(stateId);
+                getLocationData("/cities", "#shippingCity", "City", {
+                    stateId: stateId
+                });
+            });
+
+            getLocationData("/countries", '#billingCountry', "Country");
+
+            $("#billingCountry").on("change", function() {
+                let countryId = $(this).val();
+                console.log(countryId);
+                getLocationData("/states", "#billingState", "State", {
+                    countryId: countryId
+                });
+            });
+
+            $("#billingState").on("change", function() {
+                let stateId = $(this).val();
+                console.log(stateId);
+                getLocationData("/cities", "#billingCity", "City", {
+                    stateId: stateId
+                });
+            });
+
+        });
+    </script>
 @endsection

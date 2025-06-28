@@ -11,7 +11,8 @@ class VendorController extends Controller
     //
     public function vendorList()
     {
-        $vendor = Vendor::all();
+        // $vendor = Vendor::all();
+        $vendor = Vendor::get();
         return view('vendor', compact('vendor'));
     }
 
@@ -26,7 +27,7 @@ class VendorController extends Controller
             'firstName' => 'required|min:3',
             'lastName' => 'required|min:3',
             'phone' => 'required|min:10',
-            'email' => 'required|email|unique:users,email',
+            'email' => 'required|email|unique:vendors,email',
             'address' => 'required',
         ]);
 
@@ -37,17 +38,18 @@ class VendorController extends Controller
         $vendor = new Vendor();
         $vendor->first_name = $request->firstName;
         $vendor->last_name = $request->lastName;
-        $vendor->phone = $request->phone;
+        $vendor->phone_number = $request->phone;
         $vendor->email = $request->email;
-        $vendor->gst_no = $request->gstNo;
-        $vendor->pan_no = $request->panNo;
+        $vendor->gst_number = $request->gstNo;
+        $vendor->pan_number = $request->panNo;
         $vendor->address = $request->address;
         $vendor->state = $request->state;
         $vendor->city = $request->city;
+        $vendor->country = $request->country;
         $vendor->pin_code = $request->pinCode;
-        $vendor->account_no = $request->accountNo;
-        $vendor->ifsc_code = $request->ifscCode;
-        $vendor->bank_name = $request->bankName;
+        $vendor->bank_account_number = $request->accountNo;
+        $vendor->ifsc_number = $request->ifscCode;
+        $vendor->bank_number = $request->bankName;
         $vendor->status = $request->status;
         $vendor->save();
         return redirect()->route('vendor')->with('success', 'Customer added successfully.');

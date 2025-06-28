@@ -28,8 +28,6 @@ return new class extends Migration
     {
         Schema::table('roles', function (Blueprint $table) {
             //
-            $table->dropUnique('roles_name_unique');
-            $table->dropUnique('roles_slug_unique');
             $table->dropIndex(['uid']);
         });
     }

@@ -24,7 +24,7 @@ return new class extends Migration
     {
         Schema::table('states', function (Blueprint $table) {
             //
-            $table->dropIndex('states_country_id_foreign');
+            $table->dropForeign('states_country_id_foreign');
         });
     }
 };

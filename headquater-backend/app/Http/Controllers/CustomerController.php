@@ -38,6 +38,7 @@ class CustomerController extends Controller
         ]);
 
         if ($validator->fails()) {
+            dd($validator->fails());
             return back()->withErrors($validator)->withInput();
         }
 
