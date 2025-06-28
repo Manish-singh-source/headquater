@@ -10,16 +10,17 @@
                         <ol class="breadcrumb mb-0 p-0">
                             <li class="breadcrumb-item"><a href="javascript:;"><i class="bx bx-home-alt"></i></a>
                             </li>
-                            <li class="breadcrumb-item active" aria-current="page">Vendors</li>
+                            <li class="breadcrumb-item active" aria-current="page">Role List</li>
                         </ol>
                     </nav>
                 </div>
             </div>
+            <!--end breadcrumb-->
 
             <div class="row g-3">
                 <div class="col-12 col-md-2">
                     <div class="position-relative">
-                        <input class="form-control px-5" type="search" placeholder="Search Vendors">
+                        <input class="form-control px-5" type="search" placeholder="Search Role">
                         <span
                             class="material-icons-outlined position-absolute ms-3 translate-middle-y start-0 top-50 fs-5">search</span>
                     </div>
@@ -50,11 +51,11 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-12 col-md-auto">
+                <div class="col-12 col-md-2">
                     <div class="d-flex align-items-center gap-2 justify-content-lg-end">
                         <button class="btn btn-filter px-4"><i class="bi bi-box-arrow-right me-2"></i>Export</button>
-                        <a href="{{ route('vendor.create') }}"><button class="btn btn-primary px-4"><i
-                                    class="bi bi-plus-lg me-2"></i>Add Vendor</button></a>
+                        <a href="{{ route('add-role') }}" class="btn btn-primary px-4"><i class="bi bi-plus-lg me-2"></i>Add
+                            Role</a>
                     </div>
                 </div>
             </div><!--end row-->
@@ -69,57 +70,33 @@
                                         <th>
                                             <input class="form-check-input" type="checkbox">
                                         </th>
-                                        <th>Vendor Name</th>
-                                        <th>Email</th>
-                                        <th>Contact Number</th>
-                                        <th>Orders</th>
-                                        <th>Location</th>
-                                        <th>Joined At</th>
+                                        <th>Name</th>
                                         <th>Status</th>
+                                        <th>Created By</th>
                                         <th>Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @forelse ($vendor as $vendor)
+                                    @forelse($roles as $role)
                                         <tr>
                                             <td>
                                                 <input class="form-check-input" type="checkbox">
                                             </td>
                                             <td>
-                                                <a class="d-flex align-items-center gap-3"
-                                                    href="{{ route('vendor.detail', $vendor->id) }}">
-                                                    <p class="mb-0 customer-name fw-bold">{{ $vendor->first_name }}</p>
+                                                <a class="d-flex align-items-center gap-3" href="#">
+                                                    <p class="mb-0 customer-name fw-bold">{{ $role->name }}</p>
                                                 </a>
                                             </td>
                                             <td>
-                                                <a href="javascript:;" class="font-text1">{{ $vendor->email }}</a>
-                                            </td>
-                                            <td>{{ $vendor->phone }}</td>
-                                            <td>142</td>
-                                            <td>Mumbai</td>
-
-                                            <td>Nov 12, 10:45 PM</td>
-                                            <td>
                                                 <div class=" form-switch form-check-success">
                                                     <input class="form-check-input" type="checkbox" role="switch"
-                                                        id="flexSwitchCheckSuccess" checked="">
+                                                        id="flexSwitchCheckSuccess" {{ $role->status ? 'checked' : '' }}>
                                                 </div>
                                             </td>
+                                            <td>{{ $role->admins->name ?? 'NA' }}</td>
                                             <td>
                                                 <div class="d-flex">
-                                                    <a aria-label="anchor" href="{{ route('vendor.detail', $vendor->id) }}"
-                                                        class="btn btn-icon btn-sm bg-primary-subtle me-1"
-                                                        data-bs-toggle="tooltip" data-bs-original-title="View">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="13"
-                                                            height="13" viewBox="0 0 24 24" fill="none"
-                                                            stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                                            stroke-linejoin="round"
-                                                            class="feather feather-eye text-primary">
-                                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                                            <circle cx="12" cy="12" r="3"></circle>
-                                                        </svg>
-                                                    </a>
-                                                    <a aria-label="anchor" href="{{ route('edit-vendor', $vendor->id) }}"
+                                                    <a aria-label="anchor" href="{{ route('role.edit', $role->id) }}"
                                                         class="btn btn-icon btn-sm bg-warning-subtle me-1"
                                                         data-bs-toggle="tooltip" data-bs-original-title="Edit">
                                                         <svg xmlns="http://www.w3.org/2000/svg" width="13"
@@ -135,8 +112,7 @@
                                                             </path>
                                                         </svg>
                                                     </a>
-
-                                                    <form action="{{ route('vendor.delete', $vendor->id) }}"
+                                                    <form action="{{ route('role.delete', $role->id) }}"
                                                         method="POST" onsubmit="return confirm('Are you sure?')">
                                                         @csrf
                                                         @method('DELETE')
@@ -158,29 +134,21 @@
                                                             </svg>
                                                         </button>
                                                     </form>
-                                                    <a aria-label="anchor" data-bs-toggle="tooltip"
-                                                        data-bs-original-title="Delete">
-
-                                                    </a>
                                                 </div>
                                             </td>
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="9" class="text-center">
-                                                No Record Found
-                                            </td>
+                                            <td colspan="8">No Roles Found</td>
                                         </tr>
                                     @endforelse
-
                                 </tbody>
                             </table>
                         </div>
                     </div>
                 </div>
             </div>
-
-
         </div>
     </main>
+    <!--end main wrapper-->
 @endsection

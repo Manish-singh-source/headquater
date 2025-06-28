@@ -45,14 +45,18 @@
                                 <div class="col-md-6">
                                     <label for="input1" class="form-label">Warehouse Name</label>
                                     <input type="text" class="form-control" name="warehouse_name" id="input1"
-                                        value="{{ $warehouse->warehouse_name }}" placeholder="Warehouse Name">
+                                        value="{{ $warehouse->name }}" placeholder="Warehouse Name">
                                 </div>
                                 <div class="col-md-6">
                                     <label for="input9" class="form-label">Warehouse Type</label>
-                                    <select id="input9" class="form-select" name="warehouse_type">
-                                        <option selected="" disabled>Choose...</option>
-                                        <option>Storage Hub</option>
-                                        <option>Return Center</option>
+                                    <select id="input9" class="form-select" name="type">
+                                        <option disabled>Choose...</option>
+                                        <option value="storage hub"
+                                            {{ $warehouse->type == 'storage hub' ? 'selected' : '' }}>Storage Hub
+                                        </option>
+                                        <option value="return center"
+                                            {{ $warehouse->type == 'return center' ? 'selected' : '' }}>Return Center
+                                        </option>
                                     </select>
                                 </div>
                                 <div class="col-md-6">
@@ -63,38 +67,36 @@
                                 <div class="col-md-6">
                                     <label for="input3" class="form-label">Phone Number</label>
                                     <input type="text" class="form-control" name="contact_person_phone_no" id="input3"
-                                        value="{{ $warehouse->contact_person_phone_no }}" placeholder="Phone Number">
+                                        value="{{ $warehouse->phone }}" placeholder="Phone Number">
                                 </div>
                                 <div class="col-md-6">
                                     <label for="input3" class="form-label">Alternate Phone Number</label>
                                     <input type="text" class="form-control" name="contact_person_alt_phone_no"
-                                        value="{{ $warehouse->contact_person_alt_phone_no }}" id="input3"
+                                        value="{{ $warehouse->alt_phone }}" id="input3"
                                         placeholder="Alternate Phone Number">
                                 </div>
                                 <div class="col-md-6">
                                     <label for="input4" class="form-label">Email</label>
                                     <input type="email" class="form-control" name="contact_person_email" id="input4"
-                                        value="{{ $warehouse->contact_person_email }}" placeholder="Email Id">
+                                        value="{{ $warehouse->email }}" placeholder="Email Id">
                                 </div>
                                 <div class="col-md-6">
                                     <label for="input5" class="form-label">GST NO</label>
                                     <input type="text" class="form-control" name="gst_no" id="input5"
-                                        value="{{ $warehouse->gst_no }}" placeholder="GST NO">
+                                        value="{{ $warehouse->gst_number }}" placeholder="GST NO">
                                 </div>
                                 <div class="col-md-6">
                                     <label for="input6" class="form-label">PAN NO</label>
                                     <input type="text" class="form-control" name="pan_no" id="input6"
-                                        value="{{ $warehouse->pan_no }}" placeholder="PAN NO">
+                                        value="{{ $warehouse->pan_number }}" placeholder="PAN NO">
                                 </div>
                                 <div class="col-md-6">
                                     <label for="input11" class="form-label">Address Line 1</label>
-                                    <textarea class="form-control" id="input11" name="address_line_1" placeholder="Address Line 1" rows="3">
-                                            {{ $warehouse->address_line_1 }}
-                                        </textarea>
+                                    <textarea class="form-control" id="input11" name="address_line_1" placeholder="Address Line 1" rows="3">{{ $warehouse->address_line_1 ?? '' }}</textarea>
                                 </div>
                                 <div class="col-md-6">
                                     <label for="input11" class="form-label">Address Line 2</label>
-                                    <textarea class="form-control" id="input11" name="address_line_2" placeholder="Address Line 2" rows="3">{{ $warehouse->address_line_2 }}</textarea>
+                                    <textarea class="form-control" id="input11" name="address_line_2" placeholder="Address Line 2" rows="3">{{ $warehouse->address_line_2 ?? '' }}</textarea>
                                 </div>
                                 <div class="col-md-6">
                                     <label for="input6" class="form-label">Upload Licence Document</label>
@@ -108,19 +110,22 @@
                                         placeholder="Max storage capacity">
                                 </div>
                                 <div class="col-md-2">
-                                    <label for="input8" class="form-label">City</label>
-                                    <input type="text" class="form-control" name="city" id="input8"
-                                        value="{{ $warehouse->city }}" placeholder="City">
+                                    <label for="shippingCountry" class="form-label">Country</label>
+                                    <select id="shippingCountry" class="form-select" name="country">
+                                        <option value="">Select Country</option>
+                                    </select>
                                 </div>
                                 <div class="col-md-2">
-                                    <label for="input8" class="form-label">State </label>
-                                    <input type="text" class="form-control" name="state" id="input8"
-                                        value="{{ $warehouse->state }}" placeholder="State ">
+                                    <label for="shippingState" class="form-label">State</label>
+                                    <select id="shippingState" class="form-select" name="state">
+                                        <option value="">Select State</option>
+                                    </select>
                                 </div>
                                 <div class="col-md-2">
-                                    <label for="input8" class="form-label">Country </label>
-                                    <input type="text" class="form-control" name="country" id="input8"
-                                        value="{{ $warehouse->country }}" placeholder="Country  ">
+                                    <label for="shippingCity" class="form-label">City</label>
+                                    <select id="shippingCity" class="form-select" name="city">
+                                        <option value="">Select City</option>
+                                    </select>
                                 </div>
                                 <div class="col-md-2">
                                     <label for="input8" class="form-label">Pin Code</label>
@@ -131,23 +136,25 @@
                                     <label for="input9" class="form-label">Status</label>
                                     <select id="input9" name="status" class="form-select">
                                         <option selected="" disabled>Choose any one</option>
-                                        <option>Active</option>
-                                        <option>Inactive</option>
+                                        <option value="1" {{ $warehouse->status == '1' ? 'selected' : '' }}>Active</option>
+                                        <option value="0" {{ $warehouse->status == '0' ? 'selected' : '' }}>Inactive</option>
                                     </select>
                                 </div>
                                 <div class="col-md-2">
                                     <label for="input9" class="form-label">Supported Operations</label>
                                     <select id="input9" name="supported_operations" class="form-select">
                                         <option selected="" disabled>Choose any one</option>
-                                        <option>Inbound</option>
-                                        <option>Outbound</option>
-                                        <option>Return</option>
+                                        <option value="inbound"  {{ $warehouse->operations == 'inbound' ? 'selected' : '' }}>Inbound</option>
+                                        <option value="outbound"  {{ $warehouse->operations == 'outbound' ? 'selected' : '' }}>Outbound</option>
+                                        <option value="return"  {{ $warehouse->operations == 'return' ? 'selected' : '' }}>Return</option>
                                     </select>
                                 </div>
+                                {{-- 
                                 <div class="col-md-2">
                                     <input class="form-check-input" name="default_warehouse" type="checkbox">
                                     <label for="input8"class="form-label">Default Warehouse</label>
-                                </div>
+                                </div> 
+                                --}}
                                 <div class="col-md-12">
                                     <div class="d-md-flex d-grid align-items-center gap-3">
                                         <button type="submit" class="btn btn-primary px-4">Submit</button>
@@ -162,4 +169,75 @@
         </div>
     </main>
     <!--end main wrapper-->
+@endsection
+
+
+@section('script')
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"
+        integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <script>
+        $(document).ready(function() {
+
+            function getLocationData(url, id, tag, data = null) {
+                $.ajax({
+                    url: url,
+                    method: 'GET',
+                    data: data,
+                    success: function(data) {
+                        console.log(data.data);
+                        $(id).empty().append(
+                            `<option value="">Select ${tag}</option>`);
+                        data.data.map(function(country) {
+                            $(id).append(
+                                $('<option>', {
+                                    value: country.id,
+                                    text: country.name
+                                })
+                            );
+                        });
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error:', error);
+                    }
+                });
+            }
+
+            getLocationData("/countries", '#shippingCountry', "Country");
+
+            $("#shippingCountry").on("change", function() {
+                let countryId = $(this).val();
+                console.log(countryId);
+                getLocationData("/states", "#shippingState", "State", {
+                    countryId: countryId
+                });
+            });
+
+            $("#shippingState").on("change", function() {
+                let stateId = $(this).val();
+                console.log(stateId);
+                getLocationData("/cities", "#shippingCity", "City", {
+                    stateId: stateId
+                });
+            });
+
+            getLocationData("/countries", '#billingCountry', "Country");
+
+            $("#billingCountry").on("change", function() {
+                let countryId = $(this).val();
+                console.log(countryId);
+                getLocationData("/states", "#billingState", "State", {
+                    countryId: countryId
+                });
+            });
+
+            $("#billingState").on("change", function() {
+                let stateId = $(this).val();
+                console.log(stateId);
+                getLocationData("/cities", "#billingCity", "City", {
+                    stateId: stateId
+                });
+            });
+
+        });
+    </script>
 @endsection

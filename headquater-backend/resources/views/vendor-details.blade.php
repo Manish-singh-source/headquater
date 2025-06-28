@@ -14,22 +14,7 @@
                     </ol>
                 </nav>
             </div>
-            <!-- <div class="ms-auto">
-                    <div class="btn-group">
-                        <button type="button" class="btn btn-primary">Settings</button>
-                        <button type="button" class="btn btn-primary split-bg-primary dropdown-toggle dropdown-toggle-split"
-                            data-bs-toggle="dropdown"> <span class="visually-hidden">Toggle Dropdown</span>
-                        </button>
-                        <div class="dropdown-menu dropdown-menu-right dropdown-menu-lg-end"> <a class="dropdown-item"
-                                href="javascript:;">Action</a>
-                            <a class="dropdown-item" href="javascript:;">Another action</a>
-                            <a class="dropdown-item" href="javascript:;">Something else here</a>
-                            <div class="dropdown-divider"></div> <a class="dropdown-item" href="javascript:;">Separated link</a>
-                        </div>
-                    </div>
-                </div> -->
         </div>
-        <!--end breadcrumb-->
 
         <div class="row">
             <div class="col-12">
@@ -37,51 +22,49 @@
                     <ul class="col-12 list-group list-group-flush">
                         <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                             <span><b>Name</b></span>
-                            <span>{{ $vendor->first_name }}</span>
+                            <span>{{ $vendor->first_name ?? 'NA' }}</span>
                         </li>
                         <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                             <span><b>Last Name</b></span>
-                            <span> {{ $vendor->last_name }}</span>
+                            <span> {{ $vendor->last_name ?? 'NA' }}</span>
                         </li>
                         <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                             <span><b>Phone No</b></span>
-                            <span>{{ $vendor->phone }}</span>
+                            <span>{{ $vendor->phone_number ?? 'NA' }}</span>
                         </li>
                         <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                             <span><b>Email</b></span>
-                            <span>{{ $vendor->email }}</span>
+                            <span>{{ $vendor->email ?? 'NA' }}</span>
                         </li>
                         <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                             <span><b>GST No</b></span>
-                            <span>{{ $vendor->gst_no }}</span>
+                            <span>{{ $vendor->gst_number ?? 'NA' }}</span>
                         </li>
                         <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                             <span><b>PAN No</b></span>
-                            <span>{{ $vendor->pan_no }}</span>
+                            <span>{{ $vendor->pan_number ?? 'NA'  }}</span>
                         </li>
                         <li class="list-group-item d-flex justify-content-between align-items-center  mb-2 pe-3">
                             <span><b>Address</b></span>
-                            <span>{{ $vendor->address }}</span>
+                            <span>{{ $vendor->address ?? 'NA' }}</span>
                         </li>
                         <li class="list-group-item d-flex justify-content-between align-items-center  mb-2 pe-3">
                             <span><b>Bank Name</b></span>
-                            <span>{{ $vendor->bank_name }}</span>
+                            <span>{{ $vendor->bank_number ?? 'NA' }}</span>
                         </li>
                         <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                             <span><b>Account No</b></span>
-                            <span>{{ $vendor->account_no }}</span>
+                            <span>{{ $vendor->bank_account_number ?? 'NA' }}</span>
                         </li>
                         <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                             <span><b>IFSC Code</b></span>
-                            <span>{{ $vendor->ifsc_code }}</span>
+                            <span>{{ $vendor->ifsc_number ?? 'NA' }}</span>
                         </li>
                     </ul>
                 </div>
             </div>
 
-        </div><!--end row-->
-
-
+        </div>
 
         <div class="card">
             <div class="card-body">
@@ -320,5 +303,5 @@
 
     </div>
 </main>
-<!--end main wrapper-->
+
 @endsection

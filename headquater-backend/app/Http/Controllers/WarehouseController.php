@@ -11,7 +11,7 @@ class WarehouseController extends Controller
     //
     public function warehouseList()
     {
-        $warehouses = Warehouse::get();
+        $warehouses = Warehouse::with('country')->with('state')->with('cities')->get();
         return view('warehouse.warehouse', ['warehouses' => $warehouses]);
     }
 
@@ -41,25 +41,25 @@ class WarehouseController extends Controller
         }
 
         $warehouse = new Warehouse();
-        $warehouse->warehouse_name = $request->warehouse_name;
-        $warehouse->warehouse_type = $request->warehouse_type;
+        $warehouse->name = $request->warehouse_name;
+        $warehouse->type = $request->warehouse_type;
         $warehouse->contact_person_name = $request->contact_person_name;
-        $warehouse->contact_person_phone_no = $request->contact_person_phone_no;
-        $warehouse->contact_person_alt_phone_no = $request->contact_person_alt_phone_no;
-        $warehouse->contact_person_email = $request->contact_person_email;
-        $warehouse->gst_no = $request->gst_no;
-        $warehouse->pan_no = $request->pan_no;
+        $warehouse->phone = $request->contact_person_phone_no;
+        $warehouse->alt_phone = $request->contact_person_alt_phone_no;
+        $warehouse->email = $request->contact_person_email;
+        $warehouse->gst_number = $request->gst_no;
+        $warehouse->pan_number = $request->pan_no;
         $warehouse->address_line_1 = $request->address_line_1;
         $warehouse->address_line_2 = $request->address_line_2;
         $warehouse->licence_doc = $request->licence_doc;
         $warehouse->max_storage_capacity = $request->max_storage_capacity;
-        $warehouse->supported_operations = $request->supported_operations;
+        $warehouse->operations = $request->supported_operations;
         $warehouse->city = $request->city;
         $warehouse->state = $request->state;
         $warehouse->country = $request->country;
         $warehouse->pincode = $request->pincode;
         $warehouse->status = $request->status;
-        $warehouse->default_warehouse = $request->default_warehouse ? 'yes' : 'no';
+        // $warehouse->default_warehouse = $request->default_warehouse == 'on' ? 'yes' : 'no';
         $warehouse->save();
 
         return redirect()->route('warehouse');
@@ -71,14 +71,14 @@ class WarehouseController extends Controller
         $warehouse = Warehouse::findOrFail($id);
         return view('warehouse.warehouse-detail', ['warehouse' => $warehouse]);
     }
-    
+
     public function warehouseEdit($id)
     {
         $warehouse = Warehouse::findOrFail($id);
         return view('warehouse.edit-warehouse', ['warehouse' => $warehouse]);
     }
 
-        public function warehouseUpdate(Request $request, $id)
+    public function warehouseUpdate(Request $request, $id)
     {
         $validator = Validator::make(
             $request->all(),
@@ -99,25 +99,25 @@ class WarehouseController extends Controller
         }
 
         $warehouse = Warehouse::findOrFail($id);
-        $warehouse->warehouse_name = $request->warehouse_name;
-        $warehouse->warehouse_type = $request->warehouse_type;
+        $warehouse->name = $request->warehouse_name;
+        $warehouse->type = $request->warehouse_type;
         $warehouse->contact_person_name = $request->contact_person_name;
-        $warehouse->contact_person_phone_no = $request->contact_person_phone_no;
-        $warehouse->contact_person_alt_phone_no = $request->contact_person_alt_phone_no;
-        $warehouse->contact_person_email = $request->contact_person_email;
-        $warehouse->gst_no = $request->gst_no;
-        $warehouse->pan_no = $request->pan_no;
+        $warehouse->phone = $request->contact_person_phone_no;
+        $warehouse->alt_phone = $request->contact_person_alt_phone_no;
+        $warehouse->email = $request->contact_person_email;
+        $warehouse->gst_number = $request->gst_no;
+        $warehouse->pan_number = $request->pan_no;
         $warehouse->address_line_1 = $request->address_line_1;
         $warehouse->address_line_2 = $request->address_line_2;
         $warehouse->licence_doc = $request->licence_doc;
         $warehouse->max_storage_capacity = $request->max_storage_capacity;
-        $warehouse->supported_operations = $request->supported_operations;
+        $warehouse->operations = $request->supported_operations;
         $warehouse->city = $request->city;
         $warehouse->state = $request->state;
         $warehouse->country = $request->country;
         $warehouse->pincode = $request->pincode;
         $warehouse->status = $request->status;
-        $warehouse->default_warehouse = $request->default_warehouse ? 'yes' : 'no';
+        // $warehouse->default_warehouse = $request->default_warehouse ? 'yes' : 'no';
         $warehouse->save();
 
         return redirect()->route('warehouse');
