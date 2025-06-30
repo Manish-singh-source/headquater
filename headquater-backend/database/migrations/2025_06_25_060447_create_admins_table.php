@@ -18,14 +18,23 @@ return new class extends Migration
             $table->unsignedBigInteger('created_by')->nullable();
             $table->unsignedBigInteger('updated_by')->nullable();
 
-            $table->string('name', 70)->nullable();
-            $table->string('user_name', 70)->nullable();
+            $table->string('role')->nullable();
+            $table->string('fname')->nullable();
+            $table->string('lname')->nullable();
+            $table->string('phone')->nullable();
+            $table->string('dob')->nullable();
+            $table->string('marital')->nullable();
+            $table->string('gender')->nullable();
             $table->string('email', 70)->nullable();
-            $table->string('phone', 70)->nullable();
-            $table->string('image', 120)->nullable();
-            $table->string('address', 255)->nullable();
-            $table->string('password')->nullable();
-
+            $table->string('current_address')->nullable();
+            $table->string('permanent_address')->nullable();
+            $table->string('city')->nullable();
+            $table->string('state')->nullable();
+            $table->string('country')->nullable();
+            $table->string('pincode')->nullable();
+            $table->string('user_name', 50)->unique()->nullable();
+            
+            
             $table->enum('status', ['0', '1'])->default('1')->comment('Active : 1, Inactive : 0');
 
             $table->timestamps(); // created_at and updated_at

@@ -21,7 +21,7 @@
                                     <span class="fw-semibold text-break">Name :
                                     </span>
                                     <span>
-                                        Sarah Wilson
+                                     {{ $staffs->fname }}
                                     </span>
                                 </li>
 
@@ -29,7 +29,7 @@
                                     <span class="fw-semibold text-break">Role :
                                     </span>
                                     <span>
-                                        Admin
+                                        {{ $staffs->role }}
                                     </span>
                                 </li>
 
@@ -37,7 +37,7 @@
                                     <span class="fw-semibold text-break">Status :
                                     </span>
                                     <span class="badge bg-success-subtle text-success fw-semibold">
-                                        Active
+                                       {{ $staffs->status }}
                                     </span>
                                 </li>
 
@@ -45,7 +45,7 @@
                                     <span class="fw-semibold text-break">Contact no :
                                     </span>
                                     <span>
-                                        8080721003
+                                      {{ $staffs->phone }}
                                     </span>
                                 </li>
 
@@ -53,7 +53,7 @@
                                     <span class="fw-semibold text-break">E-mail :
                                     </span>
                                     <span>
-                                        abcexample@gmail.com
+                                        {{ $staffs->email }}
                                     </span>
                                 </li>
                             </ul>

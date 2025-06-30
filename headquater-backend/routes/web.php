@@ -36,7 +36,13 @@ Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
 // Staff List
 Route::get('/staff', [AccessController::class, 'staffList'])->name('staff');
 Route::get('/add-staff', [AccessController::class, 'addStaff'])->name('add-staff');
-Route::get('/staff-detail', [AccessController::class, 'staffDetail'])->name('staff-detail');
+Route::get('/staff-detail/{id}', [AccessController::class, 'staffDetail'])->name('staff-detail');
+Route::post('/add-staff', [AccessController::class, 'storeStaff'])->name('store-staff');
+Route::delete('/staff/delete/{id}', [AccessController::class, 'deletestaff'])->name('staff.delete');
+Route::get('/staff/edit/{id}', [AccessController::class, 'editstaff'])->name('staff.edit');
+Route::put('/staff/update/{id}', [AccessController::class, 'updatestaff'])->name('staff.update');
+
+
 
 
 

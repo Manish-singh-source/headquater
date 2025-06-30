@@ -6,11 +6,11 @@
             <div class="row">
 
                 <div class="col-12">
-                    <form action="" method="post" enctype="multipart/form-data">
+                    <form action="" method="post">
                         @csrf
                         @method('POST')
                     <div class="row">
-                        <div class="col-lg-8">
+                        <div class="col-lg-12">
                             <div class="card">
                                 <div class="card-header border-bottom-dashed">
                                     <div class="row g-4 align-items-center">
@@ -39,8 +39,8 @@
                                                 <span class="text-danger">*</span></label>
                                             <select class="form-control" name="status" id="marital">
                                                 <option selected="" disabled="" value="">-- Select --</option>
-                                                <option value="Active">Active</option>
-                                                <option value="Inactive">Inactive</option>
+                                                <option value="1">Active</option>
+                                                <option value="0">Inactive</option>
                                             </select>
                                         </div>
                                     </div>
@@ -120,12 +120,12 @@
                                     <div class="row g-3">
                                         <div class="col-12 col-md-6">
                                             <label for="current-address" class="form-label">Current Address <span class="text-danger">*</span></label>
-                                            <textarea name="current-address" id="current_address" class="form-control" value="" placeholder="Enter Current Address"></textarea>
+                                            <textarea name="current_address" id="current_address" class="form-control" value="" placeholder="Enter Current Address"></textarea>
                                         </div>
 
                                         <div class="col-12 col-md-6">
                                             <label for="permanent-address" class="form-label">Permanent Address </label>
-                                            <textarea name="permanent-address" id="permanent_address" class="form-control" value="" placeholder="Enter Permanent Address"></textarea>
+                                            <textarea name="permanent_address" id="permanent_address" class="form-control" value="" placeholder="Enter Permanent Address"></textarea>
                                         </div>
 
                                         <div class="col-12 col-md-6">
@@ -151,189 +151,12 @@
                                 </div>
                             </div>
 
-                            <div class="card">
-                                <div class="card-header border-bottom-dashed">
-                                    <h5 class="card-title mb-0">
-                                        Job Details:
-                                    </h5>
-                                </div>
+                          
 
-                                <div class="card-body">
-                                    <div class="row g-3">
-                                        <div class="col-12 col-md-6">
-                                            <label for="emp_id" class="form-label">Employee ID <span class="text-danger">*</span></label>
-                                            <input type="text" name="emp_id" id="emp_id" class="form-control" value="" required="" placeholder="Enter Employee ID">
-                                        </div>
-
-                                        <div class="col-12 col-md-6">
-                                            <label for="Department" class="form-label">Department/Role <span class="text-danger">*</span></label>
-                                            <select class="form-control" name="department" id="Department">
-                                                <option selected="" disabled="" value="">-- Select --</option>
-                                                <option value="">Sales</option>
-                                                <option value="">Support</option>
-                                                <option value="">Management</option>
-                                            </select>
-                                        </div>
-
-                                        <div class="col-12 col-md-6">
-                                            <label for="designation" class="form-label">Designation/Position <span class="text-danger">*</span></label>
-                                            <input type="text" name="designation" id="designation" class="form-control" value="" required="" placeholder="Enter Designation/Position">
-                                        </div>
-
-                                        <div class="col-12 col-md-6">
-                                            <label for="join_date" class="form-label">Joining Date <span class="text-danger">*</span></label>
-                                            <input type="date" name="join_date" id="join_date" class="form-control" value="" required="" placeholder="Enter Joining Date">
-                                        </div>
-
-                                        <div class="col-12 col-md-6">
-                                            <label for="shift_timing" class="form-label">Shift Timing <span class="text-danger">*</span></label>
-                                            <select class="form-control" name="shift_timing" id="shift_timing">
-                                                <option selected="" disabled="" value="">-- Select --</option>
-                                                <option value="">Morning Shift</option>
-                                                <option value="">Afternoon Shift</option>
-                                                <option value="">Night Shift</option>
-                                            </select>
-                                        </div>
-
-                                        <div class="col-12 col-md-6">
-                                            <label for="work_location" class="form-label">Work Location <span class="text-danger">*</span></label>
-                                            <input type="text" name="work_location" id="work_location" class="form-control" value="" required="" placeholder="Enter Work Location">
-                                        </div>
-
-                                        <div class="col-12 col-md-6">
-                                            <label for="supervisor" class="form-label">Supervisor/Manager Name <span class="text-danger">*</span></label>
-                                            <input type="text" name="supervisor" id="supervisor" class="form-control" value="" required="" placeholder="Enter Supervisor/Manager Name">
-                                        </div>
-
-                                    </div>
-                                </div>
-
-                            </div>
-
-                            <!-- <div class="text-start mb-3">
-                            <button type="submit" class="btn btn-success w-sm waves ripple-light">
-                                Submit
-                            </button>
-                        </div> -->
+                    
                         </div>
 
-                        <div class="col-lg-4">
-                            <div class="card">
-                                <div class="card-header border-bottom-dashed">
-                                    <h5 class="card-title mb-0">
-                                        Identity Proof
-                                    </h5>
-                                </div>
-                                <div class="card-body">
-                                    <div class="row g-3">
-                                        <div class="">
-                                            <label for="gov_id" class="form-label">Government ID Type <span class="text-danger">*</span></label>
-                                            <select class="form-control" name="gov_id" id="gov_id">
-                                                <option selected="" disabled="" value="">-- Select --</option>
-                                                <option value="">Aadhar Card</option>
-                                                <option value="">Pan Card</option>
-                                            </select>
-                                        </div>
-
-                                        <div class="">
-                                            <label for="card_no" class="form-label">ID Number <span class="text-danger">*</span></label>
-                                            <input type="text" name="card_no" id="card_no" class="form-control" value="" required="" placeholder="Enter ID Number">
-                                        </div>
-
-                                        <div class="">
-                                            <label for="document_image" class="form-label">Upload ID Document (Image/PDF) <span class="text-danger">*</span></label>
-                                            <input type="file" name="document_image" id="document_image" class="form-control" value="" required="" placeholder="Upload ID Document">
-                                        </div>
-
-                                    </div>
-                                </div>
-
-                            </div>
-
-                            <div class="card">
-                                <div class="card-header border-bottom-dashed">
-                                    <h5 class="card-title mb-0">
-                                        Other Information:
-                                    </h5>
-                                </div>
-
-                                <div class="card-body">
-                                    <div class="row g-3">
-                                        <div class="">
-                                            <label for="profile_pic" class="form-label">Upload Profile Photo <span class="text-danger">*</span></label>
-                                            <input type="file" name="profile_pic" id="profile_pic" class="form-control" value="" required="" placeholder="Upload Profile Photo">
-                                        </div>
-
-                                        <div class="">
-                                            <label for="emergency_contact_name" class="form-label">Emergency Contact Name <span class="text-danger">*</span></label>
-                                            <input type="text" name="emergency_contact_name" id="emergency_contact_name" class="form-control" value="" required="" placeholder="Enter Emergency Contact Name">
-                                        </div>
-
-                                        <div class="">
-                                            <label for="emergency_contact_number" class="form-label">Emergency Contact Number <span class="text-danger">*</span></label>
-                                            <input type="text" name="emergency_contact_number" id="emergency_contact_number" class="form-control" value="" required="" placeholder="Enter Emergency Contact Number">
-                                        </div>
-
-                                        <div class="">
-                                            <label for="emp_status" class="form-label">Employment Status <span class="text-danger">*</span></label>
-                                            <select class="form-control" name="emp_status" id="emp_status">
-                                                <option selected="" disabled="" value="">-- Select --</option>
-                                                <option value=""> Active</option>
-                                                <option value="">Inactive</option>
-                                                <option value="">Resigned</option>
-                                                <option value="">Terminated</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                </div>
-
-                            </div>
-
-                            <div class="card">
-                                <div class="card-header border-bottom-dashed">
-                                    <h5 class="card-title mb-0">
-                                        Salary Details:
-                                    </h5>
-                                </div>
-
-                                <div class="card-body">
-                                    <div class="row g-3">
-                                        <div class="">
-                                            <label for="salary_amount" class="form-label">Salary Amount <span class="text-danger">*</span></label>
-                                            <input type="text" name="salary_amount" id="salary_amount" class="form-control" value="" required="" placeholder="Enter Salary Amount">
-                                        </div>
-
-                                        <div class="">
-                                            <label for="payment-mode" class="form-label">Payment Mode <span class="text-danger">*</span></label>
-                                            <select class="form-control" name="payment_mode" id="payment-mode">
-                                                <option selected="" disabled="" value="">-- Select --</option>
-                                                <option value=""> Bank Transfer</option>
-                                                <option value="">Cash</option>
-                                                <option value="">Cheque</option>
-                                            </select>
-                                        </div>
-
-                                        <div class="">
-                                            <label for="bank_account_number" class="form-label">Bank Account Number <span class="text-danger">*</span></label>
-                                            <input type="text" name="bank_account_number" id="bank_account_number" class="form-control" value="" required="" placeholder="Enter Bank Account Number">
-                                        </div>
-
-                                        <div class="">
-                                            <label for="bank_name" class="form-label">Bank Name <span class="text-danger">*</span></label>
-                                            <input type="text" name="bank_name" id="bank_name" class="form-control" value="" required="" placeholder="Enter Bank Name">
-                                        </div>
-
-                                        <div class="">
-                                            <label for="ifsc_code" class="form-label">IFSC Code <span class="text-danger">*</span></label>
-                                            <input type="text" name="ifsc_code" id="ifsc_code" class="form-control" value="" required="" placeholder="Enter IFSC Code">
-                                        </div>
-
-                                    </div>
-                                </div>
-
-                            </div>
-                        </div>
-
+                        
                         <div class="col-lg-12">
                             <div class="text-start mb-3">
                                 <button type="submit" class="btn btn-success w-sm waves ripple-light">
