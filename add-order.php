@@ -80,12 +80,7 @@
                                         <li class="nav-item">
                                             <a class="nav-link active" aria-current="page" href="#">Blinkit</a>
                                         </li>
-                                        <li class="nav-item">
-                                            <a class="nav-link" href="#">Big Bazar</a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a class="nav-link" href="#">Amazon</a>
-                                        </li>
+                                      
                                     </ul>
                                 </div>
                                 <div class="card-body">
@@ -158,6 +153,55 @@
                                     </button>
                                     <button type="button" class="btn btn-success w-sm waves ripple-light" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
                                         Hold Products
+                                    </button>
+
+                                    <!-- Modal -->
+                                    <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h1 class="modal-title fs-5" id="staticBackdropLabel">Hold Products</h1>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <form>
+                                                        <div class="mb-3">
+                                                            <label for="message-text" class="d-flex">Reason:</label>
+                                                            <textarea class="form-control" id="message-text"></textarea>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                                    <button type="button" id="holdOrder" class="btn btn-primary">Submit</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <button type="" id="submitOrder" class="btn btn-success w-sm waves ripple-light">
+                                        Submit
+                                    </button>
+                                </div>
+                                <div class="card ">
+                                <div class="card-body">
+                                    <div class="row align-items-end">
+                                        <div class="col-12 col-lg-3">
+                                            <label for="document_image" class="form-label">Updated Excel Upload <span class="text-danger">*</span></label>
+                                            <input type="file" name="document_image" id="document_image" class="form-control" value="" required="" placeholder="Upload ID Document" multiple>
+                                        </div>
+                                        <div class="col-12 col-lg-1">
+                                            <button class="btn btn-primary" id="upload-excel">Submit</button>
+                                        </div>
+                                        <!-- <div class="col-12 col-lg-1">
+                                            <button class="btn btn-primary" id="orderStatus">Submit</button>
+                                        </div> -->
+                                    </div>
+                                </div>
+                            </div>
+                              <div class="text-end mb-3">
+                                    
+                                    <button type="button" class="btn btn-success w-sm waves ripple-light" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
+                                        Updated Hold Products
                                     </button>
 
                                     <!-- Modal -->

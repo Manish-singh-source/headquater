@@ -78,8 +78,8 @@
            <ul>
              <li><a href="assign-order.php"><i class="material-icons-outlined">arrow_right</i>Purchase Order</a>
              </li>
-             <li><a href="#"><i class="material-icons-outlined">arrow_right</i>Purchase in Word</a>
-             </li>
+             <!-- <li><a href="#"><i class="material-icons-outlined">arrow_right</i>Purchase in Word</a>
+             </li> -->
            </ul>
          </li>
           <li>
