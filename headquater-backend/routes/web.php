@@ -107,7 +107,7 @@ Route::get('/customer-sales-history', [ReportController::class, 'customerSalesHi
 //     return view('customer-detail');
 // })->name('customer-detail');
 Route::get('/customer-order-view', function () {
-    return view('customer-order-view');
+    return view('customer.customer-order-view');
 })->name('customer-order-view');
 
 

@@ -104,7 +104,8 @@
                                             </td>
                                             <td>
                                                 <div class="d-flex">
-                                                    <a aria-label="anchor" href="{{ route('warehouse.detail', $warehouse->id) }}"
+                                                    <a aria-label="anchor"
+                                                        href="{{ route('warehouse.detail', $warehouse->id) }}"
                                                         class="btn btn-icon btn-sm bg-primary-subtle me-1"
                                                         data-bs-toggle="tooltip" data-bs-original-title="View">
                                                         <svg xmlns="http://www.w3.org/2000/svg" width="13"
@@ -116,7 +117,8 @@
                                                             <circle cx="12" cy="12" r="3"></circle>
                                                         </svg>
                                                     </a>
-                                                    <a aria-label="anchor" href="{{ route('warehouse.edit', $warehouse->id) }}"
+                                                    <a aria-label="anchor"
+                                                        href="{{ route('warehouse.edit', $warehouse->id) }}"
                                                         class="btn btn-icon btn-sm bg-warning-subtle me-1"
                                                         data-bs-toggle="tooltip" data-bs-original-title="Edit">
                                                         <svg xmlns="http://www.w3.org/2000/svg" width="13"
@@ -165,6 +167,9 @@
                                 </tbody>
                             </table>
                         </div>
+                    </div>
+                    <div class="pagination justify-content-end">
+                        {{ $warehouses->links() }}
                     </div>
                 </div>
             </div>

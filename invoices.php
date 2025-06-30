@@ -122,11 +122,11 @@
                                                     <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
                                                 </svg>
                                             </a>
-                                              <a type="button" class="btn btn-icon btn-sm bg-success-subtle me-1" data-bs-toggle="modal" data-bs-target="#staticBackdrop1">
-                                                <img width="15" height="15" src="https://img.icons8.com/ios/50/document--v1.png" alt="bank-card-back-side--v1"/>
+                                            <a type="button" class="btn btn-icon btn-sm bg-success-subtle me-1" data-bs-toggle="modal" data-bs-target="#staticBackdrop1">
+                                                <img width="15" height="15" src="https://img.icons8.com/ios/50/document--v1.png" alt="bank-card-back-side--v1" />
                                             </a>
                                             <a type="button" class="btn btn-icon btn-sm bg-success-subtle me-1" data-bs-toggle="modal" data-bs-target="#staticBackdrop2">
-                                                <img width="15" height="15" src="https://img.icons8.com/ios/50/bank-card-back-side--v1.png" alt="bank-card-back-side--v1"/>
+                                                <img width="15" height="15" src="https://img.icons8.com/ios/50/bank-card-back-side--v1.png" alt="bank-card-back-side--v1" />
                                             </a>
                                         </td>
 
@@ -156,11 +156,11 @@
                                                                 <label for="document_image" class="form-label">Upload E-Invoice <span class="text-danger">*</span></label>
                                                                 <input type="file" name="document_image" id="document_image" class="form-control" value="" required="" placeholder="Upload ID Document">
                                                             </div>
-                                                             <div class="col-12 mb-3">
+                                                            <div class="col-12 mb-3">
                                                                 <label for="document_image" class="form-label">DN Amount<span class="text-danger">*</span></label>
                                                                 <input type="text" name="document_image" id="document_image" class="form-control" value="" required="" placeholder="Upload Amount">
                                                             </div>
-                                                             <div class="col-12 mb-3">
+                                                            <div class="col-12 mb-3">
                                                                 <label for="document_image" class="form-label">DN Reason<span class="text-danger">*</span></label>
                                                                 <input type="text" name="document_image" id="document_image" class="form-control" value="" required="" placeholder="DN Reason">
                                                             </div>
@@ -177,7 +177,7 @@
                                                 </div>
                                             </div>
                                         </div>
-                                         <!-- Modal -->
+                                        <!-- Modal -->
                                         <div class="modal fade" id="staticBackdrop2" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
                                             <div class="modal-dialog">
                                                 <div class="modal-content">
@@ -248,7 +248,7 @@
                                                 </svg>
                                             </a>
                                             <a type="button" class="btn btn-icon btn-sm bg-success-subtle me-1" data-bs-toggle="modal" data-bs-target="#staticBackdrop2">
-                                                <img width="15" height="15" src="https://img.icons8.com/ios/50/bank-card-back-side--v1.png" alt="bank-card-back-side--v1"/>
+                                                <img width="15" height="15" src="https://img.icons8.com/ios/50/bank-card-back-side--v1.png" alt="bank-card-back-side--v1" />
                                             </a>
                                         </td>
                                     </tr>
@@ -280,7 +280,7 @@
                                                 </svg>
                                             </a>
                                             <a type="button" class="btn btn-icon btn-sm bg-success-subtle me-1" data-bs-toggle="modal" data-bs-target="#staticBackdrop2">
-                                                <img width="15" height="15" src="https://img.icons8.com/ios/50/bank-card-back-side--v1.png" alt="bank-card-back-side--v1"/>
+                                                <img width="15" height="15" src="https://img.icons8.com/ios/50/bank-card-back-side--v1.png" alt="bank-card-back-side--v1" />
                                             </a>
                                         </td>
                                     </tr>

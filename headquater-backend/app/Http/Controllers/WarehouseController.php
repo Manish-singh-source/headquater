@@ -11,7 +11,7 @@ class WarehouseController extends Controller
     //
     public function warehouseList()
     {
-        $warehouses = Warehouse::with('country')->with('state')->with('cities')->get();
+        $warehouses = Warehouse::with('country')->with('state')->with('cities')->paginate(10);
         return view('warehouse.warehouse', ['warehouses' => $warehouses]);
     }
 

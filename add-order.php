@@ -36,7 +36,7 @@
                                 <div class="card-body">
                                     <div class="row align-items-end">
 
-                                       
+
 
                                         <div class="col-12 col-lg-3">
                                             <label for="warehouseLocation" class="form-label">Select Group
@@ -56,7 +56,7 @@
                                                 <option value="Mumbai">Mumbai</option>
                                             </select>
                                         </div>
-                                         <div class="col-12 col-lg-2">
+                                        <div class="col-12 col-lg-2">
                                             <label for="pick-date" class="form-label">Ordered Date</label>
                                             <input type="date" class="form-control" name="orderedDate" id="pick-date">
                                         </div>
@@ -80,7 +80,7 @@
                                         <li class="nav-item">
                                             <a class="nav-link active" aria-current="page" href="#">Blinkit</a>
                                         </li>
-                                      
+
                                     </ul>
                                 </div>
                                 <div class="card-body">
@@ -183,23 +183,23 @@
                                     </button>
                                 </div>
                                 <div class="card ">
-                                <div class="card-body">
-                                    <div class="row align-items-end">
-                                        <div class="col-12 col-lg-3">
-                                            <label for="document_image" class="form-label">Updated Excel Upload <span class="text-danger">*</span></label>
-                                            <input type="file" name="document_image" id="document_image" class="form-control" value="" required="" placeholder="Upload ID Document" multiple>
-                                        </div>
-                                        <div class="col-12 col-lg-1">
-                                            <button class="btn btn-primary" id="upload-excel">Submit</button>
-                                        </div>
-                                        <!-- <div class="col-12 col-lg-1">
+                                    <div class="card-body">
+                                        <div class="row align-items-end">
+                                            <div class="col-12 col-lg-3">
+                                                <label for="document_image" class="form-label">Updated Excel Upload <span class="text-danger">*</span></label>
+                                                <input type="file" name="document_image" id="document_image" class="form-control" value="" required="" placeholder="Upload ID Document" multiple>
+                                            </div>
+                                            <div class="col-12 col-lg-1">
+                                                <button class="btn btn-primary" id="upload-excel">Submit</button>
+                                            </div>
+                                            <!-- <div class="col-12 col-lg-1">
                                             <button class="btn btn-primary" id="orderStatus">Submit</button>
                                         </div> -->
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                              <div class="text-end mb-3">
-                                    
+                                <div class="text-end mb-3">
+
                                     <button type="button" class="btn btn-success w-sm waves ripple-light" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
                                         Updated Hold Products
                                     </button>

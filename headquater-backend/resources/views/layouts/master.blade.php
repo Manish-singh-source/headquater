@@ -324,40 +324,50 @@
                       </ul>
                   </li>
                   <li>
-                      <a href="{{ route('customers') }}">
-                          <div class="parent-icon"><i class="material-icons-outlined">people</i>
+                      <a href="javascript:;" class="has-arrow">
+                          <div class="parent-icon"><i class="material-icons-outlined">category</i>
                           </div>
-                          <div class="menu-title">Customers</div>
+                          <div class="menu-title">Master</div>
                       </a>
+                      <ul>
+                          <li><a href="{{ route('customers') }}"><i
+                                      class="material-icons-outlined">arrow_right</i>Customers</a>
+                          </li>
+                          <li><a href="{{ route('vendor') }}"><i
+                                      class="material-icons-outlined">arrow_right</i>Vendor</a>
+                          </li>
+                          <li><a href="{{ route('products') }}"><i
+                                      class="material-icons-outlined">arrow_right</i>Products</a>
+                          </li>
+                          <li><a href="{{ route('warehouse') }}"><i
+                                      class="material-icons-outlined">arrow_right</i>Warehouses</a>
+                          </li>
+                      </ul>
                   </li>
                   <li>
-                      <a href="{{ route('vendor') }}">
-                          <div class="parent-icon"><i class="material-icons-outlined">storefront</i>
+                      <a href="javascript:;" class="has-arrow">
+                          <div class="parent-icon"><i class="material-icons-outlined">shopping_cart</i>
                           </div>
-                          <div class="menu-title">Vendor</div>
+                          <div class="menu-title">Purchase</div>
                       </a>
-                  </li>
-
-                  <li>
-                      <a href="{{ route('order') }}">
-                          <div class="parent-icon"><i class="material-icons-outlined">home</i>
-                          </div>
-                          <div class="menu-title">Order</div>
-                      </a>
+                      <ul>
+                          <li><a href="{{ route('assign-order') }}"><i
+                                      class="material-icons-outlined">arrow_right</i>Purchase
+                                  Order</a>
+                          </li>
+                      </ul>
                   </li>
                   <li>
-                      <a href="{{ route('products') }}">
-                          <div class="parent-icon"><i class="material-icons-outlined">shopping_bag</i>
+                      <a href="javascript:;" class="has-arrow">
+                          <div class="parent-icon"><i class="material-icons-outlined">sell</i>
                           </div>
-                          <div class="menu-title">Products</div>
+                          <div class="menu-title">Sales</div>
                       </a>
-                  </li>
-                  <li>
-                      <a href="{{ route('assign-order') }}">
-                          <div class="parent-icon"><i class="material-icons-outlined">handshake</i>
-                          </div>
-                          <div class="menu-title">Place Order</div>
-                      </a>
+                      <ul>
+                          <li><a href="{{ route('order') }}"><i class="material-icons-outlined">arrow_right</i>Sales
+                                  Order</a>
+                          </li>
+                      </ul>
                   </li>
                   <li>
                       <a href="{{ route('invoices') }}">
@@ -367,13 +377,6 @@
                       </a>
                   </li>
                   <li class="menu-label">Warehouse</li>
-                  <li>
-                      <a href="{{ route('warehouse') }}">
-                          <div class="parent-icon"><i class="material-icons-outlined">store</i>
-                          </div>
-                          <div class="menu-title">Warehouses</div>
-                      </a>
-                  </li>
                   <li>
                       <a href="{{ route('received-products') }}">
                           <div class="parent-icon"><i class="material-icons-outlined">move_to_inbox</i>

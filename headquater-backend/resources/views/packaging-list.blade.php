@@ -15,17 +15,17 @@
                     </nav>
                 </div>
                 <!-- <div class="ms-auto">
-                    <div class="btn-group">
-                        <button type="button" class="btn btn-primary">Settings</button>
-                        <button type="button" class="btn btn-primary split-bg-primary dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown"> <span class="visually-hidden">Toggle Dropdown</span>
-                        </button>
-                        <div class="dropdown-menu dropdown-menu-right dropdown-menu-lg-end"> <a class="dropdown-item" href="javascript:;">Action</a>
-                            <a class="dropdown-item" href="javascript:;">Another action</a>
-                            <a class="dropdown-item" href="javascript:;">Something else here</a>
-                            <div class="dropdown-divider"></div> <a class="dropdown-item" href="javascript:;">Separated link</a>
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-primary">Settings</button>
+                            <button type="button" class="btn btn-primary split-bg-primary dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown"> <span class="visually-hidden">Toggle Dropdown</span>
+                            </button>
+                            <div class="dropdown-menu dropdown-menu-right dropdown-menu-lg-end"> <a class="dropdown-item" href="javascript:;">Action</a>
+                                <a class="dropdown-item" href="javascript:;">Another action</a>
+                                <a class="dropdown-item" href="javascript:;">Something else here</a>
+                                <div class="dropdown-divider"></div> <a class="dropdown-item" href="javascript:;">Separated link</a>
+                            </div>
                         </div>
-                    </div>
-                </div> -->
+                    </div> -->
             </div>
             <!--end breadcrumb-->
 
@@ -35,13 +35,15 @@
                 <div class="col-12 col-md-2">
                     <div class="position-relative">
                         <input class="form-control px-5" type="search" placeholder="Search Order">
-                        <span class="material-icons-outlined position-absolute ms-3 translate-middle-y start-0 top-50 fs-5">search</span>
+                        <span
+                            class="material-icons-outlined position-absolute ms-3 translate-middle-y start-0 top-50 fs-5">search</span>
                     </div>
                 </div>
                 <div class="col-12 col-md-2 flex-grow-1 overflow-auto">
                     <div class="btn-group position-static">
                         <div class="btn-group position-static">
-                            <button type="button" class="btn btn-filter dropdown-toggle px-4" data-bs-toggle="dropdown" aria-expanded="false">
+                            <button type="button" class="btn btn-filter dropdown-toggle px-4" data-bs-toggle="dropdown"
+                                aria-expanded="false">
                                 Sort
                             </button>
                             <ul class="dropdown-menu">
@@ -52,7 +54,8 @@
                             </ul>
                         </div>
                         <div class="btn-group position-static">
-                            <button type="button" class="btn btn-filter dropdown-toggle px-4" data-bs-toggle="dropdown" aria-expanded="false">
+                            <button type="button" class="btn btn-filter dropdown-toggle px-4" data-bs-toggle="dropdown"
+                                aria-expanded="false">
                                 Status
                             </button>
                             <ul class="dropdown-menu">
@@ -75,10 +78,8 @@
                                             <input class="form-check-input" type="checkbox">
                                         </th>
                                         <th>Order Id</th>
-                                        <th>Customer Name</th>
+                                        <th>Group Name</th>
                                         <th>Ordered Date</th>
-                                        <th>Delivery Date</th>
-                                        <th>Package Pdf</th>
                                         <th>Status</th>
                                         <th>Action</th>
                                     </tr>
@@ -96,14 +97,17 @@
                                         <td>
                                             2025-04-11
                                         </td>
-                                        <td>
-                                            2025-05-11
-                                        </td>
-                                        <td>BK159.pdf</td>
+
+
                                         <td class="text-success">Completed</td>
                                         <td>
-                                            <a aria-label="anchor" href="{{route('packing-products-list') }}" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye text-primary">
+                                            <a aria-label="anchor" href="{{ route('packing-products-list') }}"
+                                                class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip"
+                                                data-bs-original-title="View">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13"
+                                                    viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                                    class="feather feather-eye text-primary">
                                                     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                                                     <circle cx="12" cy="12" r="3"></circle>
                                                 </svg>
@@ -121,14 +125,16 @@
                                         <td>
                                             2025-04-11
                                         </td>
-                                        <td>
-                                            2025-05-11
-                                        </td>
-                                        <td>BK158.pdf</td>
+
                                         <td class="text-primary">Pending</td>
                                         <td>
-                                            <a aria-label="anchor" href="{{route('packing-products-list') }}" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye text-primary">
+                                            <a aria-label="anchor" href="{{ route('packing-products-list') }}"
+                                                class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip"
+                                                data-bs-original-title="View">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13"
+                                                    viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                                    class="feather feather-eye text-primary">
                                                     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                                                     <circle cx="12" cy="12" r="3"></circle>
                                                 </svg>
@@ -146,14 +152,16 @@
                                         <td>
                                             2025-04-11
                                         </td>
-                                        <td>
-                                            2025-05-11
-                                        </td>
-                                        <td>-</td>
+
                                         <td class="text-danger">Issue</td>
                                         <td>
-                                            <a aria-label="anchor" href="{{route('packing-products-list') }}" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye text-primary">
+                                            <a aria-label="anchor" href="{{ route('packing-products-list') }}"
+                                                class="btn btn-icon btn-sm bg-primary-subtle me-1"
+                                                data-bs-toggle="tooltip" data-bs-original-title="View">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13"
+                                                    viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                                    class="feather feather-eye text-primary">
                                                     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                                                     <circle cx="12" cy="12" r="3"></circle>
                                                 </svg>
@@ -171,5 +179,4 @@
         </div>
     </main>
     <!--end main wrapper-->
-
-       @endsection
+@endsection

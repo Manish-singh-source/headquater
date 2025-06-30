@@ -1,6 +1,5 @@
 @extends('layouts.master')
 @section('main-content')
-
     <!--start main wrapper-->
     <main class="main-wrapper">
         <div class="main-content">
@@ -19,11 +18,14 @@
                 <div class="card-body">
                     <div class="d-flex gap-3 justify-content-start align-items-end">
                         <div class="col-9 ">
-                            <label for="dn amount" class="form-label">Track Order Id<span class="text-danger">*</span></label>
-                            <input type="text" name="dn amount" id="dn amount" class="form-control" value="" required="" placeholder="Enter Track Order Id">
+                            <label for="dn amount" class="form-label">Track Order Id<span
+                                    class="text-danger">*</span></label>
+                            <input type="text" name="dn amount" id="dn amount" class="form-control" value=""
+                                required="" placeholder="Enter Track Order Id">
                         </div>
                         <div class="col-2">
-                            <button type="" id="track-order" class="btn btn-success w-sm waves ripple-light text-end mt-4">
+                            <button type="" id="track-order"
+                                class="btn btn-success w-sm waves ripple-light text-end mt-4">
                                 Track
                             </button>
                         </div>
@@ -57,7 +59,9 @@
                                     <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                                         <span><b>Order Invoice</b></span>
                                         <span>
-                                            <a href="#" data-bs-toggle="tooltip" data-bs-placement="top" aria-label="Pdf" data-bs-original-title="Pdf">PDF <img src="assets/svg/pdf.svg" alt="img"></a>
+                                            <a href="#" data-bs-toggle="tooltip" data-bs-placement="top"
+                                                aria-label="Pdf" data-bs-original-title="Pdf">PDF <img
+                                                    src="assets/svg/pdf.svg" alt="img"></a>
                                         </span>
                                     </li>
                                     <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
@@ -80,18 +84,19 @@
                             <div class="col">
                                 <h6 class="mb-3">PO Table</h6>
                             </div>
-                            <!-- <div class="col-12 col-lg-1 text-end">
-                            <span class="badge bg-danger-subtle text-danger fw-semibold">Pending</span>
-                        </div> -->
                         </div>
                         <!-- Tabs Navigation -->
                         <div class="div d-flex my-3">
                             <ul class="nav nav-tabs" id="vendorTabs" role="tablist">
                                 <li class="nav-item" role="presentation">
-                                    <button class="nav-link active bg-success text-white mx-1" id="customer1-tab" data-bs-toggle="tab" data-bs-target="#customer1" type="button" role="tab">Customer 1</button>
+                                    <button class="nav-link active bg-success text-white mx-1" id="customer1-tab"
+                                        data-bs-toggle="tab" data-bs-target="#customer1" type="button"
+                                        role="tab">Customer 1</button>
                                 </li>
                                 <li class="nav-item" role="presentation">
-                                    <button class="nav-link bg-success text-white mx-1" id="customer2-tab" data-bs-toggle="tab" data-bs-target="#customer2" type="button" role="tab">Customer 2</button>
+                                    <button class="nav-link bg-success text-white mx-1" id="customer2-tab"
+                                        data-bs-toggle="tab" data-bs-target="#customer2" type="button"
+                                        role="tab">Customer 2</button>
                                 </li>
                             </ul>
                         </div>
@@ -192,12 +197,6 @@
                                     </tbody>
                                 </table>
                             </div>
-
-                            <!-- <div class="col-12 text-end">
-                            <button type="" class="btn btn-success w-sm waves ripple-light">
-                                Save
-                            </button>
-                        </div> -->
                         </div>
                     </div>
                 </div>
@@ -206,6 +205,15 @@
 
     </main>
     <!--end main wrapper-->
+@endsection
 
-
-        @endsection
+@section('script')
+    <script>
+        $(document).ready(function() {
+            $("#order-status-section").hide();
+            $("#track-order").on("click", function() {
+                $("#order-status-section").show();
+            });
+        })
+    </script>
+@endsection

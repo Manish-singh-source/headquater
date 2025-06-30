@@ -80,7 +80,7 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @forelse ($vendor as $vendor)
+                                    @forelse ($vendors as $vendor)
                                         <tr>
                                             <td>
                                                 <input class="form-check-input" type="checkbox">
@@ -176,6 +176,9 @@
                                 </tbody>
                             </table>
                         </div>
+                    </div>
+                    <div class="pagination justify-content-end">
+                        {{ $vendors->links() }}
                     </div>
                 </div>
             </div>

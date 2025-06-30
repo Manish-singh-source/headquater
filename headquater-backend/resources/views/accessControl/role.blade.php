@@ -112,8 +112,8 @@
                                                             </path>
                                                         </svg>
                                                     </a>
-                                                    <form action="{{ route('role.delete', $role->id) }}"
-                                                        method="POST" onsubmit="return confirm('Are you sure?')">
+                                                    <form action="{{ route('role.delete', $role->id) }}" method="POST"
+                                                        onsubmit="return confirm('Are you sure?')">
                                                         @csrf
                                                         @method('DELETE')
                                                         <button type="submit"
@@ -145,6 +145,9 @@
                                 </tbody>
                             </table>
                         </div>
+                    </div>
+                    <div class="pagination justify-content-end">
+                        {{ $roles->links() }}
                     </div>
                 </div>
             </div>

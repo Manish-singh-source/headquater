@@ -28,7 +28,7 @@ class AccessController extends Controller
     //Role
     public function roleList()
     {
-        $roles = Role::with('admins')->get();
+        $roles = Role::with('admins')->paginate(10);
         return view('accessControl.role', ['roles' => $roles]);
     }
 
@@ -42,7 +42,6 @@ class AccessController extends Controller
     
     public function roleEdit($id) {
         $role = Role::findOrFail($id);
-        // dd($role);
         return view('accessControl.edit-role', ['role' => $role]);
     }
 

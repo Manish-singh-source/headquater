@@ -12,8 +12,8 @@ class VendorController extends Controller
     public function vendorList()
     {
         // $vendor = Vendor::all();
-        $vendor = Vendor::get();
-        return view('vendor.vendor', compact('vendor'));
+        $vendors = Vendor::paginate(10);
+        return view('vendor.vendor', compact('vendors'));
     }
 
     public function createVendor()

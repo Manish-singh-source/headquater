@@ -45,73 +45,15 @@
 
                                 <div class="card-body">
                                     <div class="row g-3 align-items-end">
-                                        <div class="col-12">
-                                            <span><b>Group:</b></span>
-                                        </div>
                                         <div class="col-12 col-lg-3">
-                                            <label for="marital" class="form-label">Customer Group Name
+                                            <label for="warehouseLocation" class="form-label">Select Group
                                                 <span class="text-danger">*</span></label>
-                                            <input type="text" name="" class="form-control"
-                                                placeholder="Enter Group Name" id="groupName">
+                                            <select class="form-control" name="warehouseLocation" id="warehouseLocation">
+                                                <option selected="" disabled="" value="">-- Select --</option>
+                                                <option value="Baroda">Amazon</option>
+                                                <option value="Mumbai">Big Basket</option>
+                                            </select>
                                         </div>
-                                        <div class="col-12 col-lg-3">
-                                            <label for="document_image" class="form-label">Upload Excel <span
-                                                    class="text-danger">*</span></label>
-                                            <input type="file" name="document_image" id="document_image"
-                                                class="form-control" value="" required=""
-                                                placeholder="Upload ID Document" multiple>
-                                        </div>
-                                        <div class="col-12 col-lg-1">
-                                            <button class="btn btn-primary" id="add-customer">Add</button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="card customer-groups">
-                                <div class="card-body">
-                                    <h5 class="mb-3">Customers Group - <span id="groupTitle">Blinkit</span></h5>
-                                    <div class="product-table">
-                                        <div class="table-responsive white-space-nowrap">
-                                            <table id="customerGroupTable" class="table align-middle">
-                                                <thead class="table-light">
-                                                    <tr>
-                                                        <th>Customer Name</th>
-                                                        <th>Sub Customer Name</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    <tr>
-                                                        <td>Blinkit</td>
-                                                        <td>Mark</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>Blinkit</td>
-                                                        <td>Thornton</td>
-                                                    </tr>
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    </div>
-
-                                    <div class="d-flex justify-content-end">
-                                        <button class="btn btn-primary" id="save-customers">Save</button>
-                                    </div>
-
-                                </div>
-                            </div>
-
-                            <div class="card po-uploads">
-                                <div class="card-body">
-                                    <div class="row align-items-end">
-                                        <div class="col-12 col-lg-3">
-                                            <label for="document_image" class="form-label">Upload Excel <span
-                                                    class="text-danger">*</span></label>
-                                            <input type="file" name="document_image" id="document_image"
-                                                class="form-control" value="" required=""
-                                                placeholder="Upload ID Document" multiple>
-                                        </div>
-
                                         <div class="col-12 col-lg-3">
                                             <label for="warehouseLocation" class="form-label">Warehouse Location
                                                 <span class="text-danger">*</span></label>
@@ -121,7 +63,17 @@
                                                 <option value="Mumbai">Mumbai</option>
                                             </select>
                                         </div>
-
+                                        <div class="col-12 col-lg-2">
+                                            <label for="pick-date" class="form-label">Ordered Date</label>
+                                            <input type="date" class="form-control" name="orderedDate" id="pick-date">
+                                        </div>
+                                        <div class="col-12 col-lg-3">
+                                            <label for="document_image" class="form-label">Upload Excel <span
+                                                    class="text-danger">*</span></label>
+                                            <input type="file" name="document_image" id="document_image"
+                                                class="form-control" value="" required=""
+                                                placeholder="Upload ID Document" multiple>
+                                        </div>
                                         <div class="col-12 col-lg-1">
                                             <button class="btn btn-primary" id="upload-excel">Submit</button>
                                         </div>
@@ -135,12 +87,6 @@
                                         <li class="nav-item">
                                             <a class="nav-link active" aria-current="page" href="#">Blinkit</a>
                                         </li>
-                                        <li class="nav-item">
-                                            <a class="nav-link" href="#">Big Bazar</a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a class="nav-link" href="#">Amazon</a>
-                                        </li>
                                     </ul>
                                 </div>
                                 <div class="card-body">
@@ -150,65 +96,58 @@
                                             <table class="table align-middle">
                                                 <thead class="table-light">
                                                     <tr>
-                                                        <th>po_number</th>
-                                                        <th>facility_name</th>
-                                                        <th>manufacturer_name</th>
-                                                        <th>entity_vendor_legal_name</th>
-                                                        <th>vendor_name</th>
-                                                        <th>order_date</th>
-                                                        <th>appointment_date</th>
-                                                        <th>expiry_date</th>
-                                                        <th>po_state</th>
-                                                        <th>item_id</th>
-                                                        <th>name</th>
-                                                        <th>uom_text</th>
-                                                        <th>upc</th>
-                                                        <th>units_ordered</th>
-                                                        <th>remaining_quantity</th>
-                                                        <th>landing_rate</th>
-                                                        <th>cost_price</th>
-                                                        <th>margin_percentage</th>
-                                                        <th>cess_value</th>
-                                                        <th>sgst_value</th>
-                                                        <th>igst_value</th>
-                                                        <th>cgst_value</th>
-                                                        <th>tax_value</th>
-                                                        <th>total_amount</th>
-                                                        <th>mrp</th>
-                                                        <th>Qty Available</th>
+                                                        <th>Order_No</th>
+                                                        <th>Customer</th>
+                                                        <th>Po_number</th>
+                                                        <th>Facility_Name</th>
+                                                        <th>Facility_Location</th>
+                                                        <th>Po_Date</th>
+                                                        <th>Po_Expiry_Date</th>
+                                                        <th>HSN</th>
+                                                        <th>Item_Code</th>
+                                                        <th>Description</th>
+                                                        <th>Basic_Rate</th>
+                                                        <th>GST</th>
+                                                        <th>Net_Landing_Rate</th>
+                                                        <th>MRP</th>
+                                                        <th>Rate_Confirmation</th>
+                                                        <th>Po_Qty</th>
+                                                        <th>Case_Pack_Qty</th>
+                                                        <th>Available</th>
+                                                        <th>Unavailable_Qty</th>
+                                                        <th>Block</th>
+                                                        <th>Purchase_Order_Qty</th>
+                                                        <th>Vendor_Code</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
                                                     <tr>
-                                                        <td>2549210015180</td>
-                                                        <td>Nagpur N1 - Feeder Warehouse</td>
-                                                        <td>Ocean Glass Public Company Ltd.</td>
-                                                        <td>Moonstone Ventures LLP</td>
-                                                        <td>INOVIZ IDEAS PVT LTD</td>
-                                                        <td>2025-06-19 06:14:26+00:00</td>
-                                                        <td></td>
-                                                        <td>2025-07-19T18:29:59Z</td>
-                                                        <td>Created</td>
-                                                        <td>10063772</td>
-                                                        <td>Ocean Glass (290 ml, Transparent)(Pack)</td>
-                                                        <td>1 unit</td>
-                                                        <td>8.85022E+12</td>
-                                                        <td>12</td>
-                                                        <td>12</td>
-                                                        <td>417.28</td>
-                                                        <td>353.63</td>
-                                                        <td>35.31</td>
-                                                        <td>0</td>
-                                                        <td>9</td>
-                                                        <td>18</td>
-                                                        <td>9</td>
-                                                        <td>18</td>
-                                                        <td>5007.36</td>
-                                                        <td>645</td>
+                                                        <td>ORD12345</td>
+                                                        <td>John Doe Enterprises</td>
+                                                        <td>PO987654</td>
+                                                        <td>Sunrise Facility</td>
+                                                        <td>Mumbai</td>
+                                                        <td>2025-06-01</td>
+                                                        <td>2025-12-01</td>
+                                                        <td>30049011</td>
+                                                        <td>ITM001</td>
+                                                        <td>Sanitizer 500ml</td>
+                                                        <td>75.00</td>
+                                                        <td>18%</td>
+                                                        <td>88.50</td>
+                                                        <td>120.00</td>
+                                                        <td>Confirmed</td>
+                                                        <td>1000</td>
+                                                        <td>24</td>
+                                                        <td>800</td>
+                                                        <td>200</td>
+                                                        <td>No</td>
+                                                        <td>1000</td>
+                                                        <td>VEND123</td>
                                                     </tr>
+
                                                 </tbody>
                                             </table>
-
                                         </div>
                                     </div>
                                 </div>
@@ -257,6 +196,66 @@
                                         class="btn btn-success w-sm waves ripple-light">
                                         Submit
                                     </a>
+                                </div>
+                                <div class="card ">
+                                    <div class="card-body">
+                                        <div class="row align-items-end">
+                                            <div class="col-12 col-lg-3">
+                                                <label for="document_image" class="form-label">Updated Excel Upload <span
+                                                        class="text-danger">*</span></label>
+                                                <input type="file" name="document_image" id="document_image"
+                                                    class="form-control" value="" required=""
+                                                    placeholder="Upload ID Document" multiple>
+                                            </div>
+                                            <div class="col-12 col-lg-1">
+                                                <button class="btn btn-primary" id="upload-excel">Submit</button>
+                                            </div>
+                                            <!-- <div class="col-12 col-lg-1">
+                                                <button class="btn btn-primary" id="orderStatus">Submit</button>
+                                            </div> -->
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="text-end mb-3">
+
+                                    <button type="button" class="btn btn-success w-sm waves ripple-light"
+                                        data-bs-toggle="modal" data-bs-target="#staticBackdrop">
+                                        Updated Hold Products
+                                    </button>
+
+                                    <!-- Modal -->
+                                    <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static"
+                                        data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel"
+                                        aria-hidden="true">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h1 class="modal-title fs-5" id="staticBackdropLabel">Hold Products
+                                                    </h1>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                        aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <form>
+                                                        <div class="mb-3">
+                                                            <label for="message-text" class="d-flex">Reason:</label>
+                                                            <textarea class="form-control" id="message-text"></textarea>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary"
+                                                        data-bs-dismiss="modal">Close</button>
+                                                    <button type="button" id="holdOrder"
+                                                        class="btn btn-primary">Submit</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <button type="" id="submitOrder"
+                                        class="btn btn-success w-sm waves ripple-light">
+                                        Submit
+                                    </button>
                                 </div>
                             </div>
                         </div>
