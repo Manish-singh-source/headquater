@@ -116,11 +116,14 @@
                                                     <circle cx="12" cy="12" r="3"></circle>
                                                 </svg>
                                             </a>
-                                            <a type="button" class="btn btn-icon btn-sm bg-warning-subtle me-1" data-bs-toggle="modal" data-bs-target="#staticBackdrop1">
+                                            <a type="button" class="btn btn-icon btn-sm bg-warning-subtle me-1">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-edit text-warning">
                                                     <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
                                                     <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
                                                 </svg>
+                                            </a>
+                                              <a type="button" class="btn btn-icon btn-sm bg-success-subtle me-1" data-bs-toggle="modal" data-bs-target="#staticBackdrop1">
+                                                <img width="15" height="15" src="https://img.icons8.com/ios/50/document--v1.png" alt="bank-card-back-side--v1"/>
                                             </a>
                                             <a type="button" class="btn btn-icon btn-sm bg-success-subtle me-1" data-bs-toggle="modal" data-bs-target="#staticBackdrop2">
                                                 <img width="15" height="15" src="https://img.icons8.com/ios/50/bank-card-back-side--v1.png" alt="bank-card-back-side--v1"/>
@@ -138,6 +141,10 @@
                                                     <div class="modal-body">
                                                         <form>
                                                             <div class="col-12 mb-3">
+                                                                <label for="document_image" class="form-label">Appointment Date <span class="text-danger">*</span></label>
+                                                                <input type="date" name="document_image" id="document_image" class="form-control" value="" required="" placeholder="Upload ID Document">
+                                                            </div>
+                                                            <div class="col-12 mb-3">
                                                                 <label for="document_image" class="form-label">Upload POD <span class="text-danger">*</span></label>
                                                                 <input type="file" name="document_image" id="document_image" class="form-control" value="" required="" placeholder="Upload ID Document">
                                                             </div>
@@ -148,6 +155,14 @@
                                                             <div class="col-12 mb-3">
                                                                 <label for="document_image" class="form-label">Upload E-Invoice <span class="text-danger">*</span></label>
                                                                 <input type="file" name="document_image" id="document_image" class="form-control" value="" required="" placeholder="Upload ID Document">
+                                                            </div>
+                                                             <div class="col-12 mb-3">
+                                                                <label for="document_image" class="form-label">DN Amount<span class="text-danger">*</span></label>
+                                                                <input type="text" name="document_image" id="document_image" class="form-control" value="" required="" placeholder="Upload Amount">
+                                                            </div>
+                                                             <div class="col-12 mb-3">
+                                                                <label for="document_image" class="form-label">DN Reason<span class="text-danger">*</span></label>
+                                                                <input type="text" name="document_image" id="document_image" class="form-control" value="" required="" placeholder="DN Reason">
                                                             </div>
                                                             <div class="col-12 mb-3">
                                                                 <label for="document_image" class="form-label">Upload E-Way Bill<span class="text-danger">*</span></label>
