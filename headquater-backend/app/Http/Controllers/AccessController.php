@@ -11,17 +11,17 @@ class AccessController extends Controller
     //Staff
     public function staffList()
     {
-        return view('staff');
+        return view('accessControl.staff');
     }
 
     public function addStaff()
     {
-        return view('add-staff');
+        return view('accessControl.add-staff');
     }
 
     public function staffDetail()
     {
-        return view('staff-detail');
+        return view('accessControl.staff-detail');
     }
 
 

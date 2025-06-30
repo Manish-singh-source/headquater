@@ -139,7 +139,7 @@
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="8">No Roles Found</td>
+                                            <td class="text-center" colspan="5">No Roles Found</td>
                                         </tr>
                                     @endforelse
                                 </tbody>

@@ -15,7 +15,7 @@ class CustomerController extends Controller
     public function customerList()
     {
         $customers = Customer::all();
-        return view('customers', compact('customers'));
+        return view('customer.customers', compact('customers'));
     }
 
 
@@ -24,7 +24,7 @@ class CustomerController extends Controller
         $countries = Country::get();
         $states = State::get();
         $cities = City::get();
-        return view('add-customer', ['countries' => $countries, 'states' => $states, 'cities' => $cities]);
+        return view('customer.add-customer', ['countries' => $countries, 'states' => $states, 'cities' => $cities]);
     }
 
 
@@ -68,7 +68,7 @@ class CustomerController extends Controller
     public function editCustomer($id)
     {
         $customer = Customer::findOrFail($id);
-        return view('edit-customer', compact('customer'));
+        return view('customer.edit-customer', compact('customer'));
     }
 
     public function updateCustomer(Request $request, $id)
@@ -112,7 +112,7 @@ class CustomerController extends Controller
     {
         $customer = Customer::with('shippingCountry')->with('billingCountry')->findOrFail($id);
         // dd($customer->country);
-        return view('customer-detail', compact('customer'));
+        return view('customer.customer-detail', compact('customer'));
     }
 
     public function deleteCustomer($id)

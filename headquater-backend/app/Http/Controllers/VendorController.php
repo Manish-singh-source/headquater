@@ -13,12 +13,12 @@ class VendorController extends Controller
     {
         // $vendor = Vendor::all();
         $vendor = Vendor::get();
-        return view('vendor', compact('vendor'));
+        return view('vendor.vendor', compact('vendor'));
     }
 
     public function createVendor()
     {
-        return view('create-vendor');
+        return view('vendor.create-vendor');
     }
 
     public function addVendor(Request $request)
@@ -58,7 +58,7 @@ class VendorController extends Controller
     public function editVendor($id)
     {
         $vendor = Vendor::findOrFail($id);
-        return view('edit-vendor', compact('vendor'));
+        return view('vendor.edit-vendor', compact('vendor'));
     }
 
     public function updateVendor(Request $request, $id)
@@ -105,11 +105,11 @@ class VendorController extends Controller
     public function detailVendor($id)
     {
         $vendor = Vendor::findOrFail($id);
-        return view('vendor-details', compact('vendor'));
+        return view('vendor.vendor-details', compact('vendor'));
     }
 
     public function vendorOrderView()
     {
-        return view('vendor-order-view');
+        return view('vendor.vendor-order-view');
     }
 }
