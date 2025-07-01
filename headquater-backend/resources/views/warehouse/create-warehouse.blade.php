@@ -44,8 +44,14 @@
 
                                 <div class="col-md-6">
                                     <label for="input1" class="form-label">Warehouse Name</label>
-                                    <input type="text" class="form-control" name="warehouse_name" id="input1"
-                                        placeholder="Warehouse Name">
+                                    <input type="text" class="form-control @error('warehouse_name') is-invalid @enderror"
+                                        name="warehouse_name" id="input1" placeholder="Warehouse Name"
+                                        value="{{ old('warehouse_name') }}">
+                                    @error('warehouse_name')
+                                        <div class="invalid-feedback">
+                                            {{ $message }}
+                                        </div>
+                                    @enderror
                                 </div>
                                 <div class="col-md-6">
                                     <label for="input9" class="form-label">Warehouse Type</label>
@@ -57,51 +63,111 @@
                                 </div>
                                 <div class="col-md-6">
                                     <label for="input2" class="form-label">Contact Person Name</label>
-                                    <input type="text" class="form-control" name="contact_person_name" id="input2"
+                                    <input type="text"
+                                        class="form-control @error('contact_person_name') is-invalid @enderror"
+                                        name="contact_person_name" id="input2" value="{{ old('contact_person_name') }}"
                                         placeholder="Contact Person Name">
+                                    @error('contact_person_name')
+                                        <div class="invalid-feedback">
+                                            {{ $message }}
+                                        </div>
+                                    @enderror
                                 </div>
                                 <div class="col-md-6">
                                     <label for="input3" class="form-label">Phone Number</label>
-                                    <input type="text" class="form-control" name="contact_person_phone_no" id="input3"
-                                        placeholder="Phone Number">
+                                    <input type="text"
+                                        class="form-control @error('contact_person_phone_no') is-invalid @enderror"
+                                        name="contact_person_phone_no" value="{{ old('contact_person_phone_no') }}"
+                                        id="input3" placeholder="Phone Number">
+                                    @error('contact_person_phone_no')
+                                        <div class="invalid-feedback">
+                                            {{ $message }}
+                                        </div>
+                                    @enderror
                                 </div>
                                 <div class="col-md-6">
                                     <label for="input3" class="form-label">Alternate Phone Number</label>
-                                    <input type="text" class="form-control" name="contact_person_alt_phone_no"
-                                        id="input3" placeholder="Alternate Phone Number">
+                                    <input type="text"
+                                        class="form-control @error('contact_person_alt_phone_no') is-invalid @enderror"
+                                        name="contact_person_alt_phone_no"  value="{{ old('contact_person_alt_phone_no') }}" id="input3"
+                                        placeholder="Alternate Phone Number">
+                                    @error('contact_person_alt_phone_no')
+                                        <div class="invalid-feedback">
+                                            {{ $message }}
+                                        </div>
+                                    @enderror
                                 </div>
                                 <div class="col-md-6">
                                     <label for="input4" class="form-label">Email</label>
-                                    <input type="email" class="form-control" name="contact_person_email" id="input4"
-                                        placeholder="Email Id">
+                                    <input type="email"
+                                        class="form-control @error('contact_person_email') is-invalid @enderror"
+                                        name="contact_person_email" value="{{ old('contact_person_email') }}" id="input4" placeholder="Email Id">
+                                    @error('contact_person_email')
+                                        <div class="invalid-feedback">
+                                            {{ $message }}
+                                        </div>
+                                    @enderror
                                 </div>
                                 <div class="col-md-6">
                                     <label for="input5" class="form-label">GST NO</label>
-                                    <input type="text" class="form-control" name="gst_no" id="input5"
-                                        placeholder="GST NO">
+                                    <input type="text" class="form-control @error('gst_no') is-invalid @enderror"
+                                        name="gst_no" value="{{ old('gst_no') }}" id="input5" placeholder="GST NO">
+                                    @error('gst_no')
+                                        <div class="invalid-feedback">
+                                            {{ $message }}
+                                        </div>
+                                    @enderror
                                 </div>
                                 <div class="col-md-6">
                                     <label for="input6" class="form-label">PAN NO</label>
-                                    <input type="text" class="form-control" name="pan_no" id="input6"
-                                        placeholder="PAN NO">
+                                    <input type="text" class="form-control @error('pan_no') is-invalid @enderror"
+                                        name="pan_no" value="{{ old('pan_no') }}" id="input6" placeholder="PAN NO">
+                                    @error('pan_no')
+                                        <div class="invalid-feedback">
+                                            {{ $message }}
+                                        </div>
+                                    @enderror
                                 </div>
                                 <div class="col-md-6">
                                     <label for="input11" class="form-label">Address Line 1</label>
-                                    <textarea class="form-control" id="input11" name="address_line_1" placeholder="Address Line 1" rows="3"></textarea>
+                                    <textarea class="form-control @error('address_line_1') is-invalid @enderror" id="input11" name="address_line_1"
+                                        placeholder="Address Line 1" rows="3">{{ old('address_line_1') }}</textarea>
+                                    @error('address_line_1')
+                                        <div class="invalid-feedback">
+                                            {{ $message }}
+                                        </div>
+                                    @enderror
                                 </div>
                                 <div class="col-md-6">
                                     <label for="input11" class="form-label">Address Line 2</label>
-                                    <textarea class="form-control" id="input11" name="address_line_2" placeholder="Address Line 2" rows="3"></textarea>
+                                    <textarea class="form-control @error('address_line_2') is-invalid @enderror" id="input11" name="address_line_2"
+                                        placeholder="Address Line 2" rows="3">{{ old('address_line_2') }}</textarea>
+                                    @error('address_line_2')
+                                        <div class="invalid-feedback">
+                                            {{ $message }}
+                                        </div>
+                                    @enderror
                                 </div>
                                 <div class="col-md-6">
                                     <label for="input6" class="form-label">Upload Licence Document</label>
-                                    <input type="file" class="form-control" name="licence_doc" id="input6"
-                                        placeholder="Upload Licence Document">
+                                    <input type="file" class="form-control @error('licence_doc') is-invalid @enderror"
+                                        name="licence_doc" id="input6" placeholder="Upload Licence Document">
+                                    @error('licence_doc')
+                                        <div class="invalid-feedback">
+                                            {{ $message }}
+                                        </div>
+                                    @enderror
                                 </div>
                                 <div class="col-md-6">
                                     <label for="input8" class="form-label">Max storage capacity</label>
-                                    <input type="number" class="form-control" name="max_storage_capacity"
-                                        id="input8" placeholder="Max storage capacity">
+                                    <input type="number"
+                                        class="form-control @error('max_storage_capacity') is-invalid @enderror"
+                                        name="max_storage_capacity" id="input8" value="{{ old('max_storage_capacity') }}" placeholder="Max storage capacity">
+                                    @error('max_storage_capacity')
+                                        <div class="invalid-feedback">
+                                            {{ $message }}
+                                        </div>
+                                    @enderror
                                 </div>
                                 <div class="col-md-2">
                                     <label for="shippingCountry" class="form-label">Country</label>
@@ -123,8 +189,13 @@
                                 </div>
                                 <div class="col-md-2">
                                     <label for="input8" class="form-label">Pin Code</label>
-                                    <input type="text" class="form-control" name="pincode" id="input8"
-                                        placeholder="Pin Code">
+                                    <input type="text" class="form-control @error('pincode') is-invalid @enderror"
+                                        name="pincode" id="input8" value="{{ old('pincode') }}" placeholder="Pin Code">
+                                    @error('pincode')
+                                        <div class="invalid-feedback">
+                                            {{ $message }}
+                                        </div>
+                                    @enderror
                                 </div>
                                 <div class="col-md-2">
                                     <label for="input9" class="form-label">Status</label>
