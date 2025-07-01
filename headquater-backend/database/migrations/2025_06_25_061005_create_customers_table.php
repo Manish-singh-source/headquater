@@ -18,21 +18,21 @@ return new class extends Migration
             $table->string('last_name', 70);
             $table->string('email', 70);
             $table->string('phone', 70);
-            $table->string('company_name', 70);
-            $table->string('gst_number', 255);
-            $table->string('pan_number', 255);
+            $table->string('company_name', 70)->nullable();
+            $table->string('gst_number', 255)->nullable();
+            $table->string('pan_number', 255)->nullable();
 
-            $table->string('shipping_address', 255);
-            $table->integer('shipping_country');
-            $table->integer('shipping_state');
-            $table->integer('shipping_city');
-            $table->integer('shipping_pincode');
+            $table->string('shipping_address', 255)->nullable();
+            $table->integer('shipping_country')->nullable();
+            $table->integer('shipping_state')->nullable();
+            $table->integer('shipping_city')->nullable();
+            $table->integer('shipping_pincode')->nullable();
 
-            $table->integer('billing_address'); // This might be `string` if not ID
-            $table->integer('billing_country');
-            $table->integer('billing_state');
-            $table->integer('billing_city');
-            $table->integer('billing_pincode');
+            $table->integer('billing_address')->nullable(); // This might be `string` if not ID
+            $table->integer('billing_country')->nullable();
+            $table->integer('billing_state')->nullable();
+            $table->integer('billing_city')->nullable();
+            $table->integer('billing_pincode')->nullable();
 
             $table->enum('status', ['0', '1'])->default('1')->comment('Active : 1,Inactive : 0');
 

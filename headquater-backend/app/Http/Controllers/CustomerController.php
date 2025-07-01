@@ -41,6 +41,9 @@ class CustomerController extends Controller
             'lastName' => 'required|min:3',
             'phone' => 'required|min:10',
             'email' => 'required|email|unique:customers,email',
+            'companyName' => 'required',
+            'gstNo' => 'required',
+            'panNo' => 'required',
         ]);
 
         if ($validator->fails()) {
