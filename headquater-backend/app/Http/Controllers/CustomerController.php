@@ -18,6 +18,12 @@ class CustomerController extends Controller
         return view('customer.customers', compact('customers'));
     }
 
+    public function Customercount()
+    {
+        $customersCount = Customer::count();
+        return view('index', compact('customersCount'));
+    }
+
 
     public function addCustomer(Request $request)
     {

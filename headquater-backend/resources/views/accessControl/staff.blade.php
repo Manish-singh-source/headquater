@@ -17,42 +17,11 @@
             </div>
             <!--end breadcrumb-->
 
-            <div class="row g-3">
-                <div class="col-12 col-md-2">
-                    <div class="position-relative">
-                        <input class="form-control px-5" type="search" placeholder="Search Staff">
-                        <span
-                            class="material-icons-outlined position-absolute ms-3 translate-middle-y start-0 top-50 fs-5">search</span>
-                    </div>
-                </div>
-                <div class="col-12 col-md-2 flex-grow-1 overflow-auto">
-                    <div class="btn-group position-static">
-                        <div class="btn-group position-static">
-                            <button type="button" class="btn btn-filter dropdown-toggle px-4" data-bs-toggle="dropdown"
-                                aria-expanded="false">
-                                Sort
-                            </button>
-                            <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="javascript:;">Sort By Name</a></li>
-                                <li><a class="dropdown-item" href="javascript:;">Sort By Email</a></li>
-                                <li><a class="dropdown-item" href="javascript:;">Sort By Orders</a></li>
-                                <li><a class="dropdown-item" href="javascript:;">Sort By Location</a></li>
-                            </ul>
-                        </div>
-                        <div class="btn-group position-static">
-                            <button type="button" class="btn btn-filter dropdown-toggle px-4" data-bs-toggle="dropdown"
-                                aria-expanded="false">
-                                Status
-                            </button>
-                            <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="javascript:;">Active</a></li>
-                                <li><a class="dropdown-item" href="javascript:;">Inactive</a></li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-12 col-md-2">
-                    <div class="d-flex align-items-center gap-2 justify-content-lg-end">
+            <div class="row g-3 justify-content-end">
+                
+              
+                <div class="col-12 col-md-2 ">
+                    <div class="d-flex align-items-center gap-2 ">
                         <button class="btn btn-filter px-4"><i class="bi bi-box-arrow-right me-2"></i>Export</button>
                         <a href="{{ route('add-staff') }}" class="btn btn-primary px-4"><i
                                 class="bi bi-plus-lg me-2"></i>Add Staff</a>
@@ -64,7 +33,7 @@
                 <div class="card-body">
                     <div class="customer-table">
                         <div class="table-responsive white-space-nowrap">
-                            <table id="example2" class="table table-striped">
+                            <table id="example2" class="table table-striped table-bordered">
                                 <thead class="table-light">
                                     <tr>
                                         <th>
@@ -98,7 +67,7 @@
                                             <td>{{ $staff->phone }}</td>
 
 
-                                            <td>{{ $staff->role }}</td>
+                                            <td>{{ $staff->role}}</td>
 
                                             <td>
                                                 <div class=" form-switch form-check-success">
@@ -175,4 +144,6 @@
         </div>
     </main>
     <!--end main wrapper-->
+  <!--plugins-->
+
 @endsection

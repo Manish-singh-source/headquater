@@ -6,7 +6,7 @@
             <div class="row">
 
                 <div class="col-12">
-                    <form action="" method="post">
+                    <form action="{{ route('store-staff')}}" method="post">
                         @csrf
                         @method('POST')
                     <div class="row">
@@ -29,9 +29,9 @@
                                                 <span class="text-danger">*</span></label>
                                             <select class="form-control" name="role" id="marital">
                                                 <option selected="" disabled="" value="">-- Select --</option>
-                                                <option value="Admin">Admin</option>
-                                                <option value="Sales Person">Sales Person</option>
-                                                <option value="Operation Manager">Operation Manager</option>
+                                                @foreach ($roles as $role)
+                                                    <option value="{{ $role->id }}">{{ $role->name }}</option>
+                                                @endforeach
                                             </select>
                                         </div>
                                         <div class="col-12 col-md-6">

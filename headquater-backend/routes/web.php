@@ -13,10 +13,10 @@ use App\Http\Controllers\LocationController;
 use App\Http\Controllers\WarehouseController;
 use App\Http\Controllers\PlaceOrderController;
 
-Route::get('/', function () {
-    return view('index');
-})->name('index');
-
+// Route::get('/', function () {
+//     return view('index');
+// })->name('index');
+Route::get('/', [CustomerController::class, 'Customercount'])->name('index');
 
 Route::get('/countries', [LocationController::class, 'getCountries']);
 Route::get('/states', [LocationController::class, 'getStates']);
@@ -64,6 +64,9 @@ Route::get('/customer/detail/{id}', [CustomerController::class, 'detailCustomer'
 Route::get('/customers/edit/{id}', [CustomerController::class, 'editCustomer'])->name('edit_customer');
 Route::put('/customer/update/{id}', [CustomerController::class, 'updateCustomer'])->name('update-customer');
 Route::delete('/customers/delete/{id}', [CustomerController::class, 'deleteCustomer'])->name('delete-customer');
+Route::get('/customer-group', function () {
+    return view('customer.customer-group');
+})->name('customer-group');
 
 
 

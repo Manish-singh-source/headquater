@@ -19,6 +19,7 @@
       <link rel="stylesheet" type="text/css" href="{{ asset('assets/plugins/simplebar/css/simplebar.css') }}">
       <!--bootstrap css-->
       <link href="{{ asset('assets/css/bootstrap.min.css') }}" rel="stylesheet">
+      <link href="assets/plugins/datatable/css/dataTables.bootstrap5.min.css" rel="stylesheet" />
       <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@300;400;500;600&amp;display=swap"
           rel="stylesheet">
       <link href="https://fonts.googleapis.com/css?family=Material+Icons+Outlined" rel="stylesheet">
@@ -605,6 +606,26 @@
       <script src="assets/plugins/metismenu/metisMenu.min.js"></script>
       <script src="assets/plugins/simplebar/js/simplebar.min.js"></script>
       <script src="assets/js/main.js"></script>
+
+
+  <script src="assets/plugins/datatable/js/jquery.dataTables.min.js"></script>
+	<script src="assets/plugins/datatable/js/dataTables.bootstrap5.min.js"></script>
+	<script>
+		$(document).ready(function() {
+			$('#example').DataTable();
+		  } );
+	</script>
+	<script>
+		$(document).ready(function() {
+			var table = $('#example2').DataTable( {
+				lengthChange: false,
+				buttons: [ 'copy', 'excel', 'pdf', 'print']
+			} );
+		 
+			table.buttons().container()
+				.appendTo( '#example2_wrapper .col-md-6:eq(0)' );
+		} );
+	</script>
 
       @yield('script')
   </body>

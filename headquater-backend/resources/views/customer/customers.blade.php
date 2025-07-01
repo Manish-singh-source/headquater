@@ -53,6 +53,7 @@
                 <div class="col-12 col-md-auto">
                     <div class="d-flex align-items-center gap-2 justify-content-lg-end">
                         <button class="btn btn-filter px-4"><i class="bi bi-box-arrow-right me-2"></i>Export</button>
+                        <a href="{{ route('customer-group') }}" class="btn btn-primary px-4"><i class="bi bi-plus-lg me-2"></i>Create Group</a>
                         <a href="{{ route('add-customer') }}" class="btn btn-primary px-4"><i
                                 class="bi bi-plus-lg me-2"></i>Add Customers</a>
                     </div>
