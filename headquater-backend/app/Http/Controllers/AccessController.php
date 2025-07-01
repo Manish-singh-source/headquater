@@ -22,7 +22,8 @@ class AccessController extends Controller
 
     public function addStaff()
     {
-        return view('accessControl.add-staff');
+         $roles = Role::get();
+        return view('accessControl.add-staff' , ['roles' => $roles]);
     }
 
     public function staffDetail($id)
