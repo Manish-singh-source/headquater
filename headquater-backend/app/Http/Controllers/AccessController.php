@@ -146,9 +146,18 @@ class AccessController extends Controller
             'role' => 'required',
             'fname' => 'required',
             'lname' => 'required',
-            'phone' => 'required|unique:admins,phone',
+            'phone' => 'required|digits:10',
             'email' => 'required|email|unique:admins,email',
             'permanent_address' => 'required',
+            'lname' => 'required',
+            'dob' => 'required|date',
+            'gender' => 'required',
+            'marital' => 'required',
+            'current_address' => 'required',
+            'city' => 'required',
+            'state' => 'required',
+            'country' => 'required',
+            'pincode' => 'required|digits:6',
         ]);
 
         if ($validator->fails()) {

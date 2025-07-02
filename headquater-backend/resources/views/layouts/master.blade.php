@@ -392,13 +392,13 @@
                           <div class="menu-title">Packaging List</div>
                       </a>
                   </li>
-                  <li>
+                  {{-- <li>
                       <a href="{{ route('raise-a-ticket') }}">
                           <div class="parent-icon"><i class="material-icons-outlined">confirmation_number</i>
                           </div>
                           <div class="menu-title">Tickets</div>
                       </a>
-                  </li>
+                  </li> --}}
                   <li>
                       <a href="{{ route('ready-to-ship') }}">
                           <div class="parent-icon"><i class="material-icons-outlined">local_shipping</i>
