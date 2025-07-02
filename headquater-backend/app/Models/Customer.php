@@ -29,6 +29,8 @@ class Customer extends Model
         'billing_pincode',
         'status',
         'group_id',
+        'created_at',
+        'updated_at',
     ];
 
     // In app/Models/Customer.php

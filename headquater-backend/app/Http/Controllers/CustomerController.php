@@ -17,8 +17,14 @@ class CustomerController extends Controller
     //
     public function customerList()
     {
-        $customers = Customer::paginate(10);
-        return view('customer.customers', compact('customers'));
+        $customerGroups = CustomerGroups::paginate(10);
+        return view('customer.customers', compact('customerGroups'));
+    }
+
+    public function customerGroupDetail($id)
+    {
+        $customers = Customer::where('group_id', $id)->get();
+        return view('customer.customer-group-detail', compact('customers'));
     }
 
     public function  downloadCustomersCSV(Request $request)
@@ -41,7 +47,6 @@ class CustomerController extends Controller
         if ($file) {
             // Get the original file name
             $fileName = $file->getClientOriginalName();
-            // dd($fileName); // This will show the uploaded file name
             // Import the file
             Excel::import(new CustomersImport, $file);
 

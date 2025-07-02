@@ -58,6 +58,7 @@ Route::put('/role-update/{id}', [AccessController::class, 'roleUpdate'])->name('
 
 // Customer
 Route::get('/customers', [CustomerController::class, 'customerList'])->name('customers');
+Route::get('/customers-group-detail/{id}', [CustomerController::class, 'customerGroupDetail'])->name('customers.group.detail');
 Route::get('/add-customer', [CustomerController::class, 'addCustomer'])->name('add-customer');
 Route::post('/customers/store', [CustomerController::class, 'storeCustomer'])->name('store_customer');
 Route::get('/customer/detail/{id}', [CustomerController::class, 'detailCustomer'])->name('customer-detail');
