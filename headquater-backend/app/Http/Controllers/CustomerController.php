@@ -7,6 +7,9 @@ use App\Models\State;
 use App\Models\Country;
 use App\Models\Customer;
 use Illuminate\Http\Request;
+use App\Imports\CustomersImport;
+use App\Models\CustomerGroups;
+use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Validator;
 
 class CustomerController extends Controller
@@ -16,6 +19,36 @@ class CustomerController extends Controller
     {
         $customers = Customer::paginate(10);
         return view('customer.customers', compact('customers'));
+    }
+
+    public function  downloadCustomersCSV(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'group_name' => 'required',
+            'customer_po_excel' => 'required|file|mimes:xlsx,csv,xls',
+        ]);
+
+        if ($validator->fails()) {
+            return back()->withErrors($validator)->withInput();
+        }
+
+        $customerGroup = new CustomerGroups();
+        $customerGroup->group_name = $request->group_name;
+        $customerGroup->save();
+
+        $file = $request->file('customer_po_excel');
+
+        if ($file) {
+            // Get the original file name
+            $fileName = $file->getClientOriginalName();
+            // dd($fileName); // This will show the uploaded file name
+            // Import the file
+            Excel::import(new CustomersImport, $file);
+
+            return redirect()->route('customers')->with('success', 'All good!');
+        }
+
+        return redirect()->back()->with('error', 'No file uploaded.');
     }
 
     public function Customercount()

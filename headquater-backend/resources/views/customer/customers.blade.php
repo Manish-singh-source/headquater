@@ -174,9 +174,9 @@
                             </table>
                         </div>
                     </div>
-                    <div class="pagination justify-content-end">
+                    {{-- <div class="pagination justify-content-end">
                         {{ $customers->links() }}
-                    </div>
+                    </div> --}}
                 </div>
             </div>
 
