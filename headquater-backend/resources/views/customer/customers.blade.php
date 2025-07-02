@@ -71,12 +71,7 @@
                                         <th>
                                             <input class="form-check-input" type="checkbox">
                                         </th>
-                                        <th>Customers Name</th>
-                                        <th>Email</th>
-                                        <th>Contact Number</th>
-                                        <th>Orders</th>
-                                        <th>Location</th>
-                                        <th>Joined At</th>
+                                        <th>Group Name</th>
                                         <th>Status</th>
                                         <th>Action</th>
                                     </tr>
@@ -89,17 +84,9 @@
                                             </td>
                                             <td>
                                                 <a class="d-flex align-items-center gap-3" href="customer-detail.php">
-                                                    <p class="mb-0 customer-name fw-bold">{{ $customer->first_name }}</p>
+                                                    <p class="mb-0 customer-name fw-bold">Bigbasket</p>
                                                 </a>
                                             </td>
-                                            <td>
-                                                <a href="javascript:;" class="font-text1">{{ $customer->email }}</a>
-                                            </td>
-                                            <td>{{ $customer->phone }}</td>
-                                            <td>142</td>
-                                            <td>Mumbai</td>
-
-                                            <td>Nov 12, 10:45 PM</td>
                                             <td>
                                                 <div class=" form-switch form-check-success">
                                                     <input class="form-check-input" type="checkbox" role="switch"
@@ -174,9 +161,9 @@
                             </table>
                         </div>
                     </div>
-                    <div class="pagination justify-content-end">
+                    {{-- <div class="pagination justify-content-end">
                         {{ $customers->links() }}
-                    </div>
+                    </div> --}}
                 </div>
             </div>
 

@@ -67,11 +67,13 @@ Route::delete('/customers/delete/{id}', [CustomerController::class, 'deleteCusto
 Route::get('/customer-group', function () {
     return view('customer.customer-group');
 })->name('customer-group');
+// Download CSV File 
+Route::post('/customer-group-excel', [CustomerController::class, 'downloadCustomersCSV'])->name('add.customer.group');
 
 
 
-// All Vendor List Page 
-Route::get('/vendor', [VendorController::class, 'vendorList'])->name('vendor');
+
+Route::get('/vendors', [VendorController::class, 'vendorList'])->name('vendor');
 Route::get('/create-vendor', [VendorController::class, 'createVendor'])->name('vendor.create');
 Route::post('/vendor/add', [VendorController::class, 'addVendor'])->name('vendor.add');
 Route::get('/vendor/{id}', [VendorController::class, 'detailVendor'])->name('vendor.detail');
