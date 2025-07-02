@@ -119,8 +119,8 @@
 
                             <div class="col-md-12">
                                 <label for="shippingAddress" class="form-label">Shipping Address</label>
-                                <textarea class="form-control  @error('shippingAddress') is-invalid @enderror" value="{{ old('shippingAddress') }}" id="shippingAddress" placeholder="Enter Full Address" rows="3"
-                                    name="shippingAddress"></textarea>
+                                <textarea class="form-control  @error('shippingAddress') is-invalid @enderror" value="" id="shippingAddress" placeholder="Enter Full Address" rows="3"
+                                    name="shippingAddress">{{ old('shippingAddress') }}</textarea>
                                 @error('shippingAddress')
                                 <div class="invalid-feedback">
                                     {{ $message }}
@@ -162,8 +162,8 @@
 
                             <div class="col-md-12">
                                 <label for="billingAddress" class="form-label">Billing Address</label>
-                                <textarea class="form-control  @error('billingAddress') is-invalid @enderror" value="{{ old('billingAddress') }}" id="billingAddress" placeholder="Enter Full Address" rows="3"
-                                    name="billingAddress"></textarea>
+                                <textarea class="form-control  @error('billingAddress') is-invalid @enderror" value="" id="billingAddress" placeholder="Enter Full Address" rows="3"
+                                    name="billingAddress">{{ old('billingAddress') }}</textarea>
                                 @error('billingAddress')
                                 <div class="invalid-feedback">
                                     {{ $message }}
