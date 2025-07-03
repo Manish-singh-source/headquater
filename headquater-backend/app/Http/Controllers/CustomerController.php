@@ -7,8 +7,9 @@ use App\Models\State;
 use App\Models\Country;
 use App\Models\Customer;
 use Illuminate\Http\Request;
-use App\Imports\CustomersImport;
 use App\Models\CustomerGroups;
+use App\Imports\CustomersImport;
+use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Validator;
 
@@ -38,6 +39,8 @@ class CustomerController extends Controller
             return back()->withErrors($validator)->withInput();
         }
 
+
+        DB::beginTransaction();
         $customerGroup = new CustomerGroups();
         $customerGroup->group_name = $request->group_name;
         $customerGroup->save();
@@ -48,11 +51,13 @@ class CustomerController extends Controller
             // Get the original file name
             $fileName = $file->getClientOriginalName();
             // Import the file
-            Excel::import(new CustomersImport, $file);
-
+            Excel::queueImport(new CustomersImport, $file);
+            DB::commit();
+            
             return redirect()->route('customers')->with('success', 'All good!');
         }
 
+        DB::rollBack();
         return redirect()->back()->with('error', 'No file uploaded.');
     }
 

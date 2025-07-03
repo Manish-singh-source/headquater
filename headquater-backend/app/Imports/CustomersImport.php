@@ -9,10 +9,11 @@ use Maatwebsite\Excel\Concerns\Importable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\PersistRelations;
+use Maatwebsite\Excel\Concerns\WithBatchInserts;
 use Maatwebsite\Excel\Concerns\WithChunkReading;
 use Maatwebsite\Excel\Concerns\WithSkipDuplicates;
 
-class CustomersImport implements ToModel, WithSkipDuplicates, PersistRelations, WithHeadingRow, WithChunkReading, ShouldQueue
+class CustomersImport implements ToModel, WithSkipDuplicates, PersistRelations, WithBatchInserts, WithHeadingRow, WithChunkReading, ShouldQueue
 {
     /**
      * @param array $row
@@ -56,6 +57,11 @@ class CustomersImport implements ToModel, WithSkipDuplicates, PersistRelations, 
             'created_at' => now(),
             'updated_at' => now(),
         ]);
+    }
+
+    public function batchSize(): int
+    {
+        return 50;
     }
 
     public function chunkSize(): int
