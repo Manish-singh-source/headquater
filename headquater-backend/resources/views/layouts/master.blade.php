@@ -336,7 +336,7 @@
                           <div class="menu-title">Master</div>
                       </a>
                       <ul>
-                          <li><a href="{{ route('customers') }}"><i
+                          <li><a href="{{ route('groups') }}"><i
                                       class="material-icons-outlined">arrow_right</i>Customers</a>
                           </li>
                           <li><a href="{{ route('vendor') }}"><i

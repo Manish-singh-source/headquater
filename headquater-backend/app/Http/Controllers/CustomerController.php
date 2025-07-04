@@ -21,16 +21,16 @@ use Illuminate\Support\Facades\Validator;
 class CustomerController extends Controller
 {
     //
-    public function customerList()
+    public function groupsList()
     {
-        $customers = CustomerGroup::all();
+        $customers = CustomerGroup::get();
         return view('customer.customers', compact('customers'));
     }
 
-    public function customerGroupDetail($id)
+    public function customersList($id)
     {
         $customers = Customer::where('group_id', $id)->get();
-        return view('customer.customer-group-detail', compact('customers'));
+        return view('customer.customers-list', compact('customers'));
     }
 
     public function Customercount()
@@ -134,14 +134,22 @@ class CustomerController extends Controller
 
     public function detailCustomer($id)
     {
-        $customer = Customer::with('shippingCountry')->with('billingCountry')->findOrFail($id);
-        // dd($customer->country);
+        $customer = Customer::where('group_id', $id)->get();
+        // dd($customer);
         return view('customer.customer-detail', compact('customer'));
     }
 
     public function deleteCustomer($id)
     {
         $customer = Customer::findOrFail($id);
+        $customer->delete();
+
+        return redirect()->route('customers')->with('success', 'Customer deleted successfully.');
+    }
+   
+    public function deleteCustomerGroup($id)
+    {
+        $customer = CustomerGroup::findOrFail($id);
         $customer->delete();
 
         return redirect()->route('customers')->with('success', 'Customer deleted successfully.');

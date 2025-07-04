@@ -38,9 +38,13 @@
                                         <th>
                                             <input class="form-check-input" type="checkbox">
                                         </th>
-                                        <th>Group Name</th>
-                                        <th>Status</th>
-                                        <th>Action</th>
+                                        <th>Client Name</th>
+                                        <th>Contact Name</th>
+                                        <th>Email</th>
+                                        <th>Contact Number</th>
+                                        <th>Billing City</th>
+                                        {{-- <th>Status</th> --}}
+                                        {{-- <th>Action</th> --}}
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -51,16 +55,23 @@
                                             </td>
                                             <td>
                                                 <a class="d-flex align-items-center gap-3" href="customer-detail.php">
-                                                    <p class="mb-0 customer-name fw-bold">{{ $customer->group_name }}</p>
+                                                    <p class="mb-0 customer-name fw-bold">{{ $customer->client_name }}</p>
                                                 </a>
                                             </td>
                                             <td>
+                                                <a href="javascript:;" class="font-text1">{{ $customer->contact_name }}</a>
+                                            </td>
+                                            <td>{{ $customer->contact_email }}</td>
+
+                                            <td>{{ $customer->contact_phone }}</td>
+                                            <td>{{ $customer->billing_city }}</td>
+                                            {{-- <td>
                                                 <div class=" form-switch form-check-success">
                                                     <input class="form-check-input" type="checkbox" role="switch"
                                                         id="flexSwitchCheckSuccess" checked="">
                                                 </div>
-                                            </td>
-                                            <td>
+                                            </td> --}}
+                                            {{-- <td>
                                                 <div class="d-flex">
                                                     <a aria-label="anchor"
                                                         href="{{ route('customers.list', $customer->id) }}"
@@ -115,7 +126,7 @@
                                                     </form>
 
                                                 </div>
-                                            </td>
+                                            </td> --}}
                                         </tr>
                                     @empty
                                         <tr>
@@ -128,12 +139,8 @@
                             </table>
                         </div>
                     </div>
-                    {{-- <div class="pagination justify-content-end">
-                        {{ $customers->links() }}
-                    </div> --}}
                 </div>
             </div>
-
 
         </div>
     </main>

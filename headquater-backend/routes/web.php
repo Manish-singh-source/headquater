@@ -59,11 +59,11 @@ Route::put('/role-update/{id}', [AccessController::class, 'roleUpdate'])->name('
 
 
 // Customer
-Route::get('/customers', [CustomerController::class, 'customerList'])->name('customers');
+Route::get('/groups', [CustomerController::class, 'groupsList'])->name('groups');
 Route::get('/customers-group-detail/{id}', [CustomerController::class, 'customerGroupDetail'])->name('customers.group.detail');
 Route::get('/add-customer', [CustomerController::class, 'addCustomer'])->name('add-customer');
 Route::post('/customers/store', [CustomerController::class, 'storeCustomer'])->name('store_customer');
-Route::get('/customer/detail/{id}', [CustomerController::class, 'detailCustomer'])->name('customer-detail');
+// Route::get('/customer/detail/{id}', [CustomerController::class, 'detailCustomer'])->name('customer-detail');
 Route::get('/customers/edit/{id}', [CustomerController::class, 'editCustomer'])->name('edit_customer');
 Route::put('/customer/update/{id}', [CustomerController::class, 'updateCustomer'])->name('update-customer');
 Route::delete('/customers/delete/{id}', [CustomerController::class, 'deleteCustomer'])->name('delete-customer');
@@ -71,6 +71,8 @@ Route::get('/customer-group', function () {
     return view('customer.customer-group');
 })->name('customer-group');
 // Customer Group
+Route::get('/customer/detail/{id}', [CustomerController::class, 'customersList'])->name('customers.list');
+Route::delete('/customer-group/delete/{id}', [CustomerController::class, 'deleteCustomerGroup'])->name('delete.customer.group');
 Route::post('/import-large-csv', [CustomerGroupController::class, 'importLargeCsv'])->name('import-large-csv');
 
 

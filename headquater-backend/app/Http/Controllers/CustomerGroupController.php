@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Customer;
 use Illuminate\Http\Request;
 use Spatie\SimpleExcel\SimpleExcelReader;
 use App\Models\customerGroup;
@@ -16,6 +17,10 @@ class CustomerGroupController extends Controller
         }
 
 
+        $customerGroup = new customerGroup();
+        $customerGroup->group_name = $request['group_name'];
+        $customerGroup->save();
+
         $file = $request->file('csv_file')->getPathname();
         $file_extension = $request->file('csv_file')->getClientOriginalExtension();
         // dd($request->file('csv_file'), $file_extension); // Debugging line to check file and mime type
@@ -23,7 +28,7 @@ class CustomerGroupController extends Controller
         $insertedRows = [];
         foreach ($reader->getRows() as $record) {
             $insertedRows[] = [
-                'group_name' => $request['group_name'],
+                'group_id' => $customerGroup->id,
                 'client_name' => $record['client_name'],
                 'contact_name' => $record['contact_name'],
                 'contact_email' => $record['email'],
@@ -49,13 +54,13 @@ class CustomerGroupController extends Controller
             return redirect()->back()->withErrors(['csv_file' => 'No valid data found in the CSV file.']);
         }
         // Insert the data into the database
-        $insert = customerGroup::insert($insertedRows);
+        $insert = Customer::insert($insertedRows);
         if (!$insert) {
             return redirect()->back()->withErrors(['csv_file' => 'Failed to insert data into the database.']);
         }
 
 
 
-        return redirect('customers')->with('success', 'CSV file imported successfully.');
+        return redirect('groups')->with('success', 'CSV file imported successfully.');
     }
 }
