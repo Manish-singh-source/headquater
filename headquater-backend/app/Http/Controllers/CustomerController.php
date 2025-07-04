@@ -23,7 +23,7 @@ class CustomerController extends Controller
     //
     public function customerList()
     {
-        $customers = Customer::paginate(10);
+        $customers = CustomerGroup::all();
         return view('customer.customers', compact('customers'));
     }
 

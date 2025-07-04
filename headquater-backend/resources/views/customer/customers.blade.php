@@ -16,46 +16,13 @@
                 </div>
             </div>
 
-            <div class="row g-3">
-                <div class="col-12 col-md-2">
-                    <div class="position-relative">
-                        <input class="form-control px-5" type="search" placeholder="Search Customers">
-                        <span
-                            class="material-icons-outlined position-absolute ms-3 translate-middle-y start-0 top-50 fs-5">search</span>
-                    </div>
-                </div>
-                <div class="col-12 col-md-2 flex-grow-1 overflow-auto">
-                    <div class="btn-group position-static">
-                        <div class="btn-group position-static">
-                            <button type="button" class="btn btn-filter dropdown-toggle px-4" data-bs-toggle="dropdown"
-                                aria-expanded="false">
-                                Sort
-                            </button>
-                            <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="javascript:;">Sort By Name</a></li>
-                                <li><a class="dropdown-item" href="javascript:;">Sort By Email</a></li>
-                                <li><a class="dropdown-item" href="javascript:;">Sort By Orders</a></li>
-                                <li><a class="dropdown-item" href="javascript:;">Sort By Location</a></li>
-                            </ul>
-                        </div>
-                        <div class="btn-group position-static">
-                            <button type="button" class="btn btn-filter dropdown-toggle px-4" data-bs-toggle="dropdown"
-                                aria-expanded="false">
-                                Status
-                            </button>
-                            <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="javascript:;">Active</a></li>
-                                <li><a class="dropdown-item" href="javascript:;">Inactive</a></li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
+            <div class="row g-3 justify-content-end">
                 <div class="col-12 col-md-auto">
                     <div class="d-flex align-items-center gap-2 justify-content-lg-end">
                         <button class="btn btn-filter px-4"><i class="bi bi-box-arrow-right me-2"></i>Export</button>
                         <a href="{{ route('customer-group') }}" class="btn btn-primary px-4"><i class="bi bi-plus-lg me-2"></i>Create Group</a>
-                        <a href="{{ route('add-customer') }}" class="btn btn-primary px-4"><i
-                                class="bi bi-plus-lg me-2"></i>Add Customers</a>
+                        {{-- <a href="{{ route('add-customer') }}" class="btn btn-primary px-4"><i
+                                class="bi bi-plus-lg me-2"></i>Add Customers</a> --}}
                     </div>
                 </div>
             </div>
@@ -65,15 +32,15 @@
                 <div class="card-body">
                     <div class="customer-table">
                         <div class="table-responsive white-space-nowrap">
-                            <table id="example2" class="table table-striped">
+                            <table id="example" class="table table-striped">
                                 <thead class="table-light">
                                     <tr>
                                         <th>
                                             <input class="form-check-input" type="checkbox">
                                         </th>
-                                        <th>Customers Name</th>
-                                        <th>Email</th>
-                                        <th>Contact Number</th>
+                                        <th>Group Name</th>
+                                        <th>Client Name</th>
+                                        <th>Contact Name</th>
                                         <th>Orders</th>
                                         <th>Location</th>
                                         <th>Joined At</th>
@@ -89,13 +56,13 @@
                                             </td>
                                             <td>
                                                 <a class="d-flex align-items-center gap-3" href="customer-detail.php">
-                                                    <p class="mb-0 customer-name fw-bold">{{ $customer->first_name }}</p>
+                                                    <p class="mb-0 customer-name fw-bold">{{ $customer->group_name }}</p>
                                                 </a>
                                             </td>
                                             <td>
-                                                <a href="javascript:;" class="font-text1">{{ $customer->email }}</a>
+                                                <a href="javascript:;" class="font-text1">{{ $customer->client_name }}</a>
                                             </td>
-                                            <td>{{ $customer->phone }}</td>
+                                            <td>{{ $customer->contact_name }}</td>
                                             <td>142</td>
                                             <td>Mumbai</td>
 
