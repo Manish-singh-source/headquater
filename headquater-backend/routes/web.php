@@ -8,10 +8,12 @@ use App\Http\Controllers\StaffController;
 use App\Http\Controllers\AccessController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\VendorController;
+use App\Http\Controllers\ProductController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\LocationController;
 use App\Http\Controllers\WarehouseController;
 use App\Http\Controllers\PlaceOrderController;
+use App\Http\Controllers\CustomerGroupController;
 
 // Route::get('/', function () {
 //     return view('index');
@@ -68,8 +70,9 @@ Route::delete('/customers/delete/{id}', [CustomerController::class, 'deleteCusto
 Route::get('/customer-group', function () {
     return view('customer.customer-group');
 })->name('customer-group');
-// Download CSV File 
-Route::post('/customer-group-excel', [CustomerController::class, 'downloadCustomersCSV'])->name('add.customer.group');
+// Customer Group
+Route::post('/import-large-csv', [CustomerGroupController::class, 'importLargeCsv'])->name('import-large-csv');
+
 
 
 
@@ -130,6 +133,8 @@ Route::get('/products', function () {
 Route::get('/add-product', function () {
     return view('add-product');
 })->name('add-product');
+
+Route::post('/store-products', [ProductController::class, 'store'])->name('store.products');
 
 // invoice
 Route::get('/invoices', function () {

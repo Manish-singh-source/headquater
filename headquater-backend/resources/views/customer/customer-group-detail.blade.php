@@ -18,6 +18,50 @@
             </div>
             <!--end breadcrumb-->
 
+            <div class="row g-3">
+                <div class="col-12 col-md-2">
+                    <div class="position-relative">
+                        <input class="form-control px-5" type="search" placeholder="Search Customers">
+                        <span
+                            class="material-icons-outlined position-absolute ms-3 translate-middle-y start-0 top-50 fs-5">search</span>
+                    </div>
+                </div>
+                <div class="col-12 col-md-2 flex-grow-1 overflow-auto">
+                    <div class="btn-group position-static">
+                        <div class="btn-group position-static">
+                            <button type="button" class="btn btn-filter dropdown-toggle px-4" data-bs-toggle="dropdown"
+                                aria-expanded="false">
+                                Sort
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="javascript:;">Sort By Name</a></li>
+                                <li><a class="dropdown-item" href="javascript:;">Sort By Email</a></li>
+                                <li><a class="dropdown-item" href="javascript:;">Sort By Orders</a></li>
+                                <li><a class="dropdown-item" href="javascript:;">Sort By Location</a></li>
+                            </ul>
+                        </div>
+                        <div class="btn-group position-static">
+                            <button type="button" class="btn btn-filter dropdown-toggle px-4" data-bs-toggle="dropdown"
+                                aria-expanded="false">
+                                Status
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="javascript:;">Active</a></li>
+                                <li><a class="dropdown-item" href="javascript:;">Inactive</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-auto">
+                    <div class="d-flex align-items-center gap-2 justify-content-lg-end">
+                        {{-- <button class="btn btn-filter px-4"><i class="bi bi-box-arrow-right me-2"></i>Export</button> --}}
+                        <a href="{{ route('export.customer.group') }}" class="btn btn-filter px-4"><i
+                                class="bi bi-box-arrow-right me-2"></i>Export</a>
+                    </div>
+                </div>
+            </div>
+            <!--end row-->
+
 
             <div class="row">
                 <div class="col-12">

@@ -6,11 +6,11 @@
       <meta name="viewport" content="width=device-width, initial-scale=1">
       <title>HEADQUATERS | Admin Dashboard</title>
       <!--favicon-->
-      <link rel="icon" href="assets/images/favicon-32x32.png" type="image/png">
+      <link rel="icon" href="{{ asset('assets/images/favicon-32x32.png') }}" type="image/png">
       <!-- loader-->
 
       <link href="{{ asset('assets/css/pace.min.css') }}" rel="stylesheet">
-      <script src="assets/js/pace.min.js"></script>
+      <script src="{{ asset('assets/js/pace.min.js') }}"></script>
 
       <!--plugins-->
       <link href="{{ asset('assets/plugins/perfect-scrollbar/css/perfect-scrollbar.css') }}" rel="stylesheet">
@@ -597,35 +597,35 @@
 
 
       <!--bootstrap js-->
-      <script src="assets/js/bootstrap.bundle.min.js"></script>
+      <script src="{{ asset('assets/js/bootstrap.bundle.min.js') }}"></script>
 
       <!--plugins-->
-      <script src="assets/js/jquery.min.js"></script>
+      <script src="{{ asset('assets/js/jquery.min.js') }}"></script>
       <!--plugins-->
-      <script src="assets/plugins/perfect-scrollbar/js/perfect-scrollbar.js"></script>
-      <script src="assets/plugins/metismenu/metisMenu.min.js"></script>
-      <script src="assets/plugins/simplebar/js/simplebar.min.js"></script>
-      <script src="assets/js/main.js"></script>
+      <script src="{{ asset('assets/plugins/perfect-scrollbar/js/perfect-scrollbar.js') }}"></script>
+      <script src="{{ asset('assets/plugins/metismenu/metisMenu.min.js') }}"></script>
+      <script src="{{ asset('assets/plugins/simplebar/js/simplebar.min.js') }}"></script>
+      <script src="{{ asset('assets/js/main.js') }}"></script>
 
 
-  <script src="assets/plugins/datatable/js/jquery.dataTables.min.js"></script>
-	<script src="assets/plugins/datatable/js/dataTables.bootstrap5.min.js"></script>
-	<script>
-		$(document).ready(function() {
-			$('#example').DataTable();
-		  } );
-	</script>
-	<script>
-		$(document).ready(function() {
-			var table = $('#example2').DataTable( {
-				lengthChange: false,
-				buttons: [ 'copy', 'excel', 'pdf', 'print']
-			} );
-		 
-			table.buttons().container()
-				.appendTo( '#example2_wrapper .col-md-6:eq(0)' );
-		} );
-	</script>
+      <script src="{{ asset('assets/plugins/datatable/js/jquery.dataTables.min.js') }}"></script>
+      <script src="{{ asset('assets/plugins/datatable/js/dataTables.bootstrap5.min.js') }}"></script>
+      <script>
+          $(document).ready(function() {
+              $('#example').DataTable();
+          });
+      </script>
+      <script>
+          $(document).ready(function() {
+              var table = $('#example2').DataTable({
+                  lengthChange: false,
+                  buttons: ['copy', 'excel', 'pdf', 'print']
+              });
+
+              table.buttons().container()
+                  .appendTo('#example2_wrapper .col-md-6:eq(0)');
+          });
+      </script>
 
       @yield('script')
   </body>

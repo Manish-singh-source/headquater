@@ -71,22 +71,35 @@
                                         <th>
                                             <input class="form-check-input" type="checkbox">
                                         </th>
-                                        <th>Group Name</th>
+                                        <th>Customers Name</th>
+                                        <th>Email</th>
+                                        <th>Contact Number</th>
+                                        <th>Orders</th>
+                                        <th>Location</th>
+                                        <th>Joined At</th>
                                         <th>Status</th>
                                         <th>Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @forelse ($customerGroups as $customerGroup)
+                                    @forelse ($customers as $customer)
                                         <tr>
                                             <td>
                                                 <input class="form-check-input" type="checkbox">
                                             </td>
                                             <td>
                                                 <a class="d-flex align-items-center gap-3" href="customer-detail.php">
-                                                    <p class="mb-0 customer-name fw-bold">{{ $customerGroup->group_name }}</p>
+                                                    <p class="mb-0 customer-name fw-bold">{{ $customer->first_name }}</p>
                                                 </a>
                                             </td>
+                                            <td>
+                                                <a href="javascript:;" class="font-text1">{{ $customer->email }}</a>
+                                            </td>
+                                            <td>{{ $customer->phone }}</td>
+                                            <td>142</td>
+                                            <td>Mumbai</td>
+
+                                            <td>Nov 12, 10:45 PM</td>
                                             <td>
                                                 <div class=" form-switch form-check-success">
                                                     <input class="form-check-input" type="checkbox" role="switch"
@@ -96,7 +109,7 @@
                                             <td>
                                                 <div class="d-flex">
                                                     <a aria-label="anchor"
-                                                        href="{{ route('customers.group.detail', $customerGroup->id) }}"
+                                                        href="{{ route('customer-detail', $customer->id) }}"
                                                         class="btn btn-icon btn-sm bg-primary-subtle me-1"
                                                         data-bs-toggle="tooltip" data-bs-original-title="View">
                                                         <svg xmlns="http://www.w3.org/2000/svg" width="13"
@@ -108,7 +121,7 @@
                                                             <circle cx="12" cy="12" r="3"></circle>
                                                         </svg>
                                                     </a>
-                                                    <a aria-label="anchor" href="{{ route('edit_customer', $customerGroup->id) }}"
+                                                    <a aria-label="anchor" href="{{ route('edit_customer', $customer->id) }}"
                                                         class="btn btn-icon btn-sm bg-warning-subtle me-1"
                                                         data-bs-toggle="tooltip" data-bs-original-title="Edit">
                                                         <svg xmlns="http://www.w3.org/2000/svg" width="13"
@@ -124,7 +137,7 @@
                                                             </path>
                                                         </svg>
                                                     </a>
-                                                    <form action="{{ route('delete-customer', $customerGroup->id) }}"
+                                                    <form action="{{ route('delete-customer', $customer->id) }}"
                                                         method="POST" onsubmit="return confirm('Are you sure?')">
                                                         @csrf
                                                         @method('DELETE')

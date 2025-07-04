@@ -20,48 +20,52 @@
                                 </div>
 
                                 <div class="card-body">
-                                    <div class="row g-3">
-                                        <!-- <div class="col-12 col-lg-3">
-                                                <label for="marital" class="form-label">Warehouse
+                                    <form action="{{ route('store.products') }}" method="POST">
+                                        @csrf 
+                                        @method('POST')
+                                        <div class="row g-3">
+                                            <!-- <div class="col-12 col-lg-3">
+                                                    <label for="marital" class="form-label">Warehouse
+                                                        <span class="text-danger">*</span></label>
+                                                    <select class="form-control" name="marital" id="marital">
+                                                        <option selected="" disabled="" value="">-- Select --</option>
+                                                        <option value="Active">Baroda</option>
+
+
+                                                    </select>
+                                                </div> -->
+                                            <div class="col-12 col-lg-3">
+                                                <label for="marital" class="form-label">Vendor Id
                                                     <span class="text-danger">*</span></label>
                                                 <select class="form-control" name="marital" id="marital">
-                                                    <option selected="" disabled="" value="">-- Select --</option>
-                                                    <option value="Active">Baroda</option>
-
+                                                    <option selected="" disabled="" value="">-- Select --
+                                                    </option>
+                                                    <option value="Active">Active</option>
+                                                    <option value="Emily ">Emily </option>
+                                                    <option value="John ">John </option>
+                                                    <option value="Michael ">Michael </option>
+                                                    <option value="Sarah ">Sarah </option>
+                                                    <option value="Davis">Davis</option>
+                                                    <option value="Smith">Smith</option>
+                                                    <option value="Brown">Brown</option>
+                                                    <option value="Wilson">Wilson</option>
 
                                                 </select>
-                                            </div> -->
-                                        <div class="col-12 col-lg-3">
-                                            <label for="marital" class="form-label">Vendor Id
-                                                <span class="text-danger">*</span></label>
-                                            <select class="form-control" name="marital" id="marital">
-                                                <option selected="" disabled="" value="">-- Select --</option>
-                                                <option value="Active">Active</option>
-                                                <option value="Emily ">Emily </option>
-                                                <option value="John ">John </option>
-                                                <option value="Michael ">Michael </option>
-                                                <option value="Sarah ">Sarah </option>
-                                                <option value="Davis">Davis</option>
-                                                <option value="Smith">Smith</option>
-                                                <option value="Brown">Brown</option>
-                                                <option value="Wilson">Wilson</option>
-
-                                            </select>
+                                            </div>
+                                            <div class="col-12 col-lg-3">
+                                                <label for="products_excel" class="form-label">Upload Excel <span
+                                                        class="text-danger">*</span></label>
+                                                <input type="file" name="products_excel" id="products_excel"
+                                                    class="form-control" multiple>
+                                            </div>
+                                            <div class="col-12 col-lg-3 text-start">
+                                                <button type=""
+                                                    class="btn btn-success w-sm waves ripple-light text-center mt-md-4">
+                                                    Upload
+                                                </button>
+                                            </div>
                                         </div>
-                                        <div class="col-12 col-lg-3">
-                                            <label for="document_image" class="form-label">Upload Excel <span
-                                                    class="text-danger">*</span></label>
-                                            <input type="file" name="document_image" id="document_image"
-                                                class="form-control" value="" required=""
-                                                placeholder="Upload ID Document">
-                                        </div>
-                                        <div class="col-12 col-lg-3 text-start">
-                                            <button type=""
-                                                class="btn btn-success w-sm waves ripple-light text-center mt-md-4">
-                                                Upload
-                                            </button>
-                                        </div>
-                                    </div>
+                                    </form>
                                 </div>
                             </div>
 

@@ -15,7 +15,7 @@ return new class extends Migration
             //
             $table->unsignedBigInteger('group_id');
 
-            $table->foreign('group_id')->references('id')->on('customer_groups');
+            $table->foreign('group_id')->nullable()->references('id')->on('customer_groups');
         });
     }
 
@@ -26,8 +26,6 @@ return new class extends Migration
     {
         Schema::table('customers', function (Blueprint $table) {
             //
-            $table->dropForeign(['group_id']);
-            $table->dropColumn('group_id');
         });
     }
 };

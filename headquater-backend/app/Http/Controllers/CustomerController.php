@@ -2,15 +2,20 @@
 
 namespace App\Http\Controllers;
 
+use Log;
 use App\Models\City;
 use App\Models\State;
 use App\Models\Country;
 use App\Models\Customer;
 use Illuminate\Http\Request;
+use App\Models\CustomerGroup;
 use App\Models\CustomerGroups;
+use App\Exports\CustomersExport;
 use App\Imports\CustomersImport;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Bus;
 use Maatwebsite\Excel\Facades\Excel;
+use App\Jobs\ProcessCustomerExcelJob;
 use Illuminate\Support\Facades\Validator;
 
 class CustomerController extends Controller
@@ -18,47 +23,14 @@ class CustomerController extends Controller
     //
     public function customerList()
     {
-        $customerGroups = CustomerGroups::paginate(10);
-        return view('customer.customers', compact('customerGroups'));
+        $customers = Customer::paginate(10);
+        return view('customer.customers', compact('customers'));
     }
 
     public function customerGroupDetail($id)
     {
         $customers = Customer::where('group_id', $id)->get();
         return view('customer.customer-group-detail', compact('customers'));
-    }
-
-    public function  downloadCustomersCSV(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'group_name' => 'required',
-            'customer_po_excel' => 'required|file|mimes:xlsx,csv,xls',
-        ]);
-
-        if ($validator->fails()) {
-            return back()->withErrors($validator)->withInput();
-        }
-
-
-        DB::beginTransaction();
-        $customerGroup = new CustomerGroups();
-        $customerGroup->group_name = $request->group_name;
-        $customerGroup->save();
-
-        $file = $request->file('customer_po_excel');
-
-        if ($file) {
-            // Get the original file name
-            $fileName = $file->getClientOriginalName();
-            // Import the file
-            Excel::queueImport(new CustomersImport, $file);
-            DB::commit();
-            
-            return redirect()->route('customers')->with('success', 'All good!');
-        }
-
-        DB::rollBack();
-        return redirect()->back()->with('error', 'No file uploaded.');
     }
 
     public function Customercount()
