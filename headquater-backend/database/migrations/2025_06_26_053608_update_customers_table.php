@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::table('customers', function (Blueprint $table) {
             //
-            $table->string('billing_address', 255)->change();
+            $table->string('billing_address', 255)->nullable()->change();
         });
     }
 
