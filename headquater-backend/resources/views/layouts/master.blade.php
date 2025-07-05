@@ -19,7 +19,8 @@
       <link rel="stylesheet" type="text/css" href="{{ asset('assets/plugins/simplebar/css/simplebar.css') }}">
       <!--bootstrap css-->
       <link href="{{ asset('assets/css/bootstrap.min.css') }}" rel="stylesheet">
-      <link href="assets/plugins/datatable/css/dataTables.bootstrap5.min.css" rel="stylesheet" />
+      <link href="{{ asset('assets/plugins/datatable/css/dataTables.bootstrap5.min.css') }}" rel="stylesheet" />
+      <link href="https://cdn.datatables.net/2.3.2/css/dataTables.dataTables.css" rel="stylesheet" />
       <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@300;400;500;600&amp;display=swap"
           rel="stylesheet">
       <link href="https://fonts.googleapis.com/css?family=Material+Icons+Outlined" rel="stylesheet">
@@ -55,6 +56,23 @@
           div.dt-buttons {
               margin-bottom: 10px;
           }
+          .dataTables_length{
+                margin-bottom: 10px;
+
+          }
+          tbody, td, tfoot, th, thead, tr {
+    border-color: inherit;
+    border-style: solid;
+    border-width: 2px;
+}
+table.dataTable {
+    clear: both;
+    margin-top: 6px !important;
+    margin-bottom: 6px !important;
+    max-width: none !important;
+    border-collapse: collapse !important;
+    border-spacing: 0;
+}
       </style>
 
   </head>
@@ -292,7 +310,7 @@
           <div class="sidebar-header">
               <div class="logo-icon">
                   <a href="{{ route('index') }}">
-                      <img src="assets/images/logo-icon.png" class="logo-img" alt="">
+                      <img src="{{ asset('assets/images/logo-icon.png') }}" class="logo-img" alt="">
                   </a>
               </div>
               <a href="{{ route('index') }}">
