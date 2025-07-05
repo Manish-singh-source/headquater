@@ -152,6 +152,6 @@ class CustomerController extends Controller
         $customer = CustomerGroup::findOrFail($id);
         $customer->delete();
 
-        return redirect()->route('customers')->with('success', 'Customer deleted successfully.');
+        return redirect()->route('groups')->with('success', 'Customer deleted successfully.');
     }
 }

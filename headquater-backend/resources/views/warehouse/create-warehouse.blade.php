@@ -148,7 +148,7 @@
                                         </div>
                                     @enderror
                                 </div>
-                                <div class="col-md-6">
+                                {{-- <div class="col-md-6">
                                     <label for="input6" class="form-label">Upload Licence Document</label>
                                     <input type="file" class="form-control @error('licence_doc') is-invalid @enderror"
                                         name="licence_doc" id="input6" placeholder="Upload Licence Document">
@@ -157,7 +157,7 @@
                                             {{ $message }}
                                         </div>
                                     @enderror
-                                </div>
+                                </div> --}}
                                 <div class="col-md-6">
                                     <label for="input8" class="form-label">Max storage capacity</label>
                                     <input type="number"
