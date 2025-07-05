@@ -21,7 +21,7 @@ return new class extends Migration
             $table->string('entity_vendor_legal_name')->nullable();
             $table->string('manufacturer_name')->nullable();
             $table->string('facility_name')->nullable();
-            $table->integer('units')->nullable();
+            $table->string('units')->nullable();
             $table->integer('units_ordered')->nullable();
             $table->double('landing_rate', 10, 2)->nullable();
             $table->double('cost_price', 10, 2)->nullable();

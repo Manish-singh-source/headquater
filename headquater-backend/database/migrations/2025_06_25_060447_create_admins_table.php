@@ -37,7 +37,7 @@ return new class extends Migration
             
             $table->enum('status', ['0', '1'])->default('1')->comment('Active : 1, Inactive : 0');
 
-            $table->timestamps(); // created_at and updated_at
+            $table->timestamps(); 
         });
     }
 
