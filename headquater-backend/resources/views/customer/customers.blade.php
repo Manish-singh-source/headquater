@@ -19,7 +19,7 @@
             <div class="row g-3 justify-content-end">
                 <div class="col-12 col-md-auto">
                     <div class="d-flex align-items-center gap-2 justify-content-lg-end">
-                        <button class="btn btn-filter px-4"><i class="bi bi-box-arrow-right me-2"></i>Export</button>
+                        {{-- <button class="btn btn-filter px-4"><i class="bi bi-box-arrow-right me-2"></i>Export</button> --}}
                         <a href="{{ route('customer-group') }}" class="btn btn-primary px-4"><i class="bi bi-plus-lg me-2"></i>Create Group</a>
                         {{-- <a href="{{ route('add-customer') }}" class="btn btn-primary px-4"><i
                                 class="bi bi-plus-lg me-2"></i>Add Customers</a> --}}
@@ -32,7 +32,7 @@
                 <div class="card-body">
                     <div class="customer-table">
                         <div class="table-responsive white-space-nowrap">
-                            <table id="example" class="table table-striped">
+                            <table id="example" class="table table-striped cell-border">
                                 <thead class="table-light">
                                     <tr>
                                         <th>
@@ -75,22 +75,7 @@
                                                             <circle cx="12" cy="12" r="3"></circle>
                                                         </svg>
                                                     </a>
-                                                    <a aria-label="anchor" href="{{ route('edit_customer', $customer->id) }}"
-                                                        class="btn btn-icon btn-sm bg-warning-subtle me-1"
-                                                        data-bs-toggle="tooltip" data-bs-original-title="Edit">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="13"
-                                                            height="13" viewBox="0 0 24 24" fill="none"
-                                                            stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                                            stroke-linejoin="round"
-                                                            class="feather feather-edit text-warning">
-                                                            <path
-                                                                d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7">
-                                                            </path>
-                                                            <path
-                                                                d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z">
-                                                            </path>
-                                                        </svg>
-                                                    </a>
+                                                   
                                                     <form action="{{ route('delete.customer.group', $customer->id) }}"
                                                         method="POST" onsubmit="return confirm('Are you sure?')">
                                                         @csrf
