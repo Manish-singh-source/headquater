@@ -20,40 +20,24 @@
                                 </div>
 
                                 <div class="card-body">
-                                    <form action="{{ route('store.products') }}" method="POST">
-                                        @csrf 
+                                    <form action="{{ route('store.products') }}" method="POST" enctype="multipart/form-data">
+                                        @csrf
                                         @method('POST')
                                         <div class="row g-3">
-                                            <!-- <div class="col-12 col-lg-3">
-                                                    <label for="marital" class="form-label">Warehouse
-                                                        <span class="text-danger">*</span></label>
-                                                    <select class="form-control" name="marital" id="marital">
-                                                        <option selected="" disabled="" value="">-- Select --</option>
-                                                        <option value="Active">Baroda</option>
-
-
-                                                    </select>
-                                                </div> -->
                                             <div class="col-12 col-lg-3">
-                                                <label for="marital" class="form-label">Vendor Id
+                                                <label for="warehouse" class="form-label">Warehouse
                                                     <span class="text-danger">*</span></label>
-                                                <select class="form-control" name="marital" id="marital">
+                                                <select class="form-control" name="warehouse_id" id="warehouse">
                                                     <option selected="" disabled="" value="">-- Select --
                                                     </option>
-                                                    <option value="Active">Active</option>
-                                                    <option value="Emily ">Emily </option>
-                                                    <option value="John ">John </option>
-                                                    <option value="Michael ">Michael </option>
-                                                    <option value="Sarah ">Sarah </option>
-                                                    <option value="Davis">Davis</option>
-                                                    <option value="Smith">Smith</option>
-                                                    <option value="Brown">Brown</option>
-                                                    <option value="Wilson">Wilson</option>
+                                                    @foreach ($warehouses as $warehouse)
+                                                        <option value="{{ $warehouse->id }}">{{ $warehouse->name }}</option>
+                                                    @endforeach
 
                                                 </select>
                                             </div>
                                             <div class="col-12 col-lg-3">
-                                                <label for="products_excel" class="form-label">Upload Excel <span
+                                                <label for="products_excel" class="form-label">Products Sheet <span
                                                         class="text-danger">*</span></label>
                                                 <input type="file" name="products_excel" id="products_excel"
                                                     class="form-control" multiple>

@@ -22,8 +22,8 @@ class AccessController extends Controller
 
     public function addStaff()
     {
-         $roles = Role::get();
-        return view('accessControl.add-staff' , ['roles' => $roles]);
+        $roles = Role::get();
+        return view('accessControl.add-staff', ['roles' => $roles]);
     }
 
     public function staffDetail($id)
@@ -49,7 +49,7 @@ class AccessController extends Controller
 
     public function updatestaff(Request $request, $id)
     {
-       $validator = Validator::make($request->all(), [
+        $validator = Validator::make($request->all(), [
             'role' => 'required',
             'fname' => 'required',
             'lname' => 'required',

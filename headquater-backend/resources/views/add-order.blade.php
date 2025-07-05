@@ -44,226 +44,197 @@
                                 </div>
 
                                 <div class="card-body">
-                                    <div class="row g-3 align-items-end">
-                                        <div class="col-12 col-lg-3">
-                                            <label for="warehouseLocation" class="form-label">Select Group
-                                                <span class="text-danger">*</span></label>
-                                            <select class="form-control" name="warehouseLocation" id="warehouseLocation">
-                                                <option selected="" disabled="" value="">-- Select --</option>
-                                                <option value="Baroda">Amazon</option>
-                                                <option value="Mumbai">Big Basket</option>
-                                            </select>
-                                        </div>
-                                        <div class="col-12 col-lg-3">
-                                            <label for="warehouseLocation" class="form-label">Warehouse Location
-                                                <span class="text-danger">*</span></label>
-                                            <select class="form-control" name="warehouseLocation" id="warehouseLocation">
-                                                <option selected="" disabled="" value="">-- Select --</option>
-                                                <option value="Baroda">Baroda</option>
-                                                <option value="Mumbai">Mumbai</option>
-                                            </select>
-                                        </div>
-                                        <div class="col-12 col-lg-2">
-                                            <label for="pick-date" class="form-label">Ordered Date</label>
-                                            <input type="date" class="form-control" name="orderedDate" id="pick-date">
-                                        </div>
-                                        <div class="col-12 col-lg-3">
-                                            <label for="document_image" class="form-label">Upload Excel <span
-                                                    class="text-danger">*</span></label>
-                                            <input type="file" name="document_image" id="document_image"
-                                                class="form-control" value="" required=""
-                                                placeholder="Upload ID Document" multiple>
-                                        </div>
-                                        <div class="col-12 col-lg-1">
-                                            <button class="btn btn-primary" id="upload-excel">Submit</button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="card available-product">
-                                <div class="card-body">
-                                    <ul class="nav nav-tabs">
-                                        <li class="nav-item">
-                                            <a class="nav-link active" aria-current="page" href="#">Blinkit</a>
-                                        </li>
-                                    </ul>
-                                </div>
-                                <div class="card-body">
-                                    <h5 class="mb-3">Available Products</h5>
-                                    <div class="product-table">
-                                        <div class="table-responsive white-space-nowrap">
-                                            <table class="table align-middle">
-                                                <thead class="table-light">
-                                                    <tr>
-                                                        <th>Order_No</th>
-                                                        <th>Customer</th>
-                                                        <th>Po_number</th>
-                                                        <th>Facility_Name</th>
-                                                        <th>Facility_Location</th>
-                                                        <th>Po_Date</th>
-                                                        <th>Po_Expiry_Date</th>
-                                                        <th>HSN</th>
-                                                        <th>Item_Code</th>
-                                                        <th>Description</th>
-                                                        <th>Basic_Rate</th>
-                                                        <th>GST</th>
-                                                        <th>Net_Landing_Rate</th>
-                                                        <th>MRP</th>
-                                                        <th>Rate_Confirmation</th>
-                                                        <th>Po_Qty</th>
-                                                        <th>Case_Pack_Qty</th>
-                                                        <th>Available</th>
-                                                        <th>Unavailable_Qty</th>
-                                                        <th>Block</th>
-                                                        <th>Purchase_Order_Qty</th>
-                                                        <th>Vendor_Code</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    <tr>
-                                                        <td>ORD12345</td>
-                                                        <td>John Doe Enterprises</td>
-                                                        <td>PO987654</td>
-                                                        <td>Sunrise Facility</td>
-                                                        <td>Mumbai</td>
-                                                        <td>2025-06-01</td>
-                                                        <td>2025-12-01</td>
-                                                        <td>30049011</td>
-                                                        <td>ITM001</td>
-                                                        <td>Sanitizer 500ml</td>
-                                                        <td>75.00</td>
-                                                        <td>18%</td>
-                                                        <td>88.50</td>
-                                                        <td>120.00</td>
-                                                        <td>Confirmed</td>
-                                                        <td>1000</td>
-                                                        <td>24</td>
-                                                        <td>800</td>
-                                                        <td>200</td>
-                                                        <td>No</td>
-                                                        <td>1000</td>
-                                                        <td>VEND123</td>
-                                                    </tr>
-
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-lg-12 available-product">
-                                <div class="text-end mb-3">
-                                    <button type="" onclick="exportTableToExcel('unavailable-product-list')"
-                                        class="btn btn-success w-sm waves ripple-light">
-                                        Download Excel File
-                                    </button>
-                                    <button type="button" class="btn btn-success w-sm waves ripple-light"
-                                        data-bs-toggle="modal" data-bs-target="#staticBackdrop">
-                                        Hold Products
-                                    </button>
-
-                                    <!-- Modal -->
-                                    <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static"
-                                        data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel"
-                                        aria-hidden="true">
-                                        <div class="modal-dialog">
-                                            <div class="modal-content">
-                                                <div class="modal-header">
-                                                    <h1 class="modal-title fs-5" id="staticBackdropLabel">Hold Products
-                                                    </h1>
-                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                                        aria-label="Close"></button>
-                                                </div>
-                                                <div class="modal-body">
-                                                    <form>
-                                                        <div class="mb-3">
-                                                            <label for="message-text" class="d-flex">Reason:</label>
-                                                            <textarea class="form-control" id="message-text"></textarea>
-                                                        </div>
-                                                    </form>
-                                                </div>
-                                                <div class="modal-footer">
-                                                    <button type="button" class="btn btn-secondary"
-                                                        data-bs-dismiss="modal">Close</button>
-                                                    <button type="button" id="holdOrder"
-                                                        class="btn btn-primary">Submit</button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <a href="{{ route('order') }}" id="submitOrder"
-                                        class="btn btn-success w-sm waves ripple-light">
-                                        Submit
-                                    </a>
-                                </div>
-                                <div class="card ">
-                                    <div class="card-body">
-                                        <div class="row align-items-end">
+                                    <form action="{{ route('process.order') }}" method="POST"
+                                        enctype="multipart/form-data">
+                                        @csrf
+                                        @method('POST')
+                                        <div class="row g-3 align-items-end">
                                             <div class="col-12 col-lg-3">
-                                                <label for="document_image" class="form-label">Updated Excel Upload <span
+                                                <label for="customerGroup" class="form-label">Select Customer Group
+                                                    <span class="text-danger">*</span></label>
+                                                <select class="form-control" name="customerGroup" id="customerGroup">
+                                                    <option selected="" disabled="" value="">-- Select --
+                                                    </option>
+                                                    @foreach ($customerGroup as $customer)
+                                                        <option value="{{ $customer->id }}">{{ $customer->group_name }}
+                                                        </option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
+                                            <div class="col-12 col-lg-3">
+                                                <label for="warehouseName" class="form-label">Warehouse Name
+                                                    <span class="text-danger">*</span></label>
+                                                <select class="form-control" name="warehouseName" id="warehouseName">
+                                                    <option selected="" disabled="" value="">-- Select --
+                                                    </option>
+                                                    @foreach ($warehouses as $warehouse)
+                                                        <option value="{{ $warehouse->id }}">{{ $warehouse->name }}</option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
+                                            <div class="col-12 col-lg-3">
+                                                <label for="document_image" class="form-label">Customer PO (CSV/XLSX) <span
                                                         class="text-danger">*</span></label>
-                                                <input type="file" name="document_image" id="document_image"
-                                                    class="form-control" value="" required=""
-                                                    placeholder="Upload ID Document" multiple>
+                                                <input type="file" name="csv_file" id="csv_file" class="form-control"
+                                                    value="" required="" placeholder="Upload ID Document" multiple>
                                             </div>
                                             <div class="col-12 col-lg-1">
                                                 <button class="btn btn-primary" id="upload-excel">Submit</button>
                                             </div>
-                                            <!-- <div class="col-12 col-lg-1">
-                                                <button class="btn btn-primary" id="orderStatus">Submit</button>
-                                            </div> -->
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="text-end mb-3">
+                                    </form>
 
-                                    <button type="button" class="btn btn-success w-sm waves ripple-light"
-                                        data-bs-toggle="modal" data-bs-target="#staticBackdrop">
-                                        Updated Hold Products
-                                    </button>
-
-                                    <!-- Modal -->
-                                    <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static"
-                                        data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel"
-                                        aria-hidden="true">
-                                        <div class="modal-dialog">
-                                            <div class="modal-content">
-                                                <div class="modal-header">
-                                                    <h1 class="modal-title fs-5" id="staticBackdropLabel">Hold Products
-                                                    </h1>
-                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                                        aria-label="Close"></button>
-                                                </div>
-                                                <div class="modal-body">
-                                                    <form>
-                                                        <div class="mb-3">
-                                                            <label for="message-text" class="d-flex">Reason:</label>
-                                                            <textarea class="form-control" id="message-text"></textarea>
-                                                        </div>
-                                                    </form>
-                                                </div>
-                                                <div class="modal-footer">
-                                                    <button type="button" class="btn btn-secondary"
-                                                        data-bs-dismiss="modal">Close</button>
-                                                    <button type="button" id="holdOrder"
-                                                        class="btn btn-primary">Submit</button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <button type="" id="submitOrder"
-                                        class="btn btn-success w-sm waves ripple-light">
-                                        Submit
-                                    </button>
                                 </div>
                             </div>
                         </div>
 
 
+                        <div class="card">
+                            <div class="card-body d-flex justify-content-between align-items-center">
+                                <ul class="nav nav-tabs">
+                                    <li class="nav-item">
+                                        <a class="nav-link active" aria-current="page" href="#">Blinkit</a>
+                                    </li>
+                                </ul>
+                                <div>
+                                    <button class="btn btn-icon btn-sm bg-primary me-1 text-white" data-bs-toggle="modal"
+                                        data-bs-target="#staticBackdrop1">Upload Block Sheet</button>
+
+                                    <div class="modal fade" id="staticBackdrop1" data-bs-backdrop="static"
+                                        data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel"
+                                        aria-hidden="true">
+                                        <div class="modal-dialog">
+                                            <form action="{{ route('process.block.order') }}" method="POST"
+                                                enctype="multipart/form-data">
+                                                @csrf
+                                                @method('POST')
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h1 class="modal-title fs-5" id="staticBackdropLabel">Update
+                                                            Customer PO Sheet</h1>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                            aria-label="Close"></button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <div class="col-12 mb-3">
+                                                            <label for="document_image" class="form-label">Customer PO
+                                                                (CSV/XLSX) <span class="text-danger">*</span></label>
+                                                            <input type="file" name="csv_file" id="csv_file"
+                                                                class="form-control" value="" required=""
+                                                                placeholder="Upload ID Document" multiple>
+                                                        </div>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary"
+                                                            data-bs-dismiss="modal">Close</button>
+                                                        <button type="submit" class="btn btn-primary">Submit</button>
+                                                    </div>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <h5 class="mb-3">Available Products</h5>
+                                <div class="product-table">
+                                    <div class="table-responsive white-space-nowrap">
+                                        <table id="example" class="table align-middle">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    {{-- <th>Order_No</th> --}}
+                                                    <th>Customer</th>
+                                                    <th>Po&nbsp;number</th>
+                                                    <th>Facility&nbsp;Name</th>
+                                                    <th>Facility&nbsp;Location</th>
+                                                    <th>PO&nbsp;Date</th>
+                                                    <th>PO&nbsp;Expiry&nbsp;Date</th>
+                                                    <th>HSN</th>
+                                                    <th>Item&nbsp;Code</th>
+                                                    <th>Description</th>
+                                                    <th>Basic&nbsp;Rate</th>
+                                                    {{-- <th>GST</th> --}}
+                                                    <th>Net&nbsp;Landing&nbsp;Rate</th>
+                                                    <th>MRP</th>
+                                                    @isset($blockedData)
+                                                        <th>Rate&nbsp;Confirmation</th>
+                                                        <th>Po&nbsp;Qty</th>
+                                                        <th>Case&nbsp;Pack&nbsp;Qty</th>
+                                                        <th>Available</th>
+                                                        <th>Unavailable&nbsp;Qty</th>
+                                                        <th>Block</th>
+                                                        <th>Purchase&nbsp;Order&nbsp;Qty</th>
+                                                        <th>Vendor&nbsp;Code</th>
+                                                    @endisset
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+
+                                                @isset($fileData)
+                                                    @forelse($fileData as $data)
+                                                        <tr>
+                                                            <td>{{ $data['Customer'] }}</td>
+                                                            <td>{{ $data['po_number'] }}</td>
+                                                            <td>{{ $data['facility_name'] }}</td>
+                                                            <td>{{ $data['facility_Location'] }}</td>
+                                                            <td>{{ $data['po_date'] }}</td>
+                                                            <td>{{ $data['po_expiry_date'] }}</td>
+                                                            <td>{{ $data['HSN'] }}</td>
+                                                            <td>{{ $data['Item_Code'] }}</td>
+                                                            <td>{{ $data['Description'] }}</td>
+                                                            <td>{{ $data['Basic_rate'] }}</td>
+                                                            <td>{{ $data['Net_Landing_rate'] }}</td>
+                                                            <td>{{ $data['MRP'] }}</td>
+                                                        </tr>
+                                                    @empty
+                                                        <tr>
+                                                            <td>No Data</td>
+                                                        </tr>
+                                                    @endforelse
+                                                @endisset
+
+                                                @isset($blockedData)
+                                                    @forelse($blockedData as $data)
+                                                        <tr>
+                                                            <td>{{ $data['Customer'] }}</td>
+                                                            <td>{{ $data['po_number'] }}</td>
+                                                            <td>{{ $data['facility_name'] }}</td>
+                                                            <td>{{ $data['facility_Location'] }}</td>
+                                                            <td>{{ $data['po_date'] }}</td>
+                                                            <td>{{ $data['po_expiry_date'] }}</td>
+                                                            <td>{{ $data['HSN'] }}</td>
+                                                            <td>{{ $data['Item_Code'] }}</td>
+                                                            <td>{{ $data['Description'] }}</td>
+                                                            <td>{{ $data['Basic_rate'] }}</td>
+                                                            <td>{{ $data['Net_Landing_rate'] }}</td>
+                                                            <td>{{ $data['MRP'] }}</td>
+                                                            <td>{{ $data['Rate_Confirmation'] }}</td>
+                                                            <td>{{ $data['po_qty'] }}</td>
+                                                            <td>{{ $data['Case_pack_Qty'] }}</td>
+                                                            <td>{{ $data['Available'] }}</td>
+                                                            <td>{{ $data['Unavailable_qty'] }}</td>
+                                                            <td>{{ $data['Block'] }}</td>
+                                                            <td>{{ $data['Purchase_Order_Qty'] }}</td>
+                                                            <td>{{ $data['Vendor_Code'] }}</td>
+                                                        </tr>
+                                                    @empty
+                                                        <tr>
+                                                            <td>No Data</td>
+                                                        </tr>
+                                                    @endforelse
+                                                @endisset
+
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
+
+
                 </div>
             </div>
+        </div>
         </div>
     </main>
     <!--end main wrapper-->

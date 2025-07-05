@@ -78,7 +78,7 @@ Route::post('/import-large-csv', [CustomerGroupController::class, 'importLargeCs
 
 
 
-
+// Customer
 Route::get('/vendors', [VendorController::class, 'vendorList'])->name('vendor');
 Route::get('/create-vendor', [VendorController::class, 'createVendor'])->name('vendor.create');
 Route::post('/vendor/add', [VendorController::class, 'addVendor'])->name('vendor.add');
@@ -86,7 +86,6 @@ Route::get('/vendor/{id}', [VendorController::class, 'detailVendor'])->name('ven
 Route::put('/vendor/update/{id}', [VendorController::class, 'updateVendor'])->name('vendor.update');
 Route::delete('/vendor/delete/{id}', [VendorController::class, 'deleteVendor'])->name('vendor.delete');
 Route::get('/vendor/edit/{id}', [VendorController::class, 'editVendor'])->name('edit-vendor');
-
 Route::get('/vendor-order-view', [VendorController::class, 'vendorOrderView'])->name('vendor-order-view');
 
 
@@ -109,6 +108,8 @@ Route::put('/warehouse-update/{id}', [WarehouseController::class, 'warehouseUpda
 // All Order page
 Route::get('/order', [OrderController::class, 'orderList'])->name('order');
 Route::get('/add-order', [OrderController::class, 'addOrder'])->name('add-order');
+Route::post('/process-order', [OrderController::class, 'processOrder'])->name('process.order');
+Route::post('/process-block-order', [OrderController::class, 'processBlockOrder'])->name('process.block.order');
 
 
 // Report Details List
@@ -129,14 +130,9 @@ Route::get('/customer-order-view', function () {
 
 
 // Product
-Route::get('/products', function () {
-    return view('products');
-})->name('products');
-Route::get('/add-product', function () {
-    return view('add-product');
-})->name('add-product');
-
-Route::post('/store-products', [ProductController::class, 'store'])->name('store.products');
+Route::get('/products', [ProductController::class, 'productsList'])->name('products');
+Route::get('/add-product', [ProductController::class, 'addProductPage'])->name('add-product');
+Route::post('/store-products', [ProductController::class, 'storeProducts'])->name('store.products');
 
 // invoice
 Route::get('/invoices', function () {
