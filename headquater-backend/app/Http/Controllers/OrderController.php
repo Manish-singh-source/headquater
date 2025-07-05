@@ -61,12 +61,6 @@ class OrderController extends Controller
         $customerGroup = CustomerGroup::all();
         $warehouses = Warehouse::all();
         return view('add-order', ['customerGroup' => $customerGroup, 'warehouses' => $warehouses, 'fileData' => $insertedRows]);
-
-        if (!$insert) {
-            return redirect()->back()->withErrors(['csv_file' => 'Failed to insert data into the database.']);
-        }
-
-        return redirect('groups')->with('success', 'CSV file imported successfully.');
     }
 
 

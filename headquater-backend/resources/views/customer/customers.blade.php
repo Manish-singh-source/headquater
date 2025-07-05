@@ -1,6 +1,7 @@
 @extends('layouts.master')
 @section('main-content')
-    <!--start main wrapper-->
+
+
     <main class="main-wrapper">
         <div class="main-content">
             <!--breadcrumb-->
@@ -20,7 +21,8 @@
                 <div class="col-12 col-md-auto">
                     <div class="d-flex align-items-center gap-2 justify-content-lg-end">
                         <button class="btn btn-filter px-4"><i class="bi bi-box-arrow-right me-2"></i>Export</button>
-                        <a href="{{ route('customer-group') }}" class="btn btn-primary px-4"><i class="bi bi-plus-lg me-2"></i>Create Group</a>
+                        <a href="{{ route('customer-group') }}" class="btn btn-primary px-4"><i
+                                class="bi bi-plus-lg me-2"></i>Create Group</a>
                         {{-- <a href="{{ route('add-customer') }}" class="btn btn-primary px-4"><i
                                 class="bi bi-plus-lg me-2"></i>Add Customers</a> --}}
                     </div>
@@ -39,6 +41,7 @@
                                             <input class="form-check-input" type="checkbox">
                                         </th>
                                         <th>Group Name</th>
+                                        <th>Created Date</th>
                                         <th>Status</th>
                                         <th>Action</th>
                                     </tr>
@@ -53,6 +56,9 @@
                                                 <a class="d-flex align-items-center gap-3" href="customer-detail.php">
                                                     <p class="mb-0 customer-name fw-bold">{{ $customer->group_name }}</p>
                                                 </a>
+                                            </td>
+                                            <td>
+                                                {{ $customer->created_at }}
                                             </td>
                                             <td>
                                                 <div class=" form-switch form-check-success">
@@ -75,7 +81,8 @@
                                                             <circle cx="12" cy="12" r="3"></circle>
                                                         </svg>
                                                     </a>
-                                                    <a aria-label="anchor" href="{{ route('edit_customer', $customer->id) }}"
+                                                    <a aria-label="anchor"
+                                                        href="{{ route('edit_customer', $customer->id) }}"
                                                         class="btn btn-icon btn-sm bg-warning-subtle me-1"
                                                         data-bs-toggle="tooltip" data-bs-original-title="Edit">
                                                         <svg xmlns="http://www.w3.org/2000/svg" width="13"

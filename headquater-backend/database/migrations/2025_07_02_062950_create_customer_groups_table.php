@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('customer_groups', function (Blueprint $table) {
             $table->id();
-            $table->string('group_name');
+            $table->string('group_name')->unique();
             $table->enum('status', ['0', '1'])->default('1')->comment('Active : 1,Inactive : 0');
             $table->timestamps();
         });

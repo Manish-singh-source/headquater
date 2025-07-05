@@ -4,22 +4,35 @@ namespace App\Http\Controllers;
 
 use App\Models\Customer;
 use Illuminate\Http\Request;
-use Spatie\SimpleExcel\SimpleExcelReader;
 use App\Models\customerGroup;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
+use Spatie\SimpleExcel\SimpleExcelReader;
 
 class CustomerGroupController extends Controller
 {
     public function importLargeCsv(Request $request)
     {
+        $validator = Validator::make($request->all(), [
+            'group_name' => 'required|unique:customer_groups,group_name',
+            'csv_file' => 'required',
+        ]);
+
+        if ($validator->fails()) {
+            return back()->withErrors($validator)->withInput();
+        }
+
         $file = $request->file('csv_file');
         if (!$file) {
             return redirect()->back()->withErrors(['csv_file' => 'Please upload a CSV file.']);
         }
 
 
+        DB::beginTransaction();
         $customerGroup = new customerGroup();
         $customerGroup->group_name = $request['group_name'];
         $customerGroup->save();
+
 
         $file = $request->file('csv_file')->getPathname();
         $file_extension = $request->file('csv_file')->getClientOriginalExtension();
@@ -56,11 +69,12 @@ class CustomerGroupController extends Controller
         // Insert the data into the database
         $insert = Customer::insert($insertedRows);
         if (!$insert) {
+            DB::rollBack();
             return redirect()->back()->withErrors(['csv_file' => 'Failed to insert data into the database.']);
         }
 
 
-
+        DB::commit();
         return redirect('groups')->with('success', 'CSV file imported successfully.');
     }
 }

@@ -20,7 +20,8 @@
                                 </div>
 
                                 <div class="card-body">
-                                    <form action="{{ route('store.products') }}" method="POST" enctype="multipart/form-data">
+                                    <form action="{{ route('store.products') }}" method="POST"
+                                        enctype="multipart/form-data">
                                         @csrf
                                         @method('POST')
                                         <div class="row g-3">
@@ -58,7 +59,7 @@
                                     <h5 class="mb-3">Available Products</h5>
                                     <div class="product-table">
                                         <div class="table-responsive white-space-nowrap">
-                                            <table class="table align-middle">
+                                            <table id ="example" class="table align-middle">
                                                 <thead class="table-light">
                                                     <tr>
                                                         <th>Order No</th>

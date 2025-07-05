@@ -87,14 +87,9 @@
                             </div>
                         </div>
 
-
                         <div class="card">
                             <div class="card-body d-flex justify-content-between align-items-center">
-                                <ul class="nav nav-tabs">
-                                    <li class="nav-item">
-                                        <a class="nav-link active" aria-current="page" href="#">Blinkit</a>
-                                    </li>
-                                </ul>
+                                <h5 class="mb-3">Products Details</h5>
                                 <div>
                                     <button class="btn btn-icon btn-sm bg-primary me-1 text-white" data-bs-toggle="modal"
                                         data-bs-target="#staticBackdrop1">Upload Block Sheet</button>
@@ -135,7 +130,6 @@
                                 </div>
                             </div>
                             <div class="card-body">
-                                <h5 class="mb-3">Available Products</h5>
                                 <div class="product-table">
                                     <div class="table-responsive white-space-nowrap">
                                         <table id="example" class="table align-middle">

@@ -1,9 +1,8 @@
 @extends('layouts.master')
 @section('main-content')
-    <!--start main wrapper-->
+
     <main class="main-wrapper">
         <div class="main-content">
-            <!--breadcrumb-->
             <div class="page-breadcrumb d-none d-sm-flex align-items-center mb-3">
                 <div>
                     <nav aria-label="breadcrumb">
@@ -16,14 +15,6 @@
                 </div>
 
             </div>
-            <!--end breadcrumb-->
-
-            <!-- <div class="product-count d-flex align-items-center gap-3 gap-lg-4 mb-4 fw-medium flex-wrap font-text1">
-                            <a href="javascript:;"><span class="me-1">All</span><span class="text-secondary">(88754)</span></a>
-                            <a href="javascript:;"><span class="me-1">Published</span><span class="text-secondary">(56242)</span></a>
-                            <a href="javascript:;"><span class="me-1">Drafts</span><span class="text-secondary">(17)</span></a>
-                            <a href="javascript:;"><span class="me-1">On Discount</span><span class="text-secondary">(88754)</span></a>
-                          </div> -->
 
             <div class="row g-3">
                 <div class="col-12 col-md-2">
@@ -56,15 +47,6 @@
                                 <li><a class="dropdown-item" href="javascript:;">On Hold</a></li>
                             </ul>
                         </div>
-                        <!-- <div class="btn-group position-static">
-                                                <button type="button" class="btn btn-filter dropdown-toggle px-4" data-bs-toggle="dropdown" aria-expanded="false">
-                                                    Date
-                                                </button>
-                                                <ul class="dropdown-menu">
-                                                    <li><a class="dropdown-item" href="javascript:;">Active</a></li>
-                                                    <li><a class="dropdown-item" href="javascript:;">Inactive</a></li>
-                                                </ul>
-                                            </div> -->
                     </div>
                 </div>
                 <div class="col-12 col-md-auto">
@@ -74,8 +56,9 @@
                                 class="bi bi-plus-lg me-2"></i>Add Product</a>
                     </div>
                 </div>
-            </div><!--end row-->
+            </div>
 
+            
             <div class="card mt-4">
                 <div class="card-body">
                     <div class="product-table">
