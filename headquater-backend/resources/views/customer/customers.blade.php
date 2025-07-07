@@ -1,7 +1,5 @@
 @extends('layouts.master')
 @section('main-content')
-
-
     <main class="main-wrapper">
         <div class="main-content">
             <!--breadcrumb-->
@@ -21,7 +19,17 @@
                 <div class="col-12 col-md-auto">
                     <div class="d-flex align-items-center gap-2 justify-content-lg-end">
                         {{-- <button class="btn btn-filter px-4"><i class="bi bi-box-arrow-right me-2"></i>Export</button> --}}
-                        <a href="{{ route('customer-group') }}" class="btn btn-primary px-4"><i class="bi bi-plus-lg me-2"></i>Create Group</a>
+                        <a href="{{ route('customer-group') }}" class="btn btn-primary px-4"><i
+                                class="bi bi-plus-lg me-2"></i>Create Group</a>
+                                <div class="ms-auto">
+						<div class="btn-group">
+							<button type="button" class="btn btn-outline-primary">Action</button>
+							<button type="button" class="btn btn-outline-primary split-bg-primary dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown">	<span class="visually-hidden">Toggle Dropdown</span>
+							</button>
+							<div class="dropdown-menu dropdown-menu-right dropdown-menu-lg-end">	
+                                <a class="dropdown-item" id="delete-selected">Delete All</a>
+						</div>
+					</div>
                         {{-- <a href="{{ route('add-customer') }}" class="btn btn-primary px-4"><i
                                 class="bi bi-plus-lg me-2"></i>Add Customers</a> --}}
                     </div>
@@ -37,8 +45,9 @@
                                 <thead class="table-light">
                                     <tr>
                                         <th>
-                                            <input class="form-check-input" type="checkbox">
+                                            <input class="form-check-input" type="checkbox" id="select-all">
                                         </th>
+                                        <th>Sr.No</th>
                                         <th>Group Name</th>
                                         <th>Created Date</th>
                                         <th>Status</th>
@@ -46,11 +55,12 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @forelse ($customers as $customer)
+                                    @forelse ($customers as $key=> $customer)
                                         <tr>
                                             <td>
-                                                <input class="form-check-input" type="checkbox">
+                                                <input class="form-check-input row-checkbox" type="checkbox" name="ids[]" value="{{ $customer->id }}">
                                             </td>
+                                            <td>{{ $key + 1 }}</td>
                                             <td>
                                                 <a class="d-flex align-items-center gap-3" href="#">
                                                     <p class="mb-0 customer-name fw-bold">{{ $customer->group_name }}</p>
@@ -60,9 +70,10 @@
                                                 {{ $customer->created_at }}
                                             </td>
                                             <td>
-                                                <div class=" form-switch form-check-success">
-                                                    <input class="form-check-input" type="checkbox" role="switch"
-                                                        id="flexSwitchCheckSuccess" checked="">
+                                                <div class="form-switch form-check-success">
+                                                    <input class="form-check-input status-switch" type="checkbox"
+                                                        role="switch" data-customer-id="{{ $customer->id }}"
+                                                        {{ $customer->status == 1 ? 'checked' : '' }}>
                                                 </div>
                                             </td>
                                             <td>
@@ -80,7 +91,7 @@
                                                             <circle cx="12" cy="12" r="3"></circle>
                                                         </svg>
                                                     </a>
-                                                   
+
                                                     <form action="{{ route('delete.customer.group', $customer->id) }}"
                                                         method="POST" onsubmit="return confirm('Are you sure?')">
                                                         @csrf
@@ -128,4 +139,5 @@
         </div>
     </main>
     <!--end main wrapper-->
+
 @endsection

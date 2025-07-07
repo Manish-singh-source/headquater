@@ -20,6 +20,21 @@ use Illuminate\Support\Facades\Validator;
 
 class CustomerController extends Controller
 {
+
+    public function toggleStatus(Request $request)
+{
+    $customer = CustomerGroup::findOrFail($request->id);
+    $customer->status = $request->status;
+    $customer->save();
+
+    return response()->json(['success' => true]);
+}
+public function deleteSelected(Request $request)
+{
+    $ids = is_array($request->ids) ? $request->ids : explode(',', $request->ids);
+    CustomerGroup::destroy($ids);
+    return redirect()->back()->with('success', 'Selected customers deleted successfully.');
+}
     //
     public function groupsList()
     {

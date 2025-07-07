@@ -77,8 +77,8 @@ Route::get('/customer-group', function () {
 })->name('customer-group');
 
 Route::post('/import-large-csv', [CustomerGroupController::class, 'importLargeCsv'])->name('import-large-csv');
-
-
+Route::post('/customer/toggle-status', [CustomerController::class, 'toggleStatus'])->name('customer.toggleStatus');
+Route::delete('/customers/delete-selected', [CustomerController::class, 'deleteSelected'])->name('delete.selected.customers');
 
 // Vendors
 Route::controller(VendorController::class)->group(function () {
@@ -91,6 +91,7 @@ Route::controller(VendorController::class)->group(function () {
     Route::get('/vendor/edit/{id}', 'editVendor')->name('edit-vendor');
     Route::get('/vendor-order-view', 'vendorOrderView')->name('vendor-order-view');
 });
+
 
 
 
