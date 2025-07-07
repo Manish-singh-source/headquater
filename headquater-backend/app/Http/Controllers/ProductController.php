@@ -14,7 +14,12 @@ use Spatie\SimpleExcel\SimpleExcelReader;
 class ProductController extends Controller
 {
     //
-
+    public function deleteSelected(Request $request)
+    {
+        $ids = is_array($request->ids) ? $request->ids : explode(',', $request->ids);
+        Product::destroy($ids);
+        return redirect()->back()->with('success', 'Selected customers deleted successfully.');
+    }
     public function  productsList()
     {
         $products = Product::with('warehouse')->get();
