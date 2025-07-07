@@ -91,7 +91,8 @@
                             <div class="card-body d-flex justify-content-between align-items-center">
                                 <h5 class="mb-3">Products Details</h5>
                                 <div>
-                                    <button class="btn btn-icon btn-sm bg-primary me-1 text-white" data-bs-toggle="modal"
+                                    <button class="btn btn-icon btn-sm border-2 border-primary text-primary me-1">Download</button>
+                                    <button class="btn btn-icon btn-sm me-1 border-2 border-primary text-primary" data-bs-toggle="modal"
                                         data-bs-target="#staticBackdrop1">Upload Block Sheet</button>
 
                                     <div class="modal fade" id="staticBackdrop1" data-bs-backdrop="static"
@@ -133,41 +134,30 @@
                                 <div class="product-table">
                                     <div class="table-responsive white-space-nowrap">
                                         <table id="example" class="table align-middle">
-                                            <thead class="table-light">
-                                                <tr>
-                                                    {{-- <th>Order_No</th> --}}
-                                                    <th>Customer</th>
-                                                    <th>Po&nbsp;number</th>
-                                                    <th>Facility&nbsp;Name</th>
-                                                    <th>Facility&nbsp;Location</th>
-                                                    <th>PO&nbsp;Date</th>
-                                                    <th>PO&nbsp;Expiry&nbsp;Date</th>
-                                                    <th>HSN</th>
-                                                    <th>Item&nbsp;Code</th>
-                                                    <th>Description</th>
-                                                    <th>Basic&nbsp;Rate</th>
-                                                    {{-- <th>GST</th> --}}
-                                                    <th>Net&nbsp;Landing&nbsp;Rate</th>
-                                                    <th>MRP</th>
-                                                    <th>Ordered&nbsp;Quantity</th>
-                                                    <th>Available</th>
-                                                    <th>Unavailable&nbsp;Qty</th>
-                                                    @isset($blockedData)
-                                                        <th>Rate&nbsp;Confirmation</th>
-                                                        <th>Po&nbsp;Qty</th>
-                                                        <th>Case&nbsp;Pack&nbsp;Qty</th>
-                                                        <th>Block</th>
-                                                        <th>Purchase&nbsp;Order&nbsp;Qty</th>
-                                                        <th>Vendor&nbsp;Code</th>
-                                                    @endisset
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-
-                                                @isset($fileData)
+                                            @isset($fileData)
+                                                <thead class="table-light">
+                                                    <tr>
+                                                        <th>Customer</th>
+                                                        <th>Po&nbsp;number</th>
+                                                        <th>Facility&nbsp;Name</th>
+                                                        <th>Facility&nbsp;Location</th>
+                                                        <th>PO&nbsp;Date</th>
+                                                        <th>PO&nbsp;Expiry&nbsp;Date</th>
+                                                        <th>HSN</th>
+                                                        <th>Item&nbsp;Code</th>
+                                                        <th>Description</th>
+                                                        <th>Basic&nbsp;Rate</th>
+                                                        <th>Net&nbsp;Landing&nbsp;Rate</th>
+                                                        <th>MRP</th>
+                                                        <th>Ordered&nbsp;Quantity</th>
+                                                        <th>Available</th>
+                                                        <th>Unavailable&nbsp;Qty</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
                                                     @forelse($fileData as $data)
                                                         <tr>
-                                                            <td>{{ $data['Customer'] }}</td>
+                                                            <td>{{ $data['customer_name'] }}</td>
                                                             <td>{{ $data['po_number'] }}</td>
                                                             <td>{{ $data['facility_name'] }}</td>
                                                             <td>{{ $data['facility_Location'] }}</td>
@@ -180,17 +170,44 @@
                                                             <td>{{ $data['Net_Landing_rate'] }}</td>
                                                             <td>{{ $data['MRP'] }}</td>
                                                             <td>{{ $data['po_qty'] }}</td>
-                                                            <td>{{ $data['available_quantity'] }}</td>
-                                                            <td>{{ $data['unavailable_quantity'] }}</td>
+                                                            <td>{!! $data['available_quantity'] !!}</td>
+                                                            <td>{!! $data['unavailable_quantity'] !!}</td>
                                                         </tr>
                                                     @empty
                                                         <tr>
                                                             <td>No Data</td>
                                                         </tr>
                                                     @endforelse
-                                                @endisset
+                                                </tbody>
+                                            @endisset
 
-                                                @isset($blockedData)
+                                            @isset($blockedData)
+                                                <thead class="table-light">
+                                                    <tr>
+                                                        <th>Customer</th>
+                                                        <th>Po&nbsp;number</th>
+                                                        <th>Facility&nbsp;Name</th>
+                                                        <th>Facility&nbsp;Location</th>
+                                                        <th>PO&nbsp;Date</th>
+                                                        <th>PO&nbsp;Expiry&nbsp;Date</th>
+                                                        <th>HSN</th>
+                                                        <th>Item&nbsp;Code</th>
+                                                        <th>Description</th>
+                                                        <th>Basic&nbsp;Rate</th>
+                                                        <th>GST</th>
+                                                        <th>Net&nbsp;Landing&nbsp;Rate</th>
+                                                        <th>MRP</th>
+                                                        <th>Rate&nbsp;Confirmation</th>
+                                                        <th>Po&nbsp;Qty</th>
+                                                        <th>Case&nbsp;Pack&nbsp;Qty</th>
+                                                        <th>Available</th>
+                                                        <th>Unavailable&nbsp;Qty</th>
+                                                        <th>Block</th>
+                                                        <th>Purchase&nbsp;Order&nbsp;Qty</th>
+                                                        <th>Vendor&nbsp;Code</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
                                                     @forelse($blockedData as $data)
                                                         <tr>
                                                             <td>{{ $data['Customer'] }}</td>
@@ -203,11 +220,14 @@
                                                             <td>{{ $data['Item_Code'] }}</td>
                                                             <td>{{ $data['Description'] }}</td>
                                                             <td>{{ $data['Basic_rate'] }}</td>
+                                                            <td>{{ $data['GST'] }}</td>
                                                             <td>{{ $data['Net_Landing_rate'] }}</td>
                                                             <td>{{ $data['MRP'] }}</td>
                                                             <td>{{ $data['Rate_Confirmation'] }}</td>
                                                             <td>{{ $data['po_qty'] }}</td>
                                                             <td>{{ $data['Case_pack_Qty'] }}</td>
+                                                            <td>{{ $data['Available'] }}</td>
+                                                            <td>{{ $data['Unavailable_qty'] }}</td>
                                                             <td>{{ $data['Block'] }}</td>
                                                             <td>{{ $data['Purchase_Order_Qty'] }}</td>
                                                             <td>{{ $data['Vendor_Code'] }}</td>
@@ -218,7 +238,6 @@
                                                         </tr>
                                                     @endforelse
                                                 @endisset
-
                                             </tbody>
                                         </table>
                                     </div>
@@ -226,8 +245,6 @@
                             </div>
                         </div>
                     </div>
-
-
                 </div>
             </div>
         </div>

@@ -56,23 +56,31 @@
           div.dt-buttons {
               margin-bottom: 10px;
           }
-          .dataTables_length{
-                margin-bottom: 10px;
+
+          .dataTables_length {
+              margin-bottom: 10px;
 
           }
-          tbody, td, tfoot, th, thead, tr {
-    border-color: inherit;
-    border-style: solid;
-    border-width: 2px;
-}
-table.dataTable {
-    clear: both;
-    margin-top: 6px !important;
-    margin-bottom: 6px !important;
-    max-width: none !important;
-    border-collapse: collapse !important;
-    border-spacing: 0;
-}
+
+          tbody,
+          td,
+          tfoot,
+          th,
+          thead,
+          tr {
+              border-color: inherit;
+              border-style: solid;
+              border-width: 2px;
+          }
+
+          table.dataTable {
+              clear: both;
+              margin-top: 6px !important;
+              margin-bottom: 6px !important;
+              max-width: none !important;
+              border-collapse: collapse !important;
+              border-spacing: 0;
+          }
       </style>
       <style>
           /* From Uiverse.io by adamgiebl */
@@ -725,83 +733,83 @@ table.dataTable {
       </script>
 
       <script>
-        //   $(".dots-container").show();
-        //   $(document).ready(function() {
-        //       $(".dots-container").hide();
-        //   });
+          //   $(".dots-container").show();
+          //   $(document).ready(function() {
+          //       $(".dots-container").hide();
+          //   });
       </script>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script>
-    $(document).on('change', '.status-switch', function() {
-        var customerId = $(this).data('customer-id');
-        var status = $(this).is(':checked') ? 1 : 0;
+      {{-- <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> --}}
+      <script>
+          $(document).on('change', '.status-switch', function() {
+              var customerId = $(this).data('customer-id');
+              var status = $(this).is(':checked') ? 1 : 0;
 
-        $.ajax({
-            url: '{{ route("customer.toggleStatus") }}',
-            type: 'POST',
-            data: {
-                _token: '{{ csrf_token() }}',
-                id: customerId,
-                status: status
-            },
-            success: function(response) {
-                if (response.success) {
-                    alert('Status updated successfully!');
-                } else {
-                    alert('Failed to update status.');
-                }
-            },
-            error: function() {
-                alert('Status update failed!');
-            }
-        });
-    });
-</script>
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const selectAll = document.getElementById('select-all');
-        const checkboxes = document.querySelectorAll('.row-checkbox');
+              $.ajax({
+                  url: '{{ route('customer.toggleStatus') }}',
+                  type: 'POST',
+                  data: {
+                      _token: '{{ csrf_token() }}',
+                      id: customerId,
+                      status: status
+                  },
+                  success: function(response) {
+                      if (response.success) {
+                          alert('Status updated successfully!');
+                      } else {
+                          alert('Failed to update status.');
+                      }
+                  },
+                  error: function() {
+                      alert('Status update failed!');
+                  }
+              });
+          });
+      </script>
+      <script>
+          document.addEventListener('DOMContentLoaded', function() {
+              const selectAll = document.getElementById('select-all');
+              const checkboxes = document.querySelectorAll('.row-checkbox');
 
-        selectAll.addEventListener('change', function () {
-            checkboxes.forEach(cb => cb.checked = selectAll.checked);
-        });
-    });
-</script>
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    // Select All functionality
-    const selectAll = document.getElementById('select-all');
-    const checkboxes = document.querySelectorAll('.row-checkbox');
-    selectAll.addEventListener('change', function () {
-        checkboxes.forEach(cb => cb.checked = selectAll.checked);
-    });
+              selectAll.addEventListener('change', function() {
+                  checkboxes.forEach(cb => cb.checked = selectAll.checked);
+              });
+          });
+      </script>
+      <script>
+          document.addEventListener('DOMContentLoaded', function() {
+              // Select All functionality
+              const selectAll = document.getElementById('select-all');
+              const checkboxes = document.querySelectorAll('.row-checkbox');
+              selectAll.addEventListener('change', function() {
+                  checkboxes.forEach(cb => cb.checked = selectAll.checked);
+              });
 
-    // Delete Selected functionality
-    document.getElementById('delete-selected').addEventListener('click', function () {
-        let selected = [];
-        document.querySelectorAll('.row-checkbox:checked').forEach(cb => {
-            selected.push(cb.value);
-        });
-        if(selected.length === 0) {
-            alert('Please select at least one record.');
-            return;
-        }
-        if(confirm('Are you sure you want to delete selected records?')) {
-            // Create a form and submit
-            let form = document.createElement('form');
-            form.method = 'POST';
-            form.action = '{{ route("delete.selected.customers") }}';
-            form.innerHTML = `
+              // Delete Selected functionality
+              document.getElementById('delete-selected').addEventListener('click', function() {
+                  let selected = [];
+                  document.querySelectorAll('.row-checkbox:checked').forEach(cb => {
+                      selected.push(cb.value);
+                  });
+                  if (selected.length === 0) {
+                      alert('Please select at least one record.');
+                      return;
+                  }
+                  if (confirm('Are you sure you want to delete selected records?')) {
+                      // Create a form and submit
+                      let form = document.createElement('form');
+                      form.method = 'POST';
+                      form.action = '{{ route('delete.selected.customers') }}';
+                      form.innerHTML = `
                 @csrf
                 <input type="hidden" name="_method" value="DELETE">
                 <input type="hidden" name="ids" value="${selected.join(',')}">
             `;
-            document.body.appendChild(form);
-            form.submit();
-        }
-    });
-});
-</script>
+                      document.body.appendChild(form);
+                      form.submit();
+                  }
+              });
+          });
+      </script>
       @yield('script')
   </body>
 

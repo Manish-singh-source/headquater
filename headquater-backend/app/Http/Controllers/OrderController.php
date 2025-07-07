@@ -6,6 +6,7 @@ use App\Models\Warehouse;
 use Illuminate\Http\Request;
 use App\Models\CustomerGroup;
 use App\Models\Product;
+use App\Models\TempOrder;
 use Spatie\SimpleExcel\SimpleExcelReader;
 
 class OrderController extends Controller
@@ -40,14 +41,17 @@ class OrderController extends Controller
             $product = Product::where('sku', $record['sku'])->first();
 
             if ($product->units_ordered > $record['po_qty']) {
-                $unAvail = 'All Available';
+                $unAvail = "<span class='badge bg-success-subtle text-success fw-semibold'>All Available</span>";
             } else {
                 $unavailableQuantity = $product->units_ordered - $record['po_qty'];
-                $unAvail = abs($unavailableQuantity) . " Not Available";
+                $unAvail = "<span class='badge bg-danger-subtle text-danger fw-semibold'>" . abs($unavailableQuantity) . " Not Available</span>";
             }
 
             $insertedRows[] = [
-                'Customer' => $record['Customer'],
+                'customer_group_id' => $request->customerGroup,
+                'warehouse_id' => $request->warehouseName,
+                'order_id' => $request->order_id,
+                'customer_name' => $record['Customer'],
                 'po_number' => $record['po_number'],
                 'facility_name' => $record['facility_name'],
                 'facility_Location' => $record['facility_Location'],
@@ -64,6 +68,7 @@ class OrderController extends Controller
                 'po_qty' => $record['po_qty'],
                 'available_quantity' => $product->units_ordered,
                 'unavailable_quantity' => $unAvail,
+                'created_at' => now(),
             ];
         }
 
@@ -71,7 +76,10 @@ class OrderController extends Controller
             return redirect()->back()->withErrors(['csv_file' => 'No valid data found in the CSV file.']);
         }
 
-        // dd($insertedRows);
+        $insert = TempOrder::insert($insertedRows);
+        if (!$insert) {
+            return redirect()->back()->withErrors(['csv_file' => 'Failed to insert data into the database.']);
+        }
         $customerGroup = CustomerGroup::all();
         $warehouses = Warehouse::all();
         return view('add-order', ['customerGroup' => $customerGroup, 'warehouses' => $warehouses, 'fileData' => $insertedRows]);
@@ -102,7 +110,6 @@ class OrderController extends Controller
                 'HSN' => $record['HSN'],
                 'Item_Code' => $record['Item_Code'],
                 'Description' => $record['Description'],
-                'po_qty' => $record['po_qty'],
                 'Basic_rate' => $record['Basic_rate'],
                 'GST' => $record['GST'],
                 'Net_Landing_rate' => $record['Net_Landing_rate'],
@@ -122,7 +129,6 @@ class OrderController extends Controller
             return redirect()->back()->withErrors(['csv_file' => 'No valid data found in the CSV file.']);
         }
 
-        // dd($insertedRows);
         $customerGroup = CustomerGroup::all();
         $warehouses = Warehouse::all();
         return view('add-order', ['customerGroup' => $customerGroup, 'warehouses' => $warehouses, 'blockedData' => $insertedRows]);
