@@ -91,7 +91,10 @@ Route::controller(VendorController::class)->group(function () {
     Route::get('/vendor/edit/{id}', 'editVendor')->name('edit-vendor');
     Route::get('/vendor-order-view', 'vendorOrderView')->name('vendor-order-view');
 });
-
+Route::post('/vendor/toggle-status', [VendorController::class, 'toggleStatus'])->name('vendor.toggleStatus');
+Route::delete('/vendor/delete-selected', [VendorController::class, 'deleteSelected'])->name('delete.selected.vendor');
+Route::delete('/products/delete-selected', [ProductController::class, 'deleteSelected'])->name('delete.selected.product');
+Route::delete('/warehouse/delete-selected', [WarehouseController::class, 'deleteSelected'])->name('delete.selected.warehouse');
 
 
 
@@ -109,6 +112,8 @@ Route::controller(WarehouseController::class)->group(function () {
     Route::delete('/warehouse/delete/{id}', 'deleteWarehouse')->name('warehouse.delete');
     Route::get('/warehouse-edit/{id}', 'warehouseEdit')->name('warehouse.edit');
     Route::put('/warehouse-update/{id}', 'warehouseUpdate')->name('warehouse.update');
+    Route::post('/warehouse/toggle-status', [WarehouseController::class, 'toggleStatus'])->name('warehouse.toggleStatus');
+
 });
 
 // All Order page
