@@ -9,6 +9,20 @@ use Illuminate\Support\Facades\Validator;
 class WarehouseController extends Controller
 {
     //
+     public function toggleStatus(Request $request)
+{
+    $warehouse = Warehouse::findOrFail($request->id);
+    $warehouse->status = $request->status;
+    $warehouse->save();
+
+    return response()->json(['success' => true]);
+}
+    public function deleteSelected(Request $request)
+    {
+        $ids = is_array($request->ids) ? $request->ids : explode(',', $request->ids);
+        Warehouse::destroy($ids);
+        return redirect()->back()->with('success', 'Selected customers deleted successfully.');
+    }
     public function warehouseList()
     {
         $warehouses = Warehouse::with('country')->with('state')->with('cities')->paginate(10);

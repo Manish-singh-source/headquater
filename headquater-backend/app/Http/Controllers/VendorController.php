@@ -8,6 +8,22 @@ use Illuminate\Support\Facades\Validator;
 
 class VendorController extends Controller
 {
+
+    public function toggleStatus(Request $request)
+    {
+        $Vendor = Vendor::findOrFail($request->id);
+        $Vendor->status = $request->status;
+        $Vendor->save();
+
+        return response()->json(['success' => true]);
+    }
+
+    public function deleteSelected(Request $request)
+    {
+        $ids = is_array($request->ids) ? $request->ids : explode(',', $request->ids);
+        Vendor::destroy($ids);
+        return redirect()->back()->with('success', 'Selected vendor deleted successfully.');
+    }
     //
     public function vendorList()
     {

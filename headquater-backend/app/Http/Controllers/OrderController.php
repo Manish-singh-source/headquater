@@ -38,12 +38,17 @@ class OrderController extends Controller
         foreach ($reader->getRows() as $record) {
 
             $product = Product::where('sku', $record['sku'])->first();
-
-            if ($product->units_ordered > $record['po_qty']) {
-                $unAvail = 'All Available';
+            if (!$product) {
+                $unAvail = $record['po_qty'] . " Not Available";
+                $availableQty = 0;
             } else {
-                $unavailableQuantity = $product->units_ordered - $record['po_qty'];
-                $unAvail = abs($unavailableQuantity) . " Not Available";
+                if ($product->units_ordered >= $record['po_qty']) {
+                    $unAvail = 'All Available';
+                } else {
+                    $unavailableQuantity = $record['po_qty'] - $product->units_ordered;
+                    $unAvail = $unavailableQuantity . " Not Available";
+                }
+                $availableQty = $product->units_ordered;
             }
 
             $insertedRows[] = [
@@ -62,7 +67,7 @@ class OrderController extends Controller
                 'Net_Landing_rate' => $record['Net_Landing_rate'],
                 'MRP' => $record['MRP'],
                 'po_qty' => $record['po_qty'],
-                'available_quantity' => $product->units_ordered,
+                'available_quantity' => $availableQty, // <-- Use $availableQty here
                 'unavailable_quantity' => $unAvail,
             ];
         }
