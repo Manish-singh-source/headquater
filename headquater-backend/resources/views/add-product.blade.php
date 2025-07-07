@@ -1,10 +1,8 @@
 @extends('layouts.master')
 @section('main-content')
-    <!--start main wrapper-->
     <main class="main-wrapper">
         <div class="main-content">
             <div class="row">
-
                 <div class="col-12">
                     <div class="row">
                         <div class="col">
@@ -18,7 +16,6 @@
                                         </div>
                                     </div>
                                 </div>
-
                                 <div class="card-body">
                                     <form action="{{ route('store.products') }}" method="POST"
                                         enctype="multipart/form-data">
@@ -34,7 +31,6 @@
                                                     @foreach ($warehouses as $warehouse)
                                                         <option value="{{ $warehouse->id }}">{{ $warehouse->name }}</option>
                                                     @endforeach
-
                                                 </select>
                                             </div>
                                             <div class="col-12 col-lg-3">
@@ -53,28 +49,19 @@
                                     </form>
                                 </div>
                             </div>
-
-                            
-
                             <div class="col-lg-12">
                                 <div class="text-end mb-3">
-
                                     <a href="{{ route('products') }}" type=""
                                         class="btn btn-success w-sm waves ripple-light">
                                         Save
                                     </a>
                                 </div>
                             </div>
-
-
-
                         </div>
-
-
                     </div>
                 </div>
             </div>
         </div>
     </main>
-    <!--end main wrapper-->
+    
 @endsection

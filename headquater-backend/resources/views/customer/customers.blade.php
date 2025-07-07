@@ -11,7 +11,7 @@
                         <ol class="breadcrumb mb-0 p-0">
                             <li class="breadcrumb-item"><a href="javascript:;"><i class="bx bx-home-alt"></i></a>
                             </li>
-                            <li class="breadcrumb-item active" aria-current="page">Customers</li>
+                            <li class="breadcrumb-item active" aria-current="page">Customer Groups List</li>
                         </ol>
                     </nav>
                 </div>
@@ -52,7 +52,7 @@
                                                 <input class="form-check-input" type="checkbox">
                                             </td>
                                             <td>
-                                                <a class="d-flex align-items-center gap-3" href="customer-detail.php">
+                                                <a class="d-flex align-items-center gap-3" href="#">
                                                     <p class="mb-0 customer-name fw-bold">{{ $customer->group_name }}</p>
                                                 </a>
                                             </td>

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Warehouse;
 use Illuminate\Http\Request;
 use App\Models\CustomerGroup;
+use App\Models\Product;
 use Spatie\SimpleExcel\SimpleExcelReader;
 
 class OrderController extends Controller
@@ -35,6 +36,16 @@ class OrderController extends Controller
         $reader = SimpleExcelReader::create($file, $file_extension);
         $insertedRows = [];
         foreach ($reader->getRows() as $record) {
+
+            $product = Product::where('sku', $record['sku'])->first();
+
+            if ($product->units_ordered > $record['po_qty']) {
+                $unAvail = 'All Available';
+            } else {
+                $unavailableQuantity = $product->units_ordered - $record['po_qty'];
+                $unAvail = abs($unavailableQuantity) . " Not Available";
+            }
+
             $insertedRows[] = [
                 'Customer' => $record['Customer'],
                 'po_number' => $record['po_number'],
@@ -50,6 +61,9 @@ class OrderController extends Controller
                 'GST' => $record['GST'],
                 'Net_Landing_rate' => $record['Net_Landing_rate'],
                 'MRP' => $record['MRP'],
+                'po_qty' => $record['po_qty'],
+                'available_quantity' => $product->units_ordered,
+                'unavailable_quantity' => $unAvail,
             ];
         }
 

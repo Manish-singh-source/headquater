@@ -29,8 +29,9 @@ class CustomerController extends Controller
 
     public function customersList($id)
     {
+        $group = CustomerGroup::findOrFail($id);
         $customers = Customer::where('group_id', $id)->get();
-        return view('customer.customers-list', compact('customers'));
+        return view('customer.customers-list', compact('customers', 'group'));
     }
 
     public function Customercount()

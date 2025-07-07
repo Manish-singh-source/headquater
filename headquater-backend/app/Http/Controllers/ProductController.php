@@ -43,6 +43,7 @@ class ProductController extends Controller
             $insertedRows[] = [
                 'warehouse_id' => $request->warehouse_id,
                 'name' => $record['name'],
+                'sku' => $record['sku'],
                 'item_id' => $record['item_id'],
                 'vendor_name' => $record['vendor_name'],
                 'entity_vendor_legal_name' => $record['entity_vendor_legal_name'],

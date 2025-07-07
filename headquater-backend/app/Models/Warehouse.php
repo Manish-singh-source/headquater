@@ -5,7 +5,9 @@ namespace App\Models;
 use App\Models\City;
 use App\Models\State;
 use App\Models\Country;
+use App\Models\Product;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Warehouse extends Model
@@ -24,5 +26,10 @@ class Warehouse extends Model
     public function cities(): HasOne
     {
         return $this->hasOne(City::class, 'id', 'city');
+    }
+
+    public function products(): HasMany
+    {
+        return $this->hasMany(Product::class, 'warehouse_id',  'id');
     }
 }

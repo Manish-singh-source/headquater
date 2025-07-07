@@ -149,12 +149,13 @@
                                                     {{-- <th>GST</th> --}}
                                                     <th>Net&nbsp;Landing&nbsp;Rate</th>
                                                     <th>MRP</th>
+                                                    <th>Ordered&nbsp;Quantity</th>
+                                                    <th>Available</th>
+                                                    <th>Unavailable&nbsp;Qty</th>
                                                     @isset($blockedData)
                                                         <th>Rate&nbsp;Confirmation</th>
                                                         <th>Po&nbsp;Qty</th>
                                                         <th>Case&nbsp;Pack&nbsp;Qty</th>
-                                                        <th>Available</th>
-                                                        <th>Unavailable&nbsp;Qty</th>
                                                         <th>Block</th>
                                                         <th>Purchase&nbsp;Order&nbsp;Qty</th>
                                                         <th>Vendor&nbsp;Code</th>
@@ -178,6 +179,9 @@
                                                             <td>{{ $data['Basic_rate'] }}</td>
                                                             <td>{{ $data['Net_Landing_rate'] }}</td>
                                                             <td>{{ $data['MRP'] }}</td>
+                                                            <td>{{ $data['po_qty'] }}</td>
+                                                            <td>{{ $data['available_quantity'] }}</td>
+                                                            <td>{{ $data['unavailable_quantity'] }}</td>
                                                         </tr>
                                                     @empty
                                                         <tr>
@@ -204,8 +208,6 @@
                                                             <td>{{ $data['Rate_Confirmation'] }}</td>
                                                             <td>{{ $data['po_qty'] }}</td>
                                                             <td>{{ $data['Case_pack_Qty'] }}</td>
-                                                            <td>{{ $data['Available'] }}</td>
-                                                            <td>{{ $data['Unavailable_qty'] }}</td>
                                                             <td>{{ $data['Block'] }}</td>
                                                             <td>{{ $data['Purchase_Order_Qty'] }}</td>
                                                             <td>{{ $data['Vendor_Code'] }}</td>

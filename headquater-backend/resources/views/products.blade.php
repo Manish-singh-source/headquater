@@ -24,7 +24,7 @@
                                 class="bi bi-plus-lg me-2"></i>Add Product</a>
                     </div>
                 </div>
-            </div><!--end row-->
+            </div>
 
             <div class="card mt-4">
                 <div class="card-body">
@@ -38,6 +38,7 @@
                                         </th>
                                         <th>Warehouse</th>
                                         <th>Product&nbsp;Name</th>
+                                        <th>SKU</th>
                                         <th>item&nbsp;id</th>
                                         <th>vendor&nbsp;name</th>
                                         <th>vendor&nbsp;legal&nbsp;name </th>
@@ -66,10 +67,10 @@
                                                     <div class="product-info">
                                                         <a href="javascript:;"
                                                             class="product-title">{{ $product->name }}</a>
-
                                                     </div>
                                                 </div>
                                             </td>
+                                            <td>{{ $product->sku }}</td>
                                             <td>{{ $product->item_id }}</td>
                                             <td>{{ $product->vendor_name }}</td>
                                             <td>{{ $product->entity_vendor_legal_name }}</td>

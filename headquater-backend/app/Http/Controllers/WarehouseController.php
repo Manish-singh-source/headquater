@@ -68,7 +68,7 @@ class WarehouseController extends Controller
 
     public function warehouseDetail($id)
     {
-        $warehouse = Warehouse::findOrFail($id);
+        $warehouse = Warehouse::with('products')->findOrFail($id);
         return view('warehouse.warehouse-detail', ['warehouse' => $warehouse]);
     }
 

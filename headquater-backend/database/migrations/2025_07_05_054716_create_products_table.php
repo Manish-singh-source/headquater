@@ -16,6 +16,7 @@ return new class extends Migration
             $table->unsignedBigInteger('warehouse_id');
             $table->foreign('warehouse_id')->references('id')->on('warehouses')->onDelete('cascade');
             $table->string('name');
+            $table->string('sku')->unique();
             $table->integer('item_id');
             $table->string('vendor_name')->nullable();
             $table->string('entity_vendor_legal_name')->nullable();

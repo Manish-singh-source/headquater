@@ -20,74 +20,77 @@ use App\Http\Controllers\CustomerGroupController;
 // })->name('index');
 Route::get('/', [CustomerController::class, 'Customercount'])->name('index');
 
-Route::get('/countries', [LocationController::class, 'getCountries']);
-Route::get('/states', [LocationController::class, 'getStates']);
-Route::get('/cities', [LocationController::class, 'getCities']);
+Route::controller(LocationController::class)->group(function () {
+    Route::get('/countries', 'getCountries');
+    Route::get('/states', 'getStates');
+    Route::get('/cities', 'getCities');
+});
 
 
 // Authentication
-Route::get('/login', [AuthController::class, 'loginCustomer'])->name('login');
-Route::post('/login', [AuthController::class, 'loginAuthCheckCustomerData'])->name('login.auth.check');
-Route::get('/register', [AuthController::class, 'registerCustomer'])->name('register');
-Route::post('/register', [AuthController::class, 'registerCustomerData'])->name('register.store');
-Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
-
+Route::controller(AuthController::class)->group(function () {
+    Route::get('/login', 'loginCustomer')->name('login');
+    Route::post('/login', 'loginAuthCheckCustomerData')->name('login.auth.check');
+    Route::get('/register', 'registerCustomer')->name('register');
+    Route::post('/register', 'registerCustomerData')->name('register.store');
+    Route::get('/logout', 'logout')->name('logout');
+});
 
 
 //Access Control
-// Staff List
-Route::get('/staff', [AccessController::class, 'staffList'])->name('staff');
-Route::get('/add-staff', [AccessController::class, 'addStaff'])->name('add-staff');
-Route::get('/staff-detail/{id}', [AccessController::class, 'staffDetail'])->name('staff-detail');
-Route::post('/add-staff', [AccessController::class, 'storeStaff'])->name('store-staff');
-Route::delete('/staff/delete/{id}', [AccessController::class, 'deletestaff'])->name('staff.delete');
-Route::get('/staff/edit/{id}', [AccessController::class, 'editstaff'])->name('staff.edit');
-Route::put('/staff/update/{id}', [AccessController::class, 'updatestaff'])->name('staff.update');
+Route::controller(AccessController::class)->group(function () {
+    // Staff 
+    Route::get('/staff', 'staffList')->name('staff');
+    Route::get('/add-staff', 'addStaff')->name('add-staff');
+    Route::get('/staff-detail/{id}', 'staffDetail')->name('staff-detail');
+    Route::post('/add-staff', 'storeStaff')->name('store-staff');
+    Route::delete('/staff/delete/{id}', 'deletestaff')->name('staff.delete');
+    Route::get('/staff/edit/{id}', 'editstaff')->name('staff.edit');
+    Route::put('/staff/update/{id}', 'updatestaff')->name('staff.update');
 
-
-
-
-
-// Role List
-Route::get('/role', [AccessController::class, 'roleList'])->name('role');
-Route::get('/add-role', [AccessController::class, 'addRole'])->name('add-role');
-Route::post('/store-role', [AccessController::class, 'storeRole'])->name('store.role');
-Route::delete('/role-delete/{id}', [AccessController::class, 'roleDelete'])->name('role.delete');
-Route::get('/role-edit/{id}', [AccessController::class, 'roleEdit'])->name('role.edit');
-Route::put('/role-update/{id}', [AccessController::class, 'roleUpdate'])->name('role.update');
-
+    // Roles
+    Route::get('/role', 'roleList')->name('role');
+    Route::get('/add-role', 'addRole')->name('add-role');
+    Route::post('/store-role', 'storeRole')->name('store.role');
+    Route::delete('/role-delete/{id}', 'roleDelete')->name('role.delete');
+    Route::get('/role-edit/{id}', 'roleEdit')->name('role.edit');
+    Route::put('/role-update/{id}', 'roleUpdate')->name('role.update');
+});
 
 
 // Customer
-Route::get('/groups', [CustomerController::class, 'groupsList'])->name('groups');
-Route::get('/customers-group-detail/{id}', [CustomerController::class, 'customerGroupDetail'])->name('customers.group.detail');
-Route::get('/add-customer', [CustomerController::class, 'addCustomer'])->name('add-customer');
-Route::post('/customers/store', [CustomerController::class, 'storeCustomer'])->name('store_customer');
-// Route::get('/customer/detail/{id}', [CustomerController::class, 'detailCustomer'])->name('customer-detail');
-Route::get('/customers/edit/{id}', [CustomerController::class, 'editCustomer'])->name('edit_customer');
-Route::put('/customer/update/{id}', [CustomerController::class, 'updateCustomer'])->name('update-customer');
-Route::delete('/customers/delete/{id}', [CustomerController::class, 'deleteCustomer'])->name('delete-customer');
+Route::controller(CustomerController::class)->group(function () {
+    Route::get('/groups', 'groupsList')->name('groups');
+    Route::get('/customers-group-detail/{id}', 'customerGroupDetail')->name('customers.group.detail');
+    Route::get('/add-customer', 'addCustomer')->name('add-customer');
+    Route::post('/customers/store', 'storeCustomer')->name('store_customer');
+    // Route::get('/customer/detail/{id}', 'detailCustomer')->name('customer-detail');
+    Route::get('/customers/edit/{id}', 'editCustomer')->name('edit_customer');
+    Route::put('/customer/update/{id}', 'updateCustomer')->name('update-customer');
+    Route::delete('/customers/delete/{id}', 'deleteCustomer')->name('delete-customer');
+    // Customer Group
+    Route::get('/customer/detail/{id}', 'customersList')->name('customers.list');
+    Route::delete('/customer-group/delete/{id}', 'deleteCustomerGroup')->name('delete.customer.group');
+});
 Route::get('/customer-group', function () {
     return view('customer.customer-group');
 })->name('customer-group');
-// Customer Group
-Route::get('/customer/detail/{id}', [CustomerController::class, 'customersList'])->name('customers.list');
-Route::delete('/customer-group/delete/{id}', [CustomerController::class, 'deleteCustomerGroup'])->name('delete.customer.group');
+
 Route::post('/import-large-csv', [CustomerGroupController::class, 'importLargeCsv'])->name('import-large-csv');
 
 
 
-
-// Customer
-Route::get('/vendors', [VendorController::class, 'vendorList'])->name('vendor');
-Route::get('/create-vendor', [VendorController::class, 'createVendor'])->name('vendor.create');
-Route::post('/vendor/add', [VendorController::class, 'addVendor'])->name('vendor.add');
-Route::get('/vendor/{id}', [VendorController::class, 'detailVendor'])->name('vendor.detail');
-Route::put('/vendor/update/{id}', [VendorController::class, 'updateVendor'])->name('vendor.update');
-Route::delete('/vendor/delete/{id}', [VendorController::class, 'deleteVendor'])->name('vendor.delete');
-Route::get('/vendor/edit/{id}', [VendorController::class, 'editVendor'])->name('edit-vendor');
-Route::get('/vendor-order-view', [VendorController::class, 'vendorOrderView'])->name('vendor-order-view');
-
+// Vendors
+Route::controller(VendorController::class)->group(function () {
+    Route::get('/vendors', 'vendorList')->name('vendor');
+    Route::get('/create-vendor', 'createVendor')->name('vendor.create');
+    Route::post('/vendor/add', 'addVendor')->name('vendor.add');
+    Route::get('/vendor/{id}', 'detailVendor')->name('vendor.detail');
+    Route::put('/vendor/update/{id}', 'updateVendor')->name('vendor.update');
+    Route::delete('/vendor/delete/{id}', 'deleteVendor')->name('vendor.delete');
+    Route::get('/vendor/edit/{id}', 'editVendor')->name('edit-vendor');
+    Route::get('/vendor-order-view', 'vendorOrderView')->name('vendor-order-view');
+});
 
 
 
@@ -97,26 +100,30 @@ Route::get('/assign-order', [PlaceOrderController::class, 'assignOrder'])->name(
 Route::get('/assign-order-to-vendor', [PlaceOrderController::class, 'assignOrderToVendor'])->name('assign-order-to-vendor');
 
 // Warehouse List
-Route::get('/warehouse', [WarehouseController::class, 'warehouseList'])->name('warehouse');
-Route::get('/create-warehouse', [WarehouseController::class, 'createWarehouse'])->name('warehouse.create');
-Route::post('/create-warehouse', [WarehouseController::class, 'storeWarehouse'])->name('warehouse.store');
-Route::get('/warehouse-detail/{id}', [WarehouseController::class, 'warehouseDetail'])->name('warehouse.detail');
-Route::delete('/warehouse/delete/{id}', [WarehouseController::class, 'deleteWarehouse'])->name('warehouse.delete');
-Route::get('/warehouse-edit/{id}', [WarehouseController::class, 'warehouseEdit'])->name('warehouse.edit');
-Route::put('/warehouse-update/{id}', [WarehouseController::class, 'warehouseUpdate'])->name('warehouse.update');
+Route::controller(WarehouseController::class)->group(function () {
+    Route::get('/warehouse', 'warehouseList')->name('warehouse');
+    Route::get('/create-warehouse', 'createWarehouse')->name('warehouse.create');
+    Route::post('/create-warehouse', 'storeWarehouse')->name('warehouse.store');
+    Route::get('/warehouse-detail/{id}', 'warehouseDetail')->name('warehouse.detail');
+    Route::delete('/warehouse/delete/{id}', 'deleteWarehouse')->name('warehouse.delete');
+    Route::get('/warehouse-edit/{id}', 'warehouseEdit')->name('warehouse.edit');
+    Route::put('/warehouse-update/{id}', 'warehouseUpdate')->name('warehouse.update');
+});
 
 // All Order page
-Route::get('/order', [OrderController::class, 'orderList'])->name('order');
-Route::get('/add-order', [OrderController::class, 'addOrder'])->name('add-order');
-Route::post('/process-order', [OrderController::class, 'processOrder'])->name('process.order');
-Route::post('/process-block-order', [OrderController::class, 'processBlockOrder'])->name('process.block.order');
-
+Route::controller(OrderController::class)->group(function () {
+    Route::get('/order', 'orderList')->name('order');
+    Route::get('/add-order', 'addOrder')->name('add-order');
+    Route::post('/process-order', 'processOrder')->name('process.order');
+    Route::post('/process-block-order', 'processBlockOrder')->name('process.block.order');
+});
 
 // Report Details List
-Route::get('/vendor-purchase-history', [ReportController::class, 'vendorPurchaseHistory'])->name('vendor-purchase-history');
-Route::get('/inventory-stock-history', [ReportController::class, 'inventoryStockHistory'])->name('inventory-stock-history');
-Route::get('/customer-sales-history', [ReportController::class, 'customerSalesHistory'])->name('customer-sales-history');
-
+Route::controller(ReportController::class)->group(function () {
+    Route::get('/vendor-purchase-history', 'vendorPurchaseHistory')->name('vendor-purchase-history');
+    Route::get('/inventory-stock-history', 'inventoryStockHistory')->name('inventory-stock-history');
+    Route::get('/customer-sales-history', 'customerSalesHistory')->name('customer-sales-history');
+});
 
 
 
