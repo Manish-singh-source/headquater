@@ -2,12 +2,16 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Warehouse;
-use Illuminate\Http\Request;
-use App\Models\CustomerGroup;
 use App\Models\Product;
 use App\Models\TempOrder;
+use App\Models\Warehouse;
+use Illuminate\Support\Str;
+use Illuminate\Http\Request;
+use App\Models\CustomerGroup;
+use App\Models\TempOrderStatus;
+use Illuminate\Support\Facades\DB;
 use Spatie\SimpleExcel\SimpleExcelReader;
+use Spatie\SimpleExcel\SimpleExcelWriter;
 
 class OrderController extends Controller
 {
@@ -24,6 +28,12 @@ class OrderController extends Controller
         return view('add-order', ['customerGroup' => $customerGroup, 'warehouses' => $warehouses]);
     }
 
+    public function downloadBlockedCSV()
+    {
+
+        return response()->download(public_path(session('processed_csv_path')));
+    }
+
     public function processOrder(Request $request)
     {
         $file = $request->file('csv_file');
@@ -33,9 +43,10 @@ class OrderController extends Controller
 
         $file = $request->file('csv_file')->getPathname();
         $file_extension = $request->file('csv_file')->getClientOriginalExtension();
-        // dd($request->file('csv_file'), $file_extension); // Debugging line to check file and mime type
+
         $reader = SimpleExcelReader::create($file, $file_extension);
         $insertedRows = [];
+
         foreach ($reader->getRows() as $record) {
 
             $product = Product::where('sku', $record['sku'])->first();
@@ -55,7 +66,6 @@ class OrderController extends Controller
             $insertedRows[] = [
                 'customer_group_id' => $request->customerGroup,
                 'warehouse_id' => $request->warehouseName,
-                'order_id' => $request->order_id,
                 'customer_name' => $record['Customer'],
                 'po_number' => $record['po_number'],
                 'facility_name' => $record['facility_name'],
@@ -81,13 +91,19 @@ class OrderController extends Controller
             return redirect()->back()->withErrors(['csv_file' => 'No valid data found in the CSV file.']);
         }
 
-        $insert = TempOrder::insert($insertedRows);
-        if (!$insert) {
-            return redirect()->back()->withErrors(['csv_file' => 'Failed to insert data into the database.']);
-        }
+        $filteredRows = collect($insertedRows)->map(function ($row) {
+            unset($row['created_at']);
+            return $row;
+        });
+
+        $fileName = 'processed_order_' . time() . '.csv';
+        $csvPath = public_path("uploads/{$fileName}");
+
+        SimpleExcelWriter::create($csvPath)->addRows($filteredRows->toArray());
+        session(['processed_csv_path' => "uploads/{$fileName}"]);
         $customerGroup = CustomerGroup::all();
         $warehouses = Warehouse::all();
-        return view('add-order', ['customerGroup' => $customerGroup, 'warehouses' => $warehouses, 'fileData' => $insertedRows]);
+        return view('process-order', ['customerGroup' => $customerGroup, 'warehouses' => $warehouses, 'fileData' => $insertedRows]);
     }
 
 
@@ -136,7 +152,7 @@ class OrderController extends Controller
 
         $customerGroup = CustomerGroup::all();
         $warehouses = Warehouse::all();
-        return view('add-order', ['customerGroup' => $customerGroup, 'warehouses' => $warehouses, 'blockedData' => $insertedRows]);
+        return view('process-order', ['customerGroup' => $customerGroup, 'warehouses' => $warehouses, 'blockedData' => $insertedRows]);
 
         if (!$insert) {
             return redirect()->back()->withErrors(['csv_file' => 'Failed to insert data into the database.']);

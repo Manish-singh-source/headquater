@@ -85,11 +85,15 @@
       <style>
           /* From Uiverse.io by adamgiebl */
           .dots-container {
-              display: flex;
-              align-items: center;
-              justify-content: center;
+              z-index: 1000;
+              position: absolute;
+              transform: translateX(50%);
+              transform: translateY(50%);
+              bottom: 50%;
+              /* right: 50%; */
               height: 100%;
               width: 100%;
+              background-color: rgb(0, 0, 0, 0.5);
           }
 
           .dot {
@@ -142,13 +146,13 @@
 
   <body>
       <!--start header-->
-      <section class="dots-container">
+      {{-- <section class="dots-container">
           <div class="dot"></div>
           <div class="dot"></div>
           <div class="dot"></div>
           <div class="dot"></div>
           <div class="dot"></div>
-      </section>
+      </section> --}}
       <header class="top-header">
           <nav class="navbar navbar-expand align-items-center gap-4">
               <div class="btn-toggle">
@@ -740,16 +744,16 @@
       </script>
 
 
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const selectAll = document.getElementById('select-all');
-        const checkboxes = document.querySelectorAll('.row-checkbox');
+      <script>
+          document.addEventListener('DOMContentLoaded', function() {
+              const selectAll = document.getElementById('select-all');
+              const checkboxes = document.querySelectorAll('.row-checkbox');
 
-        selectAll.addEventListener('change', function () {
-            checkboxes.forEach(cb => cb.checked = selectAll.checked);
-        });
-    });
-</script>
+              selectAll.addEventListener('change', function() {
+                  checkboxes.forEach(cb => cb.checked = selectAll.checked);
+              });
+          });
+      </script>
 
       @yield('script')
   </body>

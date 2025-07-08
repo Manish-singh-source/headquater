@@ -122,6 +122,7 @@ Route::controller(OrderController::class)->group(function () {
     Route::get('/add-order', 'addOrder')->name('add-order');
     Route::post('/process-order', 'processOrder')->name('process.order');
     Route::post('/process-block-order', 'processBlockOrder')->name('process.block.order');
+    Route::get('/download-block-order-csv', 'downloadBlockedCSV')->name('download.order.excel');
 });
 
 // Report Details List
