@@ -8,6 +8,10 @@ use App\Models\Warehouse;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Models\CustomerGroup;
+use App\Models\ManageCustomer;
+use App\Models\ManageOrder;
+use App\Models\ManageProduct;
+use App\Models\ManageVendor;
 use App\Models\Order;
 use App\Models\TempOrderStatus;
 use Illuminate\Support\Facades\DB;
@@ -19,7 +23,9 @@ class OrderController extends Controller
     //
     public function orderList()
     {
-        $orders = TempOrderStatus::with('customerGroup')->with('warehouse')->get();
+        // $orders = TempOrderStatus::with('customerGroup')->with('warehouse')->get();
+        $orders = ManageOrder::with(['warehouse', 'vendors.vendor', 'manageCustomer.customerGroup'])->get();
+        // dd($orders);
         return view('order', compact('orders'));
     }
 
@@ -82,20 +88,20 @@ class OrderController extends Controller
             }
 
             $insertedRows[] = [
-                'customer_name' => $record['Customer'],
+                'customer_name' => $record['customer_name'],
                 'po_number' => $record['po_number'],
                 'sku' => $record['sku'],
                 'facility_name' => $record['facility_name'],
-                'facility_location' => $record['facility_Location'],
+                'facility_location' => $record['facility_location'],
                 'po_date' => $record['po_date']->format('d-m-Y'),
                 'po_expiry_date' => $record['po_expiry_date']->format('d-m-Y'),
-                'hsn' => $record['HSN'],
-                'item_code' => $record['Item_Code'],
-                'description' => $record['Description'],
-                'basic_rate' => $record['Basic_rate'],
-                'gst' => $record['GST'],
-                'net_landing_rate' => $record['Net_Landing_rate'],
-                'mrp' => $record['MRP'],
+                'hsn' => $record['hsn'],
+                'item_code' => $record['item_code'],
+                'description' => $record['description'],
+                'basic_rate' => $record['basic_rate'],
+                'gst' => $record['gst'],
+                'net_landing_rate' => $record['net_landing_rate'],
+                'mrp' => $record['mrp'],
                 'po_qty' => $record['po_qty'],
                 'available_quantity' => $availableQty,
                 'unavailable_quantity' => $unAvail,
@@ -136,15 +142,27 @@ class OrderController extends Controller
         $reader = SimpleExcelReader::create($file, $file_extension);
 
         DB::beginTransaction();
-        $orderStatus = new TempOrderStatus();
-        $orderStatus->customer_group_id = $request->customer_group_id;
-        $orderStatus->warehouse_id = $request->warehouse_id;
-        $orderStatus->save();
+
+        $manageOrder = new ManageOrder();
+        $manageOrder->order_id = '1000';
+        $manageOrder->warehouse_id = $request->warehouse_id;
+        $manageOrder->save();
+
+        $manageCustomer = new ManageCustomer();
+        $manageCustomer->order_id = $manageOrder->id;
+        $manageCustomer->customer_id = $request->customer_group_id;
+        $manageCustomer->save();
 
         $insertedRows = [];
         foreach ($reader->getRows() as $record) {
+
+            $manageVendor = new ManageVendor();
+            $manageVendor->order_id = $manageOrder->id;
+            $manageVendor->vendor_id = $record['vendor_code'];
+            $manageVendor->save();
+
             $insertedRows[] = [
-                'order_id' => $orderStatus->id,
+                'order_id' => $manageOrder->id,
                 'customer_name' => $record['customer_name'],
                 'po_number' => $record['po_number'],
                 'sku' => $record['sku'],
@@ -164,7 +182,6 @@ class OrderController extends Controller
                 'case_pack_quantity' => $record['case_pack_quantity'],
                 'block' => $record['block'],
                 'purchase_order_quantity' => $record['purchase_order_quantity'],
-                'vendor_code' => $record['vendor_code'],
             ];
         }
 
@@ -186,7 +203,7 @@ class OrderController extends Controller
     {
         $order = TempOrderStatus::findOrFail($id);
         $order->delete();
-        
+
         return redirect()->route('order')->with('success', 'Order deleted successfully.');
     }
 }

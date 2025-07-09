@@ -9,6 +9,11 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class TempOrderStatus extends Model
 {
     //
+    public function vendorOrderedProducts(): HasMany 
+    {
+        return $this->hasMany(TempOrder::class, 'vendor_code', 'id');
+    }
+    
     public function orderedProducts(): HasMany 
     {
         return $this->hasMany(TempOrder::class, 'order_id', 'id');

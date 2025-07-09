@@ -18,6 +18,8 @@ return new class extends Migration
             $table->unsignedBigInteger('warehouse_id');
             $table->foreign('warehouse_id')->references('id')->on('warehouses')->onDelete('cascade');
             $table->enum('status', ['0', '1', '2'])->comment('0: Pending, 1: Completed, 2: On Hold')->default(0);
+            $table->string('order_id')->nullable();
+            $table->string('vendor_code')->nullable();
             $table->timestamps();
         });
     }

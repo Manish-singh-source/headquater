@@ -91,7 +91,7 @@ Route::controller(VendorController::class)->group(function () {
     Route::put('/vendor/update/{id}', 'updateVendor')->name('vendor.update');
     Route::delete('/vendor/delete/{id}', 'deleteVendor')->name('vendor.delete');
     Route::get('/vendor/edit/{id}', 'editVendor')->name('edit-vendor');
-    Route::get('/vendor-order-view', 'vendorOrderView')->name('vendor-order-view');
+    Route::get('/vendor-order-view/{id}', 'vendorOrderView')->name('vendor-order-view');
 });
 Route::post('/vendor/toggle-status', [VendorController::class, 'toggleStatus'])->name('vendor.toggleStatus');
 Route::delete('/vendor/delete-selected', [VendorController::class, 'deleteSelected'])->name('delete.selected.vendor');

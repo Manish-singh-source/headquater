@@ -60,12 +60,13 @@
                                             <td>{{ 'ORDER-' . $order->id }}</td>
                                             <td>
                                                 <p class="mb-0 customer-name fw-bold">
-                                                    {{ $order->customerGroup->group_name }}</p>
+                                                    {{-- {{ $order->customerGroup->group_name }} --}}
+                                                </p>
                                             </td>
                                             <td>
-                                                {{ $statuses[$order->status] ?? 'Unknown' }}
+                                                {{ $statuses[$order->status] ?? 'On Hold' }}
                                             </td>
-                                            <td>{{ $order->customerGroup->created_at->toDateString() }}</td>
+                                            <td>{{ $order->created_at->toDateString() }}</td>
                                             <td>{{ $order->warehouse->name }}</td>
                                             <td>
                                                 <div class="d-flex">

@@ -13,8 +13,7 @@ return new class extends Migration
     {
         Schema::create('temp_orders', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('order_id');
-            $table->foreign('order_id')->references('id')->on('temp_order_statuses')->onDelete('cascade');
+            $table->string('order_id');
             $table->string('customer_name')->nullable();
             $table->string('po_number')->nullable();
             $table->string('sku')->nullable();

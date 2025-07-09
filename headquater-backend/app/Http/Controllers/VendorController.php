@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Vendor;
 use Illuminate\Http\Request;
+use App\Models\TempOrderStatus;
 use Illuminate\Support\Facades\Validator;
 
 class VendorController extends Controller
@@ -124,8 +125,11 @@ class VendorController extends Controller
         return view('vendor.vendor-details', compact('vendor'));
     }
 
-    public function vendorOrderView()
+    public function vendorOrderView($id)
     {
-        return view('vendor.vendor-order-view');
+        // $vendors = TempOrderStatus::where('status', '2')->with(['orderedProducts.vendors', 'warehouse'])->find($id);
+        $vendorOrders = TempOrderStatus::where('status', '2')->with(['orderedProducts.vendorInfo', 'warehouse'])->find($id);
+        // dd($vendorOrders);
+        return view('vendor.vendor-order-view', compact('vendorOrders'));
     }
 }
