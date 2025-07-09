@@ -51,6 +51,7 @@
                                                         <tr>
                                                             <th>Customer</th>
                                                             <th>Po&nbsp;number</th>
+                                                            <th>SKU</th>
                                                             <th>Facility&nbsp;Name</th>
                                                             <th>Facility&nbsp;Location</th>
                                                             <th>PO&nbsp;Date</th>
@@ -71,16 +72,17 @@
                                                             <tr>
                                                                 <td>{{ $data['customer_name'] }}</td>
                                                                 <td>{{ $data['po_number'] }}</td>
+                                                                <td>{{ $data['sku'] }}</td>
                                                                 <td>{{ $data['facility_name'] }}</td>
-                                                                <td>{{ $data['facility_Location'] }}</td>
+                                                                <td>{{ $data['facility_location'] }}</td>
                                                                 <td>{{ $data['po_date'] }}</td>
                                                                 <td>{{ $data['po_expiry_date'] }}</td>
-                                                                <td>{{ $data['HSN'] }}</td>
-                                                                <td>{{ $data['Item_Code'] }}</td>
-                                                                <td>{{ $data['Description'] }}</td>
-                                                                <td>{{ $data['Basic_rate'] }}</td>
-                                                                <td>{{ $data['Net_Landing_rate'] }}</td>
-                                                                <td>{{ $data['MRP'] }}</td>
+                                                                <td>{{ $data['hsn'] }}</td>
+                                                                <td>{{ $data['item_code'] }}</td>
+                                                                <td>{{ $data['description'] }}</td>
+                                                                <td>{{ $data['basic_rate'] }}</td>
+                                                                <td>{{ $data['net_landing_rate'] }}</td>
+                                                                <td>{{ $data['mrp'] }}</td>
                                                                 <td>{{ $data['po_qty'] }}</td>
                                                                 <td>{!! $data['available_quantity'] !!}</td>
                                                                 <td>{!! $data['unavailable_quantity'] !!}</td>
@@ -98,6 +100,7 @@
                                                         <tr>
                                                             <th>Customer</th>
                                                             <th>Po&nbsp;number</th>
+                                                            <th>SKU</th>
                                                             <th>Facility&nbsp;Name</th>
                                                             <th>Facility&nbsp;Location</th>
                                                             <th>PO&nbsp;Date</th>
@@ -122,27 +125,28 @@
                                                     <tbody>
                                                         @forelse($blockedData as $data)
                                                             <tr>
-                                                                <td>{{ $data['Customer'] }}</td>
+                                                                <td>{{ $data['customer_name'] }}</td>
                                                                 <td>{{ $data['po_number'] }}</td>
+                                                                <td>{{ $data['sku'] }}</td>
                                                                 <td>{{ $data['facility_name'] }}</td>
-                                                                <td>{{ $data['facility_Location'] }}</td>
+                                                                <td>{{ $data['facility_location'] }}</td>
                                                                 <td>{{ $data['po_date'] }}</td>
                                                                 <td>{{ $data['po_expiry_date'] }}</td>
-                                                                <td>{{ $data['HSN'] }}</td>
-                                                                <td>{{ $data['Item_Code'] }}</td>
-                                                                <td>{{ $data['Description'] }}</td>
-                                                                <td>{{ $data['Basic_rate'] }}</td>
-                                                                <td>{{ $data['GST'] }}</td>
-                                                                <td>{{ $data['Net_Landing_rate'] }}</td>
-                                                                <td>{{ $data['MRP'] }}</td>
-                                                                <td>{{ $data['Rate_Confirmation'] }}</td>
+                                                                <td>{{ $data['hsn'] }}</td>
+                                                                <td>{{ $data['item_code'] }}</td>
+                                                                <td>{{ $data['description'] }}</td>
+                                                                <td>{{ $data['basic_rate'] }}</td>
+                                                                <td>{{ $data['gst'] }}</td>
+                                                                <td>{{ $data['net_landing_rate'] }}</td>
+                                                                <td>{{ $data['mrp'] }}</td>
+                                                                <td>{{ $data['rate_confirmation'] }}</td>
                                                                 <td>{{ $data['po_qty'] }}</td>
-                                                                <td>{{ $data['Case_pack_Qty'] }}</td>
-                                                                <td>{{ $data['Available'] }}</td>
-                                                                <td>{{ $data['Unavailable_qty'] }}</td>
-                                                                <td>{{ $data['Block'] }}</td>
-                                                                <td>{{ $data['Purchase_Order_Qty'] }}</td>
-                                                                <td>{{ $data['Vendor_Code'] }}</td>
+                                                                <td>{{ $data['case_pack_quantity'] }}</td>
+                                                                <td>{{ $data['available_quantity'] }}</td>
+                                                                <td>{{ $data['unavailable_quantity'] }}</td>
+                                                                <td>{{ $data['block'] }}</td>
+                                                                <td>{{ $data['purchase_order_quantity'] }}</td>
+                                                                <td>{{ $data['vendor_code'] }}</td>
                                                             </tr>
                                                         @empty
                                                             <tr>

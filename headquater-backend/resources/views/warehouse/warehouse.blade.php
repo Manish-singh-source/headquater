@@ -19,14 +19,16 @@
                     <div class="d-flex align-items-center gap-2 justify-content-lg-end">
                         <a href="{{ route('warehouse.create') }}"><button class="btn btn-primary px-4"><i
                                     class="bi bi-plus-lg me-2"></i>Add Warehouse</button></a>
-                                    <div class="btn-group">
-							<button type="button" class="btn btn-outline-primary">Action</button>
-							<button type="button" class="btn btn-outline-primary split-bg-primary dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown">	<span class="visually-hidden">Toggle Dropdown</span>
-							</button>
-							<div class="dropdown-menu dropdown-menu-right dropdown-menu-lg-end">	
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-outline-primary">Action</button>
+                            <button type="button"
+                                class="btn btn-outline-primary split-bg-primary dropdown-toggle dropdown-toggle-split"
+                                data-bs-toggle="dropdown"> <span class="visually-hidden">Toggle Dropdown</span>
+                            </button>
+                            <div class="dropdown-menu dropdown-menu-right dropdown-menu-lg-end">
                                 <a class="dropdown-item cursor-pointer" id="delete-selected">Delete All</a>
-						</div>
-					</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -35,10 +37,10 @@
                 <div class="card-body">
                     <div class="customer-table">
                         <div class="table-responsive white-space-nowrap">
-                            <table id="example2" class="table table-striped">
+                            <table id="example" class="table table-striped">
                                 <thead class="table-light">
                                     <tr>
-                                         <th>
+                                        <th>
                                             <input class="form-check-input" type="checkbox" id="select-all">
                                         </th>
                                         <th>Warehouse Id</th>
@@ -56,7 +58,8 @@
                                     @forelse ($warehouses as $warehouse)
                                         <tr>
                                             <td>
-                                                <input class="form-check-input row-checkbox" type="checkbox" name="ids[]" value="{{ $warehouse->id }}">
+                                                <input class="form-check-input row-checkbox" type="checkbox" name="ids[]"
+                                                    value="{{ $warehouse->id }}">
                                             </td>
                                             <td>{{ $warehouse->id }} </td>
                                             <td>
@@ -154,65 +157,65 @@
     </main>
 @endsection
 @section('script')
-<script>
-    $(document).on('change', '.status-switch2', function() {
-        var warehouseId = $(this).data('warehouse-id');
-        var status = $(this).is(':checked') ? 1 : 0;
+    <script>
+        $(document).on('change', '.status-switch2', function() {
+            var warehouseId = $(this).data('warehouse-id');
+            var status = $(this).is(':checked') ? 1 : 0;
 
-        $.ajax({
-            url: '{{ route("warehouse.toggleStatus") }}',
-            type: 'POST',
-            data: {
-                _token: '{{ csrf_token() }}',
-                id: warehouseId,
-                status: status
-            },
-            success: function(response) {
-                if (response.success) {
-                    alert('Status updated successfully!');
-                } else {
-                    alert('Failed to update status.');
+            $.ajax({
+                url: '{{ route('warehouse.toggleStatus') }}',
+                type: 'POST',
+                data: {
+                    _token: '{{ csrf_token() }}',
+                    id: warehouseId,
+                    status: status
+                },
+                success: function(response) {
+                    if (response.success) {
+                        alert('Status updated successfully!');
+                    } else {
+                        alert('Failed to update status.');
+                    }
+                },
+                error: function() {
+                    alert('Status update failed!');
                 }
-            },
-            error: function() {
-                alert('Status update failed!');
-            }
+            });
         });
-    });
-</script>
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    // Select All functionality
-    const selectAll = document.getElementById('select-all');
-    const checkboxes = document.querySelectorAll('.row-checkbox');
-    selectAll.addEventListener('change', function () {
-        checkboxes.forEach(cb => cb.checked = selectAll.checked);
-    });
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Select All functionality
+            const selectAll = document.getElementById('select-all');
+            const checkboxes = document.querySelectorAll('.row-checkbox');
+            selectAll.addEventListener('change', function() {
+                checkboxes.forEach(cb => cb.checked = selectAll.checked);
+            });
 
-    // Delete Selected functionality
-    document.getElementById('delete-selected').addEventListener('click', function () {
-        let selected = [];
-        document.querySelectorAll('.row-checkbox:checked').forEach(cb => {
-            selected.push(cb.value);
-        });
-        if(selected.length === 0) {
-            alert('Please select at least one record.');
-            return;
-        }
-        if(confirm('Are you sure you want to delete selected records?')) {
-            // Create a form and submit
-            let form = document.createElement('form');
-            form.method = 'POST';
-            form.action = '{{ route("delete.selected.warehouse") }}';
-            form.innerHTML = `
+            // Delete Selected functionality
+            document.getElementById('delete-selected').addEventListener('click', function() {
+                let selected = [];
+                document.querySelectorAll('.row-checkbox:checked').forEach(cb => {
+                    selected.push(cb.value);
+                });
+                if (selected.length === 0) {
+                    alert('Please select at least one record.');
+                    return;
+                }
+                if (confirm('Are you sure you want to delete selected records?')) {
+                    // Create a form and submit
+                    let form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = '{{ route('delete.selected.warehouse') }}';
+                    form.innerHTML = `
                 @csrf
                 <input type="hidden" name="_method" value="DELETE">
                 <input type="hidden" name="ids" value="${selected.join(',')}">
             `;
-            document.body.appendChild(form);
-            form.submit();
-        }
-    });
-});
-</script>
+                    document.body.appendChild(form);
+                    form.submit();
+                }
+            });
+        });
+    </script>
 @endsection

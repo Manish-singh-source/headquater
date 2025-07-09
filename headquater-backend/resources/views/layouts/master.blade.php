@@ -712,11 +712,11 @@
               var table1 = $('#example').DataTable({
                   "columnDefs": [{
                           "orderable": false,
-                          "targets": [0, -1],
+                        //   "targets": [0, -1],
                       } // Disable sorting for the 4th column (index starts at 0)
                   ],
                   lengthChange: true,
-                  buttons: ['excel', 'pdf', 'print']
+                //   buttons: ['excel', 'pdf', 'print']
               });
 
               table1.buttons().container()

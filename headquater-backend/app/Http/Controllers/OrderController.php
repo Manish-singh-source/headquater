@@ -8,6 +8,7 @@ use App\Models\Warehouse;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Models\CustomerGroup;
+use App\Models\Order;
 use App\Models\TempOrderStatus;
 use Illuminate\Support\Facades\DB;
 use Spatie\SimpleExcel\SimpleExcelReader;
@@ -18,7 +19,15 @@ class OrderController extends Controller
     //
     public function orderList()
     {
-        return view('order');
+        $orders = TempOrderStatus::with('customerGroup')->with('warehouse')->get();
+        return view('order', compact('orders'));
+    }
+
+    public function viewOrder($id)
+    {
+        $orders = TempOrderStatus::with(['customerGroup', 'warehouse', 'orderedProducts'])->find($id);
+        // dd($orders);
+        return view('customer.customer-order-view', compact('orders'));
     }
 
     public function addOrder()
@@ -30,8 +39,17 @@ class OrderController extends Controller
 
     public function downloadBlockedCSV()
     {
+        $filePath = public_path(session('processed_csv_path'));
 
-        return response()->download(public_path(session('processed_csv_path')));
+        if (!file_exists($filePath)) {
+            abort(404);
+        }
+
+        return response()->download($filePath, basename($filePath), [
+            'Content-Type' => 'text/csv',
+            // 'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ]);
+        // return redirect()->route->('orders')->response()->download(public_path(session('processed_csv_path')));
     }
 
     public function processOrder(Request $request)
@@ -64,26 +82,23 @@ class OrderController extends Controller
             }
 
             $insertedRows[] = [
-                'customer_group_id' => $request->customerGroup,
-                'warehouse_id' => $request->warehouseName,
                 'customer_name' => $record['Customer'],
                 'po_number' => $record['po_number'],
+                'sku' => $record['sku'],
                 'facility_name' => $record['facility_name'],
-                'facility_Location' => $record['facility_Location'],
+                'facility_location' => $record['facility_Location'],
                 'po_date' => $record['po_date']->format('d-m-Y'),
                 'po_expiry_date' => $record['po_expiry_date']->format('d-m-Y'),
-                'HSN' => $record['HSN'],
-                'Item_Code' => $record['Item_Code'],
-                'Description' => $record['Description'],
+                'hsn' => $record['HSN'],
+                'item_code' => $record['Item_Code'],
+                'description' => $record['Description'],
+                'basic_rate' => $record['Basic_rate'],
+                'gst' => $record['GST'],
+                'net_landing_rate' => $record['Net_Landing_rate'],
+                'mrp' => $record['MRP'],
                 'po_qty' => $record['po_qty'],
-                'Basic_rate' => $record['Basic_rate'],
-                'GST' => $record['GST'],
-                'Net_Landing_rate' => $record['Net_Landing_rate'],
-                'MRP' => $record['MRP'],
-                'po_qty' => $record['po_qty'],
-                'available_quantity' => $availableQty, // <-- Use $availableQty here
+                'available_quantity' => $availableQty,
                 'unavailable_quantity' => $unAvail,
-                'created_at' => now(),
             ];
         }
 
@@ -101,6 +116,7 @@ class OrderController extends Controller
 
         SimpleExcelWriter::create($csvPath)->addRows($filteredRows->toArray());
         session(['processed_csv_path' => "uploads/{$fileName}"]);
+
         $customerGroup = CustomerGroup::all();
         $warehouses = Warehouse::all();
         return view('process-order', ['customerGroup' => $customerGroup, 'warehouses' => $warehouses, 'fileData' => $insertedRows]);
@@ -116,33 +132,39 @@ class OrderController extends Controller
 
         $file = $request->file('csv_file')->getPathname();
         $file_extension = $request->file('csv_file')->getClientOriginalExtension();
-        // dd($request->file('csv_file'), $file_extension); // Debugging line to check file and mime type
+
         $reader = SimpleExcelReader::create($file, $file_extension);
+
+        DB::beginTransaction();
+        $orderStatus = new TempOrderStatus();
+        $orderStatus->customer_group_id = $request->customer_group_id;
+        $orderStatus->warehouse_id = $request->warehouse_id;
+        $orderStatus->save();
+
         $insertedRows = [];
         foreach ($reader->getRows() as $record) {
             $insertedRows[] = [
-                'Order_No' => $record['Order_No'],
-                'Customer' => $record['Customer'],
+                'order_id' => $orderStatus->id,
+                'customer_name' => $record['customer_name'],
                 'po_number' => $record['po_number'],
+                'sku' => $record['sku'],
                 'facility_name' => $record['facility_name'],
-                'facility_Location' => $record['facility_Location'],
+                'facility_location' => $record['facility_location'],
                 'po_date' => $record['po_date']->format('d-m-Y'),
                 'po_expiry_date' => $record['po_expiry_date']->format('d-m-Y'),
-                'HSN' => $record['HSN'],
-                'Item_Code' => $record['Item_Code'],
-                'Description' => $record['Description'],
-                'Basic_rate' => $record['Basic_rate'],
-                'GST' => $record['GST'],
-                'Net_Landing_rate' => $record['Net_Landing_rate'],
-                'MRP' => $record['MRP'],
-                'Rate_Confirmation' => $record['Rate_Confirmation'],
+                'hsn' => $record['hsn'],
+                'item_code' => $record['item_code'],
+                'description' => $record['description'],
+                'basic_rate' => $record['basic_rate'],
+                'gst' => $record['gst'],
+                'net_landing_rate' => $record['net_landing_rate'],
+                'mrp' => $record['mrp'],
+                'rate_confirmation' => $record['rate_confirmation'],
                 'po_qty' => $record['po_qty'],
-                'Case_pack_Qty' => $record['Case_pack_Qty'],
-                'Available' => $record['Available'],
-                'Unavailable_qty' => $record['Unavailable_qty'],
-                'Block' => $record['Block'],
-                'Purchase_Order_Qty' => $record['Purchase_Order_Qty'],
-                'Vendor_Code' => $record['Vendor_Code'],
+                'case_pack_quantity' => $record['case_pack_quantity'],
+                'block' => $record['block'],
+                'purchase_order_quantity' => $record['purchase_order_quantity'],
+                'vendor_code' => $record['vendor_code'],
             ];
         }
 
@@ -150,14 +172,21 @@ class OrderController extends Controller
             return redirect()->back()->withErrors(['csv_file' => 'No valid data found in the CSV file.']);
         }
 
-        $customerGroup = CustomerGroup::all();
-        $warehouses = Warehouse::all();
-        return view('process-order', ['customerGroup' => $customerGroup, 'warehouses' => $warehouses, 'blockedData' => $insertedRows]);
-
+        $insert = TempOrder::insert($insertedRows);
         if (!$insert) {
+            DB::rollBack();
             return redirect()->back()->withErrors(['csv_file' => 'Failed to insert data into the database.']);
         }
+        DB::commit();
 
-        return redirect('groups')->with('success', 'CSV file imported successfully.');
+        return redirect()->route('order')->with('success', 'Order Completed Successful.');
+    }
+
+    public function deleteOrder($id)
+    {
+        $order = TempOrderStatus::findOrFail($id);
+        $order->delete();
+        
+        return redirect()->route('order')->with('success', 'Order deleted successfully.');
     }
 }

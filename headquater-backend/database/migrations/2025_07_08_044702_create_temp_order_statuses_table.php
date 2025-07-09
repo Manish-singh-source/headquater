@@ -13,11 +13,11 @@ return new class extends Migration
     {
         Schema::create('temp_order_statuses', function (Blueprint $table) {
             $table->id();
-            $table->string('temp_order_id')->unique();
             $table->unsignedBigInteger('customer_group_id');
             $table->foreign('customer_group_id')->references('id')->on('customer_groups')->onDelete('cascade');
             $table->unsignedBigInteger('warehouse_id');
             $table->foreign('warehouse_id')->references('id')->on('warehouses')->onDelete('cascade');
+            $table->enum('status', ['0', '1', '2'])->comment('0: Pending, 1: Completed, 2: On Hold')->default(0);
             $table->timestamps();
         });
     }

@@ -13,13 +13,11 @@ return new class extends Migration
     {
         Schema::create('temp_orders', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('customer_group_id');
-            $table->foreign('customer_group_id')->references('id')->on('customer_groups')->onDelete('cascade');
-            $table->unsignedBigInteger('warehouse_id');
-            $table->foreign('warehouse_id')->references('id')->on('warehouses')->onDelete('cascade');
-            $table->string('order_id')->nullable();
+            $table->unsignedBigInteger('order_id');
+            $table->foreign('order_id')->references('id')->on('temp_order_statuses')->onDelete('cascade');
             $table->string('customer_name')->nullable();
             $table->string('po_number')->nullable();
+            $table->string('sku')->nullable();
             $table->string('facility_name')->nullable();
             $table->string('facility_location')->nullable();
             $table->string('po_date')->nullable();
@@ -34,6 +32,11 @@ return new class extends Migration
             $table->string('po_qty')->nullable();
             $table->string('available_quantity')->nullable();
             $table->string('unavailable_quantity')->nullable();
+            $table->string('block')->nullable();
+            $table->string('rate_confirmation')->nullable();
+            $table->string('case_pack_quantity')->nullable();
+            $table->string('purchase_order_quantity')->nullable();
+            $table->string('vendor_code')->nullable();
             $table->timestamps();
         });
     }

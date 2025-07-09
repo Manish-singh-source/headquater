@@ -27,7 +27,7 @@
                                             <div class="col-12 col-lg-3">
                                                 <label for="customerGroup" class="form-label">Select Customer Group
                                                     <span class="text-danger">*</span></label>
-                                                <select class="form-control" name="customerGroup" id="customerGroup">
+                                                <select class="form-control" name="customer_group_id" id="customerGroup">
                                                     <option selected="" disabled="" value="">-- Select --
                                                     </option>
                                                     @foreach ($customerGroup as $customer)
@@ -39,7 +39,7 @@
                                             <div class="col-12 col-lg-3">
                                                 <label for="warehouseName" class="form-label">Warehouse Name
                                                     <span class="text-danger">*</span></label>
-                                                <select class="form-control" name="warehouseName" id="warehouseName">
+                                                <select class="form-control" name="warehouse_id" id="warehouseName">
                                                     <option selected="" disabled="" value="">-- Select --
                                                     </option>
                                                     @foreach ($warehouses as $warehouse)
@@ -90,7 +90,7 @@
                                                 <div class="col-12 col-lg-3">
                                                     <label for="customerGroup" class="form-label">Select Customer Group
                                                         <span class="text-danger">*</span></label>
-                                                    <select class="form-control" name="customerGroup" id="customerGroup">
+                                                    <select class="form-control" name="customer_group_id" id="customerGroup">
                                                         <option selected="" disabled="" value="">-- Select --
                                                         </option>
                                                         @foreach ($customerGroup as $customer)
@@ -102,7 +102,7 @@
                                                 <div class="col-12 col-lg-3">
                                                     <label for="warehouseName" class="form-label">Warehouse Name
                                                         <span class="text-danger">*</span></label>
-                                                    <select class="form-control" name="warehouseName" id="warehouseName">
+                                                    <select class="form-control" name="warehouse_id" id="warehouseName">
                                                         <option selected="" disabled="" value="">-- Select --
                                                         </option>
                                                         @foreach ($warehouses as $warehouse)

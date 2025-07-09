@@ -1,9 +1,7 @@
 @extends('layouts.master')
 @section('main-content')
-<!--start main wrapper-->
     <main class="main-wrapper">
         <div class="main-content">
-            <!--breadcrumb-->
             <div class="page-breadcrumb d-none d-sm-flex align-items-center mb-3">
                 <div class="">
                     <nav aria-label="breadcrumb">
@@ -14,38 +12,24 @@
                         </ol>
                     </nav>
                 </div>
-                <!-- <div class="ms-auto">
-                    <div class="btn-group">
-                        <button type="button" class="btn btn-primary">Settings</button>
-                        <button type="button" class="btn btn-primary split-bg-primary dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown"> <span class="visually-hidden">Toggle Dropdown</span>
-                        </button>
-                        <div class="dropdown-menu dropdown-menu-right dropdown-menu-lg-end"> <a class="dropdown-item" href="javascript:;">Action</a>
-                            <a class="dropdown-item" href="javascript:;">Another action</a>
-                            <a class="dropdown-item" href="javascript:;">Something else here</a>
-                            <div class="dropdown-divider"></div> <a class="dropdown-item" href="javascript:;">Separated link</a>
-                        </div>
-                    </div>
-                </div> -->
             </div>
-            <!--end breadcrumb-->
-
-
 
             <div class="row g-3 justify-content-end">
                 <div class="col-12 col-md-auto">
                     <div class="d-flex align-items-center gap-2 justify-content-lg-end">
                         <button class="btn btn-filter px-4"><i class="bi bi-box-arrow-right me-2"></i>Export</button>
-                        <a href="{{ route('add-order') }}"><button class="btn btn-primary px-4"><i class="bi bi-plus-lg me-2"></i>New Order</button></a>
+                        <a href="{{ route('add-order') }}"><button class="btn btn-primary px-4"><i
+                                    class="bi bi-plus-lg me-2"></i>New Order</button></a>
                     </div>
                 </div>
             </div>
-            
+
 
             <div class="card mt-4">
                 <div class="card-body">
                     <div class="customer-table">
                         <div class="table-responsive white-space-nowrap">
-                            <table id="example2" class="table table-striped">
+                            <table id="example" class="table table-striped">
                                 <thead class="table-light">
                                     <tr>
                                         <th>
@@ -60,121 +44,86 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr>
-                                        <td>
-                                            <input class="form-check-input" type="checkbox">
-                                        </td>
-                                        <td>#001</td>
-                                        <td>
-                                            <p class="mb-0 customer-name fw-bold">ABC</p>
+                                    @php
+                                        $statuses = [
+                                            0 => 'Pending',
+                                            1 => 'Completed',
+                                            2 => 'On Hold',
+                                        ];
+                                    @endphp
+                                    @foreach ($orders as $order)
+                                        <tr>
 
-                                        </td>
-                                        <td>
-                                            Completed
-                                        </td>
-                                        <td>2025-04-11</td>
-                                        <td>Baroda</td>
-                                        <td>
-                                            <div class="d-flex">
-                                                <a aria-label="anchor" href="{{ route('customer-order-view') }}" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye text-primary">
-                                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                                    <circle cx="12" cy="12" r="3"></circle>
-                                                </svg>
-                                            </a>
-                                            <a aria-label="anchor" href="#" class="btn btn-icon btn-sm bg-warning-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="Edit">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-edit text-warning">
-                                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                                                </svg>
-                                            </a>
-                                            <a aria-label="anchor" class="btn btn-icon btn-sm bg-danger-subtle delete-row" data-bs-toggle="tooltip" data-bs-original-title="Delete">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trash-2 text-danger">
-                                                    <polyline points="3 6 5 6 21 6"></polyline>
-                                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                                                    <line x1="10" y1="11" x2="10" y2="17"></line>
-                                                    <line x1="14" y1="11" x2="14" y2="17"></line>
-                                                </svg>
-                                            </a>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            <input class="form-check-input" type="checkbox">
-                                        </td>
-                                        <td>#002</td>
-                                        <td>
-                                            <p class="mb-0 customer-name fw-bold">XYZ</p>
-                                        </td>
-                                        <td>
-                                            On Hold
-                                        </td>
-                                        <td>2025-04-11</td>
-                                        <td>Baroda</td>
-                                        <td>
-                                            <div class="d-flex">
-                                                <a aria-label="anchor" href="{{ route('customer-order-view') }}" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye text-primary">
-                                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                                    <circle cx="12" cy="12" r="3"></circle>
-                                                </svg>
-                                            </a>
-                                            <a aria-label="anchor" href="#" class="btn btn-icon btn-sm bg-warning-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="Edit">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-edit text-warning">
-                                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                                                </svg>
-                                            </a>
-                                            <a aria-label="anchor" class="btn btn-icon btn-sm bg-danger-subtle delete-row" data-bs-toggle="tooltip" data-bs-original-title="Delete">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trash-2 text-danger">
-                                                    <polyline points="3 6 5 6 21 6"></polyline>
-                                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                                                    <line x1="10" y1="11" x2="10" y2="17"></line>
-                                                    <line x1="14" y1="11" x2="14" y2="17"></line>
-                                                </svg>
-                                            </a>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            <input class="form-check-input" type="checkbox">
-                                        </td>
-                                        <td>#003</td>
-                                        <td>
-                                            <p class="mb-0 customer-name fw-bold">EFG</p>
-                                        </td>
-                                        <td>
-                                            Pending
-                                        </td>
-                                        <td>2025-04-11</td>
-                                        <td>Baroda</td>
-                                        <td>
-                                            <div class="d-flex">
-                                                <a aria-label="anchor" href="{{ route('customer-order-view') }}" class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="View">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye text-primary">
-                                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                                    <circle cx="12" cy="12" r="3"></circle>
-                                                </svg>
-                                            </a>
-                                            <a aria-label="anchor" href="#" class="btn btn-icon btn-sm bg-warning-subtle me-1" data-bs-toggle="tooltip" data-bs-original-title="Edit">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-edit text-warning">
-                                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                                                </svg>
-                                            </a>
-                                            <a aria-label="anchor" class="btn btn-icon btn-sm bg-danger-subtle delete-row" data-bs-toggle="tooltip" data-bs-original-title="Delete">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trash-2 text-danger">
-                                                    <polyline points="3 6 5 6 21 6"></polyline>
-                                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                                                    <line x1="10" y1="11" x2="10" y2="17"></line>
-                                                    <line x1="14" y1="11" x2="14" y2="17"></line>
-                                                </svg>
-                                            </a>
-                                            </div>
-                                        </td>
-                                    </tr>
+                                            <td>
+                                                <input class="form-check-input" type="checkbox">
+                                            </td>
+                                            <td>{{ 'ORDER-' . $order->id }}</td>
+                                            <td>
+                                                <p class="mb-0 customer-name fw-bold">
+                                                    {{ $order->customerGroup->group_name }}</p>
+                                            </td>
+                                            <td>
+                                                {{ $statuses[$order->status] ?? 'Unknown' }}
+                                            </td>
+                                            <td>{{ $order->customerGroup->created_at->toDateString() }}</td>
+                                            <td>{{ $order->warehouse->name }}</td>
+                                            <td>
+                                                <div class="d-flex">
+                                                    <a aria-label="anchor"
+                                                        href="{{ route('customer-order-view', $order->id) }}"
+                                                        class="btn btn-icon btn-sm bg-primary-subtle me-1"
+                                                        data-bs-toggle="tooltip" data-bs-original-title="View">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="13"
+                                                            height="13" viewBox="0 0 24 24" fill="none"
+                                                            stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                                            stroke-linejoin="round"
+                                                            class="feather feather-eye text-primary">
+                                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                                            <circle cx="12" cy="12" r="3"></circle>
+                                                        </svg>
+                                                    </a>
+                                                    <a aria-label="anchor" href="#"
+                                                        class="btn btn-icon btn-sm bg-warning-subtle me-1"
+                                                        data-bs-toggle="tooltip" data-bs-original-title="Edit">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="13"
+                                                            height="13" viewBox="0 0 24 24" fill="none"
+                                                            stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                                            stroke-linejoin="round"
+                                                            class="feather feather-edit text-warning">
+                                                            <path
+                                                                d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7">
+                                                            </path>
+                                                            <path
+                                                                d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z">
+                                                            </path>
+                                                        </svg>
+                                                    </a>
+                                                    <form action="{{ route('delete.order', $order->id) }}"
+                                                        method="POST" onsubmit="return confirm('Are you sure?')">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit"
+                                                            class="btn btn-icon btn-sm bg-danger-subtle delete-row">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" width="13"
+                                                                height="13" viewBox="0 0 24 24" fill="none"
+                                                                stroke="currentColor" stroke-width="2"
+                                                                stroke-linecap="round" stroke-linejoin="round"
+                                                                class="feather feather-trash-2 text-danger">
+                                                                <polyline points="3 6 5 6 21 6"></polyline>
+                                                                <path
+                                                                    d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
+                                                                </path>
+                                                                <line x1="10" y1="11" x2="10"
+                                                                    y2="17"></line>
+                                                                <line x1="14" y1="11" x2="14"
+                                                                    y2="17"></line>
+                                                            </svg>
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    @endforeach
                                 </tbody>
                             </table>
                         </div>
@@ -187,4 +136,3 @@
     </main>
     <!--end main wrapper-->
 @endsection
-    

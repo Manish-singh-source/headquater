@@ -565,7 +565,7 @@
                                 </div>
                             </div>
                             <div class="table-responsive">
-                                <table id="example2" class="table table-striped">
+                                <table id="example" class="table table-striped">
                                     <thead class="table-light">
                                         <tr>
                                             <th>
@@ -690,7 +690,7 @@
                                 </div>
                             </div>
                             <div class="table-responsive">
-                                <table id="example2" class="table table-striped">
+                                <table id="example" class="table table-striped">
                                     <thead class="table-light">
                                         <tr>
                                             <th>
@@ -821,7 +821,7 @@
                                 </div>
                             </div>
                             <div class="table-responsive">
-                                <table id="example2" class="table table-striped">
+                                <table id="example" class="table table-striped">
                                     <thead class="table-light">
                                         <tr>
                                             <th>
@@ -951,7 +951,7 @@
                                 </div>
                             </div>
                             <div class="table-responsive">
-                                <table id="example2" class="table table-striped">
+                                <table id="example" class="table table-striped">
                                     <thead class="table-light">
                                         <tr>
                                             <th>
@@ -1081,7 +1081,7 @@
                                 </div>
                             </div>
                             <div class="table-responsive">
-                                <table id="example2" class="table table-striped">
+                                <table id="example" class="table table-striped">
                                     <thead class="table-light">
                                         <tr>
                                             <th>
@@ -1211,7 +1211,7 @@
                                 </div>
                             </div>
                             <div class="table-responsive">
-                                <table id="example2" class="table table-striped">
+                                <table id="example" class="table table-striped">
                                     <thead class="table-light">
                                         <tr>
                                             <th>

@@ -69,7 +69,7 @@
                         <div class="card-body">
                             <div class="customer-table">
                                 <div class="table-responsive white-space-nowrap">
-                                    <table id="example2" class="table table-striped">
+                                    <table id="example" class="table table-striped">
                                         <thead class="table-light">
                                             <tr>
                                                 <th>

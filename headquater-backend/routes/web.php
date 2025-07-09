@@ -18,7 +18,9 @@ use App\Http\Controllers\CustomerGroupController;
 // Route::get('/', function () {
 //     return view('index');
 // })->name('index');
-Route::get('/', [CustomerController::class, 'Customercount'])->name('index');
+// Route::middleware('IsAdmin')->group(function() {
+    Route::get('/', [CustomerController::class, 'Customercount'])->name('index');
+// });
 
 Route::controller(LocationController::class)->group(function () {
     Route::get('/countries', 'getCountries');
@@ -113,7 +115,6 @@ Route::controller(WarehouseController::class)->group(function () {
     Route::get('/warehouse-edit/{id}', 'warehouseEdit')->name('warehouse.edit');
     Route::put('/warehouse-update/{id}', 'warehouseUpdate')->name('warehouse.update');
     Route::post('/warehouse/toggle-status', [WarehouseController::class, 'toggleStatus'])->name('warehouse.toggleStatus');
-
 });
 
 // All Order page
@@ -123,6 +124,8 @@ Route::controller(OrderController::class)->group(function () {
     Route::post('/process-order', 'processOrder')->name('process.order');
     Route::post('/process-block-order', 'processBlockOrder')->name('process.block.order');
     Route::get('/download-block-order-csv', 'downloadBlockedCSV')->name('download.order.excel');
+    Route::get('/customer-order-view/{id}', 'viewOrder')->name('customer-order-view');
+    Route::delete('/customer-order-delete/{id}', 'deleteOrder')->name('delete.order');
 });
 
 // Report Details List
@@ -138,9 +141,7 @@ Route::controller(ReportController::class)->group(function () {
 // Route::get('/customer-detail', function () {
 //     return view('customer-detail');
 // })->name('customer-detail');
-Route::get('/customer-order-view', function () {
-    return view('customer.customer-order-view');
-})->name('customer-order-view');
+
 
 
 // Product
