@@ -60,7 +60,7 @@
                                             <td>{{ 'ORDER-' . $order->id }}</td>
                                             <td>
                                                 <p class="mb-0 customer-name fw-bold">
-                                                    {{-- {{ $order->customerGroup->group_name }} --}}
+                                                    {{ $order->manageCustomer->customerGroup->group_name }}
                                                 </p>
                                             </td>
                                             <td>
@@ -99,8 +99,8 @@
                                                             </path>
                                                         </svg>
                                                     </a>
-                                                    <form action="{{ route('delete.order', $order->id) }}"
-                                                        method="POST" onsubmit="return confirm('Are you sure?')">
+                                                    <form action="{{ route('delete.order', $order->id) }}" method="POST"
+                                                        onsubmit="return confirm('Are you sure?')">
                                                         @csrf
                                                         @method('DELETE')
                                                         <button type="submit"

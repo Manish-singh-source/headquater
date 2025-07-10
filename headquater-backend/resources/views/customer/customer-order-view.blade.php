@@ -12,15 +12,13 @@
                                 <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                                     <span><b>Order Id</b></span>
 
-                                    <span>{{ '#' . $orders->id }}</span>
+                                    <span>{{ '#' . $order->id }}</span>
                                 </li>
                                 <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                                     <span><b>Customer Group Name</b></span>
-                                    <span> <b>{{ $orders->customerGroup->group_name }}</b></span>
+                                    <span> <b>{{ $customerGroup->customerGroup->group_name }}</b></span>
                                 </li>
                             </ul>
-
-
                         </div>
                     </div>
                 </div>
@@ -41,11 +39,11 @@
                         @endphp
                         <div class="col-6 col-lg-1 text-end">
                             <span
-                                class="badge bg-danger-subtle text-danger fw-semibold">{{ $statuses[$orders->status] ?? 'Unknown' }}</span>
+                                class="badge bg-danger-subtle text-danger fw-semibold"></span>
                         </div>
                     </div>
                     <!-- Tabs Navigation -->
-                    {{-- 
+                    {{-- {{ $statuses[$orders->status] ?? 'Unknown' }}
                     <div class="div d-flex my-3">
                         <ul class="nav nav-tabs" id="vendorTabs" role="tablist">
                             <li class="nav-item" role="presentation">
@@ -63,6 +61,7 @@
                                 <thead class="table-light">
                                     <tr>
                                         <th>Customer Name</th>
+                                        <th>Vendor Code</th>
                                         <th>HSN</th>
                                         <th>Item Code</th>
                                         <th>SKU Code</th>
@@ -72,15 +71,16 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @forelse($orders->orderedProducts as $products)
+                                    @forelse($orders as $product)
                                         <tr>
-                                            <td>{{ $products->customer_name }}</td>
-                                            <td>{{ $products->hsn }}</td>
-                                            <td>{{ $products->item_code }}</td>
-                                            <td>{{ $products->sku }}</td>
-                                            <td>{{ $products->description }}</td>
-                                            <td>{{ $products->mrp }}</td>
-                                            <td>{{ $products->po_qty }}</td>
+                                            <td>{{ $product->customer_name }}</td>
+                                            <td>{{ $product->vendor_code }}</td>
+                                            <td>{{ $product->hsn }}</td>
+                                            <td>{{ $product->item_code }}</td>
+                                            <td>{{ $product->sku }}</td>
+                                            <td>{{ $product->description }}</td>
+                                            <td>{{ $product->mrp }}</td>
+                                            <td>{{ $product->po_qty }}</td>
                                         </tr>
                                     @empty
                                         <tr>

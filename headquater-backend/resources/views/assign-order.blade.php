@@ -53,7 +53,7 @@
                                             2 => 'On Hold',
                                         ];
                                     @endphp
-                                    @forelse($vendorOrders as $order)
+                                    @forelse($holdedOrders as $order)
                                         <tr>
                                             <td>
                                                 <input class="form-check-input" type="checkbox">
@@ -61,15 +61,15 @@
                                             <td>{{ 'ORDER-' . $order->id }}</td>
                                             <td>
                                                 <p class="mb-0 customer-name fw-bold">
-                                                    @foreach ($order->orderedProducts as $vendors)
-                                                        {{ $vendors->vendorInfo?->first_name ?? '' }}
+                                                    @foreach ($order->vendorCodes as $vendor)
+                                                        {{ $vendor->vendor_code ?? '' }}
                                                     @endforeach
                                                 </p>
                                             </td>
                                             <td>
-                                                {{ $statuses[$order->status] ?? 'Unknown' }}
+                                                {{ $statuses[$order->status] ?? 'On Hold' }}
                                             </td>
-                                            <td>{{ $order->customerGroup->updated_at->toDateString() }}</td>
+                                            <td>{{ $order->created_at->toDateString() }}</td>
                                             <td>{{ $order->warehouse->name }}</td>
                                             <td>
                                                 <div class="d-flex">

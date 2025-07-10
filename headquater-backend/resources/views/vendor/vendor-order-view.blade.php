@@ -12,14 +12,14 @@
                             <ul class="col-12 list-group list-group-flush">
                                 <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                                     <span><b>Order Id</b></span>
-                                    <span>{{ 'ORDER-' . $vendorOrders->id }}</span>
+                                    <span>{{ 'ORDER-' . $order->id }}</span>
                                 </li>
                                 <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                                     <span><b>Vendor Name</b></span>
                                     <span>
                                         <b>
-                                            @foreach ($vendorOrders->orderedProducts as $vendors)
-                                                {{ $vendors->vendorInfo?->first_name ?? '' }}
+                                            @foreach ($vendors as $vendor)
+                                                {{ $vendor->first_name ?? '' }}
                                             @endforeach
                                         </b>
                                     </span>
@@ -52,10 +52,10 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @forelse($vendorOrders->orderedProducts as $order)
+                                    @forelse($orders as $order)
                                         <tr>
                                             <td>{{ $order->order_id }}</td>
-                                            <td>{{ $order->vendorInfo?->first_name }}</td>
+                                            <td>{{ $order->vendorInfo->first_name }}</td>
                                             <td>{{ $order->po_number }}</td>
                                             <td>{{ $order->sku }}</td>
                                             <td>{{ $order->description }}</td>

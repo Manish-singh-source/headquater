@@ -11,4 +11,8 @@ class ManageVendor extends Model
     public function vendor() : HasOne {
         return $this->hasOne(Vendor::class, 'vendor_code', 'vendor_id');
     }
+
+    public function vendorsOrders() {
+        return $this->hasMany(Order::class);
+    }
 }

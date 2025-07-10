@@ -3,7 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Vendor;
+use App\Models\TempOrder;
+use App\Models\ManageOrder;
 use Illuminate\Http\Request;
+use App\Models\ManageCustomer;
 use App\Models\TempOrderStatus;
 use Illuminate\Support\Facades\Validator;
 
@@ -128,8 +131,20 @@ class VendorController extends Controller
     public function vendorOrderView($id)
     {
         // $vendors = TempOrderStatus::where('status', '2')->with(['orderedProducts.vendors', 'warehouse'])->find($id);
-        $vendorOrders = TempOrderStatus::where('status', '2')->with(['orderedProducts.vendorInfo', 'warehouse'])->find($id);
+        // $vendorOrders = TempOrderStatus::where('status', '2')->with(['orderedProducts.vendorInfo', 'warehouse'])->find($id);
         // dd($vendorOrders);
-        return view('vendor.vendor-order-view', compact('vendorOrders'));
+
+        $order = ManageOrder::find($id);
+
+        $vendorCodes = TempOrder::where('order_id', $id)
+            ->select('vendor_code')
+            ->distinct()
+            ->pluck('vendor_code');
+        $orders = TempOrder::with('vendorInfo')->where('order_id', $id)
+            ->whereIn('vendor_code', $vendorCodes)
+            ->get();
+        $vendors = Vendor::whereIn('vendor_code', $vendorCodes)->get();
+        // dd($orders);
+        return view('vendor.vendor-order-view', compact('order', 'vendorCodes', 'orders', 'vendors'));
     }
 }

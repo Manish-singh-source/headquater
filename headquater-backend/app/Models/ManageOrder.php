@@ -24,4 +24,11 @@ class ManageOrder extends Model
     {
         return $this->belongsTo(ManageCustomer::class, 'id', 'order_id');
     }
+
+    public function vendorCodes()
+    {
+        return $this->hasMany(TempOrder::class, 'order_id', 'id')
+            ->select('order_id', 'vendor_code')
+            ->distinct('vendor_code');
+    }
 }

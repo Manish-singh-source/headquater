@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class CustomerGroup extends Model
 {
@@ -14,4 +15,9 @@ class CustomerGroup extends Model
     {
         return $this->belongsTo('App\Models\Customer', 'customer_id');
     }
+
+    public function customerInfo() : HasMany {
+        return $this->hasMany(Customer::class, 'group_id', 'id');
+    }
+    
 }

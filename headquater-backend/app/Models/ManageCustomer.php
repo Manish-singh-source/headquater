@@ -3,12 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class ManageCustomer extends Model
 {
     //
-    public function customerGroup() : HasMany {
-        return $this->hasMany(Customer::class, 'group_id', 'customer_id');
+    public function customerGroup() : HasOne {
+        return $this->hasOne(CustomerGroup::class, 'id', 'customer_id');
     }
 }

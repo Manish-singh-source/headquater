@@ -14,6 +14,7 @@ use App\Models\ManageProduct;
 use App\Models\ManageVendor;
 use App\Models\Order;
 use App\Models\TempOrderStatus;
+use App\Models\Vendor;
 use Illuminate\Support\Facades\DB;
 use Spatie\SimpleExcel\SimpleExcelReader;
 use Spatie\SimpleExcel\SimpleExcelWriter;
@@ -25,15 +26,23 @@ class OrderController extends Controller
     {
         // $orders = TempOrderStatus::with('customerGroup')->with('warehouse')->get();
         $orders = ManageOrder::with(['warehouse', 'vendors.vendor', 'manageCustomer.customerGroup'])->get();
-        // dd($orders);
+        // dd($orders); 
         return view('order', compact('orders'));
     }
 
     public function viewOrder($id)
     {
-        $orders = TempOrderStatus::with(['customerGroup', 'warehouse', 'orderedProducts'])->find($id);
-        // dd($orders);
-        return view('customer.customer-order-view', compact('orders'));
+        $order = ManageOrder::find($id);
+        $customerGroup = ManageCustomer::with('customerGroup.customerInfo')->where('order_id', $id)->find($id);
+        $vendorCodes = TempOrder::where('order_id', $id)
+            ->select('vendor_code')
+            ->distinct()
+            ->pluck('vendor_code');
+        $orders = TempOrder::where('order_id', $id)
+            ->whereIn('vendor_code', $vendorCodes)
+            ->get();
+        $vendors = Vendor::whereIn('vendor_code', $vendorCodes)->get();
+        return view('customer.customer-order-view', compact('order', 'orders', 'vendors', 'customerGroup'));
     }
 
     public function addOrder()
@@ -182,6 +191,7 @@ class OrderController extends Controller
                 'case_pack_quantity' => $record['case_pack_quantity'],
                 'block' => $record['block'],
                 'purchase_order_quantity' => $record['purchase_order_quantity'],
+                'vendor_code' => $record['vendor_code'],
             ];
         }
 
