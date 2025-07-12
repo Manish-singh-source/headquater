@@ -39,9 +39,9 @@
                                         </th>
                                         <th>Order Id</th>
                                         <th>Vendor Name</th>
+                                        <th>Warehouse</th>
                                         <th>Order Status</th>
                                         <th>Ordered Date</th>
-                                        <th>Warehouse</th>
                                         <th>Action</th>
                                     </tr>
                                 </thead>
@@ -66,14 +66,15 @@
                                                     @endforeach
                                                 </p>
                                             </td>
+                                            <td>{{ $order->warehouse->name }}</td>
                                             <td>
                                                 {{ $statuses[$order->status] ?? 'On Hold' }}
                                             </td>
                                             <td>{{ $order->created_at->toDateString() }}</td>
-                                            <td>{{ $order->warehouse->name }}</td>
                                             <td>
                                                 <div class="d-flex">
-                                                    <a aria-label="anchor" href="{{ route('vendor-order-view', $order->id) }}"
+                                                    <a aria-label="anchor"
+                                                        href="{{ route('vendor-order-view', $order->id) }}"
                                                         class="btn btn-icon btn-sm bg-primary-subtle me-1"
                                                         data-bs-toggle="tooltip" data-bs-original-title="View">
                                                         <svg xmlns="http://www.w3.org/2000/svg" width="13"

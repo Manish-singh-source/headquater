@@ -92,6 +92,7 @@ Route::controller(VendorController::class)->group(function () {
     Route::delete('/vendor/delete/{id}', 'deleteVendor')->name('vendor.delete');
     Route::get('/vendor/edit/{id}', 'editVendor')->name('edit-vendor');
     Route::get('/vendor-order-view/{id}', 'vendorOrderView')->name('vendor-order-view');
+    Route::get('/single-vendor-order-view/{orderId}/{vendorCode}', 'singleVendorOrderView')->name('single-vendor-order-view');
 });
 Route::post('/vendor/toggle-status', [VendorController::class, 'toggleStatus'])->name('vendor.toggleStatus');
 Route::delete('/vendor/delete-selected', [VendorController::class, 'deleteSelected'])->name('delete.selected.vendor');

@@ -72,30 +72,30 @@
                                            <td>
                                                 <input class="form-check-input row-checkbox" type="checkbox" name="ids[]" value="{{ $product->id }}">
                                             </td>
-                                            <td>{{ $product->warehouse->name }}</td>
+                                            <td>{{ $product->warehouseStock?->warehouse->name ?? 'NA' }}</td>
                                             <td>
                                                 <div class="d-flex align-items-center gap-3">
 
                                                     <div class="product-info">
                                                         <a href="javascript:;"
-                                                            class="product-title">{{ $product->name }}</a>
+                                                            class="product-title">{{ $product->warehouseStock->product->name }}</a>
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td>{{ $product->sku }}</td>
-                                            <td>{{ $product->item_id }}</td>
-                                            <td>{{ $product->vendor_name }}</td>
-                                            <td>{{ $product->entity_vendor_legal_name }}</td>
-                                            <td>{{ $product->manufacturer_name }}</td>
-                                            <td>{{ $product->facility_name }}</td>
-                                            <td>{{ $product->units }}</td>
-                                            <td>{{ $product->units_ordered }}</td>
-                                            <td>{{ $product->landing_rate }}</td>
-                                            <td>{{ $product->cost_price }}</td>
-                                            <td>{{ $product->total_amount }}</td>
-                                            <td>{{ $product->mrp }}</td>
-                                            <td>{{ $product->po_status }}</td>
-                                            <td>{{ $product->created_at }}</td>
+                                            <td>{{ $product->warehouseStock->product->sku }}</td>
+                                            <td>{{ $product->warehouseStock->product->item_code }}</td>
+                                            <td>{{ $product->warehouseStock->product->vendor_name }}</td>
+                                            <td>{{ $product->warehouseStock->product->entity_vendor_legal_name }}</td>
+                                            <td>{{ $product->warehouseStock->product->manufacturer_name }}</td>
+                                            <td>{{ $product->warehouseStock->product->facility_name }}</td>
+                                            <td>{{ $product->warehouseStock->product->description }}</td>
+                                            <td>{{ $product->warehouseStock->product->units_ordered }}</td>
+                                            <td>{{ $product->warehouseStock->product->net_landing_rate }}</td>
+                                            <td>{{ $product->warehouseStock->product->po_qty }}</td>
+                                            <td>{{ $product->warehouseStock->product->total_amount }}</td>
+                                            <td>{{ $product->warehouseStock->product->mrp }}</td>
+                                            <td>{{ $product->warehouseStock->product->po_status }}</td>
+                                            <td>{{ $product->warehouseStock->product->created_at }}</td>
                                         </tr>
                                     @endforeach
                                 </tbody>

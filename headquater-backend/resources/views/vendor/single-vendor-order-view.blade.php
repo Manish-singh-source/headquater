@@ -8,23 +8,65 @@
 
                 <div class="row">
                     <div class="col-12">
-                        <div class="card w-100 d-flex  flex-sm-row flex-col">
-                            <ul class="col-12 list-group list-group-flush">
-                                <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
-                                    <span><b>Order Id</b></span>
-                                    <span>{{ 'ORDER-' . $order->id }}</span>
-                                </li>
-                                <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
-                                    <span><b>Vendor Name</b></span>
-                                    <span>
-                                        <b>
-                                            @foreach ($vendors as $vendor)
-                                                {{ $vendor->first_name ?? '' }}
-                                            @endforeach
-                                        </b>
-                                    </span>
-                                </li>
-                            </ul>
+                        <div class="card">
+                            <div class="card-header">
+                                <div class="row g-4 align-items-center">
+                                    <div class="col-sm">
+                                        <h5 class="card-title mb-0">
+                                            Vendor Details
+                                        </h5>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="row g-3">
+                                    <ul class="col-12 list-group list-group-flush">
+                                        <li
+                                            class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
+                                            <span><b>Order Id</b></span>
+                                            <span>{{ 'ORDER-' . $order->id }}</span>
+                                        </li>
+                                        <li
+                                            class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
+                                            <span><b>Vendor Name</b></span>
+                                            <span>
+                                                <b>
+                                                    {{ $vendor->first_name ?? '' }}
+                                                </b>
+                                            </span>
+                                        </li>
+                                        <li
+                                            class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
+                                            <span><b>Vendor Email</b></span>
+                                            <span>
+                                                <b>
+                                                    {{ $vendor->email ?? '' }}
+                                                </b>
+                                            </span>
+                                        </li>
+                                        <li
+                                            class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
+                                            <span><b>Vendor Contact No.</b></span>
+                                            <span>
+                                                <b>
+                                                    {{ $vendor->phone_number ?? '' }}
+                                                </b>
+                                            </span>
+                                        </li>
+
+                                        <li
+                                            class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
+                                            <span><b>Vendor Address</b></span>
+                                            <span>
+                                                <b>
+                                                    {{ $vendor->address ?? '' }}
+                                                </b>
+                                            </span>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+
                         </div>
                     </div>
                 </div>
@@ -37,28 +79,6 @@
                             <h6 class="mb-3">PO Table</h6>
                         </div>
                     </div>
-                    <!-- Tabs Navigation -->
-                    <div class="div d-flex justify-content-end my-3">
-                        <ul class="nav nav-tabs" id="vendorTabs" role="tablist">
-                            <select class="form-select"  id="departmentFilter" aria-label="Default select example">
-                                <option value="" selected>All Vendors</option>
-                                @foreach ($vendors as $vendor)
-                                    <option value="{{ $vendor->first_name }}">{{ $vendor->first_name }}</option>
-                                @endforeach
-                            </select>
-                            {{-- 
-                            @foreach ($vendors as $vendor)
-                                <li class="nav-item" role="presentation">
-                                    <button class="nav-link bg-success text-white mx-1" id="customer1-tab"
-                                        data-bs-toggle="tab" data-bs-target="#customer1" type="button"
-                                        role="tab">{{ $vendor->first_name ?? '' }}
-                                    </button>
-                                </li>
-                            @endforeach 
-                            --}}
-                        </ul>
-                    </div>
-
                     <div class="product-table">
                         <div class="table-responsive white-space-nowrap">
                             <table id="example" class="table align-middle">
@@ -92,12 +112,6 @@
                                 </tbody>
                             </table>
                         </div>
-
-                        {{-- <div class="col-12 text-end">
-                            <button type="" class="btn btn-success w-sm waves ripple-light">
-                                Save
-                            </button>
-                        </div> --}}
                     </div>
                 </div>
             </div>
@@ -160,11 +174,6 @@
                             <label for="document_image" class="form-label">PI Excel</label>
                             <p> <b>ABC.xls</b> </p>
                         </div>
-                        <!-- <div class="col-12 col-lg-2 d-flex align-items-end gap-2">
-                                                                                    <button type="" class="btn btn-success w-sm waves ripple-light add">
-                                                                                        Add More
-                                                                                    </button>
-                                                                                </div> -->
                     </div>
                 </div>
 
@@ -211,10 +220,10 @@
                             <p> <b>ABC.xls</b> </p>
                         </div>
                         <!-- <div class="col-12 col-lg-2 d-flex align-items-end gap-2">
-                                                                                    <button type="" class="btn btn-success w-sm waves ripple-light">
-                                                                                        Add More
-                                                                                    </button>
-                                                                                </div> -->
+                                                                                                        <button type="" class="btn btn-success w-sm waves ripple-light">
+                                                                                                            Add More
+                                                                                                        </button>
+                                                                                                    </div> -->
                     </div>
                 </div>
 

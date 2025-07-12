@@ -36,10 +36,10 @@
                                             <input class="form-check-input" type="checkbox">
                                         </th>
                                         <th>Order Id</th>
-                                        <th>Customer Name</th>
+                                        <th>Customer Group Name</th>
                                         <th>Order Status</th>
                                         <th>Ordered Date</th>
-                                        <th>Warehouse</th>
+                                        {{-- <th>Warehouse</th> --}}
                                         <th>Action</th>
                                     </tr>
                                 </thead>
@@ -60,14 +60,13 @@
                                             <td>{{ 'ORDER-' . $order->id }}</td>
                                             <td>
                                                 <p class="mb-0 customer-name fw-bold">
-                                                    {{ $order->manageCustomer->customerGroup->group_name }}
+                                                    {{ $order->group->group_name }}
                                                 </p>
                                             </td>
                                             <td>
                                                 {{ $statuses[$order->status] ?? 'On Hold' }}
                                             </td>
                                             <td>{{ $order->created_at->toDateString() }}</td>
-                                            <td>{{ $order->warehouse->name }}</td>
                                             <td>
                                                 <div class="d-flex">
                                                     <a aria-label="anchor"

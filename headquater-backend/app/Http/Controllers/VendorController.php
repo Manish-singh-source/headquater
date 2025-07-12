@@ -32,7 +32,7 @@ class VendorController extends Controller
     public function vendorList()
     {
         // $vendor = Vendor::all();
-        $vendors = Vendor::paginate(10);
+        $vendors = Vendor::with('city')->get();
         return view('vendor.vendor', compact('vendors'));
     }
 
@@ -124,18 +124,27 @@ class VendorController extends Controller
 
     public function detailVendor($id)
     {
-        $vendor = Vendor::findOrFail($id);
-        return view('vendor.vendor-details', compact('vendor'));
+        $vendor = Vendor::with('orderDetail')->findOrFail($id);
+
+        $orderIds = TempOrder::where('vendor_code', $vendor->vendor_code)
+            ->select('order_id')
+            ->distinct()
+            ->pluck('order_id');
+
+        $orderedProducts = TempOrder::where('vendor_code', $vendor->vendor_code)
+            ->whereIn('order_id', $orderIds)
+            ->get();
+
+        $orders = ManageOrder::with('warehouse')->whereIn('id', $orderIds)->get();
+        // dd($order);
+
+        return view('vendor.vendor-details', compact('vendor', 'orders'));
     }
 
     public function vendorOrderView($id)
     {
-        // $vendors = TempOrderStatus::where('status', '2')->with(['orderedProducts.vendors', 'warehouse'])->find($id);
-        // $vendorOrders = TempOrderStatus::where('status', '2')->with(['orderedProducts.vendorInfo', 'warehouse'])->find($id);
-        // dd($vendorOrders);
 
         $order = ManageOrder::find($id);
-
         $vendorCodes = TempOrder::where('order_id', $id)
             ->select('vendor_code')
             ->distinct()
@@ -146,5 +155,22 @@ class VendorController extends Controller
         $vendors = Vendor::whereIn('vendor_code', $vendorCodes)->get();
         // dd($orders);
         return view('vendor.vendor-order-view', compact('order', 'vendorCodes', 'orders', 'vendors'));
+    }
+
+    public function singleVendorOrderView($orderId, $vendorCode)
+    {
+        $vendor = Vendor::where('vendor_code', $vendorCode)->first();
+        // dd($vendor);
+        $order = ManageOrder::find($orderId);
+        // $vendorCodes = TempOrder::where('order_id', $id)
+        //     ->select('vendor_code')
+        //     ->distinct()
+        //     ->pluck('vendor_code');
+        $orders = TempOrder::where('order_id', $orderId)
+            ->where('vendor_code', $vendorCode)
+            ->get();
+        // dd($orders);
+        // $vendors = Vendor::whereIn('vendor_code', $vendorCodes)->get();
+        return view('vendor.single-vendor-order-view', compact('orders', 'vendor', 'order'));
     }
 }

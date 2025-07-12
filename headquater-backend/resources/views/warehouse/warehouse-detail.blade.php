@@ -10,7 +10,8 @@
                         <ol class="breadcrumb mb-0 p-0">
                             <li class="breadcrumb-item"><a href="javascript:;"><i class="bx bx-home-alt"></i></a>
                             </li>
-                            <li class="breadcrumb-item active" aria-current="page"><b>Warehouse:</b> {{ ucfirst($warehouse->name) }} </li>
+                            <li class="breadcrumb-item active" aria-current="page"><b>Warehouse:</b>
+                                {{ ucfirst($warehouse->name) }} </li>
                         </ol>
                     </nav>
                 </div>
@@ -80,7 +81,7 @@
                         <div class="table-responsive white-space-nowrap">
                             <table id="example" class="table align-middle">
                                 <thead class="table-light">
-                                    <tr>    
+                                    <tr>
                                         <th>
                                             <input class="form-check-input" type="checkbox">
                                         </th>
@@ -102,7 +103,7 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @forelse($warehouse->products as $product)
+                                    @forelse($warehouse->stocks as $stock)
                                         <tr>
                                             <td>
                                                 <input class="form-check-input" type="checkbox">
@@ -111,24 +112,24 @@
                                                 <div class="d-flex align-items-center gap-3">
                                                     <div class="product-info">
                                                         <a href="javascript:;"
-                                                            class="product-title">{{ $product->name }}</a>
+                                                            class="product-title">{{ $stock->product->item_code }}</a>
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td>{{ $product->sku }}</td>
-                                            <td>{{ $product->item_id }}</td>
-                                            <td>{{ $product->vendor_name }}</td>
-                                            <td>{{ $product->entity_vendor_legal_name }}</td>
-                                            <td>{{ $product->manufacturer_name }}</td>
-                                            <td>{{ $product->facility_name }}</td>
-                                            <td>{{ $product->units }}</td>
-                                            <td>{{ $product->units_ordered }}</td>
-                                            <td>{{ $product->landing_rate }}</td>
-                                            <td>{{ $product->cost_price }}</td>
-                                            <td>{{ $product->total_amount }}</td>
-                                            <td>{{ $product->mrp }}</td>
-                                            <td>{{ $product->po_status }}</td>
-                                            <td>{{ $product->created_at }}</td>
+                                            <td>{{ $stock->product->sku }}</td>
+                                            <td>{{ $stock->product->item_code }}</td>
+                                            <td>{{ $stock->product->vendor_code }}</td>
+                                            <td>{{ $stock->product->purchase_order_quantity }}</td>
+                                            <td>{{ $stock->product->customer_name }}</td>
+                                            <td>{{ $stock->product->facility_name }}</td>
+                                            <td>{{ $stock->product->basic_rate }}</td>
+                                            <td>{{ $stock->product->po_qty }}</td>
+                                            <td>{{ $stock->product->purchase_order_quantity }}</td>
+                                            <td>{{ $stock->product->vendor_code }}</td>
+                                            <td>{{ $stock->product->item_code }}</td>
+                                            <td>{{ $stock->product->mrp }}</td>
+                                            <td>{{ $stock->product->po_number }}</td>
+                                            <td>{{ $stock->product?->created_at }}</td>
                                         </tr>
                                     @empty
                                         <tr>

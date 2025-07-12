@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Bus;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Jobs\ProcessCustomerExcelJob;
+use App\Models\CustomerGroupMember;
 use Illuminate\Support\Facades\Validator;
 
 class CustomerController extends Controller
@@ -45,9 +46,11 @@ class CustomerController extends Controller
 
     public function customersList($id)
     {
-        $group = CustomerGroup::findOrFail($id);
+        $group = CustomerGroupMember::where('group_id', $id)->with('customer')->get();
+        $groupInfo = CustomerGroup::find($id);
         $customers = Customer::where('group_id', $id)->get();
-        return view('customer.customers-list', compact('customers', 'group'));
+        // dd($groupInfo);
+        return view('customer.customers-list', compact('customers', 'group', 'groupInfo'));
     }
 
     public function Customercount()
@@ -152,7 +155,7 @@ class CustomerController extends Controller
     public function detailCustomer($id)
     {
         $customer = Customer::where('group_id', $id)->get();
-        // dd($customer);
+
         return view('customer.customer-detail', compact('customer'));
     }
 

@@ -28,8 +28,8 @@ class Warehouse extends Model
         return $this->hasOne(City::class, 'id', 'city');
     }
 
-    public function products(): HasMany
+    public function stocks(): HasMany
     {
-        return $this->hasMany(Product::class, 'warehouse_id',  'id');
+        return $this->hasMany(WarehouseStock::class, 'warehouse_id',  'id');
     }
 }

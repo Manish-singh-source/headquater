@@ -9,14 +9,15 @@ use Illuminate\Support\Facades\Validator;
 class WarehouseController extends Controller
 {
     //
-     public function toggleStatus(Request $request)
-{
-    $warehouse = Warehouse::findOrFail($request->id);
-    $warehouse->status = $request->status;
-    $warehouse->save();
+    public function toggleStatus(Request $request)
+    {
+        $warehouse = Warehouse::findOrFail($request->id);
+        $warehouse->status = $request->status;
+        $warehouse->save();
 
-    return response()->json(['success' => true]);
-}
+        return response()->json(['success' => true]);
+    }
+
     public function deleteSelected(Request $request)
     {
         $ids = is_array($request->ids) ? $request->ids : explode(',', $request->ids);
@@ -82,10 +83,11 @@ class WarehouseController extends Controller
 
     public function warehouseDetail($id)
     {
-        $warehouse = Warehouse::with('products')->findOrFail($id);
+        $warehouse = Warehouse::with('stocks.product')->findOrFail($id);
+        // dd($warehouse); 
         return view('warehouse.warehouse-detail', ['warehouse' => $warehouse]);
     }
-
+    
     public function warehouseEdit($id)
     {
         $warehouse = Warehouse::findOrFail($id);

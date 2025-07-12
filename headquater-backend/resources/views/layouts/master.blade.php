@@ -712,15 +712,23 @@
               var table1 = $('#example').DataTable({
                   "columnDefs": [{
                           "orderable": false,
-                        //   "targets": [0, -1],
+                          //   "targets": [0, -1],
                       } // Disable sorting for the 4th column (index starts at 0)
                   ],
                   lengthChange: true,
-                //   buttons: ['excel', 'pdf', 'print']
+                    // buttons: ['excel', 'pdf', 'print']
+                    buttons: ['excel']
               });
 
               table1.buttons().container()
                   .appendTo('#example_wrapper .col-md-6:eq(0)');
+
+              $('#departmentFilter').on('change', function() {
+                  var selected = $(this).val();
+
+                  // Use regex for exact match
+                  table1.column(1).search(selected ? '^' + selected + '$' : '', true, false).draw();
+              });
           });
       </script>
 

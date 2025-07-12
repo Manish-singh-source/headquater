@@ -75,7 +75,7 @@
                                             <td>
                                                 <a href="javascript:;" class="font-text1">{{ $vendor->email }}</a>
                                             </td>
-                                            <td>{{ $vendor->phone }}</td>
+                                            <td>{{ $vendor->phone_number }}</td>
                                             <td>142</td>
                                             <td>Mumbai</td>
 
@@ -158,9 +158,6 @@
                                 </tbody>
                             </table>
                         </div>
-                    </div>
-                    <div class="pagination justify-content-end">
-                        {{ $vendors->links() }}
                     </div>
                 </div>
             </div>

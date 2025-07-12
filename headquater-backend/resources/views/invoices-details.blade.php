@@ -10,7 +10,7 @@
                     <h5 class="mb-3">INV0001</h5>
                 </div>
                 <div class="col text-end">
-                    <a href="packaging-list.php" class="btn btn-success w-sm waves ripple-light" onclick="window.print()">
+                    <a href="javascript:void(0)" class="btn btn-success w-sm waves ripple-light" onclick="window.getElementByClass('.card').print()">
                         Print
                     </a>
                 </div>

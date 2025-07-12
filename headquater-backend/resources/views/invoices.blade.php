@@ -99,7 +99,7 @@
                                         <td>2,000</td>
                                         <td class="text-success">Completed</td>
                                         <td>
-                                            <a aria-label="anchor" href="invoices-details.php"
+                                            <a aria-label="anchor" href="{{ route('invoices-details') }}"
                                                 class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip"
                                                 data-bs-original-title="View">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13"

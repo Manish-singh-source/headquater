@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Models\Country;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Customer extends Model
@@ -52,5 +53,9 @@ class Customer extends Model
     public function admins(): HasOne
     {
         return $this->hasOne(Admin::class, 'id', 'created_by');
+    }
+    
+    public function orders() : HasMany {
+        return $this->hasMany(OrderItem::class, 'customer_id', 'client_name');
     }
 }

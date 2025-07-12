@@ -6,6 +6,8 @@ use App\Models\Product;
 use App\Models\Warehouse;
 use Illuminate\Http\Request;
 use App\Imports\ProductsImport;
+use App\Models\TempOrder;
+use App\Models\WarehouseStock;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Validator;
@@ -22,7 +24,8 @@ class ProductController extends Controller
     }
     public function  productsList()
     {
-        $products = Product::with('warehouse')->get();
+        $products = TempOrder::with('warehouseStock.product')->get();
+        // dd($products[5]->warehouseStock);
         return view('products', ['products' => $products]);
     }
 
@@ -42,11 +45,19 @@ class ProductController extends Controller
         $file = $request->file('products_excel')->getPathname();
         $file_extension = $request->file('products_excel')->getClientOriginalExtension();
         // dd($request->file('products_excel'), $file_extension); // Debugging line to check file and mime type
+
         $reader = SimpleExcelReader::create($file, $file_extension);
         $insertedRows = [];
         foreach ($reader->getRows() as $record) {
+            
+            $warehouseStock = new WarehouseStock();
+            $warehouseStock->warehouse_id = $request->warehouse_id;
+            $warehouseStock->product_id= $record['sku'];
+            $warehouseStock->quantity= $record['units_ordered'];
+            $warehouseStock->save();
+
+
             $insertedRows[] = [
-                'warehouse_id' => $request->warehouse_id,
                 'name' => $record['name'],
                 'sku' => $record['sku'],
                 'item_id' => $record['item_id'],
