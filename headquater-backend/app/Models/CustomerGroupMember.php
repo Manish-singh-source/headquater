@@ -3,13 +3,17 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class CustomerGroupMember extends Model
 {
-    protected $table = 'customer_group_members';
-
-    public function customer() : HasOne {
-        return $this->hasOne(Customer::class, 'client_name', 'customer_id');
+    //
+    protected $guarded = [];
+    
+    public function customer() {
+        return $this->hasOne(Customer::class, 'id', 'customer_id');
+    }
+   
+    public function customerGroup() {
+        return $this->hasOne(CustomerGroup::class, 'id', 'customer_group_id');
     }
 }

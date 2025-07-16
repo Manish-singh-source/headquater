@@ -413,10 +413,10 @@
                           <div class="menu-title">Access Control</div>
                       </a>
                       <ul>
-                          <li><a href="{{ route('staff') }}"><i
+                          <li><a href="{{ route('staff.index') }}"><i
                                       class="material-icons-outlined">arrow_right</i>Staff</a>
                           </li>
-                          <li><a href="{{ route('role') }}"><i
+                          <li><a href="{{ route('role.index') }}"><i
                                       class="material-icons-outlined">arrow_right</i>Role</a>
                           </li>
                       </ul>
@@ -428,16 +428,16 @@
                           <div class="menu-title">Master</div>
                       </a>
                       <ul>
-                          <li><a href="{{ route('groups') }}"><i
+                          <li><a href="{{ route('customer.groups.index') }}"><i
                                       class="material-icons-outlined">arrow_right</i>Customers</a>
                           </li>
-                          <li><a href="{{ route('vendor') }}"><i
+                          <li><a href="{{ route('vendor.index') }}"><i
                                       class="material-icons-outlined">arrow_right</i>Vendor</a>
                           </li>
-                          <li><a href="{{ route('products') }}"><i
+                          <li><a href="{{ route('products.index') }}"><i
                                       class="material-icons-outlined">arrow_right</i>Products</a>
                           </li>
-                          <li><a href="{{ route('warehouse') }}"><i
+                          <li><a href="{{ route('warehouse.index') }}"><i
                                       class="material-icons-outlined">arrow_right</i>Warehouses</a>
                           </li>
                       </ul>
@@ -449,7 +449,7 @@
                           <div class="menu-title">Purchase</div>
                       </a>
                       <ul>
-                          <li><a href="{{ route('assign-order') }}"><i
+                          <li><a href="{{ route('purchase.order.index') }}"><i
                                       class="material-icons-outlined">arrow_right</i>Purchase
                                   Order</a>
                           </li>
@@ -462,7 +462,7 @@
                           <div class="menu-title">Sales</div>
                       </a>
                       <ul>
-                          <li><a href="{{ route('order') }}"><i class="material-icons-outlined">arrow_right</i>Sales
+                          <li><a href="{{ route('order.index') }}"><i class="material-icons-outlined">arrow_right</i>Sales
                                   Order</a>
                           </li>
                       </ul>

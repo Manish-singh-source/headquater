@@ -81,7 +81,7 @@
                                     <div class="ms-2">
                                         <p class="text-dark mb-1">Total Customers</p>
                                         <div class="d-inline-flex align-items-center flex-wrap gap-2">
-                                            <h4 class="text-dark">{{$customersCount}}</h4>
+                                            <h4 class="text-dark">10</h4>
                                             <!-- <span class="badge badge-soft-primary text-dark"><i class="ti ti-arrow-up me-1"></i>+22%</span> -->
                                         </div>
                                     </div>

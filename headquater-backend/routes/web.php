@@ -14,19 +14,79 @@ use App\Http\Controllers\LocationController;
 use App\Http\Controllers\WarehouseController;
 use App\Http\Controllers\PlaceOrderController;
 use App\Http\Controllers\CustomerGroupController;
+use App\Http\Controllers\PurchaseOrderController;
+use App\Http\Controllers\RoleController;
+use App\Models\CustomerGroup;
 
 // Route::get('/', function () {
 //     return view('index');
 // })->name('index');
 // Route::middleware('IsAdmin')->group(function() {
-    Route::get('/', [CustomerController::class, 'Customercount'])->name('index');
+//     Route::get('/', [CustomerController::class, 'Customercount'])->name('index');
 // });
+
+// index
+// view
+// create
+// store
+// edit
+// update
+// delete/destroy
+
+Route::get('/', [CustomerController::class, 'index'])->name('index');
 
 Route::controller(LocationController::class)->group(function () {
     Route::get('/countries', 'getCountries');
     Route::get('/states', 'getStates');
     Route::get('/cities', 'getCities');
 });
+
+
+
+// Customer Group Controller
+Route::controller(CustomerGroupController::class)->group(function () {
+    Route::get('/customer-groups', 'index')->name('customer.groups.index');
+    Route::get('/create-customer-groups', 'create')->name('customer.groups.create');
+    Route::post('/store-customer-groups', 'store')->name('customer.groups.store');
+    Route::delete('/delete-customer-groups/{id}', 'destroy')->name('customer.groups.destroy');
+    Route::get('/view-customer-groups/{id}', 'view')->name('customer.groups.view');
+});
+
+
+// Warehouse List
+Route::controller(WarehouseController::class)->group(function () {
+    Route::get('/warehouses', 'index')->name('warehouse.index');
+    Route::get('/create-warehouses', 'create')->name('warehouse.create');
+    Route::post('/warehouses', 'store')->name('warehouse.store');
+    Route::get('/warehouses/{id}', 'edit')->name('warehouse.edit');
+    Route::put('/warehouse/{id}', 'update')->name('warehouse.update');
+    Route::delete('/warehouses/{id}', 'destroy')->name('warehouse.destroy');
+    Route::get('/warehouses/view/{id}', 'view')->name('warehouse.view');
+
+    Route::post('/warehouse/toggle-status', [WarehouseController::class, 'toggleStatus'])->name('warehouse.toggleStatus');
+});
+
+
+
+// Vendors
+Route::controller(VendorController::class)->group(function () {
+    Route::get('/vendors', 'index')->name('vendor.index');
+    Route::get('/create-vendors', 'create')->name('vendor.create');
+    Route::post('/vendors', 'store')->name('vendor.store');
+    Route::get('/vendors/{id}', 'edit')->name('vendor.edit');
+    Route::put('/vendor/{id}', 'update')->name('vendor.update');
+    Route::delete('/vendors/{id}', 'destroy')->name('vendor.destroy');
+    Route::get('/vendors/view/{id}', 'view')->name('vendor.view');
+
+    Route::get('/vendor-order-view/{id}', 'vendorOrderView')->name('vendor-order-view');
+    Route::get('/single-vendor-order-view/{orderId}/{vendorCode}', 'singleVendorOrderView')->name('single-vendor-order-view');
+});
+Route::post('/vendor/toggle-status', [VendorController::class, 'toggleStatus'])->name('vendor.toggleStatus');
+Route::delete('/vendor/delete-selected', [VendorController::class, 'deleteSelected'])->name('delete.selected.vendor');
+Route::delete('/products/delete-selected', [ProductController::class, 'deleteSelected'])->name('delete.selected.product');
+Route::delete('/warehouse/delete-selected', [WarehouseController::class, 'deleteSelected'])->name('delete.selected.warehouse');
+
+
 
 
 // Authentication
@@ -40,24 +100,41 @@ Route::controller(AuthController::class)->group(function () {
 
 
 //Access Control
-Route::controller(AccessController::class)->group(function () {
-    // Staff 
-    Route::get('/staff', 'staffList')->name('staff');
-    Route::get('/add-staff', 'addStaff')->name('add-staff');
-    Route::get('/staff-detail/{id}', 'staffDetail')->name('staff-detail');
-    Route::post('/add-staff', 'storeStaff')->name('store-staff');
-    Route::delete('/staff/delete/{id}', 'deletestaff')->name('staff.delete');
-    Route::get('/staff/edit/{id}', 'editstaff')->name('staff.edit');
-    Route::put('/staff/update/{id}', 'updatestaff')->name('staff.update');
 
+Route::controller(RoleController::class)->group(function () {
     // Roles
-    Route::get('/role', 'roleList')->name('role');
-    Route::get('/add-role', 'addRole')->name('add-role');
-    Route::post('/store-role', 'storeRole')->name('store.role');
-    Route::delete('/role-delete/{id}', 'roleDelete')->name('role.delete');
-    Route::get('/role-edit/{id}', 'roleEdit')->name('role.edit');
-    Route::put('/role-update/{id}', 'roleUpdate')->name('role.update');
+    Route::get('/role', 'index')->name('role.index');
+    Route::get('/create-role', 'create')->name('role.create');
+    Route::post('/store-role', 'store')->name('role.store');
+    Route::get('/edit-role/{id}', 'edit')->name('role.edit');
+    Route::put('/update-role/{id}', 'update')->name('role.update');
+    Route::delete('/delete-role/{id}', 'destroy')->name('role.destroy');
+    Route::get('/view-staff/{id}', 'view')->name('role.view');
 });
+
+Route::controller(StaffController::class)->group(function () {
+    // Staff 
+    Route::get('/staff', 'index')->name('staff.index');
+    Route::get('/create-staff', 'create')->name('staff.create');
+    Route::post('/store-staff', 'store')->name('staff.store');
+    Route::get('/edit-staff/{id}', 'edit')->name('staff.edit');
+    Route::put('/update-staff/{id}', 'update')->name('staff.update');
+    Route::delete('/delete-staff/{id}', 'destroy')->name('staff.destroy');
+    Route::get('/view-staff/{id}', 'view')->name('staff.view');
+});
+
+
+// Product controller
+Route::controller(ProductController::class)->group(function () {
+    Route::get('/products', 'index')->name('products.index');
+    Route::get('/create-products', 'create')->name('products.create');
+    Route::post('/products', 'store')->name('products.store');
+    Route::get('/products/{id}', 'edit')->name('products.edit');
+    Route::put('/products/{id}', 'update')->name('products.update');
+    Route::delete('/products/{id}', 'destroy')->name('products.destroy');
+    Route::get('/products/view/{id}', 'view')->name('products.view');
+});
+
 
 
 // Customer
@@ -78,26 +155,12 @@ Route::get('/customer-group', function () {
     return view('customer.customer-group');
 })->name('customer-group');
 
+
+
+
 Route::post('/import-large-csv', [CustomerGroupController::class, 'importLargeCsv'])->name('import-large-csv');
 Route::post('/customer/toggle-status', [CustomerController::class, 'toggleStatus'])->name('customer.toggleStatus');
 Route::delete('/customers/delete-selected', [CustomerController::class, 'deleteSelected'])->name('delete.selected.customers');
-
-// Vendors
-Route::controller(VendorController::class)->group(function () {
-    Route::get('/vendors', 'vendorList')->name('vendor');
-    Route::get('/create-vendor', 'createVendor')->name('vendor.create');
-    Route::post('/vendor/add', 'addVendor')->name('vendor.add');
-    Route::get('/vendor/{id}', 'detailVendor')->name('vendor.detail');
-    Route::put('/vendor/update/{id}', 'updateVendor')->name('vendor.update');
-    Route::delete('/vendor/delete/{id}', 'deleteVendor')->name('vendor.delete');
-    Route::get('/vendor/edit/{id}', 'editVendor')->name('edit-vendor');
-    Route::get('/vendor-order-view/{id}', 'vendorOrderView')->name('vendor-order-view');
-    Route::get('/single-vendor-order-view/{orderId}/{vendorCode}', 'singleVendorOrderView')->name('single-vendor-order-view');
-});
-Route::post('/vendor/toggle-status', [VendorController::class, 'toggleStatus'])->name('vendor.toggleStatus');
-Route::delete('/vendor/delete-selected', [VendorController::class, 'deleteSelected'])->name('delete.selected.vendor');
-Route::delete('/products/delete-selected', [ProductController::class, 'deleteSelected'])->name('delete.selected.product');
-Route::delete('/warehouse/delete-selected', [WarehouseController::class, 'deleteSelected'])->name('delete.selected.warehouse');
 
 
 
@@ -106,28 +169,40 @@ Route::get('/assign-order', [PlaceOrderController::class, 'assignOrder'])->name(
 // Place Order To Vendor
 Route::get('/assign-order-to-vendor', [PlaceOrderController::class, 'assignOrderToVendor'])->name('assign-order-to-vendor');
 
-// Warehouse List
-Route::controller(WarehouseController::class)->group(function () {
-    Route::get('/warehouse', 'warehouseList')->name('warehouse');
-    Route::get('/create-warehouse', 'createWarehouse')->name('warehouse.create');
-    Route::post('/create-warehouse', 'storeWarehouse')->name('warehouse.store');
-    Route::get('/warehouse-detail/{id}', 'warehouseDetail')->name('warehouse.detail');
-    Route::delete('/warehouse/delete/{id}', 'deleteWarehouse')->name('warehouse.delete');
-    Route::get('/warehouse-edit/{id}', 'warehouseEdit')->name('warehouse.edit');
-    Route::put('/warehouse-update/{id}', 'warehouseUpdate')->name('warehouse.update');
-    Route::post('/warehouse/toggle-status', [WarehouseController::class, 'toggleStatus'])->name('warehouse.toggleStatus');
-});
+Route::get('/purchase-order', [PurchaseOrderController::class, 'index'])->name('purchase.order.index');
+Route::get('/purchase-order-view/{id}', [PurchaseOrderController::class, 'view'])->name('purchase.order.view');
+
+
 
 // All Order page
 Route::controller(OrderController::class)->group(function () {
-    Route::get('/order', 'orderList')->name('order');
-    Route::get('/add-order', 'addOrder')->name('add-order');
-    Route::post('/process-order', 'processOrder')->name('process.order');
-    Route::post('/process-block-order', 'processBlockOrder')->name('process.block.order');
+    // Route::get('/order', 'orderList')->name('order');
+    // Route::get('/add-order', 'addOrder')->name('add-order');
+    // Route::post('/process-order', 'processOrder')->name('process.order');
+    // Route::post('/process-block-order', 'processBlockOrder')->name('process.block.order');
+    // Route::get('/download-block-order-csv', 'downloadBlockedCSV')->name('download.order.excel');
+    // Route::get('/customer-order-view/{id}', 'viewOrder')->name('customer-order-view');
+    // Route::delete('/customer-order-delete/{id}', 'deleteOrder')->name('delete.order');
+
+    Route::get('/order', 'index')->name('order.index');
+    Route::get('/create-order', 'create')->name('order.create');
+    Route::post('/check-products-stock', 'checkProductsStock')->name('check.order.stock');
+    Route::post('/store-order', 'store')->name('order.store');
+    Route::get('/view-order/{id}', 'view')->name('order.view');
+    Route::delete('/delete-order/{id}', 'destroy')->name('order.delete');
+
     Route::get('/download-block-order-csv', 'downloadBlockedCSV')->name('download.order.excel');
-    Route::get('/customer-order-view/{id}', 'viewOrder')->name('customer-order-view');
-    Route::delete('/customer-order-delete/{id}', 'deleteOrder')->name('delete.order');
 });
+
+
+
+
+
+
+
+
+
+// Later Tasks 
 
 // Report Details List
 Route::controller(ReportController::class)->group(function () {
@@ -139,16 +214,12 @@ Route::controller(ReportController::class)->group(function () {
 
 
 
-// Route::get('/customer-detail', function () {
-//     return view('customer-detail');
-// })->name('customer-detail');
 
 
 
-// Product
-Route::get('/products', [ProductController::class, 'productsList'])->name('products');
-Route::get('/add-product', [ProductController::class, 'addProductPage'])->name('add-product');
-Route::post('/store-products', [ProductController::class, 'storeProducts'])->name('store.products');
+
+// Later Tasks
+
 
 // invoice
 Route::get('/invoices', function () {

@@ -154,7 +154,7 @@
                 <div class="card-body">
                     <div class="product-table">
                         <div class="table-responsive white-space-nowrap">
-                            <table class="table align-middle">
+                            <table id="example" class="table align-middle">
                                 <thead class="table-light">
                                     <tr>
                                         <th>

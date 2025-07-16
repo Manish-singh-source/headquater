@@ -59,7 +59,7 @@
                                     class="bi bi-plus-lg me-2"></i>Create Invoice</button></a>
                     </div>
                 </div>
-            </div><!--end row-->
+            </div>
 
             <div class="card mt-4">
                 <div class="card-body">

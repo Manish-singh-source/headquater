@@ -22,6 +22,10 @@ use Illuminate\Support\Facades\Validator;
 class CustomerController extends Controller
 {
 
+    public function index() {
+        return view('index');
+    }
+
     public function toggleStatus(Request $request)
     {
         $customer = CustomerGroup::findOrFail($request->id);

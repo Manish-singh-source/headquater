@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\WarehouseFormRequest;
 use App\Models\Warehouse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -9,6 +10,57 @@ use Illuminate\Support\Facades\Validator;
 class WarehouseController extends Controller
 {
     //
+
+    public function index()
+    {
+        $warehouses = Warehouse::with('country')->with('state')->with('cities')->get();
+        // dd($warehouses);
+        return view('warehouse.index', compact('warehouses'));
+    }
+
+
+    public function create()
+    {
+        return view('warehouse.create');
+    }
+
+    public function store(WarehouseFormRequest $request)
+    {
+        $warehouse = new Warehouse();
+        $warehouse->name = $request->name;
+        $warehouse->type = $request->type;
+        $warehouse->contact_person_name = $request->contact_person_name;
+        $warehouse->phone = $request->contact_person_phone_no;
+        $warehouse->alt_phone = $request->contact_person_alt_phone_no;
+        $warehouse->email = $request->contact_person_email;
+        $warehouse->gst_number = $request->gst_no;
+        $warehouse->pan_number = $request->pan_no;
+        $warehouse->address_line_1 = $request->address_line_1;
+        $warehouse->address_line_2 = $request->address_line_2;
+        $warehouse->licence_doc = $request->licence_doc;
+        $warehouse->max_storage_capacity = $request->max_storage_capacity;
+        $warehouse->operations = $request->supported_operations;
+        $warehouse->country_id = $request->country_id;
+        $warehouse->state_id = $request->state_id;
+        $warehouse->city_id = $request->city_id;
+        $warehouse->pincode = $request->pincode;
+        $warehouse->status = $request->status;
+        $warehouse->save();
+
+        if (!$warehouse) {
+            return redirect()->back()->with('error', 'Something Went Wrong. Warehouse Not Created');
+        }
+
+        return redirect()->route('warehouse.index')->with('success', 'Warehouse Created Successfully');
+    }
+
+    public function view($id)
+    {
+        $warehouse = Warehouse::with('warehouseStock.product')->findOrFail($id);
+        // dd($warehouse->warehouseStock[0]->product); 
+        return view('warehouse.view', ['warehouse' => $warehouse]);
+    }
+
     public function toggleStatus(Request $request)
     {
         $warehouse = Warehouse::findOrFail($request->id);
@@ -87,36 +139,18 @@ class WarehouseController extends Controller
         // dd($warehouse); 
         return view('warehouse.warehouse-detail', ['warehouse' => $warehouse]);
     }
-    
-    public function warehouseEdit($id)
+
+    public function edit($id)
     {
         $warehouse = Warehouse::findOrFail($id);
-        return view('warehouse.edit-warehouse', ['warehouse' => $warehouse]);
+        return view('warehouse.edit', ['warehouse' => $warehouse]);
     }
 
-    public function warehouseUpdate(Request $request, $id)
+    public function update(WarehouseFormRequest $request, $id)
     {
-        $validator = Validator::make(
-            $request->all(),
-            [
-                'warehouse_name' => 'required|min:3',
-                'warehouse_type' => 'required',
-                'contact_person_name' => 'required|min:3',
-                'contact_person_phone_no' => 'required|digits:10',
-                'contact_person_alt_phone_no' => 'required|digits:10',
-                'contact_person_email' => 'required',
-                'address_line_1' => 'required',
-            ]
-        );
-
-        if ($validator->fails()) {
-            return $validator->failed();
-            return redirect()->route('register')->withErrors($validator);
-        }
-
         $warehouse = Warehouse::findOrFail($id);
-        $warehouse->name = $request->warehouse_name;
-        $warehouse->type = $request->warehouse_type;
+        $warehouse->name = $request->name;
+        $warehouse->type = $request->type;
         $warehouse->contact_person_name = $request->contact_person_name;
         $warehouse->phone = $request->contact_person_phone_no;
         $warehouse->alt_phone = $request->contact_person_alt_phone_no;
@@ -128,23 +162,26 @@ class WarehouseController extends Controller
         $warehouse->licence_doc = $request->licence_doc;
         $warehouse->max_storage_capacity = $request->max_storage_capacity;
         $warehouse->operations = $request->supported_operations;
-        $warehouse->city = $request->city;
-        $warehouse->state = $request->state;
-        $warehouse->country = $request->country;
+        $warehouse->country_id = $request->country_id;
+        $warehouse->state_id = $request->state_id;
+        $warehouse->city_id = $request->city_id;
         $warehouse->pincode = $request->pincode;
         $warehouse->status = $request->status;
-        // $warehouse->default_warehouse = $request->default_warehouse ? 'yes' : 'no';
         $warehouse->save();
 
-        return redirect()->route('warehouse');
+         if (!$warehouse) {
+            return redirect()->back()->with('error', 'Something Went Wrong. Warehouse Not Created');
+        }
+
+        return redirect()->route('warehouse.index')->with('success', 'Warehouse Created Successfully');
     }
 
 
-    public function deleteWarehouse($id)
+    public function destroy($id)
     {
         $warehouse = Warehouse::findOrFail($id);
         $warehouse->delete();
 
-        return redirect()->route('warehouse')->with('success', 'Customer deleted successfully.');
+        return redirect()->route('warehouse.index')->with('success', 'Customer deleted successfully.');
     }
 }

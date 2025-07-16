@@ -2,34 +2,26 @@
 
 namespace App\Models;
 
-use App\Models\City;
-use App\Models\State;
-use App\Models\Country;
-use App\Models\Product;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Warehouse extends Model
 {
     //
-    public function country(): HasOne
-    {
-        return $this->hasOne(Country::class, 'id', 'country');
+    protected $guarded = [];
+
+    public function country() {
+        return $this->hasOne(Country::class, 'id', 'country_id');
+    }
+    
+    public function state() {
+        return $this->hasOne(State::class, 'id', 'state_id');
+    }
+    
+    public function cities() {
+        return $this->hasOne(City::class, 'id', 'city_id');
     }
 
-    public function state(): HasOne
-    {
-        return $this->hasOne(State::class, 'id', 'state');
-    }
-
-    public function cities(): HasOne
-    {
-        return $this->hasOne(City::class, 'id', 'city');
-    }
-
-    public function stocks(): HasMany
-    {
-        return $this->hasMany(WarehouseStock::class, 'warehouse_id',  'id');
+    public function warehouseStock() {
+        return $this->hasMany(WarehouseStock::class, 'warehouse_id', 'id');
     }
 }

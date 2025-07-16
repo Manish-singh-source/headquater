@@ -79,7 +79,7 @@
                                     <h5 class="mb-3">Vendor Products</h5>
                                     <div class="product-table">
                                         <div class="table-responsive white-space-nowrap">
-                                            <table class="table align-middle">
+                                            <table id="example" class="table align-middle">
                                                 <thead class="table-light">
                                                     <tr>
                                                         <th>Order No</th>
@@ -183,7 +183,7 @@
                                     <div class="col-12 text-end"><a href="#" type=""
                                             class="btn btn-success w-sm waves ripple-light me-2">
                                             Download Excel File
-                                        </a><a href="{{ route('products') }}" type=""
+                                        </a><a href="{{ route('products.index') }}" type=""
                                             class="btn btn-success w-sm waves ripple-light">
                                             Save
                                         </a></div>
@@ -213,7 +213,7 @@
                                     <h5 class="mb-3">Available Products</h5>
                                     <div class="product-table">
                                         <div class="table-responsive white-space-nowrap">
-                                            <table class="table align-middle">
+                                            <table id="example" class="table align-middle">
                                                 <thead class="table-light">
                                                     <tr>
                                                         <th>Order No</th>

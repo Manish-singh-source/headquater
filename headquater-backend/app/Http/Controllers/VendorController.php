@@ -13,6 +13,118 @@ use Illuminate\Support\Facades\Validator;
 class VendorController extends Controller
 {
 
+    //
+    public function index()
+    {
+        // $vendor = Vendor::all();
+        $vendors = Vendor::get();
+        return view('vendor.index', compact('vendors'));
+    }
+
+    public function create()
+    {
+        return view('vendor.create');
+    }
+
+    public function store(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'first_name' => 'required|min:3',
+            'last_name' => 'required|min:3',
+            'phone_number' => 'required|min:10',
+            'email' => 'required|email|unique:vendors,email',
+            'address' => 'required',
+        ]);
+
+        if ($validator->fails()) {
+            return back()->withErrors($validator)->withInput();
+        }
+
+        $vendor = new Vendor();
+        $vendor->first_name = $request->first_name;
+        $vendor->last_name = $request->last_name;
+        $vendor->phone_number = $request->phone_number;
+        $vendor->email = $request->email;
+        $vendor->gst_number = $request->gst_number;
+        $vendor->pan_number = $request->pan_number;
+        $vendor->address = $request->address;
+        $vendor->state = $request->state;
+        $vendor->city = $request->city;
+        $vendor->country = $request->country;
+        $vendor->pin_code = $request->pin_code;
+        $vendor->bank_account_number = $request->bank_account_number;
+        $vendor->ifsc_number = $request->ifsc_number;
+        $vendor->bank_number = $request->bank_number;
+        $vendor->status = $request->status;
+        $vendor->save();
+
+
+        return redirect()->route('vendor.index')->with('success', 'Customer added successfully.');
+    }
+
+    public function edit($id)
+    {
+        $vendor = Vendor::findOrFail($id);
+        return view('vendor.edit',  compact('vendor'));
+    }
+
+    public function update(Request $request, $id)
+    {
+        $validator = Validator::make($request->all(), [
+            'firstName' => 'required|min:3',
+            'lastName' => 'required|min:3',
+            'email' => 'required|email|unique:vendors,email,' . $id,
+        ]);
+
+        if ($validator->fails()) {
+            return back()->withErrors($validator)->withInput();
+        }
+
+        $vendor = Vendor::findOrFail($id);
+        $vendor->first_name = $request->firstName;
+        $vendor->last_name = $request->lastName;
+        $vendor->phone_number = $request->phone;
+        $vendor->email = $request->email;
+        $vendor->gst_number = $request->gstNo;
+        $vendor->pan_number = $request->panNo;
+        $vendor->address = $request->address;
+        $vendor->state = $request->state;
+        $vendor->city = $request->city;
+        $vendor->country = $request->country;
+        $vendor->pin_code = $request->pinCode;
+        $vendor->bank_account_number = $request->accountNo;
+        $vendor->ifsc_number = $request->ifscCode;
+        $vendor->bank_number = $request->bankName;
+        $vendor->status = $request->status;
+        $vendor->save();
+
+        return redirect()->route('vendor.index')->with('success', 'Customer updated successfully.');
+    }
+
+    public function view($id)
+    {
+        $vendor = Vendor::findOrFail($id);
+        return view('vendor.view', compact('vendor'));
+    }
+
+    public function destroy($id)
+    {
+        $vendor = Vendor::findOrFail($id);
+        $vendor->delete();
+
+        return redirect()->route('vendor.index')->with('success', 'Customer deleted successfully.');
+    }
+
+
+
+
+
+
+
+
+
+
+
     public function toggleStatus(Request $request)
     {
         $Vendor = Vendor::findOrFail($request->id);
