@@ -462,7 +462,8 @@
                           <div class="menu-title">Sales</div>
                       </a>
                       <ul>
-                          <li><a href="{{ route('order.index') }}"><i class="material-icons-outlined">arrow_right</i>Sales
+                          <li><a href="{{ route('order.index') }}"><i
+                                      class="material-icons-outlined">arrow_right</i>Sales
                                   Order</a>
                           </li>
                       </ul>
@@ -716,12 +717,21 @@
                       } // Disable sorting for the 4th column (index starts at 0)
                   ],
                   lengthChange: true,
-                    // buttons: ['excel', 'pdf', 'print']
-                    buttons: ['excel']
+                  // buttons: ['excel', 'pdf', 'print']
+                  // buttons: ['excel']
+                  buttons: [{
+                      extend: 'excelHtml5',
+                      className: 'd-none', // hide the default button
+                  }]
               });
 
               table1.buttons().container()
                   .appendTo('#example_wrapper .col-md-6:eq(0)');
+
+              // Trigger the hidden Excel button when your custom button is clicked
+              $('#customExcelBtn').on('click', function() {
+                  table1.button('.buttons-excel').trigger();
+              });
 
               $('#departmentFilter').on('change', function() {
                   var selected = $(this).val();
@@ -729,18 +739,56 @@
                   // Use regex for exact match
                   table1.column(1).search(selected ? '^' + selected + '$' : '', true, false).draw();
               });
+
+              //   $(".vendorSelect").on('click', function() {
+              //       // if($(this).className('active')) {
+              //       //     var vendorSelected = $(this).text();
+              //       // }
+              //       var vendorSelected = $(this).text();
+              //       console.log(vendorSelected);
+              //       table1.column(1).search(vendorSelected ? '^' + vendorSelected + '$' : '', true, false)
+              //       .draw();
+              //   });
           });
       </script>
 
       <script>
           $(document).ready(function() {
               var table2 = $('#example2').DataTable({
-                  lengthChange: false,
-                  buttons: ['copy', 'excel', 'pdf', 'print']
+                  "columnDefs": [{
+                          "orderable": false,
+                          //   "targets": [0, -1],
+                      } // Disable sorting for the 4th column (index starts at 0)
+                  ],
+                  lengthChange: true,
+                  // buttons: ['excel', 'pdf', 'print']
+                  // buttons: ['excel']
+                  buttons: [{
+                      extend: 'excelHtml5',
+                      className: 'd-none', // hide the default button
+                  }]
               });
 
               table2.buttons().container()
                   .appendTo('#example2_wrapper .col-md-6:eq(0)');
+
+              // Trigger the hidden Excel button when your custom button is clicked
+              $('#customExcelBtn').on('click', function() {
+                  table2.button('.buttons-excel').trigger();
+              });
+
+              $('#departmentFilter').on('change', function() {
+                  var selected = $(this).val();
+
+                  // Use regex for exact match
+                  table2.column(1).search(selected ? '^' + selected + '$' : '', true, false).draw();
+              });
+
+              $("#vendorSelect").on('change', function() {
+                  var vendorSelected = $(this).val();
+                  table2.column(1).search(vendorSelected ? '^' + vendorSelected + '$' : '', true, false)
+                      .draw();
+              });
           });
       </script>
 

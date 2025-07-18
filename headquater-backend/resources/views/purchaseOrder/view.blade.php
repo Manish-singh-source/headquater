@@ -19,7 +19,7 @@
                                     <span>
                                         <b>
                                             @foreach ($vendors as $vendor)
-                                                {{ $vendor . "," }}
+                                                {{ $vendor . ',' }}
                                             @endforeach
                                         </b>
                                     </span>
@@ -32,21 +32,26 @@
 
             <div class="card">
                 <div class="card-body">
-                    <div class="div d-flex my-2">
-                        <div class="col">
+                    <div class="d-flex justify-content-between align-items-center my-2">
+                        <div class="div d-flex justify-content-end my-3 gap-2">
                             <h6 class="mb-3">PO Table</h6>
                         </div>
-                    </div>
-                    <!-- Tabs Navigation -->
-                    <div class="div d-flex justify-content-end my-3">
-                        <ul class="nav nav-tabs" id="vendorTabs" role="tablist">
-                            <select class="form-select" id="departmentFilter" aria-label="Default select example">
-                                <option value="" selected>All Vendors</option>
-                                @foreach ($vendors as $vendor)
-                                    <option value="{{ $vendor }}">{{ $vendor }}</option>
-                                @endforeach
-                            </select>
-                        </ul>
+                        <!-- Tabs Navigation -->
+                        <div class="div d-flex justify-content-end my-3 gap-2">
+                            <button id="customExcelBtn" class="btn btn-sm border-2 border-primary">
+                                <i class="fa fa-file-excel-o"></i> Export to Excel
+                            </button>
+
+                            <ul class="nav nav-tabs" id="vendorTabs" role="tablist">
+                                <select class="form-select border-2 border-primary" id="departmentFilter"
+                                    aria-label="Default select example">
+                                    <option value="" selected>All Vendors</option>
+                                    @foreach ($vendors as $vendor)
+                                        <option value="{{ $vendor }}">{{ $vendor }}</option>
+                                    @endforeach
+                                </select>
+                            </ul>
+                        </div>
                     </div>
 
                     <div class="product-table">
@@ -87,395 +92,127 @@
             </div>
 
             <div class="card">
-                <div class="card-header border-bottom-dashed">
-                    <div class="row g-4 align-items-center">
-                        <div class="col-sm">
-                            <h5 class="card-title mb-0">
-                                Add PI
-                            </h5>
-                        </div>
-                        <div class="col-12 col-lg-2 gap-2 pi-view-show">
-                            <button type="button" class="btn btn-sm btn-success w-sm add">
-                                Add More
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
                 <div class="card-body pi-add">
-                    <div class="row g-3">
-                        <div class="col-12 col-lg-3">
-                            <label for="marital" class="form-label">Vendor Name
-                                <span class="text-danger">*</span></label>
-                            <select class="form-control" name="marital" id="marital">
-                                <option selected="" disabled="" value="">-- Select --</option>
-                                <option value="Active">Active</option>
-                                <option value="Emily ">Emily </option>
-                                <option value="John ">John </option>
-                                <option value="Michael ">Michael </option>
-                                <option value="Sarah ">Sarah </option>
-                                <option value="Davis">Davis</option>
-                                <option value="Smith">Smith</option>
-                                <option value="Brown">Brown</option>
-                                <option value="Wilson">Wilson</option>
-                            </select>
+                    <form action="{{ route('purchase.order.store') }}" method="post" enctype="multipart/form-data">
+                        @csrf
+                        @method('POST')
+                        <div class="row g-3">
+                            <input type="hidden" name="purchase_order_id"
+                                value="{{ $purchaseOrderProducts[0]->purchase_order_id }}">
+                            <div class="col-12 col-lg-3">
+                                <label for="vendor_code" class="form-label">Vendor Name
+                                    <span class="text-danger">*</span></label>
+                                <select class="form-control" name="vendor_code" id="vendor_code">
+                                    <option selected disabled value="">-- Select --</option>
+                                    @foreach ($vendors as $vendor)
+                                        <option value="{{ $vendor }}">
+                                            {{-- @if (in_array($uploadedPIOfVendors, $vendors))
+                                                disabled
+                                            @endif --}}
+                                            {{ $vendor }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="col-12 col-lg-3">
+                                <label for="pi_excel" class="form-label">Upload PI Excel <span
+                                        class="text-danger">*</span></label>
+                                <input type="file" name="pi_excel" id="pi_excel" class="form-control" value=""
+                                    required="" placeholder="Upload ID Document">
+                            </div>
+                            <div class="col-12 col-lg-2 d-flex align-items-end gap-2">
+                                <button type="submit" class="btn btn-success w-sm waves ripple-light upload">
+                                    Upload
+                                </button>
+                            </div>
                         </div>
-                        <div class="col-12 col-lg-3">
-                            <label for="document_image" class="form-label">Upload PI Excel <span
-                                    class="text-danger">*</span></label>
-                            <input type="file" name="document_image" id="document_image" class="form-control"
-                                value="" required="" placeholder="Upload ID Document">
-                        </div>
-                        <div class="col-12 col-lg-2 d-flex align-items-end gap-2">
-                            <button type="" class="btn btn-success w-sm waves ripple-light upload">
-                                Upload
-                            </button>
-                        </div>
-                    </div>
+                    </form>
                 </div>
 
-                <div class="card-body pi-view-show">
-                    <div class="row g-3">
-                        <div class="col-12 col-lg-3">
-                            <label for="marital" class="form-label">Vendor Name</label>
-                            <p><b>Emily</b></p>
-                        </div>
-                        <div class="col-12 col-lg-3">
-                            <label for="document_image" class="form-label">PI Excel</label>
-                            <p> <b>ABC.xls</b> </p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="card-body pi2-add">
-                    <div class="row g-3">
-                        <div class="col-12 col-lg-3">
-                            <label for="marital" class="form-label">Vendor Name
-                                <span class="text-danger">*</span></label>
-                            <select class="form-control" name="marital" id="marital">
-                                <option selected="" disabled="" value="">-- Select --</option>
-                                <option value="Active">Active</option>
-                                <option value="Emily ">Emily </option>
-                                <option value="John ">John </option>
-                                <option value="Michael ">Michael </option>
-                                <option value="Sarah ">Sarah </option>
-                                <option value="Davis">Davis</option>
-                                <option value="Smith">Smith</option>
-                                <option value="Brown">Brown</option>
-                                <option value="Wilson">Wilson</option>
-                            </select>
-                        </div>
-                        <div class="col-12 col-lg-3">
-                            <label for="document_image" class="form-label">Upload PI Excel <span
-                                    class="text-danger">*</span></label>
-                            <input type="file" name="document_image" id="document_image" class="form-control"
-                                value="" required="" placeholder="Upload ID Document">
-                        </div>
-                        <div class="col-12 col-lg-2 d-flex align-items-end gap-2">
-                            <button type="" class="btn btn-success w-sm waves ripple-light upload2">
-                                Upload
-                            </button>
+                {{-- 
+                @foreach ($purchaseOrder as $order)
+                    <div class="card-body pi-view-show">
+                        <div class="row g-3">
+                            <div class="col-12 col-lg-3">
+                                <label for="marital" class="form-label">Vendor Code</label>
+                                <p><b>{{ $order->id }}</b></p>
+                            </div>
+                            <div class="col-12 col-lg-3">
+                                <label for="document_image" class="form-label">PI Excel</label>
+                                <p> <b>View</b> </p>
+                            </div>
                         </div>
                     </div>
-                </div>
-
-                <div class="card-body pi2-view-show">
-                    <div class="row g-3">
-                        <div class="col-12 col-lg-3">
-                            <label for="marital" class="form-label">Vendor Name</label>
-                            <p><b>Emily</b></p>
-                        </div>
-                        <div class="col-12 col-lg-3">
-                            <label for="document_image" class="form-label">PI Excel</label>
-                            <p> <b>ABC.xls</b> </p>
-                        </div>
-                    </div>
-                </div>
+                @endforeach 
+                --}}
             </div>
 
-            <div class="card">
-                <div class="card-body">
-                    <div class="div d-flex my-2">
-                        <div class="col">
-                            <h6 class="mb-3">PI Table</h6>
-                        </div>
-                    </div>
-
-                    <!-- Tabs Navigation -->
-                    <div class="div d-flex my-3">
-                        <ul class="nav nav-tabs" id="vendorTabs" role="tablist">
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link active bg-success text-white mx-1" id="vendor1-tab"
-                                    data-bs-toggle="tab" data-bs-target="#vendor1" type="button" role="tab">Vendor
-                                    1</button>
-                            </li>
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link bg-success text-white mx-1" id="vendor2-tab" data-bs-toggle="tab"
-                                    data-bs-target="#vendor2" type="button" role="tab">Vendor 2</button>
-                            </li>
-                        </ul>
-                    </div>
-
-                    <!-- Tabs Content -->
-                    <div class="tab-content" id="vendorTabsContent">
-                        <!-- Vendor 1 Table -->
-                        <div class="tab-pane fade show active" id="vendor1" role="tabpanel"
-                            aria-labelledby="vendor1-tab">
-                            <div class="product-table" id="piTable">
-                                <div class="table-responsive white-space-nowrap">
-                                    <table class="table align-middle">
-                                        <thead class="table-light">
-                                            <tr>
-                                                <th>Vendor Sku Code</th>
-                                                <th>Title</th>
-                                                <th>MRP</th>
-                                                <th>Qty Requirement</th>
-                                                <th>Available Qty</th>
-                                                <th>Purchase rate Basic</th>
-                                                <th>GST</th>
-                                                <th>HSN</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr>
-                                                <td>TP-260</td>
-                                                <td>Yera 260ml Glass Parabolic Tumbler Set</td>
-                                                <td>315</td>
-                                                <td>64</td>
-                                                <td>60</td>
-                                                <td>280</td>
-                                                <td>12%</td>
-                                                <td>7013</td>
-                                            </tr>
-                                            <tr>
-                                                <td>JR2KG</td>
-                                                <td>Yera Glass Jar with Plastic Lid - 2425ml</td>
-                                                <td>330</td>
-                                                <td>9</td>
-                                                <td>10</td>
-                                                <td>295</td>
-                                                <td>12%</td>
-                                                <td>7013</td>
-                                            </tr>
-                                            <tr>
-                                                <td>B9OFL</td>
-                                                <td>Yera Ice Cream Delight 250 ml Glass Bowl Set of 6</td>
-                                                <td>280</td>
-                                                <td>64</td>
-                                                <td>50</td>
-                                                <td>240</td>
-                                                <td>12%</td>
-                                                <td>7013</td>
-                                            </tr>
-                                            <tr>
-                                                <td>TC8P17</td>
-                                                <td>Yera Conical Glass Tumbler Set - 215 ml</td>
-                                                <td>230</td>
-                                                <td>144</td>
-                                                <td>140</td>
-                                                <td>200</td>
-                                                <td>12%</td>
-                                                <td>7013</td>
-                                            </tr>
-                                            <tr>
-                                                <td>TS10-P0</td>
-                                                <td>Yera Glass Tumbler Transparent 285 ml</td>
-                                                <td>240</td>
-                                                <td>64</td>
-                                                <td>60</td>
-                                                <td>210</td>
-                                                <td>12%</td>
-                                                <td>7013</td>
-                                            </tr>
-                                            <tr>
-                                                <td>JS-4</td>
-                                                <td>Yera Glass Aahaar Jars, 1800 ml</td>
-                                                <td>190</td>
-                                                <td>144</td>
-                                                <td>140</td>
-                                                <td>160</td>
-                                                <td>12%</td>
-                                                <td>7013</td>
-                                            </tr>
-                                            <tr>
-                                                <td>T9AHB</td>
-                                                <td>Yera Glass Tumblers - 250 ml, Set of 6</td>
-                                                <td>250</td>
-                                                <td>64</td>
-                                                <td>64</td>
-                                                <td>215</td>
-                                                <td>12%</td>
-                                                <td>7013</td>
-                                            </tr>
-                                            <tr>
-                                                <td>JR-3</td>
-                                                <td>Yera Glass Aahaar Jars Storage Container, 3600 ML</td>
-                                                <td>225</td>
-                                                <td>360</td>
-                                                <td>350</td>
-                                                <td>200</td>
-                                                <td>12%</td>
-                                                <td>7013</td>
-                                            </tr>
-                                            <tr>
-                                                <td>CT9-P0</td>
-                                                <td>Yera Transparent Glass Mug with Handle 240 ml</td>
-                                                <td>340</td>
-                                                <td>128</td>
-                                                <td>120</td>
-                                                <td>300</td>
-                                                <td>12%</td>
-                                                <td>7013</td>
-                                            </tr>
-                                            <tr>
-                                                <td>JR-2</td>
-                                                <td>Yera Glass Aahaar Jars Storage Container, 2425 ML</td>
-                                                <td>185</td>
-                                                <td>216</td>
-                                                <td>210</td>
-                                                <td>160</td>
-                                                <td>12%</td>
-                                                <td>7013</td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-
-                                </div>
+            @isset($vendorPI)
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center my-2">
+                            <div class="div d-flex justify-content-end my-3 gap-2">
+                                <h6 class="mb-3">PI Table</h6>
                             </div>
-                            <div class="col-12 text-end">
-                                <button class="btn btn-success w-sm">Save</button>
+                            <!-- Tabs Navigation -->
+                            <div class="div d-flex justify-content-end my-3 gap-2">
+                                <ul class="nav nav-tabs" id="vendorTabs2" role="tablist">
+                                    <select class="form-select border-2 border-primary" id="vendorSelect"
+                                        aria-label="Default select example">
+                                        <option value="" selected>All Vendors</option>
+                                        @foreach ($vendors as $vendor)
+                                            <option value="{{ $vendor }}">{{ $vendor }}</option>
+                                        @endforeach
+                                    </select>
+                                </ul>
                             </div>
                         </div>
 
-                        <!-- Vendor 2 Table -->
-                        <div class="tab-pane fade" id="vendor2" role="tabpanel" aria-labelledby="vendor2-tab">
-                            <div class="product-table" id="piTable">
-                                <div class="table-responsive white-space-nowrap">
-                                    <table class="table align-middle">
-                                        <thead class="table-light">
+                        <div class="product-table">
+                            <div class="table-responsive white-space-nowrap">
+                                <table id="example2" class="table align-middle">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Order No</th>
+                                            <th>Vendor Code</th>
+                                            <th>Purchase Order No</th>
+                                            <th>Vendor SKU Code</th>
+                                            <th>Title</th>
+                                            <th>MRP</th>
+                                            <th>Quantity Requirement</th>
+                                            <th>Available Quantity</th>
+                                            <th>Purchase Rate Basic</th>
+                                            <th>GST</th>
+                                            <th>HSN</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @forelse ($vendorPI as $product)
                                             <tr>
-                                                <th>Vendor Sku Code</th>
-                                                <th>Title</th>
-                                                <th>MRP</th>
-                                                <th>Qty Requirement</th>
-                                                <th>Available Qty</th>
-                                                <th>Purchase rate Basic</th>
-                                                <th>GST</th>
-                                                <th>HSN</th>
+                                                <td>{{ $product->id }}</td>
+                                                <td>{{ $product->vendor_code }}</td>
+                                                <td>{{ $product->purchase_order_id }}</td>
+                                                <td>{{ $product->vendor_sku_code }}</td>
+                                                <td>{{ $product->product->title }}</td>
+                                                <td>{{ $product->mrp }}</td>
+                                                <td>{{ $product->quantity_requirement }}</td>
+                                                <td>{{ $product->available_quantity }}</td>
+                                                <td>{{ $product->purchase_rate }}</td>
+                                                <td>{{ $product->gst }}</td>
+                                                <td>{{ $product->hsn }}</td>
                                             </tr>
-                                        </thead>
-                                        <tbody>
+                                        @empty
                                             <tr>
-                                                <td>TP-260</td>
-                                                <td>Yera 260ml Glass Parabolic Tumbler Set</td>
-                                                <td>315</td>
-                                                <td>64</td>
-                                                <td>60</td>
-                                                <td>280</td>
-                                                <td>12%</td>
-                                                <td>7013</td>
+                                                <td colspan="6">No Records Found</td>
                                             </tr>
-                                            <tr>
-                                                <td>JR2KG</td>
-                                                <td>Yera Glass Jar with Plastic Lid - 2425ml</td>
-                                                <td>330</td>
-                                                <td>9</td>
-                                                <td>10</td>
-                                                <td>295</td>
-                                                <td>12%</td>
-                                                <td>7013</td>
-                                            </tr>
-                                            <tr>
-                                                <td>B9OFL</td>
-                                                <td>Yera Ice Cream Delight 250 ml Glass Bowl Set of 6</td>
-                                                <td>280</td>
-                                                <td>64</td>
-                                                <td>50</td>
-                                                <td>240</td>
-                                                <td>12%</td>
-                                                <td>7013</td>
-                                            </tr>
-                                            <tr>
-                                                <td>TC8P17</td>
-                                                <td>Yera Conical Glass Tumbler Set - 215 ml</td>
-                                                <td>230</td>
-                                                <td>144</td>
-                                                <td>140</td>
-                                                <td>200</td>
-                                                <td>12%</td>
-                                                <td>7013</td>
-                                            </tr>
-                                            <tr>
-                                                <td>TS10-P0</td>
-                                                <td>Yera Glass Tumbler Transparent 285 ml</td>
-                                                <td>240</td>
-                                                <td>64</td>
-                                                <td>60</td>
-                                                <td>210</td>
-                                                <td>12%</td>
-                                                <td>7013</td>
-                                            </tr>
-                                            <tr>
-                                                <td>JS-4</td>
-                                                <td>Yera Glass Aahaar Jars, 1800 ml</td>
-                                                <td>190</td>
-                                                <td>144</td>
-                                                <td>140</td>
-                                                <td>160</td>
-                                                <td>12%</td>
-                                                <td>7013</td>
-                                            </tr>
-                                            <tr>
-                                                <td>T9AHB</td>
-                                                <td>Yera Glass Tumblers - 250 ml, Set of 6</td>
-                                                <td>250</td>
-                                                <td>64</td>
-                                                <td>64</td>
-                                                <td>215</td>
-                                                <td>12%</td>
-                                                <td>7013</td>
-                                            </tr>
-                                            <tr>
-                                                <td>JR-3</td>
-                                                <td>Yera Glass Aahaar Jars Storage Container, 3600 ML</td>
-                                                <td>225</td>
-                                                <td>360</td>
-                                                <td>350</td>
-                                                <td>200</td>
-                                                <td>12%</td>
-                                                <td>7013</td>
-                                            </tr>
-                                            <tr>
-                                                <td>CT9-P0</td>
-                                                <td>Yera Transparent Glass Mug with Handle 240 ml</td>
-                                                <td>340</td>
-                                                <td>128</td>
-                                                <td>120</td>
-                                                <td>300</td>
-                                                <td>12%</td>
-                                                <td>7013</td>
-                                            </tr>
-                                            <tr>
-                                                <td>JR-2</td>
-                                                <td>Yera Glass Aahaar Jars Storage Container, 2425 ML</td>
-                                                <td>185</td>
-                                                <td>216</td>
-                                                <td>210</td>
-                                                <td>160</td>
-                                                <td>12%</td>
-                                                <td>7013</td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                            <div class="col-12 text-end">
-                                <button class="btn btn-success w-sm">Save</button>
+                                        @endforelse
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            @endisset
 
             <div class="card">
                 <div class="card-header border-bottom-dashed">
@@ -489,73 +226,78 @@
                 </div>
 
                 <div class="card-body">
-                    <div class="row g-3">
-                        <div class="col-12 col-lg-3">
-                            <label for="marital" class="form-label">Vendor Name
-                                <span class="text-danger">*</span></label>
-                            <select class="form-control" name="marital" id="marital">
-                                <option selected="" disabled="" value="">-- Select --</option>
-                                <option value="Active">Active</option>
-                                <option value="Emily ">Emily </option>
-                                <option value="John ">John </option>
-                                <option value="Michael ">Michael </option>
-                                <option value="Sarah ">Sarah </option>
-                                <option value="Davis">Davis</option>
-                                <option value="Smith">Smith</option>
-                                <option value="Brown">Brown</option>
-                                <option value="Wilson">Wilson</option>
-                            </select>
+                    <form action="{{ route('purchase.order.invoice.store') }}" method="post"
+                        enctype="multipart/form-data">
+                        @csrf
+                        @method('POST')
+                        <div class="row g-3">
+                            <div class="col-12 col-lg-3">
+                                <input type="hidden" name="purchase_order_id"
+                                    value="{{ $purchaseOrderProducts[0]->purchase_order_id }}">
+                                <label for="marital" class="form-label">Vendor Name
+                                    <span class="text-danger">*</span></label>
+                                <select class="form-control" name="vendor_code" id="vendor_code">
+                                    <option selected disabled value="">-- Select --</option>
+                                    @foreach ($vendors as $vendor)
+                                        <option value="{{ $vendor }}">
+                                            {{ $vendor }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="col-12 col-lg-3">
+                                <label for="invoice_file" class="form-label">Upload Invoice <span
+                                        class="text-danger">*</span></label>
+                                <input type="file" name="invoice_file" id="invoice_file" class="form-control"
+                                    placeholder="Upload ID Document">
+                            </div>
+                            <div class="col-12 col-lg-1 d-flex align-items-end gap-2">
+                                <button type="submit" class="btn btn-success w-sm waves ripple-light">
+                                    Upload
+                                </button>
+                            </div>
                         </div>
-                        <div class="col-12 col-lg-3">
-                            <label for="document_image" class="form-label">Upload Invoice <span
-                                    class="text-danger">*</span></label>
-                            <input type="file" name="document_image" id="document_image" class="form-control"
-                                value="" required="" placeholder="Upload ID Document">
-                        </div>
-                        <div class="col-12 col-lg-1 d-flex align-items-end gap-2">
-                            <button type="" class="btn btn-success w-sm waves ripple-light">
-                                Upload
-                            </button>
-                            <button type="" class="btn btn-success w-sm waves ripple-light">
-                                Preview
-                            </button>
-                        </div>
-                    </div>
+                    </form>
                 </div>
 
                 <div class="card-body">
-                    <div class="row g-3">
+                    <table class="table align-middle">
+                        <thead>
+
+                        </thead>
+                        <tr>
+                            <th>Vendor Name</th>
+                            <th>Invoice File</th>
+                        </tr>
+                        @foreach ($purchaseInvoice as $invoiceDetail)
+                            <tr>
+                                <th> {{ $invoiceDetail->vendor_code }}</th>
+                                <th>
+                                    <a href="{{ asset('uploads/invoices/' . $invoiceDetail->invoice_file) }}"
+                                        class="btn btn-sm border-2 border-success w-sm waves ripple-light">
+                                        Preview
+                                    </a>
+                                </th>
+                            </tr>
+                        @endforeach
+                    </table>
+                    {{-- 
+                    <div class="row mb-2 g-3">
                         <div class="col-12 col-lg-3">
                             <label for="marital" class="form-label">Vendor Name
                                 <span class="text-danger">*</span></label>
-                            <select class="form-control" name="marital" id="marital">
-                                <option selected="" disabled="" value="">-- Select --</option>
-                                <option value="Active">Active</option>
-                                <option value="Emily ">Emily </option>
-                                <option value="John ">John </option>
-                                <option value="Michael ">Michael </option>
-                                <option value="Sarah ">Sarah </option>
-                                <option value="Davis">Davis</option>
-                                <option value="Smith">Smith</option>
-                                <option value="Brown">Brown</option>
-                                <option value="Wilson">Wilson</option>
-                            </select>
+                            <div>
+                                {{ $invoiceDetail->vendor_code }}
+                            </div>
                         </div>
                         <div class="col-12 col-lg-3">
-                            <label for="document_image" class="form-label">Upload Invoice <span
-                                    class="text-danger">*</span></label>
-                            <input type="file" name="document_image" id="document_image" class="form-control"
-                                value="" required="" placeholder="Upload ID Document">
-                        </div>
-                        <div class="col-12 col-lg-1 d-flex align-items-end gap-2">
-                            <button type="" class="btn btn-success w-sm waves ripple-light">
-                                Upload
-                            </button>
-                            <button type="" class="btn btn-success w-sm waves ripple-light">
+                            <a href="{{ asset('uploads/invoices/' . $invoiceDetail->invoice_file) }}"
+                                class="btn btn-sm border-2 border-success w-sm waves ripple-light">
                                 Preview
-                            </button>
+                            </a>
                         </div>
-                    </div>
+                    </div> 
+                    --}}
                 </div>
             </div>
 
@@ -716,7 +458,7 @@
             </div>
 
             <div class="col-12 my-3 d-flex justify-content-end align-items-end gap-2">
-                <a href="{{ route('assign-order') }}" class="btn btn-success w-sm waves ripple-light">
+                <a href="{{ route('purchase.order.index') }}" class="btn btn-success w-sm waves ripple-light">
                     Close Order
                 </a>
             </div>
