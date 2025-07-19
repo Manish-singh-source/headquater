@@ -231,7 +231,8 @@ Route::get('/invoices-details', function () {
 
 
 // received products
-Route::get('/received-products', [ReceivedProductsController::class, 'view'])->name('received-products');
+Route::get('/received-products', [ReceivedProductsController::class, 'view'])->name('received-products.view');
+Route::put('/received-products', [ReceivedProductsController::class, 'update'])->name('received-products.update');
 
 
 // Route::get('/received-products', function () {

@@ -477,7 +477,7 @@
                   </li>
                   <li class="menu-label">Warehouse</li>
                   <li>
-                      <a href="{{ route('received-products') }}">
+                      <a href="{{ route('received-products.view') }}">
                           <div class="parent-icon"><i class="material-icons-outlined">move_to_inbox</i>
                           </div>
                           <div class="menu-title">Received Products</div>
