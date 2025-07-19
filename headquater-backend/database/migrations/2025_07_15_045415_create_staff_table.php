@@ -14,11 +14,12 @@ return new class extends Migration
         Schema::create('staff', function (Blueprint $table) {
             $table->id(); // id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY
             $table->string('uid', 100)->nullable()->index();
-            $table->foreignId('role_id')->constrained()->onDelete('cascade');
+            $table->foreignId('role_id')->constrained()->onDelete('cascade')->default('1');
             $table->string('user_name', 50)->unique()->nullable();
             $table->string('fname')->nullable();
             $table->string('lname')->nullable();
             $table->string('phone')->nullable();
+            $table->string('password')->nullable();
             $table->string('dob')->nullable();
             $table->string('marital')->nullable();
             $table->string('gender')->nullable();

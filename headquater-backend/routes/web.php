@@ -15,15 +15,18 @@ use App\Http\Controllers\WarehouseController;
 use App\Http\Controllers\PlaceOrderController;
 use App\Http\Controllers\CustomerGroupController;
 use App\Http\Controllers\PurchaseOrderController;
+use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\RoleController;
 use App\Models\CustomerGroup;
 
 // Route::get('/', function () {
 //     return view('index');
 // })->name('index');
-// Route::middleware('IsAdmin')->group(function() {
-//     Route::get('/', [CustomerController::class, 'Customercount'])->name('index');
-// });
+
+Route::middleware('IsAdmin')->group(function () {
+    // Route::get('/', [CustomerController::class, 'Customercount'])->name('index');
+    Route::get('/', [CustomerController::class, 'index'])->name('index');
+});
 
 // index
 // view
@@ -33,7 +36,6 @@ use App\Models\CustomerGroup;
 // update
 // delete/destroy
 
-Route::get('/', [CustomerController::class, 'index'])->name('index');
 
 Route::controller(LocationController::class)->group(function () {
     Route::get('/countries', 'getCountries');
@@ -42,14 +44,15 @@ Route::controller(LocationController::class)->group(function () {
 });
 
 
-
-// Customer Group Controller
-Route::controller(CustomerGroupController::class)->group(function () {
-    Route::get('/customer-groups', 'index')->name('customer.groups.index');
-    Route::get('/create-customer-groups', 'create')->name('customer.groups.create');
-    Route::post('/store-customer-groups', 'store')->name('customer.groups.store');
-    Route::delete('/delete-customer-groups/{id}', 'destroy')->name('customer.groups.destroy');
-    Route::get('/view-customer-groups/{id}', 'view')->name('customer.groups.view');
+Route::middleware('RolePermission:customer-handler')->group(function () {
+    // Customer Group Controller
+    Route::controller(CustomerGroupController::class)->group(function () {
+        Route::get('/customer-groups', 'index')->name('customer.groups.index');
+        Route::get('/create-customer-groups', 'create')->name('customer.groups.create');
+        Route::post('/store-customer-groups', 'store')->name('customer.groups.store');
+        Route::delete('/delete-customer-groups/{id}', 'destroy')->name('customer.groups.destroy');
+        Route::get('/view-customer-groups/{id}', 'view')->name('customer.groups.view');
+    });
 });
 
 
@@ -90,7 +93,14 @@ Route::delete('/warehouse/delete-selected', [WarehouseController::class, 'delete
 
 
 // Authentication
-Route::controller(AuthController::class)->group(function () {
+// Route::controller(AuthController::class)->group(function () {
+//     Route::get('/login', 'loginCustomer')->name('login');
+//     Route::post('/login', 'loginAuthCheckCustomerData')->name('login.auth.check');
+//     Route::get('/register', 'registerCustomer')->name('register');
+//     Route::post('/register', 'registerCustomerData')->name('register.store');
+//     Route::get('/logout', 'logout')->name('logout');
+// });
+Route::controller(RegisterController::class)->group(function () {
     Route::get('/login', 'loginCustomer')->name('login');
     Route::post('/login', 'loginAuthCheckCustomerData')->name('login.auth.check');
     Route::get('/register', 'registerCustomer')->name('register');

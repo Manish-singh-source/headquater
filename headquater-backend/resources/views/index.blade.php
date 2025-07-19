@@ -31,7 +31,10 @@
                                             width="60" height="60" alt="user">
                                         <div class="">
                                             <p class="mb-0 fw-semibold">Welcome back</p>
-                                            <h4 class="fw-semibold mb-0 fs-4 mb-0">Manish Singh!</h4>
+                                            <h4 class="fw-semibold mb-0 fs-4 mb-0">
+                                                {{Auth::user()->fname}}
+                                                {{Auth::user()->lname}}
+                                            </h4>
                                         </div>
                                     </div>
                                     <div class="d-flex align-items-center gap-5">

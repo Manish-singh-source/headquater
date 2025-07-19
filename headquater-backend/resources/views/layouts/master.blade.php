@@ -421,6 +421,8 @@
                           </li>
                       </ul>
                   </li>
+
+
                   <li>
                       <a href="javascript:;" class="has-arrow">
                           <div class="parent-icon"><i class="material-icons-outlined">category</i>
@@ -428,20 +430,34 @@
                           <div class="menu-title">Master</div>
                       </a>
                       <ul>
-                          <li><a href="{{ route('customer.groups.index') }}"><i
-                                      class="material-icons-outlined">arrow_right</i>Customers</a>
-                          </li>
-                          <li><a href="{{ route('vendor.index') }}"><i
-                                      class="material-icons-outlined">arrow_right</i>Vendor</a>
-                          </li>
-                          <li><a href="{{ route('products.index') }}"><i
-                                      class="material-icons-outlined">arrow_right</i>Products</a>
-                          </li>
-                          <li><a href="{{ route('warehouse.index') }}"><i
-                                      class="material-icons-outlined">arrow_right</i>Warehouses</a>
-                          </li>
+
+                          @can('PermissionChecker', 'view_customer')
+                              <li><a href="{{ route('customer.groups.index') }}"><i
+                                          class="material-icons-outlined">arrow_right</i>Customers</a>
+                              </li>
+                          @endcan
+
+                          @can('PermissionChecker', 'view_vendor')
+                              <li><a href="{{ route('vendor.index') }}"><i
+                                          class="material-icons-outlined">arrow_right</i>Vendor</a>
+                              </li>
+                          @endcan
+
+                          @can('PermissionChecker', 'view_product')
+                              <li><a href="{{ route('products.index') }}"><i
+                                          class="material-icons-outlined">arrow_right</i>Products</a>
+                              </li>
+                          @endcan
+
+                          @can('PermissionChecker', 'view_warehouse')
+                              <li><a href="{{ route('warehouse.index') }}"><i
+                                          class="material-icons-outlined">arrow_right</i>Warehouses</a>
+                              </li>
+                          @endcan
                       </ul>
                   </li>
+
+
                   <li>
                       <a href="javascript:;" class="has-arrow">
                           <div class="parent-icon"><i class="material-icons-outlined">shopping_cart</i>
@@ -462,7 +478,8 @@
                           <div class="menu-title">Sales</div>
                       </a>
                       <ul>
-                          <li><a href="{{ route('order.index') }}"><i class="material-icons-outlined">arrow_right</i>Sales
+                          <li><a href="{{ route('order.index') }}"><i
+                                      class="material-icons-outlined">arrow_right</i>Sales
                                   Order</a>
                           </li>
                       </ul>
@@ -716,8 +733,8 @@
                       } // Disable sorting for the 4th column (index starts at 0)
                   ],
                   lengthChange: true,
-                    // buttons: ['excel', 'pdf', 'print']
-                    buttons: ['excel']
+                  // buttons: ['excel', 'pdf', 'print']
+                  buttons: ['excel']
               });
 
               table1.buttons().container()

@@ -20,8 +20,10 @@
             <div class="row g-3 justify-content-end">
                 <div class="col-12 col-md-auto">
                     <div class="d-flex align-items-center gap-2 justify-content-lg-end">
-                        <a href="{{ route('products.create') }}" class="btn btn-primary px-4"><i
-                                class="bi bi-plus-lg me-2"></i>Add Product</a>
+                        @can('PermissionChecker', 'create_product')
+                            <a href="{{ route('products.create') }}" class="btn btn-primary px-4"><i
+                                    class="bi bi-plus-lg me-2"></i>Add Product</a>
+                        @endcan
                         <div class="ms-auto">
                             <div class="btn-group">
                                 <button type="button" class="btn btn-outline-primary">Action</button>

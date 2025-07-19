@@ -29,9 +29,9 @@
 
 </head>
 
-<body>
+<body class="d-flex align-items-center justify-content-center min-vh-100 ">
     <div class="mx-3 mx-lg-0">
-
+        
         <div class="card my-5 col-xl-9 col-xxl-8 mx-auto rounded-4 overflow-hidden p-4">
             <div class="row g-4">
                 <div class="col-lg-6 d-flex">
@@ -46,16 +46,31 @@
                                 @method('POST')
                                 <div class="col-12">
                                     <label for="email" class="form-label">Email</label>
-                                    <input type="email" class="form-control" id="email" name="email"
-                                        placeholder="Manish@example.com">
+                                    <input type="email" class="form-control @error('email') is-invalid @enderror"
+                                        id="email" name="email"
+                                        @error('email') aria-describedby="validationServer05Feedback"  @enderror
+                                        placeholder="Roshan@example.com">
+                                    @error('email')
+                                        <div id="validationServer05Feedback" class="invalid-feedback">
+                                            {{ $message }}
+                                        </div>
+                                    @enderror
                                 </div>
                                 <div class="col-12">
                                     <label for="password" class="form-label">Password</label>
                                     <div class="input-group" id="show_hide_password">
-                                        <input type="password" class="form-control border-end-0" id="password"
-                                            name="password" placeholder="Enter Password">
-                                        <a href="javascript:;" class="input-group-text bg-transparent"><i
+                                        <input type="password"
+                                            class="form-control border-end-0 @error('password') is-invalid @enderror"
+                                            id="password" name="password"
+                                            @error('password') aria-describedby="validationServer06Feedback"  @enderror
+                                            placeholder="Enter Password">
+                                        <a href="javascript:;" class="input-group-text bg-transparent text-white"><i
                                                 class="bi bi-eye-slash-fill"></i></a>
+                                        @error('password')
+                                            <div id="validationServer05Feedback" class="invalid-feedback">
+                                                {{ $message }}
+                                            </div>
+                                        @enderror
                                     </div>
                                 </div>
                                 <div class="col-md-6">

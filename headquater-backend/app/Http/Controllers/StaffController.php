@@ -31,6 +31,7 @@ class StaffController extends Controller
             'fname' => 'required',
             'lname' => 'required',
             'phone' => 'required|digits:10',
+            'password' => 'required',
             'email' => 'required|email|unique:staff,email',
             'permanent_address' => 'required',
             'dob' => 'required|date',

@@ -3,13 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\Staff;
-use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 
-class AuthController extends Controller
+class RegisterController extends Controller
 {
     //
     public function loginCustomer()
@@ -28,6 +27,7 @@ class AuthController extends Controller
         $validator = Validator::make(
             $request->all(),
             [
+                'role_id' => 'required',
                 'firstName' => 'required|min:3',
                 'lastName' => 'required|min:3',
                 'email' => 'required|email|unique:staff',
@@ -42,6 +42,7 @@ class AuthController extends Controller
         }
 
         $register = new Staff();
+        $register->role_id = $request->role_id;
         $register->fname = $request->firstName;
         $register->lname = $request->lastName;
         $register->email = $request->email;

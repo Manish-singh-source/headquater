@@ -29,7 +29,7 @@
 
 </head>
 
-<body>
+<body class="d-flex align-items-center justify-content-center min-vh-100" >
 
     <div class="mx-3 mx-lg-0">
 
@@ -48,6 +48,7 @@
 
                                 <div class="col-6">
                                     <label for="firstName" class="form-label">First Name</label>
+                                    <input type="hidden" class="form-control" name="role_id" id="firstName" value="1" placeholder="Manish">
                                     <input type="text" class="form-control" name="firstName" id="firstName" placeholder="Manish">
                                 </div>
                                 <div class="col-6">
