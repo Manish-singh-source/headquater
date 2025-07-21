@@ -54,7 +54,6 @@
                                     @endphp
                                     @foreach ($orders as $order)
                                         <tr>
-
                                             <td>
                                                 <input class="form-check-input" type="checkbox">
                                             </td>
@@ -130,9 +129,6 @@
                     </div>
                 </div>
             </div>
-
-
         </div>
     </main>
-    <!--end main wrapper-->
 @endsection

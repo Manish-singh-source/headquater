@@ -17,7 +17,6 @@ use App\Http\Controllers\CustomerGroupController;
 use App\Http\Controllers\PurchaseOrderController;
 use App\Http\Controllers\ReceivedProductsController;
 use App\Http\Controllers\RegisterController;
-use App\Http\Controllers\RoleController;
 use App\Models\CustomerGroup;
 
 // Route::get('/', function () {
@@ -38,7 +37,7 @@ Route::middleware('IsAdmin')->group(function () {
 // delete/destroy
 
 // Route::middleware('IsAdmin')->group(function() {
-    Route::get('/', [CustomerController::class, 'index'])->name('index');
+    // Route::get('/', [CustomerController::class, 'index'])->name('index');
 // });
 
 Route::controller(LocationController::class)->group(function () {

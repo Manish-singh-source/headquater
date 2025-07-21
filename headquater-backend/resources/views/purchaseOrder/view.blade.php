@@ -34,7 +34,7 @@
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center my-2">
                         <div class="div d-flex justify-content-end my-3 gap-2">
-                            <h6 class="mb-3">PO Table</h6>
+                            <h6 class="mb-3">Vendor PO Table</h6>
                         </div>
                         <!-- Tabs Navigation -->
                         <div class="div d-flex justify-content-end my-3 gap-2">
@@ -70,15 +70,17 @@
                                 </thead>
                                 <tbody>
                                     @forelse($purchaseOrderProducts as $order)
-                                        <tr>
-                                            <td>{{ 'PO-' . $order->id }}</td>
-                                            <td>{{ $order->tempProduct->vendor_code }}</td>
-                                            <td>{{ $order->tempProduct->po_number ?? 'NA' }}</td>
-                                            <td>{{ $order->tempProduct->sku ?? 'NA' }}</td>
-                                            <td>{{ $order->tempProduct->description ?? 'NA' }}</td>
-                                            <td>{{ $order->tempProduct->mrp ?? 'NA' }}</td>
-                                            <td>{{ $order->ordered_quantity ?? 'NA' }}</td>
-                                        </tr>
+                                        @if ($order->ordered_quantity > 0)
+                                            <tr>
+                                                <td>{{ 'PO-' . $order->id }}</td>
+                                                <td>{{ $order->tempProduct->vendor_code }}</td>
+                                                <td>{{ $order->tempProduct->po_number ?? 'NA' }}</td>
+                                                <td>{{ $order->tempProduct->sku ?? 'NA' }}</td>
+                                                <td>{{ $order->tempProduct->description ?? 'NA' }}</td>
+                                                <td>{{ $order->tempProduct->mrp ?? 'NA' }}</td>
+                                                <td>{{ $order->ordered_quantity ?? 'NA' }}</td>
+                                            </tr>
+                                        @endif
                                     @empty
                                         <tr>
                                             <td colspan="6">No Records Found</td>
@@ -152,7 +154,7 @@
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-center my-2">
                             <div class="div d-flex justify-content-end my-3 gap-2">
-                                <h6 class="mb-3">PI Table</h6>
+                                <h6 class="mb-3">Vendor PI Table</h6>
                             </div>
                             <!-- Tabs Navigation -->
                             <div class="div d-flex justify-content-end my-3 gap-2">
@@ -260,45 +262,32 @@
                     </form>
                 </div>
 
-                <div class="card-body">
-                    <table class="table align-middle">
-                        <thead>
+                @isset($purchaseInvoice[0]->vendor_code)
+                    <div class="card-body">
+                        <table class="table align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Vendor Name</th>
+                                    <th>Invoice File</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($purchaseInvoice as $invoiceDetail)
+                                    <tr>
+                                        <th> {{ $invoiceDetail->vendor_code }}</th>
+                                        <th>
+                                            <a href="{{ asset('uploads/invoices/' . $invoiceDetail->invoice_file) }}"
+                                                class="btn btn-sm border-2 border-success w-sm waves ripple-light">
+                                                Preview
+                                            </a>
+                                        </th>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @endisset
 
-                        </thead>
-                        <tr>
-                            <th>Vendor Name</th>
-                            <th>Invoice File</th>
-                        </tr>
-                        @foreach ($purchaseInvoice as $invoiceDetail)
-                            <tr>
-                                <th> {{ $invoiceDetail->vendor_code }}</th>
-                                <th>
-                                    <a href="{{ asset('uploads/invoices/' . $invoiceDetail->invoice_file) }}"
-                                        class="btn btn-sm border-2 border-success w-sm waves ripple-light">
-                                        Preview
-                                    </a>
-                                </th>
-                            </tr>
-                        @endforeach
-                    </table>
-                    {{-- 
-                    <div class="row mb-2 g-3">
-                        <div class="col-12 col-lg-3">
-                            <label for="marital" class="form-label">Vendor Name
-                                <span class="text-danger">*</span></label>
-                            <div>
-                                {{ $invoiceDetail->vendor_code }}
-                            </div>
-                        </div>
-                        <div class="col-12 col-lg-3">
-                            <a href="{{ asset('uploads/invoices/' . $invoiceDetail->invoice_file) }}"
-                                class="btn btn-sm border-2 border-success w-sm waves ripple-light">
-                                Preview
-                            </a>
-                        </div>
-                    </div> 
-                    --}}
-                </div>
             </div>
 
             <div class="card">
@@ -347,40 +336,6 @@
                     </div>
                 </div>
 
-                <div class="card-body">
-                    <div class="row g-3">
-                        <div class="col-12 col-lg-3">
-                            <label for="marital" class="form-label">Vendor Name
-                                <span class="text-danger">*</span></label>
-                            <select class="form-control" name="marital" id="marital">
-                                <option selected="" disabled="" value="">-- Select --</option>
-                                <option value="Active">Active</option>
-                                <option value="Emily ">Emily </option>
-                                <option value="John ">John </option>
-                                <option value="Michael ">Michael </option>
-                                <option value="Sarah ">Sarah </option>
-                                <option value="Davis">Davis</option>
-                                <option value="Smith">Smith</option>
-                                <option value="Brown">Brown</option>
-                                <option value="Wilson">Wilson</option>
-                            </select>
-                        </div>
-                        <div class="col-12 col-lg-3">
-                            <label for="document_image" class="form-label">Upload GRN <span
-                                    class="text-danger">*</span></label>
-                            <input type="file" name="document_image" id="document_image" class="form-control"
-                                value="" required="" placeholder="Upload ID Document">
-                        </div>
-                        <div class="col-12 col-lg-1 d-flex align-items-end gap-2">
-                            <button type="" class="btn btn-success w-sm waves ripple-light">
-                                Upload
-                            </button>
-                            <button type="" class="btn btn-success w-sm waves ripple-light">
-                                Preview
-                            </button>
-                        </div>
-                    </div>
-                </div>
             </div>
 
             <div class="card">
@@ -425,36 +380,6 @@
                     </div>
                 </div>
 
-                <div class="card-body">
-                    <div class="row g-3">
-                        <div class="col-12 col-lg-3">
-                            <label for="marital" class="form-label">Vendor Name
-                                <span class="text-danger">*</span></label>
-                            <select class="form-control" name="marital" id="marital">
-                                <option selected="" disabled="" value="">-- Select --</option>
-                                <option value="Active">Active</option>
-                                <option value="Emily ">Emily </option>
-                                <option value="John ">John </option>
-                                <option value="Michael ">Michael </option>
-                                <option value="Sarah ">Sarah </option>
-                                <option value="Davis">Davis</option>
-                                <option value="Smith">Smith</option>
-                                <option value="Brown">Brown</option>
-                                <option value="Wilson">Wilson</option>
-                            </select>
-                        </div>
-                        <div class="col-12 col-lg-2">
-                            <label for="document_image" class="form-label">Update Payment Status<span
-                                    class="text-danger">*</span></label>
-                            <select id="input9" class="form-select">
-                                <option selected="" disabled>Payment Status</option>
-                                <option>Pending</option>
-                                <option>Rejected</option>
-                                <option>Completed</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
             </div>
 
             <div class="col-12 my-3 d-flex justify-content-end align-items-end gap-2">

@@ -35,14 +35,14 @@
                                         <div class="d-flex g-4 flex-row align-items-center justify-content-between">
                                             <div>
                                                 <h5 class="card-title mb-0">
-                                                    Add Group
+                                                    Add Customers Group
                                                 </h5>
                                             </div>
-                                            <div>
+                                            {{-- <div>
                                                 <b>
                                                     #0081
                                                 </b>
-                                            </div>
+                                            </div> --}}
                                         </div>
                                     </div>
 
@@ -73,7 +73,7 @@
                                                 @enderror
                                             </div>
                                             <div class="col-12 col-lg-3">
-                                                <label for="csv_file" class="form-label">Upload Excel <span
+                                                <label for="csv_file" class="form-label">Customers Data (Excel/CSV) <span
                                                         class="text-danger">*</span></label>
                                                 <input type="file" name="csv_file" id="csv_file" class="form-control @error('csv_file') is-invalid @enderror"
                                                     value="" required="" placeholder="Upload ID Document"
@@ -86,8 +86,8 @@
                                                 @enderror
                                             </div>
                                             <div class="col-12 col-lg-1">
-                                                <input type="submit" class="btn btn-primary" id="upload-excel"
-                                                    value="Upload Excel">
+                                                <input type="submit" class="btn border-2 border-primary" id="upload-excel"
+                                                    value="Submit">
                                             </div>
                                         </div>
                                     </div>
@@ -102,18 +102,7 @@
     </main>
     <!--end main wrapper-->
 
-
-    <!--start overlay-->
-    <div class="overlay btn-toggle"></div>
-    <!--end overlay-->
-
-    <!--start footer-->
-    <footer class="page-footer">
-        <p class="mb-0">Copyright © 2025. All right reserved.</p>
-    </footer>
-    <!--top footer-->
-
-
+    
     <!--bootstrap js-->
     <script src="assets/js/bootstrap.bundle.min.js"></script>
 

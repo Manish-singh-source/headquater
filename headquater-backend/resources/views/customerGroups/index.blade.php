@@ -19,13 +19,13 @@
                 <div class="col-12 col-md-auto">
                     <div class="d-flex align-items-center gap-2 justify-content-lg-end">
                         {{-- <button class="btn btn-filter px-4"><i class="bi bi-box-arrow-right me-2"></i>Export</button> --}}
-                        <a href="{{ route('customer.groups.create') }}" class="btn btn-primary px-4"><i
-                                class="bi bi-plus-lg me-2"></i>Create Group</a>
+                        <a href="{{ route('customer.groups.create') }}" class="btn border-2 border-primary px-4"><i
+                                class="bi bi-plus-lg me-2"></i>Create Customers Group</a>
                         <div class="ms-auto">
                             <div class="btn-group">
-                                <button type="button" class="btn btn-outline-primary">Action</button>
+                                <button type="button" class="btn border-2 border-primary">Action</button>
                                 <button type="button"
-                                    class="btn btn-outline-primary split-bg-primary dropdown-toggle dropdown-toggle-split"
+                                    class="btn border-2 border-primary split-bg-primary dropdown-toggle dropdown-toggle-split"
                                     data-bs-toggle="dropdown"> <span class="visually-hidden">Toggle Dropdown</span>
                                 </button>
                                 <div class="dropdown-menu dropdown-menu-right dropdown-menu-lg-end">
