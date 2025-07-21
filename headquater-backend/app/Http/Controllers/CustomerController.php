@@ -53,7 +53,6 @@ class CustomerController extends Controller
         $group = CustomerGroupMember::where('group_id', $id)->with('customer')->get();
         $groupInfo = CustomerGroup::find($id);
         $customers = Customer::where('group_id', $id)->get();
-        // dd($groupInfo);
         return view('customer.customers-list', compact('customers', 'group', 'groupInfo'));
     }
 

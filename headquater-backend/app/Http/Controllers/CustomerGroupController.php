@@ -115,7 +115,6 @@ class CustomerGroupController extends Controller
     // View Customer Group Details
     public function view($id)
     {
-        
         $customerGroup = CustomerGroup::with('customerGroupMembers.customer')->findOrFail($id);
         return view('customerGroups.view', compact('customerGroup'));
     }

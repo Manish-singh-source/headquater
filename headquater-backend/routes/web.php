@@ -1,11 +1,11 @@
 <?php
 
-use App\Http\Controllers\Warehouse;
+use App\Http\Middleware\AdminAuth;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\RoleController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\StaffController;
-use App\Http\Controllers\AccessController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\VendorController;
 use App\Http\Controllers\ProductController;
@@ -15,6 +15,7 @@ use App\Http\Controllers\WarehouseController;
 use App\Http\Controllers\PlaceOrderController;
 use App\Http\Controllers\CustomerGroupController;
 use App\Http\Controllers\PurchaseOrderController;
+use App\Http\Controllers\ReceivedProductsController;
 use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\RoleController;
 use App\Models\CustomerGroup;
@@ -36,6 +37,9 @@ Route::middleware('IsAdmin')->group(function () {
 // update
 // delete/destroy
 
+// Route::middleware('IsAdmin')->group(function() {
+    Route::get('/', [CustomerController::class, 'index'])->name('index');
+// });
 
 Route::controller(LocationController::class)->group(function () {
     Route::get('/countries', 'getCountries');
@@ -146,6 +150,21 @@ Route::controller(ProductController::class)->group(function () {
 });
 
 
+// All Order page
+Route::controller(OrderController::class)->group(function () {
+    
+    Route::get('/order', 'index')->name('order.index');
+    Route::get('/create-order', 'create')->name('order.create');
+    Route::post('/check-products-stock', 'checkProductsStock')->name('check.order.stock');
+    Route::post('/store-order', 'store')->name('order.store');
+    Route::get('/view-order/{id}', 'view')->name('order.view');
+    Route::delete('/delete-order/{id}', 'destroy')->name('order.delete');
+
+    Route::get('/download-block-order-csv', 'downloadBlockedCSV')->name('download.order.excel');
+});
+
+
+
 
 // Customer
 Route::controller(CustomerController::class)->group(function () {
@@ -175,34 +194,10 @@ Route::delete('/customers/delete-selected', [CustomerController::class, 'deleteS
 
 
 // Place Order
-Route::get('/assign-order', [PlaceOrderController::class, 'assignOrder'])->name('assign-order');
-// Place Order To Vendor
-Route::get('/assign-order-to-vendor', [PlaceOrderController::class, 'assignOrderToVendor'])->name('assign-order-to-vendor');
-
 Route::get('/purchase-order', [PurchaseOrderController::class, 'index'])->name('purchase.order.index');
 Route::get('/purchase-order-view/{id}', [PurchaseOrderController::class, 'view'])->name('purchase.order.view');
-
-
-
-// All Order page
-Route::controller(OrderController::class)->group(function () {
-    // Route::get('/order', 'orderList')->name('order');
-    // Route::get('/add-order', 'addOrder')->name('add-order');
-    // Route::post('/process-order', 'processOrder')->name('process.order');
-    // Route::post('/process-block-order', 'processBlockOrder')->name('process.block.order');
-    // Route::get('/download-block-order-csv', 'downloadBlockedCSV')->name('download.order.excel');
-    // Route::get('/customer-order-view/{id}', 'viewOrder')->name('customer-order-view');
-    // Route::delete('/customer-order-delete/{id}', 'deleteOrder')->name('delete.order');
-
-    Route::get('/order', 'index')->name('order.index');
-    Route::get('/create-order', 'create')->name('order.create');
-    Route::post('/check-products-stock', 'checkProductsStock')->name('check.order.stock');
-    Route::post('/store-order', 'store')->name('order.store');
-    Route::get('/view-order/{id}', 'view')->name('order.view');
-    Route::delete('/delete-order/{id}', 'destroy')->name('order.delete');
-
-    Route::get('/download-block-order-csv', 'downloadBlockedCSV')->name('download.order.excel');
-});
+Route::post('/purchase-order-store', [PurchaseOrderController::class, 'store'])->name('purchase.order.store');
+Route::post('/purchase-order-invoice-store', [PurchaseOrderController::class, 'invoiceStore'])->name('purchase.order.invoice.store');
 
 
 
@@ -242,10 +237,20 @@ Route::get('/invoices-details', function () {
     return view('invoices-details');
 })->name('invoices-details');
 
-// recev products
-Route::get('/received-products', function () {
-    return view('received-products');
-})->name('received-products');
+
+
+
+
+
+
+// received products
+Route::get('/received-products', [ReceivedProductsController::class, 'view'])->name('received-products.view');
+Route::put('/received-products', [ReceivedProductsController::class, 'update'])->name('received-products.update');
+
+
+// Route::get('/received-products', function () {
+//     return view('received-products');
+// })->name('received-products');
 Route::get('/packaging-list', function () {
     return view('packaging-list');
 })->name('packaging-list');
