@@ -19,8 +19,10 @@
                 <div class="col-12 col-md-auto">
                     <div class="d-flex align-items-center gap-2 justify-content-lg-end">
                         {{-- <button class="btn btn-filter px-4"><i class="bi bi-box-arrow-right me-2"></i>Export</button> --}}
-                        <a href="{{ route('customer.groups.create') }}" class="btn btn-primary px-4"><i
-                                class="bi bi-plus-lg me-2"></i>Create Group</a>
+                        @can('PermissionChecker', 'create_customer')
+                            <a href="{{ route('customer.groups.create') }}" class="btn btn-primary px-4"><i
+                                    class="bi bi-plus-lg me-2"></i>Create Group</a>
+                        @endcan
                         <div class="ms-auto">
                             <div class="btn-group">
                                 <button type="button" class="btn btn-outline-primary">Action</button>
@@ -77,51 +79,53 @@
                                                 <td>
                                                     <div class="form-switch form-check-success">
                                                         <input class="form-check-input status-switch" type="checkbox"
-                                                            role="switch"
-                                                            data-customer-id="{{ $group->id }}"
+                                                            role="switch" data-customer-id="{{ $group->id }}"
                                                             {{ $group->customerGroupMembers[0]->status == 1 ? 'checked' : '' }}>
                                                     </div>
                                                 </td>
                                                 <td>
                                                     <div class="d-flex">
-                                                        <a aria-label="anchor"
-                                                            href="{{ route('customer.groups.view', $group->id) }}"
-                                                            class="btn btn-icon btn-sm bg-primary-subtle me-1"
-                                                            data-bs-toggle="tooltip" data-bs-original-title="View">
-                                                            <svg xmlns="http://www.w3.org/2000/svg" width="13"
-                                                                height="13" viewBox="0 0 24 24" fill="none"
-                                                                stroke="currentColor" stroke-width="2"
-                                                                stroke-linecap="round" stroke-linejoin="round"
-                                                                class="feather feather-eye text-primary">
-                                                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z">
-                                                                </path>
-                                                                <circle cx="12" cy="12" r="3"></circle>
-                                                            </svg>
-                                                        </a>
-
-                                                        <form action="{{ route('customer.groups.destroy', $group->id) }}"
-                                                            method="POST" onsubmit="return confirm('Are you sure?')">
-                                                            @csrf
-                                                            @method('DELETE')
-                                                            <button type="submit"
-                                                                class="btn btn-icon btn-sm bg-danger-subtle delete-row">
+                                                        @can('PermissionChecker', 'view_customer-detail')
+                                                            <a aria-label="anchor"
+                                                                href="{{ route('customer.groups.view', $group->id) }}"
+                                                                class="btn btn-icon btn-sm bg-primary-subtle me-1"
+                                                                data-bs-toggle="tooltip" data-bs-original-title="View">
                                                                 <svg xmlns="http://www.w3.org/2000/svg" width="13"
                                                                     height="13" viewBox="0 0 24 24" fill="none"
                                                                     stroke="currentColor" stroke-width="2"
                                                                     stroke-linecap="round" stroke-linejoin="round"
-                                                                    class="feather feather-trash-2 text-danger">
-                                                                    <polyline points="3 6 5 6 21 6"></polyline>
-                                                                    <path
-                                                                        d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
+                                                                    class="feather feather-eye text-primary">
+                                                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z">
                                                                     </path>
-                                                                    <line x1="10" y1="11" x2="10"
-                                                                        y2="17"></line>
-                                                                    <line x1="14" y1="11" x2="14"
-                                                                        y2="17"></line>
+                                                                    <circle cx="12" cy="12" r="3"></circle>
                                                                 </svg>
-                                                            </button>
-                                                        </form>
+                                                            </a>
+                                                        @endcan
 
+                                                        @can('PermissionChecker', 'delete_customer')
+                                                            <form action="{{ route('customer.groups.destroy', $group->id) }}"
+                                                                method="POST" onsubmit="return confirm('Are you sure?')">
+                                                                @csrf
+                                                                @method('DELETE')
+                                                                <button type="submit"
+                                                                    class="btn btn-icon btn-sm bg-danger-subtle delete-row">
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="13"
+                                                                        height="13" viewBox="0 0 24 24" fill="none"
+                                                                        stroke="currentColor" stroke-width="2"
+                                                                        stroke-linecap="round" stroke-linejoin="round"
+                                                                        class="feather feather-trash-2 text-danger">
+                                                                        <polyline points="3 6 5 6 21 6"></polyline>
+                                                                        <path
+                                                                            d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
+                                                                        </path>
+                                                                        <line x1="10" y1="11" x2="10"
+                                                                            y2="17"></line>
+                                                                        <line x1="14" y1="11" x2="14"
+                                                                            y2="17"></line>
+                                                                    </svg>
+                                                                </button>
+                                                            </form>
+                                                        @endcan
                                                     </div>
                                                 </td>
                                             </tr>

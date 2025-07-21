@@ -70,10 +70,13 @@
                                             </div>
                                             <!-- Tabs Navigation -->
                                             <div class="div d-flex justify-content-end my-3 gap-2">
-                                                <a type="button" class="btn btn-sm border-2 border-primary"
-                                                    data-bs-toggle="modal" data-bs-target="#staticBackdrop1">
-                                                    Update Products
-                                                </a>
+                                                @can('PermissionChecker', 'update_received_products')
+                                                    <a type="button" class="btn btn-sm border-2 border-primary"
+                                                        data-bs-toggle="modal" data-bs-target="#staticBackdrop1">
+                                                        Update Products
+                                                    </a>
+                                                @endcan
+
                                                 <!-- Modal -->
                                                 <div class="modal fade" id="staticBackdrop1" data-bs-backdrop="static"
                                                     data-bs-keyboard="false" tabindex="-1"
@@ -302,7 +305,8 @@
                                         method="POST" onsubmit="return confirm('Are you sure?')">
                                         @csrf
                                         @method('PUT')
-                                        <input type="hidden" name="purchase_order_id" value="{{ request('purchase_order_id') }}">
+                                        <input type="hidden" name="purchase_order_id"
+                                            value="{{ request('purchase_order_id') }}">
                                         <input type="hidden" name="vendor_code" value="{{ request('vendor_code') }}">
                                         <button class="btn btn-sm border-2 border-primary" type="submit">Submit</button>
                                     </form>

@@ -14,10 +14,10 @@ use App\Http\Controllers\LocationController;
 use App\Http\Controllers\WarehouseController;
 use App\Http\Controllers\PlaceOrderController;
 use App\Http\Controllers\CustomerGroupController;
+use App\Http\Controllers\PackagingController;
 use App\Http\Controllers\PurchaseOrderController;
 use App\Http\Controllers\ReceivedProductsController;
 use App\Http\Controllers\RegisterController;
-use App\Http\Controllers\RoleController;
 use App\Models\CustomerGroup;
 
 // Route::get('/', function () {
@@ -38,7 +38,7 @@ Route::middleware('IsAdmin')->group(function () {
 // delete/destroy
 
 // Route::middleware('IsAdmin')->group(function() {
-    Route::get('/', [CustomerController::class, 'index'])->name('index');
+// Route::get('/', [CustomerController::class, 'index'])->name('index');
 // });
 
 Route::controller(LocationController::class)->group(function () {
@@ -152,7 +152,7 @@ Route::controller(ProductController::class)->group(function () {
 
 // All Order page
 Route::controller(OrderController::class)->group(function () {
-    
+
     Route::get('/order', 'index')->name('order.index');
     Route::get('/create-order', 'create')->name('order.create');
     Route::post('/check-products-stock', 'checkProductsStock')->name('check.order.stock');
@@ -248,27 +248,25 @@ Route::get('/received-products', [ReceivedProductsController::class, 'view'])->n
 Route::put('/received-products', [ReceivedProductsController::class, 'update'])->name('received-products.update');
 
 
-// Route::get('/received-products', function () {
-//     return view('received-products');
-// })->name('received-products');
-Route::get('/packaging-list', function () {
-    return view('packaging-list');
-})->name('packaging-list');
-Route::get('/packing-products-list', function () {
-    return view('packing-products-list');
-})->name('packing-products-list');
-Route::get('/raise-a-ticket-form', function () {
-    return view('raise-a-ticket-form');
-})->name('raise-a-ticket-form');
-Route::get('/ready-to-ship', function () {
-    return view('ready-to-ship');
-})->name('ready-to-ship');
-Route::get('/ready-to-ship-detail', function () {
-    return view('ready-to-ship-detail');
-})->name('ready-to-ship-detail');
-Route::get('/raise-a-ticket', function () {
-    return view('raise-a-ticket');
-})->name('raise-a-ticket');
-Route::get('/track-order', function () {
-    return view('track-order');
-})->name('track-order');
+// Packaging List
+Route::controller(PackagingController::class)->group(function () {
+
+    Route::get('/packaging-list', 'packagingList')->name('packaging-list');
+    Route::get('/packing-products-list', 'packingProductsList')->name('packing-products-list');
+
+    Route::get('/ready-to-ship', 'readyToShip')->name('ready-to-ship');
+    Route::get('/ready-to-ship-detail', 'readyToShipDetail')->name('ready-to-ship-detail');
+
+    Route::get('/track-order', 'trackOrder')->name('track-order');
+});
+
+// Route::get('/raise-a-ticket-form', function () {
+//     return view('raise-a-ticket-form');
+// })->name('raise-a-ticket-form');
+
+
+
+// Route::get('/raise-a-ticket', function () {
+//     return view('raise-a-ticket');
+// })->name('raise-a-ticket');
+

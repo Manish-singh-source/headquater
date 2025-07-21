@@ -12,7 +12,7 @@
                         <div class="card">
 
                             <div class="card-header">
-                                <h5 class="card-title mb-0">Create Role</h5>
+                                <h5 class="card-title mb-0">Edit Role</h5>
                             </div>
 
                             <div class="card-body">
@@ -30,6 +30,73 @@
                                     </h5>
 
                                     <div class="row g-3">
+                                        {{-- Dashboard --}}
+                                        <div class="col-xl-6">
+                                            <div class="border rounded p-3">
+                                                <div class="d-flex align-items-center justify-content-between mb-3">
+                                                    <h6 class="mb-0">
+                                                         Dashboard
+                                                    </h6>
+                                                </div>
+
+                                                <div class="row g-3">
+
+                                                    @php
+                                                        $permissions = json_decode($role->permissions, true);
+                                                    @endphp
+
+                                                    <div class="col-md-6">
+                                                        <div
+                                                            class="d-flex align-items-center justify-content-between gap-3 form-control p-2">
+                                                            <label class="mb-0">
+                                                                View Dashboard
+                                                            </label>
+                                                            <div class="form-check form-switch">
+                                                                <input type="checkbox" value="view_dashboard"
+                                                                    name="permission[view_dashboard]"
+                                                                    class="form-check-input" id="view_dashboard"
+                                                                    @if (isset($permissions['view_dashboard'])) checked @endif>
+                                                                <label class="form-check-label"
+                                                                    for="view_dashboard"></label>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <div
+                                                            class="d-flex align-items-center justify-content-between gap-3 form-control p-2">
+                                                            <label class="mb-0">
+                                                                View Dashboard Detail
+                                                            </label>
+                                                            <div class="form-check form-switch">
+                                                                <input type="checkbox" value="view_dashboard_detail"
+                                                                    name="permission[view_dashboard_detail]"
+                                                                    class="form-check-input" id="view_dashboard_detail"
+                                                                    @if (isset($permissions['view_dashboard_detail'])) checked @endif>
+                                                                <label class="form-check-label"
+                                                                    for="view_dashboard_detail"></label>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <div
+                                                            class="d-flex align-items-center justify-content-between gap-3 form-control p-2">
+                                                            <label class="mb-0">
+                                                                View Dashboard Tables
+                                                            </label>
+                                                            <div class="form-check form-switch">
+                                                                <input type="checkbox" value="view_dashboard_table"
+                                                                    name="permission[view_dashboard_table]"
+                                                                    class="form-check-input" id="view_dashboard_table"
+                                                                    @if (isset($permissions['view_dashboard_table'])) checked @endif>
+                                                                <label class="form-check-label"
+                                                                    for="view_dashboard_table"></label>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
                                         {{-- Admin  --}}
                                         <div class="col-xl-6">
                                             <div class="border rounded p-3">
@@ -40,9 +107,7 @@
                                                 </div>
 
                                                 <div class="row g-3">
-                                                    @php
-                                                        $permissions = json_decode($role->permissions, true);
-                                                    @endphp
+                                                    
 
                                                     <div class="col-md-6">
                                                         <div
@@ -117,115 +182,6 @@
                                                                     id="delete_admin"
                                                                     @if (isset($permissions['delete_admin'])) checked @endif>
                                                                 <label class="form-check-label" for="delete_admin"></label>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        {{-- Dashboard --}}
-                                        <div class="col-xl-6">
-                                            <div class="border rounded p-3">
-                                                <div class="d-flex align-items-center justify-content-between mb-3">
-                                                    <h6 class="mb-0">
-                                                        Dashboard
-                                                    </h6>
-                                                </div>
-
-                                                <div class="row g-3">
-                                                    <div class="col-md-6">
-                                                        <div
-                                                            class="d-flex align-items-center justify-content-between gap-3 form-control p-2">
-                                                            <label class="mb-0">
-                                                                View Dashboard
-                                                            </label>
-                                                            <div class="form-check form-switch">
-                                                                <input type="checkbox" value="view_dashboard"
-                                                                    name="permission[view_dashboard]"
-                                                                    class="form-check-input" id="view_dashboard"
-                                                                    @if (isset($permissions['view_dashboard'])) checked @endif>
-                                                                <label class="form-check-label"
-                                                                    for="view_dashboard"></label>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        {{-- Role  --}}
-                                        <div class="col-xl-6">
-                                            <div class="border rounded p-3">
-                                                <div class="d-flex align-items-center justify-content-between mb-3">
-                                                    <h6 class="mb-0">
-                                                        Role
-                                                    </h6>
-                                                </div>
-
-                                                <div class="row g-3">
-                                                    <div class="col-md-6">
-                                                        <div
-                                                            class="d-flex align-items-center justify-content-between gap-3 form-control p-2">
-                                                            <label class="mb-0">
-                                                                View Roles
-                                                            </label>
-                                                            <div class="form-check form-switch">
-                                                                <input type="checkbox" value="view_roles"
-                                                                    name="permission[view_roles]" class="form-check-input"
-                                                                    id="view_roles"
-                                                                    @if (isset($permissions['view_roles'])) checked @endif>
-                                                                <label class="form-check-label" for="view_roles"></label>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div class="col-md-6">
-                                                        <div
-                                                            class="d-flex align-items-center justify-content-between gap-3 form-control p-2">
-                                                            <label class="mb-0">
-                                                                Create Roles
-                                                            </label>
-                                                            <div class="form-check form-switch">
-                                                                <input type="checkbox" value="create_roles"
-                                                                    name="permission[create_roles]"
-                                                                    class="form-check-input" id="create_roles"
-                                                                    @if (isset($permissions['create_roles'])) checked @endif>
-                                                                <label class="form-check-label"
-                                                                    for="create_roles"></label>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div class="col-md-6">
-                                                        <div
-                                                            class="d-flex align-items-center justify-content-between gap-3 form-control p-2">
-                                                            <label class="mb-0">
-                                                                Update Roles
-                                                            </label>
-                                                            <div class="form-check form-switch">
-                                                                <input type="checkbox" value="update_roles"
-                                                                    name="permission[update_roles]"
-                                                                    class="form-check-input" id="update_roles"
-                                                                    @if (isset($permissions['update_roles'])) checked @endif>
-                                                                <label class="form-check-label"
-                                                                    for="update_roles"></label>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div class="col-md-6">
-                                                        <div
-                                                            class="d-flex align-items-center justify-content-between gap-3 form-control p-2">
-                                                            <label class="mb-0">
-                                                                Delete Roles
-                                                            </label>
-                                                            <div class="form-check form-switch">
-                                                                <input type="checkbox" value="delete_roles"
-                                                                    name="permission[delete_roles]"
-                                                                    class="form-check-input" id="delete_roles"
-                                                                    @if (isset($permissions['delete_roles'])) checked @endif>
-                                                                <label class="form-check-label"
-                                                                    for="delete_roles"></label>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -312,13 +268,12 @@
                                             </div>
                                         </div>
 
-                                        {{-- Master  --}}
-                                        {{-- Vendor  --}}
+                                         {{-- Role  --}}
                                         <div class="col-xl-6">
                                             <div class="border rounded p-3">
                                                 <div class="d-flex align-items-center justify-content-between mb-3">
                                                     <h6 class="mb-0">
-                                                        Vendor
+                                                        Role
                                                     </h6>
                                                 </div>
 
@@ -327,14 +282,14 @@
                                                         <div
                                                             class="d-flex align-items-center justify-content-between gap-3 form-control p-2">
                                                             <label class="mb-0">
-                                                                View Vendor
+                                                                View Roles
                                                             </label>
                                                             <div class="form-check form-switch">
-                                                                <input type="checkbox" value="view_vendor"
-                                                                    name="permission[view_vendor]" class="form-check-input"
-                                                                    id="view_vendor"
-                                                                    @if (isset($permissions['view_vendor'])) checked @endif>
-                                                                <label class="form-check-label" for="view_vendor"></label>
+                                                                <input type="checkbox" value="view_roles"
+                                                                    name="permission[view_roles]" class="form-check-input"
+                                                                    id="view_roles"
+                                                                    @if (isset($permissions['view_roles'])) checked @endif>
+                                                                <label class="form-check-label" for="view_roles"></label>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -342,15 +297,15 @@
                                                         <div
                                                             class="d-flex align-items-center justify-content-between gap-3 form-control p-2">
                                                             <label class="mb-0">
-                                                                View Vendor Detail
+                                                                Create Roles
                                                             </label>
                                                             <div class="form-check form-switch">
-                                                                <input type="checkbox" value="view_vendor-detail"
-                                                                    name="permission[view_vendor-detail]"
-                                                                    class="form-check-input" id="view_vendor-detail"
-                                                                    @if (isset($permissions['view_vendor-detail'])) checked @endif>
+                                                                <input type="checkbox" value="create_roles"
+                                                                    name="permission[create_roles]"
+                                                                    class="form-check-input" id="create_roles"
+                                                                    @if (isset($permissions['create_roles'])) checked @endif>
                                                                 <label class="form-check-label"
-                                                                    for="view_vendor-detail"></label>
+                                                                    for="create_roles"></label>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -358,15 +313,15 @@
                                                         <div
                                                             class="d-flex align-items-center justify-content-between gap-3 form-control p-2">
                                                             <label class="mb-0">
-                                                                Create Vendor
+                                                                Update Roles
                                                             </label>
                                                             <div class="form-check form-switch">
-                                                                <input type="checkbox" value="create_vendor"
-                                                                    name="permission[create_vendor]"
-                                                                    class="form-check-input" id="create_vendor"
-                                                                    @if (isset($permissions['create_vendor'])) checked @endif>
+                                                                <input type="checkbox" value="update_roles"
+                                                                    name="permission[update_roles]"
+                                                                    class="form-check-input" id="update_roles"
+                                                                    @if (isset($permissions['update_roles'])) checked @endif>
                                                                 <label class="form-check-label"
-                                                                    for="create_vendor"></label>
+                                                                    for="update_roles"></label>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -374,31 +329,15 @@
                                                         <div
                                                             class="d-flex align-items-center justify-content-between gap-3 form-control p-2">
                                                             <label class="mb-0">
-                                                                Update Vendor
+                                                                Delete Roles
                                                             </label>
                                                             <div class="form-check form-switch">
-                                                                <input type="checkbox" value="update_vendor"
-                                                                    name="permission[update_vendor]"
-                                                                    class="form-check-input" id="update_vendor"
-                                                                    @if (isset($permissions['update_vendor'])) checked @endif>
+                                                                <input type="checkbox" value="delete_roles"
+                                                                    name="permission[delete_roles]"
+                                                                    class="form-check-input" id="delete_roles"
+                                                                    @if (isset($permissions['delete_roles'])) checked @endif>
                                                                 <label class="form-check-label"
-                                                                    for="update_vendor"></label>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div class="col-md-6">
-                                                        <div
-                                                            class="d-flex align-items-center justify-content-between gap-3 form-control p-2">
-                                                            <label class="mb-0">
-                                                                Delete Vendor
-                                                            </label>
-                                                            <div class="form-check form-switch">
-                                                                <input type="checkbox" value="delete_vendor"
-                                                                    name="permission[delete_vendor]]"
-                                                                    class="form-check-input" id="delete_vendor"
-                                                                    @if (isset($permissions['delete_vendor'])) checked @endif>
-                                                                <label class="form-check-label" for="delete_vendor">
-                                                                </label>
+                                                                    for="delete_roles"></label>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -407,6 +346,7 @@
                                             </div>
                                         </div>
 
+                                        {{-- Master  --}}
                                         {{-- Customer  --}}
                                         <div class="col-xl-6">
                                             <div class="border rounded p-3">
@@ -502,12 +442,12 @@
                                             </div>
                                         </div>
 
-                                        {{-- Warehouse  --}}
+                                        {{-- Vendor  --}}
                                         <div class="col-xl-6">
                                             <div class="border rounded p-3">
                                                 <div class="d-flex align-items-center justify-content-between mb-3">
                                                     <h6 class="mb-0">
-                                                        Warehouse
+                                                        Vendor
                                                     </h6>
                                                 </div>
 
@@ -516,15 +456,14 @@
                                                         <div
                                                             class="d-flex align-items-center justify-content-between gap-3 form-control p-2">
                                                             <label class="mb-0">
-                                                                View Warehouse
+                                                                View Vendor
                                                             </label>
                                                             <div class="form-check form-switch">
-                                                                <input type="checkbox" value="view_warehouse"
-                                                                    name="permission[view_warehouse]"
-                                                                    class="form-check-input" id="view_warehouse"
-                                                                    @if (isset($permissions['view_warehouse'])) checked @endif>
-                                                                <label class="form-check-label"
-                                                                    for="view_warehouse"></label>
+                                                                <input type="checkbox" value="view_vendor"
+                                                                    name="permission[view_vendor]" class="form-check-input"
+                                                                    id="view_vendor"
+                                                                    @if (isset($permissions['view_vendor'])) checked @endif>
+                                                                <label class="form-check-label" for="view_vendor"></label>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -532,15 +471,15 @@
                                                         <div
                                                             class="d-flex align-items-center justify-content-between gap-3 form-control p-2">
                                                             <label class="mb-0">
-                                                                View Warehouse Detail
+                                                                View Vendor Detail
                                                             </label>
                                                             <div class="form-check form-switch">
-                                                                <input type="checkbox" value="view_warehouse-detail"
-                                                                    name="permission[view_warehouse-detail]"
-                                                                    class="form-check-input" id="view_warehouse-detail"
-                                                                    @if (isset($permissions['view_warehouse'])) checked @endif>
+                                                                <input type="checkbox" value="view_vendor-detail"
+                                                                    name="permission[view_vendor-detail]"
+                                                                    class="form-check-input" id="view_vendor-detail"
+                                                                    @if (isset($permissions['view_vendor-detail'])) checked @endif>
                                                                 <label class="form-check-label"
-                                                                    for="view_warehouse-detail"></label>
+                                                                    for="view_vendor-detail"></label>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -548,15 +487,15 @@
                                                         <div
                                                             class="d-flex align-items-center justify-content-between gap-3 form-control p-2">
                                                             <label class="mb-0">
-                                                                Create Warehouse
+                                                                Create Vendor
                                                             </label>
                                                             <div class="form-check form-switch">
-                                                                <input type="checkbox" value="create_warehouse"
-                                                                    name="permission[create_warehouse]"
-                                                                    class="form-check-input" id="create_warehouse"
-                                                                    @if (isset($permissions['create_warehouse'])) checked @endif>
+                                                                <input type="checkbox" value="create_vendor"
+                                                                    name="permission[create_vendor]"
+                                                                    class="form-check-input" id="create_vendor"
+                                                                    @if (isset($permissions['create_vendor'])) checked @endif>
                                                                 <label class="form-check-label"
-                                                                    for="create_warehouse"></label>
+                                                                    for="create_vendor"></label>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -564,15 +503,15 @@
                                                         <div
                                                             class="d-flex align-items-center justify-content-between gap-3 form-control p-2">
                                                             <label class="mb-0">
-                                                                Update Warehouse
+                                                                Update Vendor
                                                             </label>
                                                             <div class="form-check form-switch">
-                                                                <input type="checkbox" value="update_warehouse"
-                                                                    name="permission[update_warehouse]"
-                                                                    class="form-check-input" id="update_warehouse"
-                                                                    @if (isset($permissions['update_warehouse'])) checked @endif>
+                                                                <input type="checkbox" value="update_vendor"
+                                                                    name="permission[update_vendor]"
+                                                                    class="form-check-input" id="update_vendor"
+                                                                    @if (isset($permissions['update_vendor'])) checked @endif>
                                                                 <label class="form-check-label"
-                                                                    for="update_warehouse"></label>
+                                                                    for="update_vendor"></label>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -580,15 +519,15 @@
                                                         <div
                                                             class="d-flex align-items-center justify-content-between gap-3 form-control p-2">
                                                             <label class="mb-0">
-                                                                Delete Warehouse
+                                                                Delete Vendor
                                                             </label>
                                                             <div class="form-check form-switch">
-                                                                <input type="checkbox" value="delete_warehouse"
-                                                                    name="permission[delete_warehouse]"
-                                                                    class="form-check-input" id="delete_warehouse"
-                                                                    @if (isset($permissions['delete_warehouse'])) checked @endif>
-                                                                <label class="form-check-label"
-                                                                    for="delete_warehouse"></label>
+                                                                <input type="checkbox" value="delete_vendor"
+                                                                    name="permission[delete_vendor]]"
+                                                                    class="form-check-input" id="delete_vendor"
+                                                                    @if (isset($permissions['delete_vendor'])) checked @endif>
+                                                                <label class="form-check-label" for="delete_vendor">
+                                                                </label>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -676,6 +615,101 @@
                                             </div>
                                         </div>
 
+                                        {{-- Warehouse  --}}
+                                        <div class="col-xl-6">
+                                            <div class="border rounded p-3">
+                                                <div class="d-flex align-items-center justify-content-between mb-3">
+                                                    <h6 class="mb-0">
+                                                        Warehouse
+                                                    </h6>
+                                                </div>
+
+                                                <div class="row g-3">
+                                                    <div class="col-md-6">
+                                                        <div
+                                                            class="d-flex align-items-center justify-content-between gap-3 form-control p-2">
+                                                            <label class="mb-0">
+                                                                View Warehouse
+                                                            </label>
+                                                            <div class="form-check form-switch">
+                                                                <input type="checkbox" value="view_warehouse"
+                                                                    name="permission[view_warehouse]"
+                                                                    class="form-check-input" id="view_warehouse"
+                                                                    @if (isset($permissions['view_warehouse'])) checked @endif>
+                                                                <label class="form-check-label"
+                                                                    for="view_warehouse"></label>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <div
+                                                            class="d-flex align-items-center justify-content-between gap-3 form-control p-2">
+                                                            <label class="mb-0">
+                                                                View Warehouse Detail
+                                                            </label>
+                                                            <div class="form-check form-switch">
+                                                                <input type="checkbox" value="view_warehouse-detail"
+                                                                    name="permission[view_warehouse-detail]"
+                                                                    class="form-check-input" id="view_warehouse-detail"
+                                                                    @if (isset($permissions['view_warehouse-detail'])) checked @endif>
+                                                                <label class="form-check-label"
+                                                                    for="view_warehouse-detail"></label>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <div
+                                                            class="d-flex align-items-center justify-content-between gap-3 form-control p-2">
+                                                            <label class="mb-0">
+                                                                Create Warehouse
+                                                            </label>
+                                                            <div class="form-check form-switch">
+                                                                <input type="checkbox" value="create_warehouse"
+                                                                    name="permission[create_warehouse]"
+                                                                    class="form-check-input" id="create_warehouse"
+                                                                    @if (isset($permissions['create_warehouse'])) checked @endif>
+                                                                <label class="form-check-label"
+                                                                    for="create_warehouse"></label>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <div
+                                                            class="d-flex align-items-center justify-content-between gap-3 form-control p-2">
+                                                            <label class="mb-0">
+                                                                Update Warehouse
+                                                            </label>
+                                                            <div class="form-check form-switch">
+                                                                <input type="checkbox" value="update_warehouse"
+                                                                    name="permission[update_warehouse]"
+                                                                    class="form-check-input" id="update_warehouse"
+                                                                    @if (isset($permissions['update_warehouse'])) checked @endif>
+                                                                <label class="form-check-label"
+                                                                    for="update_warehouse"></label>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <div
+                                                            class="d-flex align-items-center justify-content-between gap-3 form-control p-2">
+                                                            <label class="mb-0">
+                                                                Delete Warehouse
+                                                            </label>
+                                                            <div class="form-check form-switch">
+                                                                <input type="checkbox" value="delete_warehouse"
+                                                                    name="permission[delete_warehouse]"
+                                                                    class="form-check-input" id="delete_warehouse"
+                                                                    @if (isset($permissions['delete_warehouse'])) checked @endif>
+                                                                <label class="form-check-label"
+                                                                    for="delete_warehouse"></label>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                </div>
+                                            </div>
+                                        </div>
+
                                         {{-- Purchase Order  --}}
                                         <div class="col-xl-6">
                                             <div class="border rounded p-3">
@@ -693,11 +727,11 @@
                                                                 View Purchase Order
                                                             </label>
                                                             <div class="form-check form-switch">
-                                                                <input type="checkbox" value="view_order"
-                                                                    name="permission[view_order]" class="form-check-input"
+                                                                <input type="checkbox" value="view_purchase_order"
+                                                                    name="permission[view_purchase_order]" class="form-check-input"
                                                                     id="view_order"
-                                                                    @if (isset($permissions['view_order'])) checked @endif>
-                                                                <label class="form-check-label" for="view_order"></label>
+                                                                    @if (isset($permissions['view_purchase_order'])) checked @endif>
+                                                                <label class="form-check-label" for="view_purchase_order"></label>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -708,11 +742,11 @@
                                                                View Purchase Order Detail
                                                             </label>
                                                             <div class="form-check form-switch">
-                                                                <input type="checkbox" value="view_order"
-                                                                    name="permission[view_order]" class="form-check-input"
+                                                                <input type="checkbox" value="view_purchase_order_detail"
+                                                                    name="permission[view_purchase_order_detail]" class="form-check-input"
                                                                     id="view_order"
-                                                                    @if (isset($permissions['view_order'])) checked @endif>
-                                                                <label class="form-check-label" for="view_order"></label>
+                                                                    @if (isset($permissions['view_purchase_order_detail'])) checked @endif>
+                                                                <label class="form-check-label" for="view_purchase_order_detail"></label>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -723,12 +757,12 @@
                                                                 Create Purchase Order
                                                             </label>
                                                             <div class="form-check form-switch">
-                                                                <input type="checkbox" value="create_order"
-                                                                    name="permission[create_order]"
-                                                                    class="form-check-input" id="create_order"
-                                                                    @if (isset($permissions['create_order'])) checked @endif>
+                                                                <input type="checkbox" value="create_purchase_order"
+                                                                    name="permission[create_purchase_order]"
+                                                                    class="form-check-input" id="create_purchase_order"
+                                                                    @if (isset($permissions['create_purchase_order'])) checked @endif>
                                                                 <label class="form-check-label"
-                                                                    for="create_order"></label>
+                                                                    for="create_purchase_order"></label>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -739,12 +773,12 @@
                                                                 Update Purchase Order
                                                             </label>
                                                             <div class="form-check form-switch">
-                                                                <input type="checkbox" value="update_order"
-                                                                    name="permission[update_order]"
-                                                                    class="form-check-input" id="update_order"
-                                                                    @if (isset($permissions['update_order'])) checked @endif>
+                                                                <input type="checkbox" value="update_purchase_order"
+                                                                    name="permission[update_purchase_order]"
+                                                                    class="form-check-input" id="update_purchase_order"
+                                                                    @if (isset($permissions['update_purchase_order'])) checked @endif>
                                                                 <label class="form-check-label"
-                                                                    for="update_order"></label>
+                                                                    for="update_purchase_order"></label>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -755,12 +789,12 @@
                                                                 Delete Purchase Order
                                                             </label>
                                                             <div class="form-check form-switch">
-                                                                <input type="checkbox" value="delete_order"
-                                                                    name="permission[delete_order]"
-                                                                    class="form-check-input" id="delete_order"
-                                                                    @if (isset($permissions['delete_order'])) checked @endif>
+                                                                <input type="checkbox" value="delete_purchase_order"
+                                                                    name="permission[delete_purchase_order]"
+                                                                    class="form-check-input" id="delete_purchase_order"
+                                                                    @if (isset($permissions['delete_purchase_order'])) checked @endif>
                                                                 <label class="form-check-label"
-                                                                    for="delete_order"></label>
+                                                                    for="delete_purchase_order"></label>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -940,15 +974,15 @@
                                                         <div
                                                             class="d-flex align-items-center justify-content-between gap-3 form-control p-2">
                                                             <label class="mb-0">
-                                                                Delete Invoice
+                                                                Payment Invoice
                                                             </label>
                                                             <div class="form-check form-switch">
-                                                                <input type="checkbox" value="delete_invoice"
-                                                                    name="permission[delete_invoice]"
-                                                                    class="form-check-input" id="delete_invoice"
-                                                                    @if (isset($permissions['delete_invoice'])) checked @endif>
+                                                                <input type="checkbox" value="payment_invoice"
+                                                                    name="permission[payment_invoice]"
+                                                                    class="form-check-input" id="payment_invoice"
+                                                                    @if (isset($permissions['payment_invoice'])) checked @endif>
                                                                 <label class="form-check-label"
-                                                                    for="delete_invoice"></label>
+                                                                    for="payment_invoice"></label>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -974,12 +1008,28 @@
                                                                 View Received Products
                                                             </label>
                                                             <div class="form-check form-switch">
-                                                                <input type="checkbox" value="view_dashboard"
-                                                                    name="permission[view_dashboard]"
-                                                                    class="form-check-input" id="view_dashboard"
-                                                                    @if (isset($permissions['view_dashboard'])) checked @endif>
+                                                                <input type="checkbox" value="view_received_products"
+                                                                    name="permission[view_received_products]"
+                                                                    class="form-check-input" id="view_received_products"
+                                                                    @if (isset($permissions['view_received_products'])) checked @endif>
                                                                 <label class="form-check-label"
-                                                                    for="view_dashboard"></label>
+                                                                    for="view_received_products"></label>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <div
+                                                            class="d-flex align-items-center justify-content-between gap-3 form-control p-2">
+                                                            <label class="mb-0">
+                                                                Update Received Products
+                                                            </label>
+                                                            <div class="form-check form-switch">
+                                                                <input type="checkbox" value="update_received_products"
+                                                                    name="permission[update_received_products]"
+                                                                    class="form-check-input" id="update_received_products"
+                                                                    @if (isset($permissions['update_received_products'])) checked @endif>
+                                                                <label class="form-check-label"
+                                                                    for="update_received_products"></label>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -987,13 +1037,139 @@
                                                 </div>
                                             </div>
                                         </div>
+
+                                        {{-- Packaging List --}}
+                                        <div class="col-xl-6">
+                                            <div class="border rounded p-3">
+                                                <div class="d-flex align-items-center justify-content-between mb-3">
+                                                    <h6 class="mb-0">
+                                                        Packaging List
+                                                    </h6>
+                                                </div>
+
+                                                <div class="row g-3">
+                                                    <div class="col-md-6">
+                                                        <div
+                                                            class="d-flex align-items-center justify-content-between gap-3 form-control p-2">
+                                                            <label class="mb-0">
+                                                                View Packaging List
+                                                            </label>
+                                                            <div class="form-check form-switch">
+                                                                <input type="checkbox" value="view_packaging_list"
+                                                                    name="permission[view_packaging_list]"
+                                                                    class="form-check-input" id="view_packaging_list"
+                                                                    @if (isset($permissions['view_packaging_list'])) checked @endif>
+                                                                <label class="form-check-label"
+                                                                    for="view_packaging_list"></label>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <div
+                                                            class="d-flex align-items-center justify-content-between gap-3 form-control p-2">
+                                                            <label class="mb-0">
+                                                                Packaging List Detail
+                                                            </label>
+                                                            <div class="form-check form-switch">
+                                                                <input type="checkbox" value="view_packaging_detail"
+                                                                    name="permission[view_packaging_detail]"
+                                                                    class="form-check-input" id="view_packaging_detail"
+                                                                    @if (isset($permissions['view_packaging_detail'])) checked @endif>
+                                                                <label class="form-check-label"
+                                                                    for="view_packaging_detail"></label>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {{-- Ready to Ship --}}
+                                        <div class="col-xl-6">
+                                            <div class="border rounded p-3">
+                                                <div class="d-flex align-items-center justify-content-between mb-3">
+                                                    <h6 class="mb-0">
+                                                        Ready to Ship
+                                                    </h6>
+                                                </div>
+
+                                                <div class="row g-3">
+                                                    <div class="col-md-6">
+                                                        <div
+                                                            class="d-flex align-items-center justify-content-between gap-3 form-control p-2">
+                                                            <label class="mb-0">
+                                                                View Ready to Ship
+                                                            </label>
+                                                            <div class="form-check form-switch">
+                                                                <input type="checkbox" value="view_ready_to_ship"
+                                                                    name="permission[view_ready_to_ship]"
+                                                                    class="form-check-input" id="view_ready_to_ship"
+                                                                    @if (isset($permissions['view_ready_to_ship'])) checked @endif>
+                                                                <label class="form-check-label"
+                                                                    for="view_ready_to_ship"></label>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <div
+                                                            class="d-flex align-items-center justify-content-between gap-3 form-control p-2">
+                                                            <label class="mb-0">
+                                                                Ready to Ship Detail
+                                                            </label>
+                                                            <div class="form-check form-switch">
+                                                                <input type="checkbox" value="view_ready_to_ship_detail"
+                                                                    name="permission[view_ready_to_ship_detail]"
+                                                                    class="form-check-input" id="view_ready_to_ship_detail"
+                                                                    @if (isset($permissions['view_ready_to_ship_detail'])) checked @endif>
+                                                                <label class="form-check-label"
+                                                                    for="view_ready_to_ship_detail"></label>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {{-- Track Order --}}
+                                        <div class="col-xl-6">
+                                            <div class="border rounded p-3">
+                                                <div class="d-flex align-items-center justify-content-between mb-3">
+                                                    <h6 class="mb-0">
+                                                        Track Order
+                                                    </h6>
+                                                </div>
+
+                                                <div class="row g-3">
+                                                    <div class="col-md-6">
+                                                        <div
+                                                            class="d-flex align-items-center justify-content-between gap-3 form-control p-2">
+                                                            <label class="mb-0">
+                                                                View Track Order
+                                                            </label>
+                                                            <div class="form-check form-switch">
+                                                                <input type="checkbox" value="view_track_order"
+                                                                    name="permission[view_track_order]"
+                                                                    class="form-check-input" id="view_track_order"
+                                                                    @if (isset($permissions['view_track_order'])) checked @endif>
+                                                                <label class="form-check-label"
+                                                                    for="view_track_order"></label>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        
                                         
                                     </div>
                                 </div>
 
                                 <div class="mt-3">
                                     <button type="submit" class="btn btn-success waves ripple-light" id="add-btn">
-                                        Add
+                                        Update
                                     </button>
                                 </div>
                             </div>

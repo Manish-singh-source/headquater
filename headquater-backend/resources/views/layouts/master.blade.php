@@ -399,13 +399,15 @@
           <div class="sidebar-nav">
               <!--navigation-->
               <ul class="metismenu" id="sidenav">
-                  <li>
-                      <a href="{{ route('index') }}">
-                          <div class="parent-icon"><i class="material-icons-outlined">home</i>
-                          </div>
-                          <div class="menu-title">Dashboard</div>
-                      </a>
-                  </li>
+                  @can('PermissionChecker', 'view_dashboard')
+                      <li>
+                          <a href="{{ route('index') }}">
+                              <div class="parent-icon"><i class="material-icons-outlined">home</i>
+                              </div>
+                              <div class="menu-title">Dashboard</div>
+                          </a>
+                      </li>
+                  @endcan
                   <li>
                       <a href="javascript:;" class="has-arrow">
                           <div class="parent-icon"><i class="material-icons-outlined">key</i>
@@ -413,12 +415,16 @@
                           <div class="menu-title">Access Control</div>
                       </a>
                       <ul>
-                          <li><a href="{{ route('staff.index') }}"><i
-                                      class="material-icons-outlined">arrow_right</i>Staff</a>
-                          </li>
-                          <li><a href="{{ route('role.index') }}"><i
-                                      class="material-icons-outlined">arrow_right</i>Role</a>
-                          </li>
+                          @can('PermissionChecker', 'view_staff')
+                              <li><a href="{{ route('staff.index') }}"><i
+                                          class="material-icons-outlined">arrow_right</i>Staff</a>
+                              </li>
+                          @endcan
+                          @can('PermissionChecker', 'view_roles')
+                              <li><a href="{{ route('role.index') }}"><i
+                                          class="material-icons-outlined">arrow_right</i>Role</a>
+                              </li>
+                          @endcan
                       </ul>
                   </li>
 
@@ -457,76 +463,95 @@
                       </ul>
                   </li>
 
+                  @can('PermissionChecker', 'view_purchase_order')
+                      <li>
+                          <a href="javascript:;" class="has-arrow">
+                              <div class="parent-icon"><i class="material-icons-outlined">shopping_cart</i>
+                              </div>
+                              <div class="menu-title">Purchase</div>
+                          </a>
+                          <ul>
+                              <li><a href="{{ route('purchase.order.index') }}"><i
+                                          class="material-icons-outlined">arrow_right</i>Purchase
+                                      Order</a>
+                              </li>
+                          </ul>
+                      </li>
+                  @endcan
 
-                  <li>
-                      <a href="javascript:;" class="has-arrow">
-                          <div class="parent-icon"><i class="material-icons-outlined">shopping_cart</i>
-                          </div>
-                          <div class="menu-title">Purchase</div>
-                      </a>
-                      <ul>
-                          <li><a href="{{ route('purchase.order.index') }}"><i
-                                      class="material-icons-outlined">arrow_right</i>Purchase
-                                  Order</a>
-                          </li>
-                      </ul>
-                  </li>
-                  <li>
-                      <a href="javascript:;" class="has-arrow">
-                          <div class="parent-icon"><i class="material-icons-outlined">sell</i>
-                          </div>
-                          <div class="menu-title">Sales</div>
-                      </a>
-                      <ul>
-                          <li><a href="{{ route('order.index') }}"><i
-                                      class="material-icons-outlined">arrow_right</i>Sales
-                                  Order</a>
-                          </li>
-                      </ul>
-                  </li>
-                  <li>
-                      <a href="{{ route('invoices') }}">
-                          <div class="parent-icon"><i class="material-icons-outlined">receipt_long</i>
-                          </div>
-                          <div class="menu-title">Invoices</div>
-                      </a>
-                  </li>
+                  @can('PermissionChecker', 'view_sale')
+                      <li>
+                          <a href="javascript:;" class="has-arrow">
+                              <div class="parent-icon"><i class="material-icons-outlined">sell</i>
+                              </div>
+                              <div class="menu-title">Sales</div>
+                          </a>
+                          <ul>
+                              <li><a href="{{ route('order.index') }}"><i
+                                          class="material-icons-outlined">arrow_right</i>Sales
+                                      Order</a>
+                              </li>
+                          </ul>
+                      </li>
+                  @endcan
+
+                  @can('PermissionChecker', 'view_invoice')
+                      <li>
+                          <a href="{{ route('invoices') }}">
+                              <div class="parent-icon"><i class="material-icons-outlined">receipt_long</i>
+                              </div>
+                              <div class="menu-title">Invoices</div>
+                          </a>
+                      </li>
+                  @endcan
+
                   <li class="menu-label">Warehouse</li>
-                  <li>
-                      <a href="{{ route('received-products.view') }}">
-                          <div class="parent-icon"><i class="material-icons-outlined">move_to_inbox</i>
-                          </div>
-                          <div class="menu-title">Received Products</div>
-                      </a>
-                  </li>
-                  <li>
-                      <a href="{{ route('packaging-list') }}">
-                          <div class="parent-icon"><i class="material-icons-outlined">all_inbox</i>
-                          </div>
-                          <div class="menu-title">Packaging List</div>
-                      </a>
-                  </li>
+                  @can('PermissionChecker', 'view_received_products')
+                      <li>
+                          <a href="{{ route('received-products.view') }}">
+                              <div class="parent-icon"><i class="material-icons-outlined">move_to_inbox</i>
+                              </div>
+                              <div class="menu-title">Received Products</div>
+                          </a>
+                      </li>
+                  @endcan
+
+                  @can('PermissionChecker', 'view_packaging_list')
+                      <li>
+                          <a href="{{ route('packaging-list') }}">
+                              <div class="parent-icon"><i class="material-icons-outlined">all_inbox</i>
+                              </div>
+                              <div class="menu-title">Packaging List</div>
+                          </a>
+                      </li>
+                  @endcan
                   {{-- <li>
                       <a href="{{ route('raise-a-ticket') }}">
                           <div class="parent-icon"><i class="material-icons-outlined">confirmation_number</i>
                           </div>
                           <div class="menu-title">Tickets</div>
-                      </a>
-                  </li> --}}
-                  <li>
-                      <a href="{{ route('ready-to-ship') }}">
-                          <div class="parent-icon"><i class="material-icons-outlined">local_shipping</i>
-                          </div>
-                          <div class="menu-title">Ready To Ship</div>
-                      </a>
-                  </li>
-                  <li>
-                      <a href="{{ route('track-order') }}">
-                          <div class="parent-icon"><i class="material-icons-outlined">search</i>
-                          </div>
-                          <div class="menu-title">Track Order</div>
-                      </a>
-                  </li>
+                        </a>
+                    </li> --}}
+                  @can('PermissionChecker', 'view_ready_to_ship')
+                      <li>
+                          <a href="{{ route('ready-to-ship') }}">
+                              <div class="parent-icon"><i class="material-icons-outlined">local_shipping</i>
+                              </div>
+                              <div class="menu-title">Ready To Ship</div>
+                          </a>
+                      </li>
+                  @endcan
+
+                  @can('PermissionChecker', 'view_track_order')
+                      <li>
+                          <a href="{{ route('track-order') }}">
+                              <div class="parent-icon"><i class="material-icons-outlined">search</i>
+                              </div>
+                              <div class="menu-title">Track Order</div>
+                          </a>
+                      </li>
+                  @endcan
+
                   <li class="menu-label">Reports</li>
                   <li>
                       <a href="{{ route('vendor-purchase-history') }}">
