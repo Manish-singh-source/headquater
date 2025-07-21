@@ -29,4 +29,11 @@ class Staff extends Model
         }
         return false;
     }
+     protected function casts(): array
+    {
+        return [
+            
+            'password' => 'hashed',
+        ];
+    }
 }

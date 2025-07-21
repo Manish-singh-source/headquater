@@ -1333,8 +1333,6 @@
 @endsection
 
 @section('script')
-    <!--bootstrap js-->
-    <script src="assets/js/bootstrap.bundle.min.js"></script>
 
     <!--plugins-->
     <script src="assets/js/jquery.min.js"></script>
