@@ -26,119 +26,124 @@
                         <div class="card-body position-relative p-4">
                             <div class="row">
                                 <div class="col-12 col-sm-7">
-                                    <div class="d-flex align-items-center gap-3 mb-5">
-                                        <img src="https://placehold.co/200x200" class="rounded-circle bg-grd-info p-1"
-                                            width="60" height="60" alt="user">
-                                        <div class="">
-                                            <p class="mb-0 fw-semibold">Welcome back</p>
-                                            <h4 class="fw-semibold mb-0 fs-4 mb-0">
-                                                {{Auth::user()->fname}}
-                                                {{Auth::user()->lname}}
-                                            </h4>
-                                        </div>
-                                    </div>
-                                    <div class="d-flex align-items-center gap-5">
-                                        <div class="">
-                                            <h4 class="mb-1 fw-semibold d-flex align-content-center">₹65.4K<i
-                                                    class="ti ti-arrow-up-right fs-5 lh-base text-success"></i>
-                                            </h4>
-                                            <p class="mb-3">Todays Sales</p>
-                                            <div class="progress mb-0" style="height:5px;">
-                                                <div class="progress-bar bg-grd-success" role="progressbar"
-                                                    style="width: 60%" aria-valuenow="25" aria-valuemin="0"
-                                                    aria-valuemax="100"></div>
+                                    @can('PermissionChecker', 'view_dashboard')
+                                        <div class="d-flex align-items-center gap-3 mb-5">
+                                            <img src="https://placehold.co/200x200" class="rounded-circle bg-grd-info p-1"
+                                                width="60" height="60" alt="user">
+                                            <div class="">
+                                                <p class="mb-0 fw-semibold">Welcome back</p>
+                                                <h4 class="fw-semibold mb-0 fs-4 mb-0">
+                                                    {{ Auth::user()->fname }}
+                                                    {{ Auth::user()->lname }}
+                                                </h4>
                                             </div>
                                         </div>
-                                        <div class="vr"></div>
-                                        <div class="">
-                                            <h4 class="mb-1 fw-semibold d-flex align-content-center">78.4%<i
-                                                    class="ti ti-arrow-up-right fs-5 lh-base text-success"></i>
-                                            </h4>
-                                            <p class="mb-3">Growth Rate</p>
-                                            <div class="progress mb-0" style="height:5px;">
-                                                <div class="progress-bar bg-grd-danger" role="progressbar"
-                                                    style="width: 60%" aria-valuenow="25" aria-valuemin="0"
-                                                    aria-valuemax="100"></div>
+                                    @endcan
+
+                                    @can('PermissionChecker', 'view_dashboard_detail')
+                                        <div class="d-flex align-items-center gap-5">
+                                            <div class="">
+                                                <h4 class="mb-1 fw-semibold d-flex align-content-center">₹65.4K<i
+                                                        class="ti ti-arrow-up-right fs-5 lh-base text-success"></i>
+                                                </h4>
+                                                <p class="mb-3">Todays Sales</p>
+                                                <div class="progress mb-0" style="height:5px;">
+                                                    <div class="progress-bar bg-grd-success" role="progressbar"
+                                                        style="width: 60%" aria-valuenow="25" aria-valuemin="0"
+                                                        aria-valuemax="100"></div>
+                                                </div>
+                                            </div>
+                                            <div class="vr"></div>
+                                            <div class="">
+                                                <h4 class="mb-1 fw-semibold d-flex align-content-center">78.4%<i
+                                                        class="ti ti-arrow-up-right fs-5 lh-base text-success"></i>
+                                                </h4>
+                                                <p class="mb-3">Growth Rate</p>
+                                                <div class="progress mb-0" style="height:5px;">
+                                                    <div class="progress-bar bg-grd-danger" role="progressbar"
+                                                        style="width: 60%" aria-valuenow="25" aria-valuemin="0"
+                                                        aria-valuemax="100"></div>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
+                                    @endcan
                                 </div>
-                                <div class="col-12 col-sm-5">
-                                    <div class="welcome-back-img pt-4">
-                                        <img src="assets/images/gallery/welcome-back-3.png" height="180" alt="">
+
+                                @can('PermissionChecker', 'view_dashboard')
+                                    <div class="col-12 col-sm-5">
+                                        <div class="welcome-back-img pt-4">
+                                            <img src="assets/images/gallery/welcome-back-3.png" height="180" alt="">
+                                        </div>
                                     </div>
-                                </div>
+                                @endcan
                             </div><!--end row-->
                         </div>
                     </div>
                 </div>
 
+
                 <div class="col-xxl-4">
                     <div class="row">
-                        <div class="col-xl-6 col-sm-6 col-12 d-flex">
-                            <div class="card bg-white sale-widget flex-fill">
-                                <div class="card-body d-flex align-items-center">
-                                    <span class="sale-icon bg-white text-primary">
-                                        <i class="ti ti-file-text fs-24"></i>
-                                    </span>
-                                    <div class="ms-2">
-                                        <p class="text-dark mb-1">Total Customers</p>
-                                        <div class="d-inline-flex align-items-center flex-wrap gap-2">
-                                            <h4 class="text-dark">10</h4>
-                                            <!-- <span class="badge badge-soft-primary text-dark"><i class="ti ti-arrow-up me-1"></i>+22%</span> -->
+                        @can('PermissionChecker', 'view_customer')
+                            <div class="col-xl-6 col-sm-6 col-12 d-flex">
+                                <div class="card bg-white sale-widget flex-fill">
+                                    <div class="card-body d-flex align-items-center">
+                                        <div class="ms-2">
+                                            <p class="text-dark mb-1">Total Customers</p>
+                                            <div class="d-inline-flex align-items-center flex-wrap gap-2">
+                                                <h4 class="text-dark">10</h4>
+                                                <!-- <span class="badge badge-soft-primary text-dark"><i class="ti ti-arrow-up me-1"></i>+22%</span> -->
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                        <div class="col-xl-6 col-sm-6 col-12 d-flex">
-                            <div class="card bg-white sale-widget flex-fill">
-                                <div class="card-body d-flex align-items-center">
-                                    <span class="sale-icon bg-white text-primary">
-                                        <i class="ti ti-file-text fs-24"></i>
-                                    </span>
-                                    <div class="ms-2">
-                                        <p class="text-dark mb-1">Total Vendors</p>
-                                        <div class="d-inline-flex align-items-center flex-wrap gap-2">
-                                            <h4 class="text-dark">400</h4>
-                                            <!-- <span class="badge badge-soft-primary text-dark"><i class="ti ti-arrow-up me-1"></i>+22%</span> -->
+                        @endcan
+                        @can('PermissionChecker', 'view_customer')
+                            <div class="col-xl-6 col-sm-6 col-12 d-flex">
+                                <div class="card bg-white sale-widget flex-fill">
+                                    <div class="card-body d-flex align-items-center">
+                                        <div class="ms-2">
+                                            <p class="text-dark mb-1">Total Customer Orders</p>
+                                            <div class="d-inline-flex align-items-center flex-wrap gap-2">
+                                                <h4 class="text-dark">158</h4>
+                                                <!-- <span class="badge badge-soft-primary text-dark"><i class="ti ti-arrow-up me-1"></i>+22%</span> -->
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                        <div class="col-xl-6 col-sm-6 col-12 d-flex">
-                            <div class="card bg-white sale-widget flex-fill">
-                                <div class="card-body d-flex align-items-center">
-                                    <span class="sale-icon bg-white text-primary">
-                                        <i class="ti ti-file-text fs-24"></i>
-                                    </span>
-                                    <div class="ms-2">
-                                        <p class="text-dark mb-1">Total Customer Orders</p>
-                                        <div class="d-inline-flex align-items-center flex-wrap gap-2">
-                                            <h4 class="text-dark">158</h4>
-                                            <!-- <span class="badge badge-soft-primary text-dark"><i class="ti ti-arrow-up me-1"></i>+22%</span> -->
+                        @endcan
+                        @can('PermissionChecker', 'view_vendor')
+                            <div class="col-xl-6 col-sm-6 col-12 d-flex">
+                                <div class="card bg-white sale-widget flex-fill">
+                                    <div class="card-body d-flex align-items-center">
+                                        <div class="ms-2">
+                                            <p class="text-dark mb-1">Total Vendors</p>
+                                            <div class="d-inline-flex align-items-center flex-wrap gap-2">
+                                                <h4 class="text-dark">400</h4>
+                                                <!-- <span class="badge badge-soft-primary text-dark"><i class="ti ti-arrow-up me-1"></i>+22%</span> -->
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                        <div class="col-xl-6 col-sm-6 col-12 d-flex">
-                            <div class="card bg-white sale-widget flex-fill">
-                                <div class="card-body d-flex align-items-center">
-                                    <span class="sale-icon bg-white text-primary">
-                                        <i class="ti ti-file-text fs-24"></i>
-                                    </span>
-                                    <div class="ms-2">
-                                        <p class="text-dark mb-1">Total Vendor Orders</p>
-                                        <div class="d-inline-flex align-items-center flex-wrap gap-2">
-                                            <h4 class="text-dark">88</h4>
-                                            <!-- <span class="badge badge-soft-primary text-dark"><i class="ti ti-arrow-up me-1"></i>+22%</span> -->
+                        @endcan
+                        @can('PermissionChecker', 'view_vendor')
+                            <div class="col-xl-6 col-sm-6 col-12 d-flex">
+                                <div class="card bg-white sale-widget flex-fill">
+                                    <div class="card-body d-flex align-items-center">
+                                        <div class="ms-2">
+                                            <p class="text-dark mb-1">Total Vendor Orders</p>
+                                            <div class="d-inline-flex align-items-center flex-wrap gap-2">
+                                                <h4 class="text-dark">88</h4>
+                                                <!-- <span class="badge badge-soft-primary text-dark"><i class="ti ti-arrow-up me-1"></i>+22%</span> -->
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        @endcan
                     </div>
 
                 </div>
@@ -169,9 +174,6 @@
                         <div class="col-xl-6 col-sm-6 col-12 d-flex">
                             <div class="card bg-white sale-widget flex-fill">
                                 <div class="card-body d-flex align-items-center">
-                                    <span class="sale-icon bg-white text-primary">
-                                        <i class="ti ti-file-text fs-24"></i>
-                                    </span>
                                     <div class="ms-2">
                                         <p class="text-dark mb-1">Total Products</p>
                                         <div class="d-inline-flex align-items-center flex-wrap gap-2">
@@ -185,9 +187,6 @@
                         <div class="col-xl-6 col-sm-6 col-12 d-flex">
                             <div class="card bg-white sale-widget flex-fill">
                                 <div class="card-body d-flex align-items-center">
-                                    <span class="sale-icon bg-white text-primary">
-                                        <i class="ti ti-file-text fs-24"></i>
-                                    </span>
                                     <div class="ms-2">
                                         <p class="text-dark mb-1">Total Warehouses</p>
                                         <div class="d-inline-flex align-items-center flex-wrap gap-2">
@@ -201,9 +200,6 @@
                         <div class="col-xl-6 col-sm-6 col-12 d-flex">
                             <div class="card bg-white sale-widget flex-fill">
                                 <div class="card-body d-flex align-items-center">
-                                    <span class="sale-icon bg-white text-primary">
-                                        <i class="ti ti-file-text fs-24"></i>
-                                    </span>
                                     <div class="ms-2">
                                         <p class="text-dark mb-1">Total Invoices</p>
                                         <div class="d-inline-flex align-items-center flex-wrap gap-2">
@@ -217,9 +213,6 @@
                         <div class="col-xl-6 col-sm-6 col-12 d-flex">
                             <div class="card bg-white sale-widget flex-fill">
                                 <div class="card-body d-flex align-items-center">
-                                    <span class="sale-icon bg-white text-primary">
-                                        <i class="ti ti-file-text fs-24"></i>
-                                    </span>
                                     <div class="ms-2">
                                         <p class="text-dark mb-1">Packaging List</p>
                                         <div class="d-inline-flex align-items-center flex-wrap gap-2">
@@ -233,9 +226,6 @@
                         <div class="col-xl-6 col-sm-6 col-12 d-flex">
                             <div class="card bg-white sale-widget flex-fill">
                                 <div class="card-body d-flex align-items-center">
-                                    <span class="sale-icon bg-white text-primary">
-                                        <i class="ti ti-file-text fs-24"></i>
-                                    </span>
                                     <div class="ms-2">
                                         <p class="text-dark mb-1">Ready To Ship</p>
                                         <div class="d-inline-flex align-items-center flex-wrap gap-2">
@@ -246,1085 +236,1091 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-xl-6 col-sm-6 col-12 d-flex">
-                            <div class="card bg-white sale-widget flex-fill">
-                                <div class="card-body d-flex align-items-center">
-                                    <span class="sale-icon bg-white text-primary">
-                                        <i class="ti ti-file-text fs-24"></i>
-                                    </span>
-                                    <div class="ms-2">
-                                        <p class="text-dark mb-1">Damaged Products</p>
-                                        <div class="d-inline-flex align-items-center flex-wrap gap-2">
-                                            <h4 class="text-dark">545</h4>
-                                            <!-- <span class="badge badge-soft-primary text-dark"><i class="ti ti-arrow-up me-1"></i>+22%</span> -->
+                        {{-- <div class="col-xl-6 col-sm-6 col-12 d-flex">
+                                <div class="card bg-white sale-widget flex-fill">
+                                    <div class="card-body d-flex align-items-center">
+                                        <div class="ms-2">
+                                            <p class="text-dark mb-1">Damaged Products</p>
+                                            <div class="d-inline-flex align-items-center flex-wrap gap-2">
+                                                <h4 class="text-dark">545</h4>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                        </div>
-                        <div class="col-xl-6 col-sm-6 col-12 d-flex">
-                            <div class="card bg-white sale-widget flex-fill">
-                                <div class="card-body d-flex align-items-center">
-                                    <span class="sale-icon bg-white text-primary">
-                                        <i class="ti ti-file-text fs-24"></i>
-                                    </span>
-                                    <div class="ms-2">
-                                        <p class="text-dark mb-1">Missing Products</p>
-                                        <div class="d-inline-flex align-items-center flex-wrap gap-2">
-                                            <h4 class="text-dark">24</h4>
-                                            <!-- <span class="badge badge-soft-primary text-dark"><i class="ti ti-arrow-up me-1"></i>+22%</span> -->
+                            </div> --}}
+                        {{-- <div class="col-xl-6 col-sm-6 col-12 d-flex">
+                                <div class="card bg-white sale-widget flex-fill">
+                                    <div class="card-body d-flex align-items-center">
+                                        <div class="ms-2">
+                                            <p class="text-dark mb-1">Missing Products</p>
+                                            <div class="d-inline-flex align-items-center flex-wrap gap-2">
+                                                <h4 class="text-dark">24</h4>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                        </div>
-                        <div class="col-xl-6 col-sm-6 col-12 d-flex">
-                            <div class="card bg-white sale-widget flex-fill">
-                                <div class="card-body d-flex align-items-center">
-                                    <span class="sale-icon bg-white text-primary">
-                                        <i class="ti ti-file-text fs-24"></i>
-                                    </span>
-                                    <div class="ms-2">
-                                        <p class="text-dark mb-1">Total Tickets</p>
-                                        <div class="d-inline-flex align-items-center flex-wrap gap-2">
-                                            <h4 class="text-dark">48</h4>
-                                            <!-- <span class="badge badge-soft-primary text-dark"><i class="ti ti-arrow-up me-1"></i>+22%</span> -->
+                            </div> --}}
+                        {{-- <div class="col-xl-6 col-sm-6 col-12 d-flex">
+                                <div class="card bg-white sale-widget flex-fill">
+                                    <div class="card-body d-flex align-items-center">
+                                        <div class="ms-2">
+                                            <p class="text-dark mb-1">Total Tickets</p>
+                                            <div class="d-inline-flex align-items-center flex-wrap gap-2">
+                                                <h4 class="text-dark">48</h4>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                        </div>
+                            </div> --}}
                     </div>
 
                 </div>
 
-                <div class="col-lg-12 col-xxl-6 d-flex align-items-stretch">
-                    <div class="card w-100 rounded-4">
-                        <div class="card-body">
-                            <div class="d-flex align-items-start justify-content-between mb-3">
-                                <div class="">
-                                    <h5 class="mb-0">Recent Vendor Orders</h5>
+                @can('PermissionChecker', 'view_vendor')
+                    <div class="col-lg-12 col-xxl-6 d-flex align-items-stretch">
+                        <div class="card w-100 rounded-4">
+                            <div class="card-body">
+                                <div class="d-flex align-items-start justify-content-between mb-3">
+                                    <div class="">
+                                        <h5 class="mb-0">Recent Vendor Orders</h5>
+                                    </div>
+                                    <div class="dropdown">
+                                        <a href="javascript:;" class="dropdown-toggle-nocaret options dropdown-toggle"
+                                            data-bs-toggle="dropdown">
+                                            <span class="material-icons-outlined fs-5">more_vert</span>
+                                        </a>
+                                        <ul class="dropdown-menu">
+                                            <li><a class="dropdown-item" href="javascript:;">Action</a></li>
+                                            <li><a class="dropdown-item" href="javascript:;">Another action</a></li>
+                                            <li><a class="dropdown-item" href="javascript:;">Something else here</a></li>
+                                        </ul>
+                                    </div>
                                 </div>
-                                <div class="dropdown">
-                                    <a href="javascript:;" class="dropdown-toggle-nocaret options dropdown-toggle"
-                                        data-bs-toggle="dropdown">
-                                        <span class="material-icons-outlined fs-5">more_vert</span>
-                                    </a>
-                                    <ul class="dropdown-menu">
-                                        <li><a class="dropdown-item" href="javascript:;">Action</a></li>
-                                        <li><a class="dropdown-item" href="javascript:;">Another action</a></li>
-                                        <li><a class="dropdown-item" href="javascript:;">Something else here</a></li>
-                                    </ul>
-                                </div>
-                            </div>
-                            <div class="table-responsive">
-                                <table class="table align-middle">
-                                    <thead class="table-light">
-                                        <tr>
-                                            <th>
-                                                <input class="form-check-input" type="checkbox">
-                                            </th>
-                                            <th>Order Id</th>
-                                            <th>Vendor Name</th>
-                                            <th>Order Status</th>
-                                            <th>Ordered Date</th>
-                                            <th>Warehouse</th>
-                                            <th>Action</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td>
-                                                <input class="form-check-input" type="checkbox">
-                                            </td>
-                                            <td>#001</td>
-                                            <td>
-                                                <p class="mb-0 customer-name fw-bold">ABC</p>
+                                <div class="table-responsive">
+                                    <table class="table align-middle">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>
+                                                    <input class="form-check-input" type="checkbox">
+                                                </th>
+                                                <th>Order Id</th>
+                                                <th>Vendor Name</th>
+                                                <th>Order Status</th>
+                                                <th>Ordered Date</th>
+                                                <th>Warehouse</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>
+                                                    <input class="form-check-input" type="checkbox">
+                                                </td>
+                                                <td>#001</td>
+                                                <td>
+                                                    <p class="mb-0 customer-name fw-bold">ABC</p>
 
-                                            </td>
-                                            <td>
-                                                Completed
-                                            </td>
-                                            <td>2025-04-11</td>
-                                            <td>Baroda</td>
-                                            <td>
-                                                <a aria-label="anchor" href="vendor-order-view.php"
-                                                    class="btn btn-icon btn-sm bg-primary-subtle me-1"
-                                                    data-bs-toggle="tooltip" data-bs-original-title="View">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13"
-                                                        viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                                                        class="feather feather-eye text-primary">
-                                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                                        <circle cx="12" cy="12" r="3"></circle>
-                                                    </svg>
-                                                </a>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>
-                                                <input class="form-check-input" type="checkbox">
-                                            </td>
-                                            <td>#002</td>
-                                            <td>
-                                                <p class="mb-0 customer-name fw-bold">XYZ</p>
-                                            </td>
-                                            <td>
-                                                On Hold
-                                            </td>
-                                            <td>2025-04-11</td>
-                                            <td>Baroda</td>
-                                            <td>
-                                                <a aria-label="anchor" href="vendor-order-view.php"
-                                                    class="btn btn-icon btn-sm bg-primary-subtle me-1"
-                                                    data-bs-toggle="tooltip" data-bs-original-title="View">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13"
-                                                        viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                                                        class="feather feather-eye text-primary">
-                                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                                        <circle cx="12" cy="12" r="3"></circle>
-                                                    </svg>
-                                                </a>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>
-                                                <input class="form-check-input" type="checkbox">
-                                            </td>
-                                            <td>#003</td>
-                                            <td>
-                                                <p class="mb-0 customer-name fw-bold">EFG</p>
-                                            </td>
-                                            <td>
-                                                Pending
-                                            </td>
-                                            <td>2025-04-11</td>
-                                            <td>Baroda</td>
-                                            <td>
-                                                <a aria-label="anchor" href="vendor-order-view.php"
-                                                    class="btn btn-icon btn-sm bg-primary-subtle me-1"
-                                                    data-bs-toggle="tooltip" data-bs-original-title="View">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13"
-                                                        viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                                                        class="feather feather-eye text-primary">
-                                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                                        <circle cx="12" cy="12" r="3"></circle>
-                                                    </svg>
-                                                </a>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
+                                                </td>
+                                                <td>
+                                                    Completed
+                                                </td>
+                                                <td>2025-04-11</td>
+                                                <td>Baroda</td>
+                                                <td>
+                                                    <a aria-label="anchor" href="vendor-order-view.php"
+                                                        class="btn btn-icon btn-sm bg-primary-subtle me-1"
+                                                        data-bs-toggle="tooltip" data-bs-original-title="View">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13"
+                                                            viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                                            class="feather feather-eye text-primary">
+                                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                                            <circle cx="12" cy="12" r="3"></circle>
+                                                        </svg>
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                    <input class="form-check-input" type="checkbox">
+                                                </td>
+                                                <td>#002</td>
+                                                <td>
+                                                    <p class="mb-0 customer-name fw-bold">XYZ</p>
+                                                </td>
+                                                <td>
+                                                    On Hold
+                                                </td>
+                                                <td>2025-04-11</td>
+                                                <td>Baroda</td>
+                                                <td>
+                                                    <a aria-label="anchor" href="vendor-order-view.php"
+                                                        class="btn btn-icon btn-sm bg-primary-subtle me-1"
+                                                        data-bs-toggle="tooltip" data-bs-original-title="View">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13"
+                                                            viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                                            class="feather feather-eye text-primary">
+                                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                                            <circle cx="12" cy="12" r="3"></circle>
+                                                        </svg>
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                    <input class="form-check-input" type="checkbox">
+                                                </td>
+                                                <td>#003</td>
+                                                <td>
+                                                    <p class="mb-0 customer-name fw-bold">EFG</p>
+                                                </td>
+                                                <td>
+                                                    Pending
+                                                </td>
+                                                <td>2025-04-11</td>
+                                                <td>Baroda</td>
+                                                <td>
+                                                    <a aria-label="anchor" href="vendor-order-view.php"
+                                                        class="btn btn-icon btn-sm bg-primary-subtle me-1"
+                                                        data-bs-toggle="tooltip" data-bs-original-title="View">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13"
+                                                            viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                                            class="feather feather-eye text-primary">
+                                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                                            <circle cx="12" cy="12" r="3"></circle>
+                                                        </svg>
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
+                @endcan
 
-                <div class="col-lg-12 col-xxl-6 d-flex align-items-stretch">
-                    <div class="card w-100 rounded-4">
-                        <div class="card-body">
-                            <div class="d-flex align-items-start justify-content-between mb-3">
-                                <div class="">
-                                    <h5 class="mb-0">Recent Customer Orders</h5>
+                @can('PermissionChecker', 'view_customer')
+                    <div class="col-lg-12 col-xxl-6 d-flex align-items-stretch">
+                        <div class="card w-100 rounded-4">
+                            <div class="card-body">
+                                <div class="d-flex align-items-start justify-content-between mb-3">
+                                    <div class="">
+                                        <h5 class="mb-0">Recent Customer Orders</h5>
 
+                                    </div>
+                                    <div class="dropdown">
+                                        <a href="javascript:;" class="dropdown-toggle-nocaret options dropdown-toggle"
+                                            data-bs-toggle="dropdown">
+                                            <span class="material-icons-outlined fs-5">more_vert</span>
+                                        </a>
+                                        <ul class="dropdown-menu">
+                                            <li><a class="dropdown-item" href="javascript:;">Action</a></li>
+                                            <li><a class="dropdown-item" href="javascript:;">Another action</a></li>
+                                            <li><a class="dropdown-item" href="javascript:;">Something else here</a></li>
+                                        </ul>
+                                    </div>
                                 </div>
-                                <div class="dropdown">
-                                    <a href="javascript:;" class="dropdown-toggle-nocaret options dropdown-toggle"
-                                        data-bs-toggle="dropdown">
-                                        <span class="material-icons-outlined fs-5">more_vert</span>
-                                    </a>
-                                    <ul class="dropdown-menu">
-                                        <li><a class="dropdown-item" href="javascript:;">Action</a></li>
-                                        <li><a class="dropdown-item" href="javascript:;">Another action</a></li>
-                                        <li><a class="dropdown-item" href="javascript:;">Something else here</a></li>
-                                    </ul>
+                                <div class="table-responsive">
+
+                                    <table class="table align-middle">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>
+                                                    <input class="form-check-input" type="checkbox">
+                                                </th>
+                                                <th>Order Id</th>
+                                                <th>Customer Name</th>
+                                                <th>Order Status</th>
+                                                <th>Ordered Date</th>
+                                                <th>Warehouse</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>
+                                                    <input class="form-check-input" type="checkbox">
+                                                </td>
+                                                <td>#001</td>
+                                                <td>
+                                                    <p class="mb-0 customer-name fw-bold">ABC</p>
+
+                                                </td>
+                                                <td>
+                                                    Completed
+                                                </td>
+                                                <td>2025-04-11</td>
+                                                <td>Baroda</td>
+                                                <td>
+                                                    <a aria-label="anchor" href="customer-order-view.php"
+                                                        class="btn btn-icon btn-sm bg-primary-subtle me-1"
+                                                        data-bs-toggle="tooltip" data-bs-original-title="View">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13"
+                                                            viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                                            class="feather feather-eye text-primary">
+                                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                                            <circle cx="12" cy="12" r="3"></circle>
+                                                        </svg>
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                    <input class="form-check-input" type="checkbox">
+                                                </td>
+                                                <td>#002</td>
+                                                <td>
+                                                    <p class="mb-0 customer-name fw-bold">XYZ</p>
+                                                </td>
+                                                <td>
+                                                    On Hold
+                                                </td>
+                                                <td>2025-04-11</td>
+                                                <td>Baroda</td>
+                                                <td>
+                                                    <a aria-label="anchor" href="customer-order-view.php"
+                                                        class="btn btn-icon btn-sm bg-primary-subtle me-1"
+                                                        data-bs-toggle="tooltip" data-bs-original-title="View">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13"
+                                                            viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                                            class="feather feather-eye text-primary">
+                                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                                            <circle cx="12" cy="12" r="3"></circle>
+                                                        </svg>
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                    <input class="form-check-input" type="checkbox">
+                                                </td>
+                                                <td>#003</td>
+                                                <td>
+                                                    <p class="mb-0 customer-name fw-bold">EFG</p>
+                                                </td>
+                                                <td>
+                                                    Pending
+                                                </td>
+                                                <td>2025-04-11</td>
+                                                <td>Baroda</td>
+                                                <td>
+                                                    <a aria-label="anchor" href="customer-order-view.php"
+                                                        class="btn btn-icon btn-sm bg-primary-subtle me-1"
+                                                        data-bs-toggle="tooltip" data-bs-original-title="View">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13"
+                                                            viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                                            class="feather feather-eye text-primary">
+                                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                                            <circle cx="12" cy="12" r="3"></circle>
+                                                        </svg>
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
                                 </div>
-                            </div>
-                            <div class="table-responsive">
-
-                                <table class="table align-middle">
-                                    <thead class="table-light">
-                                        <tr>
-                                            <th>
-                                                <input class="form-check-input" type="checkbox">
-                                            </th>
-                                            <th>Order Id</th>
-                                            <th>Customer Name</th>
-                                            <th>Order Status</th>
-                                            <th>Ordered Date</th>
-                                            <th>Warehouse</th>
-                                            <th>Action</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td>
-                                                <input class="form-check-input" type="checkbox">
-                                            </td>
-                                            <td>#001</td>
-                                            <td>
-                                                <p class="mb-0 customer-name fw-bold">ABC</p>
-
-                                            </td>
-                                            <td>
-                                                Completed
-                                            </td>
-                                            <td>2025-04-11</td>
-                                            <td>Baroda</td>
-                                            <td>
-                                                <a aria-label="anchor" href="customer-order-view.php"
-                                                    class="btn btn-icon btn-sm bg-primary-subtle me-1"
-                                                    data-bs-toggle="tooltip" data-bs-original-title="View">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13"
-                                                        viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                                                        class="feather feather-eye text-primary">
-                                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                                        <circle cx="12" cy="12" r="3"></circle>
-                                                    </svg>
-                                                </a>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>
-                                                <input class="form-check-input" type="checkbox">
-                                            </td>
-                                            <td>#002</td>
-                                            <td>
-                                                <p class="mb-0 customer-name fw-bold">XYZ</p>
-                                            </td>
-                                            <td>
-                                                On Hold
-                                            </td>
-                                            <td>2025-04-11</td>
-                                            <td>Baroda</td>
-                                            <td>
-                                                <a aria-label="anchor" href="customer-order-view.php"
-                                                    class="btn btn-icon btn-sm bg-primary-subtle me-1"
-                                                    data-bs-toggle="tooltip" data-bs-original-title="View">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13"
-                                                        viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                                                        class="feather feather-eye text-primary">
-                                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                                        <circle cx="12" cy="12" r="3"></circle>
-                                                    </svg>
-                                                </a>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>
-                                                <input class="form-check-input" type="checkbox">
-                                            </td>
-                                            <td>#003</td>
-                                            <td>
-                                                <p class="mb-0 customer-name fw-bold">EFG</p>
-                                            </td>
-                                            <td>
-                                                Pending
-                                            </td>
-                                            <td>2025-04-11</td>
-                                            <td>Baroda</td>
-                                            <td>
-                                                <a aria-label="anchor" href="customer-order-view.php"
-                                                    class="btn btn-icon btn-sm bg-primary-subtle me-1"
-                                                    data-bs-toggle="tooltip" data-bs-original-title="View">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13"
-                                                        viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                                                        class="feather feather-eye text-primary">
-                                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                                        <circle cx="12" cy="12" r="3"></circle>
-                                                    </svg>
-                                                </a>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
                             </div>
                         </div>
                     </div>
-                </div>
+                @endcan
 
-                <div class="col-lg-12 col-xxl-6 d-flex align-items-stretch">
-                    <div class="card w-100 rounded-4">
-                        <div class="card-body">
-                            <div class="d-flex align-items-start justify-content-between mb-3">
-                                <div class="">
-                                    <h5 class="mb-0">Packaging List</h5>
+                @can('PermissionChecker', 'view_packaging_list')
+                    <div class="col-lg-12 col-xxl-6 d-flex align-items-stretch">
+                        <div class="card w-100 rounded-4">
+                            <div class="card-body">
+                                <div class="d-flex align-items-start justify-content-between mb-3">
+                                    <div class="">
+                                        <h5 class="mb-0">Packaging List</h5>
+                                    </div>
+                                    <div class="dropdown">
+                                        <a href="javascript:;" class="dropdown-toggle-nocaret options dropdown-toggle"
+                                            data-bs-toggle="dropdown">
+                                            <span class="material-icons-outlined fs-5">more_vert</span>
+                                        </a>
+                                        <ul class="dropdown-menu">
+                                            <li><a class="dropdown-item" href="javascript:;">Action</a></li>
+                                            <li><a class="dropdown-item" href="javascript:;">Another action</a></li>
+                                            <li><a class="dropdown-item" href="javascript:;">Something else here</a></li>
+                                        </ul>
+                                    </div>
                                 </div>
-                                <div class="dropdown">
-                                    <a href="javascript:;" class="dropdown-toggle-nocaret options dropdown-toggle"
-                                        data-bs-toggle="dropdown">
-                                        <span class="material-icons-outlined fs-5">more_vert</span>
-                                    </a>
-                                    <ul class="dropdown-menu">
-                                        <li><a class="dropdown-item" href="javascript:;">Action</a></li>
-                                        <li><a class="dropdown-item" href="javascript:;">Another action</a></li>
-                                        <li><a class="dropdown-item" href="javascript:;">Something else here</a></li>
-                                    </ul>
-                                </div>
-                            </div>
-                            <div class="table-responsive">
-                                <table id="example" class="table table-striped">
-                                    <thead class="table-light">
-                                        <tr>
-                                            <th>
-                                                <input class="form-check-input" type="checkbox">
-                                            </th>
-                                            <th>Order Id</th>
-                                            <th>Customer Name</th>
-                                            <th>Ordered Date</th>
-                                            <th>Package Pdf</th>
-                                            <th>Status</th>
-                                            <th>Action</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td>
-                                                <input class="form-check-input" type="checkbox">
-                                            </td>
-                                            <td>#001</td>
-                                            <td>
-                                                <p class="mb-0 customer-name fw-bold">ABC</p>
+                                <div class="table-responsive">
+                                    <table id="example" class="table table-striped">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>
+                                                    <input class="form-check-input" type="checkbox">
+                                                </th>
+                                                <th>Order Id</th>
+                                                <th>Customer Name</th>
+                                                <th>Ordered Date</th>
+                                                <th>Package Pdf</th>
+                                                <th>Status</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>
+                                                    <input class="form-check-input" type="checkbox">
+                                                </td>
+                                                <td>#001</td>
+                                                <td>
+                                                    <p class="mb-0 customer-name fw-bold">ABC</p>
 
-                                            </td>
-                                            <td>
-                                                2025-04-11
-                                            </td>
-                                            <td>BK159.pdf</td>
-                                            <td class="text-success">Completed</td>
-                                            <td>
-                                                <a aria-label="anchor" href="packing-products-list.php"
-                                                    class="btn btn-icon btn-sm bg-primary-subtle me-1"
-                                                    data-bs-toggle="tooltip" data-bs-original-title="View">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13"
-                                                        viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                                                        class="feather feather-eye text-primary">
-                                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                                        <circle cx="12" cy="12" r="3"></circle>
-                                                    </svg>
-                                                </a>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>
-                                                <input class="form-check-input" type="checkbox">
-                                            </td>
-                                            <td>#002</td>
-                                            <td>
-                                                <p class="mb-0 customer-name fw-bold">XYZ</p>
-                                            </td>
-                                            <td>
-                                                2025-04-11
-                                            </td>
-                                            <td>BK158.pdf</td>
-                                            <td class="text-primary">Pending</td>
-                                            <td>
-                                                <a aria-label="anchor" href="packing-products-list.php"
-                                                    class="btn btn-icon btn-sm bg-primary-subtle me-1"
-                                                    data-bs-toggle="tooltip" data-bs-original-title="View">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13"
-                                                        viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                                                        class="feather feather-eye text-primary">
-                                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                                        <circle cx="12" cy="12" r="3"></circle>
-                                                    </svg>
-                                                </a>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>
-                                                <input class="form-check-input" type="checkbox">
-                                            </td>
-                                            <td>#003</td>
-                                            <td>
-                                                <p class="mb-0 customer-name fw-bold">EFG</p>
-                                            </td>
-                                            <td>
-                                                2025-04-11
-                                            </td>
-                                            <td>BK157.pdf</td>
-                                            <td class="text-danger">Issue</td>
-                                            <td>
-                                                <a aria-label="anchor" href="packing-products-list.php"
-                                                    class="btn btn-icon btn-sm bg-primary-subtle me-1"
-                                                    data-bs-toggle="tooltip" data-bs-original-title="View">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13"
-                                                        viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                                                        class="feather feather-eye text-primary">
-                                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                                        <circle cx="12" cy="12" r="3"></circle>
-                                                    </svg>
-                                                </a>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
+                                                </td>
+                                                <td>
+                                                    2025-04-11
+                                                </td>
+                                                <td>BK159.pdf</td>
+                                                <td class="text-success">Completed</td>
+                                                <td>
+                                                    <a aria-label="anchor" href="packing-products-list.php"
+                                                        class="btn btn-icon btn-sm bg-primary-subtle me-1"
+                                                        data-bs-toggle="tooltip" data-bs-original-title="View">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13"
+                                                            viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                                            class="feather feather-eye text-primary">
+                                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                                            <circle cx="12" cy="12" r="3"></circle>
+                                                        </svg>
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                    <input class="form-check-input" type="checkbox">
+                                                </td>
+                                                <td>#002</td>
+                                                <td>
+                                                    <p class="mb-0 customer-name fw-bold">XYZ</p>
+                                                </td>
+                                                <td>
+                                                    2025-04-11
+                                                </td>
+                                                <td>BK158.pdf</td>
+                                                <td class="text-primary">Pending</td>
+                                                <td>
+                                                    <a aria-label="anchor" href="packing-products-list.php"
+                                                        class="btn btn-icon btn-sm bg-primary-subtle me-1"
+                                                        data-bs-toggle="tooltip" data-bs-original-title="View">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13"
+                                                            viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                                            class="feather feather-eye text-primary">
+                                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                                            <circle cx="12" cy="12" r="3"></circle>
+                                                        </svg>
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                    <input class="form-check-input" type="checkbox">
+                                                </td>
+                                                <td>#003</td>
+                                                <td>
+                                                    <p class="mb-0 customer-name fw-bold">EFG</p>
+                                                </td>
+                                                <td>
+                                                    2025-04-11
+                                                </td>
+                                                <td>BK157.pdf</td>
+                                                <td class="text-danger">Issue</td>
+                                                <td>
+                                                    <a aria-label="anchor" href="packing-products-list.php"
+                                                        class="btn btn-icon btn-sm bg-primary-subtle me-1"
+                                                        data-bs-toggle="tooltip" data-bs-original-title="View">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13"
+                                                            viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                                            class="feather feather-eye text-primary">
+                                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                                            <circle cx="12" cy="12" r="3"></circle>
+                                                        </svg>
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
+                @endcan
 
-                <div class="col-lg-12 col-xxl-6 d-flex align-items-stretch">
-                    <div class="card w-100 rounded-4">
-                        <div class="card-body">
-                            <div class="d-flex align-items-start justify-content-between mb-3">
-                                <div class="">
-                                    <h5 class="mb-0">Ready To Ship</h5>
+                @can('PermissionChecker', 'view_ready_to_ship')
+                    <div class="col-lg-12 col-xxl-6 d-flex align-items-stretch">
+                        <div class="card w-100 rounded-4">
+                            <div class="card-body">
+                                <div class="d-flex align-items-start justify-content-between mb-3">
+                                    <div class="">
+                                        <h5 class="mb-0">Ready To Ship</h5>
 
+                                    </div>
+                                    <div class="dropdown">
+                                        <a href="javascript:;" class="dropdown-toggle-nocaret options dropdown-toggle"
+                                            data-bs-toggle="dropdown">
+                                            <span class="material-icons-outlined fs-5">more_vert</span>
+                                        </a>
+                                        <ul class="dropdown-menu">
+                                            <li><a class="dropdown-item" href="javascript:;">Action</a></li>
+                                            <li><a class="dropdown-item" href="javascript:;">Another action</a></li>
+                                            <li><a class="dropdown-item" href="javascript:;">Something else here</a></li>
+                                        </ul>
+                                    </div>
                                 </div>
-                                <div class="dropdown">
-                                    <a href="javascript:;" class="dropdown-toggle-nocaret options dropdown-toggle"
-                                        data-bs-toggle="dropdown">
-                                        <span class="material-icons-outlined fs-5">more_vert</span>
-                                    </a>
-                                    <ul class="dropdown-menu">
-                                        <li><a class="dropdown-item" href="javascript:;">Action</a></li>
-                                        <li><a class="dropdown-item" href="javascript:;">Another action</a></li>
-                                        <li><a class="dropdown-item" href="javascript:;">Something else here</a></li>
-                                    </ul>
-                                </div>
-                            </div>
-                            <div class="table-responsive">
-                                <table id="example" class="table table-striped">
-                                    <thead class="table-light">
-                                        <tr>
-                                            <th>
-                                                <input class="form-check-input" type="checkbox">
-                                            </th>
-                                            <th>Order Id</th>
-                                            <th>Customer Name</th>
-                                            <th>Ordered Date</th>
-                                            <th>Delivery Date</th>
-                                            <th>Status</th>
-                                            <th>Action</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td>
-                                                <input class="form-check-input" type="checkbox">
-                                            </td>
-                                            <td>#001</td>
-                                            <td>
-                                                <p class="mb-0 customer-name fw-bold">ABC</p>
+                                <div class="table-responsive">
+                                    <table id="example" class="table table-striped">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>
+                                                    <input class="form-check-input" type="checkbox">
+                                                </th>
+                                                <th>Order Id</th>
+                                                <th>Customer Name</th>
+                                                <th>Ordered Date</th>
+                                                <th>Delivery Date</th>
+                                                <th>Status</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>
+                                                    <input class="form-check-input" type="checkbox">
+                                                </td>
+                                                <td>#001</td>
+                                                <td>
+                                                    <p class="mb-0 customer-name fw-bold">ABC</p>
 
-                                            </td>
-                                            <td>
-                                                2025-04-11
-                                            </td>
-                                            <td>
-                                                2025-05-15
-                                            </td>
-                                            <td class="text-success">Completed</td>
-                                            <td>
-                                                <a aria-label="anchor" href="ready-to-ship-detail.php"
-                                                    class="btn btn-icon btn-sm bg-primary-subtle me-1"
-                                                    data-bs-toggle="tooltip" data-bs-original-title="View">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13"
-                                                        viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                                                        class="feather feather-eye text-primary">
-                                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                                        <circle cx="12" cy="12" r="3"></circle>
-                                                    </svg>
-                                                </a>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>
-                                                <input class="form-check-input" type="checkbox">
-                                            </td>
-                                            <td>#002</td>
-                                            <td>
-                                                <p class="mb-0 customer-name fw-bold">XYZ</p>
-                                            </td>
-                                            <td>
-                                                2025-04-11
-                                            </td>
-                                            <td>
-                                                2025-05-15
-                                            </td>
-                                            <td class="text-primary">Delivered</td>
-                                            <td>
-                                                <a aria-label="anchor" href="ready-to-ship-detail.php"
-                                                    class="btn btn-icon btn-sm bg-primary-subtle me-1"
-                                                    data-bs-toggle="tooltip" data-bs-original-title="View">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13"
-                                                        viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                                                        class="feather feather-eye text-primary">
-                                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                                        <circle cx="12" cy="12" r="3"></circle>
-                                                    </svg>
-                                                </a>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>
-                                                <input class="form-check-input" type="checkbox">
-                                            </td>
-                                            <td>#003</td>
-                                            <td>
-                                                <p class="mb-0 customer-name fw-bold">EFG</p>
-                                            </td>
-                                            <td>
-                                                2025-04-11
-                                            </td>
-                                            <td>
-                                                2025-05-15
-                                            </td>
-                                            <td class="text-Secondary">Out For Delivery</td>
-                                            <td>
-                                                <a aria-label="anchor" href="ready-to-ship-detail.php"
-                                                    class="btn btn-icon btn-sm bg-primary-subtle me-1"
-                                                    data-bs-toggle="tooltip" data-bs-original-title="View">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13"
-                                                        viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                                                        class="feather feather-eye text-primary">
-                                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                                        <circle cx="12" cy="12" r="3"></circle>
-                                                    </svg>
-                                                </a>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
+                                                </td>
+                                                <td>
+                                                    2025-04-11
+                                                </td>
+                                                <td>
+                                                    2025-05-15
+                                                </td>
+                                                <td class="text-success">Completed</td>
+                                                <td>
+                                                    <a aria-label="anchor" href="ready-to-ship-detail.php"
+                                                        class="btn btn-icon btn-sm bg-primary-subtle me-1"
+                                                        data-bs-toggle="tooltip" data-bs-original-title="View">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13"
+                                                            viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                                            class="feather feather-eye text-primary">
+                                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                                            <circle cx="12" cy="12" r="3"></circle>
+                                                        </svg>
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                    <input class="form-check-input" type="checkbox">
+                                                </td>
+                                                <td>#002</td>
+                                                <td>
+                                                    <p class="mb-0 customer-name fw-bold">XYZ</p>
+                                                </td>
+                                                <td>
+                                                    2025-04-11
+                                                </td>
+                                                <td>
+                                                    2025-05-15
+                                                </td>
+                                                <td class="text-primary">Delivered</td>
+                                                <td>
+                                                    <a aria-label="anchor" href="ready-to-ship-detail.php"
+                                                        class="btn btn-icon btn-sm bg-primary-subtle me-1"
+                                                        data-bs-toggle="tooltip" data-bs-original-title="View">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13"
+                                                            viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                                            class="feather feather-eye text-primary">
+                                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                                            <circle cx="12" cy="12" r="3"></circle>
+                                                        </svg>
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                    <input class="form-check-input" type="checkbox">
+                                                </td>
+                                                <td>#003</td>
+                                                <td>
+                                                    <p class="mb-0 customer-name fw-bold">EFG</p>
+                                                </td>
+                                                <td>
+                                                    2025-04-11
+                                                </td>
+                                                <td>
+                                                    2025-05-15
+                                                </td>
+                                                <td class="text-Secondary">Out For Delivery</td>
+                                                <td>
+                                                    <a aria-label="anchor" href="ready-to-ship-detail.php"
+                                                        class="btn btn-icon btn-sm bg-primary-subtle me-1"
+                                                        data-bs-toggle="tooltip" data-bs-original-title="View">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13"
+                                                            viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                                            class="feather feather-eye text-primary">
+                                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                                            <circle cx="12" cy="12" r="3"></circle>
+                                                        </svg>
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
+                @endcan
 
-                <div class="col-lg-12 col-xxl-6 d-flex align-items-stretch">
-                    <div class="card w-100 rounded-4">
-                        <div class="card-body">
-                            <div class="d-flex align-items-start justify-content-between mb-3">
-                                <div class="">
-                                    <h5 class="mb-0">Invoices</h5>
+                @can('PermissionChecker', 'view_invoice')
+                    <div class="col-lg-12 col-xxl-6 d-flex align-items-stretch">
+                        <div class="card w-100 rounded-4">
+                            <div class="card-body">
+                                <div class="d-flex align-items-start justify-content-between mb-3">
+                                    <div class="">
+                                        <h5 class="mb-0">Invoices</h5>
 
+                                    </div>
+                                    <div class="dropdown">
+                                        <a href="javascript:;" class="dropdown-toggle-nocaret options dropdown-toggle"
+                                            data-bs-toggle="dropdown">
+                                            <span class="material-icons-outlined fs-5">more_vert</span>
+                                        </a>
+                                        <ul class="dropdown-menu">
+                                            <li><a class="dropdown-item" href="javascript:;">Action</a></li>
+                                            <li><a class="dropdown-item" href="javascript:;">Another action</a></li>
+                                            <li><a class="dropdown-item" href="javascript:;">Something else here</a></li>
+                                        </ul>
+                                    </div>
                                 </div>
-                                <div class="dropdown">
-                                    <a href="javascript:;" class="dropdown-toggle-nocaret options dropdown-toggle"
-                                        data-bs-toggle="dropdown">
-                                        <span class="material-icons-outlined fs-5">more_vert</span>
-                                    </a>
-                                    <ul class="dropdown-menu">
-                                        <li><a class="dropdown-item" href="javascript:;">Action</a></li>
-                                        <li><a class="dropdown-item" href="javascript:;">Another action</a></li>
-                                        <li><a class="dropdown-item" href="javascript:;">Something else here</a></li>
-                                    </ul>
+                                <div class="table-responsive">
+                                    <table id="example" class="table table-striped">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>
+                                                    <input class="form-check-input" type="checkbox">
+                                                </th>
+                                                <th>Order Id</th>
+                                                <th>Invoice No</th>
+                                                <th>Customer Name</th>
+                                                <th>Due Date</th>
+                                                <th>Amount</th>
+                                                <th>Paid</th>
+                                                <th>Amount Due</th>
+                                                <th>Status</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>
+                                                    <input class="form-check-input" type="checkbox">
+                                                </td>
+                                                <td>#001</td>
+                                                <td>INV0001</td>
+                                                <td>ABC</td>
+                                                </td>
+                                                <td>
+                                                    2025-04-11
+                                                </td>
+                                                <td>10,000</td>
+                                                <td>8,000</td>
+                                                <td>2,000</td>
+                                                <td class="text-success">Completed</td>
+                                                <td>
+                                                    <a aria-label="anchor" href="invoices-details.php"
+                                                        class="btn btn-icon btn-sm bg-primary-subtle me-1"
+                                                        data-bs-toggle="tooltip" data-bs-original-title="View">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13"
+                                                            viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                                            class="feather feather-eye text-primary">
+                                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                                            <circle cx="12" cy="12" r="3"></circle>
+                                                        </svg>
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                    <input class="form-check-input" type="checkbox">
+                                                </td>
+                                                <td>#002</td>
+                                                <td>INV0002</td>
+                                                <td>EFG</td>
+                                                <td>
+                                                    2025-04-11
+                                                </td>
+                                                <td>10,000</td>
+                                                <td>8,000</td>
+                                                <td>2,000</td>
+                                                <td class="text-primary">Pending</td>
+                                                <td>
+                                                    <a aria-label="anchor" href="invoices-details.php"
+                                                        class="btn btn-icon btn-sm bg-primary-subtle me-1"
+                                                        data-bs-toggle="tooltip" data-bs-original-title="View">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13"
+                                                            viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                                            class="feather feather-eye text-primary">
+                                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                                            <circle cx="12" cy="12" r="3"></circle>
+                                                        </svg>
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                    <input class="form-check-input" type="checkbox">
+                                                </td>
+                                                <td>#003</td>
+                                                <td>INV0003</td>
+                                                <td>XYZ</td>
+                                                <td>
+                                                    2025-04-11
+                                                </td>
+                                                <td>10,000</td>
+                                                <td>8,000</td>
+                                                <td>2,000</td>
+                                                <td class="text-danger">Issue</td>
+                                                <td>
+                                                    <a aria-label="anchor" href="invoices-details.php"
+                                                        class="btn btn-icon btn-sm bg-primary-subtle me-1"
+                                                        data-bs-toggle="tooltip" data-bs-original-title="View">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13"
+                                                            viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                                            class="feather feather-eye text-primary">
+                                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                                            <circle cx="12" cy="12" r="3"></circle>
+                                                        </svg>
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
                                 </div>
-                            </div>
-                            <div class="table-responsive">
-                                <table id="example" class="table table-striped">
-                                    <thead class="table-light">
-                                        <tr>
-                                            <th>
-                                                <input class="form-check-input" type="checkbox">
-                                            </th>
-                                            <th>Order Id</th>
-                                            <th>Invoice No</th>
-                                            <th>Customer Name</th>
-                                            <th>Due Date</th>
-                                            <th>Amount</th>
-                                            <th>Paid</th>
-                                            <th>Amount Due</th>
-                                            <th>Status</th>
-                                            <th>Action</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td>
-                                                <input class="form-check-input" type="checkbox">
-                                            </td>
-                                            <td>#001</td>
-                                            <td>INV0001</td>
-                                            <td>ABC</td>
-                                            </td>
-                                            <td>
-                                                2025-04-11
-                                            </td>
-                                            <td>10,000</td>
-                                            <td>8,000</td>
-                                            <td>2,000</td>
-                                            <td class="text-success">Completed</td>
-                                            <td>
-                                                <a aria-label="anchor" href="invoices-details.php"
-                                                    class="btn btn-icon btn-sm bg-primary-subtle me-1"
-                                                    data-bs-toggle="tooltip" data-bs-original-title="View">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13"
-                                                        viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                                                        class="feather feather-eye text-primary">
-                                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                                        <circle cx="12" cy="12" r="3"></circle>
-                                                    </svg>
-                                                </a>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>
-                                                <input class="form-check-input" type="checkbox">
-                                            </td>
-                                            <td>#002</td>
-                                            <td>INV0002</td>
-                                            <td>EFG</td>
-                                            <td>
-                                                2025-04-11
-                                            </td>
-                                            <td>10,000</td>
-                                            <td>8,000</td>
-                                            <td>2,000</td>
-                                            <td class="text-primary">Pending</td>
-                                            <td>
-                                                <a aria-label="anchor" href="invoices-details.php"
-                                                    class="btn btn-icon btn-sm bg-primary-subtle me-1"
-                                                    data-bs-toggle="tooltip" data-bs-original-title="View">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13"
-                                                        viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                                                        class="feather feather-eye text-primary">
-                                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                                        <circle cx="12" cy="12" r="3"></circle>
-                                                    </svg>
-                                                </a>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>
-                                                <input class="form-check-input" type="checkbox">
-                                            </td>
-                                            <td>#003</td>
-                                            <td>INV0003</td>
-                                            <td>XYZ</td>
-                                            <td>
-                                                2025-04-11
-                                            </td>
-                                            <td>10,000</td>
-                                            <td>8,000</td>
-                                            <td>2,000</td>
-                                            <td class="text-danger">Issue</td>
-                                            <td>
-                                                <a aria-label="anchor" href="invoices-details.php"
-                                                    class="btn btn-icon btn-sm bg-primary-subtle me-1"
-                                                    data-bs-toggle="tooltip" data-bs-original-title="View">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13"
-                                                        viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                                                        class="feather feather-eye text-primary">
-                                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                                        <circle cx="12" cy="12" r="3"></circle>
-                                                    </svg>
-                                                </a>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
                             </div>
                         </div>
                     </div>
-                </div>
-                <div class="col-lg-12 col-xxl-6 d-flex align-items-stretch">
-                    <div class="card w-100 rounded-4">
-                        <div class="card-body">
-                            <div class="d-flex align-items-start justify-content-between mb-3">
-                                <div class="">
-                                    <h5 class="mb-0">Payments</h5>
+                @endcan
 
-                                </div>
-                                <div class="dropdown">
-                                    <a href="javascript:;" class="dropdown-toggle-nocaret options dropdown-toggle"
-                                        data-bs-toggle="dropdown">
-                                        <span class="material-icons-outlined fs-5">more_vert</span>
-                                    </a>
-                                    <ul class="dropdown-menu">
-                                        <li><a class="dropdown-item" href="javascript:;">Action</a></li>
-                                        <li><a class="dropdown-item" href="javascript:;">Another action</a></li>
-                                        <li><a class="dropdown-item" href="javascript:;">Something else here</a></li>
-                                    </ul>
-                                </div>
-                            </div>
-                            <div class="table-responsive">
-                                <table id="example" class="table table-striped">
-                                    <thead class="table-light">
-                                        <tr>
-                                            <th>
-                                                <input class="form-check-input" type="checkbox">
-                                            </th>
-                                            <th>Order Id</th>
-                                            <th>Customer Name</th>
-                                            <th>Ordered Date</th>
-                                            <th>Delivery Date</th>
-                                            <th>Status</th>
-                                            <th>Action</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td>
-                                                <input class="form-check-input" type="checkbox">
-                                            </td>
-                                            <td>#001</td>
-                                            <td>
-                                                <p class="mb-0 customer-name fw-bold">ABC</p>
+                @can('PermissionChecker', 'view_payment')
+                    <div class="col-lg-12 col-xxl-6 d-flex align-items-stretch">
+                        <div class="card w-100 rounded-4">
+                            <div class="card-body">
+                                <div class="d-flex align-items-start justify-content-between mb-3">
+                                    <div class="">
+                                        <h5 class="mb-0">Payments</h5>
 
-                                            </td>
-                                            <td>
-                                                2025-04-11
-                                            </td>
-                                            <td>
-                                                2025-05-15
-                                            </td>
-                                            <td class="text-success">Completed</td>
-                                            <td>
-                                                <a aria-label="anchor" href="ready-to-ship-detail.php"
-                                                    class="btn btn-icon btn-sm bg-primary-subtle me-1"
-                                                    data-bs-toggle="tooltip" data-bs-original-title="View">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13"
-                                                        viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                                                        class="feather feather-eye text-primary">
-                                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                                        <circle cx="12" cy="12" r="3"></circle>
-                                                    </svg>
-                                                </a>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>
-                                                <input class="form-check-input" type="checkbox">
-                                            </td>
-                                            <td>#002</td>
-                                            <td>
-                                                <p class="mb-0 customer-name fw-bold">XYZ</p>
-                                            </td>
-                                            <td>
-                                                2025-04-11
-                                            </td>
-                                            <td>
-                                                2025-05-15
-                                            </td>
-                                            <td class="text-primary">Delivered</td>
-                                            <td>
-                                                <a aria-label="anchor" href="ready-to-ship-detail.php"
-                                                    class="btn btn-icon btn-sm bg-primary-subtle me-1"
-                                                    data-bs-toggle="tooltip" data-bs-original-title="View">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13"
-                                                        viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                                                        class="feather feather-eye text-primary">
-                                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                                        <circle cx="12" cy="12" r="3"></circle>
-                                                    </svg>
-                                                </a>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>
-                                                <input class="form-check-input" type="checkbox">
-                                            </td>
-                                            <td>#003</td>
-                                            <td>
-                                                <p class="mb-0 customer-name fw-bold">EFG</p>
-                                            </td>
-                                            <td>
-                                                2025-04-11
-                                            </td>
-                                            <td>
-                                                2025-05-15
-                                            </td>
-                                            <td class="text-Secondary">Out For Delivery</td>
-                                            <td>
-                                                <a aria-label="anchor" href="ready-to-ship-detail.php"
-                                                    class="btn btn-icon btn-sm bg-primary-subtle me-1"
-                                                    data-bs-toggle="tooltip" data-bs-original-title="View">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13"
-                                                        viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                                                        class="feather feather-eye text-primary">
-                                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                                        <circle cx="12" cy="12" r="3"></circle>
-                                                    </svg>
-                                                </a>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
+                                    </div>
+                                    <div class="dropdown">
+                                        <a href="javascript:;" class="dropdown-toggle-nocaret options dropdown-toggle"
+                                            data-bs-toggle="dropdown">
+                                            <span class="material-icons-outlined fs-5">more_vert</span>
+                                        </a>
+                                        <ul class="dropdown-menu">
+                                            <li><a class="dropdown-item" href="javascript:;">Action</a></li>
+                                            <li><a class="dropdown-item" href="javascript:;">Another action</a></li>
+                                            <li><a class="dropdown-item" href="javascript:;">Something else here</a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="table-responsive">
+                                    <table id="example" class="table table-striped">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>
+                                                    <input class="form-check-input" type="checkbox">
+                                                </th>
+                                                <th>Order Id</th>
+                                                <th>Customer Name</th>
+                                                <th>Ordered Date</th>
+                                                <th>Delivery Date</th>
+                                                <th>Status</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>
+                                                    <input class="form-check-input" type="checkbox">
+                                                </td>
+                                                <td>#001</td>
+                                                <td>
+                                                    <p class="mb-0 customer-name fw-bold">ABC</p>
+
+                                                </td>
+                                                <td>
+                                                    2025-04-11
+                                                </td>
+                                                <td>
+                                                    2025-05-15
+                                                </td>
+                                                <td class="text-success">Completed</td>
+                                                <td>
+                                                    <a aria-label="anchor" href="ready-to-ship-detail.php"
+                                                        class="btn btn-icon btn-sm bg-primary-subtle me-1"
+                                                        data-bs-toggle="tooltip" data-bs-original-title="View">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13"
+                                                            viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                                            class="feather feather-eye text-primary">
+                                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                                            <circle cx="12" cy="12" r="3"></circle>
+                                                        </svg>
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                    <input class="form-check-input" type="checkbox">
+                                                </td>
+                                                <td>#002</td>
+                                                <td>
+                                                    <p class="mb-0 customer-name fw-bold">XYZ</p>
+                                                </td>
+                                                <td>
+                                                    2025-04-11
+                                                </td>
+                                                <td>
+                                                    2025-05-15
+                                                </td>
+                                                <td class="text-primary">Delivered</td>
+                                                <td>
+                                                    <a aria-label="anchor" href="ready-to-ship-detail.php"
+                                                        class="btn btn-icon btn-sm bg-primary-subtle me-1"
+                                                        data-bs-toggle="tooltip" data-bs-original-title="View">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13"
+                                                            viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                                            class="feather feather-eye text-primary">
+                                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                                            <circle cx="12" cy="12" r="3"></circle>
+                                                        </svg>
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                    <input class="form-check-input" type="checkbox">
+                                                </td>
+                                                <td>#003</td>
+                                                <td>
+                                                    <p class="mb-0 customer-name fw-bold">EFG</p>
+                                                </td>
+                                                <td>
+                                                    2025-04-11
+                                                </td>
+                                                <td>
+                                                    2025-05-15
+                                                </td>
+                                                <td class="text-Secondary">Out For Delivery</td>
+                                                <td>
+                                                    <a aria-label="anchor" href="ready-to-ship-detail.php"
+                                                        class="btn btn-icon btn-sm bg-primary-subtle me-1"
+                                                        data-bs-toggle="tooltip" data-bs-original-title="View">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13"
+                                                            viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                                            class="feather feather-eye text-primary">
+                                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                                            <circle cx="12" cy="12" r="3"></circle>
+                                                        </svg>
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-                <div class="col-lg-12 col-xxl-6 d-flex align-items-stretch">
-                    <div class="card w-100 rounded-4">
-                        <div class="card-body">
-                            <div class="d-flex align-items-start justify-content-between mb-3">
-                                <div class="">
-                                    <h5 class="mb-0">Appointments</h5>
+                @endcan
 
-                                </div>
-                                <div class="dropdown">
-                                    <a href="javascript:;" class="dropdown-toggle-nocaret options dropdown-toggle"
-                                        data-bs-toggle="dropdown">
-                                        <span class="material-icons-outlined fs-5">more_vert</span>
-                                    </a>
-                                    <ul class="dropdown-menu">
-                                        <li><a class="dropdown-item" href="javascript:;">Action</a></li>
-                                        <li><a class="dropdown-item" href="javascript:;">Another action</a></li>
-                                        <li><a class="dropdown-item" href="javascript:;">Something else here</a></li>
-                                    </ul>
-                                </div>
-                            </div>
-                            <div class="table-responsive">
-                                <table id="example" class="table table-striped">
-                                    <thead class="table-light">
-                                        <tr>
-                                            <th>
-                                                <input class="form-check-input" type="checkbox">
-                                            </th>
-                                            <th>Order Id</th>
-                                            <th>Customer Name</th>
-                                            <th>Ordered Date</th>
-                                            <th>Delivery Date</th>
-                                            <th>Status</th>
-                                            <th>Action</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td>
-                                                <input class="form-check-input" type="checkbox">
-                                            </td>
-                                            <td>#001</td>
-                                            <td>
-                                                <p class="mb-0 customer-name fw-bold">ABC</p>
+                @can('PermissionChecker', 'view_appointment')
+                    <div class="col-lg-12 col-xxl-6 d-flex align-items-stretch">
+                        <div class="card w-100 rounded-4">
+                            <div class="card-body">
+                                <div class="d-flex align-items-start justify-content-between mb-3">
+                                    <div class="">
+                                        <h5 class="mb-0">Appointments</h5>
 
-                                            </td>
-                                            <td>
-                                                2025-04-11
-                                            </td>
-                                            <td>
-                                                2025-05-15
-                                            </td>
-                                            <td class="text-success">Completed</td>
-                                            <td>
-                                                <a aria-label="anchor" href="ready-to-ship-detail.php"
-                                                    class="btn btn-icon btn-sm bg-primary-subtle me-1"
-                                                    data-bs-toggle="tooltip" data-bs-original-title="View">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13"
-                                                        viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                                                        class="feather feather-eye text-primary">
-                                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                                        <circle cx="12" cy="12" r="3"></circle>
-                                                    </svg>
-                                                </a>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>
-                                                <input class="form-check-input" type="checkbox">
-                                            </td>
-                                            <td>#002</td>
-                                            <td>
-                                                <p class="mb-0 customer-name fw-bold">XYZ</p>
-                                            </td>
-                                            <td>
-                                                2025-04-11
-                                            </td>
-                                            <td>
-                                                2025-05-15
-                                            </td>
-                                            <td class="text-primary">Delivered</td>
-                                            <td>
-                                                <a aria-label="anchor" href="ready-to-ship-detail.php"
-                                                    class="btn btn-icon btn-sm bg-primary-subtle me-1"
-                                                    data-bs-toggle="tooltip" data-bs-original-title="View">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13"
-                                                        viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                                                        class="feather feather-eye text-primary">
-                                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                                        <circle cx="12" cy="12" r="3"></circle>
-                                                    </svg>
-                                                </a>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>
-                                                <input class="form-check-input" type="checkbox">
-                                            </td>
-                                            <td>#003</td>
-                                            <td>
-                                                <p class="mb-0 customer-name fw-bold">EFG</p>
-                                            </td>
-                                            <td>
-                                                2025-04-11
-                                            </td>
-                                            <td>
-                                                2025-05-15
-                                            </td>
-                                            <td class="text-Secondary">Out For Delivery</td>
-                                            <td>
-                                                <a aria-label="anchor" href="ready-to-ship-detail.php"
-                                                    class="btn btn-icon btn-sm bg-primary-subtle me-1"
-                                                    data-bs-toggle="tooltip" data-bs-original-title="View">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13"
-                                                        viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                                                        class="feather feather-eye text-primary">
-                                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                                        <circle cx="12" cy="12" r="3"></circle>
-                                                    </svg>
-                                                </a>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
+                                    </div>
+                                    <div class="dropdown">
+                                        <a href="javascript:;" class="dropdown-toggle-nocaret options dropdown-toggle"
+                                            data-bs-toggle="dropdown">
+                                            <span class="material-icons-outlined fs-5">more_vert</span>
+                                        </a>
+                                        <ul class="dropdown-menu">
+                                            <li><a class="dropdown-item" href="javascript:;">Action</a></li>
+                                            <li><a class="dropdown-item" href="javascript:;">Another action</a></li>
+                                            <li><a class="dropdown-item" href="javascript:;">Something else here</a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="table-responsive">
+                                    <table id="example" class="table table-striped">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>
+                                                    <input class="form-check-input" type="checkbox">
+                                                </th>
+                                                <th>Order Id</th>
+                                                <th>Customer Name</th>
+                                                <th>Ordered Date</th>
+                                                <th>Delivery Date</th>
+                                                <th>Status</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>
+                                                    <input class="form-check-input" type="checkbox">
+                                                </td>
+                                                <td>#001</td>
+                                                <td>
+                                                    <p class="mb-0 customer-name fw-bold">ABC</p>
+
+                                                </td>
+                                                <td>
+                                                    2025-04-11
+                                                </td>
+                                                <td>
+                                                    2025-05-15
+                                                </td>
+                                                <td class="text-success">Completed</td>
+                                                <td>
+                                                    <a aria-label="anchor" href="ready-to-ship-detail.php"
+                                                        class="btn btn-icon btn-sm bg-primary-subtle me-1"
+                                                        data-bs-toggle="tooltip" data-bs-original-title="View">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13"
+                                                            viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                                            class="feather feather-eye text-primary">
+                                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                                            <circle cx="12" cy="12" r="3"></circle>
+                                                        </svg>
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                    <input class="form-check-input" type="checkbox">
+                                                </td>
+                                                <td>#002</td>
+                                                <td>
+                                                    <p class="mb-0 customer-name fw-bold">XYZ</p>
+                                                </td>
+                                                <td>
+                                                    2025-04-11
+                                                </td>
+                                                <td>
+                                                    2025-05-15
+                                                </td>
+                                                <td class="text-primary">Delivered</td>
+                                                <td>
+                                                    <a aria-label="anchor" href="ready-to-ship-detail.php"
+                                                        class="btn btn-icon btn-sm bg-primary-subtle me-1"
+                                                        data-bs-toggle="tooltip" data-bs-original-title="View">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13"
+                                                            viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                                            class="feather feather-eye text-primary">
+                                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                                            <circle cx="12" cy="12" r="3"></circle>
+                                                        </svg>
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                    <input class="form-check-input" type="checkbox">
+                                                </td>
+                                                <td>#003</td>
+                                                <td>
+                                                    <p class="mb-0 customer-name fw-bold">EFG</p>
+                                                </td>
+                                                <td>
+                                                    2025-04-11
+                                                </td>
+                                                <td>
+                                                    2025-05-15
+                                                </td>
+                                                <td class="text-Secondary">Out For Delivery</td>
+                                                <td>
+                                                    <a aria-label="anchor" href="ready-to-ship-detail.php"
+                                                        class="btn btn-icon btn-sm bg-primary-subtle me-1"
+                                                        data-bs-toggle="tooltip" data-bs-original-title="View">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13"
+                                                            viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                                            class="feather feather-eye text-primary">
+                                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                                            <circle cx="12" cy="12" r="3"></circle>
+                                                        </svg>
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-                <div class="col-lg-12 col-xxl-6 d-flex align-items-stretch">
-                    <div class="card w-100 rounded-4">
-                        <div class="card-body">
-                            <div class="d-flex align-items-start justify-content-between mb-3">
-                                <div class="">
-                                    <h5 class="mb-0">GRNs</h5>
+                @endcan
 
-                                </div>
-                                <div class="dropdown">
-                                    <a href="javascript:;" class="dropdown-toggle-nocaret options dropdown-toggle"
-                                        data-bs-toggle="dropdown">
-                                        <span class="material-icons-outlined fs-5">more_vert</span>
-                                    </a>
-                                    <ul class="dropdown-menu">
-                                        <li><a class="dropdown-item" href="javascript:;">Action</a></li>
-                                        <li><a class="dropdown-item" href="javascript:;">Another action</a></li>
-                                        <li><a class="dropdown-item" href="javascript:;">Something else here</a></li>
-                                    </ul>
-                                </div>
-                            </div>
-                            <div class="table-responsive">
-                                <table id="example" class="table table-striped">
-                                    <thead class="table-light">
-                                        <tr>
-                                            <th>
-                                                <input class="form-check-input" type="checkbox">
-                                            </th>
-                                            <th>Order Id</th>
-                                            <th>Customer Name</th>
-                                            <th>Ordered Date</th>
-                                            <th>Delivery Date</th>
-                                            <th>Status</th>
-                                            <th>Action</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td>
-                                                <input class="form-check-input" type="checkbox">
-                                            </td>
-                                            <td>#001</td>
-                                            <td>
-                                                <p class="mb-0 customer-name fw-bold">ABC</p>
+                @can('PermissionChecker', 'view_grn')
+                    <div class="col-lg-12 col-xxl-6 d-flex align-items-stretch">
+                        <div class="card w-100 rounded-4">
+                            <div class="card-body">
+                                <div class="d-flex align-items-start justify-content-between mb-3">
+                                    <div class="">
+                                        <h5 class="mb-0">GRNs</h5>
 
-                                            </td>
-                                            <td>
-                                                2025-04-11
-                                            </td>
-                                            <td>
-                                                2025-05-15
-                                            </td>
-                                            <td class="text-success">Completed</td>
-                                            <td>
-                                                <a aria-label="anchor" href="ready-to-ship-detail.php"
-                                                    class="btn btn-icon btn-sm bg-primary-subtle me-1"
-                                                    data-bs-toggle="tooltip" data-bs-original-title="View">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13"
-                                                        viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                                                        class="feather feather-eye text-primary">
-                                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                                        <circle cx="12" cy="12" r="3"></circle>
-                                                    </svg>
-                                                </a>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>
-                                                <input class="form-check-input" type="checkbox">
-                                            </td>
-                                            <td>#002</td>
-                                            <td>
-                                                <p class="mb-0 customer-name fw-bold">XYZ</p>
-                                            </td>
-                                            <td>
-                                                2025-04-11
-                                            </td>
-                                            <td>
-                                                2025-05-15
-                                            </td>
-                                            <td class="text-primary">Delivered</td>
-                                            <td>
-                                                <a aria-label="anchor" href="ready-to-ship-detail.php"
-                                                    class="btn btn-icon btn-sm bg-primary-subtle me-1"
-                                                    data-bs-toggle="tooltip" data-bs-original-title="View">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13"
-                                                        viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                                                        class="feather feather-eye text-primary">
-                                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                                        <circle cx="12" cy="12" r="3"></circle>
-                                                    </svg>
-                                                </a>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>
-                                                <input class="form-check-input" type="checkbox">
-                                            </td>
-                                            <td>#003</td>
-                                            <td>
-                                                <p class="mb-0 customer-name fw-bold">EFG</p>
-                                            </td>
-                                            <td>
-                                                2025-04-11
-                                            </td>
-                                            <td>
-                                                2025-05-15
-                                            </td>
-                                            <td class="text-Secondary">Out For Delivery</td>
-                                            <td>
-                                                <a aria-label="anchor" href="ready-to-ship-detail.php"
-                                                    class="btn btn-icon btn-sm bg-primary-subtle me-1"
-                                                    data-bs-toggle="tooltip" data-bs-original-title="View">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13"
-                                                        viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                                                        class="feather feather-eye text-primary">
-                                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                                        <circle cx="12" cy="12" r="3"></circle>
-                                                    </svg>
-                                                </a>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
+                                    </div>
+                                    <div class="dropdown">
+                                        <a href="javascript:;" class="dropdown-toggle-nocaret options dropdown-toggle"
+                                            data-bs-toggle="dropdown">
+                                            <span class="material-icons-outlined fs-5">more_vert</span>
+                                        </a>
+                                        <ul class="dropdown-menu">
+                                            <li><a class="dropdown-item" href="javascript:;">Action</a></li>
+                                            <li><a class="dropdown-item" href="javascript:;">Another action</a></li>
+                                            <li><a class="dropdown-item" href="javascript:;">Something else here</a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="table-responsive">
+                                    <table id="example" class="table table-striped">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>
+                                                    <input class="form-check-input" type="checkbox">
+                                                </th>
+                                                <th>Order Id</th>
+                                                <th>Customer Name</th>
+                                                <th>Ordered Date</th>
+                                                <th>Delivery Date</th>
+                                                <th>Status</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>
+                                                    <input class="form-check-input" type="checkbox">
+                                                </td>
+                                                <td>#001</td>
+                                                <td>
+                                                    <p class="mb-0 customer-name fw-bold">ABC</p>
+
+                                                </td>
+                                                <td>
+                                                    2025-04-11
+                                                </td>
+                                                <td>
+                                                    2025-05-15
+                                                </td>
+                                                <td class="text-success">Completed</td>
+                                                <td>
+                                                    <a aria-label="anchor" href="ready-to-ship-detail.php"
+                                                        class="btn btn-icon btn-sm bg-primary-subtle me-1"
+                                                        data-bs-toggle="tooltip" data-bs-original-title="View">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13"
+                                                            viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                                            class="feather feather-eye text-primary">
+                                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                                            <circle cx="12" cy="12" r="3"></circle>
+                                                        </svg>
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                    <input class="form-check-input" type="checkbox">
+                                                </td>
+                                                <td>#002</td>
+                                                <td>
+                                                    <p class="mb-0 customer-name fw-bold">XYZ</p>
+                                                </td>
+                                                <td>
+                                                    2025-04-11
+                                                </td>
+                                                <td>
+                                                    2025-05-15
+                                                </td>
+                                                <td class="text-primary">Delivered</td>
+                                                <td>
+                                                    <a aria-label="anchor" href="ready-to-ship-detail.php"
+                                                        class="btn btn-icon btn-sm bg-primary-subtle me-1"
+                                                        data-bs-toggle="tooltip" data-bs-original-title="View">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13"
+                                                            viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                                            class="feather feather-eye text-primary">
+                                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                                            <circle cx="12" cy="12" r="3"></circle>
+                                                        </svg>
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                    <input class="form-check-input" type="checkbox">
+                                                </td>
+                                                <td>#003</td>
+                                                <td>
+                                                    <p class="mb-0 customer-name fw-bold">EFG</p>
+                                                </td>
+                                                <td>
+                                                    2025-04-11
+                                                </td>
+                                                <td>
+                                                    2025-05-15
+                                                </td>
+                                                <td class="text-Secondary">Out For Delivery</td>
+                                                <td>
+                                                    <a aria-label="anchor" href="ready-to-ship-detail.php"
+                                                        class="btn btn-icon btn-sm bg-primary-subtle me-1"
+                                                        data-bs-toggle="tooltip" data-bs-original-title="View">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13"
+                                                            viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                                            class="feather feather-eye text-primary">
+                                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                                            <circle cx="12" cy="12" r="3"></circle>
+                                                        </svg>
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
+                @endcan
             </div>
-
 
 
         </div>

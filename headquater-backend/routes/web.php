@@ -14,6 +14,7 @@ use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\PackagingController;
 use App\Http\Controllers\WarehouseController;
 use App\Http\Controllers\CustomerGroupController;
+use App\Http\Controllers\PackagingController;
 use App\Http\Controllers\PurchaseOrderController;
 use App\Http\Controllers\ReceivedProductsController;
 
@@ -138,6 +139,7 @@ Route::controller(ProductController::class)->group(function () {
 
 // All Order page
 Route::controller(OrderController::class)->group(function () {
+
 
     Route::get('/order', 'index')->name('order.index');
     Route::get('/create-order', 'create')->name('order.create');
