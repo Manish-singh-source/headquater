@@ -59,22 +59,6 @@ class WarehouseController extends Controller
         return view('warehouse.view', ['warehouse' => $warehouse]);
     }
 
-    public function toggleStatus(Request $request)
-    {
-        $warehouse = Warehouse::findOrFail($request->id);
-        $warehouse->status = $request->status;
-        $warehouse->save();
-
-        return response()->json(['success' => true]);
-    }
-
-    public function deleteSelected(Request $request)
-    {
-        $ids = is_array($request->ids) ? $request->ids : explode(',', $request->ids);
-        Warehouse::destroy($ids);
-        return redirect()->back()->with('success', 'Selected customers deleted successfully.');
-    }
-
 
     public function warehouseDetail($id)
     {
@@ -125,5 +109,22 @@ class WarehouseController extends Controller
         $warehouse->delete();
 
         return redirect()->route('warehouse.index')->with('success', 'Customer deleted successfully.');
+    }
+
+
+    public function toggleStatus(Request $request)
+    {
+        $warehouse = Warehouse::findOrFail($request->id);
+        $warehouse->status = $request->status;
+        $warehouse->save();
+
+        return response()->json(['success' => true]);
+    }
+
+    public function deleteSelected(Request $request)
+    {
+        $ids = is_array($request->ids) ? $request->ids : explode(',', $request->ids);
+        Warehouse::destroy($ids);
+        return redirect()->back()->with('success', 'Selected customers deleted successfully.');
     }
 }

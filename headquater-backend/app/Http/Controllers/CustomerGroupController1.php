@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Spatie\SimpleExcel\SimpleExcelReader;
 
-class CustomerGroupController extends Controller
+class CustomerGroupController1 extends Controller
 {
     public function importLargeCsv(Request $request)
     {

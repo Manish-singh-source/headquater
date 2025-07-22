@@ -1,8 +1,7 @@
 <?php
 
-use App\Http\Middleware\AdminAuth;
+use App\Http\Controllers\ReadyToShip;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\AuthController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\StaffController;
@@ -11,20 +10,14 @@ use App\Http\Controllers\VendorController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\LocationController;
+use App\Http\Controllers\RegisterController;
+use App\Http\Controllers\PackagingController;
 use App\Http\Controllers\WarehouseController;
-use App\Http\Controllers\PlaceOrderController;
 use App\Http\Controllers\CustomerGroupController;
 use App\Http\Controllers\PurchaseOrderController;
 use App\Http\Controllers\ReceivedProductsController;
-use App\Http\Controllers\RegisterController;
-use App\Models\CustomerGroup;
-
-// Route::get('/', function () {
-//     return view('index');
-// })->name('index');
 
 Route::middleware('IsAdmin')->group(function () {
-    // Route::get('/', [CustomerController::class, 'Customercount'])->name('index');
     Route::get('/', [CustomerController::class, 'index'])->name('index');
 });
 
@@ -35,10 +28,6 @@ Route::middleware('IsAdmin')->group(function () {
 // edit
 // update
 // delete/destroy
-
-// Route::middleware('IsAdmin')->group(function() {
-    // Route::get('/', [CustomerController::class, 'index'])->name('index');
-// });
 
 Route::controller(LocationController::class)->group(function () {
     Route::get('/countries', 'getCountries');
@@ -69,7 +58,8 @@ Route::controller(WarehouseController::class)->group(function () {
     Route::delete('/warehouses/{id}', 'destroy')->name('warehouse.destroy');
     Route::get('/warehouses/view/{id}', 'view')->name('warehouse.view');
 
-    Route::post('/warehouse/toggle-status', [WarehouseController::class, 'toggleStatus'])->name('warehouse.toggleStatus');
+    Route::post('/warehouse/toggle-status', 'toggleStatus')->name('warehouse.toggleStatus');
+    Route::delete('/warehouse/delete-selected', 'deleteSelected')->name('delete.selected.warehouse');
 });
 
 
@@ -86,13 +76,9 @@ Route::controller(VendorController::class)->group(function () {
 
     Route::get('/vendor-order-view/{id}', 'vendorOrderView')->name('vendor-order-view');
     Route::get('/single-vendor-order-view/{orderId}/{vendorCode}', 'singleVendorOrderView')->name('single-vendor-order-view');
+    Route::post('/vendor/toggle-status', 'toggleStatus')->name('vendor.toggleStatus');
+    Route::delete('/vendor/delete-selected', 'deleteSelected')->name('delete.selected.vendor');
 });
-Route::post('/vendor/toggle-status', [VendorController::class, 'toggleStatus'])->name('vendor.toggleStatus');
-Route::delete('/vendor/delete-selected', [VendorController::class, 'deleteSelected'])->name('delete.selected.vendor');
-Route::delete('/products/delete-selected', [ProductController::class, 'deleteSelected'])->name('delete.selected.product');
-Route::delete('/warehouse/delete-selected', [WarehouseController::class, 'deleteSelected'])->name('delete.selected.warehouse');
-
-
 
 
 // Authentication
@@ -146,12 +132,13 @@ Route::controller(ProductController::class)->group(function () {
     Route::put('/products/{id}', 'update')->name('products.update');
     Route::delete('/products/{id}', 'destroy')->name('products.destroy');
     Route::get('/products/view/{id}', 'view')->name('products.view');
+    Route::delete('/products/delete-selected', 'deleteSelected')->name('delete.selected.product');
 });
 
 
 // All Order page
 Route::controller(OrderController::class)->group(function () {
-    
+
     Route::get('/order', 'index')->name('order.index');
     Route::get('/create-order', 'create')->name('order.create');
     Route::post('/check-products-stock', 'checkProductsStock')->name('check.order.stock');
@@ -160,6 +147,7 @@ Route::controller(OrderController::class)->group(function () {
     Route::delete('/delete-order/{id}', 'destroy')->name('order.delete');
 
     Route::get('/download-block-order-csv', 'downloadBlockedCSV')->name('download.order.excel');
+    Route::put('/change-status', 'changeStatus')->name('change.order.status');
 });
 
 
@@ -179,6 +167,7 @@ Route::controller(CustomerController::class)->group(function () {
     Route::get('/customer/detail/{id}', 'customersList')->name('customers.list');
     Route::delete('/customer-group/delete/{id}', 'deleteCustomerGroup')->name('delete.customer.group');
 });
+
 Route::get('/customer-group', function () {
     return view('customer.customer-group');
 })->name('customer-group');
@@ -193,14 +182,13 @@ Route::delete('/customers/delete-selected', [CustomerController::class, 'deleteS
 
 
 // Place Order
-Route::get('/purchase-order', [PurchaseOrderController::class, 'index'])->name('purchase.order.index');
-Route::get('/purchase-order-view/{id}', [PurchaseOrderController::class, 'view'])->name('purchase.order.view');
-Route::post('/purchase-order-store', [PurchaseOrderController::class, 'store'])->name('purchase.order.store');
-Route::post('/purchase-order-invoice-store', [PurchaseOrderController::class, 'invoiceStore'])->name('purchase.order.invoice.store');
-
-
-
-
+Route::controller(PurchaseOrderController::class)->group(function () {
+    Route::get('/purchase-order', 'index')->name('purchase.order.index');
+    Route::get('/purchase-order-view/{id}', 'view')->name('purchase.order.view');
+    Route::post('/purchase-order-store', 'store')->name('purchase.order.store');
+    Route::post('/purchase-order-invoice-store', 'invoiceStore')->name('purchase.order.invoice.store');
+    Route::post('/purchase-order-grn-store', 'grnStore')->name('purchase.order.grn.store');
+});
 
 
 
@@ -217,6 +205,34 @@ Route::controller(ReportController::class)->group(function () {
 
 
 
+
+
+// received products
+Route::get('/received-products', [ReceivedProductsController::class, 'view'])->name('received-products.view');
+Route::put('/received-products', [ReceivedProductsController::class, 'update'])->name('received-products.update');
+
+
+
+// Route::get('/received-products', function () {
+//     return view('received-products');
+// })->name('received-products');
+Route::controller(PackagingController::class)->group(function () {
+    Route::get('/packaging-list', 'index')->name('packaging.list.index');
+    Route::get('/packing-products-list/{id}', 'view')->name('packing.products.view');
+});
+
+// 
+Route::controller(ReadyToShip::class)->group(function() {
+    Route::get('/ready-to-ship', 'index')->name('readyToShip.index');
+    Route::get('/ready-to-ship-detail/{id}', 'view')->name('readyToShip.view');
+});
+
+
+
+
+Route::get('/track-order', function () {
+    return view('track-order');
+})->name('track-order');
 
 
 
@@ -240,34 +256,10 @@ Route::get('/invoices-details', function () {
 
 
 
-
-
-// received products
-Route::get('/received-products', [ReceivedProductsController::class, 'view'])->name('received-products.view');
-Route::put('/received-products', [ReceivedProductsController::class, 'update'])->name('received-products.update');
-
-
-// Route::get('/received-products', function () {
-//     return view('received-products');
-// })->name('received-products');
-Route::get('/packaging-list', function () {
-    return view('packaging-list');
-})->name('packaging-list');
-Route::get('/packing-products-list', function () {
-    return view('packing-products-list');
-})->name('packing-products-list');
+// No need to do 
 Route::get('/raise-a-ticket-form', function () {
     return view('raise-a-ticket-form');
 })->name('raise-a-ticket-form');
-Route::get('/ready-to-ship', function () {
-    return view('ready-to-ship');
-})->name('ready-to-ship');
-Route::get('/ready-to-ship-detail', function () {
-    return view('ready-to-ship-detail');
-})->name('ready-to-ship-detail');
 Route::get('/raise-a-ticket', function () {
     return view('raise-a-ticket');
 })->name('raise-a-ticket');
-Route::get('/track-order', function () {
-    return view('track-order');
-})->name('track-order');

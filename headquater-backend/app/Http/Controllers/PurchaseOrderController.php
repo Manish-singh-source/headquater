@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\VendorPI;
 use App\Models\TempOrder;
+use App\Models\PurchaseGrn;
 use Illuminate\Http\Request;
 use App\Models\PurchaseOrder;
 use App\Models\PurchaseInvoice;
@@ -34,9 +35,9 @@ class PurchaseOrderController extends Controller
         $purchaseOrder = PurchaseOrder::with('vendorPI.product', 'purchaseInvoices')->where('status', 'pending')->get();
         $uploadedPIOfVendors = VendorPI::distinct()->pluck('vendor_code');
         $purchaseInvoice = PurchaseInvoice::where('purchase_order_id', $id)->get();
-
+        $purchaseGrn = PurchaseGrn::where('purchase_order_id', $id)->get();
         // dd($purchaseInvoice);
-        return view('purchaseOrder.view', compact('purchaseOrderProducts', 'uploadedPIOfVendors', 'vendors', 'vendorPI', 'purchaseOrder', 'purchaseInvoice'));
+        return view('purchaseOrder.view', compact('purchaseOrderProducts', 'uploadedPIOfVendors', 'vendors', 'vendorPI', 'purchaseOrder', 'purchaseInvoice', 'purchaseGrn'));
     }
 
     public function store(Request $request)
@@ -95,14 +96,21 @@ class PurchaseOrderController extends Controller
         ]);
 
         if($validated->fails()) {
-            return redirect()->back()->withInput()->withErrors($validated);
+            return redirect()->back()->withInput()->withErrors($validated)->with('error', $validated->failed());
         }
-
+        
         // if($purchaseOrderInvoice?->invoice_file != null) {
-        //     if(File::exists(public_path('uploads/invoices/' . $purchaseOrderInvoice->invoice_file))) {
+            //     if(File::exists(public_path('uploads/invoices/' . $purchaseOrderInvoice->invoice_file))) {
         //         File::delete(public_path('uploads/invoices/' . $purchaseOrderInvoice->invoice_file));
         //     }
         // }
+
+        $vendorPIStatus = VendorPI::where('purchase_order_id', $request->purchase_order_id)->where('vendor_code', $request->vendor_code)->first();
+
+        if(!isset($vendorPIStatus)) {
+            return redirect()->back()->with('error', 'Vendor PI Is Not Uploaded');
+        }
+        // dd($vendorPIStatus);
 
         $invoice_file = $request->file('invoice_file');
         $ext = $invoice_file->getClientOriginalExtension();
@@ -115,6 +123,36 @@ class PurchaseOrderController extends Controller
         $purchaseInvoice->invoice_file = $invoiceFileName;
         $purchaseInvoice->save();
         
-        return redirect()->route('purchase.order.view', $request->purchase_order_id)->with('success', 'CSV file imported successfully.');
+        if(!$purchaseInvoice) {
+            return back()->with('error', 'Something went wrong');
+        }
+        return redirect()->route('purchase.order.view', $request->purchase_order_id)->with('success', 'Invoice imported successfully.');
+    }
+
+
+    public function grnStore(Request $request)
+    {
+        $validated = Validator::make($request->all(), [
+            'purchase_order_id' => 'required',
+            'vendor_code' => 'required',
+            'grn_file' => 'required|mimes:pdf',
+        ]);
+
+        if($validated->fails()) {
+            return redirect()->back()->withInput()->withErrors($validated);
+        }
+
+        $grn_file = $request->file('grn_file');
+        $ext = $grn_file->getClientOriginalExtension();
+        $grnFileName = strtotime('now').'-'.$request->purchase_order_id.'.'.$ext;
+        $grn_file->move(public_path('uploads/invoices'), $grnFileName);
+
+        $purchaseGRN = new PurchaseGrn();
+        $purchaseGRN->purchase_order_id = $request->purchase_order_id;
+        $purchaseGRN->vendor_code = $request->vendor_code;
+        $purchaseGRN->grn_file = $grnFileName;
+        $purchaseGRN->save();
+        
+        return redirect()->route('purchase.order.view', $request->purchase_order_id)->with('success', 'GRN imported successfully.');
     }
 }

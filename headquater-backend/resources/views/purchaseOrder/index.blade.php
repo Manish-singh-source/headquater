@@ -15,13 +15,7 @@
                     </nav>
                 </div>
             </div>
-            <div class="row g-3 justify-content-end">
-                <div class="col-12 col-md-auto">
-                    <div class="d-flex align-items-center gap-2 justify-content-lg-end">
-                        <button class="btn btn-filter px-4"><i class="bi bi-box-arrow-right me-2"></i>Export</button>
-                    </div>
-                </div>
-            </div>
+            
 
             <div class="card mt-4">
                 <div class="card-body">

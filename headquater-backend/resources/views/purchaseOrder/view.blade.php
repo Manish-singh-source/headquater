@@ -38,6 +38,59 @@
                         </div>
                         <!-- Tabs Navigation -->
                         <div class="div d-flex justify-content-end my-3 gap-2">
+                            <button class="btn btn-sm border-2 border-primary" data-bs-toggle="modal"
+                                data-bs-target="#staticBackdrop1" class="btn btn-sm border-2 border-primary">
+                                Add Vendor PI
+                            </button>
+
+                            <!-- Modal -->
+                            <div class="modal fade" id="staticBackdrop1" data-bs-backdrop="static" data-bs-keyboard="false"
+                                tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <form action="{{ route('purchase.order.store') }}" method="POST"
+                                            enctype="multipart/form-data">
+                                            @csrf
+                                            @method('POST')
+                                            <div class="modal-header">
+                                                <h1 class="modal-title fs-5" id="staticBackdropLabel">Add Vendor PI</h1>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                    aria-label="Close"></button>
+                                            </div>
+
+                                            <div class="modal-body">
+                                                <div class="col-12 mb-3">
+                                                    <input type="hidden" name="purchase_order_id"
+                                                        value="{{ $purchaseOrderProducts[0]->purchase_order_id }}">
+                                                    <label for="vendor_code" class="form-label">Vendor Name
+                                                        <span class="text-danger">*</span></label>
+                                                    <select class="form-control" name="vendor_code" id="vendor_code">
+                                                        <option selected disabled value="">-- Select --</option>
+                                                        @foreach ($vendors as $vendor)
+                                                            <option value="{{ $vendor }}">{{ $vendor }}
+                                                            </option>
+                                                        @endforeach
+                                                    </select>
+                                                </div>
+
+                                                <div class="col-12 mb-3">
+                                                    <label for="pi_excel" class="form-label">Vendor PI (CSV/ELSX) <span
+                                                            class="text-danger">*</span></label>
+                                                    <input type="file" name="pi_excel" id="pi_excel"
+                                                        class="form-control" value="" required="">
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary"
+                                                    data-bs-dismiss="modal">Close</button>
+                                                <button type="submit" id="holdOrder"
+                                                    class="btn btn-primary">Submit</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+
                             <button id="customExcelBtn" class="btn btn-sm border-2 border-primary">
                                 <i class="fa fa-file-excel-o"></i> Export to Excel
                             </button>
@@ -93,7 +146,17 @@
                 </div>
             </div>
 
+            {{-- 
             <div class="card">
+                <div class="card-header border-bottom-dashed">
+                    <div class="row g-4 align-items-center">
+                        <div class="col-sm">
+                            <h5 class="card-title mb-0">
+                                Add Vendor PI
+                            </h5>
+                        </div>
+                    </div>
+                </div>
                 <div class="card-body pi-add">
                     <form action="{{ route('purchase.order.store') }}" method="post" enctype="multipart/form-data">
                         @csrf
@@ -108,9 +171,6 @@
                                     <option selected disabled value="">-- Select --</option>
                                     @foreach ($vendors as $vendor)
                                         <option value="{{ $vendor }}">
-                                            {{-- @if (in_array($uploadedPIOfVendors, $vendors))
-                                                disabled
-                                            @endif --}}
                                             {{ $vendor }}
                                         </option>
                                     @endforeach
@@ -119,8 +179,8 @@
                             <div class="col-12 col-lg-3">
                                 <label for="pi_excel" class="form-label">Upload PI Excel <span
                                         class="text-danger">*</span></label>
-                                <input type="file" name="pi_excel" id="pi_excel" class="form-control" value=""
-                                    required="" placeholder="Upload ID Document">
+                                <input type="file" name="pi_excel" id="pi_excel" class="form-control"
+                                    value="" required="" placeholder="Upload ID Document">
                             </div>
                             <div class="col-12 col-lg-2 d-flex align-items-end gap-2">
                                 <button type="submit" class="btn btn-success w-sm waves ripple-light upload">
@@ -130,26 +190,10 @@
                         </div>
                     </form>
                 </div>
+            </div> 
+            --}}
 
-                {{-- 
-                @foreach ($purchaseOrder as $order)
-                    <div class="card-body pi-view-show">
-                        <div class="row g-3">
-                            <div class="col-12 col-lg-3">
-                                <label for="marital" class="form-label">Vendor Code</label>
-                                <p><b>{{ $order->id }}</b></p>
-                            </div>
-                            <div class="col-12 col-lg-3">
-                                <label for="document_image" class="form-label">PI Excel</label>
-                                <p> <b>View</b> </p>
-                            </div>
-                        </div>
-                    </div>
-                @endforeach 
-                --}}
-            </div>
-
-            @isset($vendorPI)
+            @isset($vendorPI[0]->id)
                 <div class="card">
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-center my-2">
@@ -158,6 +202,102 @@
                             </div>
                             <!-- Tabs Navigation -->
                             <div class="div d-flex justify-content-end my-3 gap-2">
+                                <button class="btn btn-sm border-2 border-primary" data-bs-toggle="modal"
+                                    data-bs-target="#grnUpload" class="btn btn-sm border-2 border-primary">
+                                    Add Vendor GRN
+                                </button>
+
+                                <!-- Modal -->
+                                <div class="modal fade" id="grnUpload" data-bs-backdrop="static" data-bs-keyboard="false"
+                                    tabindex="-1" aria-labelledby="grnUploadSection" aria-hidden="true">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <form action="{{ route('purchase.order.grn.store') }}" method="post"
+                                                enctype="multipart/form-data">
+                                                @csrf
+                                                @method('POST')
+                                                <div class="modal-body">
+                                                    <div class="col-12 mb-3">
+                                                        <input type="hidden" name="purchase_order_id"
+                                                            value="{{ $purchaseOrderProducts[0]->purchase_order_id }}">
+                                                        <label for="marital" class="form-label">Vendor Name
+                                                            <span class="text-danger">*</span></label>
+                                                        <select class="form-control" name="vendor_code" id="vendor_code">
+                                                            <option selected disabled value="">-- Select --</option>
+                                                            @foreach ($vendors as $vendor)
+                                                                <option value="{{ $vendor }}">
+                                                                    {{ $vendor }}
+                                                                </option>
+                                                            @endforeach
+                                                        </select>
+                                                    </div>
+
+                                                    <div class="col-12 mb-3">
+                                                        <label for="grn_file" class="form-label">Upload GRN <span
+                                                                class="text-danger">*</span></label>
+                                                        <input type="file" name="grn_file" id="grn_file"
+                                                            class="form-control" placeholder="Upload ID Document">
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary"
+                                                        data-bs-dismiss="modal">Close</button>
+                                                    <button type="submit" class="btn btn-primary">Submit</button>
+                                                </div>
+                                            </form>
+
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <button class="btn btn-sm border-2 border-primary" data-bs-toggle="modal"
+                                    data-bs-target="#invoiceUpload" class="btn btn-sm border-2 border-primary">
+                                    Add Vendor Invoice
+                                </button>
+
+                                <!-- Modal -->
+                                <div class="modal fade" id="invoiceUpload" data-bs-backdrop="static"
+                                    data-bs-keyboard="false" tabindex="-1" aria-labelledby="invoiceUploadSection"
+                                    aria-hidden="true">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <form action="{{ route('purchase.order.invoice.store') }}" method="post"
+                                                enctype="multipart/form-data">
+                                                @csrf
+                                                @method('POST')
+                                                <div class="modal-body">
+                                                    <div class="col-12 mb-3">
+                                                        <input type="hidden" name="purchase_order_id"
+                                                            value="{{ $purchaseOrderProducts[0]->purchase_order_id }}">
+                                                        <label for="marital" class="form-label">Vendor Name
+                                                            <span class="text-danger">*</span></label>
+                                                        <select class="form-control" name="vendor_code" id="vendor_code">
+                                                            <option selected disabled value="">-- Select --</option>
+                                                            @foreach ($vendors as $vendor)
+                                                                <option value="{{ $vendor }}">
+                                                                    {{ $vendor }}
+                                                                </option>
+                                                            @endforeach
+                                                        </select>
+                                                    </div>
+
+                                                    <div class="col-12 mb-3">
+                                                        <label for="invoice_file" class="form-label">Upload Invoice <span
+                                                                class="text-danger">*</span></label>
+                                                        <input type="file" name="invoice_file" id="invoice_file"
+                                                            class="form-control" placeholder="Upload ID Document">
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary"
+                                                        data-bs-dismiss="modal">Close</button>
+                                                    <button type="submit" class="btn btn-primary">Submit</button>
+                                                </div>
+                                            </form>
+
+                                        </div>
+                                    </div>
+                                </div>
                                 <ul class="nav nav-tabs" id="vendorTabs2" role="tablist">
                                     <select class="form-select border-2 border-primary" id="vendorSelect"
                                         aria-label="Default select example">
@@ -216,17 +356,20 @@
                 </div>
             @endisset
 
-            <div class="card">
-                <div class="card-header border-bottom-dashed">
-                    <div class="row g-4 align-items-center">
-                        <div class="col-sm">
-                            <h5 class="card-title mb-0">
-                                Add Invoice
-                            </h5>
+
+            @isset($purchaseInvoice[0]->vendor_code)
+                <div class="card">
+
+                    <div class="card-header border-bottom-dashed">
+                        <div class="row g-4 align-items-center">
+                            <div class="col-sm">
+                                <h5 class="card-title mb-0">
+                                    Invoices
+                                </h5>
+                            </div>
                         </div>
                     </div>
-                </div>
-
+                    {{-- 
                 <div class="card-body">
                     <form action="{{ route('purchase.order.invoice.store') }}" method="post"
                         enctype="multipart/form-data">
@@ -260,9 +403,9 @@
                             </div>
                         </div>
                     </form>
-                </div>
+                </div> 
+                --}}
 
-                @isset($purchaseInvoice[0]->vendor_code)
                     <div class="card-body">
                         <table class="table align-middle">
                             <thead>
@@ -286,59 +429,85 @@
                             </tbody>
                         </table>
                     </div>
-                @endisset
 
-            </div>
-
-            <div class="card">
-                <div class="card-header border-bottom-dashed">
-                    <div class="row g-4 align-items-center">
-                        <div class="col-sm">
-                            <h5 class="card-title mb-0">
-                                Add GRN
-                            </h5>
+                </div>
+            @endisset
+            @isset($purchaseGrn[0]->vendor_code)
+                <div class="card">
+                    <div class="card-header border-bottom-dashed">
+                        <div class="row g-4 align-items-center">
+                            <div class="col-sm">
+                                <h5 class="card-title mb-0">
+                                    GRNs
+                                </h5>
+                            </div>
                         </div>
                     </div>
-                </div>
 
+                    {{-- 
                 <div class="card-body">
-                    <div class="row g-3">
-                        <div class="col-12 col-lg-3">
-                            <label for="marital" class="form-label">Vendor Name
-                                <span class="text-danger">*</span></label>
-                            <select class="form-control" name="marital" id="marital">
-                                <option selected="" disabled="" value="">-- Select --</option>
-                                <option value="Active">Active</option>
-                                <option value="Emily ">Emily </option>
-                                <option value="John ">John </option>
-                                <option value="Michael ">Michael </option>
-                                <option value="Sarah ">Sarah </option>
-                                <option value="Davis">Davis</option>
-                                <option value="Smith">Smith</option>
-                                <option value="Brown">Brown</option>
-                                <option value="Wilson">Wilson</option>
-                            </select>
+                    <form action="{{ route('purchase.order.grn.store') }}" method="post" enctype="multipart/form-data">
+                        @csrf
+                        @method('POST')
+                        <div class="row g-3">
+                            <div class="col-12 col-lg-3">
+                                <input type="hidden" name="purchase_order_id"
+                                    value="{{ $purchaseOrderProducts[0]->purchase_order_id }}">
+                                <label for="marital" class="form-label">Vendor Name
+                                    <span class="text-danger">*</span></label>
+                                <select class="form-control" name="vendor_code" id="vendor_code">
+                                    <option selected disabled value="">-- Select --</option>
+                                    @foreach ($vendors as $vendor)
+                                        <option value="{{ $vendor }}">
+                                            {{ $vendor }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="col-12 col-lg-3">
+                                <label for="grn_file" class="form-label">Upload GRN <span
+                                        class="text-danger">*</span></label>
+                                <input type="file" name="grn_file" id="grn_file" class="form-control"
+                                    placeholder="Upload ID Document">
+                            </div>
+                            <div class="col-12 col-lg-1 d-flex align-items-end gap-2">
+                                <button type="submit" class="btn btn-success w-sm waves ripple-light">
+                                    Upload
+                                </button>
+                            </div>
                         </div>
-                        <div class="col-12 col-lg-3">
-                            <label for="document_image" class="form-label">Upload GRN <span
-                                    class="text-danger">*</span></label>
-                            <input type="file" name="document_image" id="document_image" class="form-control"
-                                value="" required="" placeholder="Upload ID Document">
-                        </div>
-                        <div class="col-12 col-lg-1 d-flex align-items-end gap-2">
-                            <button type="" class="btn btn-success w-sm waves ripple-light">
-                                Upload
-                            </button>
-                            <button type="" class="btn btn-success w-sm waves ripple-light">
-                                Preview
-                            </button>
-                        </div>
+                    </form>
+                </div> 
+                --}}
+
+
+                    <div class="card-body">
+                        <table class="table align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Vendor Name</th>
+                                    <th>GRN File</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($purchaseGrn as $grnDetail)
+                                    <tr>
+                                        <th> {{ $grnDetail->vendor_code }}</th>
+                                        <th>
+                                            <a href="{{ asset('uploads/invoices/' . $grnDetail->grn_file) }}"
+                                                class="btn btn-sm border-2 border-success w-sm waves ripple-light">
+                                                Preview
+                                            </a>
+                                        </th>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
                     </div>
                 </div>
+            @endisset
 
-            </div>
-
-            <div class="card">
+            {{-- <div class="card">
                 <div class="card-header border-bottom-dashed">
                     <div class="row g-4 align-items-center">
                         <div class="col-sm">
@@ -379,14 +548,13 @@
                         </div>
                     </div>
                 </div>
-
             </div>
 
             <div class="col-12 my-3 d-flex justify-content-end align-items-end gap-2">
                 <a href="{{ route('purchase.order.index') }}" class="btn btn-success w-sm waves ripple-light">
                     Close Order
                 </a>
-            </div>
+            </div> --}}
         </div>
     </main>
 @endsection

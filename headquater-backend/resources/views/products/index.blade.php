@@ -20,15 +20,13 @@
             <div class="row g-3 justify-content-end">
                 <div class="col-12 col-md-auto">
                     <div class="d-flex align-items-center gap-2 justify-content-lg-end">
-                        @can('PermissionChecker', 'create_product')
-                            <a href="{{ route('products.create') }}" class="btn btn-primary px-4"><i
-                                    class="bi bi-plus-lg me-2"></i>Add Product</a>
-                        @endcan
+                        <a href="{{ route('products.create') }}" class="btn border-2 border-primary px-4"><i
+                                class="bi bi-plus-lg me-2"></i>Add Product</a>
                         <div class="ms-auto">
                             <div class="btn-group">
-                                <button type="button" class="btn btn-outline-primary">Action</button>
+                                <button type="button" class="btn border-2 border-primary">Action</button>
                                 <button type="button"
-                                    class="btn btn-outline-primary split-bg-primary dropdown-toggle dropdown-toggle-split"
+                                    class="btn border-2 border-primary split-bg-primary dropdown-toggle dropdown-toggle-split"
                                     data-bs-toggle="dropdown"> <span class="visually-hidden">Toggle Dropdown</span>
                                 </button>
                                 <div class="dropdown-menu dropdown-menu-right dropdown-menu-lg-end">
@@ -137,10 +135,10 @@
                     form.method = 'POST';
                     form.action = '{{ route('delete.selected.product') }}';
                     form.innerHTML = `
-                @csrf
-                <input type="hidden" name="_method" value="DELETE">
-                <input type="hidden" name="ids" value="${selected.join(',')}">
-            `;
+                        @csrf
+                        <input type="hidden" name="_method" value="DELETE">
+                        <input type="hidden" name="ids" value="${selected.join(',')}">
+                    `;
                     document.body.appendChild(form);
                     form.submit();
                 }

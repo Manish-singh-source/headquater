@@ -11,11 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('sales_orders', function (Blueprint $table) {
+        Schema::create('purchase_grns', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('warehouse_id')->constrained()->onDelete('cascade');
-            $table->foreignId('customer_group_id')->constrained()->onDelete('cascade');
-            $table->enum('status', ['pending', 'blocked', 'completed', 'ready_to_ship', 'ready_to_package'])->default('pending');
+            $table->foreignId('purchase_order_id')->constrained()->onDelete('cascade');
+            $table->string('vendor_code')->nullable();
+            $table->string('grn_file')->nullable();
             $table->timestamps();
         });
     }
@@ -25,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('sales_orders');
+        Schema::dropIfExists('purchase_grns');
     }
 };

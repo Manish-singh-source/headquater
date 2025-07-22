@@ -141,6 +141,18 @@ class OrderController extends Controller
         return view('salesOrder.view', compact('salesOrder'));
     }
 
+    public function  changeStatus(Request $request) {
+        $salesOrder = SalesOrder::findOrFail($request->order_id);
+        $salesOrder->status = $request->status;
+        $salesOrder->save();
+
+        if(!$salesOrder) {
+            return redirect()->back('error', 'Status Not Changed. Please Try Again.');
+        }
+
+        return redirect()->route('packaging.list.index', $request->order_id)->with('success', 'Status has been changed.');
+    }
+
 
     public function checkProductsStock(Request $request)
     {

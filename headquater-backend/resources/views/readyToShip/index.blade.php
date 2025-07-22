@@ -10,12 +10,13 @@
                         <ol class="breadcrumb mb-0 p-0">
                             <li class="breadcrumb-item"><a href="javascript:;"><i class="bx bx-home-alt"></i></a>
                             </li>
-                            <li class="breadcrumb-item active" aria-current="page">Packaging List</li>
+                            <li class="breadcrumb-item active" aria-current="page">Ready to Ship Products Lists</li>
                         </ol>
                     </nav>
                 </div>
             </div>
             
+
             <div class="card mt-4">
                 <div class="card-body">
                     <div class="customer-table">
@@ -27,8 +28,9 @@
                                             <input class="form-check-input" type="checkbox">
                                         </th>
                                         <th>Order Id</th>
-                                        <th>Group Name</th>
+                                        <th>Customer Group Name</th>
                                         <th>Ordered Date</th>
+                                        <th>Delivery Date</th>
                                         <th>Status</th>
                                         <th>Action</th>
                                     </tr>
@@ -55,11 +57,12 @@
                                                 </p>
                                             </td>
                                             <td>{{ $order->created_at->format('d-M-Y') }}</td>
+                                            <td>NA</td>
                                             <td>
                                                 {{ $statuses[$order->status] ?? 'On Hold' }}
                                             </td>
                                             <td>
-                                                <a aria-label="anchor" href="{{ route('packing.products.view', $order->id) }}"
+                                                <a aria-label="anchor" href="{{ route('readyToShip.view', $order->id) }}"
                                                     class="btn btn-icon btn-sm bg-primary-subtle me-1"
                                                     data-bs-toggle="tooltip" data-bs-original-title="View">
                                                     <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13"
@@ -74,15 +77,18 @@
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="6" class="text-center">No Records Found</td>
+                                            <td colspan="7" class="text-center">No Records Found</td>
                                         </tr>
                                     @endforelse
+
                                 </tbody>
                             </table>
                         </div>
                     </div>
                 </div>
             </div>
+
+
         </div>
     </main>
     <!--end main wrapper-->

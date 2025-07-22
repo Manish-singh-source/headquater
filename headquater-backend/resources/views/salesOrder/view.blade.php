@@ -12,11 +12,15 @@
                                 <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                                     <span><b>Order Id</b></span>
 
-                                    <span>{{ '#' . $salesOrder->id }}</span>
+                                    <span id="orderId">{{ '#' . $salesOrder->id }}</span>
                                 </li>
                                 <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                                     <span><b>Customer Group Name</b></span>
                                     <span> <b>{{ $salesOrder->customerGroup->name }}</b></span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
+                                    <span><b>Status</b></span>
+                                    <span> <b>{{ $salesOrder->status }}</b></span>
                                 </li>
                             </ul>
                         </div>
@@ -30,16 +34,25 @@
                         <div class="col">
                             <h6 class="mb-3">PO Table</h6>
                         </div>
-                        @php
-                            $statuses = [
-                                'pending' => 'Pending',
-                                'blocked' => 'Blocked',
-                                'completed' => 'Completed',
-                                'ready_to_ship' => 'Ready To Ship',
-                            ];
-                        @endphp
-                        <div class="col-6 col-lg-1 text-end">
-                            <span class="badge bg-danger-subtle text-danger fw-semibold"></span>
+
+                        <!-- Tabs Navigation -->
+                        <div class="div d-flex justify-content-end my-3 gap-2">
+                            <ul class="nav nav-tabs" id="vendorTabs" role="tablist">
+                                <form id="statusForm" action="{{ route('change.order.status') }}" method="POST">
+                                    @csrf
+                                    @method('PUT')
+                                    <input type="hidden" name="order_id" value="{{ $salesOrder->id }}">
+                                    <select class="form-select border-2 border-primary" id="changeStatus"
+                                        aria-label="Default select example" name="status">
+                                        <option value="" selected disabled>Change Status</option>
+                                        <option value="pending">Pending</option>
+                                        <option value="blocked">Blocked</option>
+                                        <option value="ready_to_package">Ready To Package</option>
+                                        <option value="ready_to_ship">Ready To Ship</option>
+                                        <option value="completed">Completed</option>
+                                    </select>
+                                </form>
+                            </ul>
                         </div>
                     </div>
                     <div class="product-table" id="poTable">
@@ -58,6 +71,14 @@
                                     </tr>
                                 </thead>
                                 <tbody>
+                                    @php
+                                        $statuses = [
+                                            'pending' => 'Pending',
+                                            'blocked' => 'Blocked',
+                                            'completed' => 'Completed',
+                                            'ready_to_ship' => 'Ready To Ship',
+                                        ];
+                                    @endphp
                                     @forelse($salesOrder->orderedProducts as $order)
                                         <tr>
                                             <td>{{ $order->tempOrder->customer_name }}</td>
@@ -136,4 +157,15 @@
             --}}
         </div>
     </main>
+@endsection
+
+
+@section('script')
+    <script>
+        document.getElementById('changeStatus').addEventListener('change', function() {
+            if (confirm('Are you sure you want to change status for order?')) {
+                document.getElementById('statusForm').submit();
+            }
+        });
+    </script>
 @endsection

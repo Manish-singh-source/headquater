@@ -295,25 +295,25 @@
                                     </div>
 
                                 </div>
-                            @endisset
-                            <div class="col-lg-12">
-                                <div class="row justify-content-between mb-3">
-                                    <form class="col-12 text-end" action="{{ route('received-products.update') }}"
-                                        method="POST" onsubmit="return confirm('Are you sure?')">
-                                        @csrf
-                                        @method('PUT')
-                                        <input type="hidden" name="purchase_order_id" value="{{ request('purchase_order_id') }}">
-                                        <input type="hidden" name="vendor_code" value="{{ request('vendor_code') }}">
-                                        <button class="btn btn-sm border-2 border-primary" type="submit">Submit</button>
-                                    </form>
-                                    {{-- 
-                                    <div class="col-12 text-end"><a href="products.php" type=""
-                                            class="btn btn-success w-sm waves ripple-light">
-                                            Submit
-                                        </a></div> 
-                                        --}}
+                                <div class="col-lg-12">
+                                    <div class="row justify-content-between mb-3">
+                                        <form class="col-12 text-end" action="{{ route('received-products.update') }}"
+                                            method="POST" onsubmit="return confirm('Are you sure?')">
+                                            @csrf
+                                            @method('PUT')
+                                            <input type="hidden" name="purchase_order_id" value="{{ request('purchase_order_id') }}">
+                                            <input type="hidden" name="vendor_code" value="{{ request('vendor_code') }}">
+                                            <button class="btn btn-sm border-2 border-primary" type="submit">Submit</button>
+                                        </form>
+                                        {{-- 
+                                        <div class="col-12 text-end"><a href="products.php" type=""
+                                                class="btn btn-success w-sm waves ripple-light">
+                                                Submit
+                                            </a></div> 
+                                            --}}
+                                    </div>
                                 </div>
-                            </div>
+                            @endisset
                         </div>
                     </div>
                 </div>

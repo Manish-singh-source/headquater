@@ -19,6 +19,7 @@
       <link rel="stylesheet" type="text/css" href="{{ asset('assets/plugins/simplebar/css/simplebar.css') }}">
       <!--bootstrap css-->
       <link href="{{ asset('assets/css/bootstrap.min.css') }}" rel="stylesheet">
+      {{-- <link href="{{ asset('assets/css/extra-icons.css') }}" rel="stylesheet"> --}}
       <link href="{{ asset('assets/plugins/datatable/css/dataTables.bootstrap5.min.css') }}" rel="stylesheet" />
       <link href="https://cdn.datatables.net/2.3.2/css/dataTables.dataTables.css" rel="stylesheet" />
       <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@300;400;500;600&amp;display=swap"
@@ -500,7 +501,7 @@
                       </a>
                   </li>
                   <li>
-                      <a href="{{ route('packaging-list') }}">
+                      <a href="{{ route('packaging.list.index') }}">
                           <div class="parent-icon"><i class="material-icons-outlined">all_inbox</i>
                           </div>
                           <div class="menu-title">Packaging List</div>
@@ -514,7 +515,7 @@
                       </a>
                   </li> --}}
                   <li>
-                      <a href="{{ route('ready-to-ship') }}">
+                      <a href="{{ route('readyToShip.index') }}">
                           <div class="parent-icon"><i class="material-icons-outlined">local_shipping</i>
                           </div>
                           <div class="menu-title">Ready To Ship</div>
