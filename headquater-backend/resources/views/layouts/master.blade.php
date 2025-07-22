@@ -519,7 +519,7 @@
 
                   @can('PermissionChecker', 'view_packaging_list')
                       <li>
-                          <a href="{{ route('packaging-list') }}">
+                          <a href="{{ route('packaging.list.index') }}">
                               <div class="parent-icon"><i class="material-icons-outlined">all_inbox</i>
                               </div>
                               <div class="menu-title">Packaging List</div>
@@ -535,7 +535,7 @@
                     </li> --}}
                   @can('PermissionChecker', 'view_ready_to_ship')
                       <li>
-                          <a href="{{ route('ready-to-ship') }}">
+                          <a href="{{ route('readyToShip.index') }}">
                               <div class="parent-icon"><i class="material-icons-outlined">local_shipping</i>
                               </div>
                               <div class="menu-title">Ready To Ship</div>
@@ -545,7 +545,7 @@
 
                   @can('PermissionChecker', 'view_track_order')
                       <li>
-                          <a href="{{ route('track-order') }}">
+                          <a href="{{ route('trackOrder.index') }}">
                               <div class="parent-icon"><i class="material-icons-outlined">search</i>
                               </div>
                               <div class="menu-title">Track Order</div>

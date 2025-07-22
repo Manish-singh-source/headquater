@@ -11,18 +11,12 @@
                             <li class="breadcrumb-item"><a href="javascript:;"><i class="bx bx-home-alt"></i></a>
                             </li>
                             <li class="breadcrumb-item active" aria-current="page"><b>Customers Group:</b>
-                                {{ $groupInfo->group_name }}</li>
+                               {{ $salesOrder->customerGroup }} </li>
                         </ol>
                     </nav>
                 </div>
             </div>
 
-            <div class="row g-3 justify-content-end">
-                <div class="col-12 col-md-auto">
-                    <div class="d-flex align-items-center gap-2 justify-content-lg-end">
-                    </div>
-                </div>
-            </div>
 
             <div class="card mt-4">
                 <div class="card-body">

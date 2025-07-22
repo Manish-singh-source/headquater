@@ -16,28 +16,19 @@
             </div>
 
         </div>
-        <!--end breadcrumb-->
-
-        <!-- <div class="col-md-6">
-            <label for="input3" class="form-label">Phone Number</label>
-            <input type="text" class="form-control @error('contact_person_phone_no') is-invalid @enderror" name="contact_person_phone_no" id="input3"
-                placeholder="Phone Number">
-            @error('contact_person_phone_no')
-            <div class="invalid-feedback">
-                {{ $message }}
-            </div>
-            @enderror      
-        </div> -->
+        
 
         <div class="row">
             <div class="col-12">
                 <div class="card">
                     <div class="card-body p-4">
                         <h5 class="mb-4">Customer details</h5>
-                        <form class="row g-3" action="{{ route('store_customer') }}" method="POST">
+                        <form class="row g-3" action="{{ route('customer.store') }}" method="POST">
                             @csrf
                             @method('POST')
 
+                            <input type="hidden" name="group_id" value="{{ $group_id }}">
+                            
                             <div class="col-md-6">
                                 <label for="firstName" class="form-label">First Name</label>
                                 <input type="text" class="form-control @error('firstName') is-invalid @enderror" value="{{ old('firstName') }}" id="firstName" name="firstName"
@@ -221,10 +212,10 @@
                 </div>
 
             </div>
-        </div><!--end row-->
+        </div>
     </div>
 </main>
-<!--end main wrapper-->
+
 @endsection
 
 @section('script')

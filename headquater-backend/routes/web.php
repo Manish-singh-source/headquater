@@ -14,9 +14,9 @@ use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\PackagingController;
 use App\Http\Controllers\WarehouseController;
 use App\Http\Controllers\CustomerGroupController;
-use App\Http\Controllers\PackagingController;
 use App\Http\Controllers\PurchaseOrderController;
 use App\Http\Controllers\ReceivedProductsController;
+use App\Http\Controllers\TrackOrderController;
 
 Route::middleware('IsAdmin')->group(function () {
     Route::get('/', [CustomerController::class, 'index'])->name('index');
@@ -46,6 +46,17 @@ Route::middleware('RolePermission:customer-handler')->group(function () {
         Route::delete('/delete-customer-groups/{id}', 'destroy')->name('customer.groups.destroy');
         Route::get('/view-customer-groups/{id}', 'view')->name('customer.groups.view');
     });
+});
+
+
+// Customer
+Route::controller(CustomerController::class)->group(function () {
+    Route::get('/customer-create/{g_id}', 'create')->name('customer.create');
+    Route::post('/customers/store', 'store')->name('customer.store');
+    Route::get('/customers/edit/{id}', 'edit')->name('customer.edit');
+    Route::put('/customer/update/{id}', 'update')->name('customer.update');
+    Route::delete('/customers/delete/{id}', 'delete')->name('customer.delete');
+    Route::get('/customer/detail/{id}', 'detail')->name('customers.detail');
 });
 
 
@@ -83,13 +94,6 @@ Route::controller(VendorController::class)->group(function () {
 
 
 // Authentication
-// Route::controller(AuthController::class)->group(function () {
-//     Route::get('/login', 'loginCustomer')->name('login');
-//     Route::post('/login', 'loginAuthCheckCustomerData')->name('login.auth.check');
-//     Route::get('/register', 'registerCustomer')->name('register');
-//     Route::post('/register', 'registerCustomerData')->name('register.store');
-//     Route::get('/logout', 'logout')->name('logout');
-// });
 Route::controller(RegisterController::class)->group(function () {
     Route::get('/login', 'loginCustomer')->name('login');
     Route::post('/login', 'loginAuthCheckCustomerData')->name('login.auth.check');
@@ -100,7 +104,6 @@ Route::controller(RegisterController::class)->group(function () {
 
 
 //Access Control
-
 Route::controller(RoleController::class)->group(function () {
     // Roles
     Route::get('/role', 'index')->name('role.index');
@@ -139,8 +142,6 @@ Route::controller(ProductController::class)->group(function () {
 
 // All Order page
 Route::controller(OrderController::class)->group(function () {
-
-
     Route::get('/order', 'index')->name('order.index');
     Route::get('/create-order', 'create')->name('order.create');
     Route::post('/check-products-stock', 'checkProductsStock')->name('check.order.stock');
@@ -153,26 +154,6 @@ Route::controller(OrderController::class)->group(function () {
 });
 
 
-
-
-// Customer
-Route::controller(CustomerController::class)->group(function () {
-    Route::get('/groups', 'groupsList')->name('groups');
-    Route::get('/customers-group-detail/{id}', 'customerGroupDetail')->name('customers.group.detail');
-    Route::get('/add-customer', 'addCustomer')->name('add-customer');
-    Route::post('/customers/store', 'storeCustomer')->name('store_customer');
-    // Route::get('/customer/detail/{id}', 'detailCustomer')->name('customer-detail');
-    Route::get('/customers/edit/{id}', 'editCustomer')->name('edit_customer');
-    Route::put('/customer/update/{id}', 'updateCustomer')->name('update-customer');
-    Route::delete('/customers/delete/{id}', 'deleteCustomer')->name('delete-customer');
-    // Customer Group
-    Route::get('/customer/detail/{id}', 'customersList')->name('customers.list');
-    Route::delete('/customer-group/delete/{id}', 'deleteCustomerGroup')->name('delete.customer.group');
-});
-
-Route::get('/customer-group', function () {
-    return view('customer.customer-group');
-})->name('customer-group');
 
 
 
@@ -224,7 +205,7 @@ Route::controller(PackagingController::class)->group(function () {
 });
 
 // 
-Route::controller(ReadyToShip::class)->group(function() {
+Route::controller(ReadyToShip::class)->group(function () {
     Route::get('/ready-to-ship', 'index')->name('readyToShip.index');
     Route::get('/ready-to-ship-detail/{id}', 'view')->name('readyToShip.view');
 });
@@ -232,9 +213,10 @@ Route::controller(ReadyToShip::class)->group(function() {
 
 
 
-Route::get('/track-order', function () {
-    return view('track-order');
-})->name('track-order');
+Route::controller(TrackOrderController::class)->group(function () {
+    Route::get('/track-order', 'index')->name('trackOrder.index');
+    Route::post('/track-order', 'index')->name('trackOrder.index');
+});
 
 
 

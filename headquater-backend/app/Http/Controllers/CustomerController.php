@@ -2,28 +2,27 @@
 
 namespace App\Http\Controllers;
 
-use Log;
 use App\Models\City;
 use App\Models\State;
 use App\Models\Country;
 use App\Models\Customer;
+use App\Models\SalesOrder;
 use Illuminate\Http\Request;
 use App\Models\CustomerGroup;
-use App\Models\CustomerGroups;
-use App\Exports\CustomersExport;
-use App\Imports\CustomersImport;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Bus;
-use Maatwebsite\Excel\Facades\Excel;
-use App\Jobs\ProcessCustomerExcelJob;
-use App\Models\CustomerGroupMember;
 use Illuminate\Support\Facades\Validator;
 
 class CustomerController extends Controller
 {
 
-    public function index() {
+    public function index()
+    {
         return view('index');
+    }
+
+    public function detail($id)
+    {
+        $salesOrder = SalesOrder::with('customerGroup', 'warehouse', 'orderedProducts.product', 'orderedProducts.tempOrder')->findOrFail($id);
+        return view('customer.detail', compact('salesOrder'));
     }
 
     public function toggleStatus(Request $request)
@@ -34,27 +33,15 @@ class CustomerController extends Controller
 
         return response()->json(['success' => true]);
     }
-    
+
     public function deleteSelected(Request $request)
     {
         $ids = is_array($request->ids) ? $request->ids : explode(',', $request->ids);
         CustomerGroup::destroy($ids);
         return redirect()->back()->with('success', 'Selected customers deleted successfully.');
     }
-    //
-    public function groupsList()
-    {
-        $customers = CustomerGroup::get();
-        return view('customer.customers', compact('customers'));
-    }
 
-    public function customersList($id)
-    {
-        $group = CustomerGroupMember::where('group_id', $id)->with('customer')->get();
-        $groupInfo = CustomerGroup::find($id);
-        $customers = Customer::where('group_id', $id)->get();
-        return view('customer.customers-list', compact('customers', 'group', 'groupInfo'));
-    }
+
 
     public function Customercount()
     {
@@ -63,12 +50,12 @@ class CustomerController extends Controller
     }
 
 
-    public function addCustomer(Request $request)
+    public function create($g_id)
     {
         $countries = Country::get();
         $states = State::get();
         $cities = City::get();
-        return view('customer.add-customer', ['countries' => $countries, 'states' => $states, 'cities' => $cities]);
+        return view('customer.create', ['group_id' => $g_id, 'countries' => $countries, 'states' => $states, 'cities' => $cities]);
     }
 
 
@@ -162,19 +149,11 @@ class CustomerController extends Controller
         return view('customer.customer-detail', compact('customer'));
     }
 
-    public function deleteCustomer($id)
+    public function delete($id)
     {
         $customer = Customer::findOrFail($id);
         $customer->delete();
 
-        return redirect()->route('customers')->with('success', 'Customer deleted successfully.');
-    }
-
-    public function deleteCustomerGroup($id)
-    {
-        $customer = CustomerGroup::findOrFail($id);
-        $customer->delete();
-
-        return redirect()->route('groups')->with('success', 'Customer deleted successfully.');
+        return redirect()->back()->with('success', 'Customer deleted successfully.');
     }
 }
