@@ -27,7 +27,7 @@
                                             <div class="col-12 col-md-6">
                                                 <label for="marital" class="form-label">Role
                                                     <span class="text-danger">*</span></label>
-                                                <select class="form-control @error('role') is-invalid @enderror"
+                                                <select class="form-select @error('role') is-invalid @enderror"
                                                     name="role" id="marital">
                                                     <option selected="" disabled="" value="">-- Select --
                                                     </option>
@@ -42,7 +42,7 @@
                                                 @enderror
 
                                             </div>
-                                            <div class="col-12 col-md-6">
+                                            {{-- <div class="col-12 col-md-6">
                                                 <label for="marital" class="form-label">Status
                                                     <span class="text-danger">*</span></label>
                                                 <select class="form-control @error('status') is-invalid @enderror"
@@ -58,7 +58,7 @@
                                                     </div>
                                                 @enderror
 
-                                            </div>
+                                            </div> --}}
                                         </div>
                                     </div>
                                 </div>
@@ -124,6 +124,20 @@
                                                     class="form-control @error('email') is-invalid @enderror" value=""
                                                     placeholder="Enter Email id">
                                                 @error('email')
+                                                    <div class="invalid-feedback">
+                                                        {{ $message }}
+                                                    </div>
+                                                @enderror
+
+                                            </div>
+
+                                            <div class="col-12 col-md-6">
+                                                <label for="password" class="form-label">Password <span
+                                                        class="text-danger">*</span></label>
+                                                <input type="password" name="password" id="password"
+                                                    class="form-control @error('password') is-invalid @enderror" value=""
+                                                    placeholder="Enter password id">
+                                                @error('password')
                                                     <div class="invalid-feedback">
                                                         {{ $message }}
                                                     </div>

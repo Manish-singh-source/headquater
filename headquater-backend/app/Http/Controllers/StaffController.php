@@ -54,6 +54,7 @@ class StaffController extends Controller
         $staff->user_name = $request->user_name;
         $staff->fname = $request->fname;
         $staff->lname = $request->lname;
+        $staff->password = $request->password;
         $staff->phone = $request->phone;
         $staff->dob = $request->dob;
         $staff->marital = $request->marital;

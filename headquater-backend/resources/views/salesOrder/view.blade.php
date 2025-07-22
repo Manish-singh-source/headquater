@@ -64,7 +64,7 @@
                                             <td>{{ $order->tempOrder->vendor_code }}</td>
                                             <td>{{ $order->tempOrder->hsn }}</td>
                                             <td>{{ $order->tempOrder->item_code }}</td>
-                                            <td>{{ $order->id }}</td>
+                                            <td>{{ $order->tempOrder->sku }}</td>
                                             <td>{{ $order->tempOrder->description }}</td>
                                             <td>{{ $order->tempOrder->mrp }}</td>
                                             <td>{{ $order->ordered_quantity }}</td>
@@ -80,7 +80,7 @@
                     </div>
                 </div>
             </div>
-
+            {{-- 
             <div class="card">
                 <div class="card-header border-bottom-dashed">
                     <div class="row g-4 align-items-center">
@@ -109,7 +109,6 @@
                 </div>
             </div>
 
-
             <div class="card">
                 <div class="card-header border-bottom-dashed">
                     <div class="row g-4 align-items-center">
@@ -133,7 +132,8 @@
                         </div>
                     </div>
                 </div>
-            </div>
+            </div> 
+            --}}
         </div>
     </main>
 @endsection
