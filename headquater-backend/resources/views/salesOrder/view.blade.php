@@ -1,5 +1,15 @@
 @extends('layouts.master')
 @section('main-content')
+    @php
+        $statuses = [
+            'pending' => 'Pending',
+            'blocked' => 'Blocked',
+            'completed' => 'Completed',
+            'ready_to_ship' => 'Ready To Ship',
+            'ready_to_package' => 'Ready To Package',
+        ];
+    @endphp
+
     <!--start main wrapper-->
     <main class="main-wrapper">
         <div class="main-content">
@@ -20,7 +30,7 @@
                                 </li>
                                 <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                                     <span><b>Status</b></span>
-                                    <span> <b>{{ $salesOrder->status }}</b></span>
+                                    <span> <b>{{ $statuses[$salesOrder->status] ?? 'On Hold' }}</b></span>
                                 </li>
                             </ul>
                         </div>
@@ -32,7 +42,7 @@
                 <div class="card-body">
                     <div class="div d-flex my-2">
                         <div class="col">
-                            <h6 class="mb-3">PO Table</h6>
+                            <h6 class="mb-3">Customer PO Table</h6>
                         </div>
 
                         <!-- Tabs Navigation -->
@@ -101,60 +111,6 @@
                     </div>
                 </div>
             </div>
-            {{-- 
-            <div class="card">
-                <div class="card-header border-bottom-dashed">
-                    <div class="row g-4 align-items-center">
-                        <div class="col-sm">
-                            <h5 class="card-title mb-0">
-                                Appointments Date
-                            </h5>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-12 col-md-3">
-                            <label for="dn amount" class="form-label">Appointments Date<span
-                                    class="text-danger">*</span></label>
-                            <input type="date" name="dn amount" id="dn amount" class="form-control" value=""
-                                required="" placeholder="Enter DN Amount">
-                        </div>
-                        <div class="col-12 col-md-4 text-start">
-                            <button type="" class="btn btn-success w-sm waves ripple-light text-end mt-4">
-                                Save
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card">
-                <div class="card-header border-bottom-dashed">
-                    <div class="row g-4 align-items-center">
-                        <div class="col-sm">
-                            <h5 class="card-title mb-0">
-                                Delivery Note
-                            </h5>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-12 col-md-2">
-                            <label for="dn amount" class="form-label">DN Amount<span class="text-danger">*</span></label>
-                            <p>10,000 Rupess</p>
-                        </div>
-                        <div class="col-12 col-md-6">
-                            <label for="dn reason" class="form-label">DN Reason<span class="text-danger">*</span></label>
-                            <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. mollitia possimus.</p>
-                        </div>
-                    </div>
-                </div>
-            </div> 
-            --}}
         </div>
     </main>
 @endsection

@@ -13,20 +13,23 @@ return new class extends Migration
     {
         Schema::create('vendors', function (Blueprint $table) {
             $table->id();
-            $table->string('first_name')->nullable();
-            $table->string('last_name')->nullable();
+            $table->string('client_name')->nullable();
+            $table->string('contact_name')->nullable();
             $table->string('phone_number')->nullable();
             $table->string('email')->nullable();
             $table->string('gst_number')->nullable();
+            $table->string('gst_treatment')->nullable();
             $table->string('pan_number')->nullable();
-            $table->string('address')->nullable();
-            $table->string('country')->nullable();
-            $table->string('state')->nullable();
-            $table->string('city')->nullable();
-            $table->string('pin_code')->nullable();
-            $table->string('bank_account_number')->nullable();
-            $table->string('ifsc_number')->nullable();
-            $table->string('bank_number')->nullable();
+            $table->string('billing_address')->nullable();
+            $table->string('billing_country')->nullable();
+            $table->string('billing_state')->nullable();
+            $table->string('billing_city')->nullable();
+            $table->string('billing_zip')->nullable();
+            $table->string('shipping_address')->nullable();
+            $table->string('shipping_country')->nullable();
+            $table->string('shipping_state')->nullable();
+            $table->string('shipping_city')->nullable();
+            $table->string('shipping_zip')->nullable();
             $table->string('status')->nullable();
             $table->string('vendor_code')->nullable();
             $table->timestamps();
