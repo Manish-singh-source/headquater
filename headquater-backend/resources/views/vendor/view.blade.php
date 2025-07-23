@@ -21,12 +21,12 @@
                     <div class="card w-100 d-flex  flex-sm-row flex-col">
                         <ul class="col-12 list-group list-group-flush">
                             <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
-                                <span><b>Name</b></span>
-                                <span>{{ $vendor->first_name ?? 'NA' }}</span>
+                                <span><b>Client Name</b></span>
+                                <span>{{ $vendor->client_name ?? 'NA' }}</span>
                             </li>
                             <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
-                                <span><b>Last Name</b></span>
-                                <span> {{ $vendor->last_name ?? 'NA' }}</span>
+                                <span><b>Contact Name</b></span>
+                                <span>{{ $vendor->contact_name ?? 'NA' }}</span>
                             </li>
                             <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                                 <span><b>Phone No</b></span>
@@ -45,20 +45,24 @@
                                 <span>{{ $vendor->pan_number ?? 'NA' }}</span>
                             </li>
                             <li class="list-group-item d-flex justify-content-between align-items-center  mb-2 pe-3">
-                                <span><b>Address</b></span>
-                                <span>{{ $vendor->address ?? 'NA' }}</span>
+                                <span><b>Shipping Address</b></span>
+                                <span>{{ $vendor->shipping_address ?? 'NA' }}</span>
                             </li>
                             <li class="list-group-item d-flex justify-content-between align-items-center  mb-2 pe-3">
-                                <span><b>Bank Name</b></span>
-                                <span>{{ $vendor->bank_number ?? 'NA' }}</span>
+                                <span><b>Shipping Country</b></span>
+                                <span>{{ $vendor->country->name ?? 'NA' }}</span>
                             </li>
-                            <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
-                                <span><b>Account No</b></span>
-                                <span>{{ $vendor->bank_account_number ?? 'NA' }}</span>
+                            <li class="list-group-item d-flex justify-content-between align-items-center  mb-2 pe-3">
+                                <span><b>Shipping State</b></span>
+                                <span>{{ $vendor->state->name ?? 'NA' }}</span>
                             </li>
-                            <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
-                                <span><b>IFSC Code</b></span>
-                                <span>{{ $vendor->ifsc_number ?? 'NA' }}</span>
+                            <li class="list-group-item d-flex justify-content-between align-items-center  mb-2 pe-3">
+                                <span><b>Shipping City</b></span>
+                                <span>{{ $vendor->city->name ?? 'NA' }}</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center  mb-2 pe-3">
+                                <span><b>Shipping Zip</b></span>
+                                <span>{{ $vendor->shipping_zip ?? 'NA' }}</span>
                             </li>
                         </ul>
                     </div>
@@ -93,13 +97,13 @@
                                         @endphp
                                         @forelse($orders as $order)
                                             <tr>
-                                                <td>{{ $order->id }}</td>
+                                                <td>{{ $order->purchaseOrder->id }}</td>
                                                 <td><span
                                                         class="lable-table bg-success-subtle text-success rounded border border-success-subtle font-text2 fw-bold">Paid<i
                                                             class="bi bi-check2 ms-2"></i></span></td>
                                                 <td><span
                                                         class="lable-table bg-success-subtle text-success rounded border border-success-subtle font-text2 fw-bold">
-                                                        {{ $statuses[$order->status] ?? 'On Hold' }}<i
+                                                        {{ $statuses[$order->purchaseOrder->status] ?? 'On Hold' }}<i
                                                             class="bi bi-check2 ms-2"></i></span></td>
                                                 <td>Cash on delivery</td>
                                                 <td>Jun 12, 12:56 PM</td>

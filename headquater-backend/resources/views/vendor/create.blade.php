@@ -26,22 +26,33 @@
                                 @csrf
                                 @method('POST')
                                 <div class="col-md-6">
-                                    <label for="input1" class="form-label">First Name</label>
-                                    <input type="text" class="form-control @error('first_name') is-invalid @enderror"
-                                        value="{{ old('first_name') }}" id="input1" placeholder="First Name"
-                                        name="first_name">
-                                    @error('first_name')
+                                    <label for="input1" class="form-label">Vendor Code</label>
+                                    <input type="text" class="form-control @error('vendor_code') is-invalid @enderror"
+                                        value="{{ old('vendor_code') }}" id="input1" placeholder="Vendor Code"
+                                        name="vendor_code">
+                                    @error('vendor_code')
                                         <div class="invalid-feedback">
                                             {{ $message }}
                                         </div>
                                     @enderror
                                 </div>
                                 <div class="col-md-6">
-                                    <label for="input2" class="form-label">Last Name</label>
-                                    <input type="text" class="form-control @error('last_name') is-invalid @enderror"
-                                        value="{{ old('last_name') }}" id="input2" placeholder="Last Name"
-                                        name="last_name">
-                                    @error('last_name')
+                                    <label for="input1" class="form-label">Client Name</label>
+                                    <input type="text" class="form-control @error('client_name') is-invalid @enderror"
+                                        value="{{ old('client_name') }}" id="input1" placeholder="Client Name"
+                                        name="client_name">
+                                    @error('client_name')
+                                        <div class="invalid-feedback">
+                                            {{ $message }}
+                                        </div>
+                                    @enderror
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="input2" class="form-label">Contact Name</label>
+                                    <input type="text" class="form-control @error('contact_name') is-invalid @enderror"
+                                        value="{{ old('contact_name') }}" id="input2" placeholder="Contact Name"
+                                        name="contact_name">
+                                    @error('contact_name')
                                         <div class="invalid-feedback">
                                             {{ $message }}
                                         </div>
@@ -50,7 +61,8 @@
                                 <div class="col-md-6">
                                     <label for="input3" class="form-label">Phone</label>
                                     <input type="text" class="form-control @error('phone_number') is-invalid @enderror"
-                                        value="{{ old('phone_number') }}" id="input3" placeholder="Phone Number" name="phone_number">
+                                        value="{{ old('phone_number') }}" id="input3" placeholder="Phone Number"
+                                        name="phone_number">
                                     @error('phone_number')
                                         <div class="invalid-feedback">
                                             {{ $message }}
@@ -70,7 +82,8 @@
                                 <div class="col-md-6">
                                     <label for="input5" class="form-label">GST NO</label>
                                     <input type="text" class="form-control @error('gst_number') is-invalid @enderror"
-                                        value="{{ old('gst_number') }}" id="input5" placeholder="GST NO" name="gst_number">
+                                        value="{{ old('gst_number') }}" id="input5" placeholder="GST NO"
+                                        name="gst_number">
                                     @error('gst_number')
                                         <div class="invalid-feedback">
                                             {{ $message }}
@@ -80,7 +93,8 @@
                                 <div class="col-md-6">
                                     <label for="input6" class="form-label">PAN NO</label>
                                     <input type="text" class="form-control @error('pan_number') is-invalid @enderror"
-                                        value="{{ old('pan_number') }}" id="input6" placeholder="PAN NO" name="pan_number">
+                                        value="{{ old('pan_number') }}" id="input6" placeholder="PAN NO"
+                                        name="pan_number">
                                     @error('pan_number')
                                         <div class="invalid-feedback">
                                             {{ $message }}
@@ -88,72 +102,89 @@
                                     @enderror
                                 </div>
                                 <div class="col-md-12">
-                                    <label for="input11" class="form-label">Address</label>
-                                    <textarea class="form-control @error('address') is-invalid @enderror" value="{{ old('address') }}" id="input11"
-                                        placeholder="Address ..." rows="3" name="address"></textarea>
-                                    @error('address')
+                                    <label for="shipping_address" class="form-label">Shipping Address</label>
+                                    <textarea class="form-control  @error('shipping_address') is-invalid @enderror" value="" id="shipping_address"
+                                        placeholder="Enter Full Address" rows="3" name="shipping_address">{{ old('shipping_address') }}</textarea>
+                                    @error('shipping_address')
                                         <div class="invalid-feedback">
                                             {{ $message }}
                                         </div>
                                     @enderror
                                 </div>
-                                <div class="col-md-4">
-                                    <label for="shippingCountry" class="form-label">Country</label>
-                                    <select id="shippingCountry" class="form-select" name="country">
+
+                                <div class="col-md-3">
+                                    <label for="shipping_country" class="form-label">Country</label>
+                                    <select id="shipping_country" class="form-select" name="shipping_country">
                                         <option value="">Select Country</option>
                                     </select>
                                 </div>
-                                <div class="col-md-4">
-                                    <label for="shippingState" class="form-label">State</label>
-                                    <select id="shippingState" class="form-select" name="state">
+
+                                <div class="col-md-3">
+                                    <label for="shipping_state" class="form-label">State</label>
+                                    <select id="shipping_state" class="form-select" name="shipping_state">
                                         <option value="">Select State</option>
                                     </select>
                                 </div>
-                                <div class="col-md-4">
-                                    <label for="shippingCity" class="form-label">City</label>
-                                    <select id="shippingCity" class="form-select" name="city">
+
+                                <div class="col-md-3">
+                                    <label for="shipping_city" class="form-label">City</label>
+                                    <select id="shipping_city" class="form-select" name="shipping_city">
                                         <option value="">Select City</option>
                                     </select>
                                 </div>
-                                <div class="col-md-4">
-                                    <label for="input8" class="form-label">Pin Code</label>
-                                    <input type="text" class="form-control @error('pin_code') is-invalid @enderror"
-                                        value="{{ old('pin_code') }}" id="input8" placeholder="Pin Code"
-                                        name="pin_code">
-                                    @error('pin_code')
+
+                                <div class="col-md-3">
+                                    <label for="shipping_zip" class="form-label">Pin Code</label>
+                                    <input type="text"
+                                        class="form-control  @error('shipping_zip') is-invalid @enderror"
+                                        value="{{ old('shipping_zip') }}" id="shipping_zip"
+                                        placeholder="Enter Pin Code" name="shipping_zip">
+                                    @error('shipping_zip')
                                         <div class="invalid-feedback">
                                             {{ $message }}
                                         </div>
                                     @enderror
                                 </div>
-                                <div class="col-md-4">
-                                    <label for="input10" class="form-label">Account No</label>
-                                    <input type="text" class="form-control @error('bank_account_number') is-invalid @enderror"
-                                        value="{{ old('bank_account_number') }}" id="input10" placeholder="Account No"
-                                        name="bank_account_number">
-                                    @error('bank_account_number')
+
+                                <div class="col-md-12">
+                                    <label for="billing_address" class="form-label">Billing Address</label>
+                                    <textarea class="form-control  @error('billing_address') is-invalid @enderror" value="" id="billing_address"
+                                        placeholder="Enter Full Address" rows="3" name="billing_address">{{ old('billing_address') }}</textarea>
+                                    @error('billing_address')
                                         <div class="invalid-feedback">
                                             {{ $message }}
                                         </div>
                                     @enderror
                                 </div>
-                                <div class="col-md-4">
-                                    <label for="input8" class="form-label">IFSC Code</label>
-                                    <input type="text" class="form-control @error('ifsc_number') is-invalid @enderror"
-                                        value="{{ old('ifsc_number') }}" id="input8" placeholder="IFSC Code"
-                                        name="ifsc_number">
-                                    @error('ifsc_number')
-                                        <div class="invalid-feedback">
-                                            {{ $message }}
-                                        </div>
-                                    @enderror
+
+                                <div class="col-md-3">
+                                    <label for="billing_country" class="form-label">Country</label>
+                                    <select id="billing_country" class="form-select" name="billing_country">
+                                        <option value="">Select Country</option>
+                                    </select>
                                 </div>
-                                <div class="col-md-4">
-                                    <label for="input8" class="form-label">Bank Name</label>
-                                    <input type="text" class="form-control @error('bank_number') is-invalid @enderror"
-                                        value="{{ old('bank_number') }}" id="input8" placeholder="Bank Name"
-                                        name="bank_number">
-                                    @error('bank_number')
+
+                                <div class="col-md-3">
+                                    <label for="billing_state" class="form-label">State</label>
+                                    <select id="billing_state" class="form-select" name="billing_state">
+                                        <option value="">Select State</option>
+                                    </select>
+                                </div>
+
+                                <div class="col-md-3">
+                                    <label for="billing_city" class="form-label">City</label>
+                                    <select id="billing_city" class="form-select" name="billing_city">
+                                        <option value="">Select City</option>
+                                    </select>
+                                </div>
+
+                                <div class="col-md-3">
+                                    <label for="billing_zip" class="form-label">Pin Code</label>
+                                    <input type="text"
+                                        class="form-control  @error('billing_zip') is-invalid @enderror"
+                                        value="{{ old('billing_zip') }}" id="billing_zip"
+                                        placeholder="Enter Pin Code" name="billing_zip">
+                                    @error('billing_zip')
                                         <div class="invalid-feedback">
                                             {{ $message }}
                                         </div>
@@ -182,7 +213,6 @@
 
         </div>
     </main>
-    
 @endsection
 
 
@@ -216,38 +246,38 @@
                 });
             }
 
-            getLocationData("/countries", '#shippingCountry', "Country");
+            getLocationData("/countries", '#shipping_country', "Country");
 
-            $("#shippingCountry").on("change", function() {
+            $("#shipping_country").on("change", function() {
                 let countryId = $(this).val();
                 console.log(countryId);
-                getLocationData("/states", "#shippingState", "State", {
+                getLocationData("/states", "#shipping_state", "State", {
                     countryId: countryId
                 });
             });
 
-            $("#shippingState").on("change", function() {
+            $("#shipping_state").on("change", function() {
                 let stateId = $(this).val();
                 console.log(stateId);
-                getLocationData("/cities", "#shippingCity", "City", {
+                getLocationData("/cities", "#shipping_city", "City", {
                     stateId: stateId
                 });
             });
 
-            getLocationData("/countries", '#billingCountry', "Country");
+            getLocationData("/countries", '#billing_country', "Country");
 
-            $("#billingCountry").on("change", function() {
+            $("#billing_country").on("change", function() {
                 let countryId = $(this).val();
                 console.log(countryId);
-                getLocationData("/states", "#billingState", "State", {
+                getLocationData("/states", "#billing_state", "State", {
                     countryId: countryId
                 });
             });
 
-            $("#billingState").on("change", function() {
+            $("#billing_state").on("change", function() {
                 let stateId = $(this).val();
                 console.log(stateId);
-                getLocationData("/cities", "#billingCity", "City", {
+                getLocationData("/cities", "#billing_city", "City", {
                     stateId: stateId
                 });
             });

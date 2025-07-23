@@ -73,7 +73,7 @@
                                             <td>
                                                 <a class="d-flex align-items-center gap-3"
                                                     href="{{ route('vendor.view', $vendor->id) }}">
-                                                    <p class="mb-0 customer-name fw-bold">{{ $vendor->first_name }}</p>
+                                                    <p class="mb-0 customer-name fw-bold">{{ $vendor->contact_name }}</p>
                                                 </a>
                                             </td>
                                             <td>

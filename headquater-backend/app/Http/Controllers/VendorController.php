@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Vendor;
 use App\Models\TempOrder;
 use App\Models\ManageOrder;
+use App\Models\PurchaseOrderProduct;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -26,32 +27,37 @@ class VendorController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'first_name' => 'required|min:3',
-            'last_name' => 'required|min:3',
+            'vendor_code' => 'required|min:3',
+            'client_name' => 'required|min:3',
+            'contact_name' => 'required|min:3',
             'phone_number' => 'required|min:10',
             'email' => 'required|email|unique:vendors,email',
-            'address' => 'required',
         ]);
 
         if ($validator->fails()) {
             return back()->withErrors($validator)->withInput();
         }
 
+        
         $vendor = new Vendor();
-        $vendor->first_name = $request->first_name;
-        $vendor->last_name = $request->last_name;
+        $vendor->client_name = $request->client_name;
+        $vendor->contact_name = $request->contact_name;
         $vendor->phone_number = $request->phone_number;
         $vendor->email = $request->email;
         $vendor->gst_number = $request->gst_number;
+        $vendor->gst_treatment = $request->gst_treatment;
         $vendor->pan_number = $request->pan_number;
-        $vendor->address = $request->address;
-        $vendor->state = $request->state;
-        $vendor->city = $request->city;
-        $vendor->country = $request->country;
-        $vendor->pin_code = $request->pin_code;
-        $vendor->bank_account_number = $request->bank_account_number;
-        $vendor->ifsc_number = $request->ifsc_number;
-        $vendor->bank_number = $request->bank_number;
+        $vendor->shipping_address = $request->shipping_address;
+        $vendor->shipping_country = $request->shipping_country;
+        $vendor->shipping_state = $request->shipping_state;
+        $vendor->shipping_city = $request->shipping_city;
+        $vendor->shipping_zip = $request->shipping_zip;
+        $vendor->billing_address = $request->billing_address;
+        $vendor->billing_country = $request->billing_country;
+        $vendor->billing_state = $request->billing_state;
+        $vendor->billing_city = $request->billing_city;
+        $vendor->billing_zip = $request->billing_zip;
+        $vendor->vendor_code = $request->vendor_code;
         $vendor->status = $request->status;
         $vendor->save();
 
@@ -68,8 +74,10 @@ class VendorController extends Controller
     public function update(Request $request, $id)
     {
         $validator = Validator::make($request->all(), [
-            'firstName' => 'required|min:3',
-            'lastName' => 'required|min:3',
+            'vendor_code' => 'required|min:3',
+            'client_name' => 'required|min:3',
+            'contact_name' => 'required|min:3',
+            'phone_number' => 'required|min:10',
             'email' => 'required|email|unique:vendors,email,' . $id,
         ]);
 
@@ -78,20 +86,24 @@ class VendorController extends Controller
         }
 
         $vendor = Vendor::findOrFail($id);
-        $vendor->first_name = $request->firstName;
-        $vendor->last_name = $request->lastName;
-        $vendor->phone_number = $request->phone;
+        $vendor->client_name = $request->client_name;
+        $vendor->contact_name = $request->contact_name;
+        $vendor->phone_number = $request->phone_number;
         $vendor->email = $request->email;
-        $vendor->gst_number = $request->gstNo;
-        $vendor->pan_number = $request->panNo;
-        $vendor->address = $request->address;
-        $vendor->state = $request->state;
-        $vendor->city = $request->city;
-        $vendor->country = $request->country;
-        $vendor->pin_code = $request->pinCode;
-        $vendor->bank_account_number = $request->accountNo;
-        $vendor->ifsc_number = $request->ifscCode;
-        $vendor->bank_number = $request->bankName;
+        $vendor->gst_number = $request->gst_number;
+        $vendor->gst_treatment = $request->gst_treatment;
+        $vendor->pan_number = $request->pan_number;
+        $vendor->shipping_address = $request->shipping_address;
+        $vendor->shipping_country = $request->shipping_country;
+        $vendor->shipping_state = $request->shipping_state;
+        $vendor->shipping_city = $request->shipping_city;
+        $vendor->shipping_zip = $request->shipping_zip;
+        $vendor->billing_address = $request->billing_address;
+        $vendor->billing_country = $request->billing_country;
+        $vendor->billing_state = $request->billing_state;
+        $vendor->billing_city = $request->billing_city;
+        $vendor->billing_zip = $request->billing_zip;
+        $vendor->vendor_code = $request->vendor_code;
         $vendor->status = $request->status;
         $vendor->save();
 
@@ -101,7 +113,9 @@ class VendorController extends Controller
     public function view($id)
     {
         $vendor = Vendor::findOrFail($id);
-        return view('vendor.view', compact('vendor'));
+        $orders = PurchaseOrderProduct::with('purchaseOrder')->where('vendor_code', $vendor->vendor_code)->get();
+        // dd($orders);
+        return view('vendor.view', compact('vendor', 'orders'));
     }
 
     public function destroy($id)

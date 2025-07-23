@@ -56,6 +56,8 @@ class OrderController extends Controller
             $file_extension = $request->file('csv_file')->getClientOriginalExtension();
 
             $reader = SimpleExcelReader::create($file, $file_extension);
+            $productStockCache = []; // Cache stock by SKU
+            $insertedRows = [];
             $insertCount = 0;
 
             $saveOrder = new SalesOrder();
@@ -68,6 +70,57 @@ class OrderController extends Controller
             $purchaseOrder->save();
 
             foreach ($reader->getRows() as $record) {
+                $sku = trim($record['SKU']);
+                $poQty = (int)$record['PO Quantity'];
+                $warehouseId = $request->warehouse_id;
+
+                $availableQty = 0;
+                $unavailableStatus = 0;
+
+                // Fetch stock if not already cached
+                if (!isset($productStockCache[$sku])) {
+                    $stockEntry = WarehouseStock::with('product')
+                        ->where('sku', $sku)
+                        ->where('warehouse_id', $warehouseId)
+                        ->first();
+
+                    if (isset($stockEntry->block_quantity) && $stockEntry->block_quantity >= $stockEntry->quantity) {
+                        $productStockCache[$sku] = [
+                            'remaining' => 0,
+                            'ordered' => 0,
+                        ];
+                    } else {
+                        if ($stockEntry) {
+                            $productStockCache[$sku] = [
+                                'remaining' => $stockEntry->quantity,
+                                'ordered' => $stockEntry->product->units_ordered ?? 0,
+                            ];
+                        } else {
+                            $productStockCache[$sku] = [
+                                'remaining' => 0,
+                                'ordered' => 0,
+                            ];
+                        }
+                    }
+                }
+
+                // Use cached values
+                $remaining = $productStockCache[$sku]['remaining'];
+                $availableQty = $productStockCache[$sku]['ordered'];
+
+                // Stock check
+                if ($remaining >= $poQty) {
+                    // Sufficient stock
+                    $unavailableStatus = 0;
+                    $productStockCache[$sku]['remaining'] -= $poQty;
+                } else {
+                    // Insufficient stock
+                    $shortage = $poQty - $remaining;
+                    $unavailableStatus = $shortage;
+                    $productStockCache[$sku]['remaining'] = 0;
+                }
+
+
                 $tempOrder = TempOrder::create([
                     'customer_name' => $record['Customer Name'],
                     'po_number' => $record['PO Number'],
@@ -84,8 +137,8 @@ class OrderController extends Controller
                     'net_landing_rate' => $record['Net Landing Rate'],
                     'mrp' => $record['MRP'],
                     'po_qty' => $record['PO Quantity'],
-                    'available_quantity' => $record['Available Quantity'],
-                    'unavailable_quantity' => $record['Unavailable Quantity'],
+                    'available_quantity' => $remaining,
+                    'unavailable_quantity' => $unavailableStatus,
                     'block' => $record['Block'],
                     'rate_confirmation' => $record['Rate Confirmation'],
                     'case_pack_quantity' => $record['Case Pack Quantity'],
@@ -102,10 +155,20 @@ class OrderController extends Controller
 
                 $purchaseOrderProduct = new PurchaseOrderProduct();
                 $purchaseOrderProduct->purchase_order_id = $purchaseOrder->id;
-                $purchaseOrderProduct->ordered_quantity = $record['Unavailable Quantity'];
+                $purchaseOrderProduct->ordered_quantity = $unavailableStatus;
                 $purchaseOrderProduct->sku = $record['SKU'];
                 $purchaseOrderProduct->vendor_code = $record['Vendor Code'];
                 $purchaseOrderProduct->save();
+
+                $blockQuantity = WarehouseStock::where('sku', $sku)->first();
+                if (isset($blockQuantity)) {
+                    if ($stockEntry->quantity >= $unavailableStatus) {
+                        $blockQuantity->block_quantity = $unavailableStatus;
+                    } else {
+                        $blockQuantity->block_quantity = $stockEntry->quantity;
+                    }
+                    $blockQuantity->save();
+                }
 
                 $insertCount++;
             }
@@ -141,12 +204,13 @@ class OrderController extends Controller
         return view('salesOrder.view', compact('salesOrder'));
     }
 
-    public function  changeStatus(Request $request) {
+    public function  changeStatus(Request $request)
+    {
         $salesOrder = SalesOrder::findOrFail($request->order_id);
         $salesOrder->status = $request->status;
         $salesOrder->save();
 
-        if(!$salesOrder) {
+        if (!$salesOrder) {
             return redirect()->back('error', 'Status Not Changed. Please Try Again.');
         }
 
@@ -165,28 +229,69 @@ class OrderController extends Controller
         $file_extension = $request->file('csv_file')->getClientOriginalExtension();
 
         $reader = SimpleExcelReader::create($file, $file_extension);
+
+        $productStockCache = []; // Cache stock by SKU
         $insertedRows = [];
 
         foreach ($reader->getRows() as $record) {
-            $productStock = WarehouseStock::with('product')->where('sku', $record['SKU'])->where('warehouse_id', $request->warehouse_id)->first();
+            $sku = trim($record['SKU']);
+            $poQty = (int)$record['PO Quantity'];
+            $warehouseId = $request->warehouse_id;
 
-            if (!$productStock) {
-                $unAvail = "Product Not Available";
-                $availableQty = 0;
-            } else {
-                if ($productStock->product->units_ordered >= $record['PO Quantity']) {
-                    $unAvail = 'Available';
+            // Default fallback
+            $availableQty = 0;
+            $unavailableStatus = "Product Not Available";
+
+            // Fetch stock if not already cached
+            if (!isset($productStockCache[$sku])) {
+                $stockEntry = WarehouseStock::with('product')
+                    ->where('sku', $sku)
+                    ->where('warehouse_id', $warehouseId)
+                    ->first();
+
+                if (isset($stockEntry->block_quantity) && $stockEntry->block_quantity >= $stockEntry->quantity) {
+                    $productStockCache[$sku] = [
+                        'remaining' => 0,
+                        'ordered' => 0,
+                    ];
                 } else {
-                    $unavailableQuantity = $record['PO Quantity'] - $productStock->product->units_ordered;
-                    $unAvail = $unavailableQuantity . " Quantity Not Available";
+                    if (isset($stockEntry->block_quantity)) {
+                        $stockEntry->quantity -= $stockEntry->block_quantity;
+                    }
+                    if ($stockEntry) {
+                        $productStockCache[$sku] = [
+                            'remaining' => $stockEntry->quantity,
+                            'ordered' => $stockEntry->product->units_ordered ?? 0,
+                        ];
+                    } else {
+                        $productStockCache[$sku] = [
+                            'remaining' => 0,
+                            'ordered' => 0,
+                        ];
+                    }
                 }
-                $availableQty = $productStock->product->units_ordered;
+            }
+
+            // Use cached values
+            $remaining = $productStockCache[$sku]['remaining'];
+            $availableQty = $productStockCache[$sku]['ordered'];
+
+            // Stock check
+            if ($remaining >= $poQty) {
+                // Sufficient stock
+                $unavailableStatus = "Available";
+                $productStockCache[$sku]['remaining'] -= $poQty;
+            } else {
+                // Insufficient stock
+                $shortage = $poQty - $remaining;
+                $unavailableStatus = "{$shortage} Quantity Not Available";
+                $productStockCache[$sku]['remaining'] = 0;
             }
 
             $insertedRows[] = [
                 'customer_name' => $record['Customer Name'],
                 'po_number' => $record['PO Number'],
-                'sku' => $record['SKU'],
+                'sku' => $sku,
                 'facility_name' => $record['Facility Name'],
                 'facility_location' => $record['Facility Location'],
                 'po_date' => $record['PO Date']->format('d-m-Y'),
@@ -198,11 +303,12 @@ class OrderController extends Controller
                 'gst' => $record['GST'],
                 'net_landing_rate' => $record['Net Landing Rate'],
                 'mrp' => $record['MRP'],
-                'po_qty' => $record['PO Quantity'],
-                'available_quantity' => $availableQty,
-                'unavailable_quantity' => $unAvail,
+                'po_qty' => $poQty,
+                'available_quantity' => $remaining,
+                'unavailable_quantity' => $unavailableStatus,
             ];
         }
+
 
         if (empty($insertedRows)) {
             return redirect()->back()->withErrors(['csv_file' => 'No valid data found in the CSV file.']);
