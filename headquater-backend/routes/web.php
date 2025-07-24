@@ -113,6 +113,8 @@ Route::controller(RoleController::class)->group(function () {
     Route::put('/update-role/{id}', 'update')->name('role.update');
     Route::delete('/delete-role/{id}', 'destroy')->name('role.destroy');
     Route::get('/view-staff/{id}', 'view')->name('role.view');
+    Route::delete('/role/delete-selected', 'deleteSelected')->name('delete.selected.role');
+    Route::post('/role/toggle-status', 'toggleStatus')->name('role.toggleStatus');
 });
 
 Route::controller(StaffController::class)->group(function () {
@@ -124,6 +126,8 @@ Route::controller(StaffController::class)->group(function () {
     Route::put('/update-staff/{id}', 'update')->name('staff.update');
     Route::delete('/delete-staff/{id}', 'destroy')->name('staff.destroy');
     Route::get('/view-staff/{id}', 'view')->name('staff.view');
+     Route::delete('/staff/delete-selected', 'deleteSelected')->name('delete.selected.staff');
+    Route::post('/staff/toggle-status', 'toggleStatus')->name('staff.toggleStatus');
 });
 
 

@@ -17,45 +17,23 @@
             </div>
             <!--end breadcrumb-->
 
-            <div class="row g-3">
-                <div class="col-12 col-md-2">
-                    <div class="position-relative">
-                        <input class="form-control px-5" type="search" placeholder="Search Role">
-                        <span
-                            class="material-icons-outlined position-absolute ms-3 translate-middle-y start-0 top-50 fs-5">search</span>
-                    </div>
-                </div>
-                <div class="col-12 col-md-2 flex-grow-1 overflow-auto">
-                    <div class="btn-group position-static">
-                        <div class="btn-group position-static">
-                            <button type="button" class="btn btn-filter dropdown-toggle px-4" data-bs-toggle="dropdown"
-                                aria-expanded="false">
-                                Sort
-                            </button>
-                            <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="javascript:;">Sort By Name</a></li>
-                                <li><a class="dropdown-item" href="javascript:;">Sort By Email</a></li>
-                                <li><a class="dropdown-item" href="javascript:;">Sort By Orders</a></li>
-                                <li><a class="dropdown-item" href="javascript:;">Sort By Location</a></li>
-                            </ul>
-                        </div>
-                        <div class="btn-group position-static">
-                            <button type="button" class="btn btn-filter dropdown-toggle px-4" data-bs-toggle="dropdown"
-                                aria-expanded="false">
-                                Status
-                            </button>
-                            <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="javascript:;">Active</a></li>
-                                <li><a class="dropdown-item" href="javascript:;">Inactive</a></li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-12 col-md-2">
+            <div class="row g-3 justify-content-end">
+                <div class="col-12 col-md-auto">
                     <div class="d-flex align-items-center gap-2 justify-content-lg-end">
-                        <button class="btn btn-filter px-4"><i class="bi bi-box-arrow-right me-2"></i>Export</button>
                         <a href="{{ route('role.create') }}" class="btn btn-primary px-4"><i class="bi bi-plus-lg me-2"></i>Add
                             Role</a>
+                            <div class="ms-auto">
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-outline-primary">Action</button>
+                                <button type="button"
+                                    class="btn btn-outline-primary split-bg-primary dropdown-toggle dropdown-toggle-split"
+                                    data-bs-toggle="dropdown"> <span class="visually-hidden">Toggle Dropdown</span>
+                                </button>
+                                <div class="dropdown-menu dropdown-menu-right dropdown-menu-lg-end">
+                                    <a class="dropdown-item cursor-pointer" id="delete-selected">Delete All</a>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div><!--end row-->
@@ -68,7 +46,7 @@
                                 <thead class="table-light">
                                     <tr>
                                         <th>
-                                            <input class="form-check-input" type="checkbox">
+                                            <input class="form-check-input" type="checkbox" id="select-all">
                                         </th>
                                         <th>Name</th>
                                         <th>Status</th>
@@ -80,7 +58,8 @@
                                     @forelse($roles as $role)
                                         <tr>
                                             <td>
-                                                <input class="form-check-input" type="checkbox">
+                                                <input class="form-check-input row-checkbox" type="checkbox" name="ids[]"
+                                                    value="{{ $role->id }}">
                                             </td>
                                             <td>
                                                 <a class="d-flex align-items-center gap-3" href="#">
@@ -88,9 +67,10 @@
                                                 </a>
                                             </td>
                                             <td>
-                                                <div class=" form-switch form-check-success">
-                                                    <input class="form-check-input" type="checkbox" role="switch"
-                                                        id="flexSwitchCheckSuccess" {{ $role->status ? 'checked' : '' }}>
+                                                <div class="form-switch form-check-success">
+                                                    <input class="form-check-input status-switch6" type="checkbox"
+                                                        role="switch" data-role-id="{{ $role->id }}"
+                                                        {{ $role->status == 1 ? 'checked' : '' }}>
                                                 </div>
                                             </td>
                                             <td>{{ $role->admins->name ?? 'NA' }}</td>
@@ -151,4 +131,68 @@
         </div>
     </main>
     <!--end main wrapper-->
+
+@endsection
+@section('script')
+     <script>
+        $(document).on('change', '.status-switch6', function() {
+            var roleId = $(this).data('role-id');
+            var status = $(this).is(':checked') ? 1 : 0;
+
+            $.ajax({
+                url: '{{ route('role.toggleStatus') }}',
+                type: 'POST',
+                data: {
+                    _token: '{{ csrf_token() }}',
+                    id: roleId,
+                    status: status
+                },
+                success: function(response) {
+                    if (response.success) {
+                        alert('Status updated successfully!');
+                    } else {
+                        alert('Failed to update status.');
+                    }
+                },
+                error: function() {
+                    alert('Status update failed!');
+                }
+            });
+        });
+    </script>
+        <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Select All functionality
+            const selectAll = document.getElementById('select-all');
+            const checkboxes = document.querySelectorAll('.row-checkbox');
+            selectAll.addEventListener('change', function() {
+                checkboxes.forEach(cb => cb.checked = selectAll.checked);
+            });
+
+            // Delete Selected functionality
+            document.getElementById('delete-selected').addEventListener('click', function() {
+                let selected = [];
+                document.querySelectorAll('.row-checkbox:checked').forEach(cb => {
+                    selected.push(cb.value);
+                });
+                if (selected.length === 0) {
+                    alert('Please select at least one record.');
+                    return;
+                }
+                if (confirm('Are you sure you want to delete selected records?')) {
+                    // Create a form and submit
+                    let form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = '{{ route('delete.selected.role') }}';
+                    form.innerHTML = `
+                        @csrf
+                        <input type="hidden" name="_method" value="DELETE">
+                        <input type="hidden" name="ids" value="${selected.join(',')}">
+                    `;
+                    document.body.appendChild(form);
+                    form.submit();
+                }
+            });
+        });
+    </script>
 @endsection

@@ -23,6 +23,20 @@ class StaffController extends Controller
         $roles = Role::get();
         return view('staffs.create', ['roles' => $roles]);
     }
+    public function deleteSelected(Request $request)
+    {
+        $ids = is_array($request->ids) ? $request->ids : explode(',', $request->ids);
+        Staff::destroy($ids);
+        return redirect()->back()->with('success', 'Selected Staff deleted successfully.');
+    }
+     public function toggleStatus(Request $request)
+    {
+        $staff = Staff::findOrFail($request->id);
+        $staff->status = $request->status;
+        $staff->save();
+
+        return response()->json(['success' => true]);
+    }
 
     public function store(Request $request)
     {

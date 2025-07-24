@@ -19,7 +19,20 @@ class RoleController extends Controller
     {
         return view('roles.create');
     }
+     public function deleteSelected(Request $request)
+    {
+        $ids = is_array($request->ids) ? $request->ids : explode(',', $request->ids);
+        Role::destroy($ids);
+        return redirect()->back()->with('success', 'Selected Role deleted successfully.');
+    }
+     public function toggleStatus(Request $request)
+    {
+        $role = Role::findOrFail($request->id);
+        $role->status = $request->status;
+        $role->save();
 
+        return response()->json(['success' => true]);
+    }
     public function store(Request $request)
     {
         $role = new Role();
