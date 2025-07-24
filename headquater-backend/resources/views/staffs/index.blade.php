@@ -20,11 +20,21 @@
             <div class="row g-3 justify-content-end">
                 
               
-                <div class="col-12 col-md-2 ">
-                    <div class="d-flex align-items-center gap-2 ">
-                        <button class="btn btn-filter px-4"><i class="bi bi-box-arrow-right me-2"></i>Export</button>
-                        <a href="{{ route('staff.create') }}" class="btn btn-primary px-4"><i
-                                class="bi bi-plus-lg me-2"></i>Add Staff</a>
+                <div class="col-12 col-md-auto">
+                    <div class="d-flex align-items-center gap-2 justify-content-lg-end">
+                        <a href="{{ route('staff.create') }}" class="btn btn-primary px-4">Add Staff</a>
+                            <div class="ms-auto">
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-outline-primary">Action</button>
+                                <button type="button"
+                                    class="btn btn-outline-primary split-bg-primary dropdown-toggle dropdown-toggle-split"
+                                    data-bs-toggle="dropdown"> <span class="visually-hidden">Toggle Dropdown</span>
+                                </button>
+                                <div class="dropdown-menu dropdown-menu-right dropdown-menu-lg-end">
+                                    <a class="dropdown-item cursor-pointer" id="delete-selected">Delete All</a>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div><!--end row-->
@@ -37,7 +47,7 @@
                                 <thead class="table-light">
                                     <tr>
                                         <th>
-                                            <input class="form-check-input" type="checkbox">
+                                           <input class="form-check-input" type="checkbox" id="select-all">
                                         </th>
                                         <th>Name</th>
                                         <th>Email</th>
@@ -52,7 +62,8 @@
                                     @foreach ($staffs as $staff)
                                         <tr>
                                             <td>
-                                                <input class="form-check-input" type="checkbox">
+                                               <input class="form-check-input row-checkbox" type="checkbox" name="ids[]"
+                                                    value="{{ $staff->id }}">
                                             </td>
                                             <td>
                                                 <a class="d-flex align-items-center gap-3" href="staff-detail.php">
@@ -70,9 +81,10 @@
                                             <td>{{ $staff->role->name}}</td>
 
                                             <td>
-                                                <div class=" form-switch form-check-success">
-                                                    <input class="form-check-input" type="checkbox" role="switch"
-                                                        id="flexSwitchCheckSuccess" checked="">
+                                               <div class="form-switch form-check-success">
+                                                    <input class="form-check-input status-switch7" type="checkbox"
+                                                        role="switch" data-staff-id="{{ $staff->id }}"
+                                                        {{ $staff->status == 1 ? 'checked' : '' }}>
                                                 </div>
                                             </td>
                                             <td>{{ $staff->created_by }}</td>
@@ -143,4 +155,67 @@
     <!--end main wrapper-->
   <!--plugins-->
 
+@endsection
+@section('script')
+     <script>
+        $(document).on('change', '.status-switch7', function() {
+            var staffId = $(this).data('staff-id');
+            var status = $(this).is(':checked') ? 1 : 0;
+
+            $.ajax({
+                url: '{{ route('staff.toggleStatus') }}',
+                type: 'POST',
+                data: {
+                    _token: '{{ csrf_token() }}',
+                    id: staffId,
+                    status: status
+                },
+                success: function(response) {
+                    if (response.success) {
+                        alert('Status updated successfully!');
+                    } else {
+                        alert('Failed to update status.');
+                    }
+                },
+                error: function() {
+                    alert('Status update failed!');
+                }
+            });
+        });
+    </script>
+        <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Select All functionality
+            const selectAll = document.getElementById('select-all');
+            const checkboxes = document.querySelectorAll('.row-checkbox');
+            selectAll.addEventListener('change', function() {
+                checkboxes.forEach(cb => cb.checked = selectAll.checked);
+            });
+
+            // Delete Selected functionality
+            document.getElementById('delete-selected').addEventListener('click', function() {
+                let selected = [];
+                document.querySelectorAll('.row-checkbox:checked').forEach(cb => {
+                    selected.push(cb.value);
+                });
+                if (selected.length === 0) {
+                    alert('Please select at least one record.');
+                    return;
+                }
+                if (confirm('Are you sure you want to delete selected records?')) {
+                    // Create a form and submit
+                    let form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = '{{ route('delete.selected.staff') }}';
+                    form.innerHTML = `
+                        @csrf
+                        <input type="hidden" name="_method" value="DELETE">
+                        <input type="hidden" name="ids" value="${selected.join(',')}">
+                    `;
+                    document.body.appendChild(form);
+                    form.submit();
+                }
+            });
+        });
+    </script>
 @endsection

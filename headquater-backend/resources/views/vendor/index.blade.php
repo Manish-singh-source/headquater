@@ -50,6 +50,7 @@
                                             <input class="form-check-input" type="checkbox" id="select-all">
                                         </th>
                                         <th>SR.No</th>
+                                        <th>Vendor Code</th>
                                         <th>Vendor Name</th>
                                         <th>Email</th>
                                         <th>Contact Number</th>
@@ -70,6 +71,7 @@
                                             <td>
                                                 {{ $key + 1 }}
                                             </td>
+                                            <td>{{ $vendor->vendor_code }}</td>
                                             <td>
                                                 <a class="d-flex align-items-center gap-3"
                                                     href="{{ route('vendor.view', $vendor->id) }}">
