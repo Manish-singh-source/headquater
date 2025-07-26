@@ -73,10 +73,10 @@
             @isset($orders)
                 <div class="card">
                     <div class="card-body">
-                        <h5 class="mb-3">Orders<span class="fw-light ms-2">(98)</span></h5>
+                        <h5 class="mb-3">Orders<span class="fw-light ms-2">({{ $orders->count() }})</span></h5>
                         <div class="product-table">
                             <div class="table-responsive white-space-nowrap">
-                                <table class="table align-middle">
+                                <table id="example" class="table align-middle">
                                     <thead class="table-light">
                                         <tr>
                                             <th>Order ID</th>

@@ -56,7 +56,8 @@ Route::controller(CustomerController::class)->group(function () {
     Route::get('/customers/edit/{id}', 'edit')->name('customer.edit');
     Route::put('/customer/update/{id}', 'update')->name('customer.update');
     Route::delete('/customers/delete/{id}', 'delete')->name('customer.delete');
-    Route::get('/customer/detail/{id}', 'detail')->name('customers.detail');
+    // Route::get('/customers/detail/{id}', 'detail')->name('customers.detail');
+    Route::get('/customer-detail/{id}', 'detail')->name('customer.detail');
 });
 
 
@@ -157,7 +158,7 @@ Route::controller(OrderController::class)->group(function () {
     Route::put('/change-status', 'changeStatus')->name('change.order.status');
 });
 
-
+Route::view('/404', 'errors.404');
 
 
 

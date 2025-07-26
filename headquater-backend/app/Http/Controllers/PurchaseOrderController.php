@@ -20,6 +20,7 @@ class PurchaseOrderController extends Controller
     public function index()
     {
         $purchaseOrders = PurchaseOrder::with('purchaseOrderProducts')->get();
+        // dd($purchaseOrders);
         $vendorCodes = $purchaseOrders->flatMap(function ($po) {
             return $po->purchaseOrderProducts->pluck('vendor_code');
         })->unique()->values();
@@ -36,7 +37,7 @@ class PurchaseOrderController extends Controller
         $uploadedPIOfVendors = VendorPI::distinct()->pluck('vendor_code');
         $purchaseInvoice = PurchaseInvoice::where('purchase_order_id', $id)->get();
         $purchaseGrn = PurchaseGrn::where('purchase_order_id', $id)->get();
-        // dd($purchaseInvoice);
+        // dd($vendorPI);
         return view('purchaseOrder.view', compact('purchaseOrderProducts', 'uploadedPIOfVendors', 'vendors', 'vendorPI', 'purchaseOrder', 'purchaseInvoice', 'purchaseGrn'));
     }
 

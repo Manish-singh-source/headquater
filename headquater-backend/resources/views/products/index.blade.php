@@ -64,6 +64,7 @@
                                         <th>total&nbsp;amount</th>
                                         <th>mrp</th>
                                         <th>po&nbsp;status</th>
+                                        <th>Hold&nbsp;Qty</th>
                                         <th>Date</th>
                                     </tr>
                                 </thead>
@@ -96,6 +97,14 @@
                                             <td>{{ $product->product->total_amount }}</td>
                                             <td>{{ $product->product->mrp }}</td>
                                             <td>{{ $product->product->status === '1' ? 'Active' : 'Inactive' }}</td>
+                                            <td>
+                                                @if($product->block_quantity)
+                                                    <span class="badge text-danger bg-danger-subtle">
+                                                        {{ $product->block_quantity }}</span>
+                                                @else 
+                                                        <span>NA</span>
+                                                @endif
+                                            </td>
                                             <td>{{ $product->product->created_at->format('d-M-Y') }}</td>
                                         </tr>
                                     @endforeach

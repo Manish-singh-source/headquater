@@ -35,12 +35,15 @@
                             <div class="card">
                                 <div class="card-body d-flex justify-content-between align-items-center">
                                     <h5 class="mb-3">Products Details</h5>
-                                    @isset($fileData)
+                                    {{-- @isset($fileData)
                                         <div>
                                             <a href="{{ route('download.order.excel') }}"
                                                 class="btn btn-icon btn-sm border-2 border-primary text-primary me-1">Download</a>
                                         </div>
-                                    @endisset
+                                    @endisset --}}
+                                    <button id="customExcelBtn" class="btn btn-sm border-2 border-primary">
+                                        <i class="fa fa-file-excel-o"></i> Export to Excel
+                                    </button>
                                 </div>
                                 <div class="card-body">
                                     <div class="product-table">

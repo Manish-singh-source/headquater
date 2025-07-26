@@ -335,7 +335,7 @@
                                                 <td>{{ $product->vendor_code }}</td>
                                                 <td>{{ $product->purchase_order_id }}</td>
                                                 <td>{{ $product->vendor_sku_code }}</td>
-                                                <td>{{ $product->product->title }}</td>
+                                                <td>{{ $product->product?->title }}</td>
                                                 <td>{{ $product->mrp }}</td>
                                                 <td>{{ $product->quantity_requirement }}</td>
                                                 <td>{{ $product->available_quantity }}</td>

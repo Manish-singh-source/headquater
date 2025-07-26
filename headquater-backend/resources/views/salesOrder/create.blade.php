@@ -98,7 +98,7 @@
 
                                 <div>
                                     <div class="card-body">
-                                        <form action="{{ route('order.store') }}" method="POST"
+                                        <form action="{{ route('order.store') }}" method="POST" onsubmit="return confirm('Have You Checked Availibility?')"
                                             enctype="multipart/form-data">
                                             @csrf
                                             @method('POST')

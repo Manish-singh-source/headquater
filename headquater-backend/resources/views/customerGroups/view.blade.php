@@ -90,7 +90,7 @@
                                             <td>{{ $customer->customer->status === '1' ? 'Active' : 'Inactive' }}</td>
                                             <td>
                                                 <div class="d-flex">
-                                                    <a aria-label="anchor" href="{{ route('customers.detail', $customer->customer->id) }}"
+                                                    <a aria-label="anchor" href="{{ route('customer.detail', $customer->customer->id) }}"
                                                         class="btn btn-icon btn-sm bg-primary-subtle me-1"
                                                         data-bs-toggle="tooltip" data-bs-original-title="View">
                                                         <svg xmlns="http://www.w3.org/2000/svg" width="13"

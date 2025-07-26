@@ -1,6 +1,6 @@
 @extends('layouts.master')
 @section('main-content')
-<main class="main-wrapper">
+    <main class="main-wrapper">
         <div class="main-content">
             <div class="page-breadcrumb d-none d-sm-flex align-items-center mb-3">
                 <div class="">
@@ -94,7 +94,8 @@
                                         <div class="mb-3">
                                             <label class="form-label">Choose Date</label>
                                             <div class="input-icon-start position-relative">
-                                                <input type="text" class="form-control date-range bookingrange" placeholder="dd/mm/yyyy - dd/mm/yyyy">
+                                                <input type="text" class="form-control date-range bookingrange"
+                                                    placeholder="dd/mm/yyyy - dd/mm/yyyy">
                                                 <span class="input-icon-left">
                                                     <i class="ti ti-calendar"></i>
                                                 </span>
@@ -158,262 +159,53 @@
                                 <thead class="table-light">
                                     <tr>
                                         <th>
-                                            <input class="form-check-input" type="checkbox">
+                                            <input class="form-check-input" type="checkbox" id="select-all">
                                         </th>
-                                        <th>Product Name</th>
+                                        <th>Product&nbsp;Name</th>
                                         <th>SKU</th>
-                                        <th>Price</th>
-                                        <th>Total Quantity</th>
-                                        <th>Available Quantity</th>
-                                        <th>Hold Quantity</th>
+                                        <th>units</th>
+                                        <th>landing&nbsp;rate</th>
+                                        <th>cost&nbsp;price</th>
+                                        <th>total&nbsp;amount</th>
+                                        <th>mrp</th>
+                                        <th>po&nbsp;status</th>
+                                        <th>Hold&nbsp;Qty</th>
                                         <th>Date</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr>
-                                        <td>
-                                            <input class="form-check-input" type="checkbox">
-                                        </td>
-                                        <td>
-                                            <div class="d-flex align-items-center gap-3">
-
-                                                <div class="product-info">
-                                                    <a href="javascript:;" class="product-title">Women Pink Floral Printed</a>
-
+                                    @foreach ($products as $product)
+                                        <tr>
+                                            <td>
+                                                <input class="form-check-input row-checkbox" type="checkbox"
+                                                    name="ids[]" value="{{ $product->id }}">
+                                            </td>
+                                            <td>
+                                                <div class="d-flex align-items-center gap-3">
+                                                    <div class="product-info">
+                                                        <a href="javascript:;"
+                                                            class="product-title">{{ $product->product->title }}</a>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        </td>
-                                        <td>BOK4897984</td>
-                                        <td>49₹</td>
-
-
-                                        <td>
-                                            150
-                                        </td>
-                                        <td>110</td>
-                                        <td>40</td>
-                                        <td>
-                                            Nov 12, 10:45 PM
-                                        </td>
-
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            <input class="form-check-input" type="checkbox">
-                                        </td>
-                                        <td>
-                                            <div class="d-flex align-items-center gap-3">
-
-                                                <div class="product-info">
-                                                    <a href="javascript:;" class="product-title">Women Pink Floral Printed</a>
-
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>BOK4897984</td>
-                                        <td>49₹</td>
-
-
-                                        <td>
-                                            150
-                                        </td>
-                                        <td>110</td>
-                                        <td>40</td>
-                                        <td>
-                                            Nov 12, 10:45 PM
-                                        </td>
-
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            <input class="form-check-input" type="checkbox">
-                                        </td>
-                                        <td>
-                                            <div class="d-flex align-items-center gap-3">
-
-                                                <div class="product-info">
-                                                    <a href="javascript:;" class="product-title">Women Pink Floral Printed</a>
-
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>BOK4897984</td>
-                                        <td>49₹</td>
-
-
-                                        <td>
-                                            150
-                                        </td>
-                                        <td>110</td>
-                                        <td>40</td>
-                                        <td>
-                                            Nov 12, 10:45 PM
-                                        </td>
-
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            <input class="form-check-input" type="checkbox">
-                                        </td>
-                                        <td>
-                                            <div class="d-flex align-items-center gap-3">
-
-                                                <div class="product-info">
-                                                    <a href="javascript:;" class="product-title">Women Pink Floral Printed</a>
-
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>BOK4897984</td>
-                                        <td>49₹</td>
-
-
-                                        <td>
-                                            150
-                                        </td>
-                                        <td>110</td>
-                                        <td>40</td>
-                                        <td>
-                                            Nov 12, 10:45 PM
-                                        </td>
-
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            <input class="form-check-input" type="checkbox">
-                                        </td>
-                                        <td>
-                                            <div class="d-flex align-items-center gap-3">
-
-                                                <div class="product-info">
-                                                    <a href="javascript:;" class="product-title">Women Pink Floral Printed</a>
-
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>BOK4897984</td>
-                                        <td>49₹</td>
-
-
-                                        <td>
-                                            150
-                                        </td>
-                                        <td>110</td>
-                                        <td>40</td>
-                                        <td>
-                                            Nov 12, 10:45 PM
-                                        </td>
-
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            <input class="form-check-input" type="checkbox">
-                                        </td>
-                                        <td>
-                                            <div class="d-flex align-items-center gap-3">
-
-                                                <div class="product-info">
-                                                    <a href="javascript:;" class="product-title">Women Pink Floral Printed</a>
-
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>BOK4897984</td>
-                                        <td>49₹</td>
-
-
-                                        <td>
-                                            150
-                                        </td>
-                                        <td>110</td>
-                                        <td>40</td>
-                                        <td>
-                                            Nov 12, 10:45 PM
-                                        </td>
-
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            <input class="form-check-input" type="checkbox">
-                                        </td>
-                                        <td>
-                                            <div class="d-flex align-items-center gap-3">
-
-                                                <div class="product-info">
-                                                    <a href="javascript:;" class="product-title">Women Pink Floral Printed</a>
-
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>BOK4897984</td>
-                                        <td>49₹</td>
-
-
-                                        <td>
-                                            150
-                                        </td>
-                                        <td>110</td>
-                                        <td>40</td>
-                                        <td>
-                                            Nov 12, 10:45 PM
-                                        </td>
-
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            <input class="form-check-input" type="checkbox">
-                                        </td>
-                                        <td>
-                                            <div class="d-flex align-items-center gap-3">
-
-                                                <div class="product-info">
-                                                    <a href="javascript:;" class="product-title">Women Pink Floral Printed</a>
-
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>BOK4897984</td>
-                                        <td>49₹</td>
-
-
-                                        <td>
-                                            150
-                                        </td>
-                                        <td>110</td>
-                                        <td>40</td>
-                                        <td>
-                                            Nov 12, 10:45 PM
-                                        </td>
-
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            <input class="form-check-input" type="checkbox">
-                                        </td>
-                                        <td>
-                                            <div class="d-flex align-items-center gap-3">
-
-                                                <div class="product-info">
-                                                    <a href="javascript:;" class="product-title">Women Pink Floral Printed</a>
-
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>BOK4897984</td>
-                                        <td>49₹</td>
-
-
-                                        <td>
-                                            150
-                                        </td>
-                                        <td>110</td>
-                                        <td>40</td>
-                                        <td>
-                                            Nov 12, 10:45 PM
-                                        </td>
-
-                                    </tr>
-
+                                            </td>
+                                            <td>{{ $product->product->sku }}</td>
+                                            <td>{{ $product->product->units_ordered }}</td>
+                                            <td>{{ $product->product->landing_rate }}</td>
+                                            <td>{{ $product->product->cost_price }}</td>
+                                            <td>{{ $product->product->total_amount }}</td>
+                                            <td>{{ $product->product->mrp }}</td>
+                                            <td>{{ $product->product->status === '1' ? 'Active' : 'Inactive' }}</td>
+                                            <td>
+                                                @if ($product->block_quantity)
+                                                    <span class="badge text-danger bg-danger-subtle">
+                                                        {{ $product->block_quantity }}</span>
+                                                @else
+                                                    <span>NA</span>
+                                                @endif
+                                            </td>
+                                            <td>{{ $product->product->created_at->format('d-M-Y') }}</td>
+                                        </tr>
+                                    @endforeach
                                 </tbody>
                             </table>
                         </div>
@@ -425,5 +217,3 @@
         </div>
     </main>
 @endsection
-    
-

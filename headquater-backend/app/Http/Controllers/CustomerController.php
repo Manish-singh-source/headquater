@@ -6,9 +6,11 @@ use App\Models\City;
 use App\Models\State;
 use App\Models\Country;
 use App\Models\Customer;
+use App\Models\CustomerAddress;
 use App\Models\SalesOrder;
 use Illuminate\Http\Request;
 use App\Models\CustomerGroup;
+use App\Models\CustomerGroupMember;
 use Illuminate\Support\Facades\Validator;
 
 class CustomerController extends Controller
@@ -21,8 +23,10 @@ class CustomerController extends Controller
 
     public function detail($id)
     {
-        $salesOrder = SalesOrder::with('customerGroup', 'warehouse', 'orderedProducts.product', 'orderedProducts.tempOrder')->findOrFail($id);
-        return view('customer.detail', compact('salesOrder'));
+        $customerDetails = Customer::with('groupInfo.customerGroup')->where('id', $id)->first();
+        // dd($customerDetails);
+        // $salesOrder = SalesOrder::with('customerGroup', 'warehouse', 'orderedProducts.product', 'orderedProducts.tempOrder')->findOrFail($id);
+        return view('customer.detail-view', compact('customerDetails'));
     }
 
     public function toggleStatus(Request $request)
@@ -59,16 +63,15 @@ class CustomerController extends Controller
     }
 
 
-    public function storeCustomer(Request $request)
+    public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'firstName' => 'required|min:3',
-            'lastName' => 'required|min:3',
-            'phone' => 'required|digits:10',
+            'client_name' => 'required|min:3',
+            'contact_name' => 'required|min:3',
             'email' => 'required|email|unique:customers,email',
-            'companyName' => 'required',
-            'gstNo' => 'required',
-            'panNo' => 'required',
+            'contact_no' => 'required|digits:10',
+            'gstin' => 'required',
+            'pan' => 'required',
         ]);
 
         if ($validator->fails()) {
@@ -76,27 +79,38 @@ class CustomerController extends Controller
         }
 
         $customer = new Customer();
-        $customer->first_name = $request->firstName;
-        $customer->last_name = $request->lastName;
+        $customer->client_name = $request->client_name;
+        $customer->contact_name = $request->contact_name;
         $customer->email = $request->email;
-        $customer->phone = $request->phone;
-        $customer->company_name = $request->companyName;
-        $customer->gst_number = $request->gstNo;
-        $customer->pan_number = $request->panNo;
-        $customer->shipping_address = $request->shippingAddress;
-        $customer->shipping_country = $request->shippingCountry;
-        $customer->shipping_state = $request->shippingState;
-        $customer->shipping_city = $request->shippingCity;
-        $customer->shipping_pincode = $request->shippingPinCode;
-        $customer->billing_address = $request->billingAddress;
-        $customer->billing_country = $request->billingCountry;
-        $customer->billing_state = $request->billingState;
-        $customer->billing_city = $request->billingCity;
-        $customer->billing_pincode = $request->billingPinCode;
+        $customer->contact_no = $request->contact_no;
+        $customer->gstin = $request->gstin;
+        $customer->pan = $request->pan;
         $customer->status = $request->status;
         $customer->save();
 
-        return redirect()->route('customers')->with('success', 'Customer added successfully.');
+        $customerAddress = new CustomerAddress();
+        $customerAddress->customer_id = $customer->id;
+        $customerAddress->shipping_address = $request->shippingAddress;
+        $customerAddress->shipping_country = $request->shippingCountry;
+        $customerAddress->shipping_state = $request->shippingState;
+        $customerAddress->shipping_city = $request->shippingCity;
+        $customerAddress->shipping_zip = $request->shippingPinCode;
+        $customerAddress->billing_address = $request->billingAddress;
+        $customerAddress->billing_country = $request->billingCountry;
+        $customerAddress->billing_state = $request->billingState;
+        $customerAddress->billing_city = $request->billingCity;
+        $customerAddress->billing_zip = $request->billingPinCode;
+        $customerAddress->save();
+
+        $customerGrpMember = new CustomerGroupMember();
+        $customerGrpMember->customer_group_id = $request->group_id;
+        $customerGrpMember->customer_id  = $customer->id;
+        $customerGrpMember->save();
+
+        if ($customerAddress) {
+            return redirect()->route('customer.groups.view', $request->group_id)->with('success', 'Customer added successfully.');
+        }
+        return back()->with('error', 'Something Went Wrong.');
     }
 
     public function editCustomer($id)

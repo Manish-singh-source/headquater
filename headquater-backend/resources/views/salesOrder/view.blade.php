@@ -70,14 +70,15 @@
                             <table id="example" class="table align-middle">
                                 <thead class="table-light">
                                     <tr>
-                                        <th>Customer Name</th>
-                                        <th>Vendor Code</th>
+                                        <th>Customer&nbsp;Name</th>
+                                        <th>Vendor&nbsp;Code</th>
                                         <th>HSN</th>
-                                        <th>Item Code</th>
-                                        <th>SKU Code</th>
+                                        <th>Item&nbsp;Code</th>
+                                        <th>SKU&nbsp;Code</th>
                                         <th>Title</th>
                                         <th>MRP</th>
-                                        <th>Qty Requirement</th>
+                                        <th>Qty&nbsp;Requirement</th>
+                                        <th>Qty&nbsp;Fullfilled</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -99,6 +100,15 @@
                                             <td>{{ $order->tempOrder->description }}</td>
                                             <td>{{ $order->tempOrder->mrp }}</td>
                                             <td>{{ $order->ordered_quantity }}</td>
+                                            @isset($order->vendorPI?->available_quantity)
+                                                <td>
+                                                    @if (($order->vendorPI?->available_quantity + $order->product->units_ordered) >= $order->ordered_quantity)
+                                                        <span class="badge text-success bg-success-subtle">{{ $order->vendorPI?->available_quantity + $order->product->units_ordered }}</span>
+                                                    @else
+                                                        <span class="badge text-danger bg-danger-subtle">{{ $order->vendorPI?->available_quantity + $order->product->units_ordered }}</span>
+                                                    @endif
+                                                </td>
+                                            @endisset
                                         </tr>
                                     @empty
                                         <tr>

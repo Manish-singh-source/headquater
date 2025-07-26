@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\WarehouseStock;
+
 class ReportController extends Controller
 {
     //
@@ -10,7 +12,8 @@ class ReportController extends Controller
     }
 
     public function inventoryStockHistory() {
-        return view('inventory-stock-history');
+        $products = WarehouseStock::with('product', 'warehouse')->get();
+        return view('inventory-stock-history', compact('products'));
     }
 
     public function customerSalesHistory() {

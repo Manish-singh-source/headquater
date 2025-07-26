@@ -3,10 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Vendor;
-use App\Models\TempOrder;
-use App\Models\ManageOrder;
-use App\Models\PurchaseOrderProduct;
 use Illuminate\Http\Request;
+use App\Models\PurchaseOrderProduct;
 use Illuminate\Support\Facades\Validator;
 
 class VendorController extends Controller
@@ -114,7 +112,6 @@ class VendorController extends Controller
     {
         $vendor = Vendor::findOrFail($id);
         $orders = PurchaseOrderProduct::with('purchaseOrder')->where('vendor_code', $vendor->vendor_code)->get();
-        // dd($orders);
         return view('vendor.view', compact('vendor', 'orders'));
     }
 
@@ -235,50 +232,50 @@ class VendorController extends Controller
         return redirect()->route('vendor')->with('success', 'Customer deleted successfully.');
     }
 
-    public function detailVendor($id)
-    {
-        $vendor = Vendor::with('orderDetail')->findOrFail($id);
+    // public function detailVendor($id)
+    // {
+    //     $vendor = Vendor::with('orderDetail')->findOrFail($id);
 
-        $orderIds = TempOrder::where('vendor_code', $vendor->vendor_code)
-            ->select('order_id')
-            ->distinct()
-            ->pluck('order_id');
+    //     $orderIds = TempOrder::where('vendor_code', $vendor->vendor_code)
+    //         ->select('order_id')
+    //         ->distinct()
+    //         ->pluck('order_id');
 
-        $orderedProducts = TempOrder::where('vendor_code', $vendor->vendor_code)
-            ->whereIn('order_id', $orderIds)
-            ->get();
+    //     $orderedProducts = TempOrder::where('vendor_code', $vendor->vendor_code)
+    //         ->whereIn('order_id', $orderIds)
+    //         ->get();
 
-        $orders = ManageOrder::with('warehouse')->whereIn('id', $orderIds)->get();
+    //     $orders = ManageOrder::with('warehouse')->whereIn('id', $orderIds)->get();
 
-        return view('vendor.vendor-details', compact('vendor', 'orders'));
-    }
+    //     return view('vendor.vendor-details', compact('vendor', 'orders'));
+    // }
 
-    public function vendorOrderView($id)
-    {
+    // public function vendorOrderView($id)
+    // {
 
-        $order = ManageOrder::find($id);
-        $vendorCodes = TempOrder::where('order_id', $id)
-            ->select('vendor_code')
-            ->distinct()
-            ->pluck('vendor_code');
-        $orders = TempOrder::with('vendorInfo')->where('order_id', $id)
-            ->whereIn('vendor_code', $vendorCodes)
-            ->get();
-        $vendors = Vendor::whereIn('vendor_code', $vendorCodes)->get();
+    //     $order = ManageOrder::find($id);
+    //     $vendorCodes = TempOrder::where('order_id', $id)
+    //         ->select('vendor_code')
+    //         ->distinct()
+    //         ->pluck('vendor_code');
+    //     $orders = TempOrder::with('vendorInfo')->where('order_id', $id)
+    //         ->whereIn('vendor_code', $vendorCodes)
+    //         ->get();
+    //     $vendors = Vendor::whereIn('vendor_code', $vendorCodes)->get();
 
-        return view('vendor.vendor-order-view', compact('order', 'vendorCodes', 'orders', 'vendors'));
-    }
+    //     return view('vendor.vendor-order-view', compact('order', 'vendorCodes', 'orders', 'vendors'));
+    // }
 
-    public function singleVendorOrderView($orderId, $vendorCode)
-    {
-        $vendor = Vendor::where('vendor_code', $vendorCode)->first();
+    // public function singleVendorOrderView($orderId, $vendorCode)
+    // {
+    //     $vendor = Vendor::where('vendor_code', $vendorCode)->first();
 
-        $order = ManageOrder::find($orderId);
+    //     $order = ManageOrder::find($orderId);
 
-        $orders = TempOrder::where('order_id', $orderId)
-            ->where('vendor_code', $vendorCode)
-            ->get();
+    //     $orders = TempOrder::where('order_id', $orderId)
+    //         ->where('vendor_code', $vendorCode)
+    //         ->get();
 
-        return view('vendor.single-vendor-order-view', compact('orders', 'vendor', 'order'));
-    }
+    //     return view('vendor.single-vendor-order-view', compact('orders', 'vendor', 'order'));
+    // }
 }

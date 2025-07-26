@@ -200,7 +200,11 @@ class OrderController extends Controller
 
     public function view($id)
     {
-        $salesOrder = SalesOrder::with('customerGroup', 'warehouse', 'orderedProducts.product', 'orderedProducts.tempOrder')->findOrFail($id);
+        $salesOrder = SalesOrder::with('customerGroup', 'warehouse', 'orderedProducts.product', 'orderedProducts.tempOrder', 'orderedProducts.vendorPI')->findOrFail($id);
+        // get vendor pi quantity 
+        // vendor_code, product_sku, purchase_order_id, sales_order_id 
+        // $vendorQty = PurchaseOrder::where('sales_order_id', $salesOrder->id)->with('vendorPI')->get();
+        // dd($salesOrder); 
         return view('salesOrder.view', compact('salesOrder'));
     }
 

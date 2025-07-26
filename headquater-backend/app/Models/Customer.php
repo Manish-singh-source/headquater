@@ -8,4 +8,8 @@ class Customer extends Model
 {
     //
     protected $guarded = [];
+
+    public function groupInfo() {
+        return $this->hasOne(CustomerGroupMember::class, 'customer_id', 'id');
+    }
 }
