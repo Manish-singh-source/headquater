@@ -11,12 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('vendor_p_i_s', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('purchase_order_id')->constrained()->onDelete('cascade');
+        Schema::table('sales_order_products', function (Blueprint $table) {
+            //
+            $table->string('customer_id')->nullable();
             $table->string('vendor_code')->nullable();
-            $table->enum('status', ['pending', 'approve', 'reject', 'completed'])->default('pending');
-            $table->timestamps();
         });
     }
 
@@ -25,6 +23,10 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('vendor_p_i_s');
+        Schema::table('sales_order_products', function (Blueprint $table) {
+            //
+            $table->dropColumn('customer_id');
+            $table->dropColumn('vendor_code');
+        });
     }
 };

@@ -19,7 +19,7 @@ class SalesOrderProduct extends Model
         return $this->hasOne(PurchaseOrder::class, 'sales_order_id', 'sales_order_id');
     }
 
-    public function vendorPI()  {
-        return $this->hasOne(VendorPI::class, 'vendor_sku_code', 'sku');
-    }
+    // public function vendorPI()  {
+    //     return $this->hasOne(VendorPI::class, 'vendor_sku_code', 'sku');
+    // }
 }

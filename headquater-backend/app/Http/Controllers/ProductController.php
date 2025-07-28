@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Product;
 use App\Models\TempOrder;
 use App\Models\Warehouse;
+use Illuminate\Support\Arr;
 use Illuminate\Http\Request;
 use App\Models\WarehouseStock;
 use Illuminate\Support\Facades\DB;
@@ -80,6 +81,64 @@ class ProductController extends Controller
             DB::commit();
             return redirect()->route('products.index')->with('success', 'CSV file imported successfully.');
         } catch (\Exception $e) {
+            dd($e->getMessage());
+            DB::rollBack();
+            return redirect()->back()->withErrors(['error' => 'Something went wrong: ' . $e->getMessage()]);
+        }
+    }
+
+    public function update(Request $request)
+    {
+        $request->validate([
+            'products_excel' => 'required|file|mimes:xlsx,csv,xls',
+        ]);
+
+        $file = $request->file('products_excel');
+        $filepath = $file->getPathname();
+        $extension = $file->getClientOriginalExtension();
+
+        DB::beginTransaction();
+
+        try {
+            $reader = SimpleExcelReader::create($filepath, $extension);
+            $rows = $reader->getRows();
+            $products = [];
+            $insertCount = 0;
+
+            foreach ($rows as $record) {
+                if (empty($record['sku'])) continue;
+
+                $products[] = [
+                    'sku' => Arr::get($record, 'sku'),
+                    'title' => Arr::get($record, 'name'),
+                    'description' => Arr::get($record, 'name'),
+                    'item_id' => Arr::get($record, 'item_id'),
+                    'vendor_name' => Arr::get($record, 'vendor_name'),
+                    'entity_vendor_legal_name' => Arr::get($record, 'entity_vendor_legal_name'),
+                    'manufacturer_name' => Arr::get($record, 'manufacturer_name'),
+                    'facility_name' => Arr::get($record, 'facility_name'),
+                    'units' => Arr::get($record, 'units'),
+                    'units_ordered' => Arr::get($record, 'units_ordered'),
+                    'landing_rate' => Arr::get($record, 'landing_rate'),
+                    'cost_price' => Arr::get($record, 'cost_price'),
+                    'total_amount' => Arr::get($record, 'total_amount'),
+                    'mrp' => Arr::get($record, 'mrp'),
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ];
+                $insertCount++;
+            }
+
+            if ($insertCount === 0) {
+                DB::rollBack();
+                return redirect()->back()->withErrors(['products_excel' => 'No valid data found in the file.']);
+            }
+
+            Product::upsert($products, ['sku']);
+
+            DB::commit();
+            return redirect()->route('products.index')->with('success', 'CSV file imported successfully.');
+        } catch (\Exception $e) {
             DB::rollBack();
             return redirect()->back()->withErrors(['error' => 'Something went wrong: ' . $e->getMessage()]);
         }
@@ -114,7 +173,7 @@ class ProductController extends Controller
 
         $file = $request->file('products_excel')->getPathname();
         $file_extension = $request->file('products_excel')->getClientOriginalExtension();
-        
+
         $reader = SimpleExcelReader::create($file, $file_extension);
         $insertedRows = [];
         foreach ($reader->getRows() as $record) {

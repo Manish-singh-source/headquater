@@ -138,7 +138,7 @@ Route::controller(ProductController::class)->group(function () {
     Route::get('/create-products', 'create')->name('products.create');
     Route::post('/products', 'store')->name('products.store');
     Route::get('/products/{id}', 'edit')->name('products.edit');
-    Route::put('/products/{id}', 'update')->name('products.update');
+    Route::put('/products', 'update')->name('products.update');
     Route::delete('/products/{id}', 'destroy')->name('products.destroy');
     Route::get('/products/view/{id}', 'view')->name('products.view');
     Route::delete('/products/delete-selected', 'deleteSelected')->name('delete.selected.product');
@@ -174,6 +174,9 @@ Route::controller(PurchaseOrderController::class)->group(function () {
     Route::get('/purchase-order', 'index')->name('purchase.order.index');
     Route::get('/purchase-order-view/{id}', 'view')->name('purchase.order.view');
     Route::post('/purchase-order-store', 'store')->name('purchase.order.store');
+    Route::post('/received-products-pi-update', 'update')->name('received.products.pi.update');
+    Route::post('/received-products-status', 'updateStatus')->name('received.products.status');
+    Route::post('/approve-vendor-pi-request', 'approveRequest')->name('approve.vendor.pi.request');
     Route::post('/purchase-order-invoice-store', 'invoiceStore')->name('purchase.order.invoice.store');
     Route::post('/purchase-order-grn-store', 'grnStore')->name('purchase.order.grn.store');
 });

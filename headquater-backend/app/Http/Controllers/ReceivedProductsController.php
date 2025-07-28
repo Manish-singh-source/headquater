@@ -15,7 +15,9 @@ class ReceivedProductsController extends Controller
         $vendors = PurchaseOrderProduct::distinct()->pluck('vendor_code');
         $purchaseOrders = PurchaseOrder::get(); 
         if(isset($request->purchase_order_id) && isset($request->vendor_code)) {
-            $vendorPIs = VendorPI::where('purchase_order_id', $request->purchase_order_id)->where('vendor_code', $request->vendor_code)->get();
+            $vendorPIs = VendorPI::with('products')->where('purchase_order_id', $request->purchase_order_id)->where('vendor_code', $request->vendor_code)->first();
+            // dd($vendorPisOrders);
+            // $vendorPIs = VendorPI::where('purchase_order_id', $request->purchase_order_id)->where('vendor_code', $request->vendor_code)->get();
             // dd($vendorPIs);
             return view('receivedProducts.view', compact('vendors', 'purchaseOrders', 'vendorPIs'));
         }

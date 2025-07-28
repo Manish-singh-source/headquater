@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Customer;
 use App\Models\Product;
 use App\Models\TempOrder;
 use App\Models\Warehouse;
@@ -67,6 +68,8 @@ class OrderController extends Controller
 
             $purchaseOrder = new PurchaseOrder();
             $purchaseOrder->sales_order_id = $saveOrder->id;
+            $purchaseOrder->warehouse_id = $warehouse_id;
+            $purchaseOrder->customer_group_id = $customer_group_id;
             $purchaseOrder->save();
 
             foreach ($reader->getRows() as $record) {
@@ -146,14 +149,22 @@ class OrderController extends Controller
                     'vendor_code' => $record['Vendor Code'],
                 ]);
 
+                $customerInfo = Customer::where('contact_name', $record['Customer Name'])
+                    ->first();
+
                 $saveOrderProduct = new SalesOrderProduct();
                 $saveOrderProduct->sales_order_id = $saveOrder->id;
                 $saveOrderProduct->temp_order_id = $tempOrder->id;
                 $saveOrderProduct->ordered_quantity = $record['PO Quantity'];
                 $saveOrderProduct->sku = $record['SKU'];
+                if (isset($customerInfo)) {
+                    $saveOrderProduct->customer_id = $customerInfo->id;
+                }
+                $saveOrderProduct->vendor_code = $record['Vendor Code'];
                 $saveOrderProduct->save();
 
                 $purchaseOrderProduct = new PurchaseOrderProduct();
+                $purchaseOrderProduct->sales_order_id = $saveOrder->id;
                 $purchaseOrderProduct->purchase_order_id = $purchaseOrder->id;
                 $purchaseOrderProduct->ordered_quantity = $unavailableStatus;
                 $purchaseOrderProduct->sku = $record['SKU'];
@@ -200,7 +211,7 @@ class OrderController extends Controller
 
     public function view($id)
     {
-        $salesOrder = SalesOrder::with('customerGroup', 'warehouse', 'orderedProducts.product', 'orderedProducts.tempOrder', 'orderedProducts.vendorPI')->findOrFail($id);
+        $salesOrder = SalesOrder::with('customerGroup', 'warehouse', 'orderedProducts.product', 'orderedProducts.tempOrder')->findOrFail($id);
         // get vendor pi quantity 
         // vendor_code, product_sku, purchase_order_id, sales_order_id 
         // $vendorQty = PurchaseOrder::where('sales_order_id', $salesOrder->id)->with('vendorPI')->get();

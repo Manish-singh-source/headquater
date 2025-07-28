@@ -15,4 +15,10 @@ class VendorPI extends Model
     {
         return $this->hasOne(Product::class, 'sku', 'vendor_sku_code');
     }
+
+    
+
+    public function products() {
+        return $this->hasMany(VendorPIProduct::class, 'vendor_pi_id', 'id');
+    }
 }

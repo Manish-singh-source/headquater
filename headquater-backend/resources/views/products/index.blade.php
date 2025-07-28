@@ -20,6 +20,44 @@
             <div class="row g-3 justify-content-end">
                 <div class="col-12 col-md-auto">
                     <div class="d-flex align-items-center gap-2 justify-content-lg-end">
+                        <button class="btn border-2 border-primary" data-bs-toggle="modal"
+                            data-bs-target="#staticBackdrop1" class="btn border-2 border-primary">
+                            Update Products
+                        </button>
+
+                        <!-- Modal -->
+                        <div class="modal fade" id="staticBackdrop1" data-bs-backdrop="static" data-bs-keyboard="false"
+                            tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <form action="{{ route('products.update') }}" method="POST"
+                                        enctype="multipart/form-data">
+                                        @csrf
+                                        @method('PUT')
+                                        <div class="modal-header">
+                                            <h1 class="modal-title fs-5" id="staticBackdropLabel">Update Products</h1>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                aria-label="Close"></button>
+                                        </div>
+
+                                        <div class="modal-body">
+                                            <div class="col-12 mb-3">
+                                                <label for="products_excel" class="form-label">Products List (CSV/ELSX) <span
+                                                        class="text-danger">*</span></label>
+                                                <input type="file" name="products_excel" id="products_excel" class="form-control"
+                                                    value="" required="">
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary"
+                                                data-bs-dismiss="modal">Close</button>
+                                            <button type="submit" id="holdOrder" class="btn btn-primary">Submit</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
                         <a href="{{ route('products.create') }}" class="btn border-2 border-primary px-4"><i
                                 class="bi bi-plus-lg me-2"></i>Add Product</a>
                         <div class="ms-auto">
@@ -98,11 +136,11 @@
                                             <td>{{ $product->product->mrp }}</td>
                                             <td>{{ $product->product->status === '1' ? 'Active' : 'Inactive' }}</td>
                                             <td>
-                                                @if($product->block_quantity)
+                                                @if ($product->block_quantity)
                                                     <span class="badge text-danger bg-danger-subtle">
                                                         {{ $product->block_quantity }}</span>
-                                                @else 
-                                                        <span>NA</span>
+                                                @else
+                                                    <span>NA</span>
                                                 @endif
                                             </td>
                                             <td>{{ $product->product->created_at->format('d-M-Y') }}</td>
