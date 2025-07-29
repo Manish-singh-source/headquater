@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class SalesOrder extends Model
 {
     //
+    protected $guarded = [];
     public function customerGroup() {
         return $this->hasOne(CustomerGroup::class, 'id', 'customer_group_id');
     }

@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class SalesOrderProduct extends Model
 {
     //
+    protected $guarded = [];
     public function product() {
         return $this->hasOne(Product::class, 'sku', 'sku');
     }

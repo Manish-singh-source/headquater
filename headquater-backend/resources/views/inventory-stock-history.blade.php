@@ -25,7 +25,7 @@
                                 <div class="ms-2">
                                     <p class="text-dark mb-1">Total Product Available</p>
                                     <div class="d-inline-flex align-items-center flex-wrap gap-2">
-                                        <h4 class="text-dark">32198</h4>
+                                        <h4 class="text-dark">{{ $products->count() }}</h4>
                                         <!-- <span class="badge badge-soft-primary text-dark"><i class="ti ti-arrow-up me-1"></i>+22%</span> -->
                                     </div>
                                 </div>
@@ -41,7 +41,7 @@
                                 <div class="ms-2">
                                     <p class="text-dark mb-1">Total Hold Products</p>
                                     <div class="d-inline-flex align-items-center flex-wrap gap-2">
-                                        <h4 class="text-dark">3485</h4>
+                                        <h4 class="text-dark">0</h4>
                                         <!-- <span class="badge badge-soft-primary text-dark"><i class="ti ti-arrow-up me-1"></i>+22%</span> -->
                                     </div>
                                 </div>
@@ -57,7 +57,7 @@
                                 <div class="ms-2">
                                     <p class="text-dark mb-1">Total Damage Products</p>
                                     <div class="d-inline-flex align-items-center flex-wrap gap-2">
-                                        <h4 class="text-dark">204</h4>
+                                        <h4 class="text-dark">0</h4>
                                         <!-- <span class="badge badge-soft-primary text-dark"><i class="ti ti-arrow-up me-1"></i>+22%</span> -->
                                     </div>
                                 </div>
@@ -73,7 +73,7 @@
                                 <div class="ms-2">
                                     <p class="text-dark mb-1">Total Missing Products</p>
                                     <div class="d-inline-flex align-items-center flex-wrap gap-2">
-                                        <h4 class="text-dark">241</h4>
+                                        <h4 class="text-dark">0</h4>
                                         <!-- <span class="badge badge-soft-primary text-dark"><i class="ti ti-arrow-up me-1"></i>+22%</span> -->
                                     </div>
                                 </div>
@@ -161,13 +161,13 @@
                                         <th>
                                             <input class="form-check-input" type="checkbox" id="select-all">
                                         </th>
-                                        <th>Product&nbsp;Name</th>
+                                        <th>Brand</th>
+                                        <th>Brand&nbsp;Title</th>
+                                        <th>Category</th>
                                         <th>SKU</th>
-                                        <th>units</th>
-                                        <th>landing&nbsp;rate</th>
-                                        <th>cost&nbsp;price</th>
-                                        <th>total&nbsp;amount</th>
-                                        <th>mrp</th>
+                                        <th>PCS/Set</th>
+                                        <th>Sets/CTN</th>
+                                        <th>MRP</th>
                                         <th>po&nbsp;status</th>
                                         <th>Hold&nbsp;Qty</th>
                                         <th>Date</th>
@@ -184,15 +184,15 @@
                                                 <div class="d-flex align-items-center gap-3">
                                                     <div class="product-info">
                                                         <a href="javascript:;"
-                                                            class="product-title">{{ $product->product->title }}</a>
+                                                            class="product-title">{{ $product->product->brand }}</a>
                                                     </div>
                                                 </div>
                                             </td>
+                                            <td>{{ $product->product->brand_title }}</td>
+                                            <td>{{ $product->product->category }}</td>
                                             <td>{{ $product->product->sku }}</td>
-                                            <td>{{ $product->product->units_ordered }}</td>
-                                            <td>{{ $product->product->landing_rate }}</td>
-                                            <td>{{ $product->product->cost_price }}</td>
-                                            <td>{{ $product->product->total_amount }}</td>
+                                            <td>{{ $product->product->pcs_set }}</td>
+                                            <td>{{ $product->product->sets_ctn }}</td>
                                             <td>{{ $product->product->mrp }}</td>
                                             <td>{{ $product->product->status === '1' ? 'Active' : 'Inactive' }}</td>
                                             <td>

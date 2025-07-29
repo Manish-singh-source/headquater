@@ -104,7 +104,7 @@ class ProductController extends Controller
             $insertCount = 0;
 
             foreach ($rows as $record) {
-                if (empty($record['sku'])) continue;
+                if (empty($record['SKU Code'])) continue;
 
                 $products[] = [
                     'sku' => Arr::get($record, 'SKU Code'),

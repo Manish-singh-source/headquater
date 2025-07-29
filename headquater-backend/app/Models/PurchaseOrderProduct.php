@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 class PurchaseOrderProduct extends Model
 {
     //
+    protected $guarded = [];
     public function purchaseOrder()
     {
         return $this->belongsTo(PurchaseOrder::class, 'purchase_order_id', 'id');
