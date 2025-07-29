@@ -88,19 +88,18 @@
                                             <input class="form-check-input" type="checkbox" id="select-all">
                                         </th>
                                         <th>Warehouse</th>
-                                        <th>Product&nbsp;Name</th>
+                                        <th>Brand</th>
+                                        <th>Brand&nbsp;Title</th>
                                         <th>SKU</th>
-                                        <th>item&nbsp;id</th>
-                                        <th>vendor&nbsp;name</th>
-                                        <th>vendor&nbsp;legal&nbsp;name </th>
-                                        <th>manufacturer&nbsp;name</th>
-                                        <th>facility&nbsp;name</th>
-                                        <th>units</th>
-                                        <th>units&nbsp;ordered</th>
-                                        <th>landing&nbsp;rate</th>
-                                        <th>cost&nbsp;price</th>
-                                        <th>total&nbsp;amount</th>
-                                        <th>mrp</th>
+                                        <th>EAN&nbsp;Code</th>
+                                        <th>Category</th>
+                                        <th>PCS/Set </th>
+                                        <th>Sets/CTN</th>
+                                        <th>Vendor&nbsp;Name</th>
+                                        <th>Vendor&nbsp;Purchase&nbsp;Rate</th>
+                                        <th>GST</th>
+                                        <th>Vendor&nbsp;Net&nbsp;Landing</th>
+                                        <th>MRP</th>
                                         <th>po&nbsp;status</th>
                                         <th>Hold&nbsp;Qty</th>
                                         <th>Date</th>
@@ -118,22 +117,22 @@
                                                 <div class="d-flex align-items-center gap-3">
                                                     <div class="product-info">
                                                         <a href="javascript:;"
-                                                            class="product-title">{{ $product->product->title }}</a>
+                                                            class="product-title">{{ $product->product->brand }}</a>
                                                     </div>
                                                 </div>
                                             </td>
+                                            <td>{{ $product->product->brand_title }}</td>
                                             <td>{{ $product->product->sku }}</td>
-                                            <td>{{ $product->product->item_id }}</td>
+                                            <td>{{ $product->product->ean_code }}</td>
+                                            <td>{{ $product->product->category }}</td>
+                                            <td>{{ $product->product->pcs_set }}</td>
+                                            <td>{{ $product->product->sets_ctn }}</td>
                                             <td>{{ $product->product->vendor_name }}</td>
-                                            <td>{{ $product->product->entity_vendor_legal_name }}</td>
-                                            <td>{{ $product->product->manufacturer_name }}</td>
-                                            <td>{{ $product->product->facility_name }}</td>
-                                            <td>{{ $product->product->description }}</td>
-                                            <td>{{ $product->product->units_ordered }}</td>
-                                            <td>{{ $product->product->landing_rate }}</td>
-                                            <td>{{ $product->product->cost_price }}</td>
-                                            <td>{{ $product->product->total_amount }}</td>
+                                            <td>{{ $product->product->vendor_purchase_rate }}</td>
+                                            <td>{{ $product->product->gst }}</td>
+                                            <td>{{ $product->product->vendor_net_landing }}</td>
                                             <td>{{ $product->product->mrp }}</td>
+
                                             <td>{{ $product->product->status === '1' ? 'Active' : 'Inactive' }}</td>
                                             <td>
                                                 @if ($product->block_quantity)

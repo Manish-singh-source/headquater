@@ -18,5 +18,13 @@ class SalesOrder extends Model
     public function orderedProducts() {
         return $this->hasMany(SalesOrderProduct::class, 'sales_order_id', 'id');
     }
+
+    public function vendorPIs() {
+        return $this->hasManyThrough(VendorPI::class, PurchaseOrder::class, 'sales_order_id', 'purchase_order_id');
+    }
+
+    public function vendorPIProduct() {
+        return $this->hasOne(VendorPIProduct::class);
+    }
     
 }

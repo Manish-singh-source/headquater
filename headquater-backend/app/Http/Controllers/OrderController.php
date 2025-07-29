@@ -2,21 +2,22 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Customer;
 use App\Models\Product;
+use App\Models\Customer;
 use App\Models\TempOrder;
 use App\Models\Warehouse;
-use Illuminate\Http\Request;
-use App\Models\CustomerGroup;
-use App\Models\ManageCustomer;
+use App\Models\SalesOrder;
 use App\Models\ManageOrder;
 use App\Models\ManageVendor;
+use Illuminate\Http\Request;
+use App\Models\CustomerGroup;
 use App\Models\PurchaseOrder;
-use App\Models\PurchaseOrderProduct;
-use App\Models\SalesOrder;
-use App\Models\SalesOrderProduct;
+use App\Models\ManageCustomer;
 use App\Models\WarehouseStock;
+use App\Models\SalesOrderProduct;
+use App\Models\WarehouseStockLog;
 use Illuminate\Support\Facades\DB;
+use App\Models\PurchaseOrderProduct;
 use Spatie\SimpleExcel\SimpleExcelReader;
 use Spatie\SimpleExcel\SimpleExcelWriter;
 
@@ -96,7 +97,7 @@ class OrderController extends Controller
                         if ($stockEntry) {
                             $productStockCache[$sku] = [
                                 'remaining' => $stockEntry->quantity,
-                                'ordered' => $stockEntry->product->units_ordered ?? 0,
+                                'ordered' => $stockEntry->product->sets_ctn ?? 0,
                             ];
                         } else {
                             $productStockCache[$sku] = [
@@ -170,7 +171,8 @@ class OrderController extends Controller
                 $purchaseOrderProduct->sku = $record['SKU'];
                 $purchaseOrderProduct->vendor_code = $record['Vendor Code'];
                 $purchaseOrderProduct->save();
-
+                
+                // dd($stockEntry->quantity);
                 $blockQuantity = WarehouseStock::where('sku', $sku)->first();
                 if (isset($blockQuantity)) {
                     if ($stockEntry->quantity >= $unavailableStatus) {
@@ -180,6 +182,21 @@ class OrderController extends Controller
                     }
                     $blockQuantity->save();
                 }
+
+                $warehouseStockBlockLogs = new WarehouseStockLog();
+                $warehouseStockBlockLogs->warehouse_id = $warehouse_id;
+                $warehouseStockBlockLogs->sales_order_id = $saveOrder->id;
+                $warehouseStockBlockLogs->sku = $record['SKU'];
+                if(isset($stockEntry->quantity)) {
+                    if ($stockEntry->quantity >= $unavailableStatus) {
+                        $warehouseStockBlockLogs->block_quantity = $unavailableStatus;
+                    } else {
+                        $warehouseStockBlockLogs->block_quantity = $stockEntry->quantity;
+                    }
+                }
+                // $warehouseStockBlockLogs->stock = $blockQuantity->quantity;
+                $warehouseStockBlockLogs->reason = "Quantity Blocked For Sales Order Id - " . $saveOrder->id;
+                $warehouseStockBlockLogs->save();
 
                 $insertCount++;
             }
@@ -211,7 +228,7 @@ class OrderController extends Controller
 
     public function view($id)
     {
-        $salesOrder = SalesOrder::with('customerGroup', 'warehouse', 'orderedProducts.product', 'orderedProducts.tempOrder')->findOrFail($id);
+        $salesOrder = SalesOrder::with('customerGroup', 'warehouse', 'orderedProducts.product', 'orderedProducts.tempOrder', 'orderedProducts.vendorPIProduct', 'vendorPIs.products')->findOrFail($id);
         // get vendor pi quantity 
         // vendor_code, product_sku, purchase_order_id, sales_order_id 
         // $vendorQty = PurchaseOrder::where('sales_order_id', $salesOrder->id)->with('vendorPI')->get();
@@ -276,7 +293,7 @@ class OrderController extends Controller
                     if ($stockEntry) {
                         $productStockCache[$sku] = [
                             'remaining' => $stockEntry->quantity,
-                            'ordered' => $stockEntry->product->units_ordered ?? 0,
+                            'ordered' => $stockEntry->product->sets_ctn ?? 0,
                         ];
                     } else {
                         $productStockCache[$sku] = [
