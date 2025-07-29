@@ -52,8 +52,8 @@
                                                 @isset($fileData)
                                                     <thead class="table-light">
                                                         <tr>
-                                                            <th>Customer</th>
-                                                            <th>Po&nbsp;number</th>
+                                                            <th>Customer&nbsp;Name</th>
+                                                            <th>Po&nbsp;Number</th>
                                                             <th>SKU</th>
                                                             <th>Facility&nbsp;Name</th>
                                                             <th>Facility&nbsp;Location</th>
@@ -63,9 +63,10 @@
                                                             <th>Item&nbsp;Code</th>
                                                             <th>Description</th>
                                                             <th>Basic&nbsp;Rate</th>
+                                                            <th>GST</th>
                                                             <th>Net&nbsp;Landing&nbsp;Rate</th>
                                                             <th>MRP</th>
-                                                            <th>Ordered&nbsp;Quantity</th>
+                                                            <th>PO&nbsp;Quantity</th>
                                                             <th>Available</th>
                                                             <th>Unavailable&nbsp;Qty</th>
                                                         </tr>
@@ -84,6 +85,7 @@
                                                                 <td>{{ $data['item_code'] }}</td>
                                                                 <td>{{ $data['description'] }}</td>
                                                                 <td>{{ $data['basic_rate'] }}</td>
+                                                                <td>{{ $data['gst'] }}</td>
                                                                 <td>{{ $data['net_landing_rate'] }}</td>
                                                                 <td>{{ $data['mrp'] }}</td>
                                                                 <td>{{ $data['po_qty'] }}</td>

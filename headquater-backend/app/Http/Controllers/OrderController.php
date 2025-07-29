@@ -357,6 +357,8 @@ class OrderController extends Controller
         SimpleExcelWriter::create($csvPath)->addRows($filteredRows->toArray());
         session(['processed_csv_path' => "uploads/{$fileName}"]);
 
+        dd($insertedRows);
+        
         $customerGroup = CustomerGroup::all();
         $warehouses = Warehouse::all();
         return view('process-order', ['customerGroup' => $customerGroup, 'warehouses' => $warehouses, 'fileData' => $insertedRows]);
