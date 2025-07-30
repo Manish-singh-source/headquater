@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Product;
 use App\Models\VendorPI;
 use App\Models\TempOrder;
 use App\Models\PurchaseGrn;
@@ -42,7 +43,7 @@ class PurchaseOrderController extends Controller
         $purchaseGrn = PurchaseGrn::where('purchase_order_id', $id)->get();
         // dd($purchaseOrderProducts);  
         $vendorPIs = VendorPI::with('products')->where('purchase_order_id', $id)->where('status', '!=', 'completed')->get();
-        
+
         $vendorPIid = VendorPI::where('purchase_order_id', $id)->get();
         // dd($vendorPIid);
 
@@ -163,38 +164,40 @@ class PurchaseOrderController extends Controller
         }
     }
 
-    public function updateStatus(Request $request) {
+    public function updateStatus(Request $request)
+    {
         $vendorPI = VendorPI::with('products')->where('purchase_order_id', $request->purchase_order_id)->where('vendor_code', $request->vendor_code)->first();
         $vendorPI->status = 'approve';
         $vendorPI->save();
 
-        if($vendorPI) {
+        if ($vendorPI) {
             return redirect()->back()->with('success', 'Successfully Sent For Approval.');
         }
     }
 
-    public function approveRequest(Request $request) {
+    public function approveRequest(Request $request)
+    {
         $vendorPI = VendorPI::with('products')->where('purchase_order_id', $request->purchase_order_id)->where('vendor_code', $request->vendor_code)->first();
         $vendorPI->status = 'completed';
         $vendorPI->save();
 
         // update warehouse stock 
         // find products 
-        $stock = [];
-        foreach($vendorPI->products as $product){
-            $stock[] = [
-                'warehouse_id' => '1',
-                'product_id' => '1',
-                'sku' => $product->vendor_sku_code,
-                'quantity' => $product->available_quantity,
-            ];
-        }
-        
-        $updateWarehouseStock = WarehouseStock::upsert($stock, 'sku');
+        $vendorPIProducts = VendorPI::with('products')->where('purchase_order_id', $request->purchase_order_id)->where('vendor_code', $request->vendor_code)->first();
 
-        if($updateWarehouseStock) {
-            return redirect()->back()->with('success', 'Successfully Approved Received Products');
+        foreach ($vendorPIProducts->products as $product) {
+            $updateStock = WarehouseStock::where('sku', $product->vendor_sku_code)->first();
+            $updateStock->quantity = $updateStock->quantity + $product->available_quantity;
+            $updateStock->block_quantity = $updateStock->block_quantity - $product->available_quantity;
+            $updateStock->save();
+            
+            $updateProductStock = Product::where('sku', $product->vendor_sku_code)->first();
+            $updateProductStock->sets_ctn = $updateProductStock->sets_ctn + $product->available_quantity;
+            $updateProductStock->save();
         }
+
+
+        return redirect()->back()->with('success', 'Successfully Approved Received Products');
     }
 
     public function invoiceStore(Request $request)

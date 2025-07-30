@@ -126,7 +126,7 @@
                                             <td>{{ $product->product->ean_code }}</td>
                                             <td>{{ $product->product->category }}</td>
                                             <td>{{ $product->product->pcs_set }}</td>
-                                            <td>{{ $product->product->sets_ctn }}</td>
+                                            <td>{{ $product->quantity }}</td>
                                             <td>{{ $product->product->vendor_name }}</td>
                                             <td>{{ $product->product->vendor_purchase_rate }}</td>
                                             <td>{{ $product->product->gst }}</td>
