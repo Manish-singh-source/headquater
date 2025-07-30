@@ -79,24 +79,26 @@
                             <div class="table-responsive white-space-nowrap">
                                 <table id="example" class="table align-middle">
                                     <thead class="table-light">
+
+
                                         <tr>
                                             <th>
                                                 <input class="form-check-input" type="checkbox">
                                             </th>
-                                            <th>Product&nbsp;Name</th>
+                                            <th>Brand</th>
+                                            <th>Brand&nbsp;Title</th>
                                             <th>SKU</th>
-                                            <th>item&nbsp;id</th>
-                                            <th>vendor&nbsp;name</th>
-                                            <th>vendor&nbsp;legal&nbsp;name </th>
-                                            <th>manufacturer&nbsp;name</th>
-                                            <th>facility&nbsp;name</th>
-                                            <th>units</th>
-                                            <th>units&nbsp;ordered</th>
-                                            <th>landing&nbsp;rate</th>
-                                            <th>cost&nbsp;price</th>
-                                            <th>total&nbsp;amount</th>
-                                            <th>mrp</th>
-                                            <th>po&nbsp;status</th>
+                                            <th>EAN Code</th>
+                                            <th>Category </th>
+                                            <th>PCS/Set</th>
+                                            <th>Sets/CTN</th>
+                                            <th>Vendor</th>
+                                            <th>Vendor Purchase Rate</th>
+                                            <th>GST</th>
+                                            <th>Vendor Net Landing</th>
+                                            <th>MRP</th>
+                                            <th>Status</th>
+                                            <th>Hold Qty</th>
                                             <th>Date</th>
                                         </tr>
                                     </thead>
@@ -110,23 +112,30 @@
                                                     <div class="d-flex align-items-center gap-3">
                                                         <div class="product-info">
                                                             <a href="javascript:;"
-                                                                class="product-title">{{ $stock->product->title }}</a>
+                                                                class="product-title">{{ $stock->product->brand }}</a>
                                                         </div>
                                                     </div>
                                                 </td>
+                                                <td>{{ $stock->product->brand_title }}</td>
                                                 <td>{{ $stock->product->sku }}</td>
-                                                <td>{{ $stock->product->item_id }}</td>
+                                                <td>{{ $stock->product->ean_code }}</td>
+                                                <td>{{ $stock->product->category }}</td>
+                                                <td>{{ $stock->product->pcs_set }}</td>
+                                                <td>{{ $stock->product->sets_ctn }}</td>
                                                 <td>{{ $stock->product->vendor_name }}</td>
-                                                <td>{{ $stock->product->entity_vendor_legal_name }}</td>
-                                                <td>{{ $stock->product->manufacturer_name }}</td>
-                                                <td>{{ $stock->product->facility_name }}</td>
-                                                <td>{{ $stock->product->units }}</td>
-                                                <td>{{ $stock->product->units_ordered }}</td>
-                                                <td>{{ $stock->product->landing_rate }}</td>
-                                                <td>{{ $stock->product->cost_price }}</td>
-                                                <td>{{ $stock->product->total_amount }}</td>
+                                                <td>{{ $stock->product->vendor_purchase_rate }}</td>
+                                                <td>{{ $stock->product->gst }}</td>
+                                                <td>{{ $stock->product->vendor_net_landing }}</td>
                                                 <td>{{ $stock->product->mrp }}</td>
-                                                <td>{{ $stock->product->status }}</td>
+                                                <td>{{ $stock->product->status === '1' ? 'Active' : 'Inactive' }}</td>
+                                                <td>
+                                                    @if ($stock->block_quantity)
+                                                        <span class="badge text-danger bg-danger-subtle">
+                                                            {{ $stock->block_quantity }}</span>
+                                                    @else
+                                                        <span>NA</span>
+                                                    @endif
+                                                </td>
                                                 <td>{{ $stock->product?->created_at->format('d-M-Y') }}</td>
                                             </tr>
                                         @empty

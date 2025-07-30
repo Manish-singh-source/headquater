@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Vendor;
+use App\Models\TempOrder;
 use Illuminate\Http\Request;
 use App\Models\PurchaseOrderProduct;
 use Illuminate\Support\Facades\Validator;
@@ -36,7 +37,7 @@ class VendorController extends Controller
             return back()->withErrors($validator)->withInput();
         }
 
-        
+
         $vendor = new Vendor();
         $vendor->client_name = $request->client_name;
         $vendor->contact_name = $request->contact_name;
@@ -111,7 +112,14 @@ class VendorController extends Controller
     public function view($id)
     {
         $vendor = Vendor::findOrFail($id);
-        $orders = PurchaseOrderProduct::with('purchaseOrder')->where('vendor_code', $vendor->vendor_code)->get();
+        $orders = PurchaseOrderProduct::where('vendor_code', $vendor->vendor_code)
+            ->whereHas('purchaseOrder', function ($q) {
+                $q->where('ordered_quantity', '>', 0);
+            })
+            ->with('purchaseOrder') // eager load after filtering
+            ->get();
+
+        // dd($orders); 
         return view('vendor.view', compact('vendor', 'orders'));
     }
 
@@ -266,16 +274,15 @@ class VendorController extends Controller
     //     return view('vendor.vendor-order-view', compact('order', 'vendorCodes', 'orders', 'vendors'));
     // }
 
-    // public function singleVendorOrderView($orderId, $vendorCode)
-    // {
-    //     $vendor = Vendor::where('vendor_code', $vendorCode)->first();
+    public function singleVendorOrderView($purchaseOrderId, $vendorCode)
+    {
+        $vendor = Vendor::where('vendor_code', $vendorCode)->first();
 
-    //     $order = ManageOrder::find($orderId);
+        $orders = PurchaseOrderProduct::with('product')->where('purchase_order_id', $purchaseOrderId)
+            ->where('vendor_code', $vendorCode)
+            ->get();
 
-    //     $orders = TempOrder::where('order_id', $orderId)
-    //         ->where('vendor_code', $vendorCode)
-    //         ->get();
-
-    //     return view('vendor.single-vendor-order-view', compact('orders', 'vendor', 'order'));
-    // }
+        // dd($orders);
+        return view('vendor.single-vendor-order-view', compact('orders', 'vendor'));
+    }
 }

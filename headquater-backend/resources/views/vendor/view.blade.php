@@ -79,71 +79,28 @@
                                 <table id="example" class="table align-middle">
                                     <thead class="table-light">
                                         <tr>
-                                            <th>Order ID</th>
-                                            <th>Payment Status</th>
-                                            <th>Order Status</th>
-                                            <th>Delivery Status</th>
-                                            <th>Date</th>
-                                            <th>Action</th>
+                                            <th>Purchase Order No</th>
+                                            <th>Vendor Name</th>
+                                            <th>SKU Code</th>
+                                            <th>Brand</th>
+                                            <th>Brand Title</th>
+                                            <th>MRP</th>
+                                            <th>Qty Requirement</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @php
-                                            $statuses = [
-                                                0 => 'Pending',
-                                                1 => 'Completed',
-                                                2 => 'On Hold',
-                                            ];
-                                        @endphp
                                         @forelse($orders as $order)
-                                            <tr>
-                                                <td>{{ $order->purchaseOrder->id }}</td>
-                                                <td><span
-                                                        class="lable-table bg-success-subtle text-success rounded border border-success-subtle font-text2 fw-bold">Paid<i
-                                                            class="bi bi-check2 ms-2"></i></span></td>
-                                                <td><span
-                                                        class="lable-table bg-success-subtle text-success rounded border border-success-subtle font-text2 fw-bold">
-                                                        {{ $statuses[$order->purchaseOrder->status] ?? 'On Hold' }}<i
-                                                            class="bi bi-check2 ms-2"></i></span></td>
-                                                <td>Cash on delivery</td>
-                                                <td>Jun 12, 12:56 PM</td>
-                                                <td>
-                                                    <div class="d-flex">
-                                                        <a aria-label="anchor"
-                                                            href="{{ route('single-vendor-order-view', ['orderId' => $order->id, 'vendorCode' => $vendor->vendor_code]) }}"
-                                                            class="btn btn-icon btn-sm bg-primary-subtle me-1"
-                                                            data-bs-toggle="tooltip" data-bs-original-title="View">
-                                                            <svg xmlns="http://www.w3.org/2000/svg" width="13"
-                                                                height="13" viewBox="0 0 24 24" fill="none"
-                                                                stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                                                stroke-linejoin="round"
-                                                                class="feather feather-eye text-primary">
-                                                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                                                <circle cx="12" cy="12" r="3"></circle>
-                                                            </svg>
-                                                        </a>
-
-                                                        <a aria-label="anchor"
-                                                            class="btn btn-icon btn-sm bg-danger-subtle delete-row"
-                                                            data-bs-toggle="tooltip" data-bs-original-title="Delete">
-                                                            <svg xmlns="http://www.w3.org/2000/svg" width="13"
-                                                                height="13" viewBox="0 0 24 24" fill="none"
-                                                                stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                                                stroke-linejoin="round"
-                                                                class="feather feather-trash-2 text-danger">
-                                                                <polyline points="3 6 5 6 21 6"></polyline>
-                                                                <path
-                                                                    d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
-                                                                </path>
-                                                                <line x1="10" y1="11" x2="10"
-                                                                    y2="17"></line>
-                                                                <line x1="14" y1="11" x2="14"
-                                                                    y2="17"></line>
-                                                            </svg>
-                                                        </a>
-                                                    </div>
-                                                </td>
-                                            </tr>
+                                            @if ($order->ordered_quantity > 0)
+                                                <tr>
+                                                    <td>{{ 'PO-' . $order->purchase_order_id }}</td>
+                                                    <td>{{ $vendor->client_name }}</td>
+                                                    <td>{{ $order->sku }}</td>
+                                                    <td>{{ $order->product->brand }}</td>
+                                                    <td>{{ $order->product->brand_title }}</td>
+                                                    <td>{{ $order->product->mrp }}</td>
+                                                    <td>{{ $order->ordered_quantity }}</td>
+                                                </tr>
+                                            @endif
                                         @empty
                                             <tr>
                                                 <td colspan="6">No Records Found</td>

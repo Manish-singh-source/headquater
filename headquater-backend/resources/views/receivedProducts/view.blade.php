@@ -34,7 +34,8 @@
                                                     @foreach ($purchaseOrders as $order)
                                                         <option
                                                             {{ request('purchase_order_id') == $order->id ? 'selected' : '' }}
-                                                            value="{{ $order->id }}">{{ $order->id }}</option>
+                                                            value="{{ $order->id }}">{{ 'ORDER-' . $order->id }}
+                                                        </option>
                                                     @endforeach
                                                 </select>
                                             </div>
@@ -45,8 +46,11 @@
                                                     <option selected disabled value="">-- Select --
                                                     </option>
                                                     @foreach ($vendors as $vendor)
-                                                        <option {{ request('vendor_code') == $vendor ? 'selected' : '' }}
-                                                            value="{{ $vendor }}">{{ $vendor }}</option>
+                                                        @if (!$vendorsCompletedPI->contains($vendor))
+                                                            <option
+                                                                {{ request('vendor_code') == $vendor ? 'selected' : '' }}
+                                                                value="{{ $vendor }}">{{ $vendor }}</option>
+                                                        @endif
                                                     @endforeach
                                                 </select>
                                             </div>

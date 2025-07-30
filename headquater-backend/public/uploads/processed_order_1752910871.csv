@@ -1,9 +1,0 @@
-﻿customer_name,po_number,sku,facility_name,facility_location,po_date,po_expiry_date,hsn,item_code,description,basic_rate,gst,net_landing_rate,mrp,po_qty,available_quantity,unavailable_quantity
-Technofra,PO-91515,SKU-1001,Rowe-Duke,Wrightburgh,24-05-2025,28-02-2026,5628,ITM1883,"Everybody management.",335.06,17.25,239.65,179.47,96,12,"84 Not Available"
-Technofra,PO-64472,SKU-1002,"Wong, Roberts and Rush",Mcconnellbury,27-02-2025,07-01-2026,6686,ITM5337,"Minute significant score on across.",257.04,16.97,245.66,604.98,46,24,"22 Not Available"
-"Dipu Enterprises.",PO-61640,SKU-1003,Robinson-Brown,Gillespiefurt,29-12-2024,11-10-2025,5020,ITM9150,"Probably poor.",432.45,7.44,216.96,433.59,5,24,Available
-"Dipu Enterprises.",PO-94191,SKU-1004,Ross-Lee,Sanchezland,22-10-2024,17-04-2026,8022,ITM2378,"Audience responsibility and.",102.93,17.28,335.07,429.82,78,8,"70 Not Available"
-Technofra,PO-70549,SKU-1005,Barnett-Burns,"New Sherrishire",04-12-2024,06-08-2025,3519,ITM2702,"Baby card.",438.64,23.93,286.53,465.18,45,12,"33 Not Available"
-Technofra,PO-69347,SKU-1006,"Taylor and Sons",Walkerville,10-11-2024,05-12-2025,6039,ITM2711,"Budget boy dream significant good.",389.24,25.63,464.53,356.98,13,36,Available
-"Dipu Enterprises.",PO-44701,SKU-1007,Garcia-Krueger,"Lake Lisa",30-10-2024,06-10-2025,2683,ITM9417,"On high cost city.",470.87,26.66,253.01,70.56,77,8,"69 Not Available"
-"Dipu Enterprises.",PO-25974,SKU-1008,"Ryan Ltd",Ericstad,27-06-2025,08-04-2026,5327,ITM8964,"Individual yeah who stop.",485.44,15.66,377.03,613.19,18,24,Available

@@ -13,15 +13,13 @@ class ReceivedProductsController extends Controller
     {
 
         $vendors = PurchaseOrderProduct::distinct()->pluck('vendor_code');
+        $vendorsCompletedPI = VendorPI::where('status', '=', 'completed')->pluck('vendor_code');
         $purchaseOrders = PurchaseOrder::get(); 
         if(isset($request->purchase_order_id) && isset($request->vendor_code)) {
             $vendorPIs = VendorPI::with('products')->where('purchase_order_id', $request->purchase_order_id)->where('vendor_code', $request->vendor_code)->first();
-            // dd($vendorPisOrders);
-            // $vendorPIs = VendorPI::where('purchase_order_id', $request->purchase_order_id)->where('vendor_code', $request->vendor_code)->get();
-            // dd($vendorPIs);
-            return view('receivedProducts.view', compact('vendors', 'purchaseOrders', 'vendorPIs'));
+            return view('receivedProducts.view', compact('vendors', 'purchaseOrders', 'vendorPIs', 'vendorsCompletedPI'));
         }
-        return view('receivedProducts.view', compact('vendors', 'purchaseOrders'));
+        return view('receivedProducts.view', compact('vendors', 'purchaseOrders', 'vendorsCompletedPI'));
     }
     
     public function update(Request $request) {

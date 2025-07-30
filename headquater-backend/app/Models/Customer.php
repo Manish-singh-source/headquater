@@ -12,4 +12,8 @@ class Customer extends Model
     public function groupInfo() {
         return $this->hasOne(CustomerGroupMember::class, 'customer_id', 'id');
     }
+
+    public function orders() {
+        return $this->hasMany(SalesOrderProduct::class, 'customer_id', 'id');
+    }
 }

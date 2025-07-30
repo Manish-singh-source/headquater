@@ -1,3 +1,0 @@
-﻿customer_name,po_number,sku,facility_name,facility_location,po_date,po_expiry_date,hsn,item_code,description,basic_rate,gst,net_landing_rate,mrp,po_qty,available_quantity,unavailable_quantity
-Technofra,PO-73182,SKU-1009,"Villegas PLC",Romerofort,31-07-2024,21-01-2026,1313,ITM8742,"Operation leave.",320.45,27.8,430.42,161.17,16,6,"10 Quantity Not Available"
-Saurabh,PO-73183,SKU-1009,"Villegas PLC",Romerofort,31-07-2024,21-01-2026,1313,ITM8742,"Operation leave.",320.45,27.8,430.42,161.17,16,6,"10 Quantity Not Available"

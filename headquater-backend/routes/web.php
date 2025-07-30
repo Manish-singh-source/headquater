@@ -88,7 +88,7 @@ Route::controller(VendorController::class)->group(function () {
     Route::get('/vendors/view/{id}', 'view')->name('vendor.view');
 
     Route::get('/vendor-order-view/{id}', 'vendorOrderView')->name('vendor-order-view');
-    Route::get('/single-vendor-order-view/{orderId}/{vendorCode}', 'singleVendorOrderView')->name('single-vendor-order-view');
+    Route::get('/single-vendor-order-view/{purchaseOrderId}/{vendorCode}', 'singleVendorOrderView')->name('single-vendor-order-view');
     Route::post('/vendor/toggle-status', 'toggleStatus')->name('vendor.toggleStatus');
     Route::delete('/vendor/delete-selected', 'deleteSelected')->name('delete.selected.vendor');
 });
@@ -228,7 +228,7 @@ Route::controller(TrackOrderController::class)->group(function () {
 
 
 
-
+Route::view('/excel-file-formats', 'excel-file-formats')->name('excel-file-formats');
 
 // Later Tasks
 

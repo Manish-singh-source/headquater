@@ -23,7 +23,7 @@ class CustomerController extends Controller
 
     public function detail($id)
     {
-        $customerDetails = Customer::with('groupInfo.customerGroup')->where('id', $id)->first();
+        $customerDetails = Customer::with('groupInfo.customerGroup', 'orders.product')->where('id', $id)->first();
         // dd($customerDetails);
         // $salesOrder = SalesOrder::with('customerGroup', 'warehouse', 'orderedProducts.product', 'orderedProducts.tempOrder')->findOrFail($id);
         return view('customer.detail-view', compact('customerDetails'));
