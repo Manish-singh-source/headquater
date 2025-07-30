@@ -193,8 +193,8 @@ class PurchaseOrderController extends Controller
             $updateStock->save();
 
             $warehouseStockBlockLogs = WarehouseStockLog::where('sku', $product->vendor_sku_code)->first();
-            $warehouseStockBlockLogs->block_quantity = $updateStock->block_quantity - $product->available_quantity;
-            $warehouseStockBlockLogs->reason = "Block Quantity Removed - " . $updateStock->block_quantity;
+            $warehouseStockBlockLogs->block_quantity = $warehouseStockBlockLogs->block_quantity - $product->available_quantity;
+            $warehouseStockBlockLogs->reason = "Block Quantity Removed - " . $warehouseStockBlockLogs->block_quantity;
             $warehouseStockBlockLogs->save();
 
             $updateProductStock = Product::where('sku', $product->vendor_sku_code)->first();
