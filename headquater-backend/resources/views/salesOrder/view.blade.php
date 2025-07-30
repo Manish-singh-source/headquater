@@ -100,15 +100,15 @@
                                             <td>{{ $order->tempOrder->description }}</td>
                                             <td>{{ $order->tempOrder->mrp }}</td>
                                             <td>{{ $order->ordered_quantity }}</td>
-                                            @isset($order->vendorPIProduct?->available_quantity)
+                                            @if($order->product->sets_ctn)
                                                 <td>
                                                     @if (($order->vendorPIProduct?->available_quantity + $order->product->sets_ctn) >= $order->ordered_quantity)
-                                                        <span class="badge text-success bg-success-subtle">{{ $order->vendorPIProduct?->available_quantity + $order->product->sets_ctn }}</span>
+                                                        <span class="badge text-success bg-success-subtle">{{ $order->ordered_quantity }}</span>
                                                     @else
                                                         <span class="badge text-danger bg-danger-subtle">{{ $order->vendorPIProduct?->available_quantity + $order->product->sets_ctn }}</span>
                                                     @endif
                                                 </td>
-                                            @endisset
+                                            @endif
                                         </tr>
                                     @empty
                                         <tr>

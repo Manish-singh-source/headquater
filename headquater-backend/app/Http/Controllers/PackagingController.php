@@ -17,7 +17,8 @@ class PackagingController extends Controller
     public function view($id)
     {
         $salesOrder = SalesOrder::with('customerGroup', 'warehouse', 'orderedProducts.product', 'orderedProducts.tempOrder')->findOrFail($id);
-        return view('packing-products-list', compact('salesOrder'));
+        // dd($salesOrder);
+        return view('packagingList.packing-products-list', compact('salesOrder'));
     }
     
 }

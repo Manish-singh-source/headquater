@@ -454,6 +454,12 @@
                               <li><a href="{{ route('products.index') }}"><i
                                           class="material-icons-outlined">arrow_right</i>Products</a>
                               </li>
+                              {{-- 
+                              <li>
+                                <a href="#"><i
+                                          class="material-icons-outlined">arrow_right</i>SKU Mapping</a>
+                              </li> 
+                              --}}
                           @endcan
 
                           @can('PermissionChecker', 'view_warehouse')
