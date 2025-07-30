@@ -16,19 +16,13 @@ use App\Http\Controllers\WarehouseController;
 use App\Http\Controllers\CustomerGroupController;
 use App\Http\Controllers\PurchaseOrderController;
 use App\Http\Controllers\ReceivedProductsController;
+use App\Http\Controllers\SKUMappingController;
 use App\Http\Controllers\TrackOrderController;
 
 Route::middleware('IsAdmin')->group(function () {
     Route::get('/', [CustomerController::class, 'index'])->name('index');
 });
 
-// index
-// view
-// create
-// store
-// edit
-// update
-// delete/destroy
 
 Route::controller(LocationController::class)->group(function () {
     Route::get('/countries', 'getCountries');
@@ -127,7 +121,7 @@ Route::controller(StaffController::class)->group(function () {
     Route::put('/update-staff/{id}', 'update')->name('staff.update');
     Route::delete('/delete-staff/{id}', 'destroy')->name('staff.destroy');
     Route::get('/view-staff/{id}', 'view')->name('staff.view');
-     Route::delete('/staff/delete-selected', 'deleteSelected')->name('delete.selected.staff');
+    Route::delete('/staff/delete-selected', 'deleteSelected')->name('delete.selected.staff');
     Route::post('/staff/toggle-status', 'toggleStatus')->name('staff.toggleStatus');
 });
 
@@ -229,6 +223,14 @@ Route::controller(TrackOrderController::class)->group(function () {
 
 
 Route::view('/excel-file-formats', 'excel-file-formats')->name('excel-file-formats');
+
+Route::controller(SKUMappingController::class)->group(function () {
+    Route::get('/sku-mapping', 'index')->name('sku.mapping');
+    Route::get('/sku-mapping-edit/{id}', 'edit')->name('sku.mapping.edit');
+    Route::put('/sku-mapping-update', 'update')->name('sku.mapping.update');
+    Route::delete('/sku-mapping-destroy/{id}', 'delete')->name('sku.mapping.destroy');
+    Route::post('/sku-mapping', 'store')->name('sku.mapping.store');
+});
 
 // Later Tasks
 

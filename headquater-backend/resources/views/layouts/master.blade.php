@@ -453,13 +453,11 @@
                           @can('PermissionChecker', 'view_product')
                               <li><a href="{{ route('products.index') }}"><i
                                           class="material-icons-outlined">arrow_right</i>Products</a>
-                              </li>
-                              {{-- 
+                              </li>                              
                               <li>
-                                <a href="#"><i
+                                <a href="{{ route('sku.mapping') }}"><i
                                           class="material-icons-outlined">arrow_right</i>SKU Mapping</a>
                               </li> 
-                              --}}
                           @endcan
 
                           @can('PermissionChecker', 'view_warehouse')

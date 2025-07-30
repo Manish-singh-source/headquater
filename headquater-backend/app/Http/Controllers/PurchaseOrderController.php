@@ -9,11 +9,12 @@ use App\Models\PurchaseGrn;
 use Illuminate\Support\Arr;
 use Illuminate\Http\Request;
 use App\Models\PurchaseOrder;
+use App\Models\WarehouseStock;
 use App\Models\PurchaseInvoice;
+use App\Models\VendorPIProduct;
+use App\Models\WarehouseStockLog;
 use Illuminate\Support\Facades\DB;
 use App\Models\PurchaseOrderProduct;
-use App\Models\VendorPIProduct;
-use App\Models\WarehouseStock;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Validator;
 use Spatie\SimpleExcel\SimpleExcelReader;
@@ -190,7 +191,12 @@ class PurchaseOrderController extends Controller
             $updateStock->quantity = $updateStock->quantity + $product->available_quantity;
             $updateStock->block_quantity = $updateStock->block_quantity - $product->available_quantity;
             $updateStock->save();
-            
+
+            $warehouseStockBlockLogs = WarehouseStockLog::where('sku', $product->vendor_sku_code)->first();
+            $warehouseStockBlockLogs->block_quantity = $updateStock->block_quantity - $product->available_quantity;
+            $warehouseStockBlockLogs->reason = "Block Quantity Removed - " . $updateStock->block_quantity;
+            $warehouseStockBlockLogs->save();
+
             $updateProductStock = Product::where('sku', $product->vendor_sku_code)->first();
             $updateProductStock->sets_ctn = $updateProductStock->sets_ctn + $product->available_quantity;
             $updateProductStock->save();

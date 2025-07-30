@@ -9,5 +9,9 @@ class VendorPIProduct extends Model
     //
     protected $guarded = [];
     public $table = 'vendor_p_i_products';
-    
+
+    public function order()
+    {
+        return $this->belongsTo(VendorPI::class, 'vendor_pi_id', 'id');
+    }
 }

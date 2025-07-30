@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
+use App\Models\SkuMapping;
 use App\Models\TempOrder;
 use App\Models\Warehouse;
 use Illuminate\Support\Arr;
@@ -140,8 +141,6 @@ class ProductController extends Controller
             return redirect()->back()->withErrors(['error' => 'Something went wrong: ' . $e->getMessage()]);
         }
     }
-
-
 
     public function deleteSelected(Request $request)
     {

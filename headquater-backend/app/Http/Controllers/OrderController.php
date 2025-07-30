@@ -164,13 +164,15 @@ class OrderController extends Controller
                 $saveOrderProduct->vendor_code = $record['Vendor Code'];
                 $saveOrderProduct->save();
 
-                $purchaseOrderProduct = new PurchaseOrderProduct();
-                $purchaseOrderProduct->sales_order_id = $saveOrder->id;
-                $purchaseOrderProduct->purchase_order_id = $purchaseOrder->id;
-                $purchaseOrderProduct->ordered_quantity = $unavailableStatus;
-                $purchaseOrderProduct->sku = $record['SKU'];
-                $purchaseOrderProduct->vendor_code = $record['Vendor Code'];
-                $purchaseOrderProduct->save();
+                if($unavailableStatus > 0) {
+                    $purchaseOrderProduct = new PurchaseOrderProduct();
+                    $purchaseOrderProduct->sales_order_id = $saveOrder->id;
+                    $purchaseOrderProduct->purchase_order_id = $purchaseOrder->id;
+                    $purchaseOrderProduct->ordered_quantity = $unavailableStatus;
+                    $purchaseOrderProduct->sku = $record['SKU'];
+                    $purchaseOrderProduct->vendor_code = $record['Vendor Code'];
+                    $purchaseOrderProduct->save();
+                }
                 
                 // dd($stockEntry->quantity);
                 $blockQuantity = WarehouseStock::where('sku', $sku)->first();
@@ -228,7 +230,7 @@ class OrderController extends Controller
 
     public function view($id)
     {
-        $salesOrder = SalesOrder::with('customerGroup', 'warehouse', 'orderedProducts.product', 'orderedProducts.tempOrder', 'orderedProducts.vendorPIProduct', 'vendorPIs.products')->findOrFail($id);
+        $salesOrder = SalesOrder::with('customerGroup', 'warehouse', 'orderedProducts.product', 'orderedProducts.tempOrder', 'orderedProducts.vendorPIProduct.order', 'vendorPIs.products')->findOrFail($id);
         // get vendor pi quantity 
         // vendor_code, product_sku, purchase_order_id, sales_order_id 
         // $vendorQty = PurchaseOrder::where('sales_order_id', $salesOrder->id)->with('vendorPI')->get();
@@ -267,6 +269,7 @@ class OrderController extends Controller
 
         foreach ($reader->getRows() as $record) {
             $sku = trim($record['SKU']);
+            $productSku = 
             $poQty = (int)$record['PO Quantity'];
             $warehouseId = $request->warehouse_id;
 
