@@ -9,6 +9,7 @@ use App\Models\Warehouse;
 use Illuminate\Support\Arr;
 use Illuminate\Http\Request;
 use App\Models\WarehouseStock;
+use App\Models\WarehouseStockLog;
 use Illuminate\Support\Facades\DB;
 use Spatie\SimpleExcel\SimpleExcelReader;
 
@@ -68,6 +69,13 @@ class ProductController extends Controller
                 $warehouseStock->sku = $record['SKU Code'];
                 $warehouseStock->quantity = $record['Sets/CTN'];
                 $warehouseStock->save();
+                
+                // $warehouseStock = new WarehouseStockLog();
+                // $warehouseStock->warehouse_id = $request->warehouse_id;
+                // $warehouseStock->product_id = $product->id;
+                // $warehouseStock->sku = $record['SKU Code'];
+                // $warehouseStock->quantity = $record['Sets/CTN'];
+                // $warehouseStock->save();
 
                 $insertCount++;
             }

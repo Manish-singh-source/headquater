@@ -8,19 +8,35 @@ class SalesOrderProduct extends Model
 {
     //
     protected $guarded = [];
-    public function product() {
+    public function product()
+    {
         return $this->hasOne(Product::class, 'sku', 'sku');
     }
-    
-    public function tempOrder() {
+
+    public function tempOrder()
+    {
         return $this->hasOne(TempOrder::class, 'id', 'temp_order_id');
     }
 
-    public function purchaseOrder() {
+    public function purchaseOrder()
+    {
         return $this->hasOne(PurchaseOrder::class, 'sales_order_id', 'sales_order_id');
     }
 
-    public function vendorPIProduct()  {
+    public function vendorPIProduct()
+    {
         return $this->hasOne(VendorPIProduct::class, 'vendor_sku_code', 'sku');
     }
+
+    public function warehouseStockLog()
+    {
+        return $this->hasOne(WarehouseStockLog::class, 'sales_order_id', 'id')
+            ->whereColumn('warehouse_stock_logs.sku', 'sales_order_products.sku');
+    }
+
+
+    // public function warehouseStockLog()
+    // {
+    //     return $this->hasOne(WarehouseStockLog::class, 'sales_order_id', 'id')->whereColumn('sku', 'warehouse_stock_logs.sku');
+    // }
 }

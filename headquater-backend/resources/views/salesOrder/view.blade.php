@@ -103,20 +103,22 @@
                                             @if ($order->product->sets_ctn)
                                                 <td>
                                                     @if ($order->vendorPIProduct?->order->status != 'completed')
-                                                        @if ($order->vendorPIProduct?->available_quantity + $order->product->sets_ctn >= $order->ordered_quantity)
+                                                        @if (
+                                                            $order->vendorPIProduct?->available_quantity + $order->warehouseStockLog?->block_quantity >=
+                                                                $order->ordered_quantity)
                                                             <span
                                                                 class="badge text-success bg-success-subtle">{{ $order->ordered_quantity }}</span>
                                                         @else
                                                             <span
-                                                                class="badge text-danger bg-danger-subtle">{{ $order->vendorPIProduct?->available_quantity + $order->product->sets_ctn }}</span>
+                                                                class="badge text-danger bg-danger-subtle">{{ $order->vendorPIProduct?->available_quantity + $order->warehouseStockLog?->block_quantity }}</span>
                                                         @endif
                                                     @else
-                                                        @if ($order->product->sets_ctn >= $order->ordered_quantity)
+                                                        @if ($order->warehouseStockLog?->block_quantity >= $order->ordered_quantity)
                                                             <span
                                                                 class="badge text-success bg-success-subtle">{{ $order->ordered_quantity }}</span>
                                                         @else
                                                             <span
-                                                                class="badge text-danger bg-danger-subtle">{{ $order->product->sets_ctn }}</span>
+                                                                class="badge text-danger bg-danger-subtle">{{ $order->warehouseStockLog?->block_quantity }}</span>
                                                         @endif
                                                     @endif
                                                 </td>

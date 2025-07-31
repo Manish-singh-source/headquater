@@ -513,7 +513,7 @@
                   <li class="menu-label">Warehouse</li>
                   @can('PermissionChecker', 'view_received_products')
                       <li>
-                          <a href="{{ route('received-products.view') }}">
+                          <a href="{{ route('received-products.index') }}">
                               <div class="parent-icon"><i class="material-icons-outlined">move_to_inbox</i>
                               </div>
                               <div class="menu-title">Received Products</div>

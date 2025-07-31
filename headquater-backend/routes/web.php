@@ -193,7 +193,9 @@ Route::controller(ReportController::class)->group(function () {
 
 
 // received products
-Route::get('/received-products', [ReceivedProductsController::class, 'view'])->name('received-products.view');
+Route::get('/received-products', [ReceivedProductsController::class, 'index'])->name('received-products.index');
+Route::post('/received-products', [ReceivedProductsController::class, 'view'])->name('received-products.view');
+Route::post('/get-vendors', [ReceivedProductsController::class, 'getVendors'])->name('get.vendors');
 Route::put('/received-products', [ReceivedProductsController::class, 'update'])->name('received-products.update');
 
 
