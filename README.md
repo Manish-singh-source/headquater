@@ -1,52 +1,57 @@
-﻿# headquater
+# Laravel Project Setup
 
-### **Git Workflow for Task Management**
-1. **Fetch the latest changes from the remote (github) repository:**
-   ```bash
-   git fetch origin
-   ```
-   - Fetches new branches and any changes from the remote (github) but doesn’t merge them into your local branch yet.
+This guide outlines the steps to set up and run the Laravel project locally.
 
-2. **Check the status of your working directory:**
-   ```bash
-   git status
-   ```
-   - This will show any modified, untracked, or staged files.
+## Requirements
 
-3. **Pull the latest changes (if required):**
-   ```bash
-   git pull 
-   ```
-   - If the current branch is behind the remote (github) branch, this will merge the latest changes into your local branch.
+- PHP >= 8.x
+- Composer
+- MySQL or compatible database
+- Node.js and npm (for frontend assets, if applicable)
 
-4. **Switch to the task branch:**
-   ```bash
-   git checkout BranchName
-   ```
-   - Replace `BranchName` with the actual name of the branch where you will perform your task.
+## Installation
 
-    **Example:**
+Follow the steps below to get started:
+
+1. **Clone the repository**
    ```bash
-   git checkout 1-create-a-login-page
-   ```
+   git clone <project-url>
+   cd <project-folder>
+
+2. **Install PHP dependencies**
+   ```bash
+   composer install
    
-5. **Do your work.**
-   - Modify files, write code, test changes, etc.
-
-6. **Stage the changes:**
+3. **Copy .env file**
    ```bash
-   git add .
-   ```
-   - This stages all modified files for commit.
+   cp .env.example .env
 
-7. **Commit your changes with a meaningful message:**
+4. **Update .env with your database credentials**
    ```bash
-   git commit -m "Your meaningful message"
-   ```
-   - Write a clear message that describes what changes you made.
+    DB_CONNECTION=mysql
+    DB_HOST=127.0.0.1
+    DB_PORT=3306
+    DB_DATABASE=your_database
+    DB_USERNAME=your_username
+    DB_PASSWORD=your_password
 
-8. **Push your changes to the remote repository:**
+5. **Generate application key**
    ```bash
-   git push
-   ```
-   - Pushes your commits to the remote branch you are working on.
+   php artisan key:generate
+
+6. **Create session table**
+   ````bash
+   php artisan session:table
+
+7. **Run database migrations**
+   ````bash
+   php artisan migrate
+
+8. **Serve the application**
+   ````bash
+   php artisan serve
+
+
+## License
+
+The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
