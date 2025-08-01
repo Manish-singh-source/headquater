@@ -14,25 +14,12 @@ class RoleController extends Controller
         $roles = Role::get();
         return view('roles.index', ['roles' => $roles]);
     }
-    
+
     public function create()
     {
         return view('roles.create');
     }
-     public function deleteSelected(Request $request)
-    {
-        $ids = is_array($request->ids) ? $request->ids : explode(',', $request->ids);
-        Role::destroy($ids);
-        return redirect()->back()->with('success', 'Selected Role deleted successfully.');
-    }
-     public function toggleStatus(Request $request)
-    {
-        $role = Role::findOrFail($request->id);
-        $role->status = $request->status;
-        $role->save();
 
-        return response()->json(['success' => true]);
-    }
     public function store(Request $request)
     {
         $role = new Role();
@@ -43,7 +30,7 @@ class RoleController extends Controller
 
         return redirect()->route('role.index')->with('success', 'Role added successfully.');
     }
-    
+
     public function edit($id)
     {
         $role = Role::findOrFail($id);
@@ -69,4 +56,19 @@ class RoleController extends Controller
         return redirect()->route('role.index')->with('success', 'Role deleted successfully.');
     }
 
+    public function deleteSelected(Request $request)
+    {
+        $ids = is_array($request->ids) ? $request->ids : explode(',', $request->ids);
+        Role::destroy($ids);
+        return redirect()->back()->with('success', 'Selected Role deleted successfully.');
+    }
+
+    public function toggleStatus(Request $request)
+    {
+        $role = Role::findOrFail($request->id);
+        $role->status = $request->status;
+        $role->save();
+
+        return response()->json(['success' => true]);
+    }
 }

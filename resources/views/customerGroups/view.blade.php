@@ -20,8 +20,10 @@
                 <div class="col-12 col-md-auto">
                     <div class="d-flex align-items-center gap-2 justify-content-lg-end">
                         @can('PermissionChecker', 'create_customer')
-                            <a href="{{ route('customer.create', $customerGroup->id) }}"><button class="btn btn-primary px-4"><i
-                                        class="bi bi-plus-lg me-2"></i>Add Customer</button></a>
+                            <a href="{{ route('customer.create', $customerGroup->id) }}"><button class="btn border-2 border-primary"><i
+                                        class="bi bi-plus-lg me-2"></i>Add Customer(Bulk)</button></a>
+                            <a href="{{ route('customer.create', $customerGroup->id) }}"><button class="btn border-2 border-primary"><i
+                                        class="bi bi-plus-lg me-2"></i>Add Customer(Single)</button></a>
                         @endcan
                         <div class="ms-auto">
                             <div class="btn-group">
@@ -99,6 +101,24 @@
                                                             class="feather feather-eye text-primary">
                                                             <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                                                             <circle cx="12" cy="12" r="3"></circle>
+                                                        </svg>
+                                                    </a>
+
+                                                    <a aria-label="anchor"
+                                                        href="{{ route('customer.edit', ['id' => $customer->customer->id, 'group_id' => $customer->customer_group_id]) }}"
+                                                        class="btn btn-icon btn-sm bg-warning-subtle me-1"
+                                                        data-bs-toggle="tooltip" data-bs-original-title="Edit">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="13"
+                                                            height="13" viewBox="0 0 24 24" fill="none"
+                                                            stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                                            stroke-linejoin="round"
+                                                            class="feather feather-edit text-warning">
+                                                            <path
+                                                                d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7">
+                                                            </path>
+                                                            <path
+                                                                d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z">
+                                                            </path>
                                                         </svg>
                                                     </a>
 

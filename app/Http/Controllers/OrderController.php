@@ -33,14 +33,12 @@ class OrderController extends Controller
         return view('salesOrder.index', compact('orders'));
     }
 
-
     public function create()
     {
         $customerGroup = CustomerGroup::all();
         $warehouses = Warehouse::all();
         return view('salesOrder.create', ['customerGroup' => $customerGroup, 'warehouses' => $warehouses]);
     }
-
 
     public function store(Request $request)
     {
@@ -116,7 +114,8 @@ class OrderController extends Controller
 
                 // Stock check
                 if ($remaining >= $poQty) {
-                    // Sufficient stock
+                    // Sufficient stock  
+                    $remaining = $poQty;
                     $unavailableStatus = 0;
                     $productStockCache[$sku]['remaining'] -= $poQty;
                 } else {
@@ -180,10 +179,10 @@ class OrderController extends Controller
                 $WarehouseblockQuantity = WarehouseStock::where('sku', $sku)->first(); // For Updating WarehouseStockLog Table
 
                 // Update WarehouseStock Table
-                if ($record['PO Quantity'] > ($blockQuantity->quantity - $blockQuantity->block_quantity)) {
-                    $blockQuantity->block_quantity = $blockQuantity->block_quantity + ($blockQuantity->quantity - $blockQuantity->block_quantity);
+                if ($record['PO Quantity'] > ((int)$blockQuantity->quantity - (int)$blockQuantity->block_quantity)) {
+                    $blockQuantity->block_quantity = (int)$blockQuantity->block_quantity + ((int)$blockQuantity->quantity - (int)$blockQuantity->block_quantity);
                 } else {
-                    $blockQuantity->block_quantity += $record['PO Quantity'];
+                    $blockQuantity->block_quantity = (int)$blockQuantity->block_quantity + (int)$record['PO Quantity'];
                 }
                 $blockQuantity->save();
 
@@ -192,8 +191,8 @@ class OrderController extends Controller
                 $warehouseStockBlockLogs->warehouse_id = $warehouse_id;
                 $warehouseStockBlockLogs->sales_order_id = $saveOrder->id;
                 $warehouseStockBlockLogs->sku = $record['SKU'];
-                if ($record['PO Quantity'] > ($WarehouseblockQuantity->quantity - $WarehouseblockQuantity->block_quantity)) {
-                    $warehouseStockBlockLogs->block_quantity = ($WarehouseblockQuantity->quantity - $WarehouseblockQuantity->block_quantity);
+                if ($record['PO Quantity'] > ((int)$WarehouseblockQuantity->quantity - (int)$WarehouseblockQuantity->block_quantity)) {
+                    $warehouseStockBlockLogs->block_quantity = ((int)$WarehouseblockQuantity->quantity - (int)$WarehouseblockQuantity->block_quantity);
                 } else {
                     $warehouseStockBlockLogs->block_quantity = $record['PO Quantity'];
                 }
@@ -210,23 +209,15 @@ class OrderController extends Controller
             DB::commit();
             return redirect()->route('order.index')->with('success', 'Order Completed Successful.');
         } catch (\Exception $e) {
+            dd($e->getMessage());
             DB::rollBack();
             return redirect()->back()->with(['error' => 'Something went wrong: ' . $e->getMessage()]);
         }
     }
 
-
     public function edit($id) {}
 
     public function update(Request $request, $id) {}
-
-    public function destroy($id)
-    {
-        $order = SalesOrder::findOrFail($id);
-        $order->delete();
-
-        return redirect()->route('order.index')->with('success', 'Order deleted successfully.');
-    }
 
     public function view($id)
     {
@@ -246,15 +237,22 @@ class OrderController extends Controller
         return view('salesOrder.view', compact('salesOrder'));
     }
 
+    public function destroy($id)
+    {
+        $order = SalesOrder::findOrFail($id);
+        $order->delete();
+
+        return redirect()->route('order.index')->with('success', 'Order deleted successfully.');
+    }
+
     public function  changeStatus(Request $request)
     {
         $salesOrder = SalesOrder::findOrFail($request->order_id);
         $salesOrderDetails = SalesOrderProduct::where('sales_order_id', $salesOrder->id)->get();
 
         $salesOrder->status = $request->status;
-        
-        if($salesOrder->status == 'ready_to_ship')
-        {
+
+        if ($salesOrder->status == 'ready_to_ship') {
             $invoice = new Invoice();
             $invoice->warehouse_id = $salesOrder->warehouse_id;
             $invoice->invoice_number = 'INV-' . time();
@@ -262,8 +260,7 @@ class OrderController extends Controller
             $invoice->sales_order_id = $salesOrder->id;
             $invoice->invoice_date = now();
             $invoice->round_off = 0;
-            $invoice->total_amount = $salesOrder->orderedProducts->sum(function ($product)
-            {
+            $invoice->total_amount = $salesOrder->orderedProducts->sum(function ($product) {
                 return $product->ordered_quantity * $product->product->price; // Assuming 'price' is the field in Product model
             });
             $invoiceDetails = new InvoiceDetails();
@@ -272,7 +269,7 @@ class OrderController extends Controller
             foreach ($salesOrderDetails as $detail) {
                 $product = Product::where('sku', $detail->sku)->first();
                 // dd($product);
-                
+
                 $invoiceDetails[] = [
                     'invoice_id' => $invoice->id,
                     'product_id' => $product->id,
@@ -296,7 +293,6 @@ class OrderController extends Controller
         return redirect()->route('packaging.list.index', $request->order_id)->with('success', 'Status has been changed.');
     }
 
-
     public function checkProductsStock(Request $request)
     {
         $file = $request->file('csv_file');
@@ -311,11 +307,12 @@ class OrderController extends Controller
 
         $productStockCache = []; // Cache stock by SKU
         $insertedRows = [];
+        $insertCount = 0;
 
         foreach ($reader->getRows() as $record) {
             $sku = trim($record['SKU']);
-            $productSku =
-                $poQty = (int)$record['PO Quantity'];
+            // $productSku =
+            $poQty = (int)$record['PO Quantity'];
             $warehouseId = $request->warehouse_id;
 
             // Default fallback
@@ -335,9 +332,9 @@ class OrderController extends Controller
                         'ordered' => 0,
                     ];
                 } else {
-                    if (isset($stockEntry->block_quantity)) {
-                        $stockEntry->quantity -= $stockEntry->block_quantity;
-                    }
+                    // if (isset($stockEntry->block_quantity)) {
+                    //     $stockEntry->quantity -= $stockEntry->block_quantity;
+                    // }
                     if ($stockEntry) {
                         $productStockCache[$sku] = [
                             'remaining' => $stockEntry->quantity,
@@ -359,7 +356,8 @@ class OrderController extends Controller
             // Stock check
             if ($remaining >= $poQty) {
                 // Sufficient stock
-                $unavailableStatus = $availableQty;
+                $remaining = $poQty;
+                $unavailableStatus = 0;
                 $productStockCache[$sku]['remaining'] -= $poQty;
             } else {
                 // Insufficient stock
@@ -367,6 +365,7 @@ class OrderController extends Controller
                 $unavailableStatus = $shortage;
                 $productStockCache[$sku]['remaining'] = 0;
             }
+
 
             $insertedRows[] = [
                 'customer_name' => $record['Customer Name'],
@@ -412,8 +411,6 @@ class OrderController extends Controller
         return view('process-order', ['customerGroup' => $customerGroup, 'warehouses' => $warehouses, 'fileData' => $insertedRows]);
     }
 
-
-
     public function downloadBlockedCSV()
     {
         $filePath = public_path(session('processed_csv_path'));
@@ -423,7 +420,7 @@ class OrderController extends Controller
         }
 
         return response()->download($filePath, basename($filePath), [
-            'Content-Type' => 'text/csv',
+            'Content-Type' => 'text/xlsx',
             // 'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         ]);
         // return redirect()->route->('orders')->response()->download(public_path(session('processed_csv_path')));

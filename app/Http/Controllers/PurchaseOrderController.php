@@ -31,33 +31,6 @@ class PurchaseOrderController extends Controller
         return view('purchaseOrder.index', compact('purchaseOrders', 'vendorCodes'));
     }
 
-    public function delete($id)
-    {
-        $purchaseOrder = PurchaseOrder::findOrFail($id);
-        $purchaseOrder->delete();
-
-        return redirect()->route('purchase.order.index')->with('success', 'Purchase Order deleted successfully.');
-    }
-
-    public function view($id)
-    {
-        $tempOrder = TempOrder::get();
-        $purchaseOrderProducts = PurchaseOrderProduct::where('purchase_order_id', $id)->with('purchaseOrder', 'tempProduct')->get();
-        $vendors = PurchaseOrderProduct::distinct()->pluck('vendor_code');
-        $vendorPI = VendorPI::with('product')->where('purchase_order_id', $id)->get();
-        $purchaseOrder = PurchaseOrder::with('vendorPI.product', 'purchaseInvoices')->get();
-        $uploadedPIOfVendors = VendorPI::distinct()->pluck('vendor_code');
-        $purchaseInvoice = PurchaseInvoice::where('purchase_order_id', $id)->get();
-        $purchaseGrn = PurchaseGrn::where('purchase_order_id', $id)->get();
-        // dd($purchaseOrderProducts);  
-        $vendorPIs = VendorPI::with('products')->where('purchase_order_id', $id)->where('status', '!=', 'completed')->get();
-
-        $vendorPIid = VendorPI::where('purchase_order_id', $id)->get();
-        // dd($vendorPIid);
-
-        return view('purchaseOrder.view', compact('vendorPIid', 'purchaseOrderProducts', 'uploadedPIOfVendors', 'vendors', 'vendorPIs', 'purchaseOrder', 'purchaseInvoice', 'purchaseGrn'));
-    }
-
     public function store(Request $request)
     {
         $request->validate([
@@ -115,6 +88,25 @@ class PurchaseOrderController extends Controller
             return redirect()->back()->withErrors(['error' => 'Something went wrong: ' . $e->getMessage()]);
         }
     }
+    
+    public function view($id)
+    {
+        $tempOrder = TempOrder::get();
+        $purchaseOrderProducts = PurchaseOrderProduct::where('purchase_order_id', $id)->with('purchaseOrder', 'tempProduct')->get();
+        $vendors = PurchaseOrderProduct::distinct()->pluck('vendor_code');
+        $vendorPI = VendorPI::with('product')->where('purchase_order_id', $id)->get();
+        $purchaseOrder = PurchaseOrder::with('vendorPI.product', 'purchaseInvoices')->get();
+        $uploadedPIOfVendors = VendorPI::distinct()->pluck('vendor_code');
+        $purchaseInvoice = PurchaseInvoice::where('purchase_order_id', $id)->get();
+        $purchaseGrn = PurchaseGrn::where('purchase_order_id', $id)->get();
+        // dd($purchaseOrderProducts);  
+        $vendorPIs = VendorPI::with('products')->where('purchase_order_id', $id)->where('status', '!=', 'completed')->get();
+
+        $vendorPIid = VendorPI::where('purchase_order_id', $id)->get();
+        // dd($vendorPIid);
+
+        return view('purchaseOrder.view', compact('vendorPIid', 'purchaseOrderProducts', 'uploadedPIOfVendors', 'vendors', 'vendorPIs', 'purchaseOrder', 'purchaseInvoice', 'purchaseGrn'));
+    }
 
     public function update(Request $request)
     {
@@ -170,6 +162,14 @@ class PurchaseOrderController extends Controller
             DB::rollBack();
             return redirect()->back()->withErrors(['error' => 'Something went wrong: ' . $e->getMessage()]);
         }
+    }
+
+    public function delete($id)
+    {
+        $purchaseOrder = PurchaseOrder::findOrFail($id);
+        $purchaseOrder->delete();
+
+        return redirect()->route('purchase.order.index')->with('success', 'Purchase Order deleted successfully.');
     }
 
     public function updateStatus(Request $request)
@@ -254,7 +254,6 @@ class PurchaseOrderController extends Controller
         }
         return redirect()->route('purchase.order.view', $request->purchase_order_id)->with('success', 'Invoice imported successfully.');
     }
-
 
     public function grnStore(Request $request)
     {

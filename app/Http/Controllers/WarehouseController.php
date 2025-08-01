@@ -53,18 +53,6 @@ class WarehouseController extends Controller
         return redirect()->route('warehouse.index')->with('success', 'Warehouse Created Successfully');
     }
 
-    public function view($id)
-    {
-        $warehouse = Warehouse::with('warehouseStock.product')->findOrFail($id);
-        return view('warehouse.view', ['warehouse' => $warehouse]);
-    }
-
-
-    public function warehouseDetail($id)
-    {
-        $warehouse = Warehouse::with('stocks.product')->findOrFail($id);
-        return view('warehouse.warehouse-detail', ['warehouse' => $warehouse]);
-    }
 
     public function edit($id)
     {
@@ -102,13 +90,18 @@ class WarehouseController extends Controller
         return redirect()->route('warehouse.index')->with('success', 'Warehouse Created Successfully');
     }
 
-
     public function destroy($id)
     {
         $warehouse = Warehouse::findOrFail($id);
         $warehouse->delete();
 
         return redirect()->route('warehouse.index')->with('success', 'Customer deleted successfully.');
+    }
+
+    public function view($id)
+    {
+        $warehouse = Warehouse::with('warehouseStock.product')->findOrFail($id);
+        return view('warehouse.view', ['warehouse' => $warehouse]);
     }
 
 
@@ -127,4 +120,11 @@ class WarehouseController extends Controller
         Warehouse::destroy($ids);
         return redirect()->back()->with('success', 'Selected customers deleted successfully.');
     }
+
+    // public function warehouseDetail($id)
+    // {
+    //     $warehouse = Warehouse::with('stocks.product')->findOrFail($id);
+    //     return view('warehouse.warehouse-detail', ['warehouse' => $warehouse]);
+    // }
+
 }
