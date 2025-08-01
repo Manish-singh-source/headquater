@@ -39,6 +39,7 @@ Route::middleware('RolePermission:customer-handler')->group(function () {
         Route::post('/store-customer-groups', 'store')->name('customer.groups.store');
         Route::delete('/delete-customer-groups/{id}', 'destroy')->name('customer.groups.destroy');
         Route::get('/view-customer-groups/{id}', 'view')->name('customer.groups.view');
+        
     });
 });
 
@@ -52,6 +53,9 @@ Route::controller(CustomerController::class)->group(function () {
     Route::delete('/customers/delete/{id}', 'delete')->name('customer.delete');
     // Route::get('/customers/detail/{id}', 'detail')->name('customers.detail');
     Route::get('/customer-detail/{id}', 'detail')->name('customer.detail');
+    Route::get('/user-profile', 'profile')->name('user-profile');
+    Route::put('/user-profile/update/{id}', 'updateuser')->name('user.update');
+
 });
 
 
@@ -245,6 +249,7 @@ Route::get('/create-invoice', function () {
 Route::get('/invoices-details', function () {
     return view('invoices-details');
 })->name('invoices-details');
+
 
 
 

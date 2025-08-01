@@ -11,10 +11,63 @@ use App\Models\SalesOrder;
 use Illuminate\Http\Request;
 use App\Models\CustomerGroup;
 use App\Models\CustomerGroupMember;
+use App\Models\Staff;
 use Illuminate\Support\Facades\Validator;
 
 class CustomerController extends Controller
 {
+
+    public function profile()
+    {
+        // Assuming you have a user model and authentication set up
+      $user = auth()->user(); 
+         return view('user-profile', compact('user'));
+
+        // For now, just return the view without any data
+        // You can later modify this to pass user data if needed
+       return view('user-profile');
+    }
+    public function userview()
+    {
+        
+        // Assuming you have a user model and authentication set up
+        $user = auth()->user(); 
+        return view('user-profile', compact('user'));
+    }
+    public function updateuser(Request $request, $id)
+    {
+        
+        $validator = Validator::make($request->all(), [
+            'fname' => 'required|min:3',
+            'lname' => 'required|min:3',
+            'email' => 'required|email|unique:staff,email,' . $id,
+            'phone' => 'required|digits:10',
+        ]);
+
+        if ($validator->fails()) {
+            return back()->withErrors($validator)->withInput();
+        }
+
+         $user = Staff::findOrFail($id);
+        $user->fname = $request->fname;
+        $user->lname = $request->lname;
+        $user->email = $request->email;
+        $user->phone = $request->phone;
+        $user->current_address = $request->current_address;
+        // Handle profile image upload if needed
+        if ($request->hasFile('profile_image')) {
+            // Save the profile image logic here
+            $image = $request->file('profile_image');
+            $imageName = time() . '.' . $image->getClientOriginalExtension();
+            $image->move(public_path('/uploads/images/profile'), $imageName);
+            $user->profile_image = '/uploads/images/profile/' . $imageName; // Save the 
+            dd($user->profile_image);
+        }
+        $user->save();
+        
+
+        return redirect()->route('user-profile')->with('success', 'Profile updated successfully.');
+    }
 
     public function index()
     {
