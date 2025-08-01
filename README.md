@@ -50,6 +50,7 @@ Follow the steps below to get started:
 8. **Serve the application**
    ````bash
    php artisan serve
+   live
 
 
 ## License
