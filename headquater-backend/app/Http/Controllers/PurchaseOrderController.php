@@ -25,7 +25,6 @@ class PurchaseOrderController extends Controller
     public function index()
     {
         $purchaseOrders = PurchaseOrder::with('purchaseOrderProducts')->get();
-        // dd($purchaseOrders);
         $vendorCodes = $purchaseOrders->flatMap(function ($po) {
             return $po->purchaseOrderProducts->pluck('vendor_code');
         })->unique()->values();
@@ -189,11 +188,11 @@ class PurchaseOrderController extends Controller
         foreach ($vendorPIProducts->products as $product) {
             $updateStock = WarehouseStock::where('sku', $product->vendor_sku_code)->first();
             $updateStock->quantity = $updateStock->quantity + $product->available_quantity;
-            $updateStock->block_quantity = $updateStock->block_quantity - $product->available_quantity;
+            $updateStock->block_quantity = $updateStock->block_quantity + $product->available_quantity;
             $updateStock->save();
 
             $warehouseStockBlockLogs = WarehouseStockLog::where('sku', $product->vendor_sku_code)->first();
-            $warehouseStockBlockLogs->block_quantity = $warehouseStockBlockLogs->block_quantity - $product->available_quantity;
+            $warehouseStockBlockLogs->block_quantity = $warehouseStockBlockLogs->block_quantity + $product->available_quantity;
             $warehouseStockBlockLogs->reason = "Block Quantity Removed - " . $warehouseStockBlockLogs->block_quantity;
             $warehouseStockBlockLogs->save();
 

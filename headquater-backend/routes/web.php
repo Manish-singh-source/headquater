@@ -137,7 +137,7 @@ Route::controller(ProductController::class)->group(function () {
     Route::post('/products', 'store')->name('products.store');
     Route::get('/products/{id}', 'edit')->name('products.edit');
     Route::put('/products', 'update')->name('products.update');
-    Route::delete('/products/{id}', 'destroy')->name('products.destroy');
+    // Route::delete('/products/{id}', 'destroy')->name('products.destroy');
     Route::get('/products/view/{id}', 'view')->name('products.view');
     Route::delete('/products/delete-selected', 'deleteSelected')->name('delete.selected.product');
 });
@@ -197,7 +197,9 @@ Route::controller(ReportController::class)->group(function () {
 
 
 // received products
-Route::get('/received-products', [ReceivedProductsController::class, 'view'])->name('received-products.view');
+Route::get('/received-products', [ReceivedProductsController::class, 'index'])->name('received-products.index');
+Route::post('/received-products', [ReceivedProductsController::class, 'view'])->name('received-products.view');
+Route::post('/get-vendors', [ReceivedProductsController::class, 'getVendors'])->name('get.vendors');
 Route::put('/received-products', [ReceivedProductsController::class, 'update'])->name('received-products.update');
 
 

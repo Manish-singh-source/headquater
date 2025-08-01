@@ -3,15 +3,20 @@
 namespace App\Http\Controllers;
 
 use App\Models\City;
+use App\Models\Staff;
 use App\Models\State;
+use App\Models\Vendor;
 use App\Models\Country;
+use App\Models\Product;
 use App\Models\Customer;
-use App\Models\CustomerAddress;
+use App\Models\Warehouse;
 use App\Models\SalesOrder;
 use Illuminate\Http\Request;
 use App\Models\CustomerGroup;
+use App\Models\CustomerAddress;
+use App\Models\SalesOrderProduct;
 use App\Models\CustomerGroupMember;
-use App\Models\Staff;
+use App\Models\PurchaseOrderProduct;
 use Illuminate\Support\Facades\Validator;
 
 class CustomerController extends Controller
@@ -71,7 +76,15 @@ class CustomerController extends Controller
 
     public function index()
     {
-        return view('index');
+        $customersCount = Customer::count();
+        $vendorsCount = Vendor::count();
+        $salesOrdersCount = SalesOrderProduct::count();
+        $purchaseOrdersCount = PurchaseOrderProduct::count();
+        $productsCount = Product::count();
+        $warehouseCount = Warehouse::count();
+        $readyToShipOrdersCount = SalesOrder::where('status', 'ready_to_ship')->count();
+        $readyToPackageOrdersCount = SalesOrder::where('status', 'ready_to_package')->count();
+        return view('index', compact('customersCount', 'vendorsCount', 'salesOrdersCount', 'purchaseOrdersCount', 'productsCount', 'warehouseCount', 'readyToShipOrdersCount', 'readyToPackageOrdersCount'));
     }
 
     public function detail($id)

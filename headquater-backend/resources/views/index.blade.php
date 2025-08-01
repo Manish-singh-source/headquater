@@ -32,7 +32,7 @@
                                                 width="60" height="60" alt="user">
                                             <div class="">
                                                 <p class="mb-0 fw-semibold">Welcome back</p>
-                                                <h4 class="fw-semibold mb-0 fs-4 mb-0">
+                                                <h4 class="fw-semibold mb-0 fs-4">
                                                     {{ Auth::user()->fname }}
                                                     {{ Auth::user()->lname }}
                                                 </h4>
@@ -91,7 +91,7 @@
                                         <div class="ms-2">
                                             <p class="text-dark mb-1">Total Customers</p>
                                             <div class="d-inline-flex align-items-center flex-wrap gap-2">
-                                                <h4 class="text-dark">10</h4>
+                                                <h4 class="text-dark">{{ $customersCount ?? '0' }}</h4>
                                                 <!-- <span class="badge badge-soft-primary text-dark"><i class="ti ti-arrow-up me-1"></i>+22%</span> -->
                                             </div>
                                         </div>
@@ -106,7 +106,7 @@
                                         <div class="ms-2">
                                             <p class="text-dark mb-1">Total Customer Orders</p>
                                             <div class="d-inline-flex align-items-center flex-wrap gap-2">
-                                                <h4 class="text-dark">158</h4>
+                                                <h4 class="text-dark">{{ $salesOrdersCount ?? '0' }}</h4>
                                                 <!-- <span class="badge badge-soft-primary text-dark"><i class="ti ti-arrow-up me-1"></i>+22%</span> -->
                                             </div>
                                         </div>
@@ -121,7 +121,7 @@
                                         <div class="ms-2">
                                             <p class="text-dark mb-1">Total Vendors</p>
                                             <div class="d-inline-flex align-items-center flex-wrap gap-2">
-                                                <h4 class="text-dark">400</h4>
+                                                <h4 class="text-dark">{{ $vendorsCount ?? '0' }}</h4>
                                                 <!-- <span class="badge badge-soft-primary text-dark"><i class="ti ti-arrow-up me-1"></i>+22%</span> -->
                                             </div>
                                         </div>
@@ -136,7 +136,7 @@
                                         <div class="ms-2">
                                             <p class="text-dark mb-1">Total Vendor Orders</p>
                                             <div class="d-inline-flex align-items-center flex-wrap gap-2">
-                                                <h4 class="text-dark">88</h4>
+                                                <h4 class="text-dark">{{ $purchaseOrdersCount ?? '0' }}</h4>
                                                 <!-- <span class="badge badge-soft-primary text-dark"><i class="ti ti-arrow-up me-1"></i>+22%</span> -->
                                             </div>
                                         </div>
@@ -177,7 +177,7 @@
                                     <div class="ms-2">
                                         <p class="text-dark mb-1">Total Products</p>
                                         <div class="d-inline-flex align-items-center flex-wrap gap-2">
-                                            <h4 class="text-dark">2916</h4>
+                                            <h4 class="text-dark">{{ $productsCount ?? '0' }}</h4>
                                             <!-- <span class="badge badge-soft-primary text-dark"><i class="ti ti-arrow-up me-1"></i>+22%</span> -->
                                         </div>
                                     </div>
@@ -190,7 +190,7 @@
                                     <div class="ms-2">
                                         <p class="text-dark mb-1">Total Warehouses</p>
                                         <div class="d-inline-flex align-items-center flex-wrap gap-2">
-                                            <h4 class="text-dark">1</h4>
+                                            <h4 class="text-dark">{{ $warehouseCount ?? '0' }}</h4>
                                             <!-- <span class="badge badge-soft-primary text-dark"><i class="ti ti-arrow-up me-1"></i>+22%</span> -->
                                         </div>
                                     </div>
@@ -203,7 +203,7 @@
                                     <div class="ms-2">
                                         <p class="text-dark mb-1">Total Invoices</p>
                                         <div class="d-inline-flex align-items-center flex-wrap gap-2">
-                                            <h4 class="text-dark">895</h4>
+                                            <h4 class="text-dark">0</h4>
                                             <!-- <span class="badge badge-soft-primary text-dark"><i class="ti ti-arrow-up me-1"></i>+22%</span> -->
                                         </div>
                                     </div>
@@ -216,7 +216,7 @@
                                     <div class="ms-2">
                                         <p class="text-dark mb-1">Packaging List</p>
                                         <div class="d-inline-flex align-items-center flex-wrap gap-2">
-                                            <h4 class="text-dark">10 Orders</h4>
+                                            <h4 class="text-dark">{{ $readyToPackageOrdersCount ?? '0' }}</h4>
                                             <!-- <span class="badge badge-soft-primary text-dark"><i class="ti ti-arrow-up me-1"></i>+22%</span> -->
                                         </div>
                                     </div>
@@ -229,7 +229,7 @@
                                     <div class="ms-2">
                                         <p class="text-dark mb-1">Ready To Ship</p>
                                         <div class="d-inline-flex align-items-center flex-wrap gap-2">
-                                            <h4 class="text-dark">15 Orders</h4>
+                                            <h4 class="text-dark">{{ $readyToShipOrdersCount ?? '0' }}</h4>
                                             <!-- <span class="badge badge-soft-primary text-dark"><i class="ti ti-arrow-up me-1"></i>+22%</span> -->
                                         </div>
                                     </div>

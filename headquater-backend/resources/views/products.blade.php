@@ -47,7 +47,7 @@
                                 <thead class="table-light">
                                     <tr>
                                         <th>
-                                            <input class="form-check-input" type="checkbox" id="select-all">
+                                             <input class="form-check-input" type="checkbox" id="select-all">
                                         </th>
                                         <th>Warehouse</th>
                                         <th>Product&nbsp;Name</th>

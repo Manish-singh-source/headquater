@@ -131,8 +131,8 @@ class OrderController extends Controller
                     'sku' => $record['SKU'],
                     'facility_name' => $record['Facility Name'],
                     'facility_location' => $record['Facility Location'],
-                    'po_date' => $record['PO Date']->format('d-m-Y'),
-                    'po_expiry_date' => $record['PO Expiry Date']->format('d-m-Y'),
+                    'po_date' => $record['PO Date'],
+                    'po_expiry_date' => $record['PO Expiry Date'],
                     'hsn' => $record['HSN'],
                     'item_code' => $record['Item Code'],
                     'description' => $record['Description'],
@@ -164,7 +164,7 @@ class OrderController extends Controller
                 $saveOrderProduct->vendor_code = $record['Vendor Code'];
                 $saveOrderProduct->save();
 
-                if($unavailableStatus > 0) {
+                if ($unavailableStatus > 0) {
                     $purchaseOrderProduct = new PurchaseOrderProduct();
                     $purchaseOrderProduct->sales_order_id = $saveOrder->id;
                     $purchaseOrderProduct->purchase_order_id = $purchaseOrder->id;
@@ -173,30 +173,28 @@ class OrderController extends Controller
                     $purchaseOrderProduct->vendor_code = $record['Vendor Code'];
                     $purchaseOrderProduct->save();
                 }
-                
-                // dd($stockEntry->quantity);
-                $blockQuantity = WarehouseStock::where('sku', $sku)->first();
-                if (isset($blockQuantity)) {
-                    if ($stockEntry->quantity >= $unavailableStatus) {
-                        $blockQuantity->block_quantity = $unavailableStatus;
-                    } else {
-                        $blockQuantity->block_quantity = $stockEntry->quantity;
-                    }
-                    $blockQuantity->save();
-                }
 
+                $blockQuantity = WarehouseStock::where('sku', $sku)->first();
+                $WarehouseblockQuantity = WarehouseStock::where('sku', $sku)->first(); // For Updating WarehouseStockLog Table
+
+                // Update WarehouseStock Table
+                if ($record['PO Quantity'] > ($blockQuantity->quantity - $blockQuantity->block_quantity)) {
+                    $blockQuantity->block_quantity = $blockQuantity->block_quantity + ($blockQuantity->quantity - $blockQuantity->block_quantity);
+                } else {
+                    $blockQuantity->block_quantity += $record['PO Quantity'];
+                }
+                $blockQuantity->save();
+
+                // Update WarehouseStockLog Table
                 $warehouseStockBlockLogs = new WarehouseStockLog();
                 $warehouseStockBlockLogs->warehouse_id = $warehouse_id;
                 $warehouseStockBlockLogs->sales_order_id = $saveOrder->id;
                 $warehouseStockBlockLogs->sku = $record['SKU'];
-                if(isset($stockEntry->quantity)) {
-                    if ($stockEntry->quantity >= $unavailableStatus) {
-                        $warehouseStockBlockLogs->block_quantity = $unavailableStatus;
-                    } else {
-                        $warehouseStockBlockLogs->block_quantity = $stockEntry->quantity;
-                    }
+                if ($record['PO Quantity'] > ($WarehouseblockQuantity->quantity - $WarehouseblockQuantity->block_quantity)) {
+                    $warehouseStockBlockLogs->block_quantity = ($WarehouseblockQuantity->quantity - $WarehouseblockQuantity->block_quantity);
+                } else {
+                    $warehouseStockBlockLogs->block_quantity = $record['PO Quantity'];
                 }
-                // $warehouseStockBlockLogs->stock = $blockQuantity->quantity;
                 $warehouseStockBlockLogs->reason = "Quantity Blocked For Sales Order Id - " . $saveOrder->id;
                 $warehouseStockBlockLogs->save();
 
@@ -231,10 +229,18 @@ class OrderController extends Controller
     public function view($id)
     {
         $salesOrder = SalesOrder::with('customerGroup', 'warehouse', 'orderedProducts.product', 'orderedProducts.tempOrder', 'orderedProducts.vendorPIProduct.order', 'vendorPIs.products')->findOrFail($id);
+        // $warehouseStockBlockLogs = WarehouseStockLog::where('sales_order_id', $id)->get();
         // get vendor pi quantity 
         // vendor_code, product_sku, purchase_order_id, sales_order_id 
         // $vendorQty = PurchaseOrder::where('sales_order_id', $salesOrder->id)->with('vendorPI')->get();
-        // dd($salesOrder); 
+        // dd($warehouseStockBlockLogs); 
+
+        foreach ($salesOrder->orderedProducts as $orderedProduct) {
+            $orderedProduct->warehouseStockLog = WarehouseStockLog::where('sales_order_id', $orderedProduct->sales_order_id)
+                ->where('sku', $orderedProduct->sku)
+                ->first();
+        }
+        // dd($salesOrder->orderedProducts);
         return view('salesOrder.view', compact('salesOrder'));
     }
 
@@ -269,13 +275,13 @@ class OrderController extends Controller
 
         foreach ($reader->getRows() as $record) {
             $sku = trim($record['SKU']);
-            $productSku = 
-            $poQty = (int)$record['PO Quantity'];
+            $productSku =
+                $poQty = (int)$record['PO Quantity'];
             $warehouseId = $request->warehouse_id;
 
             // Default fallback
             $availableQty = 0;
-            $unavailableStatus = "Product Not Available";
+            $unavailableStatus = "0";
 
             // Fetch stock if not already cached
             if (!isset($productStockCache[$sku])) {
@@ -314,12 +320,12 @@ class OrderController extends Controller
             // Stock check
             if ($remaining >= $poQty) {
                 // Sufficient stock
-                $unavailableStatus = "Available";
+                $unavailableStatus = $availableQty;
                 $productStockCache[$sku]['remaining'] -= $poQty;
             } else {
                 // Insufficient stock
                 $shortage = $poQty - $remaining;
-                $unavailableStatus = "{$shortage} Quantity Not Available";
+                $unavailableStatus = $shortage;
                 $productStockCache[$sku]['remaining'] = 0;
             }
 

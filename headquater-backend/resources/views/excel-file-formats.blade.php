@@ -32,8 +32,8 @@
                                 <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                                     <span><b>Products</b></span>
                                     <span>
-                                        <a href="{{ asset('uploads/excel-formats/customers-group.xlsx') }}"
-                                            download="customers-group.xlsx" class="btn btn-sm border-2 border-primary">
+                                        <a href="{{ asset('uploads/excel-formats/product-master.xlsx') }}"
+                                            download="product-master.xlsx" class="btn btn-sm border-2 border-primary">
                                             <i class="fas fa-file-excel me-1"></i> Download
                                         </a>
                                     </span>
@@ -41,8 +41,8 @@
                                 <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                                     <span><b>Customer PO</b></span>
                                     <span>
-                                        <a href="{{ asset('uploads/excel-formats/customers-group.xlsx') }}"
-                                            download="customers-group.xlsx" class="btn btn-sm border-2 border-primary">
+                                        <a href="{{ asset('uploads/excel-formats/customers-po.xlsx') }}"
+                                            download="customers-po.xlsx" class="btn btn-sm border-2 border-primary">
                                             <i class="fas fa-file-excel me-1"></i> Download
                                         </a>
                                     </span>
@@ -50,8 +50,8 @@
                                 <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                                     <span><b>Customer PO Availibility Check</b></span>
                                     <span>
-                                        <a href="{{ asset('uploads/excel-formats/customers-group.xlsx') }}"
-                                            download="customers-group.xlsx" class="btn btn-sm border-2 border-primary">
+                                        <a href="{{ asset('uploads/excel-formats/customer-po-availibility-check.xlsx') }}"
+                                            download="customer-po-availibility-check.xlsx" class="btn btn-sm border-2 border-primary">
                                             <i class="fas fa-file-excel me-1"></i> Download
                                         </a>
                                     </span>
@@ -59,8 +59,8 @@
                                 <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                                     <span><b>Customer PO Block Quantity</b></span>
                                     <span>
-                                        <a href="{{ asset('uploads/excel-formats/customers-group.xlsx') }}"
-                                            download="customers-group.xlsx" class="btn btn-sm border-2 border-primary">
+                                        <a href="{{ asset('uploads/excel-formats/customer-po-block-quantity.xlsx') }}"
+                                            download="customer-po-block-quantity.xlsx" class="btn btn-sm border-2 border-primary">
                                             <i class="fas fa-file-excel me-1"></i> Download
                                         </a>
                                     </span>
@@ -68,8 +68,8 @@
                                 <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                                     <span><b>Vendor PO</b></span>
                                     <span>
-                                        <a href="{{ asset('uploads/excel-formats/customers-group.xlsx') }}"
-                                            download="customers-group.xlsx" class="btn btn-sm border-2 border-primary">
+                                        <a href="{{ asset('uploads/excel-formats/vendor-po.xlsx') }}"
+                                            download="vendor-po.xlsx" class="btn btn-sm border-2 border-primary">
                                             <i class="fas fa-file-excel me-1"></i> Download
                                         </a>
                                     </span>
@@ -77,13 +77,13 @@
                                 <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                                     <span><b>Vendor PI</b></span>
                                     <span>
-                                        <a href="{{ asset('uploads/excel-formats/customers-group.xlsx') }}"
-                                            download="customers-group.xlsx" class="btn btn-sm border-2 border-primary">
+                                        <a href="{{ asset('uploads/excel-formats/vendor-pi.xlsx') }}"
+                                            download="vendor-pi.xlsx" class="btn btn-sm border-2 border-primary">
                                             <i class="fas fa-file-excel me-1"></i> Download
                                         </a>
                                     </span>
                                 </li>
-                                <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
+                                {{-- <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                                     <span><b>Update Vendor Received Products</b></span>
                                     <span>
                                         <a href="{{ asset('uploads/excel-formats/customers-group.xlsx') }}"
@@ -91,7 +91,7 @@
                                             <i class="fas fa-file-excel me-1"></i> Download
                                         </a>
                                     </span>
-                                </li>
+                                </li> --}}
 
                             </ul>
                         </div>
