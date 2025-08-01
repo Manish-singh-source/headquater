@@ -6,7 +6,9 @@ use App\Models\Role;
 use App\Models\Staff;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
+use App\Mail\StaffCredentialsMail;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 
 class StaffController extends Controller
@@ -85,6 +87,9 @@ class StaffController extends Controller
         $staff->created_by = Auth::id() ?? '1'; // Assuming you have an authenticated user
         $staff->updated_by =  Auth::id() ?? '1'; // Assuming you have an
         $staff->save();
+
+        // Send email with credentials
+         Mail::to($staff->email)->send(new StaffCredentialsMail($staff->email, $request->password));
 
         return redirect()->route('staff.index')->with('success', 'Staff added successfully.');
     }
