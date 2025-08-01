@@ -43,6 +43,47 @@
                     <div class="div d-flex my-2">
                         <div class="col">
                             <h6 class="mb-3">Customer PO Table</h6>
+
+                            {{-- @php
+                                $sum = 0;
+                                $sum2 = 0;
+                                foreach ($salesOrder->orderedProducts as $order) {
+                                    $sum += $sum + (int)$order->ordered_quantity;
+                                }
+
+                                foreach ($salesOrder->orderedProducts as $order) {
+                                    if ($order->product?->sets_ctn) {
+                                        if ($order->vendorPIProduct?->order?->status != 'completed') {
+                                            if (
+                                                $order->vendorPIProduct?->available_quantity +
+                                                    $order->warehouseStockLog?->block_quantity >=
+                                                $order->ordered_quantity
+                                            ) {
+                                                $sum2 = $sum2 + $order->ordered_quantity;
+                                            } else {
+                                                $sum2 =
+                                                    $sum2 +
+                                                    $order->vendorPIProduct?->available_quantity +
+                                                    $order->warehouseStockLog?->block_quantity;
+                                            }
+                                        } else {
+                                            if (
+                                                $order->warehouseStockLog?->block_quantity >= $order->ordered_quantity
+                                            ) {
+                                                $sum2 = $sum2 + $order->ordered_quantity;
+                                            } else {
+                                                $sum2 = $sum2 + $order->warehouseStockLog?->block_quantity;
+                                            }
+                                        }
+                                    } else {
+                                        $sum2 = $sum2 + 0;
+                                    }
+                                }
+                            @endphp
+
+                            {{ $sum }}
+                            {{ $sum2 }} --}}
+
                         </div>
 
                         <!-- Tabs Navigation -->
@@ -128,7 +169,9 @@
                                                     @endif
                                                 </td>
                                             @else
-                                                <span class="badge text-danger bg-danger-subtle">0</span>
+                                                <td>
+                                                    <span class="badge text-danger bg-danger-subtle">0</span>
+                                                </td>
                                             @endif
                                         </tr>
                                     @empty

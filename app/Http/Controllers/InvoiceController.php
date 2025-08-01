@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Invoice;
 use Illuminate\Http\Request;
-use PDF;
+use Barryvdh\DomPDF\PDF;
 
 class InvoiceController extends Controller
 {
@@ -22,11 +22,8 @@ class InvoiceController extends Controller
     public function downloadPdf()
     {
         $data = [
-
             'title' => 'Welcome to ItSolutionStuff.com',
-
             'date' => date('m/d/Y')
-
         ];
         // $data = [
 

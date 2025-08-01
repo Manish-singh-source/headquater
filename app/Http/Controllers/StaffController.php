@@ -6,7 +6,9 @@ use App\Models\Role;
 use App\Models\Staff;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
+use App\Mail\StaffCredentialsMail;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 
 class StaffController extends Controller
@@ -22,20 +24,6 @@ class StaffController extends Controller
     {
         $roles = Role::get();
         return view('staffs.create', ['roles' => $roles]);
-    }
-    public function deleteSelected(Request $request)
-    {
-        $ids = is_array($request->ids) ? $request->ids : explode(',', $request->ids);
-        Staff::destroy($ids);
-        return redirect()->back()->with('success', 'Selected Staff deleted successfully.');
-    }
-     public function toggleStatus(Request $request)
-    {
-        $staff = Staff::findOrFail($request->id);
-        $staff->status = $request->status;
-        $staff->save();
-
-        return response()->json(['success' => true]);
     }
 
     public function store(Request $request)
@@ -85,6 +73,9 @@ class StaffController extends Controller
         $staff->created_by = Auth::id() ?? '1'; // Assuming you have an authenticated user
         $staff->updated_by =  Auth::id() ?? '1'; // Assuming you have an
         $staff->save();
+
+        // Send email with credentials
+         Mail::to($staff->email)->send(new StaffCredentialsMail($staff->email, $request->password));
 
         return redirect()->route('staff.index')->with('success', 'Staff added successfully.');
     }
@@ -151,5 +142,21 @@ class StaffController extends Controller
     {
         $staffs = Staff::where('id', $id)->first();
         return view('staffs.view', ['staffs' => $staffs]);
+    }
+
+    public function deleteSelected(Request $request)
+    {
+        $ids = is_array($request->ids) ? $request->ids : explode(',', $request->ids);
+        Staff::destroy($ids);
+        return redirect()->back()->with('success', 'Selected Staff deleted successfully.');
+    }
+    
+    public function toggleStatus(Request $request)
+    {
+        $staff = Staff::findOrFail($request->id);
+        $staff->status = $request->status;
+        $staff->save();
+
+        return response()->json(['success' => true]);
     }
 }

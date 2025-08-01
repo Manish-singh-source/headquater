@@ -107,10 +107,10 @@ class CustomerGroupController extends Controller
     }
 
     // Editing Group information of existing
-    public function edit($id)
-    {
-        return view('customerGroups.edit');
-    }
+    // public function edit($id)
+    // {
+    //     return view('customerGroups.edit');
+    // }
 
     // View Customer Group Details
     public function view($id)

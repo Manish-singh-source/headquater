@@ -1,20 +1,44 @@
-@extends('layouts.master')
-@section('main-content')
+<!DOCTYPE html>
+<html lang="en">
+<head>
+          <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <title>HEADQUATERS | Admin Dashboard</title>
+      <!--favicon-->
+      <link rel="icon" href="{{ asset('assets/images/favicon-32x32.png') }}" type="image/png">
+      <!-- loader-->
 
-    <!--start main wrapper-->
-    <main class="main-wrapper">
+      <link href="{{ asset('assets/css/pace.min.css') }}" rel="stylesheet">
+      <script src="{{ asset('assets/js/pace.min.js') }}"></script>
+
+      <!--plugins-->
+      <link href="{{ asset('assets/plugins/perfect-scrollbar/css/perfect-scrollbar.css') }}" rel="stylesheet">
+      <link rel="stylesheet" type="text/css" href="{{ asset('assets/plugins/metismenu/metisMenu.min.css') }}">
+      <link rel="stylesheet" type="text/css" href="{{ asset('assets/plugins/metismenu/mm-vertical.css') }}">
+      <link rel="stylesheet" type="text/css" href="{{ asset('assets/plugins/simplebar/css/simplebar.css') }}">
+      <!--bootstrap css-->
+      <link href="{{ asset('assets/css/bootstrap.min.css') }}" rel="stylesheet">
+      {{-- <link href="{{ asset('assets/css/extra-icons.css') }}" rel="stylesheet"> --}}
+      <link href="{{ asset('assets/plugins/datatable/css/dataTables.bootstrap5.min.css') }}" rel="stylesheet" />
+      <link href="https://cdn.datatables.net/2.3.2/css/dataTables.dataTables.css" rel="stylesheet" />
+      <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@300;400;500;600&amp;display=swap"
+          rel="stylesheet">
+      <link href="https://fonts.googleapis.com/css?family=Material+Icons+Outlined" rel="stylesheet">
+      <!--main css-->
+      <link href="{{ asset('assets/css/bootstrap-extended.css') }}" rel="stylesheet">
+      <link href="{{ asset('sass/main.css') }}" rel="stylesheet">
+      <link href="{{ asset('sass/dark-theme.css') }}" rel="stylesheet">
+      <link href="{{ asset('sass/blue-theme.css') }}" rel="stylesheet">
+      <link href="{{ asset('sass/semi-dark.css') }}" rel="stylesheet">
+      <link href="{{ asset('sass/bordered-theme.css') }}" rel="stylesheet">
+      <link href="{{ asset('sass/responsive.css') }}" rel="stylesheet">
+
+      <!-- Include Select2 CSS -->
+      <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+</head>
+<body>
+     <!--start main wrapper-->
         <div class="main-content">
-
-            <div class="div d-flex my-2">
-                <div class="col">
-                    <h5 class="mb-3">INV0001</h5>
-                </div>
-                <div class="col text-end">
-                    <a href="javascript:void(0)" class="btn btn-success w-sm waves ripple-light" onclick="window.getElementByClass('.card').print()">
-                        Print
-                    </a>
-                </div>
-            </div>
 
             <div class="card">
                 <div class="card-body">
@@ -198,7 +222,9 @@
             </div>
 
         </div>
-    </main>
     <!--end main wrapper-->
+</body>
+</html>
+   
 
-    @endsection
+

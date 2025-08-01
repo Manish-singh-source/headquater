@@ -17,21 +17,161 @@ use App\Models\CustomerAddress;
 use App\Models\SalesOrderProduct;
 use App\Models\CustomerGroupMember;
 use App\Models\PurchaseOrderProduct;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 
 class CustomerController extends Controller
 {
 
+    public function index()
+    {
+        $customersCount = Customer::count();
+        $vendorsCount = Vendor::count();
+        $salesOrdersCount = SalesOrderProduct::count();
+        $purchaseOrdersCount = PurchaseOrderProduct::count();
+        $productsCount = Product::count();
+        $warehouseCount = Warehouse::count();
+        $readyToShipOrdersCount = SalesOrder::where('status', 'ready_to_ship')->count();
+        $readyToPackageOrdersCount = SalesOrder::where('status', 'ready_to_package')->count();
+        return view('index', compact('customersCount', 'vendorsCount', 'salesOrdersCount', 'purchaseOrdersCount', 'productsCount', 'warehouseCount', 'readyToShipOrdersCount', 'readyToPackageOrdersCount'));
+    }
+
+
+    public function create($g_id)
+    {
+        $countries = Country::get();
+        $states = State::get();
+        $cities = City::get();
+        return view('customer.create', ['group_id' => $g_id, 'countries' => $countries, 'states' => $states, 'cities' => $cities]);
+    }
+
+
+    public function store(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'client_name' => 'required|min:3',
+            'contact_name' => 'required|min:3',
+            'email' => 'required|email|unique:customers,email',
+            'contact_no' => 'required|digits:10',
+            'gstin' => 'required',
+            'pan' => 'required',
+        ]);
+
+        if ($validator->fails()) {
+            return back()->withErrors($validator)->withInput();
+        }
+
+        $customer = new Customer();
+        $customer->client_name = $request->client_name;
+        $customer->contact_name = $request->contact_name;
+        $customer->email = $request->email;
+        $customer->contact_no = $request->contact_no;
+        $customer->company_name = $request->companyName;
+        $customer->gstin = $request->gstin;
+        $customer->pan = $request->pan;
+        $customer->status = $request->status;
+        $customer->save();
+
+        $customerAddress = new CustomerAddress();
+        $customerAddress->customer_id = $customer->id;
+        $customerAddress->shipping_address = $request->shippingAddress;
+        $customerAddress->shipping_country = $request->shippingCountry;
+        $customerAddress->shipping_state = $request->shippingState;
+        $customerAddress->shipping_city = $request->shippingCity;
+        $customerAddress->shipping_zip = $request->shippingPinCode;
+        $customerAddress->billing_address = $request->billingAddress;
+        $customerAddress->billing_country = $request->billingCountry;
+        $customerAddress->billing_state = $request->billingState;
+        $customerAddress->billing_city = $request->billingCity;
+        $customerAddress->billing_zip = $request->billingPinCode;
+        $customerAddress->save();
+
+        $customerGrpMember = new CustomerGroupMember();
+        $customerGrpMember->customer_group_id = $request->group_id;
+        $customerGrpMember->customer_id  = $customer->id;
+        $customerGrpMember->save();
+
+        if ($customerAddress) {
+            return redirect()->route('customer.groups.view', $request->group_id)->with('success', 'Customer added successfully.');
+        }
+        return back()->with('error', 'Something Went Wrong.');
+    }
+
+    public function edit($id, $group_id)
+    {
+        $customer = Customer::with('addresses')->findOrFail($id);
+        // dd($customer);
+        return view('customer.edit', compact('customer', 'group_id'));
+    }
+
+    public function update(Request $request, $id)
+    {
+        $validator = Validator::make($request->all(), [
+            'group_id' => 'required',
+            'client_name' => 'required|min:3',
+            'contact_name' => 'required|min:3',
+            'email' => 'required|email|unique:customers,email,' . $id,
+            'contact_no' => 'required|digits:10',
+            'gstin' => 'required',
+            'pan' => 'required',
+        ]);
+
+        if ($validator->fails()) {
+            return back()->withErrors($validator)->withInput();
+        }
+
+        $customer = Customer::findOrFail($id);
+        $customer->client_name = $request->client_name;
+        $customer->contact_name = $request->contact_name;
+        $customer->email = $request->email;
+        $customer->contact_no = $request->contact_no;
+        $customer->company_name = $request->companyName;
+        $customer->gstin = $request->gstin;
+        $customer->pan = $request->pan;
+        $customer->status = $request->status;
+        $customer->save();
+
+        $customerAddress = CustomerAddress::where('customer_id', $id)->first();
+        $customerAddress->customer_id = $customer->id;
+        $customerAddress->shipping_address = $request->shippingAddress;
+        $customerAddress->shipping_country = $request->shippingCountry;
+        $customerAddress->shipping_state = $request->shippingState;
+        $customerAddress->shipping_city = $request->shippingCity;
+        $customerAddress->shipping_zip = $request->shippingPinCode;
+        $customerAddress->billing_address = $request->billingAddress;
+        $customerAddress->billing_country = $request->billingCountry;
+        $customerAddress->billing_state = $request->billingState;
+        $customerAddress->billing_city = $request->billingCity;
+        $customerAddress->billing_zip = $request->billingPinCode;
+        $customerAddress->save();
+
+        return redirect()->route('customer.groups.view', $request->group_id)->with('success', 'Customer updated successfully.');
+    }
+
+
+    public function delete($id)
+    {
+        $customer = Customer::findOrFail($id);
+        $customer->delete();
+
+        return redirect()->back()->with('success', 'Customer deleted successfully.');
+    }
+
+    public function detail($id)
+    {
+        $customerDetails = Customer::with('groupInfo.customerGroup', 'orders.product')->where('id', $id)->first();
+        // dd($customerDetails);
+        // $salesOrder = SalesOrder::with('customerGroup', 'warehouse', 'orderedProducts.product', 'orderedProducts.tempOrder')->findOrFail($id);
+        return view('customer.detail-view', compact('customerDetails'));
+    }
+
     public function profile()
     {
-        $user = auth()->user();
+        $user = Auth::user();
+        // $user = auth()->user();
         return view('user-profile', compact('user'));
     }
-    public function userview()
-    {
-        $user = auth()->user();
-        return view('user-profile', compact('user'));
-    }
+
     public function updateuser(Request $request, $id)
     {
 
@@ -66,27 +206,6 @@ class CustomerController extends Controller
         return redirect()->route('user-profile')->with('success', 'Profile updated successfully.');
     }
 
-    public function index()
-    {
-        $customersCount = Customer::count();
-        $vendorsCount = Vendor::count();
-        $salesOrdersCount = SalesOrderProduct::count();
-        $purchaseOrdersCount = PurchaseOrderProduct::count();
-        $productsCount = Product::count();
-        $warehouseCount = Warehouse::count();
-        $readyToShipOrdersCount = SalesOrder::where('status', 'ready_to_ship')->count();
-        $readyToPackageOrdersCount = SalesOrder::where('status', 'ready_to_package')->count();
-        return view('index', compact('customersCount', 'vendorsCount', 'salesOrdersCount', 'purchaseOrdersCount', 'productsCount', 'warehouseCount', 'readyToShipOrdersCount', 'readyToPackageOrdersCount'));
-    }
-
-    public function detail($id)
-    {
-        $customerDetails = Customer::with('groupInfo.customerGroup', 'orders.product')->where('id', $id)->first();
-        // dd($customerDetails);
-        // $salesOrder = SalesOrder::with('customerGroup', 'warehouse', 'orderedProducts.product', 'orderedProducts.tempOrder')->findOrFail($id);
-        return view('customer.detail-view', compact('customerDetails'));
-    }
-
     public function toggleStatus(Request $request)
     {
         $customer = CustomerGroup::findOrFail($request->id);
@@ -105,127 +224,24 @@ class CustomerController extends Controller
 
 
 
-    public function Customercount()
-    {
-        $customersCount = Customer::count();
-        return view('index', compact('customersCount'));
-    }
 
+    // public function userview()
+    // {
+    //     $user = Auth::user();
+    //     // $user = auth()->user();
+    //     return view('user-profile', compact('user'));
+    // }
 
-    public function create($g_id)
-    {
-        $countries = Country::get();
-        $states = State::get();
-        $cities = City::get();
-        return view('customer.create', ['group_id' => $g_id, 'countries' => $countries, 'states' => $states, 'cities' => $cities]);
-    }
+    // public function Customercount()
+    // {
+    //     $customersCount = Customer::count();
+    //     return view('index', compact('customersCount'));
+    // }
 
+    // public function detailCustomer($id)
+    // {
+    //     $customer = Customer::where('group_id', $id)->get();
 
-    public function store(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'client_name' => 'required|min:3',
-            'contact_name' => 'required|min:3',
-            'email' => 'required|email|unique:customers,email',
-            'contact_no' => 'required|digits:10',
-            'gstin' => 'required',
-            'pan' => 'required',
-        ]);
-
-        if ($validator->fails()) {
-            return back()->withErrors($validator)->withInput();
-        }
-
-        $customer = new Customer();
-        $customer->client_name = $request->client_name;
-        $customer->contact_name = $request->contact_name;
-        $customer->email = $request->email;
-        $customer->contact_no = $request->contact_no;
-        $customer->gstin = $request->gstin;
-        $customer->pan = $request->pan;
-        $customer->status = $request->status;
-        $customer->save();
-
-        $customerAddress = new CustomerAddress();
-        $customerAddress->customer_id = $customer->id;
-        $customerAddress->shipping_address = $request->shippingAddress;
-        $customerAddress->shipping_country = $request->shippingCountry;
-        $customerAddress->shipping_state = $request->shippingState;
-        $customerAddress->shipping_city = $request->shippingCity;
-        $customerAddress->shipping_zip = $request->shippingPinCode;
-        $customerAddress->billing_address = $request->billingAddress;
-        $customerAddress->billing_country = $request->billingCountry;
-        $customerAddress->billing_state = $request->billingState;
-        $customerAddress->billing_city = $request->billingCity;
-        $customerAddress->billing_zip = $request->billingPinCode;
-        $customerAddress->save();
-
-        $customerGrpMember = new CustomerGroupMember();
-        $customerGrpMember->customer_group_id = $request->group_id;
-        $customerGrpMember->customer_id  = $customer->id;
-        $customerGrpMember->save();
-
-        if ($customerAddress) {
-            return redirect()->route('customer.groups.view', $request->group_id)->with('success', 'Customer added successfully.');
-        }
-        return back()->with('error', 'Something Went Wrong.');
-    }
-
-    public function editCustomer($id)
-    {
-        $customer = Customer::findOrFail($id);
-        return view('customer.edit-customer', compact('customer'));
-    }
-
-    public function updateCustomer(Request $request, $id)
-    {
-        $validator = Validator::make($request->all(), [
-            'firstName' => 'required|min:3',
-            'lastName' => 'required|min:3',
-            'phone' => 'required|min:10',
-            'email' => 'required|email|unique:customers,email,' . $id,
-        ]);
-
-        if ($validator->fails()) {
-            return back()->withErrors($validator)->withInput();
-        }
-
-        $customer = Customer::findOrFail($id);
-        $customer->first_name = $request->firstName;
-        $customer->last_name = $request->lastName;
-        $customer->email = $request->email;
-        $customer->phone = $request->phone;
-        $customer->company_name = $request->companyName;
-        $customer->gst_number = $request->gstNo;
-        $customer->pan_number = $request->panNo;
-        $customer->shipping_address = $request->shippingAddress;
-        $customer->shipping_country = $request->shippingCountry;
-        $customer->shipping_state = $request->shippingState;
-        $customer->shipping_city = $request->shippingCity;
-        $customer->shipping_pincode = $request->shippingPinCode;
-        $customer->billing_address = $request->billingAddress;
-        $customer->billing_country = $request->billingCountry;
-        $customer->billing_state = $request->billingState;
-        $customer->billing_city = $request->billingCity;
-        $customer->billing_pincode = $request->billingPinCode;
-        $customer->status = $request->status;
-        $customer->save();
-
-        return redirect()->route('customers')->with('success', 'Customer updated successfully.');
-    }
-
-    public function detailCustomer($id)
-    {
-        $customer = Customer::where('group_id', $id)->get();
-
-        return view('customer.customer-detail', compact('customer'));
-    }
-
-    public function delete($id)
-    {
-        $customer = Customer::findOrFail($id);
-        $customer->delete();
-
-        return redirect()->back()->with('success', 'Customer deleted successfully.');
-    }
+    //     return view('customer.customer-detail', compact('customer'));
+    // }
 }

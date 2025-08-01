@@ -23,18 +23,6 @@ class ReceivedProductsController extends Controller
         return view('receivedProducts.view', compact('vendorPIs'));
     }
 
-
-    public function getVendors(Request $request)
-    {
-        $vendorsList = VendorPI::where('purchase_order_id', $request->id)->where('status', '!=', 'completed')->get();
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Vendors retrieved successfully',
-            'data' => $vendorsList
-        ], 200);
-    }
-
     public function update(Request $request)
     {
         $purchaseOrder = PurchaseOrder::where('id', $request->purchase_order_id)->first();
@@ -46,5 +34,16 @@ class ReceivedProductsController extends Controller
         }
 
         return back()->with('error', 'Something Went Wrong.');
+    }
+
+    public function getVendors(Request $request)
+    {
+        $vendorsList = VendorPI::where('purchase_order_id', $request->id)->where('status', '!=', 'completed')->get();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Vendors retrieved successfully',
+            'data' => $vendorsList
+        ], 200);
     }
 }
