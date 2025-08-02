@@ -186,6 +186,7 @@ Route::controller(PackagingController::class)->group(function () {
 Route::controller(ReadyToShip::class)->group(function () {
     Route::get('/ready-to-ship', 'index')->name('readyToShip.index');
     Route::get('/ready-to-ship-detail/{id}', 'view')->name('readyToShip.view');
+    Route::get('/ready-to-ship-detail-view/{id}/{c_id}', 'viewDetail')->name('readyToShip.view.detail');
 });
 
 Route::controller(TrackOrderController::class)->group(function () {
@@ -210,6 +211,7 @@ Route::controller(InvoiceController::class)->group(function () {
     // Route::get('/view-invoice/{id}', 'view')->name('invoice.view');
     // Route::delete('/delete-invoice/{id}', 'destroy')->name('invoice.delete');
     Route::get('/download-invoice-pdf/{id}', 'downloadPdf')->name('invoice.downloadPdf');
+
     Route::get('/create-invoice', function () {
         return view('create-invoice');
     })->name('create-invoice');

@@ -151,7 +151,7 @@ class OrderController extends Controller
                     'vendor_code' => $record['Vendor Code'],
                 ]);
 
-                $customerInfo = Customer::where('contact_name', $record['Customer Name'])
+                $customerInfo = Customer::where('client_name', $record['Facility Name'])
                     ->first();
 
                 $saveOrderProduct = new SalesOrderProduct();
@@ -253,36 +253,47 @@ class OrderController extends Controller
         $salesOrder->status = $request->status;
 
         if ($salesOrder->status == 'ready_to_ship') {
-            $invoice = new Invoice();
-            $invoice->warehouse_id = $salesOrder->warehouse_id;
-            $invoice->invoice_number = 'INV-' . time();
-            $invoice->customer_id = $salesOrder->customer_group_id;
-            $invoice->sales_order_id = $salesOrder->id;
-            $invoice->invoice_date = now();
-            $invoice->round_off = 0;
-            $invoice->total_amount = $salesOrder->orderedProducts->sum(function ($product) {
-                return $product->ordered_quantity * $product->product->price; // Assuming 'price' is the field in Product model
-            });
-            $invoiceDetails = new InvoiceDetails();
-            $invoice->save();
-            $invoiceDetails = [];
-            foreach ($salesOrderDetails as $detail) {
-                $product = Product::where('sku', $detail->sku)->first();
-                // dd($product);
+            $customerFacilityName = SalesOrderProduct::with('customer')
+                ->where('sales_order_id', $salesOrder->id)
+                ->get()
+                ->pluck('customer')
+                ->filter()
+                ->unique('client_name')
+                ->pluck('client_name', 'id',);
 
-                $invoiceDetails[] = [
-                    'invoice_id' => $invoice->id,
-                    'product_id' => $product->id,
-                    'quantity' => $detail->ordered_quantity,
-                    'unit_price' => $product->mrp,
-                    'discount' => 0, // Assuming no discount for simplicity
-                    'amount' => $detail->ordered_quantity * $product->mrp,
-                    'tax' => $product->gst ?? 0, // Assuming tax is a field in Product model
-                    'total_price' => ($detail->ordered_quantity * $product->price) - 0, // Total price after discount
-                    'description' => isset($detail->tempOrder) ? $detail->tempOrder->description : null, // Assuming description is in TempOrder
-                ];
+            foreach ($customerFacilityName as $customer_id => $facility_name) {
+                $invoice = new Invoice();
+                $invoice->warehouse_id = $salesOrder->warehouse_id;
+                $invoice->invoice_number = 'INV-' . time();
+                $invoice->customer_id = $customer_id;
+                $invoice->sales_order_id = $salesOrder->id;
+                $invoice->invoice_date = now();
+                $invoice->round_off = 0;
+                $invoice->total_amount = $salesOrder->orderedProducts->sum(function ($product) {
+                    return $product->ordered_quantity * $product->product->price; // Assuming 'price' is the field in Product model
+                });
+                // $invoiceDetails = new InvoiceDetails();
+                $invoice->save();
+
+                $invoiceDetails = [];
+                foreach ($salesOrderDetails as $detail) {
+                    $product = Product::where('sku', $detail->sku)->first();
+                    // dd($product);
+
+                    $invoiceDetails[] = [
+                        'invoice_id' => $invoice->id,
+                        'product_id' => $product->id,
+                        'quantity' => $detail->ordered_quantity,
+                        'unit_price' => $product->mrp,
+                        'discount' => 0, // Assuming no discount for simplicity
+                        'amount' => $detail->ordered_quantity * $product->mrp,
+                        'tax' => $product->gst ?? 0, // Assuming tax is a field in Product model
+                        'total_price' => ($detail->ordered_quantity * $product->price) - 0, // Total price after discount
+                        'description' => isset($detail->tempOrder) ? $detail->tempOrder->description : null, // Assuming description is in TempOrder
+                    ];
+                }
+                InvoiceDetails::insert($invoiceDetails);
             }
-            InvoiceDetails::insert($invoiceDetails);
         }
         $salesOrder->save();
 
@@ -373,8 +384,8 @@ class OrderController extends Controller
                 'sku' => $sku,
                 'facility_name' => $record['Facility Name'],
                 'facility_location' => $record['Facility Location'],
-                'po_date' => $record['PO Date']->format('d-m-Y'),
-                'po_expiry_date' => $record['PO Expiry Date']->format('d-m-Y'),
+                'po_date' => $record['PO Date'],
+                'po_expiry_date' => $record['PO Expiry Date'],
                 'hsn' => $record['HSN'],
                 'item_code' => $record['Item Code'],
                 'description' => $record['Description'],
@@ -408,7 +419,7 @@ class OrderController extends Controller
 
         $customerGroup = CustomerGroup::all();
         $warehouses = Warehouse::all();
-        return view('process-order', ['customerGroup' => $customerGroup, 'warehouses' => $warehouses, 'fileData' => $insertedRows]);
+        return view('salesOrder.process-order', ['customerGroup' => $customerGroup, 'warehouses' => $warehouses, 'fileData' => $insertedRows]);
     }
 
     public function downloadBlockedCSV()

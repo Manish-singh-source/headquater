@@ -85,7 +85,7 @@
                                             <td>
                                                 <input class="form-check-input" type="checkbox">
                                             </td>
-                                            <td>#{{ $invoice->invoice_number }}</td>
+                                            <td>#{{ $invoice->sales_order_id }}</td>
                                             <td>{{ $invoice->invoice_number }}</td>
                                             <td>{{ $invoice->customer->client_name }}</td>
                                             <td>

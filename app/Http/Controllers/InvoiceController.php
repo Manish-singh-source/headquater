@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Invoice;
 use Illuminate\Http\Request;
-use Barryvdh\DomPDF\PDF;
+use PDF;
 
 class InvoiceController extends Controller
 {
@@ -16,7 +16,7 @@ class InvoiceController extends Controller
             'invoices' => Invoice::with(['warehouse', 'customer', 'salesOrder'])->get(),
         ];
         // dd($data['invoices'][0]->customer->client_name);   
-        return view('invoices', $data);
+        return view('invoice.invoices', $data);
     }
 
     public function downloadPdf()
@@ -33,6 +33,6 @@ class InvoiceController extends Controller
         // ];
         // dd($data);
         // $pdf = PDF::loadView('invoice/invoice', $data);
-        return  PDF::loadView('invoice/invoice', $data)->stream('invoice.pdf');
+        return  PDF::loadView('invoice/invoice-pdf', $data)->stream('invoice.pdf');
     }
 }

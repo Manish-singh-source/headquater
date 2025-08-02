@@ -33,6 +33,7 @@ class PurchaseOrderController extends Controller
 
     public function store(Request $request)
     {
+        dd("hello");
         $request->validate([
             'pi_excel' => 'required|file|mimes:xlsx,csv,xls',
             'purchase_order_id' => 'required|exists:purchase_orders,id',

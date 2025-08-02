@@ -24,11 +24,17 @@
                             <h6 class="mb-3">Customer PO Table</h6>
                         </div>
                         <!-- Tabs Navigation -->
-                        <div class="div d-flex justify-content-end my-3 gap-2">
-                            <a href="{{ route('invoices-details') }}" class="btn btn-sm border-2 border-primary"
-                                class="btn btn-sm border-2 border-primary">
-                                Generate Invoice
-                            </a>
+                        <div class="d-flex justify-content-end my-3 gap-2">
+                            <ul class="nav nav-tabs" id="vendorTabs" role="tablist">
+                                <select class="form-select border-2 border-primary" id="departmentFilter"
+                                    aria-label="Default select example">
+                                    <option value="" selected> -- Select Client Name --</option>
+                                    @foreach ($facilityNames as $name)
+                                        <option value="{{ $name }}">{{ $name }}</option>
+                                    @endforeach
+                                </select>
+                            </ul>
+
                             <button class="btn btn-sm border-2 border-primary" data-bs-toggle="modal"
                                 data-bs-target="#staticBackdrop1" class="btn btn-sm border-2 border-primary">
                                 Update PO
@@ -86,22 +92,22 @@
                                 <thead class="table-light">
                                     <tr>
                                         <th>Order No</th>
-                                        <th>Portal Code</th>
+                                        <th>Client Name</th>
                                         <th>SKU Code</th>
                                         <th>Title</th>
-                                        <th>MRP</th>
+                                        <th>Category</th>
                                         <th>Qty Requirement</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    
+
                                     @forelse($salesOrder->orderedProducts as $order)
                                         <tr>
                                             <td>{{ $order->id }}</td>
-                                            <td>{{ $order->tempOrder->item_code }}</td>
+                                            <td>{{ $order->tempOrder->facility_name }}</td>
                                             <td>{{ $order->tempOrder->sku }}</td>
-                                            <td>{{ $order->tempOrder->description }}</td>
-                                            <td>{{ $order->tempOrder->mrp }}</td>
+                                            <td>{{ $order->product?->brand }}</td>
+                                            <td>{{ $order->product?->category }}</td>
                                             <td>{{ $order->ordered_quantity }}</td>
                                         </tr>
                                     @empty

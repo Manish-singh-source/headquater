@@ -4,131 +4,94 @@
     <main class="main-wrapper">
         <div class="main-content">
             <!--breadcrumb-->
-
-            <div class="div d-flex">
-                <div class="col-6">
-                    <i class="bx bx-home-alt"></i>
-                    <h5 class="mb-3">Delivery Details</h5>
-                </div>
-                <div class="col-6 d-flex justify-content-end text-end my-2 ">
-                    <div>
-                        <select id="input9" class="form-select">
-                            <option selected="" disabled>Status</option>
-                            <option>Out For Delivery</option>
-                            <option>Delivered</option>
-                            <option>Completed</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-            <!--end breadcrumb-->
-
-            <div class="row">
-                <div class="col-12">
-                    <div class="card w-100 d-flex  flex-sm-row flex-col">
-                        <ul class="col-12 list-group list-group-flush">
-                            <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
-                                <span><b>Order Id</b></span>
-
-                                <span>{{ $salesOrder->id }}</span>
+            <div class="page-breadcrumb d-none d-sm-flex align-items-center mb-3">
+                <div class="">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb mb-0 p-0">
+                            <li class="breadcrumb-item"><a href="javascript:;"><i class="bx bx-home-alt"></i></a>
                             </li>
-                            <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
-                                <span><b>Customer Group Name</b></span>
-                                <span>{{ $salesOrder->customerGroup->name }}</span>
-                            </li>
-                            <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
-                                <span><b>Phone No</b></span>
-                                <span> +91 123 456 7789 </span>
-                            </li>
-                            <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
-                                <span><b>Email</b></span>
-                                <span> manish@gmail.com</span>
-                            </li>
-                            <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
-                                <span><b>Ordered Date</b></span>
-                                <span> 2025-04-11</span>
-                            </li>
-                            <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
-                                <span><b>Delivery Date</b></span>
-                                <span> 2025-05-15</span>
-                            </li>
-                            <li class="list-group-item d-flex justify-content-between align-items-center  mb-2 pe-3">
-                                <span><b>Billing Address</b></span>
-                                <span> Office No. 501, 5th Floor, Ghanshyam Enclave, Next To Laljipada Police Station,
-                                    Laljipada, Link Road, Kandivali (West), Mumbai - 400067. Maharashtra - India</span>
-                            </li>
-                            <li class="list-group-item d-flex justify-content-between align-items-center  mb-2 pe-3">
-                                <span><b> Shipping Address</b></span>
-                                <span> Office No. 501, 5th Floor, Ghanshyam Enclave, Next To Laljipada Police Station,
-                                    Laljipada, Link Road, Kandivali (West), Mumbai - 400067. Maharashtra - India</span>
-                            </li>
-                            <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
-                                <span><b>Invoices PDF</b></span>
-                                <span> BK159.pdf</span>
-                            </li>
-                        </ul>
-                    </div>
+                            <li class="breadcrumb-item active" aria-current="page">Ready to Ship Products Lists</li>
+                        </ol>
+                    </nav>
                 </div>
             </div>
 
-            <div class="row">
-                <div class="col-12">
-                    <div class="card">
-                        <div class="card-body">
-                            <div class="div d-flex my-2">
-                                <div class="col">
-                                    <h6 class="mb-3">PO Table</h6>
-                                </div>
 
-                            </div>
-                            <div class="product-table" id="poTable">
-                                <div class="table-responsive white-space-nowrap">
-                                    <table id="example" class="table align-middle">
-                                        <thead class="table-light">
-                                            <tr>
-                                                <th>Customer Name</th>
-                                                <th>Vendor Code</th>
-                                                <th>HSN</th>
-                                                <th>Item Code</th>
-                                                <th>SKU Code</th>
-                                                <th>Title</th>
-                                                <th>MRP</th>
-                                                <th>Qty Requirement</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            @php
-                                                $statuses = [
-                                                    'pending' => 'Pending',
-                                                    'blocked' => 'Blocked',
-                                                    'completed' => 'Completed',
-                                                    'ready_to_ship' => 'Ready To Ship',
-                                                ];
-                                            @endphp
-                                            @forelse($salesOrder->orderedProducts as $order)
-                                                <tr>
-                                                    <td>{{ $order->tempOrder->customer_name }}</td>
-                                                    <td>{{ $order->tempOrder->vendor_code }}</td>
-                                                    <td>{{ $order->tempOrder->hsn }}</td>
-                                                    <td>{{ $order->tempOrder->item_code }}</td>
-                                                    <td>{{ $order->tempOrder->sku }}</td>
-                                                    <td>{{ $order->tempOrder->description }}</td>
-                                                    <td>{{ $order->tempOrder->mrp }}</td>
-                                                    <td>{{ $order->ordered_quantity }}</td>
-                                                </tr>
-                                            @empty
-                                                <tr>
-                                                    <td colspan="6">No Records Found</td>
-                                                </tr>
-                                            @endforelse
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>  
+            <div class="card mt-4">
+                <div class="card-body">
+                    <div class="customer-table">
+                        <div class="table-responsive white-space-nowrap">
+                            <table id="example" class="table table-striped">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>
+                                            <input class="form-check-input" type="checkbox">
+                                        </th>
+                                        <th>Order Id</th>
+                                        <th>Customer Group Name</th>
+                                        <th>Client Name</th>
+                                        <th>Contact Name</th>
+                                        <th>Product</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @php
+                                        $statuses = [
+                                            'pending' => 'Pending',
+                                            'blocked' => 'Blocked',
+                                            'completed' => 'Completed',
+                                            'ready_to_ship' => 'Ready To Ship',
+                                            'ready_to_package' => 'Ready To Package',
+                                        ];
+                                    @endphp
+                                    @forelse ($customerInfo as $customerOrders)
+                                        <tr>
+                                            <td>
+                                                <input class="form-check-input" type="checkbox">
+                                            </td>
+                                            <td>{{ 'ORDER-' . $order->id }}</td>
+                                            <td>
+                                                <p class="mb-0 customer-name fw-bold">
+                                                    {{ $customerOrders->groupInfo->customerGroup->name }}
+                                                </p>
+                                            </td>
+                                            <td>{{ $customerOrders->client_name }}</td>
+                                            <td>
+                                                {{ $customerOrders->contact_name }}
+                                            </td>
+                                            <td>
+                                                {{ $customerOrders->orders_count }}
+                                            </td>
+                                            <td>
+                                                <a aria-label="anchor"
+                                                    href="{{ route('readyToShip.view.detail', ['id' => $order->id, 'c_id' => $customerOrders->id]) }}"
+                                                    class="btn btn-icon btn-sm bg-primary-subtle me-1"
+                                                    data-bs-toggle="tooltip" data-bs-original-title="View">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13"
+                                                        viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                                        class="feather feather-eye text-primary">
+                                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                                        <circle cx="12" cy="12" r="3"></circle>
+                                                    </svg>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    @empty
+                                        <tr>
+                                            <td colspan="7" class="text-center">No Records Found</td>
+                                        </tr>
+                                    @endforelse
+
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
             </div>
+
+
         </div>
     </main>
     <!--end main wrapper-->

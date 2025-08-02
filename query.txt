@@ -1,0 +1,8 @@
+public function index()
+{
+    $categories = Category::query()
+        ->whereNull('category_id')
+        ->with(['subcategories.subcategories' => function($query) {
+            $query->withCount('products');
+        }])->get();
+}

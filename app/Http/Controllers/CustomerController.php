@@ -22,7 +22,7 @@ use Illuminate\Support\Facades\Validator;
 
 class CustomerController extends Controller
 {
-
+ 
     public function index()
     {
         $customersCount = Customer::count();

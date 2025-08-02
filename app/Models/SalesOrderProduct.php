@@ -34,6 +34,10 @@ class SalesOrderProduct extends Model
             ->whereColumn('warehouse_stock_logs.sku', 'sales_order_products.sku');
     }
 
+    public function customer()
+    {
+        return $this->belongsTo(Customer::class, 'customer_id', 'id');
+    }
 
     // public function warehouseStockLog()
     // {

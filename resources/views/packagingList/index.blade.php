@@ -15,7 +15,7 @@
                     </nav>
                 </div>
             </div>
-            
+
             <div class="card mt-4">
                 <div class="card-body">
                     <div class="customer-table">
@@ -59,7 +59,8 @@
                                                 {{ $statuses[$order->status] ?? 'On Hold' }}
                                             </td>
                                             <td>
-                                                <a aria-label="anchor" href="{{ route('packing.products.view', $order->id) }}"
+                                                <a aria-label="anchor"
+                                                    href="{{ route('packing.products.view', $order->id) }}"
                                                     class="btn btn-icon btn-sm bg-primary-subtle me-1"
                                                     data-bs-toggle="tooltip" data-bs-original-title="View">
                                                     <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13"

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,13 +10,13 @@
             size: A4;
             margin: 20mm;
         }
-        
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
             font-family: 'Times New Roman', serif;
             font-size: 12pt;
@@ -26,25 +27,25 @@
             margin: 0 auto;
             padding: 20px;
         }
-        
+
         .invoice-container {
             background: white;
             border: 2px solid #000;
             padding: 15mm;
             min-height: 250mm;
         }
-        
+
         .header-section {
             border-bottom: 3px solid #000;
             padding-bottom: 10px;
             margin-bottom: 20px;
         }
-        
+
         .company-info {
             text-align: center;
             margin-bottom: 15px;
         }
-        
+
         .company-name {
             font-size: 24pt;
             font-weight: bold;
@@ -52,12 +53,12 @@
             letter-spacing: 2px;
             margin-bottom: 5px;
         }
-        
+
         .company-details {
             font-size: 11pt;
             margin-bottom: 10px;
         }
-        
+
         .invoice-title {
             background: #000;
             color: white;
@@ -67,18 +68,18 @@
             font-weight: bold;
             letter-spacing: 1px;
         }
-        
+
         .invoice-meta {
             display: table;
             width: 100%;
             margin: 20px 0;
             border: 1px solid #000;
         }
-        
+
         .meta-row {
             display: table-row;
         }
-        
+
         .meta-cell {
             display: table-cell;
             padding: 8px;
@@ -86,41 +87,41 @@
             vertical-align: top;
             width: 25%;
         }
-        
+
         .meta-cell:last-child {
             border-right: none;
         }
-        
+
         .meta-label {
             font-weight: bold;
             text-transform: uppercase;
             font-size: 10pt;
         }
-        
+
         .meta-value {
             margin-top: 3px;
             font-size: 11pt;
         }
-        
+
         .billing-section {
             display: table;
             width: 100%;
             margin: 20px 0;
         }
-        
+
         .billing-column {
             display: table-cell;
             width: 50%;
             vertical-align: top;
             padding-right: 20px;
         }
-        
+
         .billing-column:last-child {
             padding-right: 0;
             padding-left: 20px;
             border-left: 1px solid #000;
         }
-        
+
         .billing-header {
             background: #000;
             color: white;
@@ -130,24 +131,24 @@
             font-size: 11pt;
             margin-bottom: 10px;
         }
-        
+
         .billing-content {
             padding: 0 10px;
             font-size: 11pt;
             line-height: 1.6;
         }
-        
+
         .items-section {
             margin: 30px 0;
         }
-        
+
         .items-table {
             width: 100%;
             border-collapse: collapse;
             border: 2px solid #000;
             margin-bottom: 20px;
         }
-        
+
         .items-table th,
         .items-table td {
             border: 1px solid #000;
@@ -155,7 +156,7 @@
             text-align: left;
             font-size: 10pt;
         }
-        
+
         .items-table th {
             background: #000;
             color: white;
@@ -163,95 +164,95 @@
             text-transform: uppercase;
             text-align: center;
         }
-        
+
         .items-table .description {
             width: 50%;
         }
-        
+
         .items-table .qty,
         .items-table .rate,
         .items-table .amount {
             width: 16.66%;
             text-align: right;
         }
-        
+
         .items-table .qty {
             text-align: center;
         }
-        
+
         .items-table tbody tr:nth-child(even) {
             background: #f5f5f5;
         }
-        
+
         .totals-section {
             float: right;
             width: 300px;
             border: 2px solid #000;
             margin-top: 20px;
         }
-        
+
         .total-row {
             display: table;
             width: 100%;
             border-bottom: 1px solid #000;
         }
-        
+
         .total-row:last-child {
             border-bottom: none;
             background: #000;
             color: white;
             font-weight: bold;
         }
-        
+
         .total-label,
         .total-value {
             display: table-cell;
             padding: 8px 12px;
             font-size: 11pt;
         }
-        
+
         .total-label {
             text-align: left;
             border-right: 1px solid #000;
             width: 60%;
         }
-        
+
         .total-value {
             text-align: right;
             width: 40%;
         }
-        
+
         .footer-section {
             clear: both;
             margin-top: 40px;
             border-top: 2px solid #000;
             padding-top: 15px;
         }
-        
+
         .payment-info {
             border: 1px solid #000;
             padding: 15px;
             margin-bottom: 15px;
         }
-        
+
         .payment-header {
             font-weight: bold;
             text-transform: uppercase;
             margin-bottom: 10px;
             font-size: 12pt;
         }
-        
+
         .payment-details {
             font-size: 10pt;
             line-height: 1.6;
         }
-        
+
         .signature-section {
             display: table;
             width: 100%;
             margin-top: 30px;
         }
-        
+
         .signature-box {
             display: table-cell;
             width: 50%;
@@ -259,47 +260,47 @@
             padding: 20px;
             border: 1px solid #000;
         }
-        
+
         .signature-box:first-child {
             border-right: none;
         }
-        
+
         .signature-line {
             border-bottom: 1px solid #000;
             width: 200px;
             margin: 20px auto 10px;
             height: 40px;
         }
-        
+
         .signature-label {
             font-size: 10pt;
             text-transform: uppercase;
             font-weight: bold;
         }
-        
+
         @media print {
             body {
                 margin: 0;
                 padding: 0;
             }
-            
+
             .invoice-container {
                 border: none;
                 padding: 0;
                 min-height: auto;
             }
         }
-        
+
         @media screen and (max-width: 768px) {
             body {
                 padding: 10px;
                 font-size: 10pt;
             }
-            
+
             .billing-section {
                 display: block;
             }
-            
+
             .billing-column {
                 display: block;
                 width: 100%;
@@ -307,21 +308,21 @@
                 padding: 0;
                 border: 1px solid #000;
             }
-            
+
             .billing-column:last-child {
                 border-left: 1px solid #000;
                 padding-left: 0;
             }
-            
+
             .totals-section {
                 float: none;
                 width: 100%;
             }
-            
+
             .signature-section {
                 display: block;
             }
-            
+
             .signature-box {
                 display: block;
                 width: 100%;
@@ -330,6 +331,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="invoice-container">
         <!-- Header Section -->
@@ -344,7 +346,7 @@
             </div>
             <div class="invoice-title">INVOICE</div>
         </div>
-        
+
         <!-- Invoice Meta Information -->
         <div class="invoice-meta">
             <div class="meta-row">
@@ -366,7 +368,7 @@
                 </div>
             </div>
         </div>
-        
+
         <!-- Billing Information -->
         <div class="billing-section">
             <div class="billing-column">
@@ -392,7 +394,7 @@
                 </div>
             </div>
         </div>
-        
+
         <!-- Items Table -->
         <div class="items-section">
             <table class="items-table">
@@ -448,7 +450,7 @@
                 </tbody>
             </table>
         </div>
-        
+
         <!-- Totals Section -->
         <div class="totals-section">
             <div class="total-row">
@@ -472,7 +474,7 @@
                 <div class="total-value">$19,817.07</div>
             </div>
         </div>
-        
+
         <!-- Footer Section -->
         <div class="footer-section">
             <div class="payment-info">
@@ -482,17 +484,18 @@
                     ABC Corporation<br>
                     123 Business Street, Suite 100<br>
                     City, State 12345<br><br>
-                    
+
                     <strong>Wire Transfer Information:</strong><br>
                     Bank Name: First National Bank<br>
                     Account Number: 1234567890<br>
                     Routing Number: 021000021<br>
                     Swift Code: FNBKUS33<br><br>
-                    
-                    <strong>Terms:</strong> Payment is due within 30 days of invoice date. A 1.5% monthly service charge will be applied to past due accounts. Please reference invoice number with payment.
+
+                    <strong>Terms:</strong> Payment is due within 30 days of invoice date. A 1.5% monthly service charge
+                    will be applied to past due accounts. Please reference invoice number with payment.
                 </div>
             </div>
-            
+
             <!-- Signature Section -->
             <div class="signature-section">
                 <div class="signature-box">
@@ -507,4 +510,5 @@
         </div>
     </div>
 </body>
+
 </html>
