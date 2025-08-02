@@ -44,11 +44,13 @@
                                             <a href="{{ route('download.order.excel') }}"
                                                 class="btn btn-icon btn-sm border-2 border-primary text-primary me-1">Download</a>
                                         </div>
-                                    @endisset 
-                                    --}}
-                                    <button id="customExcelBtn" class="btn btn-sm border-2 border-primary">
+                                    @endisset --}}
+                                    <!-- <button id="customExcelBtn" class="btn btn-sm border-2 border-primary">
                                         <i class="fa fa-file-excel-o"></i> Export to Excel
-                                    </button>
+                                    </button> -->
+                                    <a href="{{ route('download.order.excel') }}"
+                                        class="btn btn-icon btn-sm border-2 border-primary text-primary me-1">Export to Excel</a>
+
                                 </div>
                                 <div class="card-body">
                                     <div class="product-table">

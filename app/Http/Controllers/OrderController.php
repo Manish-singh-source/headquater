@@ -422,18 +422,70 @@ class OrderController extends Controller
         return view('salesOrder.process-order', ['customerGroup' => $customerGroup, 'warehouses' => $warehouses, 'fileData' => $insertedRows]);
     }
 
+
     public function downloadBlockedCSV()
     {
         $filePath = public_path(session('processed_csv_path'));
+        // print all data
+        // dd(file_get_contents($filePath));
+        // add 3 columns to the csv file
+        // We'll add: 'Blocked Quantity', 'Processed At', 'Processed By'
+        // Read the CSV, add columns, and write back
 
+        $rows = [];
+
+        // Use SimpleExcelReader to read the file
+        $reader = SimpleExcelReader::create($filePath);
+        foreach ($reader->getRows() as $row) {
+            $rows[] = [
+                'Customer Name' => $row['customer_name'] ?? '',
+                'PO Number' => $row['po_number'] ?? '',
+                'SKU' => $row['sku'] ?? '',
+                'Facility Name' => $row['facility_name'] ?? '',
+                'Facility Location' => $row['facility_location'] ?? '',
+                'PO Date' => $row['po_date'] ?? '',
+                'PO Expiry Date' => $row['po_expiry_date'] ?? '',
+                'HSN' => $row['hsn'] ?? '',
+                'Item Code' => $row['item_code'] ?? '',
+                'Description' => $row['description'] ?? '',
+                'Basic Rate' => $row['basic_rate'] ?? '',
+                'GST' => $row['gst'] ?? '',
+                'Net Landing Rate' => $row['net_landing_rate'] ?? '',
+                'MRP' => $row['mrp'] ?? '',
+                'Rate Confirmation' => '',
+                'PO Quantity' => $row['po_qty'] ?? '',
+                'Case Pack Quantity' => '',
+                'Available Quantity' => $row['available_quantity'] ?? '',
+                'Unavailable Quantity' => $row['unavailable_quantity'] ?? '',
+                'Block' => '',
+                'Purchase Order Quantity' => '',
+                'Vendor Code' => '',
+                'Blocked Quantity' => '',
+                'Processed At' => '',
+                'Processed By' => '',
+            ];
+        }
+
+        // Write the new CSV with extra columns
+        SimpleExcelWriter::create($filePath)->addRows($rows);
+
+        // Now download the file
         if (!file_exists($filePath)) {
             abort(404);
         }
 
         return response()->download($filePath, basename($filePath), [
-            'Content-Type' => 'text/xlsx',
-            // 'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         ]);
+
+        // if (!file_exists($filePath)) {
+        //     abort(404);
+        // }
+
+        // return response()->download($filePath, basename($filePath), [
+        //     'Content-Type' => 'text/csv',
+        //     // 'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        // ]);
         // return redirect()->route->('orders')->response()->download(public_path(session('processed_csv_path')));
     }
 
