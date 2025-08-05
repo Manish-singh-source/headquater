@@ -36,6 +36,8 @@ Route::middleware('RolePermission:customer-handler')->group(function () {
         Route::get('/customer-groups', 'index')->name('customer.groups.index');
         Route::get('/create-customer-groups', 'create')->name('customer.groups.create');
         Route::post('/store-customer-groups', 'store')->name('customer.groups.store');
+        Route::get('/edit-customer-groups/{id}', 'edit')->name('customer.groups.edit');
+        Route::put('/update-customer-groups/{id}', 'update')->name('customer.groups.update');
         Route::delete('/delete-customer-groups/{id}', 'destroy')->name('customer.groups.destroy');
         Route::get('/view-customer-groups/{id}', 'view')->name('customer.groups.view');
         // Route::post('/import-large-csv', 'importLargeCsv')->name('import-large-csv');
@@ -45,6 +47,7 @@ Route::middleware('RolePermission:customer-handler')->group(function () {
 // Customer
 Route::controller(CustomerController::class)->group(function () {
     Route::get('/customer-create/{g_id}', 'create')->name('customer.create');
+    Route::post('/customer-store-bulk/{g_id}', 'storeBulk')->name('customer.store.bulk');
     Route::post('/customers/store', 'store')->name('customer.store');
     Route::get('/customers/edit/{id}/{group_id}', 'edit')->name('customer.edit');
     Route::put('/customer/update/{id}', 'update')->name('customer.update');
@@ -138,8 +141,10 @@ Route::controller(OrderController::class)->group(function () {
     Route::get('/order', 'index')->name('order.index');
     Route::get('/create-order', 'create')->name('order.create');
     Route::post('/store-order', 'store')->name('order.store');
+    Route::get('/edit-order/{id}', 'edit')->name('order.edit');
     Route::get('/view-order/{id}', 'view')->name('order.view');
     Route::delete('/delete-order/{id}', 'destroy')->name('order.delete');
+    Route::delete('/order/delete-selected', 'deleteSelected')->name('delete.selected.order');
     Route::put('/change-status', 'changeStatus')->name('change.order.status');
     Route::post('/check-products-stock', 'checkProductsStock')->name('check.order.stock');
     Route::get('/download-block-order-csv', 'downloadBlockedCSV')->name('download.order.excel');
@@ -157,6 +162,7 @@ Route::controller(PurchaseOrderController::class)->group(function () {
     Route::post('/approve-vendor-pi-request', 'approveRequest')->name('approve.vendor.pi.request');
     Route::post('/purchase-order-invoice-store', 'invoiceStore')->name('purchase.order.invoice.store');
     Route::post('/purchase-order-grn-store', 'grnStore')->name('purchase.order.grn.store');
+    Route::get('/download-vendor-po-excel', 'downloadVendorPO')->name('download.vendor.po.excel');
 });
 
 // Report Details List

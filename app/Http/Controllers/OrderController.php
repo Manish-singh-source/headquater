@@ -9,6 +9,7 @@ use App\Models\TempOrder;
 use App\Models\Warehouse;
 use App\Models\SalesOrder;
 use App\Models\ManageOrder;
+use Illuminate\Support\Str;
 use App\Models\ManageVendor;
 use Illuminate\Http\Request;
 use App\Models\CustomerGroup;
@@ -190,6 +191,9 @@ class OrderController extends Controller
                 $warehouseStockBlockLogs = new WarehouseStockLog();
                 $warehouseStockBlockLogs->warehouse_id = $warehouse_id;
                 $warehouseStockBlockLogs->sales_order_id = $saveOrder->id;
+                if (isset($customerInfo)) {
+                    $warehouseStockBlockLogs->customer_id = $customerInfo->id;
+                }
                 $warehouseStockBlockLogs->sku = $record['SKU'];
                 if ($record['PO Quantity'] > ((int)$WarehouseblockQuantity->quantity - (int)$WarehouseblockQuantity->block_quantity)) {
                     $warehouseStockBlockLogs->block_quantity = ((int)$WarehouseblockQuantity->quantity - (int)$WarehouseblockQuantity->block_quantity);
@@ -215,25 +219,30 @@ class OrderController extends Controller
         }
     }
 
-    public function edit($id) {}
+    public function edit($id)
+    {
+        $salesOrder = SalesOrder::with('customerGroup', 'warehouse', 'orderedProducts.product', 'orderedProducts.tempOrder', 'orderedProducts.vendorPIProduct.order', 'vendorPIs.products')->findOrFail($id);
+        foreach ($salesOrder->orderedProducts as $orderedProduct) {
+            $orderedProduct->warehouseStockLog = WarehouseStockLog::where('sales_order_id', $orderedProduct->sales_order_id)
+                ->where('sku', $orderedProduct->sku)
+                ->first();
+        }
+        return view('salesOrder.edit', compact('salesOrder'));
+    }
 
     public function update(Request $request, $id) {}
 
     public function view($id)
     {
         $salesOrder = SalesOrder::with('customerGroup', 'warehouse', 'orderedProducts.product', 'orderedProducts.tempOrder', 'orderedProducts.vendorPIProduct.order', 'vendorPIs.products')->findOrFail($id);
-        // $warehouseStockBlockLogs = WarehouseStockLog::where('sales_order_id', $id)->get();
-        // get vendor pi quantity 
-        // vendor_code, product_sku, purchase_order_id, sales_order_id 
-        // $vendorQty = PurchaseOrder::where('sales_order_id', $salesOrder->id)->with('vendorPI')->get();
-        // dd($warehouseStockBlockLogs); 
-
+        // dd($salesOrder->orderedProducts[0]);
         foreach ($salesOrder->orderedProducts as $orderedProduct) {
             $orderedProduct->warehouseStockLog = WarehouseStockLog::where('sales_order_id', $orderedProduct->sales_order_id)
+                ->where('customer_id', $orderedProduct->customer_id)
                 ->where('sku', $orderedProduct->sku)
                 ->first();
         }
-        // dd($salesOrder->orderedProducts);
+        // dd($salesOrder->orderedProducts[0]);
         return view('salesOrder.view', compact('salesOrder'));
     }
 
@@ -243,6 +252,34 @@ class OrderController extends Controller
         $order->delete();
 
         return redirect()->route('order.index')->with('success', 'Order deleted successfully.');
+    }
+
+    public function deleteSelected(Request $request)
+    {
+        $ids = is_array($request->ids) ? $request->ids : explode(',', $request->ids);
+
+        // dd($ids);
+        foreach ($ids as $salesOrderIdKey => $salesOrderId) {
+            $salesOrderProduct = SalesOrderProduct::where('id', $salesOrderId)->first();
+            $blockQuantity = WarehouseStockLog::where('sales_order_id', $salesOrderProduct->sales_order_id)
+                ->where('customer_id', $salesOrderProduct->customer_id)
+                ->where('sku', $salesOrderProduct->sku)
+                ->first();
+
+            if ($blockQuantity->block_quantity > 0) {
+                $WarehouseStockUpdate = WarehouseStock::where('sku', $salesOrderProduct->sku)->first();
+                $WarehouseStockUpdate->block_quantity = $WarehouseStockUpdate->block_quantity - $blockQuantity->block_quantity;
+                $WarehouseStockUpdate->save();
+
+                // Released Products now ready to available for another products  
+                // $allowToAnotherAvailableQuantityToBlock = SalesOrderProduct::whereNot('customer_id', $salesOrderProduct->customer_id)->where('sales_order_id', $salesOrderProduct->sales_order_id)->where('sku', $salesOrderProduct->sku)->first();
+                // dd($allowToAnotherAvailableQuantityToBlock);
+            }
+        }
+
+        SalesOrderProduct::destroy($ids);
+
+        return redirect()->back()->with('success', 'Selected customers deleted successfully.');
     }
 
     public function  changeStatus(Request $request)
@@ -264,7 +301,7 @@ class OrderController extends Controller
             foreach ($customerFacilityName as $customer_id => $facility_name) {
                 $invoice = new Invoice();
                 $invoice->warehouse_id = $salesOrder->warehouse_id;
-                $invoice->invoice_number = 'INV-' . time();
+                $invoice->invoice_number = 'INV-' . time() . '-' . $customer_id;
                 $invoice->customer_id = $customer_id;
                 $invoice->sales_order_id = $salesOrder->id;
                 $invoice->invoice_date = now();
@@ -379,23 +416,23 @@ class OrderController extends Controller
 
 
             $insertedRows[] = [
-                'customer_name' => $record['Customer Name'],
-                'po_number' => $record['PO Number'],
-                'sku' => $sku,
-                'facility_name' => $record['Facility Name'],
-                'facility_location' => $record['Facility Location'],
-                'po_date' => $record['PO Date'],
-                'po_expiry_date' => $record['PO Expiry Date'],
-                'hsn' => $record['HSN'],
-                'item_code' => $record['Item Code'],
-                'description' => $record['Description'],
-                'basic_rate' => $record['Basic Rate'],
-                'gst' => $record['GST'],
-                'net_landing_rate' => $record['Net Landing Rate'],
-                'mrp' => $record['MRP'],
-                'po_qty' => $poQty,
-                'available_quantity' => $remaining,
-                'unavailable_quantity' => $unavailableStatus,
+                'Customer Name' => $record['Customer Name'],
+                'PO Number' => $record['PO Number'],
+                'SKU Code' => $sku,
+                'Facility Name' => $record['Facility Name'],
+                'Facility Location' => $record['Facility Location'],
+                'PO Date' => $record['PO Date'],
+                'PO Expiry Date' => $record['PO Expiry Date'],
+                'HSN' => $record['HSN'],
+                'Item Code' => $record['Item Code'],
+                'Description' => $record['Description'],
+                'Basic Rate' => $record['Basic Rate'],
+                'GST' => $record['GST'],
+                'Net Landing Rate' => $record['Net Landing Rate'],
+                'MRP' => $record['MRP'],
+                'PO Quantity' => $poQty,
+                'Available Quantity' => $remaining,
+                'Unavailable Quantity' => $unavailableStatus,
             ];
         }
 
@@ -425,68 +462,52 @@ class OrderController extends Controller
 
     public function downloadBlockedCSV()
     {
-        $filePath = public_path(session('processed_csv_path'));
-        // print all data
-        // dd(file_get_contents($filePath));
-        // add 3 columns to the csv file
-        // We'll add: 'Blocked Quantity', 'Processed At', 'Processed By'
-        // Read the CSV, add columns, and write back
+        $originalPath = public_path(session('processed_csv_path'));
 
-        $rows = [];
+        if (!file_exists($originalPath)) {
+            abort(404, 'CSV file not found.');
+        }
 
-        // Use SimpleExcelReader to read the file
-        $reader = SimpleExcelReader::create($filePath);
-        foreach ($reader->getRows() as $row) {
-            $rows[] = [
-                'Customer Name' => $row['customer_name'] ?? '',
-                'PO Number' => $row['po_number'] ?? '',
-                'SKU' => $row['sku'] ?? '',
-                'Facility Name' => $row['facility_name'] ?? '',
-                'Facility Location' => $row['facility_location'] ?? '',
-                'PO Date' => $row['po_date'] ?? '',
-                'PO Expiry Date' => $row['po_expiry_date'] ?? '',
-                'HSN' => $row['hsn'] ?? '',
-                'Item Code' => $row['item_code'] ?? '',
-                'Description' => $row['description'] ?? '',
-                'Basic Rate' => $row['basic_rate'] ?? '',
-                'GST' => $row['gst'] ?? '',
-                'Net Landing Rate' => $row['net_landing_rate'] ?? '',
-                'MRP' => $row['mrp'] ?? '',
-                'Rate Confirmation' => '',
-                'PO Quantity' => $row['po_qty'] ?? '',
-                'Case Pack Quantity' => '',
-                'Available Quantity' => $row['available_quantity'] ?? '',
-                'Unavailable Quantity' => $row['unavailable_quantity'] ?? '',
+        // Create temporary .xlsx file
+        $tempXlsxPath = storage_path('app/blocked_' . Str::random(8) . '.xlsx');
+
+        // Create writer
+        $writer = SimpleExcelWriter::create($tempXlsxPath);
+
+        // Add rows while transforming
+        SimpleExcelReader::create($originalPath)->getRows()->each(function (array $row) use ($writer) {
+            $writer->addRow([
+                'Customer Name' => $row['Customer Name'] ?? '',
+                'PO Number' => $row['PO Number'] ?? '',
+                'SKU Code' => $row['SKU Code'] ?? '',
+                'Facility Name' => $row['Facility Name'] ?? '',
+                'Facility Location' => $row['Facility Location'] ?? '',
+                'PO Date' => $row['PO Date'] ?? '',
+                'PO Expiry Date' => $row['PO Expiry Date'] ?? '',
+                'HSN' => $row['HSN'] ?? '',
+                'Item Code' => $row['Item Code'] ?? '',
+                'Description' => $row['Description'] ?? '',
+                'Basic Rate' => $row['Basic Rate'] ?? '',
+                'GST' => $row['GST'] ?? '',
+                'Net Landing Rate' => $row['Net Landing Rate'] ?? '',
+                'MRP' => $row['MRP'] ?? '',
+                'PO Quantity' => $row['PO Quantity'] ?? '',
+                'Available Quantity' => $row['Available Quantity'] ?? '',
+                'Unavailable Quantity' => $row['Unavailable Quantity'] ?? '',
                 'Block' => '',
                 'Purchase Order Quantity' => '',
                 'Vendor Code' => '',
-                'Blocked Quantity' => '',
-                'Processed At' => '',
-                'Processed By' => '',
-            ];
-        }
+                'Case Pack Quantity' => '',
+                'Rate Confirmation' => '',
+            ]);
+        });
 
-        // Write the new CSV with extra columns
-        SimpleExcelWriter::create($filePath)->addRows($rows);
+        $writer->close();
 
-        // Now download the file
-        if (!file_exists($filePath)) {
-            abort(404);
-        }
-
-        return response()->download($filePath, basename($filePath), [
+        // Return the XLSX as a download
+        return response()->download($tempXlsxPath, 'blocked_orders.xlsx', [
             'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        ]);
-
-        // if (!file_exists($filePath)) {
-        //     abort(404);
-        // }
-
-        // return response()->download($filePath, basename($filePath), [
-        //     'Content-Type' => 'text/csv',
-        //     // 'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        // ]);
-        // return redirect()->route->('orders')->response()->download(public_path(session('processed_csv_path')));
+        ])->deleteFileAfterSend(true);
     }
 
     // public function processBlockOrder2(Request $request)

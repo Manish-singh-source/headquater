@@ -7,6 +7,7 @@ use App\Models\VendorPI;
 use App\Models\TempOrder;
 use App\Models\PurchaseGrn;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Models\PurchaseOrder;
 use App\Models\WarehouseStock;
@@ -18,6 +19,7 @@ use App\Models\PurchaseOrderProduct;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Validator;
 use Spatie\SimpleExcel\SimpleExcelReader;
+use Spatie\SimpleExcel\SimpleExcelWriter;
 
 class PurchaseOrderController extends Controller
 {
@@ -33,7 +35,6 @@ class PurchaseOrderController extends Controller
 
     public function store(Request $request)
     {
-        dd("hello");
         $request->validate([
             'pi_excel' => 'required|file|mimes:xlsx,csv,xls',
             'purchase_order_id' => 'required|exists:purchase_orders,id',
@@ -89,7 +90,7 @@ class PurchaseOrderController extends Controller
             return redirect()->back()->withErrors(['error' => 'Something went wrong: ' . $e->getMessage()]);
         }
     }
-    
+
     public function view($id)
     {
         $tempOrder = TempOrder::get();
@@ -280,5 +281,56 @@ class PurchaseOrderController extends Controller
         $purchaseGRN->save();
 
         return redirect()->route('purchase.order.view', $request->purchase_order_id)->with('success', 'GRN imported successfully.');
+    }
+
+
+    public function downloadVendorPO(Request $request)
+    {
+        $validated = Validator::make($request->all(), [
+            'purchaseOrderId' => 'required',
+        ]);
+
+        if ($validated->failed()) {
+            return back()->with('error', 'Please Try Again.');
+        }
+
+        // Create temporary .xlsx file path
+        $tempXlsxPath = storage_path('app/blocked_' . Str::random(8) . '.xlsx');
+
+        // Create writer
+        $writer = SimpleExcelWriter::create($tempXlsxPath);
+
+        // Fetch data with relationships
+        $query = PurchaseOrderProduct::where('purchase_order_id', $request->purchaseOrderId);
+        if ($request->filled('vendorCode')) {
+            $query->where('vendor_code', '=', $request->vendorCode);
+        }
+        $purchaseOrderProducts = $query->with('purchaseOrder', 'tempProduct')->get();
+        
+        // Add rows
+        foreach ($purchaseOrderProducts as $order) {
+            if ($order->ordered_quantity > 0) {
+                $writer->addRow([
+                    'Order No' => $order->id,
+                    'Purchase Order No' => 'PO-' . $order->id,
+                    'Portal'            => $order->tempProduct->po_number ?? '',
+                    'Vendor SKU Code'   => $order->tempProduct->sku ?? '',
+                    'Title'             => $order->tempProduct->description ?? '',
+                    'MRP'               => $order->tempProduct->mrp ?? '',
+                    'Quantity Requirement' => $order->ordered_quantity ?? '',
+                    'Available Quantity' => '',
+                    'Purchase Rate Basic' => '',
+                    'GST' => '',
+                    'HSN' => '',
+                ]);
+            }
+        }
+
+        // Close the writer
+        $writer->close();
+
+        return response()->download($tempXlsxPath, 'vendor_po.xlsx', [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ])->deleteFileAfterSend(true);
     }
 }

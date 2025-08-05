@@ -72,7 +72,6 @@
         $(document).on('change', '.purchaseOrder', function() {
             var purchaseOrderId = $(this).val();
 
-            console.log(purchaseOrderId);
             $.ajax({
                 url: '{{ route('get.vendors') }}',
                 type: 'POST',
@@ -82,7 +81,6 @@
                 },
                 success: function(response) {
                     if (response.success) {
-                        console.log(response.data)
                         let itemsHtml = `<option selected disabled> -- Selected -- </option>`;
                         
                         itemsHtml += response.data.map(function(item) {

@@ -89,7 +89,7 @@
                                                     @endcan
 
                                                     @can('PermissionChecker', 'update_sale')
-                                                        <a aria-label="anchor" href="#"
+                                                        <a aria-label="anchor" href="{{ route('order.edit', $order->id) }}"
                                                             class="btn btn-icon btn-sm bg-warning-subtle me-1"
                                                             data-bs-toggle="tooltip" data-bs-original-title="Edit">
                                                             <svg xmlns="http://www.w3.org/2000/svg" width="13"

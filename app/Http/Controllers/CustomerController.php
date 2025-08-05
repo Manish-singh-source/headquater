@@ -7,22 +7,26 @@ use App\Models\Staff;
 use App\Models\State;
 use App\Models\Vendor;
 use App\Models\Country;
+use App\Models\Invoice;
 use App\Models\Product;
 use App\Models\Customer;
 use App\Models\Warehouse;
 use App\Models\SalesOrder;
 use Illuminate\Http\Request;
 use App\Models\CustomerGroup;
+use App\Models\PurchaseOrder;
 use App\Models\CustomerAddress;
 use App\Models\SalesOrderProduct;
+use Illuminate\Support\Facades\DB;
 use App\Models\CustomerGroupMember;
 use App\Models\PurchaseOrderProduct;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
+use Spatie\SimpleExcel\SimpleExcelReader;
 
 class CustomerController extends Controller
 {
- 
+
     public function index()
     {
         $customersCount = Customer::count();
@@ -33,7 +37,26 @@ class CustomerController extends Controller
         $warehouseCount = Warehouse::count();
         $readyToShipOrdersCount = SalesOrder::where('status', 'ready_to_ship')->count();
         $readyToPackageOrdersCount = SalesOrder::where('status', 'ready_to_package')->count();
-        return view('index', compact('customersCount', 'vendorsCount', 'salesOrdersCount', 'purchaseOrdersCount', 'productsCount', 'warehouseCount', 'readyToShipOrdersCount', 'readyToPackageOrdersCount'));
+
+        // Recent Purchase Orders (Vendor) 
+        $purchaseOrders = PurchaseOrder::with('purchaseOrderProducts')->limit(4)->latest()->get();
+        $vendorCodes = $purchaseOrders->flatMap(function ($po) {
+            return $po->purchaseOrderProducts->pluck('vendor_code');
+        })->unique()->values();
+
+        // Recent Sales Orders (Cutomer)
+        $orders = SalesOrder::with('customerGroup')->limit(4)->latest()->get();
+
+        // Recent Packaging List
+        $packagingOrders = SalesOrder::where('status', 'ready_to_package')->with('customerGroup')->limit(4)->latest()->get();
+
+        // Recent Ready To Ship Orders
+        $readyToShipOrders = SalesOrder::where('status', 'ready_to_ship')->with('customerGroup')->limit(4)->latest()->get();
+
+        // Invoices Lists
+        $invoices = Invoice::with(['warehouse', 'customer', 'salesOrder'])->limit(4)->latest()->get();
+
+        return view('index', compact('purchaseOrders', 'vendorCodes', 'orders', 'packagingOrders', 'readyToShipOrders', 'invoices', 'customersCount', 'vendorsCount', 'salesOrdersCount', 'purchaseOrdersCount', 'productsCount', 'warehouseCount', 'readyToShipOrdersCount', 'readyToPackageOrdersCount'));
     }
 
 
@@ -45,6 +68,77 @@ class CustomerController extends Controller
         return view('customer.create', ['group_id' => $g_id, 'countries' => $countries, 'states' => $states, 'cities' => $cities]);
     }
 
+    public function storeBulk(Request $request, $g_id)
+    {
+        $validator = Validator::make($request->all(), [
+            'csv_file' => 'required',
+        ]);
+
+        if ($validator->fails()) {
+            return back()->withErrors($validator)->withInput();
+        }
+
+        $file = $request->file('csv_file');
+        if (!$file) {
+            return redirect()->back()->withErrors(['csv_file' => 'Please upload a CSV file.']);
+        }
+
+        DB::beginTransaction();
+
+        try {
+            $filePath = $file->getPathname();
+            $fileExtension = $file->getClientOriginalExtension();
+
+            $reader = SimpleExcelReader::create($filePath, $fileExtension);
+
+            $insertCount = 0;
+
+            foreach ($reader->getRows() as $record) {
+                // 2. Insert individual customer
+                $customer = Customer::create([
+                    'client_name'       => $record['Client Name'],
+                    'contact_name'       => $record['Contact Name'],
+                    'email'      => $record['Email'],
+                    'contact_no'      => $record['Contact No'],
+                    'gstin'      => $record['GSTIN'],
+                    'pan'      => $record['PAN'],
+                ]);
+
+                CustomerAddress::create([
+                    'customer_id' => $customer->id,
+                    'billing_address'      => $record['Billing Address'],
+                    'billing_country'      => $record['Billing Country'],
+                    'billing_state'      => $record['Billing State'],
+                    'billing_city'      => $record['Billing City'],
+                    'billing_zip'      => $record['Billing Zip'],
+                    'shipping_address'      => $record['Shipping Address'],
+                    'shipping_country'      => $record['Shipping Country'],
+                    'shipping_state'      => $record['Shipping State'],
+                    'shipping_city'      => $record['Shipping City'],
+                    'shipping_zip'      => $record['Shipping Zip'],
+                ]);
+
+                // 3. Insert into customer_group_members
+                CustomerGroupMember::create([
+                    'customer_id' => $customer->id,
+                    'customer_group_id' => $g_id,
+                ]);
+
+                $insertCount++;
+            }
+
+            if ($insertCount === 0) {
+                DB::rollBack();
+                return redirect()->back()->withErrors(['csv_file' => 'No valid data found in the CSV file.']);
+            }
+
+            DB::commit();
+            return redirect()->route('customer.groups.index')->with('success', 'CSV file imported successfully. Group and customers created.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->withErrors(['error' => 'Something went wrong: ' . $e->getMessage()]);
+        }
+    }
 
     public function store(Request $request)
     {
@@ -218,7 +312,7 @@ class CustomerController extends Controller
     public function deleteSelected(Request $request)
     {
         $ids = is_array($request->ids) ? $request->ids : explode(',', $request->ids);
-        CustomerGroup::destroy($ids);
+        Customer::destroy($ids);
         return redirect()->back()->with('success', 'Selected customers deleted successfully.');
     }
 

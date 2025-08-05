@@ -11,10 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('warehouse_stocks', function (Blueprint $table) {
+        Schema::table('warehouse_stock_logs', function (Blueprint $table) {
             //
-            $table->after('product_id', function(Blueprint $table) {
-                $table->string('sku')->nullable()->unique();
+             $table->after('sales_order_id', function (Blueprint $table) {
+                $table->string('customer_id')->nullable();
             });
         });
     }
@@ -24,9 +24,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('warehouse_stocks', function (Blueprint $table) {
+        Schema::table('warehouse_stock_logs', function (Blueprint $table) {
             //
-            $table->dropColumn('sku');
         });
     }
 };

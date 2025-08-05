@@ -33,8 +33,8 @@
                                             <div class="">
                                                 <p class="mb-0 fw-semibold">Welcome back</p>
                                                 <h4 class="fw-semibold mb-0 fs-4">
-                                                    {{ Auth::user()->fname }}
-                                                    {{ Auth::user()->lname }}
+                                                    {{ ucfirst(Auth::user()->fname) }}
+                                                    {{ ucfirst(Auth::user()->lname) }}
                                                 </h4>
                                             </div>
                                         </div>
@@ -236,42 +236,6 @@
                                 </div>
                             </div>
                         </div>
-                        {{-- <div class="col-xl-6 col-sm-6 col-12 d-flex">
-                                <div class="card bg-white sale-widget flex-fill">
-                                    <div class="card-body d-flex align-items-center">
-                                        <div class="ms-2">
-                                            <p class="text-dark mb-1">Damaged Products</p>
-                                            <div class="d-inline-flex align-items-center flex-wrap gap-2">
-                                                <h4 class="text-dark">545</h4>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div> --}}
-                        {{-- <div class="col-xl-6 col-sm-6 col-12 d-flex">
-                                <div class="card bg-white sale-widget flex-fill">
-                                    <div class="card-body d-flex align-items-center">
-                                        <div class="ms-2">
-                                            <p class="text-dark mb-1">Missing Products</p>
-                                            <div class="d-inline-flex align-items-center flex-wrap gap-2">
-                                                <h4 class="text-dark">24</h4>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div> --}}
-                        {{-- <div class="col-xl-6 col-sm-6 col-12 d-flex">
-                                <div class="card bg-white sale-widget flex-fill">
-                                    <div class="card-body d-flex align-items-center">
-                                        <div class="ms-2">
-                                            <p class="text-dark mb-1">Total Tickets</p>
-                                            <div class="d-inline-flex align-items-center flex-wrap gap-2">
-                                                <h4 class="text-dark">48</h4>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div> --}}
                     </div>
 
                 </div>
@@ -297,103 +261,109 @@
                                     </div>
                                 </div>
                                 <div class="table-responsive">
-                                    <table class="table align-middle">
+                                    <table id="example" class="table table-striped">
                                         <thead class="table-light">
                                             <tr>
                                                 <th>
                                                     <input class="form-check-input" type="checkbox">
                                                 </th>
                                                 <th>Order Id</th>
-                                                <th>Vendor Name</th>
+                                                <th>Vendor Code</th>
                                                 <th>Order Status</th>
                                                 <th>Ordered Date</th>
-                                                <th>Warehouse</th>
                                                 <th>Action</th>
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            <tr>
-                                                <td>
-                                                    <input class="form-check-input" type="checkbox">
-                                                </td>
-                                                <td>#001</td>
-                                                <td>
-                                                    <p class="mb-0 customer-name fw-bold">ABC</p>
+                                            @forelse($purchaseOrders as $order)
+                                                <tr>
+                                                    <td>
+                                                        <input class="form-check-input" type="checkbox">
+                                                    </td>
+                                                    <td>{{ 'ORDER-' . $order->id }}</td>
+                                                    <td>
+                                                        <p class="mb-0 customer-name fw-bold">
+                                                            @forelse($vendorCodes as $vendor)
+                                                                {{ $vendor . ',' }}
+                                                            @empty
+                                                                {{ 'NA' }}
+                                                            @endforelse
+                                                        </p>
+                                                    </td>
+                                                    <td>
+                                                        {{ $statuses[$order->status] ?? 'On Hold' }}
+                                                    </td>
+                                                    <td>{{ $order->created_at->format('d-M-Y') }}</td>
+                                                    <td>
+                                                        <div class="d-flex">
+                                                            @can('PermissionChecker', 'view_purchase_order_detail')
+                                                                <a aria-label="anchor"
+                                                                    href="{{ route('purchase.order.view', $order->id) }}"
+                                                                    class="btn btn-icon btn-sm bg-primary-subtle me-1"
+                                                                    data-bs-toggle="tooltip" data-bs-original-title="View">
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="13"
+                                                                        height="13" viewBox="0 0 24 24" fill="none"
+                                                                        stroke="currentColor" stroke-width="2"
+                                                                        stroke-linecap="round" stroke-linejoin="round"
+                                                                        class="feather feather-eye text-primary">
+                                                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z">
+                                                                        </path>
+                                                                        <circle cx="12" cy="12" r="3"></circle>
+                                                                    </svg>
+                                                                </a>
+                                                            @endcan
 
-                                                </td>
-                                                <td>
-                                                    Completed
-                                                </td>
-                                                <td>2025-04-11</td>
-                                                <td>Baroda</td>
-                                                <td>
-                                                    <a aria-label="anchor" href="vendor-order-view.php"
-                                                        class="btn btn-icon btn-sm bg-primary-subtle me-1"
-                                                        data-bs-toggle="tooltip" data-bs-original-title="View">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13"
-                                                            viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                                                            class="feather feather-eye text-primary">
-                                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                                            <circle cx="12" cy="12" r="3"></circle>
-                                                        </svg>
-                                                    </a>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td>
-                                                    <input class="form-check-input" type="checkbox">
-                                                </td>
-                                                <td>#002</td>
-                                                <td>
-                                                    <p class="mb-0 customer-name fw-bold">XYZ</p>
-                                                </td>
-                                                <td>
-                                                    On Hold
-                                                </td>
-                                                <td>2025-04-11</td>
-                                                <td>Baroda</td>
-                                                <td>
-                                                    <a aria-label="anchor" href="vendor-order-view.php"
-                                                        class="btn btn-icon btn-sm bg-primary-subtle me-1"
-                                                        data-bs-toggle="tooltip" data-bs-original-title="View">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13"
-                                                            viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                                                            class="feather feather-eye text-primary">
-                                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                                            <circle cx="12" cy="12" r="3"></circle>
-                                                        </svg>
-                                                    </a>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td>
-                                                    <input class="form-check-input" type="checkbox">
-                                                </td>
-                                                <td>#003</td>
-                                                <td>
-                                                    <p class="mb-0 customer-name fw-bold">EFG</p>
-                                                </td>
-                                                <td>
-                                                    Pending
-                                                </td>
-                                                <td>2025-04-11</td>
-                                                <td>Baroda</td>
-                                                <td>
-                                                    <a aria-label="anchor" href="vendor-order-view.php"
-                                                        class="btn btn-icon btn-sm bg-primary-subtle me-1"
-                                                        data-bs-toggle="tooltip" data-bs-original-title="View">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13"
-                                                            viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                                                            class="feather feather-eye text-primary">
-                                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                                            <circle cx="12" cy="12" r="3"></circle>
-                                                        </svg>
-                                                    </a>
-                                                </td>
-                                            </tr>
+                                                            {{-- @can('PermissionChecker', 'update_purchase_order')
+                                                        <a aria-label="anchor" href="#"
+                                                            class="btn btn-icon btn-sm bg-warning-subtle me-1"
+                                                            data-bs-toggle="tooltip" data-bs-original-title="Edit">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" width="13"
+                                                                height="13" viewBox="0 0 24 24" fill="none"
+                                                                stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                                                stroke-linejoin="round"
+                                                                class="feather feather-edit text-warning">
+                                                                <path
+                                                                    d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7">
+                                                                </path>
+                                                                <path
+                                                                    d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z">
+                                                                </path>
+                                                            </svg>
+                                                        </a>
+                                                    @endcan --}}
+
+                                                            @can('PermissionChecker', 'delete_purchase_order')
+                                                                <form action="{{ route('purchase.order.delete', $order->id) }}"
+                                                                    method="POST" onsubmit="return confirm('Are you sure?')">
+                                                                    @csrf
+                                                                    @method('DELETE')
+                                                                    <button type="submit"
+                                                                        class="btn btn-icon btn-sm bg-danger-subtle delete-row">
+                                                                        <svg xmlns="http://www.w3.org/2000/svg" width="13"
+                                                                            height="13" viewBox="0 0 24 24" fill="none"
+                                                                            stroke="currentColor" stroke-width="2"
+                                                                            stroke-linecap="round" stroke-linejoin="round"
+                                                                            class="feather feather-trash-2 text-danger">
+                                                                            <polyline points="3 6 5 6 21 6"></polyline>
+                                                                            <path
+                                                                                d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
+                                                                            </path>
+                                                                            <line x1="10" y1="11" x2="10"
+                                                                                y2="17"></line>
+                                                                            <line x1="14" y1="11" x2="14"
+                                                                                y2="17"></line>
+                                                                        </svg>
+                                                                    </button>
+                                                                </form>
+                                                            @endcan
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            @empty
+                                                <tr>
+                                                    <td colspan="7">No Records Found</td>
+                                                </tr>
+                                            @endforelse
                                         </tbody>
                                     </table>
                                 </div>
@@ -424,104 +394,110 @@
                                     </div>
                                 </div>
                                 <div class="table-responsive">
-
-                                    <table class="table align-middle">
+                                    <table id="example" class="table table-striped">
                                         <thead class="table-light">
                                             <tr>
                                                 <th>
                                                     <input class="form-check-input" type="checkbox">
                                                 </th>
                                                 <th>Order Id</th>
-                                                <th>Customer Name</th>
+                                                <th>Customer Group Name</th>
                                                 <th>Order Status</th>
                                                 <th>Ordered Date</th>
-                                                <th>Warehouse</th>
+                                                {{-- <th>Warehouse</th> --}}
                                                 <th>Action</th>
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            <tr>
-                                                <td>
-                                                    <input class="form-check-input" type="checkbox">
-                                                </td>
-                                                <td>#001</td>
-                                                <td>
-                                                    <p class="mb-0 customer-name fw-bold">ABC</p>
+                                            @php
+                                                $statuses = [
+                                                    'pending' => 'Pending',
+                                                    'blocked' => 'Blocked',
+                                                    'completed' => 'Completed',
+                                                    'ready_to_ship' => 'Ready To Ship',
+                                                    'ready_to_package' => 'Ready To Package',
+                                                ];
+                                            @endphp
+                                            @foreach ($orders as $order)
+                                                <tr>
+                                                    <td>
+                                                        <input class="form-check-input" type="checkbox">
+                                                    </td>
+                                                    <td>{{ 'ORDER-' . $order->id }}</td>
+                                                    <td>
+                                                        <p class="mb-0 customer-name fw-bold">
+                                                            {{ $order->customerGroup->name }}
+                                                        </p>
+                                                    </td>
+                                                    <td>
+                                                        {{ $statuses[$order->status] ?? 'On Hold' }}
+                                                    </td>
+                                                    <td>{{ $order->created_at->format('d-M-Y') }}</td>
+                                                    <td>
+                                                        <div class="d-flex">
+                                                            @can('PermissionChecker', 'view_sale-detail')
+                                                                <a aria-label="anchor"
+                                                                    href="{{ route('order.view', $order->id) }}"
+                                                                    class="btn btn-icon btn-sm bg-primary-subtle me-1"
+                                                                    data-bs-toggle="tooltip" data-bs-original-title="View">
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="13"
+                                                                        height="13" viewBox="0 0 24 24" fill="none"
+                                                                        stroke="currentColor" stroke-width="2"
+                                                                        stroke-linecap="round" stroke-linejoin="round"
+                                                                        class="feather feather-eye text-primary">
+                                                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z">
+                                                                        </path>
+                                                                        <circle cx="12" cy="12" r="3"></circle>
+                                                                    </svg>
+                                                                </a>
+                                                            @endcan
 
-                                                </td>
-                                                <td>
-                                                    Completed
-                                                </td>
-                                                <td>2025-04-11</td>
-                                                <td>Baroda</td>
-                                                <td>
-                                                    <a aria-label="anchor" href="customer-order-view.php"
-                                                        class="btn btn-icon btn-sm bg-primary-subtle me-1"
-                                                        data-bs-toggle="tooltip" data-bs-original-title="View">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13"
-                                                            viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                                                            class="feather feather-eye text-primary">
-                                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                                            <circle cx="12" cy="12" r="3"></circle>
-                                                        </svg>
-                                                    </a>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td>
-                                                    <input class="form-check-input" type="checkbox">
-                                                </td>
-                                                <td>#002</td>
-                                                <td>
-                                                    <p class="mb-0 customer-name fw-bold">XYZ</p>
-                                                </td>
-                                                <td>
-                                                    On Hold
-                                                </td>
-                                                <td>2025-04-11</td>
-                                                <td>Baroda</td>
-                                                <td>
-                                                    <a aria-label="anchor" href="customer-order-view.php"
-                                                        class="btn btn-icon btn-sm bg-primary-subtle me-1"
-                                                        data-bs-toggle="tooltip" data-bs-original-title="View">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13"
-                                                            viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                                                            class="feather feather-eye text-primary">
-                                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                                            <circle cx="12" cy="12" r="3"></circle>
-                                                        </svg>
-                                                    </a>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td>
-                                                    <input class="form-check-input" type="checkbox">
-                                                </td>
-                                                <td>#003</td>
-                                                <td>
-                                                    <p class="mb-0 customer-name fw-bold">EFG</p>
-                                                </td>
-                                                <td>
-                                                    Pending
-                                                </td>
-                                                <td>2025-04-11</td>
-                                                <td>Baroda</td>
-                                                <td>
-                                                    <a aria-label="anchor" href="customer-order-view.php"
-                                                        class="btn btn-icon btn-sm bg-primary-subtle me-1"
-                                                        data-bs-toggle="tooltip" data-bs-original-title="View">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13"
-                                                            viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                                                            class="feather feather-eye text-primary">
-                                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                                            <circle cx="12" cy="12" r="3"></circle>
-                                                        </svg>
-                                                    </a>
-                                                </td>
-                                            </tr>
+                                                            @can('PermissionChecker', 'update_sale')
+                                                                <a aria-label="anchor" href="#"
+                                                                    class="btn btn-icon btn-sm bg-warning-subtle me-1"
+                                                                    data-bs-toggle="tooltip" data-bs-original-title="Edit">
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="13"
+                                                                        height="13" viewBox="0 0 24 24" fill="none"
+                                                                        stroke="currentColor" stroke-width="2"
+                                                                        stroke-linecap="round" stroke-linejoin="round"
+                                                                        class="feather feather-edit text-warning">
+                                                                        <path
+                                                                            d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7">
+                                                                        </path>
+                                                                        <path
+                                                                            d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z">
+                                                                        </path>
+                                                                    </svg>
+                                                                </a>
+                                                            @endcan
+                                                            @can('PermissionChecker', 'delete_sale')
+                                                                <form action="{{ route('order.delete', $order->id) }}"
+                                                                    method="POST" onsubmit="return confirm('Are you sure?')">
+                                                                    @csrf
+                                                                    @method('DELETE')
+                                                                    <button type="submit"
+                                                                        class="btn btn-icon btn-sm bg-danger-subtle delete-row">
+                                                                        <svg xmlns="http://www.w3.org/2000/svg" width="13"
+                                                                            height="13" viewBox="0 0 24 24" fill="none"
+                                                                            stroke="currentColor" stroke-width="2"
+                                                                            stroke-linecap="round" stroke-linejoin="round"
+                                                                            class="feather feather-trash-2 text-danger">
+                                                                            <polyline points="3 6 5 6 21 6"></polyline>
+                                                                            <path
+                                                                                d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
+                                                                            </path>
+                                                                            <line x1="10" y1="11" x2="10"
+                                                                                y2="17"></line>
+                                                                            <line x1="14" y1="11" x2="14"
+                                                                                y2="17"></line>
+                                                                        </svg>
+                                                                    </button>
+                                                                </form>
+                                                            @endcan
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            @endforeach
                                         </tbody>
                                     </table>
                                 </div>
@@ -558,96 +534,58 @@
                                                     <input class="form-check-input" type="checkbox">
                                                 </th>
                                                 <th>Order Id</th>
-                                                <th>Customer Name</th>
+                                                <th>Group Name</th>
                                                 <th>Ordered Date</th>
-                                                <th>Package Pdf</th>
                                                 <th>Status</th>
                                                 <th>Action</th>
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            <tr>
-                                                <td>
-                                                    <input class="form-check-input" type="checkbox">
-                                                </td>
-                                                <td>#001</td>
-                                                <td>
-                                                    <p class="mb-0 customer-name fw-bold">ABC</p>
-
-                                                </td>
-                                                <td>
-                                                    2025-04-11
-                                                </td>
-                                                <td>BK159.pdf</td>
-                                                <td class="text-success">Completed</td>
-                                                <td>
-                                                    <a aria-label="anchor" href="packing-products-list.php"
-                                                        class="btn btn-icon btn-sm bg-primary-subtle me-1"
-                                                        data-bs-toggle="tooltip" data-bs-original-title="View">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13"
-                                                            viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                                                            class="feather feather-eye text-primary">
-                                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                                            <circle cx="12" cy="12" r="3"></circle>
-                                                        </svg>
-                                                    </a>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td>
-                                                    <input class="form-check-input" type="checkbox">
-                                                </td>
-                                                <td>#002</td>
-                                                <td>
-                                                    <p class="mb-0 customer-name fw-bold">XYZ</p>
-                                                </td>
-                                                <td>
-                                                    2025-04-11
-                                                </td>
-                                                <td>BK158.pdf</td>
-                                                <td class="text-primary">Pending</td>
-                                                <td>
-                                                    <a aria-label="anchor" href="packing-products-list.php"
-                                                        class="btn btn-icon btn-sm bg-primary-subtle me-1"
-                                                        data-bs-toggle="tooltip" data-bs-original-title="View">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13"
-                                                            viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                                                            class="feather feather-eye text-primary">
-                                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                                            <circle cx="12" cy="12" r="3"></circle>
-                                                        </svg>
-                                                    </a>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td>
-                                                    <input class="form-check-input" type="checkbox">
-                                                </td>
-                                                <td>#003</td>
-                                                <td>
-                                                    <p class="mb-0 customer-name fw-bold">EFG</p>
-                                                </td>
-                                                <td>
-                                                    2025-04-11
-                                                </td>
-                                                <td>BK157.pdf</td>
-                                                <td class="text-danger">Issue</td>
-                                                <td>
-                                                    <a aria-label="anchor" href="packing-products-list.php"
-                                                        class="btn btn-icon btn-sm bg-primary-subtle me-1"
-                                                        data-bs-toggle="tooltip" data-bs-original-title="View">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13"
-                                                            viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                                                            class="feather feather-eye text-primary">
-                                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                                            <circle cx="12" cy="12" r="3"></circle>
-                                                        </svg>
-                                                    </a>
-                                                </td>
-                                            </tr>
+                                            @php
+                                                $statuses = [
+                                                    'pending' => 'Pending',
+                                                    'blocked' => 'Blocked',
+                                                    'completed' => 'Completed',
+                                                    'ready_to_ship' => 'Ready To Ship',
+                                                    'ready_to_package' => 'Ready To Package',
+                                                ];
+                                            @endphp
+                                            @forelse ($packagingOrders as $order)
+                                                <tr>
+                                                    <td>
+                                                        <input class="form-check-input" type="checkbox">
+                                                    </td>
+                                                    <td>{{ 'ORDER-' . $order->id }}</td>
+                                                    <td>
+                                                        <p class="mb-0 customer-name fw-bold">
+                                                            {{ $order->customerGroup->name }}
+                                                        </p>
+                                                    </td>
+                                                    <td>{{ $order->created_at->format('d-M-Y') }}</td>
+                                                    <td>
+                                                        {{ $statuses[$order->status] ?? 'On Hold' }}
+                                                    </td>
+                                                    <td>
+                                                        <a aria-label="anchor"
+                                                            href="{{ route('packing.products.view', $order->id) }}"
+                                                            class="btn btn-icon btn-sm bg-primary-subtle me-1"
+                                                            data-bs-toggle="tooltip" data-bs-original-title="View">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" width="13"
+                                                                height="13" viewBox="0 0 24 24" fill="none"
+                                                                stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                                                stroke-linejoin="round"
+                                                                class="feather feather-eye text-primary">
+                                                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                                                <circle cx="12" cy="12" r="3"></circle>
+                                                            </svg>
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                            @empty
+                                                <tr>
+                                                    <td colspan="6" class="text-center">No Orders Found</td>
+                                                </tr>
+                                            @endforelse
                                         </tbody>
                                     </table>
                                 </div>
@@ -685,7 +623,7 @@
                                                     <input class="form-check-input" type="checkbox">
                                                 </th>
                                                 <th>Order Id</th>
-                                                <th>Customer Name</th>
+                                                <th>Customer Group Name</th>
                                                 <th>Ordered Date</th>
                                                 <th>Delivery Date</th>
                                                 <th>Status</th>
@@ -693,94 +631,53 @@
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            <tr>
-                                                <td>
-                                                    <input class="form-check-input" type="checkbox">
-                                                </td>
-                                                <td>#001</td>
-                                                <td>
-                                                    <p class="mb-0 customer-name fw-bold">ABC</p>
+                                            @php
+                                                $statuses = [
+                                                    'pending' => 'Pending',
+                                                    'blocked' => 'Blocked',
+                                                    'completed' => 'Completed',
+                                                    'ready_to_ship' => 'Ready To Ship',
+                                                    'ready_to_package' => 'Ready To Package',
+                                                ];
+                                            @endphp
+                                            @forelse ($orders as $order)
+                                                <tr>
+                                                    <td>
+                                                        <input class="form-check-input" type="checkbox">
+                                                    </td>
+                                                    <td>{{ 'ORDER-' . $order->id }}</td>
+                                                    <td>
+                                                        <p class="mb-0 customer-name fw-bold">
+                                                            {{ $order->customerGroup->name }}
+                                                        </p>
+                                                    </td>
+                                                    <td>{{ $order->created_at->format('d-M-Y') }}</td>
+                                                    <td>NA</td>
+                                                    <td>
+                                                        {{ $statuses[$order->status] ?? 'On Hold' }}
+                                                    </td>
+                                                    <td>
+                                                        <a aria-label="anchor"
+                                                            href="{{ route('readyToShip.view', $order->id) }}"
+                                                            class="btn btn-icon btn-sm bg-primary-subtle me-1"
+                                                            data-bs-toggle="tooltip" data-bs-original-title="View">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" width="13"
+                                                                height="13" viewBox="0 0 24 24" fill="none"
+                                                                stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                                                stroke-linejoin="round"
+                                                                class="feather feather-eye text-primary">
+                                                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                                                <circle cx="12" cy="12" r="3"></circle>
+                                                            </svg>
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                            @empty
+                                                <tr>
+                                                    <td colspan="7" class="text-center">No Records Found</td>
+                                                </tr>
+                                            @endforelse
 
-                                                </td>
-                                                <td>
-                                                    2025-04-11
-                                                </td>
-                                                <td>
-                                                    2025-05-15
-                                                </td>
-                                                <td class="text-success">Completed</td>
-                                                <td>
-                                                    <a aria-label="anchor" href="ready-to-ship-detail.php"
-                                                        class="btn btn-icon btn-sm bg-primary-subtle me-1"
-                                                        data-bs-toggle="tooltip" data-bs-original-title="View">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13"
-                                                            viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                                                            class="feather feather-eye text-primary">
-                                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                                            <circle cx="12" cy="12" r="3"></circle>
-                                                        </svg>
-                                                    </a>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td>
-                                                    <input class="form-check-input" type="checkbox">
-                                                </td>
-                                                <td>#002</td>
-                                                <td>
-                                                    <p class="mb-0 customer-name fw-bold">XYZ</p>
-                                                </td>
-                                                <td>
-                                                    2025-04-11
-                                                </td>
-                                                <td>
-                                                    2025-05-15
-                                                </td>
-                                                <td class="text-primary">Delivered</td>
-                                                <td>
-                                                    <a aria-label="anchor" href="ready-to-ship-detail.php"
-                                                        class="btn btn-icon btn-sm bg-primary-subtle me-1"
-                                                        data-bs-toggle="tooltip" data-bs-original-title="View">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13"
-                                                            viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                                                            class="feather feather-eye text-primary">
-                                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                                            <circle cx="12" cy="12" r="3"></circle>
-                                                        </svg>
-                                                    </a>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td>
-                                                    <input class="form-check-input" type="checkbox">
-                                                </td>
-                                                <td>#003</td>
-                                                <td>
-                                                    <p class="mb-0 customer-name fw-bold">EFG</p>
-                                                </td>
-                                                <td>
-                                                    2025-04-11
-                                                </td>
-                                                <td>
-                                                    2025-05-15
-                                                </td>
-                                                <td class="text-Secondary">Out For Delivery</td>
-                                                <td>
-                                                    <a aria-label="anchor" href="ready-to-ship-detail.php"
-                                                        class="btn btn-icon btn-sm bg-primary-subtle me-1"
-                                                        data-bs-toggle="tooltip" data-bs-original-title="View">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13"
-                                                            viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                                                            class="feather feather-eye text-primary">
-                                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                                            <circle cx="12" cy="12" r="3"></circle>
-                                                        </svg>
-                                                    </a>
-                                                </td>
-                                            </tr>
                                         </tbody>
                                     </table>
                                 </div>
@@ -817,103 +714,44 @@
                                                 <th>
                                                     <input class="form-check-input" type="checkbox">
                                                 </th>
-                                                <th>Order Id</th>
-                                                <th>Invoice No</th>
-                                                <th>Customer Name</th>
-                                                <th>Due Date</th>
+                                                <th>Order&nbsp;Id</th>
+                                                <th>Invoice&nbsp;No</th>
+                                                <th>Customer&nbsp;Name</th>
+                                                <th>Due&nbsp;Date</th>
                                                 <th>Amount</th>
-                                                <th>Paid</th>
-                                                <th>Amount Due</th>
-                                                <th>Status</th>
                                                 <th>Action</th>
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            <tr>
-                                                <td>
-                                                    <input class="form-check-input" type="checkbox">
-                                                </td>
-                                                <td>#001</td>
-                                                <td>INV0001</td>
-                                                <td>ABC</td>
-                                                </td>
-                                                <td>
-                                                    2025-04-11
-                                                </td>
-                                                <td>10,000</td>
-                                                <td>8,000</td>
-                                                <td>2,000</td>
-                                                <td class="text-success">Completed</td>
-                                                <td>
-                                                    <a aria-label="anchor" href="invoices-details.php"
-                                                        class="btn btn-icon btn-sm bg-primary-subtle me-1"
-                                                        data-bs-toggle="tooltip" data-bs-original-title="View">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13"
-                                                            viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                                                            class="feather feather-eye text-primary">
-                                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                                            <circle cx="12" cy="12" r="3"></circle>
-                                                        </svg>
-                                                    </a>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td>
-                                                    <input class="form-check-input" type="checkbox">
-                                                </td>
-                                                <td>#002</td>
-                                                <td>INV0002</td>
-                                                <td>EFG</td>
-                                                <td>
-                                                    2025-04-11
-                                                </td>
-                                                <td>10,000</td>
-                                                <td>8,000</td>
-                                                <td>2,000</td>
-                                                <td class="text-primary">Pending</td>
-                                                <td>
-                                                    <a aria-label="anchor" href="invoices-details.php"
-                                                        class="btn btn-icon btn-sm bg-primary-subtle me-1"
-                                                        data-bs-toggle="tooltip" data-bs-original-title="View">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13"
-                                                            viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                                                            class="feather feather-eye text-primary">
-                                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                                            <circle cx="12" cy="12" r="3"></circle>
-                                                        </svg>
-                                                    </a>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td>
-                                                    <input class="form-check-input" type="checkbox">
-                                                </td>
-                                                <td>#003</td>
-                                                <td>INV0003</td>
-                                                <td>XYZ</td>
-                                                <td>
-                                                    2025-04-11
-                                                </td>
-                                                <td>10,000</td>
-                                                <td>8,000</td>
-                                                <td>2,000</td>
-                                                <td class="text-danger">Issue</td>
-                                                <td>
-                                                    <a aria-label="anchor" href="invoices-details.php"
-                                                        class="btn btn-icon btn-sm bg-primary-subtle me-1"
-                                                        data-bs-toggle="tooltip" data-bs-original-title="View">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13"
-                                                            viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                                                            class="feather feather-eye text-primary">
-                                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                                            <circle cx="12" cy="12" r="3"></circle>
-                                                        </svg>
-                                                    </a>
-                                                </td>
-                                            </tr>
+                                            @foreach ($invoices as $invoice)
+                                                <tr>
+                                                    <td>
+                                                        <input class="form-check-input" type="checkbox">
+                                                    </td>
+                                                    <td>#{{ $invoice->sales_order_id }}</td>
+                                                    <td>{{ $invoice->invoice_number }}</td>
+                                                    <td>{{ $invoice->customer->client_name }}</td>
+                                                    <td>
+                                                        {{ $invoice->invoice_date }}
+                                                    </td>
+                                                    <td>{{ number_format($invoice->total_amount, 2) }}</td>
+                                                    <td>
+                                                        <a aria-label="anchor"
+                                                            href="{{ route('invoice.downloadPdf', $invoice->id) }}"
+                                                            class="btn btn-icon btn-sm bg-primary-subtle me-1"
+                                                            data-bs-toggle="tooltip" data-bs-original-title="View">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" width="13"
+                                                                height="13" viewBox="0 0 24 24" fill="none"
+                                                                stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                                                stroke-linejoin="round"
+                                                                class="feather feather-eye text-primary">
+                                                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                                                <circle cx="12" cy="12" r="3"></circle>
+                                                            </svg>
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                            @endforeach
                                         </tbody>
                                     </table>
                                 </div>
@@ -1329,7 +1167,6 @@
 @endsection
 
 @section('script')
-
     <!--plugins-->
     <script src="assets/js/jquery.min.js"></script>
     <!--plugins-->

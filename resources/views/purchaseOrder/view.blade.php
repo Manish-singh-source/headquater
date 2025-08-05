@@ -5,14 +5,14 @@
         <div class="main-content">
 
             <div class="div my-2">
-
                 <div class="row">
                     <div class="col-12">
                         <div class="card w-100 d-flex  flex-sm-row flex-col">
                             <ul class="col-12 list-group list-group-flush">
                                 <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                                     <span><b>Order Id</b></span>
-                                    <span>{{ 'ORDER-' . $purchaseOrderProducts[0]->purchase_order_id }}</span>
+                                    <span>{{ 'ORDER-' }} <span
+                                            id="purchase-order-id">{{ $purchaseOrderProducts[0]->purchase_order_id }}</span></span>
                                 </li>
                                 <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                                     <span><b>Vendor Name</b></span>
@@ -34,7 +34,7 @@
                                     ];
                                 @endphp
 
-                                
+
                                 <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                                     <span><b>Status</b></span>
                                     <span>
@@ -147,7 +147,8 @@
                                                                                 <label for="approve_reason"
                                                                                     class="form-label">Reason<span
                                                                                         class="text-danger">*</span></label>
-                                                                                <input type="text" name="approve_reason"
+                                                                                <input type="text"
+                                                                                    name="approve_reason"
                                                                                     id="approve_reason"
                                                                                     class="form-control" value=""
                                                                                     required="">
@@ -238,12 +239,14 @@
                                 </div>
                             </div>
 
-                            <button id="customExcelBtn" class="btn btn-sm border-2 border-primary">
+                            {{-- <button id="customExcelBtn" class="btn btn-sm border-2 border-primary">
                                 <i class="fa fa-file-excel-o"></i> Export to Excel
-                            </button>
+                            </button> --}}
+                            <a href="#" class="btn btn-icon btn-sm border-2 border-primary me-1"
+                                id="exportData">Export to Excel</a>
 
                             <ul class="nav nav-tabs" id="vendorTabs" role="tablist">
-                                <select class="form-select border-2 border-primary" id="departmentFilter"
+                                <select class="form-select border-2 border-primary" id="vendorSelect"
                                     aria-label="Default select example">
                                     <option value="" selected>All Vendors</option>
                                     @foreach ($vendors as $vendor)
@@ -270,17 +273,17 @@
                                 </thead>
                                 <tbody>
                                     @forelse($purchaseOrderProducts as $order)
-                                        @if ($order->ordered_quantity > 0)
+                                        {{-- @if ($order->ordered_quantity > 0) --}}
                                             <tr>
                                                 <td>{{ 'PO-' . $order->id }}</td>
-                                                <td>{{ $order->tempProduct->vendor_code }}</td>
+                                                <td>{{ $order->vendor_code }}</td>
                                                 <td>{{ $order->tempProduct->po_number ?? 'NA' }}</td>
                                                 <td>{{ $order->tempProduct->sku ?? 'NA' }}</td>
                                                 <td>{{ $order->tempProduct->description ?? 'NA' }}</td>
                                                 <td>{{ $order->tempProduct->mrp ?? 'NA' }}</td>
                                                 <td>{{ $order->ordered_quantity ?? 'NA' }}</td>
                                             </tr>
-                                        @endif
+                                        {{-- @endif --}}
                                     @empty
                                         <tr>
                                             <td colspan="6">No Records Found</td>
@@ -293,52 +296,6 @@
                 </div>
             </div>
 
-            {{-- 
-            <div class="card">
-                <div class="card-header border-bottom-dashed">
-                    <div class="row g-4 align-items-center">
-                        <div class="col-sm">
-                            <h5 class="card-title mb-0">
-                                Add Vendor PI
-                            </h5>
-                        </div>
-                    </div>
-                </div>
-                <div class="card-body pi-add">
-                    <form action="{{ route('purchase.order.store') }}" method="post" enctype="multipart/form-data">
-                        @csrf
-                        @method('POST')
-                        <div class="row g-3">
-                            <input type="hidden" name="purchase_order_id"
-                                value="{{ $purchaseOrderProducts[0]->purchase_order_id }}">
-                            <div class="col-12 col-lg-3">
-                                <label for="vendor_code" class="form-label">Vendor Name
-                                    <span class="text-danger">*</span></label>
-                                <select class="form-control" name="vendor_code" id="vendor_code">
-                                    <option selected disabled value="">-- Select --</option>
-                                    @foreach ($vendors as $vendor)
-                                        <option value="{{ $vendor }}">
-                                            {{ $vendor }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div class="col-12 col-lg-3">
-                                <label for="pi_excel" class="form-label">Upload PI Excel <span
-                                        class="text-danger">*</span></label>
-                                <input type="file" name="pi_excel" id="pi_excel" class="form-control"
-                                    value="" required="" placeholder="Upload ID Document">
-                            </div>
-                            <div class="col-12 col-lg-2 d-flex align-items-end gap-2">
-                                <button type="submit" class="btn btn-success w-sm waves ripple-light upload">
-                                    Upload
-                                </button>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div> 
-            --}}
 
             @isset($vendorPIs[0]->id)
                 <div class="card">
@@ -518,42 +475,6 @@
                             </div>
                         </div>
                     </div>
-                    {{-- 
-                <div class="card-body">
-                    <form action="{{ route('purchase.order.invoice.store') }}" method="post"
-                        enctype="multipart/form-data">
-                        @csrf
-                        @method('POST')
-                        <div class="row g-3">
-                            <div class="col-12 col-lg-3">
-                                <input type="hidden" name="purchase_order_id"
-                                    value="{{ $purchaseOrderProducts[0]->purchase_order_id }}">
-                                <label for="marital" class="form-label">Vendor Name
-                                    <span class="text-danger">*</span></label>
-                                <select class="form-control" name="vendor_code" id="vendor_code">
-                                    <option selected disabled value="">-- Select --</option>
-                                    @foreach ($vendors as $vendor)
-                                        <option value="{{ $vendor }}">
-                                            {{ $vendor }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div class="col-12 col-lg-3">
-                                <label for="invoice_file" class="form-label">Upload Invoice <span
-                                        class="text-danger">*</span></label>
-                                <input type="file" name="invoice_file" id="invoice_file" class="form-control"
-                                    placeholder="Upload ID Document">
-                            </div>
-                            <div class="col-12 col-lg-1 d-flex align-items-end gap-2">
-                                <button type="submit" class="btn btn-success w-sm waves ripple-light">
-                                    Upload
-                                </button>
-                            </div>
-                        </div>
-                    </form>
-                </div> 
-                --}}
 
                     <div class="card-body">
                         <table class="table align-middle">
@@ -593,43 +514,6 @@
                         </div>
                     </div>
 
-                    {{-- 
-                <div class="card-body">
-                    <form action="{{ route('purchase.order.grn.store') }}" method="post" enctype="multipart/form-data">
-                        @csrf
-                        @method('POST')
-                        <div class="row g-3">
-                            <div class="col-12 col-lg-3">
-                                <input type="hidden" name="purchase_order_id"
-                                    value="{{ $purchaseOrderProducts[0]->purchase_order_id }}">
-                                <label for="marital" class="form-label">Vendor Name
-                                    <span class="text-danger">*</span></label>
-                                <select class="form-control" name="vendor_code" id="vendor_code">
-                                    <option selected disabled value="">-- Select --</option>
-                                    @foreach ($vendors as $vendor)
-                                        <option value="{{ $vendor }}">
-                                            {{ $vendor }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div class="col-12 col-lg-3">
-                                <label for="grn_file" class="form-label">Upload GRN <span
-                                        class="text-danger">*</span></label>
-                                <input type="file" name="grn_file" id="grn_file" class="form-control"
-                                    placeholder="Upload ID Document">
-                            </div>
-                            <div class="col-12 col-lg-1 d-flex align-items-end gap-2">
-                                <button type="submit" class="btn btn-success w-sm waves ripple-light">
-                                    Upload
-                                </button>
-                            </div>
-                        </div>
-                    </form>
-                </div> 
-                --}}
-
-
                     <div class="card-body">
                         <table class="table align-middle">
                             <thead>
@@ -655,55 +539,24 @@
                     </div>
                 </div>
             @endisset
-
-            {{-- <div class="card">
-                <div class="card-header border-bottom-dashed">
-                    <div class="row g-4 align-items-center">
-                        <div class="col-sm">
-                            <h5 class="card-title mb-0">
-                                Payment Status
-                            </h5>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="card-body">
-                    <div class="row g-3">
-                        <div class="col-12 col-lg-3">
-                            <label for="marital" class="form-label">Vendor Name
-                                <span class="text-danger">*</span></label>
-                            <select class="form-control" name="marital" id="marital">
-                                <option selected="" disabled="" value="">-- Select --</option>
-                                <option value="Active">Active</option>
-                                <option value="Emily ">Emily </option>
-                                <option value="John ">John </option>
-                                <option value="Michael ">Michael </option>
-                                <option value="Sarah ">Sarah </option>
-                                <option value="Davis">Davis</option>
-                                <option value="Smith">Smith</option>
-                                <option value="Brown">Brown</option>
-                                <option value="Wilson">Wilson</option>
-                            </select>
-                        </div>
-                        <div class="col-12 col-lg-2">
-                            <label for="document_image" class="form-label">Update Payment Status<span
-                                    class="text-danger">*</span></label>
-                            <select id="input9" class="form-select">
-                                <option selected="" disabled>Payment Status</option>
-                                <option>Pending</option>
-                                <option>Rejected</option>
-                                <option>Completed</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-12 my-3 d-flex justify-content-end align-items-end gap-2">
-                <a href="{{ route('purchase.order.index') }}" class="btn btn-success w-sm waves ripple-light">
-                    Close Order
-                </a>
-            </div> --}}
         </div>
     </main>
+@endsection
+
+
+@section('script')
+    <script>
+        $(document).on('click', '#exportData', function() {
+            var purchaseOrderId = $("#purchase-order-id").text();
+            var vendorCode = $("#vendorSelect").val();
+
+            // Construct download URL with parameters
+            var downloadUrl = '{{ route('download.vendor.po.excel') }}' +
+                '?purchaseOrderId=' + encodeURIComponent(purchaseOrderId) +
+                '&vendorCode=' + encodeURIComponent(vendorCode);
+
+            // Trigger browser download
+            window.location.href = downloadUrl;
+        });
+    </script>
 @endsection

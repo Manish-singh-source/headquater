@@ -91,7 +91,8 @@
                                             <tr>
                                                 <th>Order No</th>
                                                 <th>SKU Code</th>
-                                                <th>Title</th>
+                                                <th>Brand</th>
+                                                <th>Brand Title</th>
                                                 <th>Category</th>
                                                 <th>Qty Requirement</th>
                                             </tr>
@@ -103,6 +104,7 @@
                                                     <td>{{ $order->id }}</td>
                                                     <td>{{ $order->tempOrder->sku }}</td>
                                                     <td>{{ $order->product?->brand }}</td>
+                                                    <td>{{ $order->product?->brand_title }}</td>
                                                     <td>{{ $order->product?->category }}</td>
                                                     <td>{{ $order->ordered_quantity }}</td>
                                                 </tr>

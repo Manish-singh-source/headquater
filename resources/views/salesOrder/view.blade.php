@@ -121,6 +121,20 @@
                                     </select>
                                 </form>
                             </ul>
+                            <div class="ms-auto">
+                                <div class="btn-group">
+                                    <button type="button" class="btn border-2 border-primary">Action</button>
+                                    <button type="button"
+                                        class="btn border-2 border-primary split-bg-primary dropdown-toggle dropdown-toggle-split"
+                                        data-bs-toggle="dropdown"> <span class="visually-hidden">Toggle Dropdown</span>
+                                    </button>
+                                    <div class="dropdown-menu dropdown-menu-right dropdown-menu-lg-end">
+                                        <a class="dropdown-item cursor-pointer" id="delete-selected">Delete All</a>
+                                    </div>
+                                </div>
+                                {{-- <a href="{{ route('add-customer') }}" class="btn btn-primary px-4"><i
+                                class="bi bi-plus-lg me-2"></i>Add Customers</a> --}}
+                            </div>
                         </div>
                     </div>
                     <div class="product-table" id="poTable">
@@ -128,12 +142,18 @@
                             <table id="example" class="table align-middle">
                                 <thead class="table-light">
                                     <tr>
+                                        <th>
+                                            <input class="form-check-input" type="checkbox" id="select-all">
+                                        </th>
                                         <th>Customer&nbsp;Name</th>
+                                        <th>Facility&nbsp;Name</th>
                                         <th>Vendor&nbsp;Code</th>
                                         <th>HSN</th>
                                         <th>Item&nbsp;Code</th>
                                         <th>SKU&nbsp;Code</th>
                                         <th>Title</th>
+                                        <th>Basic&nbsp;Rate</th>
+                                        <th>Net&nbsp;Landing&nbsp;Rate</th>
                                         <th>MRP</th>
                                         <th>Qty&nbsp;Requirement</th>
                                         <th>Qty&nbsp;Fullfilled</th>
@@ -150,12 +170,19 @@
                                     @endphp
                                     @forelse($salesOrder->orderedProducts as $order)
                                         <tr>
+                                            <td>
+                                                <input class="form-check-input row-checkbox" type="checkbox" name="ids[]"
+                                                    value="{{ $order->id }}">
+                                            </td>
                                             <td>{{ $order->tempOrder->customer_name }}</td>
+                                            <td>{{ $order->tempOrder->facility_name }}</td>
                                             <td>{{ $order->tempOrder->vendor_code }}</td>
                                             <td>{{ $order->tempOrder->hsn }}</td>
                                             <td>{{ $order->tempOrder->item_code }}</td>
                                             <td>{{ $order->tempOrder->sku }}</td>
                                             <td>{{ $order->tempOrder->description }}</td>
+                                            <td>{{ $order->tempOrder->basic_rate }}</td>
+                                            <td>{{ $order->tempOrder->net_landing_rate }}</td>
                                             <td>{{ $order->tempOrder->mrp }}</td>
                                             <td>{{ $order->ordered_quantity }}</td>
                                             @if ($order->product?->sets_ctn)
@@ -208,6 +235,42 @@
             if (confirm('Are you sure you want to change status for order?')) {
                 document.getElementById('statusForm').submit();
             }
+        });
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Select All functionality
+            const selectAll = document.getElementById('select-all');
+            const checkboxes = document.querySelectorAll('.row-checkbox');
+            selectAll.addEventListener('change', function() {
+                checkboxes.forEach(cb => cb.checked = selectAll.checked);
+            });
+
+            // Delete Selected functionality
+            document.getElementById('delete-selected').addEventListener('click', function() {
+                let selected = [];
+                document.querySelectorAll('.row-checkbox:checked').forEach(cb => {
+                    selected.push(cb.value);
+                });
+                if (selected.length === 0) {
+                    alert('Please select at least one record.');
+                    return;
+                }
+                if (confirm('Are you sure you want to delete selected records?')) {
+                    // Create a form and submit
+                    let form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = '{{ route('delete.selected.order') }}';
+                    form.innerHTML = `
+                        @csrf
+                        <input type="hidden" name="_method" value="DELETE">
+                        <input type="hidden" name="ids" value="${selected.join(',')}">
+                    `;
+                    document.body.appendChild(form);
+                    form.submit();
+                }
+            });
         });
     </script>
 @endsection

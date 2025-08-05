@@ -20,10 +20,47 @@
                 <div class="col-12 col-md-auto">
                     <div class="d-flex align-items-center gap-2 justify-content-lg-end">
                         @can('PermissionChecker', 'create_customer')
-                            <a href="{{ route('customer.create', $customerGroup->id) }}"><button class="btn border-2 border-primary"><i
-                                        class="bi bi-plus-lg me-2"></i>Add Customer(Bulk)</button></a>
-                            <a href="{{ route('customer.create', $customerGroup->id) }}"><button class="btn border-2 border-primary"><i
-                                        class="bi bi-plus-lg me-2"></i>Add Customer(Single)</button></a>
+                            <a type="button" class="btn border-2 border-primary" data-bs-toggle="modal"
+                                data-bs-target="#staticBackdrop1">
+                                Add Customer(Bulk)
+                            </a>
+                            <!-- Modal -->
+                            <div class="modal fade" id="staticBackdrop1" data-bs-backdrop="static" data-bs-keyboard="false"
+                                tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <form action="{{ route('customer.store.bulk', $customerGroup->id) }}" method="POST"
+                                            enctype="multipart/form-data">
+                                            @csrf
+                                            @method('POST')
+                                            <div class="modal-header">
+                                                <h1 class="modal-title fs-5" id="staticBackdropLabel">Check Availibility Of
+                                                    Products</h1>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                    aria-label="Close"></button>
+                                            </div>
+
+                                            <div class="modal-body">
+                                                <div class="col-12 mb-3">
+                                                    <label for="document_image" class="form-label">Customers
+                                                        List (CSV/XLSX) <span class="text-danger">*</span></label>
+                                                    <input type="file" name="csv_file" id="csv_file" class="form-control"
+                                                        value="" required="">
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary"
+                                                    data-bs-dismiss="modal">Close</button>
+                                                <button type="submit" id="holdOrder" class="btn btn-primary">Submit</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <a href="{{ route('customer.create', $customerGroup->id) }}"><button
+                                    class="btn border-2 border-primary"><i class="bi bi-plus-lg me-2"></i>Add
+                                    Customer(Single)</button></a>
                         @endcan
                         <div class="ms-auto">
                             <div class="btn-group">
@@ -56,7 +93,7 @@
                                 <thead class="table-light">
                                     <tr>
                                         <th>
-                                            <input class="form-check-input" type="checkbox">
+                                            <input class="form-check-input" type="checkbox" id="select-all">
                                         </th>
                                         <th>Client Name</th>
                                         <th>Contact Name</th>
@@ -72,7 +109,8 @@
                                     @forelse ($customerGroup->customerGroupMembers as $customer)
                                         <tr>
                                             <td>
-                                                <input class="form-check-input" type="checkbox">
+                                                <input class="form-check-input row-checkbox" type="checkbox" name="ids[]"
+                                                    value="{{ $customer->id }}">
                                             </td>
                                             <td>
                                                 <span class="mb-0 customer-name fw-bold">
@@ -163,4 +201,42 @@
             </div>
         </div>
     </main>
+@endsection
+
+@section('script')
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Select All functionality
+            const selectAll = document.getElementById('select-all');
+            const checkboxes = document.querySelectorAll('.row-checkbox');
+            selectAll.addEventListener('change', function() {
+                checkboxes.forEach(cb => cb.checked = selectAll.checked);
+            });
+
+            // Delete Selected functionality
+            document.getElementById('delete-selected').addEventListener('click', function() {
+                let selected = [];
+                document.querySelectorAll('.row-checkbox:checked').forEach(cb => {
+                    selected.push(cb.value);
+                });
+                if (selected.length === 0) {
+                    alert('Please select at least one record.');
+                    return;
+                }
+                if (confirm('Are you sure you want to delete selected records?')) {
+                    // Create a form and submit
+                    let form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = '{{ route('delete.selected.customers') }}';
+                    form.innerHTML = `
+                        @csrf
+                        <input type="hidden" name="_method" value="DELETE">
+                        <input type="hidden" name="ids" value="${selected.join(',')}">
+                    `;
+                    document.body.appendChild(form);
+                    form.submit();
+                }
+            });
+        });
+    </script>
 @endsection

@@ -110,6 +110,7 @@ class ProductController extends Controller
             $reader = SimpleExcelReader::create($filepath, $extension);
             $rows = $reader->getRows();
             $products = [];
+            $warehouseStockUpdate = [];
             $insertCount = 0;
 
             foreach ($rows as $record) {
@@ -132,6 +133,10 @@ class ProductController extends Controller
                     'updated_at' => now(),
                 ];
 
+                $warehouseStockUpdate = WarehouseStock::where('sku', $record['SKU Code'])->first();
+                $warehouseStockUpdate->quantity = $record['Sets/CTN'];
+                $warehouseStockUpdate->save();
+                
                 $insertCount++;
             }
 

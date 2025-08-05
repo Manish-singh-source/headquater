@@ -61,7 +61,7 @@
                                                         <tr>
                                                             <th>Customer&nbsp;Name</th>
                                                             <th>Po&nbsp;Number</th>
-                                                            <th>SKU</th>
+                                                            <th>SKU&nbsp;Code</th>
                                                             <th>Facility&nbsp;Name</th>
                                                             <th>Facility&nbsp;Location</th>
                                                             <th>PO&nbsp;Date</th>
@@ -81,23 +81,23 @@
                                                     <tbody>
                                                         @forelse($fileData as $data)
                                                             <tr>
-                                                                <td>{{ $data['customer_name'] }}</td>
-                                                                <td>{{ $data['po_number'] }}</td>
-                                                                <td>{{ $data['sku'] }}</td>
-                                                                <td>{{ $data['facility_name'] }}</td>
-                                                                <td>{{ $data['facility_location'] }}</td>
-                                                                <td>{{ $data['po_date'] }}</td>
-                                                                <td>{{ $data['po_expiry_date'] }}</td>
-                                                                <td>{{ $data['hsn'] }}</td>
-                                                                <td>{{ $data['item_code'] }}</td>
-                                                                <td>{{ $data['description'] }}</td>
-                                                                <td>{{ $data['basic_rate'] }}</td>
-                                                                <td>{{ $data['gst'] }}</td>
-                                                                <td>{{ $data['net_landing_rate'] }}</td>
-                                                                <td>{{ $data['mrp'] }}</td>
-                                                                <td>{{ $data['po_qty'] }}</td>
-                                                                <td>{!! $data['available_quantity'] !!}</td>
-                                                                <td>{!! $data['unavailable_quantity'] !!}</td>
+                                                                <td>{{ $data['Customer Name'] }}</td>
+                                                                <td>{{ $data['PO Number'] }}</td>
+                                                                <td>{{ $data['SKU Code'] }}</td>
+                                                                <td>{{ $data['Facility Name'] }}</td>
+                                                                <td>{{ $data['Facility Location'] }}</td>
+                                                                <td>{{ $data['PO Date'] }}</td>
+                                                                <td>{{ $data['PO Expiry Date'] }}</td>
+                                                                <td>{{ $data['HSN'] }}</td>
+                                                                <td>{{ $data['Item Code'] }}</td>
+                                                                <td>{{ $data['Description'] }}</td>
+                                                                <td>{{ $data['Basic Rate'] }}</td>
+                                                                <td>{{ $data['GST'] }}</td>
+                                                                <td>{{ $data['Net Landing Rate'] }}</td>
+                                                                <td>{{ $data['MRP'] }}</td>
+                                                                <td>{{ $data['PO Quantity'] }}</td>
+                                                                <td>{!! $data['Available Quantity'] !!}</td>
+                                                                <td>{!! $data['Unavailable Quantity'] !!}</td>
                                                             </tr>
                                                         @empty
                                                             <tr>

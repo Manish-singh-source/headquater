@@ -9,11 +9,9 @@
                             <li class="breadcrumb-item"><a href="javascript:;"><i class="bx bx-home-alt"></i></a>
                             </li>
                             <li class="breadcrumb-item active" aria-current="page">Products</li>
-
                         </ol>
                     </nav>
                 </div>
-
             </div>
             <!--end breadcrumb-->
 
@@ -58,8 +56,7 @@
                             </div>
                         </div>
 
-                        <a href="{{ route('products.create') }}" class="btn border-2 border-primary px-4"><i
-                                class="bi bi-plus-lg me-2"></i>Add Product</a>
+                        <a href="{{ route('products.create') }}" class="btn border-2 border-primary px-4"></i>Add Product</a>
                         <div class="ms-auto">
                             <div class="btn-group">
                                 <button type="button" class="btn border-2 border-primary">Action</button>
@@ -73,7 +70,7 @@
                             </div>
                             {{-- <a href="{{ route('add-customer') }}" class="btn btn-primary px-4"><i
                                 class="bi bi-plus-lg me-2"></i>Add Customers</a> --}}
-                        </div>
+                        </div> 
                     </div>
                 </div>
             </div>
@@ -126,7 +123,7 @@
                                             <td>{{ $product->product->ean_code }}</td>
                                             <td>{{ $product->product->category }}</td>
                                             <td>{{ $product->product->pcs_set }}</td>
-                                            <td>{{ $product->quantity }}</td>
+                                            <td>{{ $product->product->sets_ctn }}</td>
                                             <td>{{ $product->product->vendor_name }}</td>
                                             <td>{{ $product->product->vendor_purchase_rate }}</td>
                                             <td>{{ $product->product->gst }}</td>

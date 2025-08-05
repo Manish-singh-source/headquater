@@ -13,7 +13,7 @@ use Spatie\SimpleExcel\SimpleExcelReader;
 
 class CustomerGroupController extends Controller
 {
-    
+
     // List of Customer Groups
     public function index()
     {
@@ -118,12 +118,34 @@ class CustomerGroupController extends Controller
         $customerGroup = CustomerGroup::with('customerGroupMembers.customer')->findOrFail($id);
         return view('customerGroups.view', compact('customerGroup'));
     }
+    
+    public function edit($id) {
+        $customerGroup = CustomerGroup::findOrFail($id);
+        return view('customerGroups.edit', compact('customerGroup'));
+    }
 
+    public function update(Request $request, $id)
+    {
+        $validator = Validator::make($request->all(), [
+            'name' => 'required',
+        ]);
+        
+        if ($validator->fails()) {
+            return back()->withErrors($validator)->withInput();
+        }
+
+        $customerGroup = CustomerGroup::find($id);
+        $customerGroup->name = $request->name;
+        $customerGroup->save();
+
+        return redirect()->route('customer.groups.index')->with('success', 'Group Name Updated Successfully.');
+    }
     // Deleting Group of customers and it's related customers 
-    public function destroy($id) {
+    public function destroy($id)
+    {
         $customerGroup = CustomerGroup::findOrFail($id);
         $customerGroup->delete();
-        
+
         return redirect()->route('customerGroups.index')->with('success', 'Successfully Deleted Group');
     }
 }
