@@ -22,8 +22,6 @@ return new class extends Migration
             $table->string('gst')->nullable();
             $table->string('hsn')->nullable();
             $table->timestamps();
-
-            $table->unique(['vendor_pi_id', 'vendor_sku_code'], 'vendor_pi_products_unique_index');
         });
     }
 
