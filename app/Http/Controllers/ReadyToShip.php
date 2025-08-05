@@ -21,9 +21,7 @@ class ReadyToShip extends Controller
     {
 
         $order = SalesOrder::where('status', 'ready_to_ship')->find($id);
-        // $salesOrder = SalesOrder::with('orderedProducts.product', 'orderedProducts.tempOrder')->findOrFail($id);
-        // return view('readyToShip.index', compact('orders'));
-
+        
         $facilityNames = SalesOrderProduct::with('customer')
             ->where('sales_order_id', $id)
             ->get()
@@ -32,8 +30,7 @@ class ReadyToShip extends Controller
             ->unique('client_name')
             ->pluck('id');
         $customerInfo = Customer::with('groupInfo.customerGroup')->withCount('orders')->whereIn('id', $facilityNames)->get();
-        // dd($customerInfo[0]);
-        // return view('readyToShip.view', compact('salesOrder', 'facilityNames'));
+        
         return view('readyToShip.view', compact('customerInfo', 'order'));
     }
 
@@ -51,7 +48,6 @@ class ReadyToShip extends Controller
 
         $customerInfo = Customer::with('addresses')->find($c_id);
         $invoice = Invoice::where('customer_id', $c_id)->where('sales_order_id', $id)->first();
-        // dd($invoice);
 
         return view('readyToShip.view-detail', compact('salesOrder', 'customerInfo', 'invoice'));
     }

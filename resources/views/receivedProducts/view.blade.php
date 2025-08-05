@@ -22,11 +22,12 @@
                             <ul class="col-12 list-group list-group-flush">
                                 <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                                     <span><b>Purchase Order Id</b></span>
-                                    <span> <b>{{ 'ORDER-' . $vendorPIs->purchase_order_id }}</b></span>
+                                    <span> <b>{{ 'ORDER-' }} <span
+                                                id="purchase-order-id">{{ $vendorPIs->purchase_order_id }}</span></b></span>
                                 </li>
                                 <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                                     <span><b>Vendor Name</b></span>
-                                    <span> <b>{{ $vendorPIs->vendor_code }}</b></span>
+                                    <span> <b id="vendor-code">{{ $vendorPIs->vendor_code }}</b></span>
                                 </li>
                             </ul>
                         </div>
@@ -141,7 +142,7 @@
                                                         </div>
                                                     </div>
                                                 </div>
-                                                <button id="customExcelBtn" class="btn btn-sm border-2 border-primary">
+                                                <button class="btn btn-sm border-2 border-primary" id="exportData">
                                                     <i class="fa fa-file-excel-o"></i> Export to Excel
                                                 </button>
                                             </div>
@@ -152,15 +153,15 @@
                                                 <table id="example" class="table align-middle">
                                                     <thead class="table-light">
                                                         <tr>
-                                                            <th>Order No</th>
-                                                            <th>Vendor Code</th>
-                                                            <th>Purchase Order No</th>
-                                                            <th>Vendor SKU Code</th>
+                                                            <th>Order&nbsp;No</th>
+                                                            <th>Vendor&nbsp;Code</th>
+                                                            <th>Purchase&nbsp;Order&nbsp;No</th>
+                                                            <th>Vendor&nbsp;SKU&nbsp;Code</th>
                                                             <th>Title</th>
                                                             <th>MRP</th>
-                                                            <th>Quantity Requirement</th>
-                                                            <th>Available Quantity</th>
-                                                            <th>Purchase Rate Basic</th>
+                                                            <th>Quantity&nbsp;Requirement</th>
+                                                            <th>Available&nbsp;Quantity</th>
+                                                            <th>Purchase&nbsp;Rate&nbsp;Basic</th>
                                                             <th>GST</th>
                                                             <th>HSN</th>
                                                         </tr>
@@ -208,4 +209,22 @@
         </div>
     </main>
     <!--end main wrapper-->
+@endsection
+
+
+@section('script')
+    <script>
+        $(document).on('click', '#exportData', function() {
+            var purchaseOrderId = $("#purchase-order-id").text();
+            var vendorCode = $("#vendor-code").text();
+
+            // Construct download URL with parameters
+            var downloadUrl = '{{ route('download.received-products.excel') }}' +
+                '?purchaseOrderId=' + encodeURIComponent(purchaseOrderId) +
+                '&vendorCode=' + encodeURIComponent(vendorCode);
+
+            // Trigger browser download
+            window.location.href = downloadUrl;
+        });
+    </script>
 @endsection

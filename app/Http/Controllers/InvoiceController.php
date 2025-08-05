@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use PDF;
 use App\Models\Invoice;
-use Illuminate\Http\Request;
+use App\Models\SalesOrder;
 use App\Models\InvoiceDetails;
 use App\Models\SalesOrderProduct;
 
@@ -13,9 +13,26 @@ class InvoiceController extends Controller
 
     public function index()
     {
+        $orders = SalesOrder::where('status', 'ready_to_ship')->with('customerGroup')->get();
+        return view('invoice.index', compact('orders'));
+    }
+    
+    public function view($id)
+    {
+        // $order = SalesOrder::where('status', 'ready_to_ship')->find($id);
+        
+        // $facilityNames = SalesOrderProduct::with('customer')
+        //     ->where('sales_order_id', $id)
+        //     ->get()
+        //     ->pluck('customer')
+        //     ->filter()
+        //     ->unique('client_name')
+        //     ->pluck('id');
+        // $customerInfo = Customer::with('groupInfo.customerGroup')->withCount('orders')->whereIn('id', $facilityNames)->get();
+        
         $data = [
             'title' => 'Invoices',
-            'invoices' => Invoice::with(['warehouse', 'customer', 'salesOrder'])->get(),
+            'invoices' => Invoice::with(['warehouse', 'customer', 'salesOrder'])->where('sales_order_id', $id)->get(),
         ];
         // dd($data['invoices'][0]->customer->client_name);   
         return view('invoice.invoices', $data);

@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\PurchaseOrder;
-use Illuminate\Http\Request;
-use App\Models\PurchaseOrderProduct;
 use App\Models\VendorPI;
+use Illuminate\Support\Str;
+use Illuminate\Http\Request;
+use App\Models\PurchaseOrder;
+use App\Models\PurchaseOrderProduct;
+use Illuminate\Support\Facades\Validator;
+use Spatie\SimpleExcel\SimpleExcelWriter;
 
 class ReceivedProductsController extends Controller
 {
@@ -13,14 +16,61 @@ class ReceivedProductsController extends Controller
     public function index()
     {
         $purchaseOrders = PurchaseOrder::where('status', 'pending')->get();
+        // dd($purchaseOrders);
         return view('receivedProducts.index', compact('purchaseOrders'));
     }
 
     public function view(Request $request)
     {
         $vendorPIs = VendorPI::with('products')->where('purchase_order_id', $request->purchase_order_id)->where('vendor_code', $request->vendor_code)->first();
-        // dd($vendorPIs);
+        // dd($vendorPIs);     
         return view('receivedProducts.view', compact('vendorPIs'));
+    }
+
+    public function downloadReceivedProductsFile(Request $request)
+    {
+        $validated = Validator::make($request->all(), [
+            'purchaseOrderId' => 'required',
+            'vendorCode' => 'required',
+        ]);
+
+        if ($validated->failed()) {
+            return back()->with('error', 'Please Try Again.');
+        }
+
+        // Create temporary .xlsx file path
+        $tempXlsxPath = storage_path('app/received_' . Str::random(8) . '.xlsx');
+
+        // Create writer
+        $writer = SimpleExcelWriter::create($tempXlsxPath);
+
+        // Fetch data with relationships
+        $vendorPIs = VendorPI::with('products')->where('purchase_order_id', $request->purchaseOrderId)->where('vendor_code', $request->vendorCode)->first();
+
+        // dd($vendorPIs);
+        // Add rows
+        foreach ($vendorPIs->products as $product) {
+            $writer->addRow([
+                'Order No' => $product->id,
+                'Vendor Code' => $vendorPIs->vendor_code,
+                'Purchase Order No' => $vendorPIs->purchase_order_id ?? '',
+                'Vendor SKU Code'   => $product->vendor_sku_code ?? '',
+                'Title'             => $product->vendor_sku_code ?? '',
+                'MRP'               => $product->mrp ?? '',
+                'Quantity Requirement' => $product->quantity_requirement ?? '',
+                'Available Quantity' => $product->available_quantity ?? '',
+                'Purchase Rate Basic' => $product->purchase_rate ?? '',
+                'GST' => $product->gst ?? '',
+                'HSN' => $product->hsn ?? '',
+            ]);
+        }
+
+        // Close the writer
+        $writer->close();
+
+        return response()->download($tempXlsxPath, 'vendor_po.xlsx', [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ])->deleteFileAfterSend(true);
     }
 
     public function update(Request $request)

@@ -75,7 +75,7 @@ class OrderController extends Controller
             $purchaseOrder->save();
 
             foreach ($reader->getRows() as $record) {
-                $sku = trim($record['SKU']);
+                $sku = trim($record['SKU Code']);
                 $poQty = (int)$record['PO Quantity'];
                 $warehouseId = $request->warehouse_id;
 
@@ -130,7 +130,7 @@ class OrderController extends Controller
                 $tempOrder = TempOrder::create([
                     'customer_name' => $record['Customer Name'],
                     'po_number' => $record['PO Number'],
-                    'sku' => $record['SKU'],
+                    'sku' => $record['SKU Code'],
                     'facility_name' => $record['Facility Name'],
                     'facility_location' => $record['Facility Location'],
                     'po_date' => $record['PO Date'],
@@ -159,7 +159,7 @@ class OrderController extends Controller
                 $saveOrderProduct->sales_order_id = $saveOrder->id;
                 $saveOrderProduct->temp_order_id = $tempOrder->id;
                 $saveOrderProduct->ordered_quantity = $record['PO Quantity'];
-                $saveOrderProduct->sku = $record['SKU'];
+                $saveOrderProduct->sku = $record['SKU Code'];
                 if (isset($customerInfo)) {
                     $saveOrderProduct->customer_id = $customerInfo->id;
                 }
@@ -171,7 +171,7 @@ class OrderController extends Controller
                     $purchaseOrderProduct->sales_order_id = $saveOrder->id;
                     $purchaseOrderProduct->purchase_order_id = $purchaseOrder->id;
                     $purchaseOrderProduct->ordered_quantity = $unavailableStatus;
-                    $purchaseOrderProduct->sku = $record['SKU'];
+                    $purchaseOrderProduct->sku = $record['SKU Code'];
                     $purchaseOrderProduct->vendor_code = $record['Vendor Code'];
                     $purchaseOrderProduct->save();
                 }
@@ -194,7 +194,7 @@ class OrderController extends Controller
                 if (isset($customerInfo)) {
                     $warehouseStockBlockLogs->customer_id = $customerInfo->id;
                 }
-                $warehouseStockBlockLogs->sku = $record['SKU'];
+                $warehouseStockBlockLogs->sku = $record['SKU Code'];
                 if ($record['PO Quantity'] > ((int)$WarehouseblockQuantity->quantity - (int)$WarehouseblockQuantity->block_quantity)) {
                     $warehouseStockBlockLogs->block_quantity = ((int)$WarehouseblockQuantity->quantity - (int)$WarehouseblockQuantity->block_quantity);
                 } else {
@@ -358,7 +358,7 @@ class OrderController extends Controller
         $insertCount = 0;
 
         foreach ($reader->getRows() as $record) {
-            $sku = trim($record['SKU']);
+            $sku = trim($record['SKU Code']);
             // $productSku =
             $poQty = (int)$record['PO Quantity'];
             $warehouseId = $request->warehouse_id;

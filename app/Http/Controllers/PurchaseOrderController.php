@@ -58,6 +58,7 @@ class PurchaseOrderController extends Controller
                 'vendor_code' => $request->vendor_code,
             ]);
 
+            // dd($vendorPi);
             foreach ($rows as $record) {
                 if (empty($record['Vendor SKU Code'])) continue;
 

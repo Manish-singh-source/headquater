@@ -178,6 +178,7 @@ Route::controller(ReceivedProductsController::class)->group(function () {
     Route::post('/received-products', 'view')->name('received-products.view');
     Route::put('/received-products', 'update')->name('received-products.update');
     Route::post('/get-vendors', 'getVendors')->name('get.vendors');
+    Route::get('/download-received-products-excel', 'downloadReceivedProductsFile')->name('download.received-products.excel');
 });
 
 // Route::get('/received-products', function () {
@@ -212,6 +213,7 @@ Route::controller(SKUMappingController::class)->group(function () {
 // invoice
 Route::controller(InvoiceController::class)->group(function () {
     Route::get('/invoices', 'index')->name('invoices');
+    Route::get('/invoices/{id}', 'view')->name('invoices.view');
     // Route::get('/create-invoice', 'create')->name('invoice.create');
     // Route::post('/store-invoice', 'store')->name('invoice.store');
     // Route::get('/view-invoice/{id}', 'view')->name('invoice.view');

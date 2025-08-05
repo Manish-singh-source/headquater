@@ -788,6 +788,13 @@
                   table1.button('.buttons-excel').trigger();
               });
 
+              $('#departmentFilter').on('change', function() {
+                  var selected = $(this).val().trim();
+
+                  // Use regex for exact match
+                  table1.column(1).search(selected ? '^' + selected + '$' : '', true, false).draw();
+              });
+              
               $('#vendorSelect').on('change', function() {
                   var selected = $(this).val().trim();
 

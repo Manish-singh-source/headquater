@@ -239,11 +239,12 @@
                                 </div>
                             </div>
 
-                            {{-- <button id="customExcelBtn" class="btn btn-sm border-2 border-primary">
+                            <button id="customExcelBtn" class="btn btn-icon btn-sm border-2 border-primary me-1"
+                                id="exportData">
                                 <i class="fa fa-file-excel-o"></i> Export to Excel
-                            </button> --}}
-                            <a href="#" class="btn btn-icon btn-sm border-2 border-primary me-1"
-                                id="exportData">Export to Excel</a>
+                            </button>
+                            {{-- <a href="#" class="btn btn-icon btn-sm border-2 border-primary me-1"
+                                id="exportData">Export to Excel</a> --}}
 
                             <ul class="nav nav-tabs" id="vendorTabs" role="tablist">
                                 <select class="form-select border-2 border-primary" id="vendorSelect"
@@ -262,27 +263,27 @@
                             <table id="example" class="table align-middle">
                                 <thead class="table-light">
                                     <tr>
-                                        <th>Purchase Order No</th>
-                                        <th>Vendor Name</th>
-                                        <th>Portal Code</th>
-                                        <th>SKU Code</th>
+                                        <th>Purchase&nbsp;Order&nbsp;No</th>
+                                        <th>Vendor&nbsp;Name</th>
+                                        <th>Portal&nbsp;Code</th>
+                                        <th>SKU&nbsp;Code</th>
                                         <th>Title</th>
                                         <th>MRP</th>
-                                        <th>Qty Requirement</th>
+                                        <th>Qty&nbsp;Requirement</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @forelse($purchaseOrderProducts as $order)
                                         {{-- @if ($order->ordered_quantity > 0) --}}
-                                            <tr>
-                                                <td>{{ 'PO-' . $order->id }}</td>
-                                                <td>{{ $order->vendor_code }}</td>
-                                                <td>{{ $order->tempProduct->po_number ?? 'NA' }}</td>
-                                                <td>{{ $order->tempProduct->sku ?? 'NA' }}</td>
-                                                <td>{{ $order->tempProduct->description ?? 'NA' }}</td>
-                                                <td>{{ $order->tempProduct->mrp ?? 'NA' }}</td>
-                                                <td>{{ $order->ordered_quantity ?? 'NA' }}</td>
-                                            </tr>
+                                        <tr>
+                                            <td>{{ 'PO-' . $order->id }}</td>
+                                            <td>{{ $order->vendor_code }}</td>
+                                            <td>{{ $order->tempProduct->po_number ?? 'NA' }}</td>
+                                            <td>{{ $order->tempProduct->sku ?? 'NA' }}</td>
+                                            <td>{{ $order->tempProduct->description ?? 'NA' }}</td>
+                                            <td>{{ $order->tempProduct->mrp ?? 'NA' }}</td>
+                                            <td>{{ $order->ordered_quantity ?? 'NA' }}</td>
+                                        </tr>
                                         {{-- @endif --}}
                                     @empty
                                         <tr>
@@ -419,15 +420,15 @@
                                 <table id="example2" class="table align-middle">
                                     <thead class="table-light">
                                         <tr>
-                                            <th>Order No</th>
-                                            <th>Vendor Code</th>
-                                            <th>Purchase Order No</th>
-                                            <th>Vendor SKU Code</th>
+                                            <th>Order&nbsp;No</th>
+                                            <th>Vendor&nbsp;Code</th>
+                                            <th>Purchase&nbsp;Order&nbsp;No</th>
+                                            <th>Vendor&nbsp;SKU&nbsp;Code</th>
                                             <th>Title</th>
                                             <th>MRP</th>
-                                            <th>Quantity Requirement</th>
-                                            <th>Available Quantity</th>
-                                            <th>Purchase Rate Basic</th>
+                                            <th>Quantity&nbsp;Requirement</th>
+                                            <th>Available&nbsp;Quantity</th>
+                                            <th>Purchase&nbsp;Rate&nbsp;Basic</th>
                                             <th>GST</th>
                                             <th>HSN</th>
                                         </tr>

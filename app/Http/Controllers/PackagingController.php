@@ -20,14 +20,6 @@ class PackagingController extends Controller
     {
         $salesOrder = SalesOrder::with('orderedProducts.product', 'orderedProducts.customer', 'orderedProducts.tempOrder')->findOrFail($id);
 
-        // i want this type of 'client_name' names unique 
-        // $facilityNames = Customer::pluck('client_name');
-
-        // but these names are placed in customer tabel and customer id is placed in sales order product and both have hasOne connection
-        // $facilityNames = SalesOrderProduct::with(['customer' => function ($query) {
-        //     $query->pluck('client_name');
-        // }])->get();
-
         $facilityNames = SalesOrderProduct::with('customer')
             ->where('sales_order_id', $id)
             ->get()
