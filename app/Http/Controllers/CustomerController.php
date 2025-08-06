@@ -262,7 +262,6 @@ class CustomerController extends Controller
     public function profile()
     {
         $user = Auth::user();
-        // $user = auth()->user();
         return view('user-profile', compact('user'));
     }
 
@@ -293,7 +292,6 @@ class CustomerController extends Controller
             $imageName = time() . '.' . $image->getClientOriginalExtension();
             $image->move(public_path('/uploads/images/profile'), $imageName);
             $user->profile_image = '/uploads/images/profile/' . $imageName; // Save the 
-            dd($user->profile_image);
         }
         $user->save();
 

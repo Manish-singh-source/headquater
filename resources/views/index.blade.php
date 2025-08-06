@@ -28,7 +28,7 @@
                                 <div class="col-12 col-sm-7">
                                     @can('PermissionChecker', 'view_dashboard')
                                         <div class="d-flex align-items-center gap-3 mb-5">
-                                            <img src="https://placehold.co/200x200" class="rounded-circle bg-grd-info p-1"
+                                            <img src="{{ Auth::user()->profile_image ?? Avatar::create(Auth::user()->fname)->toBase64() }}" class="rounded-circle bg-grd-info p-1"
                                                 width="60" height="60" alt="user">
                                             <div class="">
                                                 <p class="mb-0 fw-semibold">Welcome back</p>

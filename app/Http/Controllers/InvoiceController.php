@@ -57,7 +57,7 @@ class InvoiceController extends Controller
         // $customerInfo = Customer::with('addresses')->find($c_id);
         $invoice = Invoice::with(['warehouse', 'customer', 'salesOrder'])->findOrFail($id);
         $salesOrderProducts = SalesOrderProduct::with('product')->where('sales_order_id', $invoice->sales_order_id)->where('customer_id', $invoice->customer_id)->get();
-        // dd($salesOrderProducts);
+
         $data = [
             'title' => 'Invoice',
             'invoice' => $invoice,
