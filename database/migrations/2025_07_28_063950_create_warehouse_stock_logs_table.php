@@ -17,8 +17,8 @@ return new class extends Migration
             $table->string('purchase_order_id')->nullable();    
             $table->string('sales_order_id')->nullable();
             $table->string('sku')->nullable();
-            $table->string('stock')->nullable();
-            $table->string('block_quantity')->nullable();
+            $table->string('stock')->default(0)->nullable();
+            $table->string('block_quantity')->default(0)->nullable();
             $table->string('reason')->nullable();
             $table->timestamps();
         });

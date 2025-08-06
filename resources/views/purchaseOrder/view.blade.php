@@ -18,9 +18,20 @@
                                     <span><b>Vendor Name</b></span>
                                     <span>
                                         <b>
-                                            @foreach ($vendors as $vendor)
+                                            {{-- @foreach ($vendors as $vendor)
                                                 {{ $vendor . ',' }}
-                                            @endforeach
+                                            @endforeach --}}
+                                            @php
+                                                $vendors = $purchaseOrderProducts
+                                                    ->pluck('vendor_code')
+                                                    ->filter()
+                                                    ->unique();
+                                            @endphp
+                                            @forelse($vendors as $vendor)
+                                                {{ $vendor }},
+                                            @empty
+                                                NA
+                                            @endforelse
                                         </b>
                                     </span>
                                 </li>
@@ -214,10 +225,22 @@
                                                         <span class="text-danger">*</span></label>
                                                     <select class="form-control" name="vendor_code" id="vendor_code">
                                                         <option selected disabled value="">-- Select --</option>
-                                                        @foreach ($vendors as $vendor)
+                                                        {{-- @foreach ($vendors as $vendor)
                                                             <option value="{{ $vendor }}">{{ $vendor }}
                                                             </option>
-                                                        @endforeach
+                                                        @endforeach --}}
+                                                        @php
+                                                            $vendors = $purchaseOrderProducts
+                                                                ->pluck('vendor_code')
+                                                                ->filter()
+                                                                ->unique();
+                                                        @endphp
+                                                        @forelse($vendors as $vendor)
+                                                            <option value="{{ $vendor }}">{{ $vendor }}
+                                                            </option>
+                                                        @empty
+                                                            NA
+                                                        @endforelse
                                                     </select>
                                                 </div>
 
@@ -250,9 +273,18 @@
                                 <select class="form-select border-2 border-primary" id="vendorSelect"
                                     aria-label="Default select example">
                                     <option value="" selected>All Vendors</option>
-                                    @foreach ($vendors as $vendor)
+                                    {{-- @foreach ($vendors as $vendor)
                                         <option value="{{ $vendor }}">{{ $vendor }}</option>
-                                    @endforeach
+                                    @endforeach --}}
+                                    @php
+                                        $vendors = $purchaseOrderProducts->pluck('vendor_code')->filter()->unique();
+                                    @endphp
+                                    @forelse($vendors as $vendor)
+                                        <option value="{{ $vendor }}">{{ $vendor }}
+                                        </option>
+                                    @empty
+                                        NA
+                                    @endforelse
                                 </select>
                             </ul>
                         </div>
@@ -329,11 +361,23 @@
                                                             <span class="text-danger">*</span></label>
                                                         <select class="form-control" name="vendor_code" id="vendor_code">
                                                             <option selected disabled value="">-- Select --</option>
-                                                            @foreach ($vendors as $vendor)
+                                                            {{-- @foreach ($vendors as $vendor)
                                                                 <option value="{{ $vendor }}">
                                                                     {{ $vendor }}
                                                                 </option>
-                                                            @endforeach
+                                                            @endforeach --}}
+                                                            @php
+                                                                $vendors = $purchaseOrderProducts
+                                                                    ->pluck('vendor_code')
+                                                                    ->filter()
+                                                                    ->unique();
+                                                            @endphp
+                                                            @forelse($vendors as $vendor)
+                                                                <option value="{{ $vendor }}">{{ $vendor }}
+                                                                </option>
+                                                            @empty
+                                                                NA
+                                                            @endforelse
                                                         </select>
                                                     </div>
 
@@ -378,11 +422,23 @@
                                                             <span class="text-danger">*</span></label>
                                                         <select class="form-control" name="vendor_code" id="vendor_code">
                                                             <option selected disabled value="">-- Select --</option>
-                                                            @foreach ($vendors as $vendor)
-                                                                <option value="{{ $vendor }}">
-                                                                    {{ $vendor }}
+                                                            {{-- @foreach ($vendors as $vendor)
+                                                                    <option value="{{ $vendor }}">
+                                                                        {{ $vendor }}
+                                                                    </option>
+                                                                @endforeach --}}
+                                                            @php
+                                                                $vendors = $purchaseOrderProducts
+                                                                    ->pluck('vendor_code')
+                                                                    ->filter()
+                                                                    ->unique();
+                                                            @endphp
+                                                            @forelse($vendors as $vendor)
+                                                                <option value="{{ $vendor }}">{{ $vendor }}
                                                                 </option>
-                                                            @endforeach
+                                                            @empty
+                                                                NA
+                                                            @endforelse
                                                         </select>
                                                     </div>
 
@@ -407,9 +463,20 @@
                                     <select class="form-select border-2 border-primary" id="vendorSelect"
                                         aria-label="Default select example">
                                         <option value="" selected>All Vendors</option>
+                                        {{-- 
                                         @foreach ($vendors as $vendor)
                                             <option value="{{ $vendor }}">{{ $vendor }}</option>
-                                        @endforeach
+                                        @endforeach 
+                                        --}}
+
+                                        @php
+                                            $vendors = $purchaseOrderProducts->pluck('vendor_code')->filter()->unique();
+                                        @endphp
+                                        @forelse($vendors as $vendor)
+                                            <option value="{{ $vendor }}">{{ $vendor }}</option>
+                                        @empty
+                                            NA
+                                        @endforelse
                                     </select>
                                 </ul>
                             </div>

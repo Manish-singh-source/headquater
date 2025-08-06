@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::table('warehouse_stocks', function (Blueprint $table) {
             //
             $table->after('quantity', function (Blueprint $table) {
-                $table->string('block_quantity')->nullable();
+                $table->string('block_quantity')->default(0)->nullable();
             });
         });
     }

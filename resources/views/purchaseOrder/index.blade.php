@@ -54,10 +54,16 @@
                                             <td>{{ 'ORDER-' . $order->id }}</td>
                                             <td>
                                                 <p class="mb-0 customer-name fw-bold">
+                                                    @php
+                                                        $vendorCodes = $order->purchaseOrderProducts
+                                                            ->pluck('vendor_code')
+                                                            ->filter()
+                                                            ->unique();
+                                                    @endphp
                                                     @forelse($vendorCodes as $vendor)
-                                                        {{ $vendor . ',' }}
+                                                        {{ $vendor }},
                                                     @empty
-                                                        {{ 'NA' }}
+                                                        NA
                                                     @endforelse
                                                 </p>
                                             </td>
@@ -103,8 +109,8 @@
                                                     @endcan --}}
 
                                                     @can('PermissionChecker', 'delete_purchase_order')
-                                                        <form action="{{ route('purchase.order.delete', $order->id) }}" method="POST"
-                                                            onsubmit="return confirm('Are you sure?')">
+                                                        <form action="{{ route('purchase.order.delete', $order->id) }}"
+                                                            method="POST" onsubmit="return confirm('Are you sure?')">
                                                             @csrf
                                                             @method('DELETE')
                                                             <button type="submit"

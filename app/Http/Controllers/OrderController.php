@@ -17,6 +17,7 @@ use App\Models\PurchaseOrder;
 use App\Models\InvoiceDetails;
 use App\Models\ManageCustomer;
 use App\Models\WarehouseStock;
+use Illuminate\Support\Carbon;
 use App\Models\SalesOrderProduct;
 use App\Models\WarehouseStockLog;
 use Illuminate\Support\Facades\DB;
@@ -89,15 +90,28 @@ class OrderController extends Controller
                         ->where('warehouse_id', $warehouseId)
                         ->first();
 
-                    if (isset($stockEntry->block_quantity) && $stockEntry->block_quantity >= $stockEntry->quantity) {
+                    if (empty($stockEntry->quantity)) {
+                        $quantity = 0;
+                        $block_quantity = 0;
+                    } else {
+                        $quantity = $stockEntry->quantity;
+                        $block_quantity = $stockEntry->block_quantity;
+                    }
+
+                    if (isset($block_quantity) && $block_quantity >= $quantity) {
                         $productStockCache[$sku] = [
                             'remaining' => 0,
+                            'ordered' => 0,
+                        ];
+                    } elseif (isset($block_quantity) && $block_quantity > 0 && $block_quantity < $quantity) {
+                        $productStockCache[$sku] = [
+                            'remaining' => $quantity - $block_quantity,
                             'ordered' => 0,
                         ];
                     } else {
                         if ($stockEntry) {
                             $productStockCache[$sku] = [
-                                'remaining' => $stockEntry->quantity,
+                                'remaining' => $quantity,
                                 'ordered' => $stockEntry->product->sets_ctn ?? 0,
                             ];
                         } else {
@@ -107,6 +121,7 @@ class OrderController extends Controller
                             ];
                         }
                     }
+
                 }
 
                 // Use cached values
@@ -166,26 +181,35 @@ class OrderController extends Controller
                 $saveOrderProduct->vendor_code = $record['Vendor Code'];
                 $saveOrderProduct->save();
 
-                if ($unavailableStatus > 0) {
-                    $purchaseOrderProduct = new PurchaseOrderProduct();
-                    $purchaseOrderProduct->sales_order_id = $saveOrder->id;
-                    $purchaseOrderProduct->purchase_order_id = $purchaseOrder->id;
-                    $purchaseOrderProduct->ordered_quantity = $unavailableStatus;
-                    $purchaseOrderProduct->sku = $record['SKU Code'];
-                    $purchaseOrderProduct->vendor_code = $record['Vendor Code'];
-                    $purchaseOrderProduct->save();
-                }
+                // if ($unavailableStatus > 0) {
+                $purchaseOrderProduct = new PurchaseOrderProduct();
+                $purchaseOrderProduct->sales_order_id = $saveOrder->id;
+                $purchaseOrderProduct->purchase_order_id = $purchaseOrder->id;
+                $purchaseOrderProduct->ordered_quantity = $unavailableStatus;
+                $purchaseOrderProduct->sku = $record['SKU Code'];
+                $purchaseOrderProduct->vendor_code = $record['Vendor Code'];
+                $purchaseOrderProduct->save();
+                // }
 
                 $blockQuantity = WarehouseStock::where('sku', $sku)->first();
                 $WarehouseblockQuantity = WarehouseStock::where('sku', $sku)->first(); // For Updating WarehouseStockLog Table
-
                 // Update WarehouseStock Table
-                if ($record['PO Quantity'] > ((int)$blockQuantity->quantity - (int)$blockQuantity->block_quantity)) {
-                    $blockQuantity->block_quantity = (int)$blockQuantity->block_quantity + ((int)$blockQuantity->quantity - (int)$blockQuantity->block_quantity);
-                } else {
-                    $blockQuantity->block_quantity = (int)$blockQuantity->block_quantity + (int)$record['PO Quantity'];
+                if (isset($blockQuantity)) {
+                    if (empty($blockQuantity->quantity)) {
+                        $quantity1 = 0;
+                        $block_quantity1 = 0;
+                    } else {
+                        $quantity1 = $blockQuantity->quantity;
+                        $block_quantity1 = $blockQuantity->block_quantity;
+                    }
+
+                    if ($record['PO Quantity'] > ((int)$quantity1 - (int)$block_quantity1)) {
+                        $blockQuantity->block_quantity = (int)$block_quantity1 + ((int)$quantity1 - (int)$block_quantity1);
+                    } else {
+                        $blockQuantity->block_quantity = (int)$block_quantity1 + (int)$record['PO Quantity'];
+                    }
+                    $blockQuantity->save();
                 }
-                $blockQuantity->save();
 
                 // Update WarehouseStockLog Table
                 $warehouseStockBlockLogs = new WarehouseStockLog();
@@ -195,10 +219,12 @@ class OrderController extends Controller
                     $warehouseStockBlockLogs->customer_id = $customerInfo->id;
                 }
                 $warehouseStockBlockLogs->sku = $record['SKU Code'];
-                if ($record['PO Quantity'] > ((int)$WarehouseblockQuantity->quantity - (int)$WarehouseblockQuantity->block_quantity)) {
-                    $warehouseStockBlockLogs->block_quantity = ((int)$WarehouseblockQuantity->quantity - (int)$WarehouseblockQuantity->block_quantity);
-                } else {
-                    $warehouseStockBlockLogs->block_quantity = $record['PO Quantity'];
+                if (isset($WarehouseblockQuantity)) {
+                    if ($record['PO Quantity'] > ((int)$WarehouseblockQuantity->quantity - (int)$WarehouseblockQuantity->block_quantity)) {
+                        $warehouseStockBlockLogs->block_quantity = ((int)$WarehouseblockQuantity->quantity - (int)$WarehouseblockQuantity->block_quantity);
+                    } else {
+                        $warehouseStockBlockLogs->block_quantity = $record['PO Quantity'];
+                    }
                 }
                 $warehouseStockBlockLogs->reason = "Quantity Blocked For Sales Order Id - " . $saveOrder->id;
                 $warehouseStockBlockLogs->save();
@@ -213,7 +239,7 @@ class OrderController extends Controller
             DB::commit();
             return redirect()->route('order.index')->with('success', 'Order Completed Successful.');
         } catch (\Exception $e) {
-            dd($e->getMessage());
+            dd($e);
             DB::rollBack();
             return redirect()->back()->with(['error' => 'Something went wrong: ' . $e->getMessage()]);
         }
@@ -374,18 +400,28 @@ class OrderController extends Controller
                     ->where('warehouse_id', $warehouseId)
                     ->first();
 
-                if (isset($stockEntry->block_quantity) && $stockEntry->block_quantity >= $stockEntry->quantity) {
+                // if (empty($stockEntry->quantity)) {
+                //     $quantity = 0;
+                //     $block_quantity = 0;
+                // } else {
+                $quantity = $stockEntry->quantity;
+                $block_quantity = $stockEntry->block_quantity;
+                // }
+
+                if (isset($block_quantity) && $block_quantity >= $quantity) {
                     $productStockCache[$sku] = [
                         'remaining' => 0,
                         'ordered' => 0,
                     ];
+                } elseif (isset($block_quantity) && $block_quantity > 0 && $block_quantity < $quantity) {
+                    $productStockCache[$sku] = [
+                        'remaining' => $quantity - $block_quantity,
+                        'ordered' => 0,
+                    ];
                 } else {
-                    // if (isset($stockEntry->block_quantity)) {
-                    //     $stockEntry->quantity -= $stockEntry->block_quantity;
-                    // }
                     if ($stockEntry) {
                         $productStockCache[$sku] = [
-                            'remaining' => $stockEntry->quantity,
+                            'remaining' => $quantity,
                             'ordered' => $stockEntry->product->sets_ctn ?? 0,
                         ];
                     } else {
@@ -395,6 +431,7 @@ class OrderController extends Controller
                         ];
                     }
                 }
+                // dd($stockEntry->product->sets_ctn);
             }
 
             // Use cached values
@@ -421,8 +458,8 @@ class OrderController extends Controller
                 'SKU Code' => $sku,
                 'Facility Name' => $record['Facility Name'],
                 'Facility Location' => $record['Facility Location'],
-                'PO Date' => $record['PO Date']->format('d-m-Y'),
-                'PO Expiry Date' => $record['PO Expiry Date']->format('d-m-Y'),
+                'PO Date' => Carbon::parse($record['PO Date'])->format('d-m-Y'),
+                'PO Expiry Date' => Carbon::parse($record['PO Expiry Date'])->format('d-m-Y'),
                 'HSN' => $record['HSN'],
                 'Item Code' => $record['Item Code'],
                 'Description' => $record['Description'],
@@ -435,6 +472,7 @@ class OrderController extends Controller
                 'Unavailable Quantity' => $unavailableStatus,
             ];
         }
+        // dd($insertedRows);
 
 
         if (empty($insertedRows)) {
