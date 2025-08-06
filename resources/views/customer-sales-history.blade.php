@@ -1,6 +1,6 @@
 @extends('layouts.master')
 @section('main-content')
-<main class="main-wrapper">
+    <main class="main-wrapper">
         <div class="main-content">
             <div class="page-breadcrumb d-none d-sm-flex align-items-center mb-3">
                 <div class="">
@@ -94,7 +94,8 @@
                                         <div class="mb-3">
                                             <label class="form-label">Choose Date</label>
                                             <div class="input-icon-start position-relative">
-                                                <input type="text" class="form-control date-range bookingrange" placeholder="dd/mm/yyyy - dd/mm/yyyy">
+                                                <input type="text" class="form-control date-range bookingrange"
+                                                    placeholder="dd/mm/yyyy - dd/mm/yyyy">
                                                 <span class="input-icon-left">
                                                     <i class="ti ti-calendar"></i>
                                                 </span>
@@ -172,67 +173,75 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr>
-                                        <td>
-                                            <input class="form-check-input" type="checkbox">
-                                        </td>
-                                        <td>INV0001</td>
-                                        <td>#001</td>
-                                        <td>
-                                            <p class="mb-0 customer-name fw-bold">ABC</p>
+                                    @foreach ($invoices as $invoice)
+                                        <tr>
+                                            <td>
+                                                <input class="form-check-input" type="checkbox">
+                                            </td>
+                                            <td>#{{ $invoice->sales_order_id }}</td>
+                                            <td>{{ $invoice->invoice_number }}</td>
+                                            <td>{{ $invoice->customer->client_name }}</td>
+                                            <td>
+                                                {{ $invoice->invoice_date }}
+                                            </td>
+                                            <td>{{ number_format($invoice->total_amount, 2) }}</td>
+                                            <td>
+                                                <a aria-label="anchor"
+                                                    href="{{ route('invoice.downloadPdf', $invoice->id) }}"
+                                                    class="btn btn-icon btn-sm bg-primary-subtle me-1"
+                                                    data-bs-toggle="tooltip" data-bs-original-title="View">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13"
+                                                        viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                                        class="feather feather-eye text-primary">
+                                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                                        <circle cx="12" cy="12" r="3"></circle>
+                                                    </svg>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <input class="form-check-input" type="checkbox">
+                                            </td>
+                                            <td>INV0001</td>
+                                            <td>#001</td>
+                                            <td>
+                                                <p class="mb-0 customer-name fw-bold">ABC</p>
 
-                                        </td>
-                                        <td>
-                                            2025-04-11
-                                        </td>
-                                        <td>
-                                            2025-05-15
-                                        </td>
-                                        <td>₹ 10,000</td>
-                                        <td>₹ 10,000</td>
-                                        <td>₹ 0</td>
-                                        <td class="text-success">Paid</td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            <input class="form-check-input" type="checkbox">
-                                        </td>
-                                        <td>INV0002</td>
-                                        <td>#002</td>
-                                        <td>
-                                            <p class="mb-0 customer-name fw-bold">XYZ</p>
-                                        </td>
-                                        <td>
-                                            2025-04-11
-                                        </td>
-                                        <td>
-                                            2025-05-15
-                                        </td>
-                                        <td>₹ 10,000</td>
-                                        <td>₹ 8,000</td>
-                                        <td>₹ 2,000</td>
-                                        <td class="text-danger">Unpaid</td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            <input class="form-check-input" type="checkbox">
-                                        </td>
-                                        <td>INV0003</td>
-                                        <td>#003</td>
-                                        <td>
-                                            <p class="mb-0 customer-name fw-bold">EFG</p>
-                                        </td>
-                                        <td>
-                                            2025-04-11
-                                        </td>
-                                        <td>
-                                            2025-05-15
-                                        </td>
-                                        <td>₹ 10,000</td>
-                                        <td>₹ 10,000</td>
-                                        <td>₹ 0</td>
-                                        <td class="text-success">Paid</td>
-                                    </tr>
+                                            </td>
+                                            <td>
+                                                2025-04-11
+                                            </td>
+                                            <td>
+                                                2025-05-15
+                                            </td>
+                                            <td>₹ 10,000</td>
+                                            <td>₹ 10,000</td>
+                                            <td>₹ 0</td>
+                                            <td class="text-success">Paid</td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <input class="form-check-input" type="checkbox">
+                                            </td>
+                                            <td>INV0002</td>
+                                            <td>#002</td>
+                                            <td>
+                                                <p class="mb-0 customer-name fw-bold">XYZ</p>
+                                            </td>
+                                            <td>
+                                                2025-04-11
+                                            </td>
+                                            <td>
+                                                2025-05-15
+                                            </td>
+                                            <td>₹ 10,000</td>
+                                            <td>₹ 8,000</td>
+                                            <td>₹ 2,000</td>
+                                            <td class="text-danger">Unpaid</td>
+                                        </tr>
+                                    @endforeach
                                 </tbody>
                             </table>
                         </div>
@@ -244,4 +253,3 @@
         </div>
     </main>
 @endsection
-    

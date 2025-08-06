@@ -121,7 +121,6 @@ class OrderController extends Controller
                             ];
                         }
                     }
-
                 }
 
                 // Use cached values
@@ -181,15 +180,15 @@ class OrderController extends Controller
                 $saveOrderProduct->vendor_code = $record['Vendor Code'];
                 $saveOrderProduct->save();
 
-                // if ($unavailableStatus > 0) {
-                $purchaseOrderProduct = new PurchaseOrderProduct();
-                $purchaseOrderProduct->sales_order_id = $saveOrder->id;
-                $purchaseOrderProduct->purchase_order_id = $purchaseOrder->id;
-                $purchaseOrderProduct->ordered_quantity = $unavailableStatus;
-                $purchaseOrderProduct->sku = $record['SKU Code'];
-                $purchaseOrderProduct->vendor_code = $record['Vendor Code'];
-                $purchaseOrderProduct->save();
-                // }
+                if ($unavailableStatus > 0) {
+                    $purchaseOrderProduct = new PurchaseOrderProduct();
+                    $purchaseOrderProduct->sales_order_id = $saveOrder->id;
+                    $purchaseOrderProduct->purchase_order_id = $purchaseOrder->id;
+                    $purchaseOrderProduct->ordered_quantity = $unavailableStatus;
+                    $purchaseOrderProduct->sku = $record['SKU Code'];
+                    $purchaseOrderProduct->vendor_code = $record['Vendor Code'];
+                    $purchaseOrderProduct->save();
+                }
 
                 $blockQuantity = WarehouseStock::where('sku', $sku)->first();
                 $WarehouseblockQuantity = WarehouseStock::where('sku', $sku)->first(); // For Updating WarehouseStockLog Table
@@ -239,7 +238,6 @@ class OrderController extends Controller
             DB::commit();
             return redirect()->route('order.index')->with('success', 'Order Completed Successful.');
         } catch (\Exception $e) {
-            dd($e);
             DB::rollBack();
             return redirect()->back()->with(['error' => 'Something went wrong: ' . $e->getMessage()]);
         }

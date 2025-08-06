@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Invoice;
 use App\Models\WarehouseStock;
 
 class ReportController extends Controller
@@ -17,6 +18,10 @@ class ReportController extends Controller
     }
 
     public function customerSalesHistory() {
-        return view('customer-sales-history');
+        $data = [
+            'title' => 'Invoices',
+            'invoices' => Invoice::with(['warehouse', 'customer', 'salesOrder'])->get(),
+        ];
+        return view('customer-sales-history', $data);
     }
 }

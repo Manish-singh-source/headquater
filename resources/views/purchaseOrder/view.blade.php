@@ -262,7 +262,7 @@
                                 </div>
                             </div>
 
-                            <button id="customExcelBtn" class="btn btn-icon btn-sm border-2 border-primary me-1"
+                            <button class="btn btn-icon btn-sm border-2 border-primary me-1"
                                 id="exportData">
                                 <i class="fa fa-file-excel-o"></i> Export to Excel
                             </button>
@@ -273,9 +273,6 @@
                                 <select class="form-select border-2 border-primary" id="vendorSelect"
                                     aria-label="Default select example">
                                     <option value="" selected>All Vendors</option>
-                                    {{-- @foreach ($vendors as $vendor)
-                                        <option value="{{ $vendor }}">{{ $vendor }}</option>
-                                    @endforeach --}}
                                     @php
                                         $vendors = $purchaseOrderProducts->pluck('vendor_code')->filter()->unique();
                                     @endphp
@@ -361,11 +358,6 @@
                                                             <span class="text-danger">*</span></label>
                                                         <select class="form-control" name="vendor_code" id="vendor_code">
                                                             <option selected disabled value="">-- Select --</option>
-                                                            {{-- @foreach ($vendors as $vendor)
-                                                                <option value="{{ $vendor }}">
-                                                                    {{ $vendor }}
-                                                                </option>
-                                                            @endforeach --}}
                                                             @php
                                                                 $vendors = $purchaseOrderProducts
                                                                     ->pluck('vendor_code')
@@ -422,11 +414,6 @@
                                                             <span class="text-danger">*</span></label>
                                                         <select class="form-control" name="vendor_code" id="vendor_code">
                                                             <option selected disabled value="">-- Select --</option>
-                                                            {{-- @foreach ($vendors as $vendor)
-                                                                    <option value="{{ $vendor }}">
-                                                                        {{ $vendor }}
-                                                                    </option>
-                                                                @endforeach --}}
                                                             @php
                                                                 $vendors = $purchaseOrderProducts
                                                                     ->pluck('vendor_code')
@@ -459,16 +446,10 @@
                                         </div>
                                     </div>
                                 </div>
-                                <ul class="nav nav-tabs" id="vendorTabs2" role="tablist">
-                                    <select class="form-select border-2 border-primary" id="vendorSelect"
+                                <ul class="nav nav-tabs" role="tablist">
+                                    <select class="form-select border-2 border-primary" id="vendorSelect2"
                                         aria-label="Default select example">
                                         <option value="" selected>All Vendors</option>
-                                        {{-- 
-                                        @foreach ($vendors as $vendor)
-                                            <option value="{{ $vendor }}">{{ $vendor }}</option>
-                                        @endforeach 
-                                        --}}
-
                                         @php
                                             $vendors = $purchaseOrderProducts->pluck('vendor_code')->filter()->unique();
                                         @endphp

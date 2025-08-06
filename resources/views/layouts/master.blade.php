@@ -801,6 +801,13 @@
                   // Use regex for exact match
                   table1.column(1).search(selected ? '^' + selected + '$' : '', true, false).draw();
               });
+              
+              $('#vendorSelect2').on('change', function() {
+                  var selected = $(this).val().trim();
+
+                  // Use regex for exact match
+                  table1.column(1).search(selected ? '^' + selected + '$' : '', true, false).draw();
+              });
 
               //   $(".vendorSelect").on('click', function() {
               //       // if($(this).className('active')) {
@@ -847,6 +854,11 @@
               });
 
               $("#vendorSelect").on('change', function() {
+                  var vendorSelected = $(this).val();
+                  table2.column(1).search(vendorSelected ? '^' + vendorSelected + '$' : '', true, false)
+                      .draw();
+              });
+              $("#vendorSelect2").on('change', function() {
                   var vendorSelected = $(this).val();
                   table2.column(1).search(vendorSelected ? '^' + vendorSelected + '$' : '', true, false)
                       .draw();
