@@ -200,47 +200,6 @@
                                                 </a>
                                             </td>
                                         </tr>
-                                        <tr>
-                                            <td>
-                                                <input class="form-check-input" type="checkbox">
-                                            </td>
-                                            <td>INV0001</td>
-                                            <td>#001</td>
-                                            <td>
-                                                <p class="mb-0 customer-name fw-bold">ABC</p>
-
-                                            </td>
-                                            <td>
-                                                2025-04-11
-                                            </td>
-                                            <td>
-                                                2025-05-15
-                                            </td>
-                                            <td>₹ 10,000</td>
-                                            <td>₹ 10,000</td>
-                                            <td>₹ 0</td>
-                                            <td class="text-success">Paid</td>
-                                        </tr>
-                                        <tr>
-                                            <td>
-                                                <input class="form-check-input" type="checkbox">
-                                            </td>
-                                            <td>INV0002</td>
-                                            <td>#002</td>
-                                            <td>
-                                                <p class="mb-0 customer-name fw-bold">XYZ</p>
-                                            </td>
-                                            <td>
-                                                2025-04-11
-                                            </td>
-                                            <td>
-                                                2025-05-15
-                                            </td>
-                                            <td>₹ 10,000</td>
-                                            <td>₹ 8,000</td>
-                                            <td>₹ 2,000</td>
-                                            <td class="text-danger">Unpaid</td>
-                                        </tr>
                                     @endforeach
                                 </tbody>
                             </table>

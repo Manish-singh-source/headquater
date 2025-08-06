@@ -39,16 +39,6 @@ class AppServiceProvider extends ServiceProvider
                 }
             }
 
-
-            // json_encode($role->permissions);
-            // // dd($role->permissions);
-
-            // foreach ($role->permissions as $role) {
-            //     if ($role == 'update_profile') {
-            //         return true;
-            //     }
-            // }
-            // return $role->perimissions === 'customer-handler';
         });
     }
 }

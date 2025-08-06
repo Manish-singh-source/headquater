@@ -19,7 +19,6 @@ class AdminAuth
         if(!Auth::check() || !Auth::user()->role_id == '1') {
             return redirect()->route('login')->with('error', 'Unauthorized Access');
         }
-
         return $next($request);
     }
 }

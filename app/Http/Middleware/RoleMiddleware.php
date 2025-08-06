@@ -24,10 +24,6 @@ class RoleMiddleware
         $user = Auth::user();
         $role=Role::find($user->id);
         
-        // if (($role->slug!=$roles)) {
-        //     return redirect('/login');
-        // }
-
         return $next($request);
     }
 }
