@@ -127,11 +127,10 @@ class VendorController extends Controller
             ->with('purchaseOrder') // eager load after filtering
             ->get();
 
-        // dd($orders); 
         return view('vendor.view', compact('vendor', 'orders'));
     }
 
-    
+
     public function singleVendorOrderView($purchaseOrderId, $vendorCode)
     {
         $vendor = Vendor::where('vendor_code', $vendorCode)->first();
@@ -140,7 +139,6 @@ class VendorController extends Controller
             ->where('vendor_code', $vendorCode)
             ->get();
 
-        // dd($orders);
         return view('vendor.single-vendor-order-view', compact('orders', 'vendor'));
     }
 

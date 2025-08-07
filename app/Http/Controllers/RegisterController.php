@@ -23,7 +23,6 @@ class RegisterController extends Controller
 
     public function registerCustomerData(Request $request)
     {
-        // dd($request->all());
         $validator = Validator::make(
             $request->all(),
             [

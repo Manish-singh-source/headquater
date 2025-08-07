@@ -16,14 +16,12 @@ class ReceivedProductsController extends Controller
     public function index()
     {
         $purchaseOrders = PurchaseOrder::where('status', 'pending')->get();
-        // dd($purchaseOrders);
         return view('receivedProducts.index', compact('purchaseOrders'));
     }
 
     public function view(Request $request)
     {
         $vendorPIs = VendorPI::with('products')->where('purchase_order_id', $request->purchase_order_id)->where('vendor_code', $request->vendor_code)->first();
-        // dd($vendorPIs);     
         return view('receivedProducts.view', compact('vendorPIs'));
     }
 
@@ -47,7 +45,6 @@ class ReceivedProductsController extends Controller
         // Fetch data with relationships
         $vendorPIs = VendorPI::with('products')->where('purchase_order_id', $request->purchaseOrderId)->where('vendor_code', $request->vendorCode)->first();
 
-        // dd($vendorPIs);
         // Add rows
         foreach ($vendorPIs->products as $product) {
             $writer->addRow([

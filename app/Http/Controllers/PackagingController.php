@@ -28,7 +28,6 @@ class PackagingController extends Controller
             ->unique()
             ->values();
 
-        // dd($facilityNames->toArray());
         return view('packagingList.view', compact('salesOrder', 'facilityNames'));
     }
 }

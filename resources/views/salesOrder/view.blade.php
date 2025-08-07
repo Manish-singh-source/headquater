@@ -34,7 +34,8 @@
                                 </li>
                                 <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                                     <span><b>PO Quantity Status</b></span>
-                                    <span> <b>
+                                    <span> 
+                                        <b>
                                             @php
                                                 $sum = 0;
                                                 $sum2 = 0;
@@ -83,7 +84,8 @@
                                                 <span class="badge text-success bg-success-subtle"> Quantity Fulfilled
                                                 </span>
                                             @endif
-                                        </b></span>
+                                        </b>
+                                    </span>
                                 </li>
                             </ul>
                         </div>

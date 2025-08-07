@@ -194,7 +194,6 @@ class CustomerController extends Controller
     public function edit($id, $group_id)
     {
         $customer = Customer::with('addresses')->findOrFail($id);
-        // dd($customer);
         return view('customer.edit', compact('customer', 'group_id'));
     }
 
@@ -254,7 +253,6 @@ class CustomerController extends Controller
     public function detail($id)
     {
         $customerDetails = Customer::with('groupInfo.customerGroup', 'orders.product')->where('id', $id)->first();
-        // dd($customerDetails);
         // $salesOrder = SalesOrder::with('customerGroup', 'warehouse', 'orderedProducts.product', 'orderedProducts.tempOrder')->findOrFail($id);
         return view('customer.detail-view', compact('customerDetails'));
     }

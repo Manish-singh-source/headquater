@@ -16,6 +16,7 @@ use App\Models\VendorPIProduct;
 use App\Models\WarehouseStockLog;
 use Illuminate\Support\Facades\DB;
 use App\Models\PurchaseOrderProduct;
+use Exception;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Validator;
 use Spatie\SimpleExcel\SimpleExcelReader;
@@ -27,7 +28,6 @@ class PurchaseOrderController extends Controller
     public function index()
     {
         $purchaseOrders = PurchaseOrder::with('purchaseOrderProducts')->get();
-        // dd($purchaseOrders);
 
         $vendorCodes = $purchaseOrders->flatMap(function ($po) {
             return $po->purchaseOrderProducts->pluck('vendor_code');
@@ -60,7 +60,6 @@ class PurchaseOrderController extends Controller
                 'vendor_code' => $request->vendor_code,
             ]);
 
-            // dd($vendorPi);
             foreach ($rows as $record) {
                 if (empty($record['Vendor SKU Code'])) continue;
 
@@ -89,7 +88,6 @@ class PurchaseOrderController extends Controller
             return redirect()->route('purchase.order.view')->with('success', 'CSV file imported successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
-            // dd($e->getMessage());
             return redirect()->back()->withErrors(['error' => 'Something went wrong: ' . $e->getMessage()]);
         }
     }
@@ -100,17 +98,24 @@ class PurchaseOrderController extends Controller
         $purchaseOrderProducts = PurchaseOrderProduct::where('purchase_order_id', $id)->with('purchaseOrder', 'tempProduct')->get();
         // $vendors = PurchaseOrderProduct::distinct()->pluck('vendor_code');
         $vendorPI = VendorPI::with('product')->where('purchase_order_id', $id)->get();
+
+        $facilityNames = VendorPI::with('product')->where('purchase_order_id', $id)
+            ->where('status', '!=', 'completed')
+            ->get()
+            ->pluck('vendor_code')
+            ->filter()
+            ->unique()
+            ->values();
+
         $purchaseOrder = PurchaseOrder::with('vendorPI.product', 'purchaseInvoices')->get();
         $uploadedPIOfVendors = VendorPI::distinct()->pluck('vendor_code');
         $purchaseInvoice = PurchaseInvoice::where('purchase_order_id', $id)->get();
         $purchaseGrn = PurchaseGrn::where('purchase_order_id', $id)->get();
-        // dd($purchaseOrderProducts);  
         $vendorPIs = VendorPI::with('products')->where('purchase_order_id', $id)->where('status', '!=', 'completed')->get();
 
         $vendorPIid = VendorPI::where('purchase_order_id', $id)->get();
-        // dd($vendorPIid);
 
-        return view('purchaseOrder.view', compact('vendorPIid', 'purchaseOrderProducts', 'uploadedPIOfVendors',  'vendorPIs', 'purchaseOrder', 'purchaseInvoice', 'purchaseGrn'));
+        return view('purchaseOrder.view', compact('vendorPIid', 'facilityNames', 'purchaseOrderProducts', 'uploadedPIOfVendors',  'vendorPIs', 'purchaseOrder', 'purchaseInvoice', 'purchaseGrn'));
     }
 
     public function update(Request $request)
@@ -189,32 +194,50 @@ class PurchaseOrderController extends Controller
 
     public function approveRequest(Request $request)
     {
-        $vendorPI = VendorPI::with('products')->where('purchase_order_id', $request->purchase_order_id)->where('vendor_code', $request->vendor_code)->first();
-        $vendorPI->status = 'completed';
-        $vendorPI->save();
+        DB::beginTransaction();
 
-        // update warehouse stock 
-        // find products 
-        $vendorPIProducts = VendorPI::with('products')->where('purchase_order_id', $request->purchase_order_id)->where('vendor_code', $request->vendor_code)->first();
+        try {
 
-        foreach ($vendorPIProducts->products as $product) {
-            $updateStock = WarehouseStock::where('sku', $product->vendor_sku_code)->first();
-            $updateStock->quantity = $updateStock->quantity + $product->available_quantity;
-            $updateStock->block_quantity = $updateStock->block_quantity + $product->available_quantity;
-            $updateStock->save();
+            $vendorPI = VendorPI::with('products')->where('purchase_order_id', $request->purchase_order_id)->where('vendor_code', $request->vendor_code)->first();
+            $vendorPI->status = 'completed';
+            $vendorPI->save();
 
-            $warehouseStockBlockLogs = WarehouseStockLog::where('sku', $product->vendor_sku_code)->first();
-            $warehouseStockBlockLogs->block_quantity = $warehouseStockBlockLogs->block_quantity + $product->available_quantity;
-            $warehouseStockBlockLogs->reason = "Block Quantity Removed - " . $warehouseStockBlockLogs->block_quantity;
-            $warehouseStockBlockLogs->save();
+            // update warehouse stock 
+            // find products 
+            $vendorPIProducts = VendorPI::with('products')->where('purchase_order_id', $request->purchase_order_id)->where('vendor_code', $request->vendor_code)->first();
 
-            $updateProductStock = Product::where('sku', $product->vendor_sku_code)->first();
-            $updateProductStock->sets_ctn = $updateProductStock->sets_ctn + $product->available_quantity;
-            $updateProductStock->save();
+            foreach ($vendorPIProducts->products as $product) {
+                $updateStock = WarehouseStock::where('sku', $product->vendor_sku_code)->first();
+                if (isset($updateStock)) {
+                    $updateStock->quantity = $updateStock->quantity + $product->available_quantity;
+                    $updateStock->block_quantity = $updateStock->block_quantity + $product->available_quantity;
+                    $updateStock->save();
+                } else {
+                    $storeStock = WarehouseStock::create([
+                        'warehouse_id' => '0',
+                        'product_id' => '0',
+                        'sku' => $product->vendor_sku_code,
+                        'quantity' => '0',
+                        'block_quantity' => '0',
+                    ]);
+                }
+
+                $warehouseStockBlockLogs = WarehouseStockLog::where('sku', $product->vendor_sku_code)->first();
+                $warehouseStockBlockLogs->block_quantity = $warehouseStockBlockLogs->block_quantity + $product->available_quantity;
+                $warehouseStockBlockLogs->reason = "Block Quantity Removed - " . $warehouseStockBlockLogs->block_quantity;
+                $warehouseStockBlockLogs->save();
+
+                $updateProductStock = Product::where('sku', $product->vendor_sku_code)->first();
+                $updateProductStock->sets_ctn = $updateProductStock->sets_ctn + $product->available_quantity;
+                $updateProductStock->save();
+            }
+
+            DB::commit();
+            return redirect()->back()->with('success', 'Successfully Approved Received Products');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->withErrors(['error' => 'Something went wrong: ' . $e->getMessage()]);
         }
-
-
-        return redirect()->back()->with('success', 'Successfully Approved Received Products');
     }
 
     public function invoiceStore(Request $request)
@@ -240,7 +263,6 @@ class PurchaseOrderController extends Controller
         if (!isset($vendorPIStatus)) {
             return redirect()->back()->with('error', 'Vendor PI Is Not Uploaded');
         }
-        // dd($vendorPIStatus);
 
         $invoice_file = $request->file('invoice_file');
         $ext = $invoice_file->getClientOriginalExtension();
@@ -308,7 +330,7 @@ class PurchaseOrderController extends Controller
             $query->where('vendor_code', '=', $request->vendorCode);
         }
         $purchaseOrderProducts = $query->with('purchaseOrder', 'tempProduct')->get();
-        
+
         // Add rows
         foreach ($purchaseOrderProducts as $order) {
             if ($order->ordered_quantity > 0) {

@@ -90,35 +90,66 @@ class OrderController extends Controller
                         ->where('warehouse_id', $warehouseId)
                         ->first();
 
-                    if (empty($stockEntry->quantity)) {
-                        $quantity = 0;
-                        $block_quantity = 0;
-                    } else {
-                        $quantity = $stockEntry->quantity;
-                        $block_quantity = $stockEntry->block_quantity;
-                    }
-
-                    if (isset($block_quantity) && $block_quantity >= $quantity) {
+                    if (!isset($stockEntry)) {
                         $productStockCache[$sku] = [
                             'remaining' => 0,
                             'ordered' => 0,
                         ];
-                    } elseif (isset($block_quantity) && $block_quantity > 0 && $block_quantity < $quantity) {
-                        $productStockCache[$sku] = [
-                            'remaining' => $quantity - $block_quantity,
-                            'ordered' => 0,
-                        ];
+
+                        // Store Product & Stock Quantity as well
+                        $newProduct = Product::create([
+                            'sku' => $record['SKU Code'] ?? '',
+                            'ean_code' => $record['EAN Code'] ?? '',
+                            'brand' => $record['Description'] ?? '',
+                            'brand_title' => $record['Description'] ?? '',
+                            'mrp' => $record['MRP'] ?? '0',
+                            'category' => $record['Category'] ?? '',
+                            'pcs_set' => $record['PCS/Set'] ?? '0',
+                            'sets_ctn' => $record['Sets/CTN'] ?? '0',
+                            'vendor_name' => $record['Vendor Name'] ?? '',
+                            'vendor_purchase_rate' => $record['Vendor Purchase Rate'] ?? '',
+                            'gst' => $record['GST'] ?? '0',
+                            'vendor_net_landing' => $record['Net Landing Rate'] ?? '',
+                            'created_at' => now() ?? '',
+                            'updated_at' => now() ?? '',
+                        ]);
+
+                        WarehouseStock::create([
+                            'warehouse_id' => $warehouseId,
+                            'product_id' => $newProduct->id,
+                            'sku' => $record['SKU Code'],
+                        ]);
                     } else {
-                        if ($stockEntry) {
-                            $productStockCache[$sku] = [
-                                'remaining' => $quantity,
-                                'ordered' => $stockEntry->product->sets_ctn ?? 0,
-                            ];
+                        if (empty($stockEntry->quantity)) {
+                            $quantity = 0;
+                            $block_quantity = 0;
                         } else {
+                            $quantity = $stockEntry->quantity;
+                            $block_quantity = $stockEntry->block_quantity;
+                        }
+
+                        if (isset($block_quantity) && $block_quantity >= $quantity) {
                             $productStockCache[$sku] = [
                                 'remaining' => 0,
                                 'ordered' => 0,
                             ];
+                        } elseif (isset($block_quantity) && $block_quantity > 0 && $block_quantity < $quantity) {
+                            $productStockCache[$sku] = [
+                                'remaining' => $quantity - $block_quantity,
+                                'ordered' => 0,
+                            ];
+                        } else {
+                            if ($stockEntry) {
+                                $productStockCache[$sku] = [
+                                    'remaining' => $quantity,
+                                    'ordered' => $stockEntry->product->sets_ctn ?? 0,
+                                ];
+                            } else {
+                                $productStockCache[$sku] = [
+                                    'remaining' => 0,
+                                    'ordered' => 0,
+                                ];
+                            }
                         }
                     }
                 }
@@ -259,14 +290,12 @@ class OrderController extends Controller
     public function view($id)
     {
         $salesOrder = SalesOrder::with('customerGroup', 'warehouse', 'orderedProducts.product', 'orderedProducts.tempOrder', 'orderedProducts.vendorPIProduct.order', 'vendorPIs.products')->findOrFail($id);
-        // dd($salesOrder->orderedProducts[0]);
         foreach ($salesOrder->orderedProducts as $orderedProduct) {
             $orderedProduct->warehouseStockLog = WarehouseStockLog::where('sales_order_id', $orderedProduct->sales_order_id)
                 ->where('customer_id', $orderedProduct->customer_id)
                 ->where('sku', $orderedProduct->sku)
                 ->first();
         }
-        // dd($salesOrder->orderedProducts[0]);
         return view('salesOrder.view', compact('salesOrder'));
     }
 
@@ -282,7 +311,6 @@ class OrderController extends Controller
     {
         $ids = is_array($request->ids) ? $request->ids : explode(',', $request->ids);
 
-        // dd($ids);
         foreach ($ids as $salesOrderIdKey => $salesOrderId) {
             $salesOrderProduct = SalesOrderProduct::where('id', $salesOrderId)->first();
             $blockQuantity = WarehouseStockLog::where('sales_order_id', $salesOrderProduct->sales_order_id)
@@ -297,7 +325,6 @@ class OrderController extends Controller
 
                 // Released Products now ready to available for another products  
                 // $allowToAnotherAvailableQuantityToBlock = SalesOrderProduct::whereNot('customer_id', $salesOrderProduct->customer_id)->where('sales_order_id', $salesOrderProduct->sales_order_id)->where('sku', $salesOrderProduct->sku)->first();
-                // dd($allowToAnotherAvailableQuantityToBlock);
             }
         }
 
@@ -339,7 +366,6 @@ class OrderController extends Controller
                 $invoiceDetails = [];
                 foreach ($salesOrderDetails as $detail) {
                     $product = Product::where('sku', $detail->sku)->first();
-                    // dd($product);
 
                     $invoiceDetails[] = [
                         'invoice_id' => $invoice->id,
@@ -398,38 +424,45 @@ class OrderController extends Controller
                     ->where('warehouse_id', $warehouseId)
                     ->first();
 
-                // if (empty($stockEntry->quantity)) {
-                //     $quantity = 0;
-                //     $block_quantity = 0;
-                // } else {
-                $quantity = $stockEntry->quantity;
-                $block_quantity = $stockEntry->block_quantity;
-                // }
 
-                if (isset($block_quantity) && $block_quantity >= $quantity) {
+                if (!isset($stockEntry)) {
                     $productStockCache[$sku] = [
                         'remaining' => 0,
                         'ordered' => 0,
                     ];
-                } elseif (isset($block_quantity) && $block_quantity > 0 && $block_quantity < $quantity) {
-                    $productStockCache[$sku] = [
-                        'remaining' => $quantity - $block_quantity,
-                        'ordered' => 0,
-                    ];
                 } else {
-                    if ($stockEntry) {
-                        $productStockCache[$sku] = [
-                            'remaining' => $quantity,
-                            'ordered' => $stockEntry->product->sets_ctn ?? 0,
-                        ];
-                    } else {
+                    // if (empty($stockEntry->quantity)) {
+                    //     $quantity = 0;
+                    //     $block_quantity = 0;
+                    // } else {
+                    $quantity = $stockEntry->quantity;
+                    $block_quantity = $stockEntry->block_quantity;
+                    // }
+
+                    if (isset($block_quantity) && $block_quantity >= $quantity) {
                         $productStockCache[$sku] = [
                             'remaining' => 0,
                             'ordered' => 0,
                         ];
+                    } elseif (isset($block_quantity) && $block_quantity > 0 && $block_quantity < $quantity) {
+                        $productStockCache[$sku] = [
+                            'remaining' => $quantity - $block_quantity,
+                            'ordered' => 0,
+                        ];
+                    } else {
+                        if ($stockEntry) {
+                            $productStockCache[$sku] = [
+                                'remaining' => $quantity,
+                                'ordered' => $stockEntry->product->sets_ctn ?? 0,
+                            ];
+                        } else {
+                            $productStockCache[$sku] = [
+                                'remaining' => 0,
+                                'ordered' => 0,
+                            ];
+                        }
                     }
                 }
-                // dd($stockEntry->product->sets_ctn);
             }
 
             // Use cached values
@@ -470,7 +503,6 @@ class OrderController extends Controller
                 'Unavailable Quantity' => $unavailableStatus,
             ];
         }
-        // dd($insertedRows);
 
 
         if (empty($insertedRows)) {
@@ -487,8 +519,6 @@ class OrderController extends Controller
 
         SimpleExcelWriter::create($csvPath)->addRows($filteredRows->toArray());
         session(['processed_csv_path' => "uploads/{$fileName}"]);
-
-        // dd($insertedRows);
 
         $customerGroup = CustomerGroup::all();
         $warehouses = Warehouse::all();

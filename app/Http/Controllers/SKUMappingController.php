@@ -51,7 +51,6 @@ class SKUMappingController extends Controller
             DB::commit();
             return redirect()->route('sku.mapping')->with('success', 'CSV file imported successfully.');
         } catch (\Exception $e) {
-            dd($e->getMessage());
             DB::rollBack();
             return redirect()->back()->withErrors(['error' => 'Something went wrong: ' . $e->getMessage()]);
         }

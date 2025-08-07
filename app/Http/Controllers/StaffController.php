@@ -100,7 +100,6 @@ class StaffController extends Controller
 
 
         if ($validator->failed()) {
-            DD($validator->errors());
             return back()->withErrors($validator)->withInput();
         }
 

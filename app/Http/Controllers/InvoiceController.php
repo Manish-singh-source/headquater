@@ -34,7 +34,6 @@ class InvoiceController extends Controller
             'title' => 'Invoices',
             'invoices' => Invoice::with(['warehouse', 'customer', 'salesOrder'])->where('sales_order_id', $id)->get(),
         ];
-        // dd($data['invoices'][0]->customer->client_name);   
         return view('invoice.invoices', $data);
     }
 
@@ -64,13 +63,11 @@ class InvoiceController extends Controller
             'invoiceDetails' => InvoiceDetails::with('product')->where('invoice_id', $id)->get(),
             'salesOrderProducts' => $salesOrderProducts,
         ];
-        // dd($data);
         // $data = [
         //     'title' => 'Invoice',
         //     'invoice' => Invoice::with(['warehouse', 'customer', 'salesOrder'])->findOrFail($id),
         //     'invoiceDetails' => InvoiceDetails::with('product')->where('invoice_id', $id)->get(),
         // ];
-        // dd($data);
         // $pdf = PDF::loadView('invoice/invoice', $data);
         return  PDF::loadView('invoice/invoice-pdf', $data)->stream('invoice.pdf');
     }
