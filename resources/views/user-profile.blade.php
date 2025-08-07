@@ -21,16 +21,13 @@
             <div class="card w-100 d-flex  flex-sm-row flex-col">
                 <div class="col card-body d-flex">
                     <div class="position-relative justify-content-center">
-                        <img src="{{ Auth::user()->profile_image ?? Avatar::create(Auth::user()->fname)->toBase64() }}" id="profilePreview" class="img-fluid rounded"
-                            alt="">
-
+                        <img src="{{ Auth::user()->profile_image ?? Avatar::create(Auth::user()->fname)->toBase64() }}"
+                            id="profilePreview" class="img-fluid rounded" alt="">
                         <div class="text-center my-2 pt-2">
                             <h4 class="mb-1">{{ ucfirst($user->user_name) }}</h4>
                             <p class="mb-0">{{ ucfirst($user->fname) }} {{ ucfirst($user->lname) }}</p>
                         </div>
                     </div>
-
-
                 </div>
                 <ul class="col-10 list-group list-group-flush">
                     <li class="list-group-item">
@@ -41,10 +38,8 @@
                     <li class="list-group-item">
                         <b>Email</b>
                         <br>
-                        {{ $user->email ?? 'NA'}}
+                        {{ $user->email ?? 'NA' }}
                     </li>
-
-
                     <li class="list-group-item border-top">
                         <b>Address</b>
                         <br>
@@ -79,59 +74,97 @@
                                 @method('PUT')
                                 <div class="col-md-6">
                                     <label for="input1" class="form-label">First Name</label>
-                                    <input type="text" class="form-control" name="fname" id="input1"
-                                        placeholder="First Name" value="{{ $user->fname }}">
+                                    <input type="text" class="form-control @error('fname') is-invalid @enderror"
+                                        name="fname" id="fname" placeholder="First Name" value="{{ $user->fname }}">
+                                    @error('fname')
+                                        <div class="invalid-feedback">
+                                            {{ $message }}
+                                        </div>
+                                    @enderror
                                 </div>
                                 <div class="col-md-6">
                                     <label for="input2" class="form-label">Last Name</label>
-                                    <input type="text" class="form-control" name="lname" id="input2"
-                                        placeholder="Last Name" value="{{ $user->lname }}">
+                                    <input type="text" class="form-control @error('lname') is-invalid @enderror"
+                                        name="lname" id="input2" placeholder="Last Name" value="{{ $user->lname }}">
+                                    @error('lname')
+                                        <div class="invalid-feedback">
+                                            {{ $message }}
+                                        </div>
+                                    @enderror
                                 </div>
                                 <div class="col-md-6">
                                     <label for="input3" class="form-label">Phone</label>
-                                    <input type="text" class="form-control" name="phone" id="input3"
-                                        placeholder="Phone" value="{{ $user->phone }}">
+                                    <input type="text" class="form-control @error('phone') is-invalid @enderror"
+                                        name="phone" id="input3" placeholder="Phone" value="{{ $user->phone }}">
+                                    @error('phone')
+                                        <div class="invalid-feedback">
+                                            {{ $message }}
+                                        </div>
+                                    @enderror
                                 </div>
                                 <div class="col-md-6">
                                     <label for="input4" class="form-label">Email</label>
-                                    <input type="email" class="form-control" name="email" id="input4"
-                                        placeholder="Email" value="{{ $user->email }}">
+                                    <input type="email" class="form-control @error('email') is-invalid @enderror"
+                                        name="email" id="input4" placeholder="Email"
+                                        value="{{ $user->email }}">
+                                    @error('email')
+                                        <div class="invalid-feedback">
+                                            {{ $message }}
+                                        </div>
+                                    @enderror
                                 </div>
                                 <div class="col-md-6">
-                                    <label for="input7" class="form-label">Country</label>
-                                    <select id="input7" class="form-select">
-                                        <option selected="">Choose...</option>
-                                        <option>One</option>
-                                        <option>Two</option>
-                                        <option>Three</option>
+                                    <label for="country" class="form-label">Country</label>
+                                    <select id="country" class="form-select" name="country">
+                                        <option value="">Select Country</option>
+                                    </select>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label for="state" class="form-label">State</label>
+                                    <select id="state" class="form-select" name="state">
+                                        <option value="">Select State</option>
+                                    </select>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label for="city" class="form-label">City</label>
+                                    <select id="city" class="form-select" name="city">
+                                        <option value="">Select City</option>
                                     </select>
                                 </div>
                                 <div class="col-md-6">
-                                    <label for="input8" class="form-label">City</label>
-                                    <input type="text" class="form-control" id="input8" placeholder="City">
-                                </div>
-                                <div class="col-md-4">
-                                    <label for="input9" class="form-label">State</label>
-                                    <select id="input9" class="form-select">
-                                        <option selected="">Choose...</option>
-                                        <option>One</option>
-                                        <option>Two</option>
-                                        <option>Three</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-2">
                                     <label for="input10" class="form-label">Zip</label>
-                                    <input type="text" class="form-control" id="input10" placeholder="Zip"
-                                        value="{{ $user->pincode }}">
+                                    <input type="text" class="form-control @error('zip') is-invalid @enderror"
+                                        id="input10" placeholder="Zip" name="zip" value="{{ $user->pincode }}">
+                                    @error('zip')
+                                        <div class="invalid-feedback">
+                                            {{ $message }}
+                                        </div>
+                                    @enderror
                                 </div>
+
                                 <div class="col-md-6">
                                     <label for="input10" class="form-label">Profile Image</label>
-                                    <input type="file" class="form-control" id="inputProfileImage"
-                                        name="profile_image" placeholder="Profile" accept="image/*">
+                                    <input type="file"
+                                        class="form-control @error('profile_image') is-invalid @enderror"
+                                        id="inputProfileImage" name="profile_image" placeholder="Profile"
+                                        accept="image/*">
+                                    @error('profile_image')
+                                        <div class="invalid-feedback">
+                                            {{ $message }}
+                                        </div>
+                                    @enderror
                                 </div>
                                 <div class="col-md-12">
                                     <label for="input11" class="form-label">Address</label>
-                                    <textarea class="form-control" id="input11" placeholder="Address ..." rows="4" cols="4">{{ $user->current_address }}</textarea>
+                                    <textarea class="form-control @error('current_address') is-invalid @enderror" name="current_address" id="input11"
+                                        placeholder="Address ..." rows="4" cols="4">{{ $user->current_address }}</textarea>
+                                    @error('current_address')
+                                        <div class="invalid-feedback">
+                                            {{ $message }}
+                                        </div>
+                                    @enderror
                                 </div>
                                 <div class="col-md-12">
                                     <div class="d-md-flex d-grid align-items-center gap-3">
@@ -202,6 +235,62 @@
                 }
                 reader.readAsDataURL(file);
             }
+        });
+    </script>
+@endsection
+
+
+@section('script')
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"
+        integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <script>
+        $(document).ready(function() {
+
+            function getLocationData(url, id, tag, data = null) {
+                $.ajax({
+                    url: url,
+                    method: 'GET',
+                    data: data,
+                    success: function(data) {
+                        console.log(data.data);
+                        $(id).empty().append(
+                            `<option value="">Select ${tag}</option>`);
+                        data.data.map(function(country) {
+                            $(id).append(
+                                $('<option>', {
+                                    // how to add data-id attribute
+                                    'data-id': country.id,
+                                    value: country.name,
+                                    text: country.name
+                                })
+                            );
+                        });
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error:', error);
+                    }
+                });
+            }
+
+            getLocationData("/countries", '#country', "Country");
+
+            $("#country").on("change", function() {
+                let countryId = $(this).find('option:selected').data('id');
+                // let countryId = $(this).val();
+                // console.log(countryId);
+                getLocationData("/states", "#state", "State", {
+                    countryId: countryId
+                });
+            });
+
+            $("#state").on("change", function() {
+                let stateId = $(this).find('option:selected').data('id');
+                // let stateId = $(this).val();
+                // console.log(stateId);
+                getLocationData("/cities", "#city", "City", {
+                    stateId: stateId
+                });
+            });
         });
     </script>
 @endsection

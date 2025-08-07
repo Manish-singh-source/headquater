@@ -267,7 +267,6 @@ class CustomerController extends Controller
 
     public function updateuser(Request $request, $id)
     {
-
         $validator = Validator::make($request->all(), [
             'fname' => 'required|min:3',
             'lname' => 'required|min:3',
@@ -284,6 +283,11 @@ class CustomerController extends Controller
         $user->lname = $request->lname;
         $user->email = $request->email;
         $user->phone = $request->phone;
+        $user->country = $request->country;
+        $user->state = $request->state;
+        $user->city = $request->city;
+        $user->pincode = $request->zip;
+
         $user->current_address = $request->current_address;
         // Handle profile image upload if needed
         if ($request->hasFile('profile_image')) {
