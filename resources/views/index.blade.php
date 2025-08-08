@@ -28,8 +28,9 @@
                                 <div class="col-12 col-sm-7">
                                     @can('PermissionChecker', 'view_dashboard')
                                         <div class="d-flex align-items-center gap-3 mb-5">
-                                            <img src="{{ Auth::user()->profile_image ?? Avatar::create(Auth::user()->fname)->toBase64() }}" class="rounded-circle bg-grd-info p-1"
-                                                width="60" height="60" alt="user">
+                                            <img src="{{ Auth::user()->profile_image ?? Avatar::create(Auth::user()->fname)->toBase64() }}"
+                                                class="rounded-circle bg-grd-info p-1" width="60" height="60"
+                                                alt="user">
                                             <div class="">
                                                 <p class="mb-0 fw-semibold">Welcome back</p>
                                                 <h4 class="fw-semibold mb-0 fs-4">
@@ -418,7 +419,7 @@
                                                     'ready_to_package' => 'Ready To Package',
                                                 ];
                                             @endphp
-                                            @foreach ($orders as $order)
+                                            @forelse ($orders as $order)
                                                 <tr>
                                                     <td>
                                                         <input class="form-check-input" type="checkbox">
@@ -497,7 +498,13 @@
                                                         </div>
                                                     </td>
                                                 </tr>
-                                            @endforeach
+                                            @empty
+                                                <tr>
+                                                    <td colspan="6" class="text-center">
+                                                        No Records Found
+                                                    </td>
+                                                </tr>
+                                            @endforelse
                                         </tbody>
                                     </table>
                                 </div>
@@ -723,7 +730,7 @@
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            @foreach ($invoices as $invoice)
+                                            @forelse ($invoices as $invoice)
                                                 <tr>
                                                     <td>
                                                         <input class="form-check-input" type="checkbox">
@@ -751,7 +758,13 @@
                                                         </a>
                                                     </td>
                                                 </tr>
-                                            @endforeach
+                                            @empty
+                                                <tr>
+                                                    <td colspan="7" class="text-center">
+                                                        No Records Found
+                                                    </td>
+                                                </tr>
+                                            @endforelse
                                         </tbody>
                                     </table>
                                 </div>

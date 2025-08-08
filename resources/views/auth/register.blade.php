@@ -48,12 +48,12 @@
 
                                 <div class="col-6">
                                     <label for="firstName" class="form-label">First Name</label>
-                                    <input type="hidden" class="form-control" name="role_id" id="firstName" value="1" placeholder="Manish">
-                                    <input type="text" class="form-control" name="firstName" id="firstName" placeholder="Manish">
+                                    <input type="hidden" class="form-control" name="role_id" id="firstName" value="1" placeholder="John">
+                                    <input type="text" class="form-control" name="firstName" id="firstName" placeholder="John">
                                 </div>
                                 <div class="col-6">
                                     <label for="lastName" class="form-label">Last name</label>
-                                    <input type="text" class="form-control" name="lastName" id="lastName" placeholder="Singh">
+                                    <input type="text" class="form-control" name="lastName" id="lastName" placeholder="Doe">
                                 </div>
                                 <div class="col-6">
                                     <label for="email" class="form-label">Email Id</label>
@@ -78,7 +78,7 @@
                                     <label for="password_confirmation" class="form-label">Confirm Password</label>
                                     <div class="input-group" id="show_hide_password">
                                         <input type="password" class="form-control border-end-0"
-                                            id="password_confirmation" name="password_confirmation" value="12345678" placeholder="Enter Password">
+                                            id="password_confirmation" name="password_confirmation" value="12345678" placeholder="Confirm Password">
                                         <a href="javascript:;" class="input-group-text bg-transparent"><i
                                                 class="bi bi-eye-slash-fill"></i></a>
                                     </div>

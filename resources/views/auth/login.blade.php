@@ -49,7 +49,7 @@
                                     <input type="email" class="form-control @error('email') is-invalid @enderror"
                                         id="email" name="email"
                                         @error('email') aria-describedby="validationServer05Feedback"  @enderror
-                                        placeholder="Roshan@example.com">
+                                        placeholder="example@gmail.com">
                                     @error('email')
                                         <div id="validationServer05Feedback" class="invalid-feedback">
                                             {{ $message }}

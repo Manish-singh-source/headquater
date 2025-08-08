@@ -128,7 +128,7 @@
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td>None SKU Mapping Found</td>
+                                            <td class="text-center" colspan="5">None SKU Mapping Found</td>
                                         </tr>
                                     @endforelse
                                 </tbody>
