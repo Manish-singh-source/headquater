@@ -91,24 +91,49 @@
                             <table id="example" class="table align-middle">
                                 <thead class="table-light">
                                     <tr>
-                                        <th>Order No</th>
-                                        <th>Client Name</th>
-                                        <th>SKU Code</th>
-                                        <th>Title</th>
-                                        <th>Category</th>
-                                        <th>Qty Requirement</th>
+                                        <th>Customer&nbsp;Name</th>
+                                        <th>PO&nbsp;Number</th>
+                                        <th>SKU&nbsp;Code</th>
+                                        <th>Facility&nbsp;Name</th>
+                                        <th>Facility&nbsp;Location</th>
+                                        <th>PO&nbsp;Date</th>
+                                        <th>PO&nbsp;Expiry&nbsp;Date</th>
+                                        <th>HSN</th>
+                                        <th>Item&nbsp;Code</th>
+                                        <th>Description</th>
+                                        <th>Basic&nbsp;Rate</th>
+                                        <th>GST</th>
+                                        <th>Net&nbsp;Landing&nbsp;Rate</th>
+                                        <th>MRP</th>
+                                        <th>PO&nbsp;Quantity</th>
+                                        <th>Warehouse&nbsp;Stock</th>
+                                        <th>PI&nbsp;Qty</th>
+                                        <th>Purchase&nbsp;Order&nbsp;No</th>
+                                        <th>Total&nbsp;Dispatch&nbsp;Qty</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-
                                     @forelse($salesOrder->orderedProducts as $order)
                                         <tr>
-                                            <td>{{ $order->id }}</td>
-                                            <td>{{ $order->tempOrder->facility_name }}</td>
+                                            <td>{{ $order->customer->contact_name }}</td>
+                                            <td>{{ $order->tempOrder->po_number }}</td>
                                             <td>{{ $order->tempOrder->sku }}</td>
-                                            <td>{{ $order->product?->brand }}</td>
-                                            <td>{{ $order->product?->category }}</td>
+                                            <td>{{ $order->tempOrder->facility_name }}</td>
+                                            <td>{{ $order->tempOrder->facility_location }}</td>
+                                            <td>{{ $order->tempOrder->po_date }}</td>
+                                            <td>{{ $order->tempOrder->po_expiry_date }}</td>
+                                            <td>{{ $order->tempOrder->hsn }}</td>
+                                            <td>{{ $order->tempOrder->item_code }}</td>
+                                            <td>{{ $order->tempOrder->description }}</td>
+                                            <td>{{ $order->tempOrder->basic_rate }}</td>
+                                            <td>{{ $order->tempOrder->gst }}</td>
+                                            <td>{{ $order->tempOrder->net_landing_rate }}</td>
+                                            <td>{{ $order->tempOrder->mrp }}</td>
+                                            <td>{{ $order->tempOrder->po_qty }}</td>
+                                            <td>{{ $order->warehouseStock->quantity - $order->warehouseStock->block_quantity }}</td>
                                             <td>{{ $order->ordered_quantity }}</td>
+                                            <td>{{ $order->tempOrder->po_number }}</td>
+                                            <td>0</td>
                                         </tr>
                                     @empty
                                         <tr>

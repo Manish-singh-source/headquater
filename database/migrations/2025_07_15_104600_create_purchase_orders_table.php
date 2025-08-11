@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('purchase_orders', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('sales_order_id')->constrained()->onDelete('cascade');
+            $table->string('sales_order_id')->nullable();
             $table->enum('status', ['pending', 'completed', 'ready_to_ship', 'ready_to_package'])->default('pending');
             $table->enum('download_status', ['1', '0'])->default('0')->comment('0: not downloaded, 1: downloaded');
             $table->timestamps();

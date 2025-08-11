@@ -22,7 +22,9 @@
                                 <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                                     <span><b>Order Id</b></span>
 
-                                    <span id="orderId">{{ '#' . $salesOrder->id }}</span>
+                                    <span>#
+                                        <span id="orderId">{{ $salesOrder->id }}</span>
+                                    </span>
                                 </li>
                                 <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                                     <span><b>Customer Group Name</b></span>
@@ -34,7 +36,7 @@
                                 </li>
                                 <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                                     <span><b>PO Quantity Status</b></span>
-                                    <span> 
+                                    <span>
                                         <b>
                                             @php
                                                 $sum = 0;
@@ -102,6 +104,48 @@
 
                         <!-- Tabs Navigation -->
                         <div class="div d-flex justify-content-end my-3 gap-2">
+                            <button class="btn border-2 border-primary" data-bs-toggle="modal"
+                                data-bs-target="#staticBackdrop1" class="btn border-2 border-primary">
+                                Update PO
+                            </button>
+
+                            <!-- Modal -->
+                            <div class="modal fade" id="staticBackdrop1" data-bs-backdrop="static" data-bs-keyboard="false"
+                                tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <form action="{{ route('products.update') }}" method="POST"
+                                            enctype="multipart/form-data">
+                                            @csrf
+                                            @method('PUT')
+                                            <div class="modal-header">
+                                                <h1 class="modal-title fs-5" id="staticBackdropLabel">Update Products</h1>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                    aria-label="Close"></button>
+                                            </div>
+
+                                            <div class="modal-body">
+                                                <div class="col-12 mb-3">
+                                                    <label for="products_excel" class="form-label">Products List (CSV/ELSX)
+                                                        <span class="text-danger">*</span></label>
+                                                    <input type="file" name="products_excel" id="products_excel"
+                                                        class="form-control" value="" required="">
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary"
+                                                    data-bs-dismiss="modal">Close</button>
+                                                <button type="submit" id="holdOrder"
+                                                    class="btn btn-primary">Submit</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button class="btn btn-icon btn-sm border-2 border-primary me-1" id="exportData">
+                                <i class="fa fa-file-excel-o"></i> Export to Excel
+                            </button>
                             <ul class="nav nav-tabs" id="vendorTabs" role="tablist">
                                 <form id="statusForm" action="{{ route('change.order.status') }}" method="POST">
                                     @csrf
@@ -149,14 +193,16 @@
                                         </th>
                                         <th>Customer&nbsp;Name</th>
                                         <th>Facility&nbsp;Name</th>
-                                        <th>Vendor&nbsp;Code</th>
                                         <th>HSN</th>
+                                        <th>GST</th>
                                         <th>Item&nbsp;Code</th>
                                         <th>SKU&nbsp;Code</th>
                                         <th>Title</th>
                                         <th>Basic&nbsp;Rate</th>
                                         <th>Net&nbsp;Landing&nbsp;Rate</th>
-                                        <th>MRP</th>
+                                        <th>PO&nbsp;MRP</th>
+                                        <th>Product&nbsp;MRP</th>
+                                        <th>Rate&nbsp;Confirmation</th>
                                         <th>Qty&nbsp;Requirement</th>
                                         <th>Qty&nbsp;Fullfilled</th>
                                     </tr>
@@ -173,19 +219,25 @@
                                     @forelse($salesOrder->orderedProducts as $order)
                                         <tr>
                                             <td>
-                                                <input class="form-check-input row-checkbox" type="checkbox" name="ids[]"
-                                                    value="{{ $order->id }}">
+                                                <input class="form-check-input row-checkbox" type="checkbox"
+                                                    name="ids[]" value="{{ $order->id }}">
                                             </td>
                                             <td>{{ $order->tempOrder->customer_name }}</td>
                                             <td>{{ $order->tempOrder->facility_name }}</td>
-                                            <td>{{ $order->tempOrder->vendor_code }}</td>
                                             <td>{{ $order->tempOrder->hsn }}</td>
+                                            <td>{{ $order->tempOrder->gst }}</td>
                                             <td>{{ $order->tempOrder->item_code }}</td>
                                             <td>{{ $order->tempOrder->sku }}</td>
                                             <td>{{ $order->tempOrder->description }}</td>
                                             <td>{{ $order->tempOrder->basic_rate }}</td>
                                             <td>{{ $order->tempOrder->net_landing_rate }}</td>
                                             <td>{{ $order->tempOrder->mrp }}</td>
+                                            <td>{{ $order->tempOrder->product_mrp }}</td>
+                                            @if ($order->tempOrder->mrp == $order->tempOrder->product_mrp)
+                                                <td> <span class="badge text-success bg-success-subtle">Yes</span></td>
+                                            @else
+                                                <td><span class="badge text-danger bg-danger-subtle">No</span></td>
+                                            @endif
                                             <td>{{ $order->ordered_quantity }}</td>
                                             @if ($order->product?->sets_ctn)
                                                 <td>
@@ -273,6 +325,19 @@
                     form.submit();
                 }
             });
+        });
+    </script>
+    
+    <script>
+        $(document).on('click', '#exportData', function() {
+            var purchaseOrderId = $("#orderId").text().trim();
+
+            // Construct download URL with parameters
+            var downloadUrl = '{{ route('products.download.po.excel') }}' +
+                '?salesOrderId=' + encodeURIComponent(purchaseOrderId);
+
+            // Trigger browser download
+            window.location.href = downloadUrl;
         });
     </script>
 @endsection

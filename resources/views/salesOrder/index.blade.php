@@ -17,7 +17,7 @@
             <div class="row g-3 justify-content-end">
                 <div class="col-12 col-md-auto">
                     <div class="d-flex align-items-center gap-2 justify-content-lg-end">
-                        <button class="btn btn-filter px-4"><i class="bi bi-box-arrow-right me-2"></i>Export</button>
+                        {{-- <button class="btn btn-filter px-4"><i class="bi bi-box-arrow-right me-2"></i>Export</button> --}}
                         @can('PermissionChecker', 'create_sale')
                             <a href="{{ route('order.create') }}"><button class="btn btn-primary px-4"><i
                                         class="bi bi-plus-lg me-2"></i>New Order</button></a>
@@ -88,6 +88,7 @@
                                                         </a>
                                                     @endcan
 
+                                                    {{-- 
                                                     @can('PermissionChecker', 'update_sale')
                                                         <a aria-label="anchor" href="{{ route('order.edit', $order->id) }}"
                                                             class="btn btn-icon btn-sm bg-warning-subtle me-1"
@@ -105,7 +106,8 @@
                                                                 </path>
                                                             </svg>
                                                         </a>
-                                                    @endcan
+                                                    @endcan 
+                                                    --}}
                                                     @can('PermissionChecker', 'delete_sale')
                                                         <form action="{{ route('order.delete', $order->id) }}" method="POST"
                                                             onsubmit="return confirm('Are you sure?')">

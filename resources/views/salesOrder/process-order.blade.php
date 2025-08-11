@@ -69,10 +69,12 @@
                                                             <th>HSN</th>
                                                             <th>Item&nbsp;Code</th>
                                                             <th>Description</th>
-                                                            <th>Basic&nbsp;Rate</th>
                                                             <th>GST</th>
+                                                            <th>Basic&nbsp;Rate</th>
                                                             <th>Net&nbsp;Landing&nbsp;Rate</th>
-                                                            <th>MRP</th>
+                                                            <th>PO&nbsp;MRP</th>
+                                                            <th>Product&nbsp;MRP</th>
+                                                            <th>Rate&nbsp;Confirmation</th>
                                                             <th>PO&nbsp;Quantity</th>
                                                             <th>Available</th>
                                                             <th>Unavailable&nbsp;Qty</th>
@@ -91,10 +93,12 @@
                                                                 <td>{{ $data['HSN'] }}</td>
                                                                 <td>{{ $data['Item Code'] }}</td>
                                                                 <td>{{ $data['Description'] }}</td>
-                                                                <td>{{ $data['Basic Rate'] }}</td>
                                                                 <td>{{ $data['GST'] }}</td>
+                                                                <td>{{ $data['Basic Rate'] }}</td>
                                                                 <td>{{ $data['Net Landing Rate'] }}</td>
                                                                 <td>{{ $data['MRP'] }}</td>
+                                                                <td>{{ $data['Product MRP'] }}</td>
+                                                                <td>{{ $data['Rate Confirmation'] }}</td>
                                                                 <td>{{ $data['PO Quantity'] }}</td>
                                                                 <td>{!! $data['Available Quantity'] !!}</td>
                                                                 <td>{!! $data['Unavailable Quantity'] !!}</td>

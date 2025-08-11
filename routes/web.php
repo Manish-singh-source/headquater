@@ -128,8 +128,13 @@ Route::middleware('RolePermission:customer-handler')->group(function () {
         Route::get('/products', 'index')->name('products.index');
         Route::get('/create-products', 'create')->name('products.create');
         Route::post('/products', 'store')->name('products.store');
-        // Route::get('/products/{id}', 'edit')->name('products.edit');
+        // Route::get('/products/{id}', 'edit')->name('product.edit');
         Route::put('/products', 'update')->name('products.update');
+        Route::get('/products/{id}/edit','editProduct')->name('product.edit');
+        Route::get('/download-product-sheet','downloadProductSheet')->name('download.product.sheet');
+        Route::post('/products/update','updateProduct')->name('product.update');
+
+        Route::delete('/product-order/{id}', 'destroy')->name('product.delete');
         // Route::delete('/products/{id}', 'destroy')->name('products.destroy');
         // Route::get('/products/view/{id}', 'view')->name('products.view');
         Route::delete('/products/delete-selected', 'deleteSelected')->name('delete.selected.product');
@@ -147,6 +152,7 @@ Route::middleware('RolePermission:customer-handler')->group(function () {
         Route::put('/change-status', 'changeStatus')->name('change.order.status');
         Route::post('/check-products-stock', 'checkProductsStock')->name('check.order.stock');
         Route::get('/download-block-order-csv', 'downloadBlockedCSV')->name('download.order.excel');
+        Route::get('/products-download-po-excel', 'downloadPoExcel')->name('products.download.po.excel');
     });
 
 

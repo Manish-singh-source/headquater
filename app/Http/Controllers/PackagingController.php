@@ -18,7 +18,7 @@ class PackagingController extends Controller
 
     public function view($id)
     {
-        $salesOrder = SalesOrder::with('orderedProducts.product', 'orderedProducts.customer', 'orderedProducts.tempOrder')->findOrFail($id);
+        $salesOrder = SalesOrder::with('orderedProducts.product', 'orderedProducts.customer', 'orderedProducts.tempOrder', 'orderedProducts.warehouseStock', 'orderedProducts.warehouseStockLog')->findOrFail($id);
 
         $facilityNames = SalesOrderProduct::with('customer')
             ->where('sales_order_id', $id)
@@ -27,6 +27,7 @@ class PackagingController extends Controller
             ->filter()
             ->unique()
             ->values();
+        // dd($salesOrder);
 
         return view('packagingList.view', compact('salesOrder', 'facilityNames'));
     }

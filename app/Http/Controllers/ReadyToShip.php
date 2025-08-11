@@ -21,7 +21,7 @@ class ReadyToShip extends Controller
     {
 
         $order = SalesOrder::where('status', 'ready_to_ship')->find($id);
-        
+
         $facilityNames = SalesOrderProduct::with('customer')
             ->where('sales_order_id', $id)
             ->get()
@@ -30,7 +30,8 @@ class ReadyToShip extends Controller
             ->unique('client_name')
             ->pluck('id');
         $customerInfo = Customer::with('groupInfo.customerGroup')->withCount('orders')->whereIn('id', $facilityNames)->get();
-        
+        // dd($customerInfo);
+
         return view('readyToShip.view', compact('customerInfo', 'order'));
     }
 

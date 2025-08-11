@@ -59,6 +59,8 @@ class ReceivedProductsController extends Controller
                 'Purchase Rate Basic' => $product->purchase_rate ?? '',
                 'GST' => $product->gst ?? '',
                 'HSN' => $product->hsn ?? '',
+                'Issue Item' => '',
+                'Issue Reason' => '',
             ]);
         }
 

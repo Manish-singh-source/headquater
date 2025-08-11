@@ -22,6 +22,7 @@ use App\Models\SalesOrderProduct;
 use App\Models\WarehouseStockLog;
 use Illuminate\Support\Facades\DB;
 use App\Models\PurchaseOrderProduct;
+use Illuminate\Support\Facades\Validator;
 use Spatie\SimpleExcel\SimpleExcelReader;
 use Spatie\SimpleExcel\SimpleExcelWriter;
 
@@ -181,19 +182,22 @@ class OrderController extends Controller
                     'po_date' => $record['PO Date'],
                     'po_expiry_date' => $record['PO Expiry Date'],
                     'hsn' => $record['HSN'],
+                    'gst' => $record['GST'],
                     'item_code' => $record['Item Code'],
                     'description' => $record['Description'],
                     'basic_rate' => $record['Basic Rate'],
-                    'gst' => $record['GST'],
                     'net_landing_rate' => $record['Net Landing Rate'],
-                    'mrp' => $record['MRP'],
+                    'mrp' => $record['PO MRP'],
+                    'product_mrp' => $record['Product MRP'],
+                    // rate confirmation ?? want to store -- first create rate_confirmation column in db 
+                    // 'rate_confirmation' => $record['Rate Confirmation'],
                     'po_qty' => $record['PO Quantity'],
                     'available_quantity' => $remaining,
                     'unavailable_quantity' => $unavailableStatus,
                     'block' => $record['Block'],
                     'rate_confirmation' => $record['Rate Confirmation'],
                     'case_pack_quantity' => $record['Case Pack Quantity'],
-                    'purchase_order_quantity' => $record['Purchase Order Quantity'],
+                    'purchase_order_quantity' => $record['Purchase Order Quantity'] ?? '',
                     'vendor_code' => $record['Vendor Code'],
                 ]);
 
@@ -302,8 +306,18 @@ class OrderController extends Controller
     public function destroy($id)
     {
         $order = SalesOrder::findOrFail($id);
+        $orderedProducts = SalesOrderProduct::where('sales_order_id', $id)->get();
+        foreach($orderedProducts as $product) {
+            $warehouseStockBlock = WarehouseStockLog::where('sales_order_id', $product->sales_order_id)->where('sku', $product->sku)->first();
+            $warehouseStock = WarehouseStock::where('sku', $product->sku)->first();
+            if(isset($warehouseStockBlock) && isset($warehouseStock)) {
+                $warehouseStock->block_quantity = ($warehouseStock->block_quantity ?? 0) - ($warehouseStockBlock->block_quantity ?? 0);
+                $warehouseStockBlock->block_quantity = 0;
+                $warehouseStock->save();
+            }
+        }
+        
         $order->delete();
-
         return redirect()->route('order.index')->with('success', 'Order deleted successfully.');
     }
 
@@ -494,10 +508,12 @@ class OrderController extends Controller
                 'HSN' => $record['HSN'],
                 'Item Code' => $record['Item Code'],
                 'Description' => $record['Description'],
-                'Basic Rate' => $record['Basic Rate'],
                 'GST' => $record['GST'],
+                'Basic Rate' => $record['Basic Rate'],
                 'Net Landing Rate' => $record['Net Landing Rate'],
                 'MRP' => $record['MRP'],
+                'Product MRP' => $stockEntry->product->mrp,
+                'Rate Confirmation' => ($record['MRP'] == $stockEntry->product->mrp) ? 'Yes' : 'No',
                 'PO Quantity' => $poQty,
                 'Available Quantity' => $remaining,
                 'Unavailable Quantity' => $unavailableStatus,
@@ -551,20 +567,20 @@ class OrderController extends Controller
                 'PO Date' => $row['PO Date'] ?? '',
                 'PO Expiry Date' => $row['PO Expiry Date'] ?? '',
                 'HSN' => $row['HSN'] ?? '',
+                'GST' => $row['GST'] ?? '',
                 'Item Code' => $row['Item Code'] ?? '',
                 'Description' => $row['Description'] ?? '',
                 'Basic Rate' => $row['Basic Rate'] ?? '',
-                'GST' => $row['GST'] ?? '',
                 'Net Landing Rate' => $row['Net Landing Rate'] ?? '',
-                'MRP' => $row['MRP'] ?? '',
+                'PO MRP' => $row['MRP'] ?? '',
+                'Product MRP' => $row['MRP'] ?? '',
+                'Rate Confirmation' => $row['Rate Confirmation'] ?? '',
                 'PO Quantity' => $row['PO Quantity'] ?? '',
                 'Available Quantity' => $row['Available Quantity'] ?? '',
                 'Unavailable Quantity' => $row['Unavailable Quantity'] ?? '',
+                'Case Pack Quantity' => $row['Case Pack Quantity'] ?? '',
                 'Block' => '',
-                'Purchase Order Quantity' => '',
                 'Vendor Code' => '',
-                'Case Pack Quantity' => '',
-                'Rate Confirmation' => '',
             ]);
         });
 
@@ -576,74 +592,82 @@ class OrderController extends Controller
         ])->deleteFileAfterSend(true);
     }
 
-    // public function processBlockOrder2(Request $request)
-    // {
-    //     $file = $request->file('csv_file');
-    //     if (!$file) {
-    //         return redirect()->back()->withErrors(['csv_file' => 'Please upload a CSV file.']);
-    //     }
+    public function downloadPoExcel(Request $request)
+    {
+        $validated = Validator::make($request->all(), [
+            'salesOrderId' => 'required',
+        ]);
 
-    //     $file = $request->file('csv_file')->getPathname();
-    //     $file_extension = $request->file('csv_file')->getClientOriginalExtension();
+        if ($validated->failed()) {
+            return back()->with('error', 'Please Try Again.');
+        }
 
-    //     $reader = SimpleExcelReader::create($file, $file_extension);
+        // Create temporary .xlsx file path
+        $tempXlsxPath = storage_path('app/order_po_update_' . Str::random(8) . '.xlsx');
 
-    //     DB::beginTransaction();
+        // Create writer
+        $writer = SimpleExcelWriter::create($tempXlsxPath);
 
-    //     $manageOrder = new ManageOrder();
-    //     $manageOrder->order_id = '1000';
-    //     $manageOrder->warehouse_id = $request->warehouse_id;
-    //     $manageOrder->save();
+        // Fetch data with relationships
+        $salesOrder = SalesOrder::with('customerGroup', 'warehouse', 'orderedProducts.product', 'orderedProducts.tempOrder', 'orderedProducts.vendorPIProduct.order', 'vendorPIs.products')->findOrFail($request->salesOrderId);
+        foreach ($salesOrder->orderedProducts as $orderedProduct) {
+            $orderedProduct->warehouseStockLog = WarehouseStockLog::where('sales_order_id', $orderedProduct->sales_order_id)
+                ->where('customer_id', $orderedProduct->customer_id)
+                ->where('sku', $orderedProduct->sku)
+                ->first();
+        }
+        // Add rows
+        foreach ($salesOrder->orderedProducts as $order) {
+            if ($order->ordered_quantity > 0) {
 
-    //     $manageCustomer = new ManageCustomer();
-    //     $manageCustomer->order_id = $manageOrder->id;
-    //     $manageCustomer->customer_id = $request->customer_group_id;
-    //     $manageCustomer->save();
+                $fulfilledQuantity = 0;
 
-    //     $insertedRows = [];
-    //     foreach ($reader->getRows() as $record) {
+                if ($order->product?->sets_ctn) {
+                    if ($order->vendorPIProduct?->order?->status != 'completed') {
+                        if (
+                            $order->vendorPIProduct?->available_quantity + $order->warehouseStockLog?->block_quantity >=
+                            $order->ordered_quantity
+                        ) {
+                            $fulfilledQuantity = $order->ordered_quantity;
+                        } else {
+                            $fulfilledQuantity = $order->vendorPIProduct?->available_quantity + $order->warehouseStockLog?->block_quantity;
+                        }
+                    } else {
+                        if ($order->warehouseStockLog?->block_quantity >= $order->ordered_quantity) {
+                            $fulfilledQuantity = $order->ordered_quantity;
+                        } else {
+                            $fulfilledQuantity = $order->warehouseStockLog?->block_quantity;
+                        }
+                    }
+                } else {
+                    $fulfilledQuantity = '0';
+                }
 
-    //         $manageVendor = new ManageVendor();
-    //         $manageVendor->order_id = $manageOrder->id;
-    //         $manageVendor->vendor_id = $record['vendor_code'];
-    //         $manageVendor->save();
+                $writer->addRow([
+                    'Order No' => $order->id,
+                    'Customer Name' => $order->tempOrder->customer_name,
+                    'Facility Name' => $order->tempOrder->facility_name,
+                    'HSN' => $order->tempOrder->hsn,
+                    'GST' => $order->tempOrder->gst,
+                    'Item Code' =>  $order->tempOrder->item_code,
+                    'SKU Code' => $order->tempOrder->sku,
+                    'Title' => $order->tempOrder->description,
+                    'Basic Rate' => $order->tempOrder->basic_rate,
+                    'Net Landing Rate' => $order->tempOrder->net_landing_rate,
+                    'PO MRP' =>  $order->tempOrder->mrp,
+                    'Product MRP' => $order->tempOrder->product_mrp,
+                    'Rate Confirmation' => ($order->tempOrder->mrp == $order->tempOrder->product_mrp) ? 'Yes' : 'No',
+                    'Qty Requirement' => $order->ordered_quantity,
+                    'Qty Fullfilled' => $fulfilledQuantity,
+                ]);
+            }
+        }
 
-    //         $insertedRows[] = [
-    //             'order_id' => $manageOrder->id,
-    //             'customer_name' => $record['customer_name'],
-    //             'po_number' => $record['po_number'],
-    //             'sku' => $record['sku'],
-    //             'facility_name' => $record['facility_name'],
-    //             'facility_location' => $record['facility_location'],
-    //             'po_date' => $record['po_date']->format('d-m-Y'),
-    //             'po_expiry_date' => $record['po_expiry_date']->format('d-m-Y'),
-    //             'hsn' => $record['hsn'],
-    //             'item_code' => $record['item_code'],
-    //             'description' => $record['description'],
-    //             'basic_rate' => $record['basic_rate'],
-    //             'gst' => $record['gst'],
-    //             'net_landing_rate' => $record['net_landing_rate'],
-    //             'mrp' => $record['mrp'],
-    //             'rate_confirmation' => $record['rate_confirmation'],
-    //             'po_qty' => $record['po_qty'],
-    //             'case_pack_quantity' => $record['case_pack_quantity'],
-    //             'block' => $record['block'],
-    //             'purchase_order_quantity' => $record['purchase_order_quantity'],
-    //             'vendor_code' => $record['vendor_code'],
-    //         ];
-    //     }
+        // Close the writer
+        $writer->close();
 
-    //     if (empty($insertedRows)) {
-    //         return redirect()->back()->withErrors(['csv_file' => 'No valid data found in the CSV file.']);
-    //     }
-
-    //     $insert = TempOrder::insert($insertedRows);
-    //     if (!$insert) {
-    //         DB::rollBack();
-    //         return redirect()->back()->withErrors(['csv_file' => 'Failed to insert data into the database.']);
-    //     }
-    //     DB::commit();
-
-    //     return redirect()->route('order')->with('success', 'Order Completed Successful.');
-    // }
+        return response()->download($tempXlsxPath, 'vendor_po.xlsx', [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ])->deleteFileAfterSend(true);
+    }
 }

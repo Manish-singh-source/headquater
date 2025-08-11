@@ -115,6 +115,7 @@ class PurchaseOrderController extends Controller
 
         $vendorPIid = VendorPI::where('purchase_order_id', $id)->get();
 
+        // dd($purchaseOrderProducts);
         return view('purchaseOrder.view', compact('vendorPIid', 'facilityNames', 'purchaseOrderProducts', 'uploadedPIOfVendors',  'vendorPIs', 'purchaseOrder', 'purchaseInvoice', 'purchaseGrn'));
     }
 
@@ -141,22 +142,36 @@ class PurchaseOrderController extends Controller
             $vendorPIid = VendorPI::where('purchase_order_id', $request->purchase_order_id)->where('vendor_code', $request->vendor_code)->first();
 
             foreach ($rows as $record) {
-                if (empty($record['Vendor SKU Code'])) continue;
+                if (empty($record['Vendor SKU Code'])) {
+                    continue;
+                }
 
-                $products[] = [
-                    'vendor_pi_id' => $vendorPIid->id,
-                    'vendor_sku_code' => Arr::get($record, 'Vendor SKU Code'),
-                    'mrp' => Arr::get($record, 'MRP'),
+                $productData = [
+                    'vendor_pi_id'         => $vendorPIid->id,
+                    'vendor_sku_code'      => Arr::get($record, 'Vendor SKU Code'),
+                    'mrp'                  => Arr::get($record, 'MRP'),
                     'quantity_requirement' => Arr::get($record, 'Quantity Requirement'),
-                    'available_quantity' => Arr::get($record, 'Available Quantity'),
-                    'purchase_rate' => Arr::get($record, 'Purchase Rate Basic'),
-                    'gst' => Arr::get($record, 'GST'),
-                    'hsn' => Arr::get($record, 'HSN'),
-                    'created_at' => now(),
-                    'updated_at' => now(),
+                    'available_quantity'   => Arr::get($record, 'Available Quantity'),
+                    'purchase_rate'        => Arr::get($record, 'Purchase Rate Basic'),
+                    'gst'                  => Arr::get($record, 'GST'),
+                    'hsn'                  => Arr::get($record, 'HSN'),
+                    'created_at'           => now(),
+                    'updated_at'           => now(),
                 ];
+
+                if ($issueItem = Arr::get($record, 'Issue Item')) {
+                    $productData['issue_item'] = $issueItem;
+                    $productData['issue_reason'] = Arr::get($record, 'Issue Reason');
+                }else {
+                    $productData['issue_item'] = 0;
+                    $productData['issue_reason'] = '';
+                }
+
+                $products[] = $productData;
                 $insertCount++;
             }
+
+
 
             if ($insertCount === 0) {
                 DB::rollBack();
@@ -337,15 +352,15 @@ class PurchaseOrderController extends Controller
                 $writer->addRow([
                     'Order No' => $order->id,
                     'Purchase Order No' => 'PO-' . $order->id,
-                    'Portal'            => $order->tempProduct->po_number ?? '',
+                    'Portal'            => $order->tempProduct->item_code ?? '',
                     'Vendor SKU Code'   => $order->tempProduct->sku ?? '',
                     'Title'             => $order->tempProduct->description ?? '',
                     'MRP'               => $order->tempProduct->mrp ?? '',
                     'Quantity Requirement' => $order->ordered_quantity ?? '',
+                    'Purchase Rate Basic' => $order->tempProduct->basic_rate,
+                    'GST' => $order->tempProduct->gst,
+                    'HSN' => $order->tempProduct->hsn,
                     'Available Quantity' => '',
-                    'Purchase Rate Basic' => '',
-                    'GST' => '',
-                    'HSN' => '',
                 ]);
             }
         }

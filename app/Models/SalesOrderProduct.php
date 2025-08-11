@@ -28,10 +28,14 @@ class SalesOrderProduct extends Model
         return $this->hasOne(VendorPIProduct::class, 'vendor_sku_code', 'sku');
     }
 
+    public function warehouseStock()
+    {
+        return $this->hasOne(WarehouseStock::class, 'sku', 'sku');
+    }
+    
     public function warehouseStockLog()
     {
-        return $this->hasOne(WarehouseStockLog::class, 'sales_order_id', 'id')
-            ->whereColumn('warehouse_stock_logs.sku', 'sales_order_products.sku');
+        return $this->hasOne(WarehouseStockLog::class, 'sales_order_id', 'id');
     }
 
     public function customer()

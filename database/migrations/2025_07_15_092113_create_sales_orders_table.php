@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('sales_orders', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('warehouse_id')->constrained()->onDelete('cascade');
-            $table->foreignId('customer_group_id')->constrained()->onDelete('cascade');
+            $table->foreignId('warehouse_id')->constrained();
+            $table->foreignId('customer_group_id')->constrained();
             $table->enum('status', ['pending', 'blocked', 'completed', 'ready_to_ship', 'ready_to_package'])->default('pending');
             $table->timestamps();
         });

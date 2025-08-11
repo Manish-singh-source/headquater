@@ -297,22 +297,26 @@
                                         <th>SKU&nbsp;Code</th>
                                         <th>Title</th>
                                         <th>MRP</th>
+                                        <th>Basic</th>
+                                        <th>GST</th>
+                                        <th>HSN</th>
                                         <th>Qty&nbsp;Requirement</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @forelse($purchaseOrderProducts as $order)
-                                        {{-- @if ($order->ordered_quantity > 0) --}}
                                         <tr>
-                                            <td>{{ 'PO-' . $order->id }}</td>
+                                            <td>{{ $order->purchase_order_id }}</td>
                                             <td>{{ $order->vendor_code }}</td>
-                                            <td>{{ $order->tempProduct->po_number ?? 'NA' }}</td>
+                                            <td>{{ $order->tempProduct->item_code ?? 'NA' }}</td>
                                             <td>{{ $order->tempProduct->sku ?? 'NA' }}</td>
                                             <td>{{ $order->tempProduct->description ?? 'NA' }}</td>
                                             <td>{{ $order->tempProduct->mrp ?? 'NA' }}</td>
+                                            <td>{{ $order->tempProduct->basic_rate ?? 'NA' }}</td>
+                                            <td>{{ $order->tempProduct->gst ?? 'NA' }}</td>
+                                            <td>{{ $order->tempProduct->hsn ?? 'NA' }}</td>
                                             <td>{{ $order->ordered_quantity ?? 'NA' }}</td>
                                         </tr>
-                                        {{-- @endif --}}
                                     @empty
                                         <tr>
                                             <td colspan="6">No Records Found</td>

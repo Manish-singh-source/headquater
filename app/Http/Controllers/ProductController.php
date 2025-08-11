@@ -3,15 +3,17 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
-use App\Models\SkuMapping;
 use App\Models\TempOrder;
 use App\Models\Warehouse;
+use App\Models\SkuMapping;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Models\WarehouseStock;
 use App\Models\WarehouseStockLog;
 use Illuminate\Support\Facades\DB;
 use Spatie\SimpleExcel\SimpleExcelReader;
+use Spatie\SimpleExcel\SimpleExcelWriter;
 
 class ProductController extends Controller
 {
@@ -69,7 +71,7 @@ class ProductController extends Controller
                 $warehouseStock->sku = $record['SKU Code'];
                 $warehouseStock->quantity = $record['Sets/CTN'];
                 $warehouseStock->save();
-                
+
                 // $warehouseStock = new WarehouseStockLog();
                 // $warehouseStock->warehouse_id = $request->warehouse_id;
                 // $warehouseStock->product_id = $product->id;
@@ -135,7 +137,7 @@ class ProductController extends Controller
                 $warehouseStockUpdate = WarehouseStock::where('sku', $record['SKU Code'])->first();
                 $warehouseStockUpdate->quantity = $record['Sets/CTN'];
                 $warehouseStockUpdate->save();
-                
+
                 $insertCount++;
             }
 
@@ -154,6 +156,37 @@ class ProductController extends Controller
         }
     }
 
+    public function editProduct($id)
+    {
+        $product = Product::findOrFail($id);
+        return response()->json($product); // send data to AJAX
+    }
+
+    public function updateProduct(Request $request)
+    {
+        $product = Product::findOrFail($request->id);
+        $product->update([
+            'sku' => $request->sku,
+            'ean_code' => $request->ean_code,
+            'brand' => $request->brand,
+            'brand_title' => $request->brand_title,
+            'mrp' => $request->mrp,
+            'category' => $request->category,
+            'pcs_set' => $request->pcs_set,
+            'sets_ctn' => $request->sets_ctn,
+        ]);
+
+        return response()->json(['success' => true]);
+    }
+
+    public function destroy($id)
+    {
+        $product = Product::findOrFail($id);
+        $product->delete();
+
+        return redirect()->back()->with('success', 'Product deleted successfully.');
+    }
+
     public function deleteSelected(Request $request)
     {
         $ids = is_array($request->ids) ? $request->ids : explode(',', $request->ids);
@@ -161,67 +194,41 @@ class ProductController extends Controller
         return redirect()->back()->with('success', 'Selected customers deleted successfully.');
     }
 
-    // public function  productsList()
-    // {
-    //     $products = TempOrder::with('warehouseStock.product')->get();
-    //     return view('products', ['products' => $products]);
-    // }
 
-    // public function addProductPage()
-    // {
-    //     $warehouses = Warehouse::all();
-    //     return view('add-product', ['warehouses' => $warehouses]);
-    // }
+    public function downloadProductSheet(Request $request)
+    {
+        // Create temporary .xlsx file path
+        $tempXlsxPath = storage_path('app/product_sheet_' . Str::random(8) . '.xlsx');
 
-    // public function  storeProducts(Request $request)
-    // {
-    //     $file = $request->file('products_excel');
-    //     if (!$file) {
-    //         return redirect()->back()->withErrors(['products_excel' => 'Please upload a CSV file.']);
-    //     }
+        // Create writer
+        $writer = SimpleExcelWriter::create($tempXlsxPath);
 
-    //     $file = $request->file('products_excel')->getPathname();
-    //     $file_extension = $request->file('products_excel')->getClientOriginalExtension();
+        // Fetch data with relationships
+        $products = WarehouseStock::with('product', 'warehouse')->get();
 
-    //     $reader = SimpleExcelReader::create($file, $file_extension);
-    //     $insertedRows = [];
-    //     foreach ($reader->getRows() as $record) {
+        // Add rows
+        foreach ($products as $product) {
+            $writer->addRow([
+                'SKU Code' => $product->product->sku,
+                'EAN Code' => $product->product->ean_code,
+                'Brand' => $product->product->brand,
+                'Brand Title' => $product->product->brand_title,
+                'MRP' => $product->product->mrp,
+                'Category' =>  $product->product->category,
+                'PCS/Set' => $product->product->pcs_set,
+                'Sets/CTN' => $product->product->sets_ctn,
+                'Vendor Name' => $product->product->vendor_name,
+                'Vendor Purchase Rate' => $product->product->vendor_purchase_rate,
+                'GST' =>  $product->product->gst,
+                'Vendor Net Landing' => $product->product->vendor_net_landing,
+            ]);
+        }
 
-    //         $warehouseStock = new WarehouseStock();
-    //         $warehouseStock->warehouse_id = $request->warehouse_id;
-    //         $warehouseStock->product_id = $record['sku'];
-    //         $warehouseStock->quantity = $record['units_ordered'];
-    //         $warehouseStock->save();
+        // Close the writer
+        $writer->close();
 
-
-    //         $insertedRows[] = [
-    //             'name' => $record['name'],
-    //             'sku' => $record['sku'],
-    //             'item_id' => $record['item_id'],
-    //             'vendor_name' => $record['vendor_name'],
-    //             'entity_vendor_legal_name' => $record['entity_vendor_legal_name'],
-    //             'manufacturer_name' => $record['manufacturer_name'],
-    //             'facility_name' => $record['facility_name'],
-    //             'units' => $record['units'],
-    //             'units_ordered' => $record['units_ordered'],
-    //             'landing_rate' => $record['landing_rate'],
-    //             'cost_price' => $record['cost_price'],
-    //             'total_amount' => $record['total_amount'],
-    //             'mrp' => $record['mrp'],
-    //             'po_status' => $record['po_status'],
-    //             'created_at' => now(),
-    //             'updated_at' => now(),
-    //         ];
-    //     }
-
-    //     if (empty($insertedRows)) {
-    //         return redirect()->back()->withErrors(['products_excel' => 'No valid data found in the CSV file.']);
-    //     }
-    //     // Insert the data into the database
-    //     $insert = Product::insert($insertedRows);
-    //     if (!$insert) {
-    //         return redirect()->back()->withErrors(['products_excel' => 'Failed to insert data into the database.']);
-    //     }
-    //     return redirect('products')->with('success', 'CSV file imported successfully.');
-    // }
+        return response()->download($tempXlsxPath, 'vendor_po.xlsx', [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ])->deleteFileAfterSend(true);
+    }
 }
