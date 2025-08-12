@@ -162,6 +162,7 @@ Route::middleware('RolePermission:customer-handler')->group(function () {
         Route::post('/purchase-order-invoice-store', 'invoiceStore')->name('purchase.order.invoice.store');
         Route::post('/purchase-order-grn-store', 'grnStore')->name('purchase.order.grn.store');
         Route::get('/download-vendor-po-excel', 'downloadVendorPO')->name('download.vendor.po.excel');
+        Route::get('/create', 'purchesstore')->name('purches.store');
     });
 
     // Report Details List

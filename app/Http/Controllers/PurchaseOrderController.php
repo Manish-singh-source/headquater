@@ -25,6 +25,11 @@ use Spatie\SimpleExcel\SimpleExcelWriter;
 class PurchaseOrderController extends Controller
 {
     //
+    public function purchesstore(){
+        return view('purchaseOrder.create');
+
+    }
+
     public function index()
     {
         $purchaseOrders = PurchaseOrder::with('purchaseOrderProducts')->get();
