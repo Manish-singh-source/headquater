@@ -26,7 +26,26 @@
                     </nav>
                 </div>
             </div>
+            <div class="col-12 col-md-auto">
+                <div class="d-flex align-items-center gap-2 justify-content-end">
 
+                    <a href="{{ route('purches.store') }}" class="btn btn-primary px-4"><i
+                            class="bi bi-plus-lg me-2"></i>Create Order</a>
+                    <div>
+                        <div class="btn-group">
+                            <button type="button" class="btn border-2 border-primary">Action</button>
+                            <button type="button"
+                                class="btn btn-outline-primary split-bg-primary dropdown-toggle dropdown-toggle-split"
+                                data-bs-toggle="dropdown"> <span class="visually-hidden">Toggle Dropdown</span>
+                            </button>
+                            <div class="dropdown-menu dropdown-menu-right dropdown-menu-lg-end">
+                                <a class="dropdown-item cursor-pointer" id="delete-selected">Delete All</a>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
 
             <div class="card mt-4">
                 <div class="card-body">
