@@ -18,7 +18,9 @@ return new class extends Migration
             $table->string('email')->nullable();
             $table->string('contact_no')->nullable();
             $table->string('gstin')->nullable();
+            $table->string('gst_treatment')->nullable();
             $table->string('pan')->nullable();
+            $table->string('private_details')->nullable();
             $table->enum('status', ['0', '1'])->default('1')->comment('0: Inactive, 1: Active');
             $table->timestamps();
         });

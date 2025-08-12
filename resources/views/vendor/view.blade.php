@@ -18,56 +18,97 @@
 
             <div class="row">
                 <div class="col-12">
-                    <div class="card w-100 d-flex  flex-sm-row flex-col">
-                        <ul class="col-12 list-group list-group-flush">
-                            <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
-                                <span><b>Client Name</b></span>
-                                <span>{{ $vendor->client_name ?? 'NA' }}</span>
-                            </li>
-                            <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
-                                <span><b>Contact Name</b></span>
-                                <span>{{ $vendor->contact_name ?? 'NA' }}</span>
-                            </li>
-                            <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
-                                <span><b>Phone No</b></span>
-                                <span>{{ $vendor->phone_number ?? 'NA' }}</span>
-                            </li>
-                            <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
-                                <span><b>Email</b></span>
-                                <span>{{ $vendor->email ?? 'NA' }}</span>
-                            </li>
-                            <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
-                                <span><b>GST No</b></span>
-                                <span>{{ $vendor->gst_number ?? 'NA' }}</span>
-                            </li>
-                            <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
-                                <span><b>PAN No</b></span>
-                                <span>{{ $vendor->pan_number ?? 'NA' }}</span>
-                            </li>
-                            <li class="list-group-item d-flex justify-content-between align-items-center  mb-2 pe-3">
-                                <span><b>Shipping Address</b></span>
-                                <span>{{ $vendor->shipping_address ?? 'NA' }}</span>
-                            </li>
-                            <li class="list-group-item d-flex justify-content-between align-items-center  mb-2 pe-3">
-                                <span><b>Shipping Country</b></span>
-                                <span>{{ $vendor->country->name ?? 'NA' }}</span>
-                            </li>
-                            <li class="list-group-item d-flex justify-content-between align-items-center  mb-2 pe-3">
-                                <span><b>Shipping State</b></span>
-                                <span>{{ $vendor->state->name ?? 'NA' }}</span>
-                            </li>
-                            <li class="list-group-item d-flex justify-content-between align-items-center  mb-2 pe-3">
-                                <span><b>Shipping City</b></span>
-                                <span>{{ $vendor->city->name ?? 'NA' }}</span>
-                            </li>
-                            <li class="list-group-item d-flex justify-content-between align-items-center  mb-2 pe-3">
-                                <span><b>Shipping Zip</b></span>
-                                <span>{{ $vendor->shipping_zip ?? 'NA' }}</span>
-                            </li>
-                        </ul>
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>Address Details</h5>
+                        </div>
+                        <div class="card-body">
+                            <ul class="col-12 list-group list-group-flush">
+                                <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
+                                    <span><b>Client Name</b></span>
+                                    <span>{{ $vendor->client_name ?? 'NA' }}</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
+                                    <span><b>Contact Name</b></span>
+                                    <span>{{ $vendor->contact_name ?? 'NA' }}</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
+                                    <span><b>Phone No</b></span>
+                                    <span>{{ $vendor->phone_number ?? 'NA' }}</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
+                                    <span><b>Email</b></span>
+                                    <span>{{ $vendor->email ?? 'NA' }}</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
+                                    <span><b>GST No</b></span>
+                                    <span>{{ $vendor->gst_number ?? 'NA' }}</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
+                                    <span><b>GST Treatment</b></span>
+                                    <span>{{ $vendor->gst_treatment ?? 'NA' }}</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
+                                    <span><b>PAN No</b></span>
+                                    <span>{{ $vendor->pan_number ?? 'NA' }}</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>Address Details</h5>
+                        </div>
+                        <div class="card-body">
+                            <ul class="col-12 list-group list-group-flush">
+                                
+                                <li class="list-group-item d-flex justify-content-between align-items-center  mb-2 pe-3">
+                                    <span><b>Shipping Address</b></span>
+                                    <span>{{ $vendor->shipping_address ?? 'NA' }}</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center  mb-2 pe-3">
+                                    <span><b>Shipping Country</b></span>
+                                    <span>{{ $vendor->country->name ?? 'NA' }}</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center  mb-2 pe-3">
+                                    <span><b>Shipping State</b></span>
+                                    <span>{{ $vendor->state->name ?? 'NA' }}</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center  mb-2 pe-3">
+                                    <span><b>Shipping City</b></span>
+                                    <span>{{ $vendor->city->name ?? 'NA' }}</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center  mb-2 pe-3">
+                                    <span><b>Shipping Zip</b></span>
+                                    <span>{{ $vendor->shipping_zip ?? 'NA' }}</span>
+                                </li>
+
+
+                                <li class="list-group-item d-flex justify-content-between align-items-center  mb-2 pe-3">
+                                    <span><b>Billing Address</b></span>
+                                    <span>{{ $vendor->billing_address ?? 'NA' }}</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center  mb-2 pe-3">
+                                    <span><b>Billing Country</b></span>
+                                    <span>{{ $vendor->billingCountry->name ?? 'NA' }}</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center  mb-2 pe-3">
+                                    <span><b>Billing State</b></span>
+                                    <span>{{ $vendor->billingState->name ?? 'NA' }}</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center  mb-2 pe-3">
+                                    <span><b>Billing City</b></span>
+                                    <span>{{ $vendor->billingCity->name ?? 'NA' }}</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center  mb-2 pe-3">
+                                    <span><b>Billing Zip</b></span>
+                                    <span>{{ $vendor->billing_zip ?? 'NA' }}</span>
+                                </li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
-
             </div>
 
             @isset($orders)

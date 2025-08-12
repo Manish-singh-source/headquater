@@ -80,7 +80,18 @@
                                     @enderror
                                 </div>
                                 <div class="col-md-6">
-                                    <label for="input5" class="form-label">GST NO</label>
+                                    <label for="input6" class="form-label">PAN NO</label>
+                                    <input type="text" class="form-control @error('pan_number') is-invalid @enderror"
+                                        value="{{ old('pan_number') }}" id="input6" placeholder="PAN NO"
+                                        name="pan_number">
+                                    @error('pan_number')
+                                        <div class="invalid-feedback">
+                                            {{ $message }}
+                                        </div>
+                                    @enderror
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="input5" class="form-label">GSTIN</label>
                                     <input type="text" class="form-control @error('gst_number') is-invalid @enderror"
                                         value="{{ old('gst_number') }}" id="input5" placeholder="GST NO"
                                         name="gst_number">
@@ -91,11 +102,11 @@
                                     @enderror
                                 </div>
                                 <div class="col-md-6">
-                                    <label for="input6" class="form-label">PAN NO</label>
-                                    <input type="text" class="form-control @error('pan_number') is-invalid @enderror"
-                                        value="{{ old('pan_number') }}" id="input6" placeholder="PAN NO"
-                                        name="pan_number">
-                                    @error('pan_number')
+                                    <label for="gst_treatment" class="form-label">GST Treatment</label>
+                                    <input type="text" class="form-control @error('gst_treatment') is-invalid @enderror"
+                                        value="{{ old('gst_treatment') }}" id="gst_treatment" placeholder="GST Treatment"
+                                        name="gst_treatment">
+                                    @error('gst_treatment')
                                         <div class="invalid-feedback">
                                             {{ $message }}
                                         </div>

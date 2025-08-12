@@ -62,26 +62,28 @@ class CustomerGroupController extends Controller
             foreach ($reader->getRows() as $record) {
                 // 2. Insert individual customer
                 $customer = Customer::create([
-                    'client_name'       => $record['Client Name'],
-                    'contact_name'       => $record['Contact Name'],
-                    'email'      => $record['Email'],
-                    'contact_no'      => $record['Contact No'],
-                    'gstin'      => $record['GSTIN'],
-                    'pan'      => $record['PAN'],
+                    'client_name'       => $record['Client Name'] ?? '',
+                    'contact_name'       => $record['Contact Name'] ?? '',
+                    'email'      => $record['Email'] ?? '',
+                    'contact_no'      => $record['Contact No'] ?? '',
+                    'gstin'      => $record['GSTIN'] ?? '',
+                    'pan'      => $record['PAN'] ?? '',
+                    'gst_treatment'      => $record['GST Treatment'] ?? '',
+                    'private_details'      => $record['Private Details'] ?? '',
                 ]);
 
                 CustomerAddress::create([
                     'customer_id' => $customer->id,
-                    'billing_address'      => $record['Billing Address'],
-                    'billing_country'      => $record['Billing Country'],
-                    'billing_state'      => $record['Billing State'],
-                    'billing_city'      => $record['Billing City'],
-                    'billing_zip'      => $record['Billing Zip'],
-                    'shipping_address'      => $record['Shipping Address'],
-                    'shipping_country'      => $record['Shipping Country'],
-                    'shipping_state'      => $record['Shipping State'],
-                    'shipping_city'      => $record['Shipping City'],
-                    'shipping_zip'      => $record['Shipping Zip'],
+                    'billing_address'      => $record['Billing Address'] ?? '',
+                    'billing_country'      => $record['Billing Country'] ?? '',
+                    'billing_state'      => $record['Billing State'] ?? '',
+                    'billing_city'      => $record['Billing City'] ?? '',
+                    'billing_zip'      => $record['Billing Zip'] ?? '',
+                    'shipping_address'      => $record['Shipping Address'] ?? '',
+                    'shipping_country'      => $record['Shipping Country'] ?? '',
+                    'shipping_state'      => $record['Shipping State'] ?? '',
+                    'shipping_city'      => $record['Shipping City'] ?? '',
+                    'shipping_zip'      => $record['Shipping Zip'] ?? '',
                 ]);
 
                 // 3. Insert into customer_group_members

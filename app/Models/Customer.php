@@ -17,7 +17,7 @@ class Customer extends Model
         return $this->hasMany(SalesOrderProduct::class, 'customer_id', 'id');
     }
 
-    public function addresses() {
+    public function address() {
         return $this->hasOne(CustomerAddress::class, 'customer_id', 'id');
     }
 }

@@ -67,14 +67,15 @@
                                                             <th>PO&nbsp;Date</th>
                                                             <th>PO&nbsp;Expiry&nbsp;Date</th>
                                                             <th>HSN</th>
+                                                            <th>GST</th>
                                                             <th>Item&nbsp;Code</th>
                                                             <th>Description</th>
-                                                            <th>GST</th>
                                                             <th>Basic&nbsp;Rate</th>
                                                             <th>Net&nbsp;Landing&nbsp;Rate</th>
                                                             <th>PO&nbsp;MRP</th>
                                                             <th>Product&nbsp;MRP</th>
                                                             <th>Rate&nbsp;Confirmation</th>
+                                                            <th>Case&nbsp;Pack&nbsp;Quantity</th>
                                                             <th>PO&nbsp;Quantity</th>
                                                             <th>Available</th>
                                                             <th>Unavailable&nbsp;Qty</th>
@@ -83,6 +84,11 @@
                                                     <tbody>
                                                         @forelse($fileData as $data)
                                                             <tr>
+                                                                {{-- 
+                                                                'block' => $record['Block'],
+                                                                'purchase_order_quantity' => $record['Purchase Order Quantity'] ?? '',
+                                                                'vendor_code' => $record['Vendor Code'], 
+                                                                --}}
                                                                 <td>{{ $data['Customer Name'] }}</td>
                                                                 <td>{{ $data['PO Number'] }}</td>
                                                                 <td>{{ $data['SKU Code'] }}</td>
@@ -91,17 +97,18 @@
                                                                 <td>{{ $data['PO Date'] }}</td>
                                                                 <td>{{ $data['PO Expiry Date'] }}</td>
                                                                 <td>{{ $data['HSN'] }}</td>
+                                                                <td>{{ $data['GST'] }}</td>
                                                                 <td>{{ $data['Item Code'] }}</td>
                                                                 <td>{{ $data['Description'] }}</td>
-                                                                <td>{{ $data['GST'] }}</td>
                                                                 <td>{{ $data['Basic Rate'] }}</td>
                                                                 <td>{{ $data['Net Landing Rate'] }}</td>
                                                                 <td>{{ $data['MRP'] }}</td>
                                                                 <td>{{ $data['Product MRP'] }}</td>
                                                                 <td>{{ $data['Rate Confirmation'] }}</td>
+                                                                <td>{{ $data['Case Pack Quantity'] }}</td>
                                                                 <td>{{ $data['PO Quantity'] }}</td>
                                                                 <td>{!! $data['Available Quantity'] !!}</td>
-                                                                <td>{!! $data['Unavailable Quantity'] !!}</td>
+                                                                <td>{!! $data['Unavailable Quantity'] !!}</td>  
                                                             </tr>
                                                         @empty
                                                             <tr>

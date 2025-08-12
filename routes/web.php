@@ -146,6 +146,7 @@ Route::middleware('RolePermission:customer-handler')->group(function () {
         Route::get('/create-order', 'create')->name('order.create');
         Route::post('/store-order', 'store')->name('order.store');
         Route::get('/edit-order/{id}', 'edit')->name('order.edit');
+        Route::put('/update-order', 'update')->name('order.update');
         Route::get('/view-order/{id}', 'view')->name('order.view');
         Route::delete('/delete-order/{id}', 'destroy')->name('order.delete');
         Route::delete('/order/delete-selected', 'deleteSelected')->name('delete.selected.order');

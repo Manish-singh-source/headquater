@@ -114,18 +114,19 @@
                                 tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
                                 <div class="modal-dialog">
                                     <div class="modal-content">
-                                        <form action="{{ route('products.update') }}" method="POST"
+                                        <form action="{{ route('order.update') }}" method="POST"
                                             enctype="multipart/form-data">
                                             @csrf
                                             @method('PUT')
                                             <div class="modal-header">
-                                                <h1 class="modal-title fs-5" id="staticBackdropLabel">Update Products</h1>
+                                                <h1 class="modal-title fs-5" id="staticBackdropLabel">Update Order</h1>
                                                 <button type="button" class="btn-close" data-bs-dismiss="modal"
                                                     aria-label="Close"></button>
                                             </div>
 
                                             <div class="modal-body">
                                                 <div class="col-12 mb-3">
+                                                    <input type="hidden" name="sales_order_id" value="{{ $salesOrder->id }}">
                                                     <label for="products_excel" class="form-label">Products List (CSV/ELSX)
                                                         <span class="text-danger">*</span></label>
                                                     <input type="file" name="products_excel" id="products_excel"

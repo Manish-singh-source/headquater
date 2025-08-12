@@ -21,5 +21,20 @@ class Vendor extends Model
     {
         return $this->hasOne(Country::class, 'id', 'shipping_country');
     }
+    
+    public function billingCity()
+    {
+        return $this->hasOne(City::class,  'id', 'billing_city');
+    }
+    
+    public function billingState()
+    {
+        return $this->hasOne(State::class, 'id', 'billing_state');
+    }
+    
+    public function billingCountry()
+    {
+        return $this->hasOne(Country::class, 'id', 'billing_country');
+    }
 
 }

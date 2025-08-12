@@ -9,6 +9,7 @@ use App\Models\TempOrder;
 use App\Models\Warehouse;
 use App\Models\SalesOrder;
 use App\Models\ManageOrder;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use App\Models\ManageVendor;
 use Illuminate\Http\Request;
@@ -289,7 +290,100 @@ class OrderController extends Controller
         return view('salesOrder.edit', compact('salesOrder'));
     }
 
-    public function update(Request $request, $id) {}
+    public function update(Request $request)
+    {
+        $request->validate([
+            'products_excel' => 'required|file|mimes:xlsx,csv,xls',
+        ]);
+
+        $file = $request->file('products_excel');
+        $filepath = $file->getPathname();
+        $extension = $file->getClientOriginalExtension();
+
+        DB::beginTransaction();
+
+        try {
+            $reader = SimpleExcelReader::create($filepath, $extension);
+            $rows = $reader->getRows();
+            $products = [];
+            $warehouseStockUpdate = [];
+            $insertCount = 0;
+
+            foreach ($rows as $record) {
+                if (empty($record['SKU Code'])) continue;
+
+                $salesOrderProductUpdate = SalesOrderProduct::where('sku', $record['SKU Code'])->where('sales_order_id', $request->sales_order_id)->first();
+                $salesOrderProductUpdate->ordered_quantity = $record['Qty Requirement'];
+
+                $products[] = [
+                    'id' => $salesOrderProductUpdate->temp_order_id,
+                    'customer_name' => Arr::get($record, 'Customer Name') ?? '',
+                    'facility_name' => Arr::get($record, 'Facility Name') ?? '',
+                    'hsn' => Arr::get($record, 'HSN') ?? '',
+                    'gst' => Arr::get($record, 'GST') ?? '',
+                    'item_code' =>  Arr::get($record, 'Item Code') ?? '',
+                    'sku' => Arr::get($record, 'SKU Code') ?? '',
+                    'description' => Arr::get($record, 'Title') ?? '',
+                    'basic_rate' => Arr::get($record, 'Basic Rate') ?? '',
+                    'net_landing_rate' => Arr::get($record, 'Net Landing Rate') ?? '',
+                    'mrp' =>  Arr::get($record, 'PO MRP') ?? '',
+                    'product_mrp' => Arr::get($record, 'Product MRP') ?? '',
+                    'rate_confirmation' => Arr::get($record, 'Rate Confirmation') ?? '',
+                    'po_qty' => Arr::get($record, 'Qty Requirement') ?? '',
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ];
+
+                $salesOrderProductUpdate->save();
+
+                $warehouseStockBlockLogsUpdate = WarehouseStockLog::where('sku', $record['SKU Code'])->where('sales_order_id', $request->sales_order_id)->first();
+                $warehouseStockUpdate = WarehouseStock::where('sku', $record['SKU Code'])->first();
+                // $warehouseStockBlockLogsUpdate->block_quantity =  $record['Qty Requirement'];
+
+
+
+                if($warehouseStockBlockLogsUpdate->block_quantity > $record['Qty Requirement']) {
+                    $blockQuantityUpdated = $warehouseStockBlockLogsUpdate->block_quantity - $record['Qty Requirement'];
+                    $warehouseStockBlockLogsUpdate->block_quantity = $warehouseStockBlockLogsUpdate->block_quantity - $blockQuantityUpdated;
+                    $warehouseStockUpdate->block_quantity =  $warehouseStockUpdate->block_quantity - $blockQuantityUpdated;
+
+
+                }else {
+                    $blockStock = $record['Qty Requirement'] - $warehouseStockBlockLogsUpdate->block_quantity;
+                    $available = $warehouseStockUpdate->quantity - $warehouseStockUpdate->block_quantity;
+
+                    if($available >= $blockStock) { 
+                        $warehouseStockUpdate->block_quantity += $blockStock;
+                        $warehouseStockBlockLogsUpdate->block_quantity += $blockStock;
+                    }else {
+                        $warehouseStockUpdate->block_quantity += $available;
+                        // $warehouseStockBlockLogsUpdate->block_quantity = $available;
+                    }
+                }
+
+                $warehouseStockBlockLogsUpdate->save();
+                $warehouseStockUpdate->save();
+                
+                // $warehouseStockUpdate->quantity = $record['Stock'];
+                // $warehouseStockUpdate->save();
+
+                $insertCount++;
+            }
+
+            if ($insertCount === 0) {
+                DB::rollBack();
+                return redirect()->back()->withErrors(['products_excel' => 'No valid data found in the file.']);
+            }
+
+            TempOrder::upsert($products, ['id']);
+
+            DB::commit();
+            return redirect()->route('order.index')->with('success', 'CSV file imported successfully.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->withErrors(['error' => 'Something went wrong: ' . $e->getMessage()]);
+        }
+    }
 
     public function view($id)
     {
@@ -307,16 +401,16 @@ class OrderController extends Controller
     {
         $order = SalesOrder::findOrFail($id);
         $orderedProducts = SalesOrderProduct::where('sales_order_id', $id)->get();
-        foreach($orderedProducts as $product) {
+        foreach ($orderedProducts as $product) {
             $warehouseStockBlock = WarehouseStockLog::where('sales_order_id', $product->sales_order_id)->where('sku', $product->sku)->first();
             $warehouseStock = WarehouseStock::where('sku', $product->sku)->first();
-            if(isset($warehouseStockBlock) && isset($warehouseStock)) {
+            if (isset($warehouseStockBlock) && isset($warehouseStock)) {
                 $warehouseStock->block_quantity = ($warehouseStock->block_quantity ?? 0) - ($warehouseStockBlock->block_quantity ?? 0);
                 $warehouseStockBlock->block_quantity = 0;
                 $warehouseStock->save();
             }
         }
-        
+
         $order->delete();
         return redirect()->route('order.index')->with('success', 'Order deleted successfully.');
     }
@@ -496,7 +590,10 @@ class OrderController extends Controller
                 $productStockCache[$sku]['remaining'] = 0;
             }
 
+            // $casePackQty = (int)$stockEntry->product->pcs_set;
+            $casePackQty = (int)$stockEntry->product->pcs_set * (int)$stockEntry->product->sets_ctn;
 
+            // dd($casePackQty);
             $insertedRows[] = [
                 'Customer Name' => $record['Customer Name'],
                 'PO Number' => $record['PO Number'],
@@ -513,7 +610,8 @@ class OrderController extends Controller
                 'Net Landing Rate' => $record['Net Landing Rate'],
                 'MRP' => $record['MRP'],
                 'Product MRP' => $stockEntry->product->mrp,
-                'Rate Confirmation' => ($record['MRP'] == $stockEntry->product->mrp) ? 'Yes' : 'No',
+                'Rate Confirmation' => ($record['MRP'] <= $stockEntry->product->mrp) ? 'Yes' : 'No',
+                'Case Pack Quantity' => $casePackQty ?? 0,
                 'PO Quantity' => $poQty,
                 'Available Quantity' => $remaining,
                 'Unavailable Quantity' => $unavailableStatus,
@@ -579,6 +677,7 @@ class OrderController extends Controller
                 'Available Quantity' => $row['Available Quantity'] ?? '',
                 'Unavailable Quantity' => $row['Unavailable Quantity'] ?? '',
                 'Case Pack Quantity' => $row['Case Pack Quantity'] ?? '',
+                'Purchase Order Quantity' => $row['Unavailable Quantity'] ?? '',
                 'Block' => '',
                 'Vendor Code' => '',
             ]);
@@ -644,7 +743,7 @@ class OrderController extends Controller
                 }
 
                 $writer->addRow([
-                    'Order No' => $order->id,
+                    'Order No' => $salesOrder->id,
                     'Customer Name' => $order->tempOrder->customer_name,
                     'Facility Name' => $order->tempOrder->facility_name,
                     'HSN' => $order->tempOrder->hsn,
@@ -656,7 +755,7 @@ class OrderController extends Controller
                     'Net Landing Rate' => $order->tempOrder->net_landing_rate,
                     'PO MRP' =>  $order->tempOrder->mrp,
                     'Product MRP' => $order->tempOrder->product_mrp,
-                    'Rate Confirmation' => ($order->tempOrder->mrp == $order->tempOrder->product_mrp) ? 'Yes' : 'No',
+                    'Rate Confirmation' => ($order->tempOrder->mrp == $order->tempOrder->product_mrp) ? 'Confirmed' : 'Mismatched',
                     'Qty Requirement' => $order->ordered_quantity,
                     'Qty Fullfilled' => $fulfilledQuantity,
                 ]);

@@ -48,28 +48,33 @@ class ProductController extends Controller
             $insertCount = 0;
 
             foreach ($reader->getRows() as $record) {
+                // dd($record);
                 $product = Product::create([
-                    'sku' => $record['SKU Code'],
-                    'ean_code' => $record['EAN Code'],
-                    'brand' => $record['Brand'],
-                    'brand_title' => $record['Brand Title'],
-                    'mrp' => $record['MRP'],
-                    'category' => $record['Category'],
-                    'pcs_set' => $record['PCS/Set'],
-                    'sets_ctn' => $record['Sets/CTN'],
-                    'vendor_name' => $record['Vendor Name'],
-                    'vendor_purchase_rate' => $record['Vendor Purchase Rate'],
-                    'gst' => $record['GST'],
-                    'vendor_net_landing' => $record['Vendor Net Landing'],
+                    'sku' => $record['SKU Code'] ?? '',
+                    'ean_code' => $record['EAN Code'] ?? '',
+                    'brand' => $record['Brand'] ?? '',
+                    'brand_title' => $record['Brand Title'] ?? '',
+                    'mrp' => $record['MRP'] ?? '',
+                    'category' => $record['Category'] ?? '',
+                    'pcs_set' => $record['PCS/Set'] ?? '',
+                    'sets_ctn' => $record['Sets/CTN'] ?? '',
+                    'vendor_name' => $record['Vendor Name'] ?? '',
+                    'vendor_purchase_rate' => $record['Vendor Purchase Rate'] ?? '',
+                    'gst' => $record['GST'] ?? '',
+                    'vendor_net_landing' => $record['Vendor Net Landing'] ?? '',
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]);
-
+                
                 $warehouseStock = new WarehouseStock();
                 $warehouseStock->warehouse_id = $request->warehouse_id;
                 $warehouseStock->product_id = $product->id;
                 $warehouseStock->sku = $record['SKU Code'];
-                $warehouseStock->quantity = $record['Sets/CTN'];
+                if(isset($record['Stock'])) {
+                    $warehouseStock->quantity = $record['Stock'] ?? 0;
+                }else {
+                    $warehouseStock->quantity = 0;
+                }
                 $warehouseStock->save();
 
                 // $warehouseStock = new WarehouseStockLog();
@@ -90,6 +95,7 @@ class ProductController extends Controller
             DB::commit();
             return redirect()->route('products.index')->with('success', 'CSV file imported successfully.');
         } catch (\Exception $e) {
+            dd($e->getMessage());
             DB::rollBack();
             return redirect()->back()->withErrors(['error' => 'Something went wrong: ' . $e->getMessage()]);
         }
@@ -118,24 +124,24 @@ class ProductController extends Controller
                 if (empty($record['SKU Code'])) continue;
 
                 $products[] = [
-                    'sku' => Arr::get($record, 'SKU Code'),
-                    'ean_code' => Arr::get($record, 'EAN Code'),
-                    'brand' => Arr::get($record, 'Brand'),
-                    'brand_title' => Arr::get($record, 'Brand Title'),
-                    'mrp' => Arr::get($record, 'MRP'),
-                    'category' => Arr::get($record, 'Category'),
-                    'pcs_set' => Arr::get($record, 'PCS/Set'),
-                    'sets_ctn' => Arr::get($record, 'Sets/CTN'),
-                    'vendor_name' => Arr::get($record, 'Vendor Name'),
-                    'vendor_purchase_rate' => Arr::get($record, 'Vendor Purchase Rate'),
-                    'gst' => Arr::get($record, 'GST'),
-                    'vendor_net_landing' => Arr::get($record, 'Vendor Net Landing'),
+                    'sku' => Arr::get($record, 'SKU Code') ?? '',
+                    'ean_code' => Arr::get($record, 'EAN Code') ?? '',
+                    'brand' => Arr::get($record, 'Brand') ?? '',
+                    'brand_title' => Arr::get($record, 'Brand Title') ?? '',
+                    'mrp' => Arr::get($record, 'MRP') ?? '',
+                    'category' => Arr::get($record, 'Category') ?? '',
+                    'pcs_set' => Arr::get($record, 'PCS/Set') ?? '',
+                    'sets_ctn' => Arr::get($record, 'Sets/CTN') ?? '',
+                    'vendor_name' => Arr::get($record, 'Vendor Name') ?? '',
+                    'vendor_purchase_rate' => Arr::get($record, 'Vendor Purchase Rate') ?? '',
+                    'gst' => Arr::get($record, 'GST') ?? '',
+                    'vendor_net_landing' => Arr::get($record, 'Vendor Net Landing') ?? '',
                     'created_at' => now(),
                     'updated_at' => now(),
                 ];
 
                 $warehouseStockUpdate = WarehouseStock::where('sku', $record['SKU Code'])->first();
-                $warehouseStockUpdate->quantity = $record['Sets/CTN'];
+                $warehouseStockUpdate->quantity = $record['Stock'];
                 $warehouseStockUpdate->save();
 
                 $insertCount++;
@@ -221,6 +227,7 @@ class ProductController extends Controller
                 'Vendor Purchase Rate' => $product->product->vendor_purchase_rate,
                 'GST' =>  $product->product->gst,
                 'Vendor Net Landing' => $product->product->vendor_net_landing,
+                'Stock' => $product->quantity ?? '',
             ]);
         }
 

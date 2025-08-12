@@ -90,10 +90,11 @@
                                             <input class="form-check-input" type="checkbox" id="select-all">
                                         </th>
                                         <th>Warehouse</th>
+                                        <th>SKU Code</th>
+                                        <th>EAN&nbsp;Code</th>
                                         <th>Brand</th>
                                         <th>Brand&nbsp;Title</th>
-                                        <th>SKU</th>
-                                        <th>EAN&nbsp;Code</th>
+                                        <th>MRP</th>
                                         <th>Category</th>
                                         <th>PCS/Set </th>
                                         <th>Sets/CTN</th>
@@ -101,8 +102,8 @@
                                         <th>Vendor&nbsp;Purchase&nbsp;Rate</th>
                                         <th>GST</th>
                                         <th>Vendor&nbsp;Net&nbsp;Landing</th>
-                                        <th>MRP</th>
                                         <th>po&nbsp;status</th>
+                                        <th>Quantity</th>
                                         <th>Hold&nbsp;Qty</th>
                                         <th>Date</th>
                                         <th>Action</th>
@@ -116,6 +117,8 @@
                                                     value="{{ $product->id }}">
                                             </td>
                                             <td>{{ $product->warehouse->name ?? 'NA' }}</td>
+                                            <td>{{ $product->product->sku }}</td>
+                                            <td>{{ $product->product->ean_code }}</td>
                                             <td>
                                                 <div class="d-flex align-items-center gap-3">
                                                     <div class="product-info">
@@ -125,8 +128,7 @@
                                                 </div>
                                             </td>
                                             <td>{{ $product->product->brand_title }}</td>
-                                            <td>{{ $product->product->sku }}</td>
-                                            <td>{{ $product->product->ean_code }}</td>
+                                            <td>{{ $product->product->mrp }}</td>
                                             <td>{{ $product->product->category }}</td>
                                             <td>{{ $product->product->pcs_set }}</td>
                                             <td>{{ $product->product->sets_ctn }}</td>
@@ -134,9 +136,14 @@
                                             <td>{{ $product->product->vendor_purchase_rate }}</td>
                                             <td>{{ $product->product->gst }}</td>
                                             <td>{{ $product->product->vendor_net_landing }}</td>
-                                            <td>{{ $product->product->mrp }}</td>
-
                                             <td>{{ $product->product->status === '1' ? 'Active' : 'Inactive' }}</td>
+                                            <td>
+                                                @if ($product->quantity)
+                                                    {{ $product->quantity }}
+                                                @else
+                                                    <span>0</span>
+                                                @endif
+                                            </td>
                                             <td>
                                                 @if ($product->block_quantity)
                                                     <span class="badge text-danger bg-danger-subtle">
