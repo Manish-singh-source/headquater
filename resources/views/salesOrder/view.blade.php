@@ -240,7 +240,7 @@
                                                 <td><span class="badge text-danger bg-danger-subtle">No</span></td>
                                             @endif
                                             <td>{{ $order->ordered_quantity }}</td>
-                                            @if ($order->product?->sets_ctn)
+                                            @if ($order->warehouseStock?->quantity)
                                                 <td>
                                                     @if ($order->vendorPIProduct?->order?->status != 'completed')
                                                         @if (

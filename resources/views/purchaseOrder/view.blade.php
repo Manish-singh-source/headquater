@@ -269,7 +269,7 @@
                                 id="exportData">Export to Excel</a> --}}
 
                             <ul class="nav nav-tabs" id="vendorTabs" role="tablist">
-                                <select class="form-select border-2 border-primary" id="vendorSelect"
+                                <select class="form-select border-2 border-primary" id="vendorPOSelect"
                                     aria-label="Default select example">
                                     <option value="" selected>All Vendors</option>
                                     @php
@@ -279,7 +279,7 @@
                                         <option value="{{ $vendor }}">{{ $vendor }}
                                         </option>
                                     @empty
-                                        NA
+                                        <option value="">NA</option>
                                     @endforelse
                                 </select>
                             </ul>
@@ -288,18 +288,16 @@
 
                     <div class="product-table">
                         <div class="table-responsive white-space-nowrap">
-                            <table id="example" class="table align-middle">
+                            <table id="vendorPOTable" class="table align-middle">
                                 <thead class="table-light">
                                     <tr>
+                                        <th>Order&nbsp;No</th>
                                         <th>Purchase&nbsp;Order&nbsp;No</th>
                                         <th>Vendor&nbsp;Name</th>
                                         <th>Portal&nbsp;Code</th>
                                         <th>SKU&nbsp;Code</th>
                                         <th>Title</th>
                                         <th>MRP</th>
-                                        <th>Basic</th>
-                                        <th>GST</th>
-                                        <th>HSN</th>
                                         <th>Qty&nbsp;Requirement</th>
                                     </tr>
                                 </thead>
@@ -307,14 +305,12 @@
                                     @forelse($purchaseOrderProducts as $order)
                                         <tr>
                                             <td>{{ $order->purchase_order_id }}</td>
+                                            <td>{{ $order->purchase_order_id }}</td>
                                             <td>{{ $order->vendor_code }}</td>
                                             <td>{{ $order->tempProduct->item_code ?? 'NA' }}</td>
                                             <td>{{ $order->tempProduct->sku ?? 'NA' }}</td>
                                             <td>{{ $order->tempProduct->description ?? 'NA' }}</td>
                                             <td>{{ $order->tempProduct->mrp ?? 'NA' }}</td>
-                                            <td>{{ $order->tempProduct->basic_rate ?? 'NA' }}</td>
-                                            <td>{{ $order->tempProduct->gst ?? 'NA' }}</td>
-                                            <td>{{ $order->tempProduct->hsn ?? 'NA' }}</td>
                                             <td>{{ $order->ordered_quantity ?? 'NA' }}</td>
                                         </tr>
                                     @empty
@@ -588,7 +584,7 @@
     <script>
         $(document).on('click', '#exportData', function() {
             var purchaseOrderId = $("#purchase-order-id").text();
-            var vendorCode = $("#vendorSelect").val();
+            var vendorCode = $("#vendorPOSelect").val();
 
             // Construct download URL with parameters
             var downloadUrl = '{{ route('download.vendor.po.excel') }}' +
@@ -597,6 +593,33 @@
 
             // Trigger browser download
             window.location.href = downloadUrl;
+        });
+    </script>
+
+    <script>
+        $(document).ready(function() {
+            var table3 = $('#vendorPOTable').DataTable({
+                "columnDefs": [{
+                        "orderable": false,
+                        //   "targets": [0, -1],
+                    } // Disable sorting for the 4th column (index starts at 0)
+                ],
+                lengthChange: true,
+                // buttons: ['excel', 'pdf', 'print']
+                // buttons: ['excel']
+                buttons: [{
+                    extend: 'excelHtml5',
+                    className: 'd-none', // hide the default button
+                }]
+            });
+
+            $('#vendorPOSelect').on('change', function() {
+                var selected = $(this).val().trim();
+
+                // Use regex for exact match
+                table3.column(2).search(selected ? '^' + selected + '$' : '', true, false).draw();
+            });
+
         });
     </script>
 @endsection

@@ -120,7 +120,6 @@ class PurchaseOrderController extends Controller
 
         $vendorPIid = VendorPI::where('purchase_order_id', $id)->get();
 
-        // dd($purchaseOrderProducts);
         return view('purchaseOrder.view', compact('vendorPIid', 'facilityNames', 'purchaseOrderProducts', 'uploadedPIOfVendors',  'vendorPIs', 'purchaseOrder', 'purchaseInvoice', 'purchaseGrn'));
     }
 
@@ -362,10 +361,10 @@ class PurchaseOrderController extends Controller
                     'Title'             => $order->tempProduct->description ?? '',
                     'MRP'               => $order->tempProduct->mrp ?? '',
                     'Quantity Requirement' => $order->ordered_quantity ?? '',
-                    'Purchase Rate Basic' => $order->tempProduct->basic_rate,
-                    'GST' => $order->tempProduct->gst,
-                    'HSN' => $order->tempProduct->hsn,
                     'Available Quantity' => '',
+                    'Purchase rate Basic' => '',
+                    'GST' => '',
+                    'HSN' => '',
                 ]);
             }
         }
@@ -373,7 +372,7 @@ class PurchaseOrderController extends Controller
         // Close the writer
         $writer->close();
 
-        return response()->download($tempXlsxPath, 'vendor_po.xlsx', [
+        return response()->download($tempXlsxPath, $request->vendorCode .'_Vendor_PO.xlsx', [
             'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         ])->deleteFileAfterSend(true);
     }

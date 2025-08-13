@@ -217,14 +217,28 @@ class OrderController extends Controller
                 $saveOrderProduct->save();
 
                 if ($unavailableStatus > 0) {
-                    $purchaseOrderProduct = new PurchaseOrderProduct();
-                    $purchaseOrderProduct->sales_order_id = $saveOrder->id;
-                    $purchaseOrderProduct->purchase_order_id = $purchaseOrder->id;
-                    $purchaseOrderProduct->ordered_quantity = $unavailableStatus;
-                    $purchaseOrderProduct->sku = $record['SKU Code'];
-                    $purchaseOrderProduct->vendor_code = $record['Vendor Code'];
-                    $purchaseOrderProduct->save();
+                    // Check if an existing product for the same purchase order, SKU, and vendor exists
+                    $existingProduct = PurchaseOrderProduct::where('purchase_order_id', $purchaseOrder->id)
+                        ->where('sku', $record['SKU Code'])
+                        ->where('vendor_code', $record['Vendor Code'])
+                        ->first();
+
+                    if ($existingProduct) {
+                        // Combine quantities if match found
+                        $existingProduct->ordered_quantity += $unavailableStatus;
+                        $existingProduct->save();
+                    } else {
+                        // Create a new record
+                        $purchaseOrderProduct = new PurchaseOrderProduct();
+                        $purchaseOrderProduct->sales_order_id = $saveOrder->id;
+                        $purchaseOrderProduct->purchase_order_id = $purchaseOrder->id;
+                        $purchaseOrderProduct->ordered_quantity = $unavailableStatus;
+                        $purchaseOrderProduct->sku = $record['SKU Code'];
+                        $purchaseOrderProduct->vendor_code = $record['Vendor Code'];
+                        $purchaseOrderProduct->save();
+                    }
                 }
+
 
                 $blockQuantity = WarehouseStock::where('sku', $sku)->first();
                 $WarehouseblockQuantity = WarehouseStock::where('sku', $sku)->first(); // For Updating WarehouseStockLog Table
@@ -312,8 +326,10 @@ class OrderController extends Controller
             foreach ($rows as $record) {
                 if (empty($record['SKU Code'])) continue;
 
-                $salesOrderProductUpdate = SalesOrderProduct::where('sku', $record['SKU Code'])->where('sales_order_id', $request->sales_order_id)->first();
-                $salesOrderProductUpdate->ordered_quantity = $record['Qty Requirement'];
+                $customerInfo = Customer::where('client_name', $record['Facility Name'])
+                    ->first();
+
+                $salesOrderProductUpdate = SalesOrderProduct::where('sku', $record['SKU Code'])->where('sales_order_id', $request->sales_order_id)->where('customer_id', $customerInfo->id)->first();
 
                 $products[] = [
                     'id' => $salesOrderProductUpdate->temp_order_id,
@@ -334,38 +350,37 @@ class OrderController extends Controller
                     'updated_at' => now(),
                 ];
 
+                $salesOrderProductUpdate->ordered_quantity = $record['Qty Requirement'];
                 $salesOrderProductUpdate->save();
 
                 $warehouseStockBlockLogsUpdate = WarehouseStockLog::where('sku', $record['SKU Code'])->where('sales_order_id', $request->sales_order_id)->first();
                 $warehouseStockUpdate = WarehouseStock::where('sku', $record['SKU Code'])->first();
                 // $warehouseStockBlockLogsUpdate->block_quantity =  $record['Qty Requirement'];
 
-
-
-                if($warehouseStockBlockLogsUpdate->block_quantity > $record['Qty Requirement']) {
+                // dd($record['Qty Requirement']);
+                if ($warehouseStockBlockLogsUpdate->block_quantity > $record['Qty Requirement']) {
                     $blockQuantityUpdated = $warehouseStockBlockLogsUpdate->block_quantity - $record['Qty Requirement'];
+                    // dd($blockQuantityUpdated);
                     $warehouseStockBlockLogsUpdate->block_quantity = $warehouseStockBlockLogsUpdate->block_quantity - $blockQuantityUpdated;
                     $warehouseStockUpdate->block_quantity =  $warehouseStockUpdate->block_quantity - $blockQuantityUpdated;
-
-
-                }else {
-                    $blockStock = $record['Qty Requirement'] - $warehouseStockBlockLogsUpdate->block_quantity;
+                } else {
+                    $blockStock = $record['Qty Requirement'] - (int)$warehouseStockBlockLogsUpdate->block_quantity;
                     $available = $warehouseStockUpdate->quantity - $warehouseStockUpdate->block_quantity;
-
-                    if($available >= $blockStock) { 
-                        $warehouseStockUpdate->block_quantity += $blockStock;
+                    // dd($warehouseStockUpdate->block_quantity);
+                    if ($available >= $blockStock) {
                         $warehouseStockBlockLogsUpdate->block_quantity += $blockStock;
-                    }else {
+                        $warehouseStockUpdate->block_quantity += $blockStock;
+                    } else {
+                        $warehouseStockBlockLogsUpdate->block_quantity += $available;
                         $warehouseStockUpdate->block_quantity += $available;
-                        // $warehouseStockBlockLogsUpdate->block_quantity = $available;
                     }
+                    // dd($available);
+
+                    // what about extra ?? 
                 }
 
                 $warehouseStockBlockLogsUpdate->save();
                 $warehouseStockUpdate->save();
-                
-                // $warehouseStockUpdate->quantity = $record['Stock'];
-                // $warehouseStockUpdate->save();
 
                 $insertCount++;
             }
@@ -380,6 +395,7 @@ class OrderController extends Controller
             DB::commit();
             return redirect()->route('order.index')->with('success', 'CSV file imported successfully.');
         } catch (\Exception $e) {
+            dd($e->getMessage());
             DB::rollBack();
             return redirect()->back()->withErrors(['error' => 'Something went wrong: ' . $e->getMessage()]);
         }
@@ -387,13 +403,14 @@ class OrderController extends Controller
 
     public function view($id)
     {
-        $salesOrder = SalesOrder::with('customerGroup', 'warehouse', 'orderedProducts.product', 'orderedProducts.tempOrder', 'orderedProducts.vendorPIProduct.order', 'vendorPIs.products')->findOrFail($id);
+        $salesOrder = SalesOrder::with('customerGroup', 'warehouse', 'orderedProducts.product', 'orderedProducts.tempOrder', 'orderedProducts.warehouseStock', 'orderedProducts.vendorPIProduct.order', 'vendorPIs.products')->findOrFail($id);
         foreach ($salesOrder->orderedProducts as $orderedProduct) {
             $orderedProduct->warehouseStockLog = WarehouseStockLog::where('sales_order_id', $orderedProduct->sales_order_id)
                 ->where('customer_id', $orderedProduct->customer_id)
                 ->where('sku', $orderedProduct->sku)
                 ->first();
         }
+        // dd($salesOrder->orderedProducts);
         return view('salesOrder.view', compact('salesOrder'));
     }
 
