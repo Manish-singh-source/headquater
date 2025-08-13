@@ -21,7 +21,8 @@ class ReceivedProductsController extends Controller
 
     public function view(Request $request)
     {
-        $vendorPIs = VendorPI::with('products')->where('purchase_order_id', $request->purchase_order_id)->where('vendor_code', $request->vendor_code)->first();
+        $vendorPIs = VendorPI::with('products.product')->where('purchase_order_id', $request->purchase_order_id)->where('vendor_code', $request->vendor_code)->first();
+        // dd($vendorPIs);
         return view('receivedProducts.view', compact('vendorPIs'));
     }
 
@@ -43,23 +44,24 @@ class ReceivedProductsController extends Controller
         $writer = SimpleExcelWriter::create($tempXlsxPath);
 
         // Fetch data with relationships
-        $vendorPIs = VendorPI::with('products')->where('purchase_order_id', $request->purchaseOrderId)->where('vendor_code', $request->vendorCode)->first();
+        $vendorPIs = VendorPI::with('products.product')->where('purchase_order_id', $request->purchaseOrderId)->where('vendor_code', $request->vendorCode)->first();
 
         // Add rows
         foreach ($vendorPIs->products as $product) {
             $writer->addRow([
-                'Order No' => $product->id,
-                'Vendor Code' => $vendorPIs->vendor_code,
+                'Order No' => $vendorPIs->purchase_order_id,
                 'Purchase Order No' => $vendorPIs->purchase_order_id ?? '',
+                // 'Vendor Code' => $vendorPIs->vendor_code ?? '',
                 'Vendor SKU Code'   => $product->vendor_sku_code ?? '',
-                'Title'             => $product->vendor_sku_code ?? '',
+                'Title'             => $product->product->brand_title ?? '',
                 'MRP'               => $product->mrp ?? '',
-                'Quantity Requirement' => $product->quantity_requirement ?? '',
-                'Available Quantity' => $product->available_quantity ?? '',
-                'Purchase Rate Basic' => $product->purchase_rate ?? '',
-                'GST' => $product->gst ?? '',
-                'HSN' => $product->hsn ?? '',
-                'Issue Item' => '',
+                'Quantity Ordered' => $product->quantity_requirement ?? '',
+                // 'Available Quantity' => $product->available_quantity ?? '',
+                // 'Purchase Rate Basic' => $product->purchase_rate ?? '',
+                // 'GST' => $product->gst ?? '',
+                // 'HSN' => $product->hsn ?? '',
+                'Quantity Received' => '',
+                'Issue Units' => '',
                 'Issue Reason' => '',
             ]);
         }

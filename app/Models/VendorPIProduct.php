@@ -14,4 +14,8 @@ class VendorPIProduct extends Model
     {
         return $this->belongsTo(VendorPI::class, 'vendor_pi_id', 'id');
     }
+
+    public function product() {
+        return $this->hasOne(Product::class, 'sku', 'vendor_sku_code');
+    }
 }

@@ -25,9 +25,9 @@ use Spatie\SimpleExcel\SimpleExcelWriter;
 class PurchaseOrderController extends Controller
 {
     //
-    public function purchesstore(){
+    public function purchesstore()
+    {
         return view('purchaseOrder.create');
-
     }
 
     public function index()
@@ -116,10 +116,11 @@ class PurchaseOrderController extends Controller
         $uploadedPIOfVendors = VendorPI::distinct()->pluck('vendor_code');
         $purchaseInvoice = PurchaseInvoice::where('purchase_order_id', $id)->get();
         $purchaseGrn = PurchaseGrn::where('purchase_order_id', $id)->get();
-        $vendorPIs = VendorPI::with('products')->where('purchase_order_id', $id)->where('status', '!=', 'completed')->get();
+        $vendorPIs = VendorPI::with('products.product')->where('purchase_order_id', $id)->where('status', '!=', 'completed')->get();
 
         $vendorPIid = VendorPI::where('purchase_order_id', $id)->get();
 
+        // dd($vendorPIs);
         return view('purchaseOrder.view', compact('vendorPIid', 'facilityNames', 'purchaseOrderProducts', 'uploadedPIOfVendors',  'vendorPIs', 'purchaseOrder', 'purchaseInvoice', 'purchaseGrn'));
     }
 
@@ -140,7 +141,7 @@ class PurchaseOrderController extends Controller
         try {
             $reader = SimpleExcelReader::create($filepath, $extension);
             $rows = $reader->getRows();
-            $products = [];
+            // $products = [];
             $insertCount = 0;
 
             $vendorPIid = VendorPI::where('purchase_order_id', $request->purchase_order_id)->where('vendor_code', $request->vendor_code)->first();
@@ -150,28 +151,29 @@ class PurchaseOrderController extends Controller
                     continue;
                 }
 
-                $productData = [
-                    'vendor_pi_id'         => $vendorPIid->id,
-                    'vendor_sku_code'      => Arr::get($record, 'Vendor SKU Code'),
-                    'mrp'                  => Arr::get($record, 'MRP'),
-                    'quantity_requirement' => Arr::get($record, 'Quantity Requirement'),
-                    'available_quantity'   => Arr::get($record, 'Available Quantity'),
-                    'purchase_rate'        => Arr::get($record, 'Purchase Rate Basic'),
-                    'gst'                  => Arr::get($record, 'GST'),
-                    'hsn'                  => Arr::get($record, 'HSN'),
-                    'created_at'           => now(),
-                    'updated_at'           => now(),
-                ];
-
-                if ($issueItem = Arr::get($record, 'Issue Item')) {
-                    $productData['issue_item'] = $issueItem;
-                    $productData['issue_reason'] = Arr::get($record, 'Issue Reason');
-                }else {
-                    $productData['issue_item'] = 0;
-                    $productData['issue_reason'] = '';
+                $productData = VendorPIProduct::where('vendor_sku_code', Arr::get($record, 'Vendor SKU Code'))->where('vendor_pi_id', $vendorPIid->id)->first();
+                if (Arr::get($record, 'MRP')) {
+                    $productData->mrp = Arr::get($record, 'MRP');
                 }
+                if (Arr::get($record, 'Quantity Ordered')) {
+                    $productData->quantity_requirement = Arr::get($record, 'Quantity Ordered');
+                }
+                // $productData->purchase_rate = Arr::get($record, 'Purchase Rate Basic');
+                if (Arr::get($record, 'Issue Units')) {
+                    $productData->quantity_received = Arr::get($record, 'Quantity Received');
+                }
+                // $productData->gst = Arr::get($record, 'GST');
+                // $productData->hsn = Arr::get($record, 'HSN');
 
-                $products[] = $productData;
+                if ($issueItem = Arr::get($record, 'Issue Units')) {
+                    $productData->issue_item = $issueItem ?? '';
+                    $productData->issue_reason = Arr::get($record, 'Issue Reason') ?? '';
+                } else {
+                    $productData->issue_item = 0;
+                    $productData->issue_reason = '';
+                }
+                $productData->save();
+
                 $insertCount++;
             }
 
@@ -182,11 +184,12 @@ class PurchaseOrderController extends Controller
                 return redirect()->back()->withErrors(['pi_excel' => 'No valid data found in the CSV file.']);
             }
 
-            VendorPIProduct::upsert($products, ['vendor_sku_code', 'vendor_pi_id']);
+            // VendorPIProduct::upsert($products, ['vendor_sku_code', 'vendor_pi_id']);
 
             DB::commit();
             return redirect()->route('purchase.order.view', $request->purchase_order_id)->with('success', 'CSV file imported successfully.');
         } catch (\Exception $e) {
+            dd($e->getMessage());
             DB::rollBack();
             return redirect()->back()->withErrors(['error' => 'Something went wrong: ' . $e->getMessage()]);
         }
@@ -362,7 +365,7 @@ class PurchaseOrderController extends Controller
                     'MRP'               => $order->tempProduct->mrp ?? '',
                     'Quantity Requirement' => $order->ordered_quantity ?? '',
                     'Available Quantity' => '',
-                    'Purchase rate Basic' => '',
+                    'Purchase Rate Basic' => '',
                     'GST' => '',
                     'HSN' => '',
                 ]);
@@ -372,7 +375,7 @@ class PurchaseOrderController extends Controller
         // Close the writer
         $writer->close();
 
-        return response()->download($tempXlsxPath, $request->vendorCode .'_Vendor_PO.xlsx', [
+        return response()->download($tempXlsxPath, $request->vendorCode . '_Vendor_PO.xlsx', [
             'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         ])->deleteFileAfterSend(true);
     }

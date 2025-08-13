@@ -157,29 +157,30 @@
                                                             <th>Vendor&nbsp;Code</th>
                                                             <th>Purchase&nbsp;Order&nbsp;No</th>
                                                             <th>Vendor&nbsp;SKU&nbsp;Code</th>
+                                                            {{-- <th>Portal&nbsp;Code</th> --}}
                                                             <th>Title</th>
                                                             <th>MRP</th>
-                                                            <th>Quantity&nbsp;Requirement</th>
-                                                            <th>Available&nbsp;Quantity</th>
+                                                            <th>Quantity&nbsp;Ordered</th>
+                                                            {{-- <th>Available&nbsp;Quantity</th>
                                                             <th>Purchase&nbsp;Rate&nbsp;Basic</th>
                                                             <th>GST</th>
-                                                            <th>HSN</th>
+                                                            <th>HSN</th> --}}
                                                         </tr>
                                                     </thead>
                                                     <tbody>
                                                         @foreach ($vendorPIs->products as $product)
                                                             <tr>
-                                                                <td>{{ $product->id }}</td>
+                                                                <td>{{ $vendorPIs->id }}</td>
                                                                 <td>{{ $vendorPIs->vendor_code }}</td>
                                                                 <td>{{ $vendorPIs->purchase_order_id }}</td>
                                                                 <td>{{ $product->vendor_sku_code }}</td>
-                                                                <td>{{ $product->vendor_sku_code }}</td>
+                                                                <td>{{ $product->product->brand_title }}</td>
                                                                 <td>{{ $product->mrp }}</td>
                                                                 <td>{{ $product->quantity_requirement }}</td>
-                                                                <td>{{ $product->available_quantity }}</td>
+                                                                {{-- <td>{{ $product->available_quantity }}</td>
                                                                 <td>{{ $product->purchase_rate }}</td>
                                                                 <td>{{ $product->gst }}</td>
-                                                                <td>{{ $product->hsn }}</td>
+                                                                <td>{{ $product->hsn }}</td> --}}
                                                             </tr>
                                                         @endforeach
                                                     </tbody>

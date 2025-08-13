@@ -293,7 +293,7 @@
                                     <tr>
                                         <th>Order&nbsp;No</th>
                                         <th>Purchase&nbsp;Order&nbsp;No</th>
-                                        <th>Vendor&nbsp;Name</th>
+                                        <th>Vendor&nbsp;Code</th>
                                         <th>Portal&nbsp;Code</th>
                                         <th>SKU&nbsp;Code</th>
                                         <th>Title</th>
@@ -455,14 +455,17 @@
                                 <table id="example2" class="table align-middle">
                                     <thead class="table-light">
                                         <tr>
+                                            Order No Purchse order No Portal Vendor SKU Code Title MRP Quantity Orderd Qunaity
+                                            Recevied Issue Units Reason
+
                                             <th>Order&nbsp;No</th>
-                                            <th>Vendor&nbsp;Code</th>
                                             <th>Purchase&nbsp;Order&nbsp;No</th>
+                                            <th>Vendor&nbsp;Code</th>
                                             <th>Vendor&nbsp;SKU&nbsp;Code</th>
                                             <th>Title</th>
                                             <th>MRP</th>
                                             <th>Quantity&nbsp;Requirement</th>
-                                            <th>Available&nbsp;Quantity</th>
+                                            <th>Quantity&nbsp;Received</th>
                                             <th>Purchase&nbsp;Rate&nbsp;Basic</th>
                                             <th>GST</th>
                                             <th>HSN</th>
@@ -473,13 +476,13 @@
                                             @foreach ($vendorPI->products as $product)
                                                 <tr>
                                                     <td>{{ $product->id }}</td>
-                                                    <td>{{ $vendorPI->vendor_code }}</td>
                                                     <td>{{ $vendorPI->purchase_order_id }}</td>
+                                                    <td>{{ $vendorPI->vendor_code }}</td>
                                                     <td>{{ $product->vendor_sku_code }}</td>
-                                                    <td>{{ $product->vendor_sku_code }}</td>
+                                                    <td>{{ $product->product->brand_title }}</td>
                                                     <td>{{ $product->mrp }}</td>
                                                     <td>{{ $product->quantity_requirement }}</td>
-                                                    <td>{{ $product->available_quantity }}</td>
+                                                    <td>{{ $product->quantity_received ?? '' }}</td>
                                                     <td>{{ $product->purchase_rate }}</td>
                                                     <td>{{ $product->gst }}</td>
                                                     <td>{{ $product->hsn }}</td>
