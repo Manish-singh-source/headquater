@@ -281,7 +281,7 @@
                                                     <td>
                                                         <input class="form-check-input" type="checkbox">
                                                     </td>
-                                                    <td>{{ 'ORDER-' . $order->id }}</td>
+                                                    <td>{{ $order->id }}</td>
                                                     <td>
                                                         <p class="mb-0 customer-name fw-bold">
                                                             @forelse($vendorCodes as $vendor)
@@ -424,7 +424,7 @@
                                                     <td>
                                                         <input class="form-check-input" type="checkbox">
                                                     </td>
-                                                    <td>{{ 'ORDER-' . $order->id }}</td>
+                                                    <td>{{ $order->id }}</td>
                                                     <td>
                                                         <p class="mb-0 customer-name fw-bold">
                                                             {{ $order->customerGroup->name }}
@@ -562,7 +562,7 @@
                                                     <td>
                                                         <input class="form-check-input" type="checkbox">
                                                     </td>
-                                                    <td>{{ 'ORDER-' . $order->id }}</td>
+                                                    <td>{{ $order->id }}</td>
                                                     <td>
                                                         <p class="mb-0 customer-name fw-bold">
                                                             {{ $order->customerGroup->name }}
@@ -652,7 +652,7 @@
                                                     <td>
                                                         <input class="form-check-input" type="checkbox">
                                                     </td>
-                                                    <td>{{ 'ORDER-' . $order->id }}</td>
+                                                    <td>{{ $order->id }}</td>
                                                     <td>
                                                         <p class="mb-0 customer-name fw-bold">
                                                             {{ $order->customerGroup->name }}

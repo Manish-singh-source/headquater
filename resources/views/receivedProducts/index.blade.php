@@ -34,7 +34,7 @@
                                                     @foreach ($purchaseOrders as $order)
                                                         <option
                                                             {{ request('purchase_order_id') == $order->id ? 'selected' : '' }}
-                                                            value="{{ $order->id }}">{{ 'ORDER-' . $order->id }}
+                                                            value="{{ $order->id }}">{{ $order->id }}
                                                         </option>
                                                     @endforeach
                                                 </select>

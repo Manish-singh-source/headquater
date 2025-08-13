@@ -22,7 +22,7 @@
                             <ul class="col-12 list-group list-group-flush">
                                 <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                                     <span><b>Purchase Order Id</b></span>
-                                    <span> <b>{{ 'ORDER-' }} <span
+                                    <span> <b><span
                                                 id="purchase-order-id">{{ $vendorPIs->purchase_order_id }}</span></b></span>
                                 </li>
                                 <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
@@ -161,7 +161,13 @@
                                                             <th>Title</th>
                                                             <th>MRP</th>
                                                             <th>Quantity&nbsp;Ordered</th>
-                                                            {{-- <th>Available&nbsp;Quantity</th>
+                                                            <th>PI&nbsp;Quantity</th>
+                                                            <th>Quantity&nbsp;Received</th>
+                                                            @if ($vendorPIs->products[0])
+                                                                <th>Issue&nbsp;Units</th>
+                                                                <th>Issue&nbsp;Reason</th>
+                                                            @endif
+                                                            {{-- 
                                                             <th>Purchase&nbsp;Rate&nbsp;Basic</th>
                                                             <th>GST</th>
                                                             <th>HSN</th> --}}
@@ -177,7 +183,13 @@
                                                                 <td>{{ $product->product->brand_title }}</td>
                                                                 <td>{{ $product->mrp }}</td>
                                                                 <td>{{ $product->quantity_requirement }}</td>
-                                                                {{-- <td>{{ $product->available_quantity }}</td>
+                                                                <td>{{ $product->available_quantity }}</td>
+                                                                <td>{{ $product->quantity_received }}</td>
+                                                                @if ($product->issue_item)
+                                                                    <td>{{ $product->issue_item ?? '' }}</td>
+                                                                    <td>{{ $product->issue_reason ?? '' }}</td>
+                                                                @endif
+                                                                {{-- 
                                                                 <td>{{ $product->purchase_rate }}</td>
                                                                 <td>{{ $product->gst }}</td>
                                                                 <td>{{ $product->hsn }}</td> --}}

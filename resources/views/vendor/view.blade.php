@@ -133,7 +133,7 @@
                                         @forelse($orders as $order)
                                             @if ($order->ordered_quantity > 0)
                                                 <tr>
-                                                    <td>{{ 'PO-' . $order->purchase_order_id }}</td>
+                                                    <td>{{ $order->purchase_order_id }}</td>
                                                     <td>{{ $vendor->client_name }}</td>
                                                     <td>{{ $order->sku }}</td>
                                                     <td>{{ $order->product->brand }}</td>

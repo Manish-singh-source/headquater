@@ -34,35 +34,35 @@
                             </li>
                             <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                                 <span><b>Customer Group Name</b></span>
-                                <span>{{ $salesOrder->customerGroup->name }}</span>
+                                <span>{{ $salesOrder->customerGroup->name ?? 'NA' }}</span>
                             </li>
                             <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                                 <span><b>Phone No</b></span>
-                                <span> {{ $customerInfo->contact_no }} </span>
+                                <span> {{ $customerInfo->contact_no ?? 'NA' }} </span>
                             </li>
                             <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                                 <span><b>Email</b></span>
-                                <span> {{ $customerInfo->email }} </span>
+                                <span> {{ $customerInfo->email ?? 'NA' }} </span>
                             </li>
                             <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                                 <span><b>Ordered Date</b></span>
-                                <span> 2025-04-11</span>
+                                <span> NA</span>
                             </li>
                             <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                                 <span><b>Delivery Date</b></span>
-                                <span> 2025-05-15</span>
+                                <span> NA</span>
                             </li>
                             <li class="list-group-item d-flex justify-content-between align-items-center  mb-2 pe-3">
                                 <span><b>Billing Address</b></span>
-                                <span> {{ $customerInfo->addresses->billing_address }} </span>
+                                <span> {{ $customerInfo->address->billing_address ?? 'NA' }} </span>
                             </li>
                             <li class="list-group-item d-flex justify-content-between align-items-center  mb-2 pe-3">
                                 <span><b> Shipping Address</b></span>
-                                <span> {{ $customerInfo->addresses->shipping_address }}</span>
+                                <span> {{ $customerInfo->address->shipping_address ?? 'NA' }}</span>
                             </li>
                             <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                                 <span><b>Invoices PDF</b></span>
-                                <span> 
+                                <span>
                                     <a aria-label="anchor" href="{{ route('invoice.downloadPdf', $invoice->id) }}"
                                         class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip"
                                         data-bs-original-title="View">
@@ -89,24 +89,50 @@
                                     <table id="example" class="table align-middle">
                                         <thead class="table-light">
                                             <tr>
-                                                <th>Order No</th>
-                                                <th>SKU Code</th>
-                                                <th>Brand</th>
-                                                <th>Brand Title</th>
-                                                <th>Category</th>
-                                                <th>Qty Requirement</th>
+                                                <th>Customer&nbsp;Name</th>
+                                                <th>PO&nbsp;Number</th>
+                                                <th>SKU&nbsp;Code</th>
+                                                <th>Facility&nbsp;Name</th>
+                                                <th>Facility&nbsp;Location</th>
+                                                <th>PO&nbsp;Date</th>
+                                                <th>PO&nbsp;Expiry&nbsp;Date</th>
+                                                <th>HSN</th>
+                                                <th>Item&nbsp;Code</th>
+                                                <th>Description</th>
+                                                <th>Basic&nbsp;Rate</th>
+                                                <th>GST</th>
+                                                <th>Net&nbsp;Landing&nbsp;Rate</th>
+                                                <th>MRP</th>
+                                                <th>PO&nbsp;Quantity</th>
+                                                <th>Warehouse&nbsp;Stock</th>
+                                                <th>PI&nbsp;Qty</th>
+                                                <th>Purchase&nbsp;Order&nbsp;No</th>
+                                                <th>Total&nbsp;Dispatch&nbsp;Qty</th>
                                             </tr>
                                         </thead>
                                         <tbody>
-
                                             @forelse($salesOrder->orderedProducts as $order)
                                                 <tr>
-                                                    <td>{{ $order->id }}</td>
+                                                    <td>{{ $order->customer->contact_name }}</td>
+                                                    <td>{{ $order->tempOrder->po_number }}</td>
                                                     <td>{{ $order->tempOrder->sku }}</td>
-                                                    <td>{{ $order->product?->brand }}</td>
-                                                    <td>{{ $order->product?->brand_title }}</td>
-                                                    <td>{{ $order->product?->category }}</td>
+                                                    <td>{{ $order->tempOrder->facility_name }}</td>
+                                                    <td>{{ $order->tempOrder->facility_location }}</td>
+                                                    <td>{{ $order->tempOrder->po_date }}</td>
+                                                    <td>{{ $order->tempOrder->po_expiry_date }}</td>
+                                                    <td>{{ $order->tempOrder->hsn }}</td>
+                                                    <td>{{ $order->tempOrder->item_code }}</td>
+                                                    <td>{{ $order->tempOrder->description }}</td>
+                                                    <td>{{ $order->tempOrder->basic_rate }}</td>
+                                                    <td>{{ $order->tempOrder->gst }}</td>
+                                                    <td>{{ $order->tempOrder->net_landing_rate }}</td>
+                                                    <td>{{ $order->tempOrder->mrp }}</td>
+                                                    <td>{{ $order->tempOrder->po_qty }}</td>
+                                                    {{-- Need to check --}}
+                                                    <td>{{ $order->warehouseStockLog->block_quantity ?? '0' }}</td>
                                                     <td>{{ $order->ordered_quantity }}</td>
+                                                    <td>{{ $order->tempOrder->po_number }}</td>
+                                                    <td>{{ $order->warehouseStockLog->block_quantity ?? '0' }}</td>
                                                 </tr>
                                             @empty
                                                 <tr>

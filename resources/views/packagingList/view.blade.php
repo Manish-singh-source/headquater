@@ -14,7 +14,7 @@
         <div class="main-content">
             <div class="div d-flex my-2">
                 <div class="col">
-                    <h5 class="mb-3">Packaging List: {{ 'ORDER-' . $salesOrder->id }}</h5>
+                    <h5 class="mb-3">Packaging List: {{ $salesOrder->id }}</h5>
                 </div>
             </div>
             <div class="card">
@@ -26,7 +26,7 @@
                         <!-- Tabs Navigation -->
                         <div class="d-flex justify-content-end my-3 gap-2">
                             <ul class="nav nav-tabs" id="vendorTabs" role="tablist">
-                                <select class="form-select border-2 border-primary" id="departmentFilter"
+                                <select class="form-select border-2 border-primary" id="customerPOTable"
                                     aria-label="Default select example">
                                     <option value="" selected> -- Select Client Name --</option>
                                     @foreach ($facilityNames as $name)
@@ -88,7 +88,7 @@
 
                     <div class="product-table" id="poTable">
                         <div class="table-responsive white-space-nowrap">
-                            <table id="example" class="table align-middle">
+                            <table id="customerPOTableList" class="table align-middle">
                                 <thead class="table-light">
                                     <tr>
                                         <th>Customer&nbsp;Name</th>
@@ -130,10 +130,11 @@
                                             <td>{{ $order->tempOrder->net_landing_rate }}</td>
                                             <td>{{ $order->tempOrder->mrp }}</td>
                                             <td>{{ $order->tempOrder->po_qty }}</td>
-                                            <td>{{ $order->warehouseStock->quantity - $order->warehouseStock->block_quantity }}</td>
+                                            {{-- Need to check --}}
+                                            <td>{{ $order->warehouseStockLog->block_quantity ?? '0'}}</td>
                                             <td>{{ $order->ordered_quantity }}</td>
                                             <td>{{ $order->tempOrder->po_number }}</td>
-                                            <td>0</td>
+                                            <td>{{ $order->warehouseStockLog->block_quantity ?? '0'}}</td>
                                         </tr>
                                     @empty
                                         <tr>
@@ -171,4 +172,28 @@
             </div>
         </div>
     </main>
+@endsection
+
+@section('script')
+    <script>
+        $(document).ready(function() {
+            var customerPOTableList = $('#customerPOTableList').DataTable({
+                "columnDefs": [{
+                        "orderable": false,
+                    }
+                ],
+                lengthChange: true,
+                buttons: [{
+                    extend: 'excelHtml5',
+                    className: 'd-none', 
+                }]
+            });
+
+            $('#customerPOTable').on('change', function() {
+                var selected = $(this).val().trim();
+                customerPOTableList.column(3).search(selected ? '^' + selected + '$' : '', true, false).draw();
+            });
+
+        });
+    </script>
 @endsection

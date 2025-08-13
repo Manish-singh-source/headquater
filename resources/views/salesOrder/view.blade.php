@@ -126,7 +126,8 @@
 
                                             <div class="modal-body">
                                                 <div class="col-12 mb-3">
-                                                    <input type="hidden" name="sales_order_id" value="{{ $salesOrder->id }}">
+                                                    <input type="hidden" name="sales_order_id"
+                                                        value="{{ $salesOrder->id }}">
                                                     <label for="products_excel" class="form-label">Products List (CSV/ELSX)
                                                         <span class="text-danger">*</span></label>
                                                     <input type="file" name="products_excel" id="products_excel"
@@ -243,11 +244,16 @@
                                             @if ($order->warehouseStock?->quantity)
                                                 <td>
                                                     @if ($order->vendorPIProduct?->order?->status != 'completed')
-                                                        @if (
-                                                            $order->vendorPIProduct?->available_quantity + $order->warehouseStockLog?->block_quantity >=
-                                                                $order->ordered_quantity)
-                                                            <span
-                                                                class="badge text-success bg-success-subtle">{{ $order->ordered_quantity }}</span>
+                                                        @if ($order->vendorPIProduct?->available_quantity >= $order->vendorPIProduct?->quantity_received)
+                                                            @if (
+                                                                $order->vendorPIProduct?->quantity_received + $order->warehouseStockLog?->block_quantity >=
+                                                                    $order->ordered_quantity)
+                                                                <span
+                                                                    class="badge text-success bg-success-subtle">{{ $order->ordered_quantity }}</span>
+                                                            @else
+                                                                <span
+                                                                    class="badge text-danger bg-danger-subtle">{{ $order->vendorPIProduct?->quantity_received + $order->warehouseStockLog?->block_quantity }}</span>
+                                                            @endif
                                                         @else
                                                             <span
                                                                 class="badge text-danger bg-danger-subtle">{{ $order->vendorPIProduct?->available_quantity + $order->warehouseStockLog?->block_quantity }}</span>
@@ -328,7 +334,7 @@
             });
         });
     </script>
-    
+
     <script>
         $(document).on('click', '#exportData', function() {
             var purchaseOrderId = $("#orderId").text().trim();

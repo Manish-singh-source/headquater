@@ -358,7 +358,7 @@ class PurchaseOrderController extends Controller
             if ($order->ordered_quantity > 0) {
                 $writer->addRow([
                     'Order No' => $order->id,
-                    'Purchase Order No' => 'PO-' . $order->id,
+                    'Purchase Order No' => $order->id,
                     'Portal'            => $order->tempProduct->item_code ?? '',
                     'Vendor SKU Code'   => $order->tempProduct->sku ?? '',
                     'Title'             => $order->tempProduct->description ?? '',

@@ -47,9 +47,10 @@ class ReadyToShip extends Controller
             }
         ])->findOrFail($id);
 
-        $customerInfo = Customer::with('addresses')->find($c_id);
+        $customerInfo = Customer::with('address')->find($c_id);
         $invoice = Invoice::where('customer_id', $c_id)->where('sales_order_id', $id)->first();
 
+        // dd($customerInfo);
         return view('readyToShip.view-detail', compact('salesOrder', 'customerInfo', 'invoice'));
     }
 }

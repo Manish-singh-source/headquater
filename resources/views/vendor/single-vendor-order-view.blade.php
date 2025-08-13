@@ -24,7 +24,7 @@
                                         <li
                                             class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                                             <span><b>Order Id</b></span>
-                                            <span>{{ 'ORDER-' . $orders[0]->id }}</span>
+                                            <span>{{ $orders[0]->id }}</span>
                                         </li>
                                         <li
                                             class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
@@ -97,7 +97,7 @@
                                     @forelse($orders as $order)
                                         @if ($order->ordered_quantity > 0)
                                             <tr>
-                                                <td>{{ 'PO-' . $order->purchase_order_id }}</td>
+                                                <td>{{ $order->purchase_order_id }}</td>
                                                 <td>{{ $vendor->client_name }}</td>
                                                 <td>{{ $order->sku }}</td>
                                                 <td>{{ $order->product->brand }}</td>

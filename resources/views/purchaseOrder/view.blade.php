@@ -11,8 +11,8 @@
                             <ul class="col-12 list-group list-group-flush">
                                 <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                                     <span><b>Order Id</b></span>
-                                    <span>{{ 'ORDER-' }} <span
-                                            id="purchase-order-id">{{ $purchaseOrderProducts[0]->purchase_order_id }}</span></span>
+                                    <span
+                                            id="purchase-order-id">{{ $purchaseOrderProducts[0]->purchase_order_id }}</span>
                                 </li>
                                 <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                                     <span><b>Vendor Name</b></span>
@@ -455,9 +455,6 @@
                                 <table id="example2" class="table align-middle">
                                     <thead class="table-light">
                                         <tr>
-                                            Order No Purchse order No Portal Vendor SKU Code Title MRP Quantity Orderd Qunaity
-                                            Recevied Issue Units Reason
-
                                             <th>Order&nbsp;No</th>
                                             <th>Purchase&nbsp;Order&nbsp;No</th>
                                             <th>Vendor&nbsp;Code</th>
@@ -465,6 +462,7 @@
                                             <th>Title</th>
                                             <th>MRP</th>
                                             <th>Quantity&nbsp;Requirement</th>
+                                            <th>PI&nbsp;Quantity</th>
                                             <th>Quantity&nbsp;Received</th>
                                             <th>Purchase&nbsp;Rate&nbsp;Basic</th>
                                             <th>GST</th>
@@ -482,6 +480,7 @@
                                                     <td>{{ $product->product->brand_title }}</td>
                                                     <td>{{ $product->mrp }}</td>
                                                     <td>{{ $product->quantity_requirement }}</td>
+                                                    <td>{{ $product->available_quantity }}</td>
                                                     <td>{{ $product->quantity_received ?? '' }}</td>
                                                     <td>{{ $product->purchase_rate }}</td>
                                                     <td>{{ $product->gst }}</td>
