@@ -25,9 +25,66 @@ use Spatie\SimpleExcel\SimpleExcelWriter;
 class PurchaseOrderController extends Controller
 {
     //
-    public function purchesstore()
+    public function customPurchaseCreate($purchaseId = null)
     {
+        if ($purchaseId) {
+            return view('purchaseOrder.create', compact('purchaseId'));
+        }
         return view('purchaseOrder.create');
+    }
+
+    public function customPurchaseStore(Request $request)
+    {
+        $request->validate([
+            'purchase_excel' => 'required|mimes:xlsx,csv,xls',
+        ]);
+
+        $file = $request->file('purchase_excel');
+        $filepath = $file->getPathname();
+        $extension = $file->getClientOriginalExtension();
+
+        DB::beginTransaction();
+
+        try {
+            $reader = SimpleExcelReader::create($filepath, $extension);
+            $rows = $reader->getRows();
+            $vendorProducts = [];
+            $insertCount = 0;
+
+            if (!isset($request->purchaseId)) {
+                $purchaseOrder = new PurchaseOrder();
+                $purchaseOrder->save();
+            }
+
+            foreach ($rows as $record) {
+                if (empty($record['SKU Code'])) continue;
+
+                $purchaseOrderProduct = new PurchaseOrderProduct();
+                if (isset($purchaseOrder->id)) {
+                    $purchaseOrderProduct->purchase_order_id = $purchaseOrder->id;
+                } else {
+                    $purchaseOrderProduct->purchase_order_id = $request->purchaseId;
+                }
+                $purchaseOrderProduct->ordered_quantity = $record['Purchase Order Quantity'];
+                $purchaseOrderProduct->sku = $record['SKU Code'];
+                $purchaseOrderProduct->vendor_code = $record['Vendor Code'];
+                $purchaseOrderProduct->save();
+
+                $insertCount++;
+            }
+
+            if ($insertCount === 0) {
+                DB::rollBack();
+                return redirect()->back()->withErrors(['purchase_excel' => 'No valid data found in the CSV file.']);
+            }
+
+            DB::commit();
+            return redirect()->route('purchase.order.index')->with('success', 'CSV file imported successfully.');
+        } catch (\Exception $e) {
+            dd($e->getMessage());
+            DB::rollBack();
+            return redirect()->back()->withErrors(['error' => 'Something went wrong: ' . $e->getMessage()]);
+        }
     }
 
     public function index()
@@ -201,6 +258,21 @@ class PurchaseOrderController extends Controller
         $purchaseOrder->delete();
 
         return redirect()->route('purchase.order.index')->with('success', 'Purchase Order deleted successfully.');
+    }
+
+    public function SingleProductdelete($id)
+    {
+        $purchaseOrderProduct = PurchaseOrderProduct::findOrFail($id);
+        $purchaseOrderProduct->delete();
+
+        return redirect()->back()->with('success', 'Purchase Order deleted successfully.');
+    }
+
+    public function multiProductdelete(Request $request)
+    {
+        $ids = is_array($request->ids) ? $request->ids : explode(',', $request->ids);
+        PurchaseOrderProduct::destroy($ids);
+        return redirect()->back()->with('success', 'Purchase Order deleted successfully.');
     }
 
     public function updateStatus(Request $request)

@@ -29,7 +29,7 @@
             <div class="col-12 col-md-auto">
                 <div class="d-flex align-items-center gap-2 justify-content-end">
 
-                    <a href="{{ route('purches.store') }}" class="btn btn-primary px-4"><i
+                    <a href="{{ route('purches.create') }}" class="btn btn-primary px-4"><i
                             class="bi bi-plus-lg me-2"></i>Create Order</a>
                     <div>
                         <div class="btn-group">

@@ -4,6 +4,32 @@
     <main class="main-wrapper">
         <div class="main-content">
 
+            <div class="page-breadcrumb d-none d-sm-flex align-items-center justify-content-between mb-3">
+                <div>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb mb-0 p-0">
+                            <li class="breadcrumb-item"><a href="javascript:;"><i class="bx bx-home-alt"></i></a>
+                            </li>
+                            <li class="breadcrumb-item active" aria-current="page">Purchase Order Details</li>
+                        </ol>
+                    </nav>
+                </div>
+                <div class="justify-end">
+                    @empty($purchaseOrderProducts)
+                        <a href="{{ route('purches.create') }}" class="btn btn-primary px-4"><i
+                                class="bi bi-plus-lg me-2"></i>Create Order</a>
+                    @endempty
+                    @isset($purchaseOrderProducts[0])
+                        <a href="{{ route('purches.create', $purchaseOrderProducts[0]?->purchase_order_id) }}"
+                            class="btn btn-primary px-4"><i class="bi bi-plus-lg me-2"></i>Create Order</a>
+                    @endisset
+                    {{-- @if ($purchaseOrderProducts[0]?->purchase_order_id)
+                        <a href="{{ route('purches.create') }}" class="btn btn-primary px-4"><i
+                                class="bi bi-plus-lg me-2"></i>Create Order</a>
+                    @endif --}}
+                </div>
+            </div>
+
             <div class="div my-2">
                 <div class="row">
                     <div class="col-12">
@@ -11,8 +37,9 @@
                             <ul class="col-12 list-group list-group-flush">
                                 <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                                     <span><b>Order Id</b></span>
-                                    <span
-                                            id="purchase-order-id">{{ $purchaseOrderProducts[0]->purchase_order_id }}</span>
+                                    @isset($purchaseOrderProducts[0])
+                                        <span id="purchase-order-id">{{ $purchaseOrderProducts[0]->purchase_order_id }}</span>
+                                    @endisset
                                 </li>
                                 <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                                     <span><b>Vendor Name</b></span>
@@ -50,7 +77,9 @@
                                     <span><b>Status</b></span>
                                     <span>
                                         <b>
-                                            {{ $statuses[$purchaseOrderProducts[0]->purchaseOrder->status] ?? 'On Hold' }}
+                                            @isset($purchaseOrderProducts[0])
+                                                {{ $statuses[$purchaseOrderProducts[0]->purchaseOrder->status] ?? 'On Hold' }}
+                                            @endisset
                                         </b>
                                     </span>
                                 </li>
@@ -90,9 +119,11 @@
 
                                                                         <div class="modal-body">
                                                                             <div class="col-12 mb-3">
-                                                                                <input type="hidden"
-                                                                                    name="purchase_order_id"
-                                                                                    value="{{ $vendorPI->purchase_order_id }}">
+                                                                                @isset($purchaseOrderProducts[0])
+                                                                                    <input type="hidden"
+                                                                                        name="purchase_order_id"
+                                                                                        value="{{ $vendorPI->purchase_order_id }}">
+                                                                                @endisset
                                                                                 <input type="hidden" name="vendor_code"
                                                                                     value="{{ $vendorPI->vendor_code }}">
                                                                             </div>
@@ -147,9 +178,11 @@
 
                                                                         <div class="modal-body">
                                                                             <div class="col-12 mb-3">
-                                                                                <input type="hidden"
-                                                                                    name="purchase_order_id"
-                                                                                    value="{{ $purchaseOrderProducts[0]->purchase_order_id }}">
+                                                                                @isset($purchaseOrderProducts[0])
+                                                                                    <input type="hidden"
+                                                                                        name="purchase_order_id"
+                                                                                        value="{{ $purchaseOrderProducts[0]->purchase_order_id }}">
+                                                                                @endisset
                                                                                 <input type="hidden" name="vendor_code"
                                                                                     value="">
                                                                             </div>
@@ -219,8 +252,10 @@
 
                                             <div class="modal-body">
                                                 <div class="col-12 mb-3">
-                                                    <input type="hidden" name="purchase_order_id"
-                                                        value="{{ $purchaseOrderProducts[0]->purchase_order_id }}">
+                                                    @isset($purchaseOrderProducts[0])
+                                                        <input type="hidden" name="purchase_order_id"
+                                                            value="{{ $purchaseOrderProducts[0]->purchase_order_id }}">
+                                                    @endisset
                                                     <label for="vendor_code" class="form-label">Vendor Name
                                                         <span class="text-danger">*</span></label>
                                                     <select class="form-control" name="vendor_code" id="vendor_code">
@@ -283,6 +318,20 @@
                                     @endforelse
                                 </select>
                             </ul>
+                            <div class="ms-auto">
+                                <div class="btn-group">
+                                    <button type="button" class="btn border-2 border-primary">Action</button>
+                                    <button type="button"
+                                        class="btn border-2 border-primary split-bg-primary dropdown-toggle dropdown-toggle-split"
+                                        data-bs-toggle="dropdown"> <span class="visually-hidden">Toggle Dropdown</span>
+                                    </button>
+                                    <div class="dropdown-menu dropdown-menu-right dropdown-menu-lg-end">
+                                        <a class="dropdown-item cursor-pointer" id="delete-selected">Delete All</a>
+                                    </div>
+                                </div>
+                                {{-- <a href="{{ route('add-customer') }}" class="btn btn-primary px-4"><i
+                                        class="bi bi-plus-lg me-2"></i>Add Customers</a> --}}
+                            </div>
                         </div>
                     </div>
 
@@ -291,6 +340,9 @@
                             <table id="vendorPOTable" class="table align-middle">
                                 <thead class="table-light">
                                     <tr>
+                                        <th>
+                                            <input class="form-check-input" type="checkbox" id="select-all">
+                                        </th>
                                         <th>Order&nbsp;No</th>
                                         <th>Purchase&nbsp;Order&nbsp;No</th>
                                         <th>Vendor&nbsp;Code</th>
@@ -299,11 +351,16 @@
                                         <th>Title</th>
                                         <th>MRP</th>
                                         <th>Qty&nbsp;Requirement</th>
+                                        <th>Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @forelse($purchaseOrderProducts as $order)
                                         <tr>
+                                            <td>
+                                                <input class="form-check-input row-checkbox" type="checkbox"
+                                                    name="ids[]" value="{{ $order->id }}">
+                                            </td>
                                             <td>{{ $order->purchase_order_id }}</td>
                                             <td>{{ $order->purchase_order_id }}</td>
                                             <td>{{ $order->vendor_code }}</td>
@@ -312,10 +369,51 @@
                                             <td>{{ $order->tempProduct->description ?? 'NA' }}</td>
                                             <td>{{ $order->tempProduct->mrp ?? 'NA' }}</td>
                                             <td>{{ $order->ordered_quantity ?? 'NA' }}</td>
+                                            <td>
+                                                <div class="d-flex">
+                                                    {{-- 
+                                                    <a aria-label="anchor" href="{{ route('order.view', $order->id) }}"
+                                                        class="btn btn-icon btn-sm bg-primary-subtle me-1"
+                                                        data-bs-toggle="tooltip" data-bs-original-title="View">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="13"
+                                                            height="13" viewBox="0 0 24 24" fill="none"
+                                                            stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                                            stroke-linejoin="round"
+                                                            class="feather feather-eye text-primary">
+                                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                                            <circle cx="12" cy="12" r="3"></circle>
+                                                        </svg>
+                                                    </a> 
+                                                    --}}
+                                                    <form
+                                                        action="{{ route('purchase.order.product.delete', $order->id) }}"
+                                                        method="POST" onsubmit="return confirm('Are you sure?')">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit"
+                                                            class="btn btn-icon btn-sm bg-danger-subtle delete-row">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" width="13"
+                                                                height="13" viewBox="0 0 24 24" fill="none"
+                                                                stroke="currentColor" stroke-width="2"
+                                                                stroke-linecap="round" stroke-linejoin="round"
+                                                                class="feather feather-trash-2 text-danger">
+                                                                <polyline points="3 6 5 6 21 6"></polyline>
+                                                                <path
+                                                                    d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
+                                                                </path>
+                                                                <line x1="10" y1="11" x2="10"
+                                                                    y2="17"></line>
+                                                                <line x1="14" y1="11" x2="14"
+                                                                    y2="17"></line>
+                                                            </svg>
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            </td>
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="6">No Records Found</td>
+                                            <td colspan="10" class="text-center">No Records Found</td>
                                         </tr>
                                     @endforelse
                                 </tbody>
@@ -351,8 +449,10 @@
                                                 @method('POST')
                                                 <div class="modal-body">
                                                     <div class="col-12 mb-3">
-                                                        <input type="hidden" name="purchase_order_id"
-                                                            value="{{ $purchaseOrderProducts[0]->purchase_order_id }}">
+                                                        @isset($purchaseOrderProducts[0])
+                                                            <input type="hidden" name="purchase_order_id"
+                                                                value="{{ $purchaseOrderProducts[0]->purchase_order_id }}">
+                                                        @endisset
                                                         <label for="marital" class="form-label">Vendor Name
                                                             <span class="text-danger">*</span></label>
                                                         <select class="form-control" name="vendor_code" id="vendor_code">
@@ -401,8 +501,10 @@
                                                 @method('POST')
                                                 <div class="modal-body">
                                                     <div class="col-12 mb-3">
-                                                        <input type="hidden" name="purchase_order_id"
-                                                            value="{{ $purchaseOrderProducts[0]->purchase_order_id }}">
+                                                        @isset($purchaseOrderProducts[0])
+                                                            <input type="hidden" name="purchase_order_id"
+                                                                value="{{ $purchaseOrderProducts[0]->purchase_order_id }}">
+                                                        @endisset
                                                         <label for="marital" class="form-label">Vendor Name
                                                             <span class="text-danger">*</span></label>
                                                         <select class="form-control" name="vendor_code" id="vendor_code">
@@ -595,6 +697,40 @@
 
             // Trigger browser download
             window.location.href = downloadUrl;
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Select All functionality
+            const selectAll = document.getElementById('select-all');
+            const checkboxes = document.querySelectorAll('.row-checkbox');
+            selectAll.addEventListener('change', function() {
+                checkboxes.forEach(cb => cb.checked = selectAll.checked);
+            });
+
+            // Delete Selected functionality
+            document.getElementById('delete-selected').addEventListener('click', function() {
+                let selected = [];
+                document.querySelectorAll('.row-checkbox:checked').forEach(cb => {
+                    selected.push(cb.value);
+                });
+                if (selected.length === 0) {
+                    alert('Please select at least one record.');
+                    return;
+                }
+                if (confirm('Are you sure you want to delete selected records?')) {
+                    // Create a form and submit
+                    let form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = '{{ route('purchase.order.products.delete') }}';
+                    form.innerHTML = `
+                        @csrf
+                        <input type="hidden" name="_method" value="DELETE">
+                        <input type="hidden" name="ids" value="${selected.join(',')}">
+                    `;
+                    document.body.appendChild(form);
+                    form.submit();
+                }
+            });
         });
     </script>
 

@@ -130,16 +130,16 @@ Route::middleware('RolePermission:customer-handler')->group(function () {
         Route::post('/products', 'store')->name('products.store');
         // Route::get('/products/{id}', 'edit')->name('product.edit');
         Route::put('/products', 'update')->name('products.update');
-        Route::get('/products/{id}/edit','editProduct')->name('product.edit');
-        Route::get('/download-product-sheet','downloadProductSheet')->name('download.product.sheet');
-        Route::post('/products/update','updateProduct')->name('product.update');
+        Route::get('/products/{id}/edit', 'editProduct')->name('product.edit');
+        Route::get('/download-product-sheet', 'downloadProductSheet')->name('download.product.sheet');
+        Route::post('/products/update', 'updateProduct')->name('product.update');
 
         Route::delete('/product-order/{id}', 'destroy')->name('product.delete');
         // Route::delete('/products/{id}', 'destroy')->name('products.destroy');
         // Route::get('/products/view/{id}', 'view')->name('products.view');
         Route::delete('/products/delete-selected', 'deleteSelected')->name('delete.selected.product');
     });
-
+    
     // All Order page
     Route::controller(OrderController::class)->group(function () {
         Route::get('/order', 'index')->name('order.index');
@@ -155,8 +155,8 @@ Route::middleware('RolePermission:customer-handler')->group(function () {
         Route::get('/download-block-order-csv', 'downloadBlockedCSV')->name('download.order.excel');
         Route::get('/products-download-po-excel', 'downloadPoExcel')->name('products.download.po.excel');
     });
-
-
+    
+    
     // Place Order
     Route::controller(PurchaseOrderController::class)->group(function () {
         Route::get('/purchase-order', 'index')->name('purchase.order.index');
@@ -164,12 +164,15 @@ Route::middleware('RolePermission:customer-handler')->group(function () {
         Route::get('/purchase-order-view/{id}', 'view')->name('purchase.order.view');
         Route::post('/received-products-pi-update', 'update')->name('received.products.pi.update');
         Route::delete('/purchase-order-delete/{id}', 'delete')->name('purchase.order.delete');
+        Route::delete('/purchase-order-product-delete/{id}', 'SingleProductdelete')->name('purchase.order.product.delete');
+        Route::delete('/purchase-order-products-delete', 'multiProductdelete')->name('purchase.order.products.delete');
         Route::post('/received-products-status', 'updateStatus')->name('received.products.status');
         Route::post('/approve-vendor-pi-request', 'approveRequest')->name('approve.vendor.pi.request');
         Route::post('/purchase-order-invoice-store', 'invoiceStore')->name('purchase.order.invoice.store');
         Route::post('/purchase-order-grn-store', 'grnStore')->name('purchase.order.grn.store');
         Route::get('/download-vendor-po-excel', 'downloadVendorPO')->name('download.vendor.po.excel');
-        Route::get('/create', 'purchesstore')->name('purches.store');
+        Route::get('/purchase-order-create/{purchaseId?}', 'customPurchaseCreate')->name('purches.create');
+        Route::post('/purchase-custom-order-store', 'customPurchaseStore')->name('store.purchase.order');
     });
 
     // Report Details List

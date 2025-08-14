@@ -22,23 +22,25 @@
                     <div class="card">
                         <div class="card-body p-4">
                             <h5 class="mb-4">Create Purchase Order</h5>
-                            <form class="row g-3" action="#" method="POST">
+                            <form class="row g-3" action="{{ route('store.purchase.order') }}" method="POST" enctype="multipart/form-data">
                                 @csrf
                                 @method('POST')
+                                @isset($purchaseId)
+                                    <div class="col-md-4">
+                                        <label for="input1" class="form-label">Purchase Order No</label>
+                                        <input type="text" class="form-control @error('purchaseId') is-invalid @enderror"
+                                            value="{{ old('purchaseId', $purchaseId) }}" id="input1"
+                                            placeholder="Purchase Order No" name="purchaseId">
+                                        @error('purchaseId')
+                                            <div class="invalid-feedback">
+                                                {{ $message }}
+                                            </div>
+                                        @enderror
+                                    </div>
+                                @endisset
                                 <div class="col-md-4">
-                                    <label for="input1" class="form-label">Purchase Order No</label>
-                                    <input type="text" class="form-control @error('vendor_code') is-invalid @enderror"
-                                        value="{{ old('vendor_code') }}" id="input1" placeholder="Purchase Order No"
-                                        name="vendor_code">
-                                    @error('vendor_code')
-                                        <div class="invalid-feedback">
-                                            {{ $message }}
-                                        </div>
-                                    @enderror
-                                </div>
-                                <div class="col-md-4">
-                                    <label for="input9" class="form-label">Status</label>
-                                    <input type="file" class="form-control">
+                                    <label for="input9" class="form-label">Purchase Order</label>
+                                    <input type="file" name="purchase_excel" class="form-control">
                                 </div>
                                 <div class="col-md-4">
                                     <div class="d-md-flex d-grid align-items-center gap-3 mt-4">
