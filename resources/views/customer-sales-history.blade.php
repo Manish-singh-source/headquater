@@ -162,14 +162,15 @@
                                             <input class="form-check-input" type="checkbox">
                                         </th>
                                         <th>Reference</th>
-                                        <th>Customer Id</th>
+                                        {{-- <th>Customer Id</th> --}}
                                         <th>Customer Name</th>
                                         <th>Ordered Date</th>
-                                        <th>Delivery Date</th>
+                                        {{-- <th>Delivery Date</th> --}}
                                         <th>Total Amount</th>
-                                        <th>Paid</th>
-                                        <th>Due</th>
-                                        <th>Status</th>
+                                        {{-- <th>Paid</th> --}}
+                                        {{-- <th>Due</th> --}}
+                                        {{-- <th>Status</th> --}}
+                                        <th>Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -178,7 +179,7 @@
                                             <td>
                                                 <input class="form-check-input" type="checkbox">
                                             </td>
-                                            <td>#{{ $invoice->sales_order_id }}</td>
+                                            {{-- <td>#{{ $invoice->sales_order_id }}</td> --}}
                                             <td>{{ $invoice->invoice_number }}</td>
                                             <td>{{ $invoice->customer->client_name }}</td>
                                             <td>

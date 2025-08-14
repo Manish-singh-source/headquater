@@ -169,6 +169,7 @@
                                         <th>Sets/CTN</th>
                                         <th>MRP</th>
                                         <th>po&nbsp;status</th>
+                                        <th>Quantity</th>
                                         <th>Hold&nbsp;Qty</th>
                                         <th>Date</th>
                                     </tr>
@@ -195,6 +196,13 @@
                                             <td>{{ $product->product->sets_ctn }}</td>
                                             <td>{{ $product->product->mrp }}</td>
                                             <td>{{ $product->product->status === '1' ? 'Active' : 'Inactive' }}</td>
+                                            <td>
+                                                @if ($product->quantity)
+                                                    {{ $product->quantity }}
+                                                @else
+                                                    <span>NA</span>
+                                                @endif
+                                            </td>
                                             <td>
                                                 @if ($product->block_quantity)
                                                     <span class="badge text-danger bg-danger-subtle">

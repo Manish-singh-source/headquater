@@ -108,6 +108,7 @@
                                                 <th>PI&nbsp;Qty</th>
                                                 <th>Purchase&nbsp;Order&nbsp;No</th>
                                                 <th>Total&nbsp;Dispatch&nbsp;Qty</th>
+                                                <th>Final&nbsp;Dispatch&nbsp;Qty</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -132,6 +133,7 @@
                                                     <td>{{ $order->warehouseStockLog->block_quantity ?? '0' }}</td>
                                                     <td>{{ $order->ordered_quantity }}</td>
                                                     <td>{{ $order->tempOrder->po_number }}</td>
+                                                    <td>{{ $order->warehouseStockLog->block_quantity ?? '0' }}</td>
                                                     <td>{{ $order->warehouseStockLog->block_quantity ?? '0' }}</td>
                                                 </tr>
                                             @empty
