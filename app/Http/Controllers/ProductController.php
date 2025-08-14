@@ -95,7 +95,7 @@ class ProductController extends Controller
             DB::commit();
             return redirect()->route('products.index')->with('success', 'CSV file imported successfully.');
         } catch (\Exception $e) {
-            dd($e->getMessage());
+            // dd($e->getMessage());
             DB::rollBack();
             return redirect()->back()->withErrors(['error' => 'Something went wrong: ' . $e->getMessage()]);
         }

@@ -18,7 +18,7 @@ class ReportController extends Controller
         //     $q->where('status', 'pending');
         // }])->count();
 
-        $purchaseOrders = VendorPIProduct::with(['order' => function($q) {
+        $purchaseOrders = VendorPIProduct::with(['order' => function ($q) {
             $q->where('status', 'approve');
         }])->get();
         $purchaseOrdersTotal = VendorPIProduct::sum('mrp');
@@ -33,7 +33,10 @@ class ReportController extends Controller
     public function inventoryStockHistory()
     {
         $products = WarehouseStock::with('product', 'warehouse')->get();
-        return view('inventory-stock-history', compact('products'));
+        $productsSum = WarehouseStock::sum('quantity');
+        $blockProductsSum = WarehouseStock::sum('block_quantity');
+        // dd($productsSum);
+        return view('inventory-stock-history', compact('products', 'productsSum', 'blockProductsSum'));
     }
 
     public function customerSalesHistory()
@@ -41,6 +44,7 @@ class ReportController extends Controller
         $data = [
             'title' => 'Invoices',
             'invoices' => Invoice::with(['warehouse', 'customer', 'salesOrder'])->get(),
+            'invoicesAmountSum' => Invoice::sum('total_amount'),
         ];
         return view('customer-sales-history', $data);
     }

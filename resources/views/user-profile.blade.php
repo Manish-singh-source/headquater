@@ -105,8 +105,7 @@
                                 <div class="col-md-6">
                                     <label for="input4" class="form-label">Email</label>
                                     <input type="email" class="form-control @error('email') is-invalid @enderror"
-                                        name="email" id="input4" placeholder="Email"
-                                        value="{{ $user->email }}">
+                                        name="email" id="input4" placeholder="Email" value="{{ $user->email }}">
                                     @error('email')
                                         <div class="invalid-feedback">
                                             {{ $message }}
@@ -223,8 +222,10 @@
         </div>
     </main>
     <!--end main wrapper-->
+@endsection
 
 
+@section('script')
     <script>
         document.getElementById('inputProfileImage').addEventListener('change', function(event) {
             const file = event.target.files[0];
@@ -237,12 +238,6 @@
             }
         });
     </script>
-@endsection
-
-
-@section('script')
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"
-        integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
     <script>
         $(document).ready(function() {
 

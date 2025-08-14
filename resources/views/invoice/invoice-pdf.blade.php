@@ -52,9 +52,9 @@
         }
 
         /*
-1. Remove the margin in all browsers.
-2. Inherit line-height from `html` so users can set them as a class directly on the `html` element.
-*/
+            1. Remove the margin in all browsers.
+            2. Inherit line-height from `html` so users can set them as a class directly on the `html` element.
+        */
 
         body {
             margin: 0;
@@ -64,10 +64,10 @@
         }
 
         /*
-1. Add the correct height in Firefox.
-2. Correct the inheritance of border color in Firefox. (https://bugzilla.mozilla.org/show_bug.cgi?id=190655)
-3. Ensure horizontal rules are visible by default.
-*/
+            1. Add the correct height in Firefox.
+            2. Correct the inheritance of border color in Firefox. (https://bugzilla.mozilla.org/show_bug.cgi?id=190655)
+            3. Ensure horizontal rules are visible by default.
+        */
 
         hr {
             height: 0;
@@ -79,8 +79,8 @@
         }
 
         /*
-Add the correct text decoration in Chrome, Edge, and Safari.
-*/
+            Add the correct text decoration in Chrome, Edge, and Safari.
+        */
 
         abbr:where([title]) {
             -webkit-text-decoration: underline dotted;
@@ -88,8 +88,8 @@ Add the correct text decoration in Chrome, Edge, and Safari.
         }
 
         /*
-Remove the default font size and weight for headings.
-*/
+            Remove the default font size and weight for headings.
+        */
 
         h1,
         h2,
@@ -102,8 +102,8 @@ Remove the default font size and weight for headings.
         }
 
         /*
-Reset links to optimize for opt-in styling instead of opt-out.
-*/
+            Reset links to optimize for opt-in styling instead of opt-out.
+        */
 
         a {
             color: inherit;
@@ -111,8 +111,8 @@ Reset links to optimize for opt-in styling instead of opt-out.
         }
 
         /*
-Add the correct font weight in Edge and Safari.
-*/
+            Add the correct font weight in Edge and Safari.
+        */
 
         b,
         strong {
@@ -120,9 +120,9 @@ Add the correct font weight in Edge and Safari.
         }
 
         /*
-1. Use the user's configured `mono` font family by default.
-2. Correct the odd `em` font sizing in all browsers.
-*/
+            1. Use the user's configured `mono` font family by default.
+            2. Correct the odd `em` font sizing in all browsers.
+        */
 
         code,
         kbd,
@@ -135,16 +135,16 @@ Add the correct font weight in Edge and Safari.
         }
 
         /*
-Add the correct font size in all browsers.
-*/
+            Add the correct font size in all browsers.
+        */
 
         small {
             font-size: 80%;
         }
 
         /*
-Prevent `sub` and `sup` elements from affecting the line height in all browsers.
-*/
+            Prevent `sub` and `sup` elements from affecting the line height in all browsers.
+        */
 
         sub,
         sup {
@@ -163,10 +163,10 @@ Prevent `sub` and `sup` elements from affecting the line height in all browsers.
         }
 
         /*
-1. Remove text indentation from table contents in Chrome and Safari. (https://bugs.chromium.org/p/chromium/issues/detail?id=999088, https://bugs.webkit.org/show_bug.cgi?id=201297)
-2. Correct table border color inheritance in all Chrome and Safari. (https://bugs.chromium.org/p/chromium/issues/detail?id=935729, https://bugs.webkit.org/show_bug.cgi?id=195016)
-3. Remove gaps between table borders by default.
-*/
+            1. Remove text indentation from table contents in Chrome and Safari. (https://bugs.chromium.org/p/chromium/issues/detail?id=999088, https://bugs.webkit.org/show_bug.cgi?id=201297)
+            2. Correct table border color inheritance in all Chrome and Safari. (https://bugs.chromium.org/p/chromium/issues/detail?id=935729, https://bugs.webkit.org/show_bug.cgi?id=195016)
+            3. Remove gaps between table borders by default.
+        */
 
         table {
             text-indent: 0;
@@ -178,10 +178,10 @@ Prevent `sub` and `sup` elements from affecting the line height in all browsers.
         }
 
         /*
-1. Change the font styles in all browsers.
-2. Remove the margin in Firefox and Safari.
-3. Remove default padding in all browsers.
-*/
+            1. Change the font styles in all browsers.
+            2. Remove the margin in Firefox and Safari.
+            3. Remove default padding in all browsers.
+        */
 
         button,
         input,
@@ -209,8 +209,8 @@ Prevent `sub` and `sup` elements from affecting the line height in all browsers.
         }
 
         /*
-Remove the inheritance of text transform in Edge and Firefox.
-*/
+            Remove the inheritance of text transform in Edge and Firefox.
+        */
 
         button,
         select {
@@ -218,9 +218,9 @@ Remove the inheritance of text transform in Edge and Firefox.
         }
 
         /*
-1. Correct the inability to style clickable types in iOS and Safari.
-2. Remove default button styles.
-*/
+            1. Correct the inability to style clickable types in iOS and Safari.
+            2. Remove default button styles.
+        */
 
         button,
         [type='button'],
@@ -235,8 +235,8 @@ Remove the inheritance of text transform in Edge and Firefox.
         }
 
         /*
-Use the modern Firefox focus style for all focusable elements.
-*/
+            Use the modern Firefox focus style for all focusable elements.
+        */
 
         :-moz-focusring {
             outline: auto;
@@ -268,9 +268,9 @@ Correct the cursor style of increment and decrement buttons in Safari.
         }
 
         /*
-1. Correct the odd appearance in Chrome and Safari.
-2. Correct the outline style in Safari.
-*/
+            1. Correct the odd appearance in Chrome and Safari.
+            2. Correct the outline style in Safari.
+        */
 
         [type='search'] {
             -webkit-appearance: textfield;
@@ -727,7 +727,9 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
                         <tr>
                             <td class="w-full align-top">
                                 <div>
-                                    <img src="https://technofra.com/assets/image/icons/technofra_logo_White.png" class="h-12" />
+                                    <img src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('assets/images/invoice/brand-sample.png'))) }}"
+                                        alt="Logo">
+
                                 </div>
                             </td>
 

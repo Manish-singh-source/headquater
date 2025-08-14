@@ -25,7 +25,7 @@
                                 <div class="ms-2">
                                     <p class="text-dark mb-1">Total Customer Orders</p>
                                     <div class="d-inline-flex align-items-center flex-wrap gap-2">
-                                        <h4 class="text-dark">3</h4>
+                                        <h4 class="text-dark">{{ $invoices->count() }}</h4>
                                         <!-- <span class="badge badge-soft-primary text-dark"><i class="ti ti-arrow-up me-1"></i>+22%</span> -->
                                     </div>
                                 </div>
@@ -41,7 +41,7 @@
                                 <div class="ms-2">
                                     <p class="text-dark mb-1">Total Amount</p>
                                     <div class="d-inline-flex align-items-center flex-wrap gap-2">
-                                        <h4 class="text-dark">3K</h4>
+                                        <h4 class="text-dark">{{ $invoicesAmountSum }}</h4>
                                         <!-- <span class="badge badge-soft-primary text-dark"><i class="ti ti-arrow-up me-1"></i>+22%</span> -->
                                     </div>
                                 </div>
@@ -57,7 +57,7 @@
                                 <div class="ms-2">
                                     <p class="text-dark mb-1">Total Paid Amount</p>
                                     <div class="d-inline-flex align-items-center flex-wrap gap-2">
-                                        <h4 class="text-dark">20K</h4>
+                                        <h4 class="text-dark">0</h4>
                                         <!-- <span class="badge badge-soft-primary text-dark"><i class="ti ti-arrow-up me-1"></i>+22%</span> -->
                                     </div>
                                 </div>
@@ -73,7 +73,7 @@
                                 <div class="ms-2">
                                     <p class="text-dark mb-1">Total Due Amount</p>
                                     <div class="d-inline-flex align-items-center flex-wrap gap-2">
-                                        <h4 class="text-dark">2K</h4>
+                                        <h4 class="text-dark">0</h4>
                                         <!-- <span class="badge badge-soft-primary text-dark"><i class="ti ti-arrow-up me-1"></i>+22%</span> -->
                                     </div>
                                 </div>

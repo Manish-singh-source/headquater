@@ -25,7 +25,7 @@
                                 <div class="ms-2">
                                     <p class="text-dark mb-1">Total Product Available</p>
                                     <div class="d-inline-flex align-items-center flex-wrap gap-2">
-                                        <h4 class="text-dark">{{ $products->count() }}</h4>
+                                        <h4 class="text-dark">{{ $productsSum }}</h4>
                                         <!-- <span class="badge badge-soft-primary text-dark"><i class="ti ti-arrow-up me-1"></i>+22%</span> -->
                                     </div>
                                 </div>
@@ -41,7 +41,7 @@
                                 <div class="ms-2">
                                     <p class="text-dark mb-1">Total Hold Products</p>
                                     <div class="d-inline-flex align-items-center flex-wrap gap-2">
-                                        <h4 class="text-dark">0</h4>
+                                        <h4 class="text-dark">{{ $blockProductsSum }}</h4>
                                         <!-- <span class="badge badge-soft-primary text-dark"><i class="ti ti-arrow-up me-1"></i>+22%</span> -->
                                     </div>
                                 </div>

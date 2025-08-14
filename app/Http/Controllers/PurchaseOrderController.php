@@ -121,11 +121,12 @@ class PurchaseOrderController extends Controller
                 'purchase_order_id' => $request->purchase_order_id,
                 'vendor_code' => $request->vendor_code,
             ]);
-
+            
             foreach ($rows as $record) {
                 if (empty($record['Vendor SKU Code'])) continue;
-
+                
                 $vendorProducts[] = [
+                    'purchase_order_id' => $request->purchase_order_id,
                     'vendor_pi_id' => $vendorPi->id,
                     'vendor_sku_code' => Arr::get($record, 'Vendor SKU Code'),
                     'mrp' => Arr::get($record, 'MRP'),
@@ -246,7 +247,7 @@ class PurchaseOrderController extends Controller
             DB::commit();
             return redirect()->route('purchase.order.view', $request->purchase_order_id)->with('success', 'CSV file imported successfully.');
         } catch (\Exception $e) {
-            dd($e->getMessage());
+            // dd($e->getMessage());
             DB::rollBack();
             return redirect()->back()->withErrors(['error' => 'Something went wrong: ' . $e->getMessage()]);
         }
