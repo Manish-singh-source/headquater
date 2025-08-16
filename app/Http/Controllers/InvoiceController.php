@@ -69,6 +69,9 @@ class InvoiceController extends Controller
         //     'invoiceDetails' => InvoiceDetails::with('product')->where('invoice_id', $id)->get(),
         // ];
         // $pdf = PDF::loadView('invoice/invoice', $data);
-        return  PDF::loadView('invoice/invoice-pdf', $data)->stream('invoice.pdf');
+        // dd($data);
+        $pdf = PDF::loadView('invoice/invoice-pdf', $data);
+        $pdf->setPaper('a4', 'landscape');
+        return $pdf->stream('invoice.pdf');
     }
 }
