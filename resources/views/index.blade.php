@@ -28,7 +28,7 @@
                                 <div class="col-12 col-sm-7">
                                     @can('PermissionChecker', 'view_dashboard')
                                         <div class="d-flex align-items-center gap-3 mb-5">
-                                            <img src=""
+                                            <img src="{{ Auth::user()->profile_image ?? Avatar::create(Auth::user()->fname)->toBase64() }}"
                                                 class="rounded-circle bg-grd-info p-1" width="60" height="60"
                                                 alt="user">
                                             <div class="">
@@ -1181,18 +1181,18 @@
 
 @section('script')
     <!--plugins-->
-    <script src="assets/js/jquery.min.js"></script>
+    <script src="{{ asset('assets/js/jquery.min.js') }}"></script>
     <!--plugins-->
-    <script src="assets/plugins/perfect-scrollbar/js/perfect-scrollbar.js"></script>
-    <script src="assets/plugins/metismenu/metisMenu.min.js"></script>
-    <script src="assets/plugins/apexchart/apexcharts.min.js"></script>
-    <script src="assets/plugins/simplebar/js/simplebar.min.js"></script>
-    <script src="assets/plugins/peity/jquery.peity.min.js"></script>
+    <script src="{{ asset('assets/plugins/perfect-scrollbar/js/perfect-scrollbar.js') }}"></script>
+    <script src="{{ asset('assets/plugins/metismenu/metisMenu.min.js') }}"></script>
+    <script src="{{ asset('assets/plugins/apexchart/apexcharts.min.js') }}"></script>
+    <script src="{{ asset('assets/plugins/simplebar/js/simplebar.min.js') }}"></script>
+    <script src="{{ asset('assets/plugins/peity/jquery.peity.min.js') }}"></script>
     <script>
         $(".data-attributes span").peity("donut")
     </script>
-    <script src="assets/js/main.js"></script>
-    <script src="assets/js/dashboard1.js"></script>
+    <script src="{{ asset('assets/js/main.js') }}"></script>
+    <script src="{{ asset('assets/js/dashboard1.js') }}"></script>
     <script>
         new PerfectScrollbar(".user-list")
     </script>

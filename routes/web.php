@@ -204,6 +204,7 @@ Route::middleware('RolePermission:customer-handler')->group(function () {
         Route::get('/ready-to-ship', 'index')->name('readyToShip.index');
         Route::get('/ready-to-ship-detail/{id}', 'view')->name('readyToShip.view');
         Route::get('/ready-to-ship-detail-view/{id}/{c_id}', 'viewDetail')->name('readyToShip.view.detail');
+        Route::get('/product-issues', 'issuesProducts')->name('exceed.shortage.products');
     });
 
     Route::controller(TrackOrderController::class)->group(function () {

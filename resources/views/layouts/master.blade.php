@@ -198,9 +198,9 @@
                       <a class="nav-link dropdown-toggle dropdown-toggle-nocaret position-relative"
                           data-bs-auto-close="outside" data-bs-toggle="dropdown" href="javascript:;"><i
                               class="material-icons-outlined">notifications</i>
-                          <span class="badge-notify">5</span>
+                          {{-- <span class="badge-notify">5</span> --}}
                       </a>
-                      <div class="dropdown-menu dropdown-notify dropdown-menu-end shadow">
+                      {{-- <div class="dropdown-menu dropdown-notify dropdown-menu-end shadow">
                           <div class="px-3 py-1 d-flex align-items-center justify-content-between border-bottom">
                               <h5 class="notiy-title mb-0">Notifications</h5>
                               <div class="dropdown">
@@ -345,25 +345,26 @@
                                   </a>
                               </div>
                           </div>
-                      </div>
+                      </div> --}}
                   </li>
 
                   <li class="nav-item dropdown">
-                      <a href="javascrpt:;" class="dropdown-toggle dropdown-toggle-nocaret"
-                          data-bs-toggle="dropdown">
-                          <img src="" class="rounded-circle p-1 border" width="45"
-                              height="45" alt="">
+                      <a href="javascrpt:;" class="dropdown-toggle dropdown-toggle-nocaret" data-bs-toggle="dropdown">
+                          <img src="{{ Auth::user()->profile_image ?? Avatar::create(Auth::user()->fname)->toBase64() }}"
+                              class="rounded-circle p-1 border" width="45" height="45" alt="">
                       </a>
                       <div class="dropdown-menu dropdown-user dropdown-menu-end shadow">
                           <a class="dropdown-item  gap-2 py-2" href="javascript:;">
                               <div class="text-center">
-                                  <img src="" class="rounded-circle p-1 shadow mb-3"
-                                      width="90" height="90" alt="">
-                                  <h5 class="user-name mb-0 fw-bold">{{{ ucfirst(Auth::user()->fname) }}}</h5>
+                                  <img src="{{ Auth::user()->profile_image ?? Avatar::create(Auth::user()->fname)->toBase64() }}"
+                                      class="rounded-circle p-1 shadow mb-3" width="90" height="90"
+                                      alt="">
+                                  <h5 class="user-name mb-0 fw-bold">{{ ucfirst(Auth::user()->fname) }}</h5>
                               </div>
                           </a>
                           <hr class="dropdown-divider">
-                          <a class="dropdown-item d-flex align-items-center gap-2 py-2" href="{{ route('user-profile')}}"><i
+                          <a class="dropdown-item d-flex align-items-center gap-2 py-2"
+                              href="{{ route('user-profile') }}"><i
                                   class="material-icons-outlined">person_outline</i>Profile</a>
 
                           <a class="dropdown-item d-flex align-items-center gap-2 py-2"
@@ -453,11 +454,11 @@
                           @can('PermissionChecker', 'view_product')
                               <li><a href="{{ route('products.index') }}"><i
                                           class="material-icons-outlined">arrow_right</i>Products</a>
-                              </li>                              
+                              </li>
                               <li>
-                                <a href="{{ route('sku.mapping') }}"><i
+                                  <a href="{{ route('sku.mapping') }}"><i
                                           class="material-icons-outlined">arrow_right</i>SKU Mapping</a>
-                              </li> 
+                              </li>
                           @endcan
 
                           @can('PermissionChecker', 'view_warehouse')
@@ -546,6 +547,13 @@
                           </a>
                       </li>
                   @endcan
+                  <li>
+                      <a href="{{ route('exceed.shortage.products') }}">
+                          <div class="parent-icon"><i class="material-icons-outlined">local_shipping</i>
+                          </div>
+                          <div class="menu-title">Product Issues</div>
+                      </a>
+                  </li>
 
                   @can('PermissionChecker', 'view_track_order')
                       <li>
@@ -794,20 +802,20 @@
                   // Use regex for exact match
                   table1.column(1).search(selected ? '^' + selected + '$' : '', true, false).draw();
               });
-              
+
               $('#vendorSelect').on('change', function() {
                   var selected = $(this).val().trim();
 
                   // Use regex for exact match
                   table1.column(1).search(selected ? '^' + selected + '$' : '', true, false).draw();
               });
-              
-            //   $('#vendorSelect2').on('change', function() {
-            //       var selected = $(this).val().trim();
 
-            //       // Use regex for exact match
-            //       table1.column(1).search(selected ? '^' + selected + '$' : '', true, false).draw();
-            //   });
+              //   $('#vendorSelect2').on('change', function() {
+              //       var selected = $(this).val().trim();
+
+              //       // Use regex for exact match
+              //       table1.column(1).search(selected ? '^' + selected + '$' : '', true, false).draw();
+              //   });
 
               //   $(".vendorSelect").on('click', function() {
               //       // if($(this).className('active')) {
@@ -853,11 +861,11 @@
                   table2.column(1).search(selected ? '^' + selected + '$' : '', true, false).draw();
               });
 
-            //   $("#vendorSelect").on('change', function() {
-            //       var vendorSelected = $(this).val();
-            //       table2.column(1).search(vendorSelected ? '^' + vendorSelected + '$' : '', true, false)
-            //           .draw();
-            //   });
+              //   $("#vendorSelect").on('change', function() {
+              //       var vendorSelected = $(this).val();
+              //       table2.column(1).search(vendorSelected ? '^' + vendorSelected + '$' : '', true, false)
+              //           .draw();
+              //   });
               $("#vendorSelect2").on('change', function() {
                   var vendorSelected = $(this).val();
                   table2.column(1).search(vendorSelected ? '^' + vendorSelected + '$' : '', true, false)

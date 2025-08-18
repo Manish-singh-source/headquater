@@ -94,8 +94,8 @@
                                         <div class="mb-3">
                                             <label class="form-label">Choose Date</label>
                                             <div class="input-icon-start position-relative">
-                                                <input type="text" class="form-control date-range bookingrange"
-                                                    placeholder="dd/mm/yyyy - dd/mm/yyyy">
+                                                <input type="date" class="form-control date-range bookingrange"
+                                                    id="date-select" placeholder="dd/mm/yyyy">
                                                 <span class="input-icon-left">
                                                     <i class="ti ti-calendar"></i>
                                                 </span>
@@ -105,18 +105,15 @@
                                     <div class="col-md-3">
                                         <div class="mb-3">
                                             <label class="form-label">Customer Name</label>
-                                            <select id="status" class="form-select">
-                                                <option disabled selected>-- Select --</option>
-                                                <option>Carl</option>
-                                                <option>Minerva</option>
-                                                <option>Robert </option>
-                                                <option>Evans</option>
-                                                <option>Rameriz</option>
-                                                <option>Lamon</option>
+                                            <select id="customer-select" class="form-select">
+                                                <option selected>-- Select --</option>
+                                                @foreach ($customers as $customer)
+                                                    <option value="{{ $customer }}">{{ $customer }} </option>
+                                                @endforeach
                                             </select>
                                         </div>
                                     </div>
-                                    <div class="col-md-3">
+                                    {{-- <div class="col-md-3">
                                         <div class="mb-3">
                                             <label class="form-label">Payment Method</label>
                                             <select id="status" class="form-select">
@@ -137,7 +134,7 @@
                                                 <option>Paid</option>
                                             </select>
                                         </div>
-                                    </div>
+                                    </div> --}}
                                 </div>
                             </div>
                             <div class="col-lg-2">
@@ -155,7 +152,7 @@
                 <div class="card-body">
                     <div class="customer-table">
                         <div class="table-responsive white-space-nowrap">
-                            <table id="example" class="table table-striped">
+                            <table id="customer-sales-history-table" class="table table-striped">
                                 <thead class="table-light">
                                     <tr>
                                         <th>
@@ -212,4 +209,47 @@
 
         </div>
     </main>
+@endsection
+
+
+@section('script')
+    <script>
+        $(document).ready(function() {
+            var customerSalesHistoryTable = $('#customer-sales-history-table').DataTable({
+                "columnDefs": [{
+                        "orderable": false,
+                        //   "targets": [0, -1],
+                    } // Disable sorting for the 4th column (index starts at 0)
+                ],
+                lengthChange: true,
+                // buttons: ['excel', 'pdf', 'print']
+                // buttons: ['excel']
+                buttons: [{
+                    extend: 'excelHtml5',
+                    className: 'd-none', // hide the default button
+                }]
+            });
+
+            $('#date-select').on('change', function() {
+                var selected = $(this).val().trim();
+                // date formatting 
+                // if (selected) {
+                //     var parts = selected.split('-');
+                //     var formatted = parts[2] + '-' + parts[1] + '-' + parts[0];
+                // }
+
+                customerSalesHistoryTable.column(3).search(selected ? '^' + selected + '$' : '', true,
+                        false)
+                    .draw();
+            });
+
+            $('#customer-select').on('change', function() {
+                var selected = $(this).val().trim();
+                console.log(selected);
+                customerSalesHistoryTable.column(2).search(selected ? '^' + selected + '$' : '', true, false)
+                    .draw();
+            });
+
+        });
+    </script>
 @endsection

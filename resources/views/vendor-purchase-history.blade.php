@@ -57,7 +57,7 @@
                                 <div class="ms-2">
                                     <p class="text-dark mb-1">Total Paid Amount</p>
                                     <div class="d-inline-flex align-items-center flex-wrap gap-2">
-                                        <h4 class="text-dark">0</h4>
+                                        <h4 class="text-dark">{{ $purchaseOrders->sum('paid_amount') }}</h4>
                                         <!-- <span class="badge badge-soft-primary text-dark"><i class="ti ti-arrow-up me-1"></i>+22%</span> -->
                                     </div>
                                 </div>
@@ -73,7 +73,7 @@
                                 <div class="ms-2">
                                     <p class="text-dark mb-1">Total Due Amount</p>
                                     <div class="d-inline-flex align-items-center flex-wrap gap-2">
-                                        <h4 class="text-dark">0</h4>
+                                        <h4 class="text-dark">{{ $purchaseOrders->sum('due_amount') }}</h4>
                                         <!-- <span class="badge badge-soft-primary text-dark"><i class="ti ti-arrow-up me-1"></i>+22%</span> -->
                                     </div>
                                 </div>
@@ -95,7 +95,7 @@
                                             <label class="form-label">Choose Date</label>
                                             <div class="input-icon-start position-relative">
                                                 <input type="date" class="form-control date-range bookingrange"
-                                                    placeholder="dd/mm/yyyy - dd/mm/yyyy">
+                                                    id="date-select" placeholder="dd/mm/yyyy">
                                                 <span class="input-icon-left">
                                                     <i class="ti ti-calendar"></i>
                                                 </span>
@@ -105,18 +105,15 @@
                                     <div class="col-md-3">
                                         <div class="mb-3">
                                             <label class="form-label">Vendor Name</label>
-                                            <select id="status" class="form-select">
-                                                <option disabled selected>-- Select --</option>
-                                                <option>Carl</option>
-                                                <option>Minerva</option>
-                                                <option>Robert </option>
-                                                <option>Evans</option>
-                                                <option>Rameriz</option>
-                                                <option>Lamon</option>
+                                            <select id="vendor-select" class="form-select">
+                                                <option value="" selected>-- Select --</option>
+                                                @foreach ($purchaseOrdersVendors as $purchaseOrdersVendor)
+                                                    <option value="{{ $purchaseOrdersVendor }}">{{ $purchaseOrdersVendor }}</option>
+                                                @endforeach
                                             </select>
                                         </div>
                                     </div>
-                                    <div class="col-md-3">
+                                    {{-- <div class="col-md-3">
                                         <div class="mb-3">
                                             <label class="form-label">Payment Method</label>
                                             <select id="status" class="form-select">
@@ -137,7 +134,7 @@
                                                 <option>Paid</option>
                                             </select>
                                         </div>
-                                    </div>
+                                    </div> --}}
                                 </div>
                             </div>
                             <div class="col-lg-2">
@@ -164,18 +161,18 @@
                                     'ready_to_package' => 'Ready To Package',
                                 ];
                             @endphp
-                            <table id="example" class="table table-striped">
+                            <table id="vendor-purchase-history-table" class="table table-striped">
                                 <thead class="table-light">
                                     <tr>
                                         <th>
                                             <input class="form-check-input" type="checkbox">
                                         </th>
-                                        <th>Order Id</th>
-                                        <th>Vendor Name</th>
-                                        <th>Ordered Status</th>
-                                        <th>Ordered Quantity</th>
-                                        <th>Received Quantity</th>
-                                        <th>Total Amount</th>
+                                        <th>Order&nbsp;Id</th>
+                                        <th>Vendor&nbsp;Name</th>
+                                        <th>Ordered&nbsp;Status</th>
+                                        <th>Ordered&nbsp;Quantity</th>
+                                        <th>Received&nbsp;Quantity</th>
+                                        <th>Total&nbsp;Amount</th>
                                         <th>Paid</th>
                                         <th>Due</th>
                                         {{-- <th>Status</th> --}}
@@ -190,15 +187,15 @@
                                             <td>
                                                 <input class="form-check-input" type="checkbox">
                                             </td>
-                                            <td>{{ $purchaseOrder->vendor_pi_id }}</td>
-                                            <td>{{ $purchaseOrder->order->vendor_code ?? 'NA' }}</td>
-                                            <td>{{ ucfirst($purchaseOrder->order->status) }}</td>
-                                            <td>{{ $purchaseOrder->quantity_requirement }}</td>
-                                            <td>{{ $purchaseOrder->quantity_received }}</td>
-                                            <td>{{ $purchaseOrder->mrp }}</td>
-                                            <td>{{ $purchaseOrder->paid_amount ?? '0' }}</td>
-                                            <td>{{ $purchaseOrder->due_amount ?? '0' }}</td>
-                                            <td>{{ $purchaseOrder->order->created_at?->format('d-m-Y') ?? 'NA' }}</td>
+                                            <td>{{ $purchaseOrder->purchase_order_id }}</td>
+                                            <td>{{ $purchaseOrder->vendor_code ?? 'NA' }}</td>
+                                            <td>{{ ucfirst($purchaseOrder->status) }}</td>
+                                            <td>{{ $purchaseOrder->products->sum('quantity_requirement') }}</td>
+                                            <td>{{ $purchaseOrder->products->sum('quantity_received') }}</td>
+                                            <td>{{ $purchaseOrder->products->sum('mrp') }}</td>
+                                            <td>{{ $purchaseOrder->products->sum('paid_amount') ?? '0' }}</td>
+                                            <td>{{ $purchaseOrder->products->sum('due_amount') ?? '0' }}</td>
+                                            <td>{{ $purchaseOrder->created_at?->format('d-m-Y') ?? 'NA' }}</td>
                                             {{-- <td>
                                                 <div class="d-flex">
                                                     <a href="{{ route('purchase.order.view', $purchaseOrder->id) }}"
@@ -234,4 +231,43 @@
 
         </div>
     </main>
+@endsection
+
+
+@section('script')
+    <script>
+        $(document).ready(function() {
+            var vendorHistoryTable = $('#vendor-purchase-history-table').DataTable({
+                "columnDefs": [{
+                        "orderable": false,
+                        //   "targets": [0, -1],
+                    } // Disable sorting for the 4th column (index starts at 0)
+                ],
+                lengthChange: true,
+                // buttons: ['excel', 'pdf', 'print']
+                // buttons: ['excel']
+                buttons: [{
+                    extend: 'excelHtml5',
+                    className: 'd-none', // hide the default button
+                }]
+            });
+
+            $('#date-select').on('change', function() {
+                var selected = $(this).val().trim();
+                if (selected) {
+                    var parts = selected.split('-');
+                    var formatted = parts[2] + '-' + parts[1] + '-' + parts[0];
+                }
+                vendorHistoryTable.column(-1).search(formatted ? '^' + formatted + '$' : '', true, false)
+                    .draw();
+            });
+
+            $('#vendor-select').on('change', function() {
+                var selected = $(this).val().trim();
+                vendorHistoryTable.column(2).search(selected ? '^' + selected + '$' : '', true, false)
+                    .draw();
+            });
+
+        });
+    </script>
 @endsection

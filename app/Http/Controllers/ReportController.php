@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Invoice;
 use App\Models\PurchaseOrder;
 use App\Models\PurchaseOrderProduct;
+use App\Models\VendorPI;
 use App\Models\VendorPIProduct;
 use App\Models\WarehouseStock;
 
@@ -13,21 +14,10 @@ class ReportController extends Controller
     //
     public function vendorPurchaseHistory()
     {
-        // $purchaseOrders = PurchaseOrder::with('purchaseOrderProducts')->where('status', 'pending')->get();
-        // $purchaseOrdersCount = PurchaseOrderProduct::with(['purchaseOrder' => function($q) {
-        //     $q->where('status', 'pending');
-        // }])->count();
-
-        $purchaseOrders = VendorPIProduct::with(['order' => function ($q) {
-            $q->where('status', 'approve');
-        }])->get();
         $purchaseOrdersTotal = VendorPIProduct::sum('mrp');
-        // dd($purchaseOrders);
-        // $vendorCodes = $purchaseOrders->flatMap(function ($po) {
-        //     return $po->purchaseOrderProducts->pluck('vendor_code');
-        // })->unique()->values();
-        // dd($purchaseOrders);
-        return view('vendor-purchase-history', compact('purchaseOrders', 'purchaseOrdersTotal'));
+        $purchaseOrders = VendorPI::with('products')->where('status', 'approve')->get();
+        $purchaseOrdersVendors = VendorPI::where('status', 'approve')->pluck('vendor_code', 'vendor_code');
+        return view('vendor-purchase-history', compact('purchaseOrders', 'purchaseOrdersTotal', 'purchaseOrdersVendors'));
     }
 
     public function inventoryStockHistory()
@@ -45,7 +35,11 @@ class ReportController extends Controller
             'title' => 'Invoices',
             'invoices' => Invoice::with(['warehouse', 'customer', 'salesOrder'])->get(),
             'invoicesAmountSum' => Invoice::sum('total_amount'),
+            'customers' => Invoice::with('customer')->get()->map(function ($invoice) {
+                return $invoice->customer->client_name ?? null;
+            })
         ];
+        // dd($data);
         return view('customer-sales-history', $data);
     }
 }

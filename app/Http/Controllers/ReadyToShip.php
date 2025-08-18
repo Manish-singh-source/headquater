@@ -7,6 +7,7 @@ use App\Models\Invoice;
 use App\Models\SalesOrder;
 use Illuminate\Http\Request;
 use App\Models\SalesOrderProduct;
+use App\Models\VendorPIProduct;
 
 class ReadyToShip extends Controller
 {
@@ -52,5 +53,11 @@ class ReadyToShip extends Controller
 
         // dd(json_encode($salesOrder, JSON_PRETTY_PRINT));
         return view('readyToShip.view-detail', compact('salesOrder', 'customerInfo', 'invoice'));
+    }
+
+    public function issuesProducts()
+    {
+        $vendorOrders = VendorPIProduct::with(['order', 'product'])->where('issue_item', '>', 0)->get();
+        return view('exceed-shortage', compact('vendorOrders'));
     }
 }
