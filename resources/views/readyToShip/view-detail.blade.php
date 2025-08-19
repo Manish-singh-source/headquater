@@ -151,5 +151,5 @@
             </div>
         </div>
     </main>
-    <!--end main wrapper-->
+    
 @endsection

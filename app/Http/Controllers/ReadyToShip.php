@@ -46,11 +46,14 @@ class ReadyToShip extends Controller
             'orderedProducts.customer',
             'orderedProducts.warehouseStock',
             'orderedProducts.warehouseStockLog'
-        ])->findOrFail($id);
+            ])->with(['orderedProducts' => function($q) use ($c_id) {
+                $q->where('customer_id', $c_id);
+            }])->findOrFail($id);
 
         $customerInfo = Customer::with('address')->find($c_id);
         $invoice = Invoice::where('customer_id', $c_id)->where('sales_order_id', $id)->first();
 
+        // dd($salesOrder->orderedProducts);
         // dd(json_encode($salesOrder, JSON_PRETTY_PRINT));
         return view('readyToShip.view-detail', compact('salesOrder', 'customerInfo', 'invoice'));
     }

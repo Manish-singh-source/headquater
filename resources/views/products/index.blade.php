@@ -2,7 +2,7 @@
 @section('main-content')
     <main class="main-wrapper">
         <div class="main-content">
-            <div class="page-breadcrumb d-none d-sm-flex align-items-center mb-3">
+            <div class="page-breadcrumb d-none d-sm-flex align-items-center justify-content-between mb-3">
                 <div>
                     <nav aria-label="breadcrumb">
                         <ol class="breadcrumb mb-0 p-0">
@@ -12,73 +12,79 @@
                         </ol>
                     </nav>
                 </div>
-            </div>
-            <!--end breadcrumb-->
+                <div class="justify-end">
 
-            <div class="row g-3 justify-content-end">
-                <div class="col-12 col-md-auto">
-                    <div class="d-flex align-items-center gap-2 justify-content-lg-end">
-                        <button class="btn border-2 border-primary" data-bs-toggle="modal" data-bs-target="#staticBackdrop1"
-                            class="btn border-2 border-primary">
-                            Update Products
-                        </button>
-
-                        <!-- Modal -->
-                        <div class="modal fade" id="staticBackdrop1" data-bs-backdrop="static" data-bs-keyboard="false"
-                            tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-                            <div class="modal-dialog">
-                                <div class="modal-content">
-                                    <form action="{{ route('products.update') }}" method="POST"
-                                        enctype="multipart/form-data">
-                                        @csrf
-                                        @method('PUT')
-                                        <div class="modal-header">
-                                            <h1 class="modal-title fs-5" id="staticBackdropLabel">Update Products</h1>
-                                            <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                                aria-label="Close"></button>
-                                        </div>
-
-                                        <div class="modal-body">
-                                            <div class="col-12 mb-3">
-                                                <label for="products_excel" class="form-label">Products List (CSV/ELSX)
-                                                    <span class="text-danger">*</span></label>
-                                                <input type="file" name="products_excel" id="products_excel"
-                                                    class="form-control" value="" required="">
-                                            </div>
-                                        </div>
-                                        <div class="modal-footer">
-                                            <button type="button" class="btn btn-secondary"
-                                                data-bs-dismiss="modal">Close</button>
-                                            <button type="submit" id="holdOrder" class="btn btn-primary">Submit</button>
-                                        </div>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
-
-                        <button class="btn btn-icon border-2 border-primary me-1" id="exportData">
-                            <i class="fa fa-file-excel-o"></i> Export to Excel
-                        </button>
-
-                        <a href="{{ route('products.create') }}" class="btn border-2 border-primary px-4"></i>Add
-                            Product</a>
-                        <div class="ms-auto">
-                            <div class="btn-group">
-                                <button type="button" class="btn border-2 border-primary">Action</button>
-                                <button type="button"
-                                    class="btn border-2 border-primary split-bg-primary dropdown-toggle dropdown-toggle-split"
-                                    data-bs-toggle="dropdown"> <span class="visually-hidden">Toggle Dropdown</span>
+                    <div class="row g-3 justify-content-end">
+                        <div class="col-12 col-md-auto">
+                            <div class="d-flex align-items-center gap-2 justify-content-lg-end">
+                                <button class="btn border-2 border-primary" data-bs-toggle="modal"
+                                    data-bs-target="#staticBackdrop1" class="btn border-2 border-primary">
+                                    Update Products
                                 </button>
-                                <div class="dropdown-menu dropdown-menu-right dropdown-menu-lg-end">
-                                    <a class="dropdown-item cursor-pointer" id="delete-selected">Delete All</a>
+
+                                <!-- Modal -->
+                                <div class="modal fade" id="staticBackdrop1" data-bs-backdrop="static"
+                                    data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel"
+                                    aria-hidden="true">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <form action="{{ route('products.update') }}" method="POST"
+                                                enctype="multipart/form-data">
+                                                @csrf
+                                                @method('PUT')
+                                                <div class="modal-header">
+                                                    <h1 class="modal-title fs-5" id="staticBackdropLabel">Update Products
+                                                    </h1>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                        aria-label="Close"></button>
+                                                </div>
+
+                                                <div class="modal-body">
+                                                    <div class="col-12 mb-3">
+                                                        <label for="products_excel" class="form-label">Products List
+                                                            (CSV/ELSX)
+                                                            <span class="text-danger">*</span></label>
+                                                        <input type="file" name="products_excel" id="products_excel"
+                                                            class="form-control" value="" required="">
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary"
+                                                        data-bs-dismiss="modal">Close</button>
+                                                    <button type="submit" id="holdOrder"
+                                                        class="btn btn-primary">Submit</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <button class="btn btn-icon border-2 border-primary me-1" id="exportData">
+                                    <i class="fa fa-file-excel-o"></i> Export to Excel
+                                </button>
+
+                                <a href="{{ route('products.create') }}" class="btn border-2 border-primary px-4"></i>Add
+                                    Product</a>
+                                <div class="ms-auto">
+                                    <div class="btn-group">
+                                        <button type="button" class="btn border-2 border-primary">Action</button>
+                                        <button type="button"
+                                            class="btn border-2 border-primary split-bg-primary dropdown-toggle dropdown-toggle-split"
+                                            data-bs-toggle="dropdown"> <span class="visually-hidden">Toggle Dropdown</span>
+                                        </button>
+                                        <div class="dropdown-menu dropdown-menu-right dropdown-menu-lg-end">
+                                            <a class="dropdown-item cursor-pointer" id="delete-selected">Delete All</a>
+                                        </div>
+                                    </div>
+                                    {{-- <a href="{{ route('add-customer') }}" class="btn btn-primary px-4"><i
+                                class="bi bi-plus-lg me-2"></i>Add Customers</a> --}}
                                 </div>
                             </div>
-                            {{-- <a href="{{ route('add-customer') }}" class="btn btn-primary px-4"><i
-                                class="bi bi-plus-lg me-2"></i>Add Customers</a> --}}
                         </div>
                     </div>
                 </div>
             </div>
+
             <div class="card mt-4">
                 <div class="card-body">
                     <div class="product-table">
@@ -90,7 +96,7 @@
                                             <input class="form-check-input" type="checkbox" id="select-all">
                                         </th>
                                         <th>Warehouse</th>
-                                        <th>SKU Code</th>
+                                        <th>SKU&nbsp;Code</th>
                                         <th>EAN&nbsp;Code</th>
                                         <th>Brand</th>
                                         <th>Brand&nbsp;Title</th>

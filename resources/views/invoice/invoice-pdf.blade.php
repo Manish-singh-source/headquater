@@ -161,7 +161,7 @@
     <table>
         <tr>
             <td>Total Invoice amount in words:</td>
-            <td colspan="3">{{ $totalAmountSum }}</td>
+            <td colspan="3">{{ amountInWords(floor($totalAmountSum)) }}</td>
         </tr>
     </table>
 

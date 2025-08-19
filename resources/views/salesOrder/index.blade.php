@@ -2,8 +2,8 @@
 @section('main-content')
     <main class="main-wrapper">
         <div class="main-content">
-            <div class="page-breadcrumb d-none d-sm-flex align-items-center mb-3">
-                <div class="">
+            <div class="page-breadcrumb d-none d-sm-flex align-items-center justify-content-between mb-3">
+                <div>
                     <nav aria-label="breadcrumb">
                         <ol class="breadcrumb mb-0 p-0">
                             <li class="breadcrumb-item"><a href="javascript:;"><i class="bx bx-home-alt"></i></a>
@@ -12,21 +12,21 @@
                         </ol>
                     </nav>
                 </div>
-            </div>
+                <div class="justify-end">
+                    <div class="row g-3 justify-content-end">
+                        <div class="col-12 col-md-auto">
+                            <div class="d-flex align-items-center gap-2 justify-content-lg-end">
+                                {{-- <button class="btn btn-filter px-4"><i class="bi bi-box-arrow-right me-2"></i>Export</button> --}}
+                                @can('PermissionChecker', 'create_sale')
+                                    <a href="{{ route('order.create') }}"><button class="btn btn-primary px-4"><i
+                                                class="bi bi-plus-lg me-2"></i>New Order</button></a>
+                                @endcan
 
-            <div class="row g-3 justify-content-end">
-                <div class="col-12 col-md-auto">
-                    <div class="d-flex align-items-center gap-2 justify-content-lg-end">
-                        {{-- <button class="btn btn-filter px-4"><i class="bi bi-box-arrow-right me-2"></i>Export</button> --}}
-                        @can('PermissionChecker', 'create_sale')
-                            <a href="{{ route('order.create') }}"><button class="btn btn-primary px-4"><i
-                                        class="bi bi-plus-lg me-2"></i>New Order</button></a>
-                        @endcan
-
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-
 
             <div class="card mt-4">
                 <div class="card-body">

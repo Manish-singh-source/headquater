@@ -3,8 +3,7 @@
     <!--start main wrapper-->
     <main class="main-wrapper">
         <div class="main-content">
-            <!--breadcrumb-->
-            <div class="page-breadcrumb d-none d-sm-flex align-items-center mb-3">
+            <div class="page-breadcrumb d-none d-sm-flex align-items-center justify-content-between mb-3">
                 <div>
                     <nav aria-label="breadcrumb">
                         <ol class="breadcrumb mb-0 p-0">
@@ -14,30 +13,30 @@
                         </ol>
                     </nav>
                 </div>
-            </div>
-            <!--end breadcrumb-->
+                <div class="justify-end">
 
-            <div class="row g-3 justify-content-end">
-                
-              
-                <div class="col-12 col-md-auto">
-                    <div class="d-flex align-items-center gap-2 justify-content-lg-end">
-                        <a href="{{ route('staff.create') }}" class="btn btn-primary px-4">Add Staff</a>
-                            <div class="ms-auto">
-                            <div class="btn-group">
-                                <button type="button" class="btn btn-outline-primary">Action</button>
-                                <button type="button"
-                                    class="btn btn-outline-primary split-bg-primary dropdown-toggle dropdown-toggle-split"
-                                    data-bs-toggle="dropdown"> <span class="visually-hidden">Toggle Dropdown</span>
-                                </button>
-                                <div class="dropdown-menu dropdown-menu-right dropdown-menu-lg-end">
-                                    <a class="dropdown-item cursor-pointer" id="delete-selected">Delete All</a>
+                    <div class="row g-3 justify-content-end">
+                        <div class="col-12 col-md-auto">
+                            <div class="d-flex align-items-center gap-2 justify-content-lg-end">
+                                <a href="{{ route('staff.create') }}" class="btn btn-primary px-4">Add Staff</a>
+                                <div class="ms-auto">
+                                    <div class="btn-group">
+                                        <button type="button" class="btn btn-outline-primary">Action</button>
+                                        <button type="button"
+                                            class="btn btn-outline-primary split-bg-primary dropdown-toggle dropdown-toggle-split"
+                                            data-bs-toggle="dropdown"> <span class="visually-hidden">Toggle Dropdown</span>
+                                        </button>
+                                        <div class="dropdown-menu dropdown-menu-right dropdown-menu-lg-end">
+                                            <a class="dropdown-item cursor-pointer" id="delete-selected">Delete All</a>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div><!--end row-->
+            </div>
+
 
             <div class="card mt-4">
                 <div class="card-body">
@@ -47,7 +46,7 @@
                                 <thead class="table-light">
                                     <tr>
                                         <th>
-                                           <input class="form-check-input" type="checkbox" id="select-all">
+                                            <input class="form-check-input" type="checkbox" id="select-all">
                                         </th>
                                         <th>Name</th>
                                         <th>Email</th>
@@ -62,7 +61,7 @@
                                     @foreach ($staffs as $staff)
                                         <tr>
                                             <td>
-                                               <input class="form-check-input row-checkbox" type="checkbox" name="ids[]"
+                                                <input class="form-check-input row-checkbox" type="checkbox" name="ids[]"
                                                     value="{{ $staff->id }}">
                                             </td>
                                             <td>
@@ -78,10 +77,10 @@
                                             <td>{{ $staff->phone }}</td>
 
 
-                                            <td>{{ $staff->role->name}}</td>
+                                            <td>{{ $staff->role->name }}</td>
 
                                             <td>
-                                               <div class="form-switch form-check-success">
+                                                <div class="form-switch form-check-success">
                                                     <input class="form-check-input status-switch7" type="checkbox"
                                                         role="switch" data-staff-id="{{ $staff->id }}"
                                                         {{ $staff->status == 1 ? 'checked' : '' }}>
@@ -118,26 +117,28 @@
                                                             </path>
                                                         </svg>
                                                     </a>
-                                                    <form action="{{ route('staff.destroy', $staff->id) }}"
-                                                        method="POST" onsubmit="return confirm('Are you sure?')">
+                                                    <form action="{{ route('staff.destroy', $staff->id) }}" method="POST"
+                                                        onsubmit="return confirm('Are you sure?')">
                                                         @csrf
                                                         @method('DELETE')
-                                                        <button type="submit" class="btn btn-icon btn-sm bg-danger-subtle me-1"><svg xmlns="http://www.w3.org/2000/svg" width="13"
-                                                            height="13" viewBox="0 0 24 24" fill="none"
-                                                            stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                                            stroke-linejoin="round"
-                                                            class="feather feather-trash-2 text-danger">
-                                                            <polyline points="3 6 5 6 21 6"></polyline>
-                                                            <path
-                                                                d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
-                                                            </path>
-                                                            <line x1="10" y1="11" x2="10"
-                                                                y2="17"></line>
-                                                            <line x1="14" y1="11" x2="14"
-                                                                y2="17"></line>
-                                                        </svg></button>
+                                                        <button type="submit"
+                                                            class="btn btn-icon btn-sm bg-danger-subtle me-1"><svg
+                                                                xmlns="http://www.w3.org/2000/svg" width="13"
+                                                                height="13" viewBox="0 0 24 24" fill="none"
+                                                                stroke="currentColor" stroke-width="2"
+                                                                stroke-linecap="round" stroke-linejoin="round"
+                                                                class="feather feather-trash-2 text-danger">
+                                                                <polyline points="3 6 5 6 21 6"></polyline>
+                                                                <path
+                                                                    d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
+                                                                </path>
+                                                                <line x1="10" y1="11" x2="10"
+                                                                    y2="17"></line>
+                                                                <line x1="14" y1="11" x2="14"
+                                                                    y2="17"></line>
+                                                            </svg></button>
                                                     </form>
-                                                    
+
                                                 </div>
                                             </td>
                                         </tr>
@@ -153,11 +154,10 @@
         </div>
     </main>
     <!--end main wrapper-->
-  <!--plugins-->
-
+    <!--plugins-->
 @endsection
 @section('script')
-     <script>
+    <script>
         $(document).on('change', '.status-switch7', function() {
             var staffId = $(this).data('staff-id');
             var status = $(this).is(':checked') ? 1 : 0;
@@ -183,7 +183,7 @@
             });
         });
     </script>
-        <script>
+    <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Select All functionality
             const selectAll = document.getElementById('select-all');

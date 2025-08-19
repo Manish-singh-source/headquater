@@ -88,17 +88,17 @@
                                             <th>Brand</th>
                                             <th>Brand&nbsp;Title</th>
                                             <th>SKU</th>
-                                            <th>EAN Code</th>
+                                            <th>EAN&nbsp;Code</th>
                                             <th>Category </th>
                                             <th>PCS/Set</th>
                                             <th>Sets/CTN</th>
                                             <th>Vendor</th>
-                                            <th>Vendor Purchase Rate</th>
+                                            <th>Vendor&nbsp;Purchase&nbsp;Rate</th>
                                             <th>GST</th>
-                                            <th>Vendor Net Landing</th>
+                                            <th>Vendor&nbsp;Net&nbsp;Landing</th>
                                             <th>MRP</th>
                                             <th>Status</th>
-                                            <th>Hold Qty</th>
+                                            <th>Hold&nbsp;Qty</th>
                                             <th>Date</th>
                                         </tr>
                                     </thead>

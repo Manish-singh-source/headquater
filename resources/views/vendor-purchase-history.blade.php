@@ -182,7 +182,6 @@
                                 </thead>
                                 <tbody>
                                     @forelse($purchaseOrders as $purchaseOrder)
-                                        {{-- @foreach ($purchaseOrder->order as $order) --}}
                                         <tr>
                                             <td>
                                                 <input class="form-check-input" type="checkbox">
@@ -196,28 +195,10 @@
                                             <td>{{ $purchaseOrder->products->sum('paid_amount') ?? '0' }}</td>
                                             <td>{{ $purchaseOrder->products->sum('due_amount') ?? '0' }}</td>
                                             <td>{{ $purchaseOrder->created_at?->format('d-m-Y') ?? 'NA' }}</td>
-                                            {{-- <td>
-                                                <div class="d-flex">
-                                                    <a href="{{ route('purchase.order.view', $purchaseOrder->id) }}"
-                                                        class="btn btn-icon btn-sm bg-primary-subtle me-1"
-                                                        data-bs-toggle="tooltip" title="View">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="13"
-                                                            height="13" viewBox="0 0 24 24" fill="none"
-                                                            stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                                            stroke-linejoin="round"
-                                                            class="feather feather-eye text-primary">
-                                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z">
-                                                            </path>
-                                                            <circle cx="12" cy="12" r="3"></circle>
-                                                        </svg>
-                                                    </a>
-                                                </div>
-                                            </td> --}}
                                         </tr>
-                                        {{-- @endforeach --}}
                                     @empty
                                         <tr>
-                                            <td colspan="7" class="text-center">No Records Found</td>
+                                            <td colspan="10" class="text-center">No Records Found</td>
                                         </tr>
                                     @endforelse
 

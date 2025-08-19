@@ -46,7 +46,6 @@ class OrderController extends Controller
 
     public function store(Request $request)
     {
-
         // get warehouse id, group id and po file 
         $warehouse_id = $request->warehouse_id;
         $customer_group_id = $request->customer_group_id;
@@ -346,6 +345,7 @@ class OrderController extends Controller
                     'product_mrp' => Arr::get($record, 'Product MRP') ?? '',
                     'rate_confirmation' => Arr::get($record, 'Rate Confirmation') ?? '',
                     'po_qty' => Arr::get($record, 'Qty Requirement') ?? '',
+                    'block' => Arr::get($record, 'Qty Requirement') ?? '',
                     'created_at' => now(),
                     'updated_at' => now(),
                 ];
@@ -353,20 +353,20 @@ class OrderController extends Controller
                 $salesOrderProductUpdate->ordered_quantity = $record['Qty Requirement'];
                 $salesOrderProductUpdate->save();
 
-                $warehouseStockBlockLogsUpdate = WarehouseStockLog::where('sku', $record['SKU Code'])->where('sales_order_id', $request->sales_order_id)->first();
+                $warehouseStockBlockLogsUpdate = WarehouseStockLog::where('sku', $record['SKU Code'])->where('sales_order_id', $request->sales_order_id)->where('customer_id', $customerInfo->id)->first();
                 $warehouseStockUpdate = WarehouseStock::where('sku', $record['SKU Code'])->first();
                 // $warehouseStockBlockLogsUpdate->block_quantity =  $record['Qty Requirement'];
 
-                // dd($record['Qty Requirement']);
                 if ($warehouseStockBlockLogsUpdate->block_quantity > $record['Qty Requirement']) {
                     $blockQuantityUpdated = $warehouseStockBlockLogsUpdate->block_quantity - $record['Qty Requirement'];
-                    // dd($blockQuantityUpdated);
                     $warehouseStockBlockLogsUpdate->block_quantity = $warehouseStockBlockLogsUpdate->block_quantity - $blockQuantityUpdated;
-                    $warehouseStockUpdate->block_quantity =  $warehouseStockUpdate->block_quantity - $blockQuantityUpdated;
+
+                    $blockStockQuantityUpdated = $warehouseStockUpdate->block_quantity - $record['Qty Requirement'];
+                    $warehouseStockUpdate->block_quantity =  $warehouseStockUpdate->block_quantity - $blockStockQuantityUpdated;
                 } else {
                     $blockStock = $record['Qty Requirement'] - (int)$warehouseStockBlockLogsUpdate->block_quantity;
                     $available = $warehouseStockUpdate->quantity - $warehouseStockUpdate->block_quantity;
-                    // dd($warehouseStockUpdate->block_quantity);
+
                     if ($available >= $blockStock) {
                         $warehouseStockBlockLogsUpdate->block_quantity += $blockStock;
                         $warehouseStockUpdate->block_quantity += $blockStock;
@@ -374,7 +374,6 @@ class OrderController extends Controller
                         $warehouseStockBlockLogsUpdate->block_quantity += $available;
                         $warehouseStockUpdate->block_quantity += $available;
                     }
-                    // dd($available);
 
                     // what about extra ?? 
                 }
@@ -385,17 +384,17 @@ class OrderController extends Controller
                 $insertCount++;
             }
 
+            TempOrder::upsert($products, ['id']);
+
             if ($insertCount === 0) {
                 DB::rollBack();
                 return redirect()->back()->withErrors(['products_excel' => 'No valid data found in the file.']);
             }
 
-            TempOrder::upsert($products, ['id']);
-
             DB::commit();
             return redirect()->route('order.index')->with('success', 'CSV file imported successfully.');
         } catch (\Exception $e) {
-            // dd($e->getMessage());
+            dd($e->getMessage());
             DB::rollBack();
             return redirect()->back()->withErrors(['error' => 'Something went wrong: ' . $e->getMessage()]);
         }
@@ -485,7 +484,6 @@ class OrderController extends Controller
                 $invoice->total_amount = $salesOrder->orderedProducts->sum(function ($product) {
                     return $product->ordered_quantity * $product->product->price; // Assuming 'price' is the field in Product model
                 });
-                // $invoiceDetails = new InvoiceDetails();
                 $invoice->save();
 
                 $invoiceDetails = [];

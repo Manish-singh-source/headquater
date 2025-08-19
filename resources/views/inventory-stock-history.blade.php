@@ -94,29 +94,27 @@
                                         <div class="mb-3">
                                             <label class="form-label">Choose Date</label>
                                             <div class="input-icon-start position-relative">
-                                                <input type="text" class="form-control date-range bookingrange"
-                                                    placeholder="dd/mm/yyyy - dd/mm/yyyy">
+                                                <input type="date" class="form-control date-range bookingrange"
+                                                    id="date-select" placeholder="dd/mm/yyyy">
                                                 <span class="input-icon-left">
                                                     <i class="ti ti-calendar"></i>
                                                 </span>
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="col-md-3">
+                                    {{-- <div class="col-md-3">
                                         <div class="mb-3">
                                             <label class="form-label">Vendor Name</label>
-                                            <select id="status" class="form-select">
-                                                <option disabled selected>-- Select --</option>
-                                                <option>Carl</option>
-                                                <option>Minerva</option>
-                                                <option>Robert </option>
-                                                <option>Evans</option>
-                                                <option>Rameriz</option>
-                                                <option>Lamon</option>
+                                            <select id="vendor-select" class="form-select">
+                                                <option value="" selected>-- Select --</option>
+                                                @foreach ($purchaseOrdersVendors as $purchaseOrdersVendor)
+                                                    <option value="{{ $purchaseOrdersVendor }}">{{ $purchaseOrdersVendor }}
+                                                    </option>
+                                                @endforeach
                                             </select>
                                         </div>
-                                    </div>
-                                    <div class="col-md-3">
+                                    </div> --}}
+                                    {{-- <div class="col-md-3">
                                         <div class="mb-3">
                                             <label class="form-label">Product Status</label>
                                             <select id="status" class="form-select">
@@ -125,8 +123,8 @@
                                                 <option>Hold</option>
                                             </select>
                                         </div>
-                                    </div>
-                                    <div class="col-md-3">
+                                    </div> --}}
+                                    {{-- <div class="col-md-3">
                                         <div class="mb-3">
                                             <label class="form-label">Sort</label>
                                             <select id="status" class="form-select">
@@ -137,7 +135,7 @@
                                                 <option>Low To High</option>
                                             </select>
                                         </div>
-                                    </div>
+                                    </div> --}}
                                 </div>
                             </div>
                             <div class="col-lg-2">
@@ -155,7 +153,7 @@
                 <div class="card-body">
                     <div class="product-table">
                         <div class="table-responsive white-space-nowrap">
-                            <table id="example" class="table align-middle">
+                            <table id="inventory-stock-history-table" class="table align-middle">
                                 <thead class="table-light">
                                     <tr>
                                         <th>
@@ -178,8 +176,8 @@
                                     @foreach ($products as $product)
                                         <tr>
                                             <td>
-                                                <input class="form-check-input row-checkbox" type="checkbox"
-                                                    name="ids[]" value="{{ $product->id }}">
+                                                <input class="form-check-input row-checkbox" type="checkbox" name="ids[]"
+                                                    value="{{ $product->id }}">
                                             </td>
                                             <td>
                                                 <div class="d-flex align-items-center gap-3">
@@ -211,7 +209,7 @@
                                                     <span>NA</span>
                                                 @endif
                                             </td>
-                                            <td>{{ $product->product->created_at->format('d-M-Y') }}</td>
+                                            <td>{{ $product->product->created_at->format('d-m-Y') }}</td>
                                         </tr>
                                     @endforeach
                                 </tbody>
@@ -224,4 +222,43 @@
 
         </div>
     </main>
+@endsection
+
+
+@section('script')
+    <script>
+        $(document).ready(function() {
+            var vendorHistoryTable = $('#inventory-stock-history-table').DataTable({
+                "columnDefs": [{
+                        "orderable": false,
+                        //   "targets": [0, -1],
+                    } // Disable sorting for the 4th column (index starts at 0)
+                ],
+                lengthChange: true,
+                // buttons: ['excel', 'pdf', 'print']
+                // buttons: ['excel']
+                buttons: [{
+                    extend: 'excelHtml5',
+                    className: 'd-none', // hide the default button
+                }]
+            });
+
+            $('#date-select').on('change', function() {
+                var selected = $(this).val().trim();
+                if (selected) {
+                    var parts = selected.split('-');
+                    var formatted = parts[2] + '-' + parts[1] + '-' + parts[0];
+                }
+                vendorHistoryTable.column(-1).search(formatted ? '^' + formatted + '$' : '', true, false)
+                    .draw();
+            });
+
+            $('#vendor-select').on('change', function() {
+                var selected = $(this).val().trim();
+                vendorHistoryTable.column(2).search(selected ? '^' + selected + '$' : '', true, false)
+                    .draw();
+            });
+
+        });
+    </script>
 @endsection

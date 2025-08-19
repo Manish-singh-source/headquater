@@ -2,8 +2,8 @@
 @section('main-content')
     <main class="main-wrapper">
         <div class="main-content">
-            <div class="page-breadcrumb d-none d-sm-flex align-items-center mb-3">
-                <div class="">
+            <div class="page-breadcrumb d-none d-sm-flex align-items-center justify-content-between mb-3">
+                <div>
                     <nav aria-label="breadcrumb">
                         <ol class="breadcrumb mb-0 p-0">
                             <li class="breadcrumb-item"><a href="javascript:;"><i class="bx bx-home-alt"></i></a>
@@ -12,23 +12,24 @@
                         </ol>
                     </nav>
                 </div>
-            </div>
-
-            <div class="row g-3 justify-content-end">
-                <div class="col-12 col-md-auto">
-                    <div class="d-flex align-items-center gap-2 justify-content-lg-end">
-                        @can('PermissionChecker', 'create_warehouse')
-                            <a href="{{ route('warehouse.create') }}"><button class="btn btn-primary px-4"><i
-                                        class="bi bi-plus-lg me-2"></i>Add Warehouse</button></a>
-                        @endcan
-                        <div class="btn-group">
-                            <button type="button" class="btn btn-outline-primary">Action</button>
-                            <button type="button"
-                                class="btn btn-outline-primary split-bg-primary dropdown-toggle dropdown-toggle-split"
-                                data-bs-toggle="dropdown"> <span class="visually-hidden">Toggle Dropdown</span>
-                            </button>
-                            <div class="dropdown-menu dropdown-menu-right dropdown-menu-lg-end">
-                                <a class="dropdown-item cursor-pointer" id="delete-selected">Delete All</a>
+                <div class="justify-end">
+                    <div class="row g-3 justify-content-end">
+                        <div class="col-12 col-md-auto">
+                            <div class="d-flex align-items-center gap-2 justify-content-lg-end">
+                                @can('PermissionChecker', 'create_warehouse')
+                                    <a href="{{ route('warehouse.create') }}"><button class="btn btn-primary px-4"><i
+                                                class="bi bi-plus-lg me-2"></i>Add Warehouse</button></a>
+                                @endcan
+                                <div class="btn-group">
+                                    <button type="button" class="btn btn-outline-primary">Action</button>
+                                    <button type="button"
+                                        class="btn btn-outline-primary split-bg-primary dropdown-toggle dropdown-toggle-split"
+                                        data-bs-toggle="dropdown"> <span class="visually-hidden">Toggle Dropdown</span>
+                                    </button>
+                                    <div class="dropdown-menu dropdown-menu-right dropdown-menu-lg-end">
+                                        <a class="dropdown-item cursor-pointer" id="delete-selected">Delete All</a>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -45,13 +46,13 @@
                                         <th>
                                             <input class="form-check-input" type="checkbox" id="select-all">
                                         </th>
-                                        <th>Warehouse Id</th>
-                                        <th>Warehouse Name</th>
+                                        <th>Warehouse&nbsp;Id</th>
+                                        <th>Warehouse&nbsp;Name</th>
                                         <th>Type</th>
                                         <th>City</th>
-                                        <th>Contact Person Name</th>
-                                        <th>Phone Number</th>
-                                        <th>Default Warehouse</th>
+                                        <th>Contact&nbsp;Person&nbsp;Name</th>
+                                        <th>Phone&nbsp;Number</th>
+                                        <th>Default&nbsp;Warehouse</th>
                                         <th>Status</th>
                                         <th>Action</th>
                                     </tr>

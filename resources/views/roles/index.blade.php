@@ -3,8 +3,7 @@
     <!--start main wrapper-->
     <main class="main-wrapper">
         <div class="main-content">
-            <!--breadcrumb-->
-            <div class="page-breadcrumb d-none d-sm-flex align-items-center mb-3">
+            <div class="page-breadcrumb d-none d-sm-flex align-items-center justify-content-between mb-3">
                 <div>
                     <nav aria-label="breadcrumb">
                         <ol class="breadcrumb mb-0 p-0">
@@ -14,29 +13,30 @@
                         </ol>
                     </nav>
                 </div>
-            </div>
-            <!--end breadcrumb-->
-
-            <div class="row g-3 justify-content-end">
-                <div class="col-12 col-md-auto">
-                    <div class="d-flex align-items-center gap-2 justify-content-lg-end">
-                        <a href="{{ route('role.create') }}" class="btn btn-primary px-4"><i class="bi bi-plus-lg me-2"></i>Add
-                            Role</a>
-                            <div class="ms-auto">
-                            <div class="btn-group">
-                                <button type="button" class="btn btn-outline-primary">Action</button>
-                                <button type="button"
-                                    class="btn btn-outline-primary split-bg-primary dropdown-toggle dropdown-toggle-split"
-                                    data-bs-toggle="dropdown"> <span class="visually-hidden">Toggle Dropdown</span>
-                                </button>
-                                <div class="dropdown-menu dropdown-menu-right dropdown-menu-lg-end">
-                                    <a class="dropdown-item cursor-pointer" id="delete-selected">Delete All</a>
+                <div class="justify-end">
+                    <div class="row g-3 justify-content-end">
+                        <div class="col-12 col-md-auto">
+                            <div class="d-flex align-items-center gap-2 justify-content-lg-end">
+                                <a href="{{ route('role.create') }}" class="btn btn-primary px-4"><i
+                                        class="bi bi-plus-lg me-2"></i>Add
+                                    Role</a>
+                                <div class="ms-auto">
+                                    <div class="btn-group">
+                                        <button type="button" class="btn btn-outline-primary">Action</button>
+                                        <button type="button"
+                                            class="btn btn-outline-primary split-bg-primary dropdown-toggle dropdown-toggle-split"
+                                            data-bs-toggle="dropdown"> <span class="visually-hidden">Toggle Dropdown</span>
+                                        </button>
+                                        <div class="dropdown-menu dropdown-menu-right dropdown-menu-lg-end">
+                                            <a class="dropdown-item cursor-pointer" id="delete-selected">Delete All</a>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div><!--end row-->
+            </div>
 
             <div class="card mt-4">
                 <div class="card-body">
@@ -131,10 +131,9 @@
         </div>
     </main>
     <!--end main wrapper-->
-
 @endsection
 @section('script')
-     <script>
+    <script>
         $(document).on('change', '.status-switch6', function() {
             var roleId = $(this).data('role-id');
             var status = $(this).is(':checked') ? 1 : 0;
@@ -160,7 +159,7 @@
             });
         });
     </script>
-        <script>
+    <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Select All functionality
             const selectAll = document.getElementById('select-all');

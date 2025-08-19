@@ -27,7 +27,6 @@ class PackagingController extends Controller
             ->filter()
             ->unique()
             ->values();
-        // dd($salesOrder);
 
         return view('packagingList.view', compact('salesOrder', 'facilityNames'));
     }

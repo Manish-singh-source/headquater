@@ -4,7 +4,7 @@
     <main class="main-wrapper">
         <div class="main-content">
             <!--breadcrumb-->
-            <div class="page-breadcrumb d-none d-sm-flex align-items-center mb-3">
+            <div class="page-breadcrumb d-none d-sm-flex align-items-center justify-content-between mb-3">
                 <div>
                     <nav aria-label="breadcrumb">
                         <ol class="breadcrumb mb-0 p-0">
@@ -14,24 +14,25 @@
                         </ol>
                     </nav>
                 </div>
-            </div>
-
-            <div class="row g-3 justify-content-end">
-                <div class="col-12 col-md-auto">
-                    <div class="d-flex align-items-center gap-2 justify-content-lg-end">
-                        @can('PermissionChecker', 'create_vendor')
-                            <a href="{{ route('vendor.create') }}"><button class="btn btn-primary px-4"><i
-                                        class="bi bi-plus-lg me-2"></i>Add Vendor</button></a>
-                        @endcan
-                        <div class="ms-auto">
-                            <div class="btn-group">
-                                <button type="button" class="btn btn-outline-primary">Action</button>
-                                <button type="button"
-                                    class="btn btn-outline-primary split-bg-primary dropdown-toggle dropdown-toggle-split"
-                                    data-bs-toggle="dropdown"> <span class="visually-hidden">Toggle Dropdown</span>
-                                </button>
-                                <div class="dropdown-menu dropdown-menu-right dropdown-menu-lg-end">
-                                    <a class="dropdown-item cursor-pointer" id="delete-selected">Delete All</a>
+                <div class="justify-end">
+                    <div class="row g-3 justify-content-end">
+                        <div class="col-12 col-md-auto">
+                            <div class="d-flex align-items-center gap-2 justify-content-lg-end">
+                                @can('PermissionChecker', 'create_vendor')
+                                    <a href="{{ route('vendor.create') }}"><button class="btn btn-primary px-4"><i
+                                                class="bi bi-plus-lg me-2"></i>Add Vendor</button></a>
+                                @endcan
+                                <div class="ms-auto">
+                                    <div class="btn-group">
+                                        <button type="button" class="btn btn-outline-primary">Action</button>
+                                        <button type="button"
+                                            class="btn btn-outline-primary split-bg-primary dropdown-toggle dropdown-toggle-split"
+                                            data-bs-toggle="dropdown"> <span class="visually-hidden">Toggle Dropdown</span>
+                                        </button>
+                                        <div class="dropdown-menu dropdown-menu-right dropdown-menu-lg-end">
+                                            <a class="dropdown-item cursor-pointer" id="delete-selected">Delete All</a>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>

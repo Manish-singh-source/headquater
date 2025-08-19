@@ -35,7 +35,7 @@ class SalesOrderProduct extends Model
     
     public function warehouseStockLog()
     {
-        return $this->hasOne(WarehouseStockLog::class, 'sales_order_id', 'id');
+        return $this->hasOne(WarehouseStockLog::class, 'sales_order_id', 'sales_order_id');
     }
 
     public function customer()
