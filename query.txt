@@ -15,15 +15,15 @@
 4. Add permissions tab: 
     -- CRUD 
     -- 11 AM
-
+================ Completed ====================
 
 ================ Masters ====================
 5. Customer Group 
-    -- CRUD 
-    -- Multi select delete 
-    -- View Customers details 
-        -- CRUD 
-        -- Multi select delete 
+    -- CRUD                                                      -- done
+    -- Multi select delete                                       -- done
+    -- View Customers details                                    -- done
+        -- CRUD                                                  -- done
+        -- Multi select delete                                   -- done
         -- auto fill form with state, city, country 
         -- View Customer Details 
             -- View Customer Orders 
@@ -47,7 +47,7 @@
     -- download products list 
     -- change data and update 
 
-    -- multi select delete 
+    -- multi select delete                          -- not working 
 
     -- check all table columns 
 
@@ -93,7 +93,7 @@
         -- export (download) file with available & Unavailable products 
     -- After downloading fill block and vendor columns then upload and create sales order 
     -- List all orders 
-    -- Filter by status 
+    -- Filter by status         
     -- After Order deletes unblock all products quantity that are blocked by this order 
     -- View Sales Order 
         --  display all products list 

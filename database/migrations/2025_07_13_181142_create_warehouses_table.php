@@ -25,13 +25,11 @@ return new class extends Migration
             $table->string('address_line_2', 255)->nullable();
             $table->text('licence_doc')->nullable();
             $table->unsignedBigInteger('max_storage_capacity')->nullable(); // corrected field name (see note)
-
             $table->foreignId('country_id')->constrained()->onDelete('cascade');
             $table->foreignId('state_id')->constrained()->onDelete('cascade');
             $table->foreignId('city_id')->constrained()->onDelete('cascade');
             $table->integer('pincode');
             $table->string('operations')->nullable();
-
             $table->enum('status', ['0', '1'])->default('1')->comment('Active : 1,Inactive : 0');
             $table->timestamps();
         });
