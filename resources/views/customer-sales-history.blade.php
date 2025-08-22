@@ -41,7 +41,7 @@
                                 <div class="ms-2">
                                     <p class="text-dark mb-1">Total Amount</p>
                                     <div class="d-inline-flex align-items-center flex-wrap gap-2">
-                                        <h4 class="text-dark">{{ $invoicesAmountSum }}</h4>
+                                        <h4 class="text-dark">{{ number_format($invoicesAmountSum, 2) }}</h4>
                                         <!-- <span class="badge badge-soft-primary text-dark"><i class="ti ti-arrow-up me-1"></i>+22%</span> -->
                                     </div>
                                 </div>
@@ -57,7 +57,7 @@
                                 <div class="ms-2">
                                     <p class="text-dark mb-1">Total Paid Amount</p>
                                     <div class="d-inline-flex align-items-center flex-wrap gap-2">
-                                        <h4 class="text-dark">0</h4>
+                                        <h4 class="text-dark">{{ number_format($invoicesAmountPaidSum, 2) }}</h4>
                                         <!-- <span class="badge badge-soft-primary text-dark"><i class="ti ti-arrow-up me-1"></i>+22%</span> -->
                                     </div>
                                 </div>
@@ -73,7 +73,8 @@
                                 <div class="ms-2">
                                     <p class="text-dark mb-1">Total Due Amount</p>
                                     <div class="d-inline-flex align-items-center flex-wrap gap-2">
-                                        <h4 class="text-dark">0</h4>
+                                        <h4 class="text-dark">
+                                            {{ number_format($invoicesAmountSum - $invoicesAmountPaidSum, 2) }}</h4>
                                         <!-- <span class="badge badge-soft-primary text-dark"><i class="ti ti-arrow-up me-1"></i>+22%</span> -->
                                     </div>
                                 </div>
@@ -164,8 +165,8 @@
                                         <th>Ordered Date</th>
                                         {{-- <th>Delivery Date</th> --}}
                                         <th>Total Amount</th>
-                                        {{-- <th>Paid</th> --}}
-                                        {{-- <th>Due</th> --}}
+                                        <th>Paid</th>
+                                        <th>Due</th>
                                         {{-- <th>Status</th> --}}
                                         <th>Action</th>
                                     </tr>
@@ -183,6 +184,9 @@
                                                 {{ $invoice->invoice_date }}
                                             </td>
                                             <td>{{ number_format($invoice->total_amount, 2) }}</td>
+                                            <td>{{ number_format($invoice->payments?->sum('amount'), 2) }}</td>
+                                            <td>{{ number_format($invoice->total_amount - $invoice->payments?->sum('amount'), 2) }}
+                                            </td>
                                             <td>
                                                 <a aria-label="anchor"
                                                     href="{{ route('invoice.downloadPdf', $invoice->id) }}"
@@ -246,7 +250,8 @@
             $('#customer-select').on('change', function() {
                 var selected = $(this).val().trim();
                 console.log(selected);
-                customerSalesHistoryTable.column(2).search(selected ? '^' + selected + '$' : '', true, false)
+                customerSalesHistoryTable.column(2).search(selected ? '^' + selected + '$' : '', true,
+                        false)
                     .draw();
             });
 

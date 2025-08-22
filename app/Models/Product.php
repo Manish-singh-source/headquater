@@ -13,5 +13,9 @@ class Product extends Model
     {
         return $this->hasOne(WarehouseStock::class, 'sku', 'sku');
     }
-    
+
+    public function tempOrder()
+    {
+        return $this->hasOne(TempOrder::class, 'sku', 'sku');
+    }
 }

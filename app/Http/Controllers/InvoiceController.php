@@ -27,8 +27,9 @@ class InvoiceController extends Controller
         
         $data = [
             'title' => 'Invoices',
-            'invoices' => Invoice::with(['warehouse', 'customer', 'salesOrder'])->where('sales_order_id', $id)->get(),
+            'invoices' => Invoice::with(['warehouse', 'customer', 'salesOrder', 'appointment', 'dns', 'payments'])->where('sales_order_id', $id)->get(),
         ];
+        // dd($data);
         return view('invoice.invoices', $data);
     }
 
@@ -39,12 +40,12 @@ class InvoiceController extends Controller
             'date' => date('m/d/Y')
         ];
         $invoice = Invoice::with(['warehouse', 'customer', 'salesOrder'])->findOrFail($id);
-        $salesOrderProducts = SalesOrderProduct::with('product')->where('sales_order_id', $invoice->sales_order_id)->where('customer_id', $invoice->customer_id)->get();
+        $salesOrderProducts = SalesOrderProduct::with('product', 'tempOrder')->where('sales_order_id', $invoice->sales_order_id)->where('customer_id', $invoice->customer_id)->get();
 
         $data = [
             'title' => 'Invoice',
             'invoice' => $invoice,
-            'invoiceDetails' => InvoiceDetails::with('product')->where('invoice_id', $id)->get(),
+            'invoiceDetails' => InvoiceDetails::with('product.tempOrder')->where('invoice_id', $id)->get(),
             'salesOrderProducts' => $salesOrderProducts,
         ];
         // dd($data);

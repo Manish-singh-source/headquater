@@ -39,6 +39,8 @@
                                         <th>Customer&nbsp;Name</th>
                                         <th>Due&nbsp;Date</th>
                                         <th>Amount</th>
+                                        <th>Paid Amount</th>
+                                        <th>Due Amount</th>
                                         <th>Action</th>
                                     </tr>
                                 </thead>
@@ -52,12 +54,13 @@
                                             <td>{{ $invoice->invoice_number }}</td>
                                             <td>{{ $invoice->customer->client_name }}</td>
                                             <td>
-                                                {{ $invoice->invoice_date }}
+                                                {{ $invoice->appointment?->appointment_date ?? 'NA' }}
                                             </td>
                                             <td>{{ number_format($invoice->total_amount, 2) }}</td>
+                                            <td>{{ number_format($invoice->payments->sum('amount'), 2) }}</td>
+                                            <td>{{ number_format($invoice->total_amount - $invoice->payments->sum('amount'), 2) }}</td>
                                             <td>
-                                                <a aria-label="anchor"
-                                                    href="{{ route('invoices-details', $invoice->id) }}"
+                                                <a aria-label="anchor" href="{{ route('invoices-details', $invoice->id) }}"
                                                     class="btn btn-icon btn-sm bg-primary-subtle me-1"
                                                     data-bs-toggle="tooltip" data-bs-original-title="View">
                                                     <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13"
@@ -68,26 +71,34 @@
                                                         <circle cx="12" cy="12" r="3"></circle>
                                                     </svg>
                                                 </a>
-                                                <a type="button" class="btn btn-icon btn-sm bg-success-subtle me-1"
-                                                    data-bs-toggle="modal" data-bs-target="#appointmentView">
-                                                    <img width="15" height="15"
-                                                        src="https://img.icons8.com/ios/50/document--v1.png"
-                                                        alt="bank-card-back-side--v1" />
-                                                </a>
-                                                <a type="button" class="btn btn-icon btn-sm bg-success-subtle me-1"
-                                                    data-bs-toggle="modal" data-bs-target="#dnView">
-                                                    <img width="15" height="15"
-                                                        src="https://img.icons8.com/ios/50/document--v1.png"
-                                                        alt="bank-card-back-side--v1" />
-                                                </a>
-                                                <a type="button" class="btn btn-icon btn-sm bg-success-subtle me-1"
-                                                    data-bs-toggle="modal" data-bs-target="#paymentView">
-                                                    <img width="15" height="15"
-                                                        src="https://img.icons8.com/ios/50/bank-card-back-side--v1.png"
-                                                        alt="bank-card-back-side--v1" />
-                                                </a>
-                                                <div class="modal fade" id="appointmentView" data-bs-backdrop="static"
-                                                    data-bs-keyboard="false" tabindex="-1"
+                                                @if (!$invoice->appointment)
+                                                    <a type="button" class="btn btn-icon btn-sm bg-success-subtle me-1"
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#appointmentView-{{ $invoice->id }}">
+                                                        <img width="15" height="15"
+                                                            src="https://img.icons8.com/ios/50/document--v1.png"
+                                                            alt="bank-card-back-side--v1" />
+                                                    </a>
+                                                @endif
+                                                @if (!$invoice->dns)
+                                                    <a type="button" class="btn btn-icon btn-sm bg-success-subtle me-1"
+                                                        data-bs-toggle="modal" data-bs-target="#dnView-{{ $invoice->id }}">
+                                                        <img width="15" height="15"
+                                                            src="https://img.icons8.com/ios/50/document--v1.png"
+                                                            alt="bank-card-back-side--v1" />
+                                                    </a>
+                                                @endif
+                                                @if ($invoice->payments->sum('amount') < $invoice->total_amount)
+                                                    <a type="button" class="btn btn-icon btn-sm bg-success-subtle me-1"
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#paymentView-{{ $invoice->id }}">
+                                                        <img width="15" height="15"
+                                                            src="https://img.icons8.com/ios/50/bank-card-back-side--v1.png"
+                                                            alt="bank-card-back-side--v1" />
+                                                    </a>
+                                                @endif
+                                                <div class="modal fade" id="appointmentView-{{ $invoice->id }}"
+                                                    data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
                                                     aria-labelledby="staticBackdropLabel" aria-hidden="true">
                                                     <div class="modal-dialog">
                                                         <div class="modal-content">
@@ -139,8 +150,8 @@
                                                         </div>
                                                     </div>
                                                 </div>
-                                                <div class="modal fade" id="dnView" data-bs-backdrop="static"
-                                                    data-bs-keyboard="false" tabindex="-1"
+                                                <div class="modal fade" id="dnView-{{ $invoice->id }}"
+                                                    data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
                                                     aria-labelledby="staticBackdropLabel" aria-hidden="true">
                                                     <div class="modal-dialog">
                                                         <div class="modal-content">
@@ -196,8 +207,8 @@
                                                     </div>
                                                 </div>
                                                 <!-- Modal -->
-                                                <div class="modal fade" id="paymentView" data-bs-backdrop="static"
-                                                    data-bs-keyboard="false" tabindex="-1"
+                                                <div class="modal fade" id="paymentView-{{ $invoice->id }}"
+                                                    data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
                                                     aria-labelledby="staticBackdropLabel" aria-hidden="true">
                                                     <div class="modal-dialog">
                                                         <div class="modal-content">
@@ -207,8 +218,10 @@
                                                                 <button type="button" class="btn-close"
                                                                     data-bs-dismiss="modal" aria-label="Close"></button>
                                                             </div>
-                                                            <form method="POST" action="{{ route('invoice.payment.update', $invoice->id) }}" enctype="multipart/form-data"> 
-                                                                @csrf 
+                                                            <form method="POST"
+                                                                action="{{ route('invoice.payment.update', $invoice->id) }}"
+                                                                enctype="multipart/form-data">
+                                                                @csrf
                                                                 @method('post')
                                                                 <div class="modal-body">
                                                                     <div class="col-12 mb-3">
@@ -223,26 +236,32 @@
                                                                         <label for="payment_status"
                                                                             class="form-label">Payment Amount<span
                                                                                 class="text-danger">*</span></label>
-                                                                        <input type="text" name="pay_amount" class="form-control" placeholder="Enter Payment Amount">
+                                                                        <input type="text" name="pay_amount"
+                                                                            class="form-control"
+                                                                            placeholder="Enter Payment Amount">
                                                                     </div>
                                                                     <div class="col-12 mb-3">
                                                                         <label for="payment_method"
                                                                             class="form-label">Payment Method<span
                                                                                 class="text-danger">*</span></label>
-                                                                        <select id="payment_method" name="payment_method" class="form-select">
+                                                                        <select id="payment_method" name="payment_method"
+                                                                            class="form-select">
                                                                             <option selected="" disabled>Payment Method
                                                                             </option>
                                                                             <option value="cash">Cash</option>
-                                                                            <option value="bank_transfers">Bank Transfers</option>
+                                                                            <option value="bank_transfers">Bank Transfers
+                                                                            </option>
                                                                             <option value="checks">Checks</option>
-                                                                            <option value="mobile_payments">Mobile Payments</option>
+                                                                            <option value="mobile_payments">Mobile Payments
+                                                                            </option>
                                                                         </select>
                                                                     </div>
                                                                     <div class="col-12 mb-3">
                                                                         <label for="payment_status"
                                                                             class="form-label">Payment Status<span
                                                                                 class="text-danger">*</span></label>
-                                                                        <select id="payment_status" name="payment_status" class="form-select">
+                                                                        <select id="payment_status" name="payment_status"
+                                                                            class="form-select">
                                                                             <option selected="" disabled>Payment Status
                                                                             </option>
                                                                             <option value="pending">Pending</option>

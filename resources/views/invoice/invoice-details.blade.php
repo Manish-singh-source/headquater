@@ -28,7 +28,12 @@
                                     <span><b>Address</b></span>
                                     <span>{{ $invoiceDetails->customer->address->billing_address }}</span>
                                 </li>
-                                @if ($invoiceDetails->appointment)
+                            </ul>
+                        </div>
+
+                        @if ($invoiceDetails->appointment)
+                            <div class="card w-100 d-flex  flex-sm-row flex-col">
+                                <ul class="col-12 list-group list-group-flush">
                                     <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                                         <span><b>Appointment Date</b></span>
                                         <span>{{ $invoiceDetails->appointment->appointment_date }}</span>
@@ -43,8 +48,12 @@
                                         <a href="{{ asset('uploads/grn/' . $invoiceDetails->appointment->grn) }}"
                                             class="btn btn-icon btn-sm bg-primary-subtle me-1">View </a>
                                     </li>
-                                @endif
-                                @if ($invoiceDetails->dns)
+                                </ul>
+                            </div>
+                        @endif
+                        @if ($invoiceDetails->dns)
+                            <div class="card w-100 d-flex  flex-sm-row flex-col">
+                                <ul class="col-12 list-group list-group-flush">
                                     {{-- <li>DN Details</li> --}}
                                     <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                                         <span><b>DN Amount</b></span>
@@ -60,31 +69,44 @@
                                         <a href="{{ asset('uploads/dn_receipts/' . $invoiceDetails->dns->dn_receipt) }}"
                                             class="btn btn-icon btn-sm bg-primary-subtle me-1">View </a>
                                     </li>
-                                @endif
+                                </ul>
+                            </div>
+                        @endif
 
-                                @if ($invoiceDetails->payments)
-                                    <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
-                                        <span><b>Payment Status</b></span>
-                                        <span>{{ ucfirst($invoiceDetails->payments->payment_status) }}</span>
-                                    </li>
-                                    <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
-                                        <span><b>Payment Method</b></span>
-                                        <span>{{ ucfirst($invoiceDetails->payments->payment_method) }}</span>
-                                    </li>
-                                    <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
-                                        <span><b>Payment UTR No</b></span>
-                                        <span>{{ ucfirst($invoiceDetails->payments->payment_utr_no) }}</span>
-                                    </li>
-                                    <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
-                                        <span><b>Payment Amount</b></span>
-                                        <span>{{ ucfirst($invoiceDetails->payments->amount) }}</span>
-                                    </li>
-                                @endif
-                            </ul>
-                        </div>
+                        @if ($invoiceDetails->payments)
+                            <div class="card w-100 d-flex  flex-sm-row flex-col">
+                                <ul class="col-12 list-group list-group-flush">
+                                    <li class="list-group-item">Payment Details:</li>
+                                    @foreach ($invoiceDetails->payments as $key => $payment)
+                                        <li class="list-group-item">Payment Step {{ $key + 1 }}</li>
+                                        <li
+                                            class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
+                                            <span><b>Payment Status</b></span>
+                                            <span>{{ ucfirst($payment->payment_status) }}</span>
+                                        </li>
+                                        <li
+                                            class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
+                                            <span><b>Payment Method</b></span>
+                                            <span>{{ ucfirst($payment->payment_method) }}</span>
+                                        </li>
+                                        <li
+                                            class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
+                                            <span><b>Payment UTR No</b></span>
+                                            <span>{{ ucfirst($payment->payment_utr_no) }}</span>
+                                        </li>
+                                        <li
+                                            class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
+                                            <span><b>Payment Amount</b></span>
+                                            <span>{{ ucfirst($payment->amount) }}</span>
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        @endif
                     </div>
                 </div>
             </div>
+        </div>
         </div>
     </main>
 @endsection

@@ -136,7 +136,7 @@
                 <td>{{ $detail->product->ean_code }}</td>
                 <td>{{ $detail->product->sku }}</td>
                 <td>{{ $detail->product->brand_title }}</td>
-                <td>{{ $detail->hsn_code }}</td>
+                <td>{{ $detail->product->tempOrder?->hsn }}</td>
                 <td>{{ $detail->quantity }}</td>
                 <td>{{ $detail->box }}</td>
                 <td>{{ $detail->unit_price }}</td>
@@ -161,7 +161,6 @@
     <table>
         <tr>
             <td>Total Invoice amount in words:</td>
-            {{-- <td colspan="3">{{ amountInWords(floor($totalAmountSum)) }}</td> --}}
             <td colspan="3">{{ ucfirst(numberToWords(floor($totalAmountSum))) }} Rupees Only</td>
             {{-- <td colspan="3">{{ $totalAmountSum }}</td> --}}
         </tr>
