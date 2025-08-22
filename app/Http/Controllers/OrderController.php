@@ -482,7 +482,7 @@ class OrderController extends Controller
                 $invoice->invoice_date = now();
                 $invoice->round_off = 0;
                 $invoice->total_amount = $salesOrder->orderedProducts->sum(function ($product) {
-                    return $product->ordered_quantity * $product->product->price; // Assuming 'price' is the field in Product model
+                    return $product->ordered_quantity * $product->product->mrp; // Assuming 'price' is the field in Product model
                 });
                 $invoice->save();
 

@@ -127,7 +127,7 @@
         @endphp
         @foreach ($invoiceDetails as $index => $detail)
             <tr>
-                {{ $igstAmount = (($detail->tax * 100) / 100) * $detail->amount }}
+                {{ $igstAmount = ($detail->tax / 100) * $detail->amount }}
                 {{ $totalAmount = $igstAmount + $detail->amount }}
                 {{ $totalAmountSum = $totalAmount + $totalAmountSum }}
                 {{ $totalIgstSum = $igstAmount + $totalIgstSum }}
@@ -141,7 +141,7 @@
                 <td>{{ $detail->box }}</td>
                 <td>{{ $detail->unit_price }}</td>
                 <td>{{ $detail->amount }}</td>
-                <td>{{ $detail->tax * 100 }}</td>
+                <td>{{ $detail->tax }}</td>
                 <td>{{ $igstAmount }}</td>
                 <td>{{ $totalAmount }}</td>
             </tr>
@@ -161,7 +161,9 @@
     <table>
         <tr>
             <td>Total Invoice amount in words:</td>
-            <td colspan="3">{{ amountInWords(floor($totalAmountSum)) }}</td>
+            {{-- <td colspan="3">{{ amountInWords(floor($totalAmountSum)) }}</td> --}}
+            <td colspan="3">{{ ucfirst(numberToWords(floor($totalAmountSum))) }} Rupees Only</td>
+            {{-- <td colspan="3">{{ $totalAmountSum }}</td> --}}
         </tr>
     </table>
 

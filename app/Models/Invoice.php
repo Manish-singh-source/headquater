@@ -35,4 +35,16 @@ class Invoice extends Model
     {
         return $this->hasMany(InvoiceDetails::class);
     }
+
+    public function appointment() {
+        return $this->hasOne(Appointment::class);
+    }
+
+    public function dns() {
+        return $this->hasOne(Dn::class);
+    }
+   
+    public function payments() {
+        return $this->hasOne(Payment::class);
+    }
 }

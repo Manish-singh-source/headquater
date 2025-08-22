@@ -57,7 +57,7 @@
                                             <td>{{ number_format($invoice->total_amount, 2) }}</td>
                                             <td>
                                                 <a aria-label="anchor"
-                                                    href="{{ route('invoice.downloadPdf', $invoice->id) }}"
+                                                    href="{{ route('invoices-details', $invoice->id) }}"
                                                     class="btn btn-icon btn-sm bg-primary-subtle me-1"
                                                     data-bs-toggle="tooltip" data-bs-original-title="View">
                                                     <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13"

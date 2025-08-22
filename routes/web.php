@@ -234,9 +234,7 @@ Route::middleware('RolePermission:customer-handler')->group(function () {
         Route::get('/create-invoice', function () {
             return view('create-invoice');
         })->name('create-invoice');
-        Route::get('/invoices-details', function () {
-            return view('invoices-details');
-        })->name('invoices-details');
+        Route::get('/invoices-details/{id}', 'invoiceDetails')->name('invoices-details');
         
         // updating invoice details appointment, grn, dn, and payment 
         Route::post('/invoice-appointment-update/{id}', 'invoiceAppointmentUpdate')->name('invoices.appointment.update');
