@@ -155,6 +155,10 @@ class ProductController extends Controller
             Product::upsert($products, ['sku']);
 
             DB::commit();
+
+            // Create notification for products received
+            notifyProductsReceived($insertCount);
+
             return redirect()->route('products.index')->with('success', 'CSV file imported successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
