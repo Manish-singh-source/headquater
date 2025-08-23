@@ -19,6 +19,7 @@ use App\Http\Controllers\TrackOrderController;
 use App\Http\Controllers\CustomerGroupController;
 use App\Http\Controllers\PurchaseOrderController;
 use App\Http\Controllers\ReceivedProductsController;
+use App\Http\Controllers\NotificationController;
 
 // Authentication
 Route::controller(RegisterController::class)->group(function () {
@@ -34,6 +35,29 @@ Route::controller(LocationController::class)->group(function () {
     Route::get('/states', 'getStates');
     Route::get('/cities', 'getCities');
 });
+
+// Notification Routes
+Route::controller(NotificationController::class)->group(function () {
+    Route::get('/notifications', 'getNotifications')->name('notifications.get');
+    Route::get('/notifications/unread-count', 'getUnreadCount')->name('notifications.unread.count');
+    Route::post('/notifications/{id}/mark-read', 'markAsRead')->name('notifications.mark.read');
+    Route::post('/notifications/mark-all-read', 'markAllAsRead')->name('notifications.mark.all.read');
+    Route::delete('/notifications/{id}', 'delete')->name('notifications.delete');
+    Route::get('/notifications/all', 'index')->name('notifications.index');
+});
+
+// Test notification route (remove in production)
+Route::get('/test-notification', function() {
+    notify([
+        'title' => 'Test Notification',
+        'message' => 'This is a test notification to verify the system is working.',
+        'type' => 'success',
+        'module' => 'test',
+        'icon' => 'bi bi-check-circle'
+    ]);
+
+    return redirect()->back()->with('success', 'Test notification created!');
+})->name('test.notification');
 
 Route::middleware('RolePermission:customer-handler')->group(function () {
 
