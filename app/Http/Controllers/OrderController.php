@@ -285,6 +285,10 @@ class OrderController extends Controller
                 return redirect()->back()->withErrors(['csv_file' => 'No valid data found in the CSV file.']);
             }
             DB::commit();
+
+            // Create notification for sales order
+            notifySalesOrder($saveOrder);
+
             return redirect()->route('order.index')->with('success', 'Order Completed Successful.');
         } catch (\Exception $e) {
             DB::rollBack();
@@ -463,6 +467,13 @@ class OrderController extends Controller
         $salesOrderDetails = SalesOrderProduct::where('sales_order_id', $salesOrder->id)->get();
 
         $salesOrder->status = $request->status;
+
+        // Create notifications based on status change
+        if ($request->status == 'ready_to_package') {
+            notifyPackagingList($salesOrder);
+        } elseif ($request->status == 'ready_to_ship') {
+            notifyReadyToShip($salesOrder);
+        }
 
         if ($salesOrder->status == 'ready_to_ship') {
             $customerFacilityName = SalesOrderProduct::with('customer')
