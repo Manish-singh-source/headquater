@@ -554,6 +554,13 @@
                           <div class="menu-title">Product Issues</div>
                       </a>
                   </li>
+                  <li>
+                      <a href="{{ route('return.accept') }}">
+                          <div class="parent-icon"><i class="material-icons-outlined">local_shipping</i>
+                          </div>
+                          <div class="menu-title">Product Return</div>
+                      </a>
+                  </li>
 
                   @can('PermissionChecker', 'view_track_order')
                       <li>

@@ -173,6 +173,11 @@ Route::middleware('RolePermission:customer-handler')->group(function () {
         Route::get('/download-vendor-po-excel', 'downloadVendorPO')->name('download.vendor.po.excel');
         Route::get('/purchase-order-create/{purchaseId?}', 'customPurchaseCreate')->name('purches.create');
         Route::post('/purchase-custom-order-store', 'customPurchaseStore')->name('store.purchase.order');
+        
+        // Return or accept packaging products 
+        Route::get('/vendor-product-return/{id}', 'vendorProductReturn')->name('vendor.product.return');
+        Route::get('/vendor-product-accept/{id}', 'vendorProductAccept')->name('vendor.product.accept');
+
     });
 
     // Report Details List
@@ -205,6 +210,7 @@ Route::middleware('RolePermission:customer-handler')->group(function () {
         Route::get('/ready-to-ship-detail/{id}', 'view')->name('readyToShip.view');
         Route::get('/ready-to-ship-detail-view/{id}/{c_id}', 'viewDetail')->name('readyToShip.view.detail');
         Route::get('/product-issues', 'issuesProducts')->name('exceed.shortage.products');
+        Route::get('/return-accept', 'returnAccept')->name('return.accept');
     });
 
     Route::controller(TrackOrderController::class)->group(function () {

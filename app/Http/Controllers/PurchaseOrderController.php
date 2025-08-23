@@ -121,10 +121,10 @@ class PurchaseOrderController extends Controller
                 'purchase_order_id' => $request->purchase_order_id,
                 'vendor_code' => $request->vendor_code,
             ]);
-            
+
             foreach ($rows as $record) {
                 if (empty($record['Vendor SKU Code'])) continue;
-                
+
                 $vendorProducts[] = [
                     'purchase_order_id' => $request->purchase_order_id,
                     'vendor_pi_id' => $vendorPi->id,
@@ -225,10 +225,12 @@ class PurchaseOrderController extends Controller
 
                 if ($issueItem = Arr::get($record, 'Issue Units')) {
                     $productData->issue_item = $issueItem ?? '';
+                    $productData->issue_reason = (Arr::get($record, 'Quantity Ordered') < Arr::get($record, 'Quantity Received') ? 'Exceed' : 'Shortage');
                     $productData->issue_reason = Arr::get($record, 'Issue Reason') ?? '';
                 } else {
                     $productData->issue_item = 0;
                     $productData->issue_reason = '';
+                    $productData->issue_description = '';
                 }
                 $productData->save();
 
@@ -431,7 +433,7 @@ class PurchaseOrderController extends Controller
             if ($order->ordered_quantity > 0) {
                 $writer->addRow([
                     'Order No' => $order->id,
-                    'Purchase Order No' => $order->id,
+                    'Purchase Order No' => $request->purchaseOrderId,
                     'Portal'            => $order->tempProduct->item_code ?? '',
                     'Vendor SKU Code'   => $order->tempProduct->sku ?? '',
                     'Title'             => $order->tempProduct->description ?? '',
@@ -451,5 +453,39 @@ class PurchaseOrderController extends Controller
         return response()->download($tempXlsxPath, $request->vendorCode . '_Vendor_PO.xlsx', [
             'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         ])->deleteFileAfterSend(true);
+    }
+
+
+    // Return or Accept vendor exceeded products 
+    public function  vendorProductReturn($id)
+    {
+        $vendorPIProduct = VendorPIProduct::findOrFail($id);
+        $vendorPIProduct->issue_status = 'return';
+        $vendorPIProduct->save();
+
+        if ($vendorPIProduct) {
+            return back()->with('success', 'Products are returned');
+        }
+        return back()->with('error', 'Something went wrong.');
+    }
+
+    // Return or Accept vendor exceeded products 
+    public function  vendorProductAccept($id)
+    {
+        $vendorPIProduct = VendorPIProduct::findOrFail($id);
+        $vendorPIProduct->issue_status = 'accept';
+
+
+        $product = WarehouseStock::where('sku', $vendorPIProduct->vendor_sku_code)->first();
+        if ($product) {
+            $product->quantity += $vendorPIProduct->issue_item;
+            $product->save();
+        }
+        $vendorPIProduct->save();
+        if ($vendorPIProduct) {
+            return back()->with('success', 'Products are accepted');
+        }
+
+        return back()->with('error', 'Something went wrong.');
     }
 }

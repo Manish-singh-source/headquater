@@ -60,7 +60,13 @@ class ReadyToShip extends Controller
 
     public function issuesProducts()
     {
-        $vendorOrders = VendorPIProduct::with(['order', 'product'])->where('issue_item', '>', 0)->get();
+        $vendorOrders = VendorPIProduct::with(['order', 'product'])->where('issue_item', '>', 0)->where('issue_status', 'pending')->get();
         return view('exceed-shortage', compact('vendorOrders'));
+    }
+
+    public function returnAccept()
+    {
+        $vendorOrders = VendorPIProduct::with(['order', 'product'])->where('issue_status', 'return')->get();
+        return view('return-or-accept', compact('vendorOrders'));
     }
 }
