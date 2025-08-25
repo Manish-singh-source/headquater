@@ -287,7 +287,7 @@ class OrderController extends Controller
             DB::commit();
 
             // Create notification for sales order
-            notifySalesOrder($saveOrder);
+            // notifySalesOrder($saveOrder);
 
             return redirect()->route('order.index')->with('success', 'Order Completed Successful.');
         } catch (\Exception $e) {
