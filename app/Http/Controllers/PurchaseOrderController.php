@@ -81,9 +81,9 @@ class PurchaseOrderController extends Controller
             DB::commit();
 
             // Create notification for purchase order
-            if (isset($purchaseOrder)) {
-                notifyPurchaseOrder($purchaseOrder);
-            }
+            // if (isset($purchaseOrder)) {
+            //     notifyPurchaseOrder($purchaseOrder);
+            // }
 
             return redirect()->route('purchase.order.index')->with('success', 'CSV file imported successfully.');
         } catch (\Exception $e) {

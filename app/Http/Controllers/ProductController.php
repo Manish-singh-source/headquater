@@ -157,7 +157,7 @@ class ProductController extends Controller
             DB::commit();
 
             // Create notification for products received
-            notifyProductsReceived($insertCount);
+            // notifyProductsReceived($insertCount);
 
             return redirect()->route('products.index')->with('success', 'CSV file imported successfully.');
         } catch (\Exception $e) {
