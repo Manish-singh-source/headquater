@@ -50,7 +50,7 @@ class OrderController extends Controller
         $warehouse_id = $request->warehouse_id;
         $customer_group_id = $request->customer_group_id;
         $file = $request->file('csv_file');
-        dd($file);
+        // dd($file);
         if (!$file) {
             return redirect()->back()->withErrors(['csv_file' => 'Please upload a CSV file.']);
         }
