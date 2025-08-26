@@ -229,10 +229,18 @@ class OrderController extends Controller
                     } else {
                         // Create a new record
                         // dd($newProduct->id);
-                        $hasProduct = Product::where('sku', $record['SKU Code'])->get();
+                        $hasProduct = Product::where('sku', $record['SKU Code'])->first();
+                        // dd($hasProduct);
+                        if(!$hasProduct) {
+                            continue;
+                        }
                         $purchaseOrderProduct = new PurchaseOrderProduct();                        
                         $purchaseOrderProduct->purchase_order_id = $purchaseOrder->id;
-                        $purchaseOrderProduct->product_id = $hasProduct->id;
+                        if($hasProduct) {
+                            $purchaseOrderProduct->product_id = $hasProduct?->id ?? 0;
+                        }else {
+                            $purchaseOrderProduct->product_id = 0;
+                        }
                         $purchaseOrderProduct->sales_order_id = $saveOrder->id;
                         $purchaseOrderProduct->sales_order_product_id = $saveOrderProduct->id;
                         $purchaseOrderProduct->ordered_quantity = $unavailableStatus;
@@ -295,6 +303,7 @@ class OrderController extends Controller
 
             return redirect()->route('order.index')->with('success', 'Order Completed Successful.');
         } catch (\Exception $e) {
+            // dd($e);
             DB::rollBack();
             return redirect()->back()->with(['error' => 'Something went wrong: ' . $e->getMessage()]);
         }
