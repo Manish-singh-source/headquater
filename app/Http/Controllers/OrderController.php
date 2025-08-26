@@ -50,7 +50,7 @@ class OrderController extends Controller
         $warehouse_id = $request->warehouse_id;
         $customer_group_id = $request->customer_group_id;
         $file = $request->file('csv_file');
-
+        dd($file);
         if (!$file) {
             return redirect()->back()->withErrors(['csv_file' => 'Please upload a CSV file.']);
         }
@@ -228,9 +228,12 @@ class OrderController extends Controller
                         $existingProduct->save();
                     } else {
                         // Create a new record
-                        $purchaseOrderProduct = new PurchaseOrderProduct();
-                        $purchaseOrderProduct->sales_order_id = $saveOrder->id;
+                        // dd($newProduct->id);
+                        $purchaseOrderProduct = new PurchaseOrderProduct();                        
                         $purchaseOrderProduct->purchase_order_id = $purchaseOrder->id;
+                        $purchaseOrderProduct->product_id = $newProduct->id;
+                        $purchaseOrderProduct->sales_order_id = $saveOrder->id;
+                        $purchaseOrderProduct->sales_order_product_id = $saveOrderProduct->id;
                         $purchaseOrderProduct->ordered_quantity = $unavailableStatus;
                         $purchaseOrderProduct->sku = $record['SKU Code'];
                         $purchaseOrderProduct->vendor_code = $record['Vendor Code'];
