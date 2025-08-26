@@ -91,7 +91,7 @@
                             <table id="customerPOTableList" class="table align-middle">
                                 <thead class="table-light">
                                     <tr>
-                                        {{-- <th>Customer&nbsp;Name</th> --}}
+                                        <th>Customer&nbsp;Name</th>
                                         <th>PO&nbsp;Number</th>
                                         <th>SKU&nbsp;Code</th>
                                         <th>Facility&nbsp;Name</th>
@@ -115,7 +115,7 @@
                                 <tbody>
                                     @forelse($salesOrder->orderedProducts as $order)
                                         <tr>
-                                            {{-- <td>{{ $order->customer->contact_name }}</td> --}}
+                                            <td>{{ $order->customer->contact_name }}</td>
                                             <td>{{ $order->tempOrder->po_number }}</td>
                                             <td>{{ $order->tempOrder->sku }}</td>
                                             <td>{{ $order->tempOrder->facility_name }}</td>
