@@ -229,9 +229,10 @@ class OrderController extends Controller
                     } else {
                         // Create a new record
                         // dd($newProduct->id);
+                        $hasProduct = Product::where('sku', $record['SKU Code'])->get();
                         $purchaseOrderProduct = new PurchaseOrderProduct();                        
                         $purchaseOrderProduct->purchase_order_id = $purchaseOrder->id;
-                        $purchaseOrderProduct->product_id = $newProduct->id;
+                        $purchaseOrderProduct->product_id = $hasProduct->id;
                         $purchaseOrderProduct->sales_order_id = $saveOrder->id;
                         $purchaseOrderProduct->sales_order_product_id = $saveOrderProduct->id;
                         $purchaseOrderProduct->ordered_quantity = $unavailableStatus;
