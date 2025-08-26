@@ -20,4 +20,8 @@ class Customer extends Model
     public function address() {
         return $this->hasOne(CustomerAddress::class, 'customer_id', 'id');
     }
+    
+    public function addresses() {
+        return $this->hasOne(CustomerAddress::class, 'customer_id', 'id');
+    }
 }

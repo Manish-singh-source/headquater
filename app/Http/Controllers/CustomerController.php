@@ -193,7 +193,8 @@ class CustomerController extends Controller
 
     public function edit($id, $group_id)
     {
-        $customer = Customer::with('addresses')->findOrFail($id);
+        $customer = Customer::with('address')->findOrFail($id);
+        // dd($customer);
         return view('customer.edit', compact('customer', 'group_id'));
     }
 

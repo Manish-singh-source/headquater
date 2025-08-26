@@ -287,7 +287,7 @@ class OrderController extends Controller
             DB::commit();
 
             // Create notification for sales order
-            // notifySalesOrder($saveOrder);
+            notifySalesOrder($saveOrder);
 
             return redirect()->route('order.index')->with('success', 'Order Completed Successful.');
         } catch (\Exception $e) {
@@ -469,11 +469,11 @@ class OrderController extends Controller
         $salesOrder->status = $request->status;
 
         // Create notifications based on status change
-        // if ($request->status == 'ready_to_package') {
-        //     notifyPackagingList($salesOrder);
-        // } elseif ($request->status == 'ready_to_ship') {
-        //     notifyReadyToShip($salesOrder);
-        // }
+        if ($request->status == 'ready_to_package') {
+            notifyPackagingList($salesOrder);
+        } elseif ($request->status == 'ready_to_ship') {
+            notifyReadyToShip($salesOrder);
+        }
 
         if ($salesOrder->status == 'ready_to_ship') {
             $customerFacilityName = SalesOrderProduct::with('customer')
