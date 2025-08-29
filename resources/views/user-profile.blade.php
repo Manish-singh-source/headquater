@@ -215,13 +215,9 @@
                     </div>
 
                 </div>
-            </div><!--end row-->
-
-
-
+            </div>
         </div>
     </main>
-    <!--end main wrapper-->
 @endsection
 
 

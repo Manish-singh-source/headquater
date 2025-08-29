@@ -170,7 +170,7 @@ class InvoiceController extends Controller
             $payment->payment_status = $request->input('payment_status');
             $payment->save();
         } catch (\Exception $e) {
-            dd($e);
+            // dd($e);
             return redirect()->back()->with('error', 'Failed to update invoice: ' . $e->getMessage());
         }
 

@@ -87,7 +87,7 @@ class PurchaseOrderController extends Controller
 
             return redirect()->route('purchase.order.index')->with('success', 'CSV file imported successfully.');
         } catch (\Exception $e) {
-            dd($e->getMessage());
+            // dd($e->getMessage());
             DB::rollBack();
             return redirect()->back()->withErrors(['error' => 'Something went wrong: ' . $e->getMessage()]);
         }

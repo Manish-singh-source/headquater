@@ -1,11 +1,11 @@
-<head>
+@section('styles')
     <style>
         #hideTable {
             border-collapse: collapse;
             width: 100%;
         }
     </style>
-</head>
+@endsection
 
 @extends('layouts.master')
 @section('main-content')
@@ -25,9 +25,11 @@
                         </div>
                         <!-- Tabs Navigation -->
                         <div class="d-flex justify-content-end my-3 gap-2">
+
+                            <!-- Client Name Dropdown -->
                             <ul class="nav nav-tabs" id="vendorTabs" role="tablist">
                                 <select class="form-select border-2 border-primary" id="customerPOTable"
-                                    aria-label="Default select example">
+                                    aria-label="Select Client Name">
                                     <option value="" selected> -- Select Client Name --</option>
                                     @foreach ($facilityNames as $name)
                                         <option value="{{ $name }}">{{ $name }}</option>
@@ -131,14 +133,15 @@
                                             <td>{{ $order->tempOrder->mrp }}</td>
                                             <td>{{ $order->tempOrder->po_qty }}</td>
                                             {{-- Need to check --}}
-                                            <td>{{ $order->warehouseStockLog->block_quantity}}</td>
+                                            <td>{{ $order->warehouseStockLog->block_quantity }}</td>
                                             <td>{{ $order->ordered_quantity }}</td>
                                             <td>{{ $order->tempOrder->po_number }}</td>
-                                            <td>{{ $order->warehouseStockLog->block_quantity}}</td>
+                                            <td>{{ $order->warehouseStockLog->block_quantity }}</td>
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="6">No Records Found</td>
+                                            <td colspan="19" class="text-center">No records found. Please update or upload
+                                                a PO to see data.</td>
                                         </tr>
                                     @endforelse
                                 </tbody>
@@ -177,23 +180,26 @@
 @section('script')
     <script>
         $(document).ready(function() {
-            var customerPOTableList = $('#customerPOTableList').DataTable({
-                "columnDefs": [{
+            // Initialize DataTable only if table exists
+            if ($('#customerPOTableList').length) {
+                var customerPOTableList = $('#customerPOTableList').DataTable({
+                    "columnDefs": [{
                         "orderable": false,
-                    }
-                ],
-                lengthChange: true,
-                buttons: [{
-                    extend: 'excelHtml5',
-                    className: 'd-none', 
-                }]
-            });
+                    }],
+                    lengthChange: true,
+                    buttons: [{
+                        extend: 'excelHtml5',
+                        className: 'd-none',
+                    }]
+                });
 
-            $('#customerPOTable').on('change', function() {
-                var selected = $(this).val().trim();
-                customerPOTableList.column(3).search(selected ? '^' + selected + '$' : '', true, false).draw();
-            });
-
+                // Filter by client name
+                $('#customerPOTable').on('change', function() {
+                    var selected = $(this).val().trim();
+                    customerPOTableList.column(3).search(selected ? '^' + selected + '$' : '', true, false)
+                        .draw();
+                });
+            }
         });
     </script>
 @endsection
