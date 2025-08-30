@@ -37,4 +37,8 @@ class Vendor extends Model
         return $this->hasOne(Country::class, 'id', 'billing_country');
     }
 
+    public function purchaseOrders()
+    {
+        return $this->hasMany(PurchaseOrderProduct::class, 'vendor_code');
+    }
 }

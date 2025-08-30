@@ -14,7 +14,8 @@ class VendorController extends Controller
     //
     public function index()
     {
-        $vendors = Vendor::get();
+        $vendors = Vendor::withCount('purchaseOrders')->get();
+        // dd($vendors);
         return view('vendor.index', compact('vendors'));
     }
 

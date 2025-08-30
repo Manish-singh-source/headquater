@@ -195,7 +195,7 @@ class OrderController extends Controller
                     'available_quantity' => $remaining,
                     'unavailable_quantity' => $unavailableStatus,
                     'block' => $record['Block'],
-                    'rate_confirmation' => $record['Rate Confirmation'],
+                    'rate_confirmation' => $record['MRP Confirmation'],
                     'case_pack_quantity' => $record['Case Pack Quantity'],
                     'purchase_order_quantity' => $record['Purchase Order Quantity'] ?? '',
                     'vendor_code' => $record['Vendor Code'],
@@ -231,14 +231,14 @@ class OrderController extends Controller
                         // dd($newProduct->id);
                         $hasProduct = Product::where('sku', $record['SKU Code'])->first();
                         // dd($hasProduct);
-                        if(!$hasProduct) {
+                        if (!$hasProduct) {
                             continue;
                         }
-                        $purchaseOrderProduct = new PurchaseOrderProduct();                        
+                        $purchaseOrderProduct = new PurchaseOrderProduct();
                         $purchaseOrderProduct->purchase_order_id = $purchaseOrder->id;
-                        if($hasProduct) {
+                        if ($hasProduct) {
                             $purchaseOrderProduct->product_id = $hasProduct?->id ?? 0;
-                        }else {
+                        } else {
                             $purchaseOrderProduct->product_id = 0;
                         }
                         $purchaseOrderProduct->sales_order_id = $saveOrder->id;
@@ -360,9 +360,9 @@ class OrderController extends Controller
                     'net_landing_rate' => Arr::get($record, 'Net Landing Rate') ?? '',
                     'mrp' =>  Arr::get($record, 'PO MRP') ?? '',
                     'product_mrp' => Arr::get($record, 'Product MRP') ?? '',
-                    'rate_confirmation' => Arr::get($record, 'Rate Confirmation') ?? '',
+                    'rate_confirmation' => Arr::get($record, 'MRP Confirmation') ?? '',
                     'po_qty' => Arr::get($record, 'Qty Requirement') ?? '',
-                    'block' => Arr::get($record, 'Qty Requirement') ?? '',
+                    'block' => Arr::get($record, 'Qty Fullfilled') ?? '',
                     'created_at' => now(),
                     'updated_at' => now(),
                 ];
@@ -486,7 +486,7 @@ class OrderController extends Controller
             notifyPackagingList($salesOrder);
         } elseif ($request->status == 'ready_to_ship') {
             notifyReadyToShip($salesOrder);
-        } 
+        }
 
         if ($salesOrder->status == 'ready_to_ship') {
             $customerFacilityName = SalesOrderProduct::with('customer')
@@ -534,10 +534,10 @@ class OrderController extends Controller
         if (!$salesOrder) {
             return redirect()->back('error', 'Status Not Changed. Please Try Again.');
         }
-        if($salesOrder->status == 'completed') {
+        if ($salesOrder->status == 'completed') {
             return back()->with('success', 'Order has been completed.');
         }
-        
+
         return redirect()->route('readyToShip.view', $request->order_id)->with('success', 'Status has been changed.');
     }
 
@@ -555,129 +555,169 @@ class OrderController extends Controller
 
         $productStockCache = []; // Cache stock by SKU
         $insertedRows = [];
+        $unavailableProducts = [];
         $insertCount = 0;
 
-        foreach ($reader->getRows() as $record) {
-            $sku = trim($record['SKU Code']);
-            // $productSku =
-            $poQty = (int)$record['PO Quantity'];
-            $warehouseId = $request->warehouse_id;
+        try {
 
-            // Default fallback
-            $availableQty = 0;
-            $unavailableStatus = "0";
+            foreach ($reader->getRows() as $record) {
+                $sku = trim($record['SKU Code']);
+                // $productSku =
+                $poQty = (int)$record['PO Quantity'];
+                $warehouseId = $request->warehouse_id;
 
-            // Fetch stock if not already cached
-            if (!isset($productStockCache[$sku])) {
-                $stockEntry = WarehouseStock::with('product')
-                    ->where('sku', $sku)
-                    ->where('warehouse_id', $warehouseId)
-                    ->first();
+                // Default fallback
+                $availableQty = 0;
+                $unavailableStatus = "0";
 
+                // Fetch stock if not already cached
+                if (!isset($productStockCache[$sku])) {
+                    $stockEntry = WarehouseStock::with('product')
+                        ->where('sku', $sku)
+                        ->where('warehouse_id', $warehouseId)
+                        ->first();
 
-                if (!isset($stockEntry)) {
-                    $productStockCache[$sku] = [
-                        'remaining' => 0,
-                        'ordered' => 0,
-                    ];
-                } else {
-                    // if (empty($stockEntry->quantity)) {
-                    //     $quantity = 0;
-                    //     $block_quantity = 0;
-                    // } else {
-                    $quantity = $stockEntry->quantity;
-                    $block_quantity = $stockEntry->block_quantity;
-                    // }
-
-                    if (isset($block_quantity) && $block_quantity >= $quantity) {
+                    if (!isset($stockEntry)) {
                         $productStockCache[$sku] = [
                             'remaining' => 0,
                             'ordered' => 0,
                         ];
-                    } elseif (isset($block_quantity) && $block_quantity > 0 && $block_quantity < $quantity) {
-                        $productStockCache[$sku] = [
-                            'remaining' => $quantity - $block_quantity,
-                            'ordered' => 0,
-                        ];
                     } else {
-                        if ($stockEntry) {
-                            $productStockCache[$sku] = [
-                                'remaining' => $quantity,
-                                'ordered' => $stockEntry->product->sets_ctn ?? 0,
-                            ];
-                        } else {
+                        // if (empty($stockEntry->quantity)) {
+                        //     $quantity = 0;
+                        //     $block_quantity = 0;
+                        // } else {
+                        $quantity = $stockEntry->quantity;
+                        $block_quantity = $stockEntry->block_quantity;
+                        // }
+
+                        if (isset($block_quantity) && $block_quantity >= $quantity) {
                             $productStockCache[$sku] = [
                                 'remaining' => 0,
                                 'ordered' => 0,
                             ];
+                        } elseif (isset($block_quantity) && $block_quantity > 0 && $block_quantity < $quantity) {
+                            $productStockCache[$sku] = [
+                                'remaining' => $quantity - $block_quantity,
+                                'ordered' => 0,
+                            ];
+                        } else {
+                            if ($stockEntry) {
+                                $productStockCache[$sku] = [
+                                    'remaining' => $quantity,
+                                    'ordered' => $stockEntry->product->sets_ctn ?? 0,
+                                ];
+                            } else {
+                                $productStockCache[$sku] = [
+                                    'remaining' => 0,
+                                    'ordered' => 0,
+                                ];
+                            }
                         }
                     }
                 }
+
+                // Use cached values
+                $remaining = $productStockCache[$sku]['remaining'];
+                $availableQty = $productStockCache[$sku]['ordered'];
+
+                // Stock check
+                if ($remaining >= $poQty) {
+                    // Sufficient stock
+                    $remaining = $poQty;
+                    $unavailableStatus = 0;
+                    $productStockCache[$sku]['remaining'] -= $poQty;
+                } else {
+                    // Insufficient stock
+                    $shortage = $poQty - $remaining;
+                    $unavailableStatus = $shortage;
+                    $productStockCache[$sku]['remaining'] = 0;
+                }
+
+                // dd($stockEntry->product);
+                // $casePackQty = (int)$stockEntry->product->pcs_set;
+                // $casePackQtyData[] = (int)$stockEntry->product?->pcs_set * (int)$stockEntry->product?->sets_ctn;
+                // dd($casePackQtyData);
+                if (!isset($stockEntry->product)) {
+                    $unavailableProducts[] = $sku;
+                    $insertedRows[] = [
+                        'Customer Name' => $record['Customer Name'] ?? '',
+                        'PO Number' => $record['PO Number'] ?? '',
+                        'SKU Code' => $sku ?? '',
+                        'Facility Name' => $record['Facility Name'] ?? '',
+                        'Facility Location' => $record['Facility Location'] ?? '',
+                        'PO Date' => Carbon::parse($record['PO Date'])->format('d-m-Y') ?? '',
+                        'PO Expiry Date' => Carbon::parse($record['PO Expiry Date'])->format('d-m-Y') ?? '',
+                        'HSN' => $record['HSN'] ?? '',
+                        'Item Code' => $record['Item Code'] ?? '',
+                        'Description' => $record['Description'] ?? '',
+                        'GST' => $record['GST'] ?? '',
+                        'Basic Rate' => $record['Basic Rate'] ?? '',
+                        'Net Landing Rate' => $record['Net Landing Rate'] ?? '',
+                        'MRP' => $record['MRP'] ?? '',
+                        'Product MRP' => $stockEntry->product->mrp ?? '',
+                        'MRP Confirmation' => 'No',
+                        'Case Pack Quantity' => $casePackQty ?? 0,
+                        'PO Quantity' => $poQty ?? 0,
+                        'Available Quantity' => $remaining ?? 0,
+                        'Unavailable Quantity' => $unavailableStatus ?? 0,
+                    ];
+                    continue;
+                }
+                $casePackQty = (int)$stockEntry->product?->pcs_set * (int)$stockEntry->product?->sets_ctn;
+
+                // dd($casePackQty);
+                $insertedRows[] = [
+                    'Customer Name' => $record['Customer Name'] ?? '',
+                    'PO Number' => $record['PO Number'] ?? '',
+                    'SKU Code' => $sku ?? '',
+                    'Facility Name' => $record['Facility Name'] ?? '',
+                    'Facility Location' => $record['Facility Location'] ?? '',
+                    'PO Date' => Carbon::parse($record['PO Date'])->format('d-m-Y') ?? '',
+                    'PO Expiry Date' => Carbon::parse($record['PO Expiry Date'])->format('d-m-Y') ?? '',
+                    'HSN' => $record['HSN'] ?? '',
+                    'Item Code' => $record['Item Code'] ?? '',
+                    'Description' => $record['Description'] ?? '',
+                    'GST' => $record['GST'] ?? '',
+                    'Basic Rate' => $record['Basic Rate'] ?? '',
+                    'Net Landing Rate' => $record['Net Landing Rate'] ?? '',
+                    'MRP' => $record['MRP'] ?? '',
+                    'Product MRP' => $stockEntry->product->mrp ?? '',
+                    'MRP Confirmation' => ($record['MRP'] <= $stockEntry->product->mrp) ? 'Yes' : 'No',
+                    'Case Pack Quantity' => $casePackQty ?? 0,
+                    'PO Quantity' => $poQty ?? 0,
+                    'Available Quantity' => $remaining ?? 0,
+                    'Unavailable Quantity' => $unavailableStatus ?? 0,
+                ];
             }
 
-            // Use cached values
-            $remaining = $productStockCache[$sku]['remaining'];
-            $availableQty = $productStockCache[$sku]['ordered'];
+            // dd($insertedRows);
 
-            // Stock check
-            if ($remaining >= $poQty) {
-                // Sufficient stock
-                $remaining = $poQty;
-                $unavailableStatus = 0;
-                $productStockCache[$sku]['remaining'] -= $poQty;
-            } else {
-                // Insufficient stock
-                $shortage = $poQty - $remaining;
-                $unavailableStatus = $shortage;
-                $productStockCache[$sku]['remaining'] = 0;
+            if (empty($insertedRows)) {
+                return redirect()->back()->withErrors(['csv_file' => 'No valid data found in the CSV file.']);
             }
 
-            // $casePackQty = (int)$stockEntry->product->pcs_set;
-            $casePackQty = (int)$stockEntry->product->pcs_set * (int)$stockEntry->product->sets_ctn;
+            $filteredRows = collect($insertedRows)->map(function ($row) {
+                unset($row['created_at']);
+                return $row;
+            });
 
-            // dd($casePackQty);
-            $insertedRows[] = [
-                'Customer Name' => $record['Customer Name'],
-                'PO Number' => $record['PO Number'],
-                'SKU Code' => $sku,
-                'Facility Name' => $record['Facility Name'],
-                'Facility Location' => $record['Facility Location'],
-                'PO Date' => Carbon::parse($record['PO Date'])->format('d-m-Y'),
-                'PO Expiry Date' => Carbon::parse($record['PO Expiry Date'])->format('d-m-Y'),
-                'HSN' => $record['HSN'],
-                'Item Code' => $record['Item Code'],
-                'Description' => $record['Description'],
-                'GST' => $record['GST'],
-                'Basic Rate' => $record['Basic Rate'],
-                'Net Landing Rate' => $record['Net Landing Rate'],
-                'MRP' => $record['MRP'],
-                'Product MRP' => $stockEntry->product->mrp,
-                'Rate Confirmation' => ($record['MRP'] <= $stockEntry->product->mrp) ? 'Yes' : 'No',
-                'Case Pack Quantity' => $casePackQty ?? 0,
-                'PO Quantity' => $poQty,
-                'Available Quantity' => $remaining,
-                'Unavailable Quantity' => $unavailableStatus,
-            ];
+            $fileName = 'processed_order_' . time() . '.csv';
+            $csvPath = public_path("uploads/{$fileName}");
+
+            SimpleExcelWriter::create($csvPath)->addRows($filteredRows->toArray());
+            session(['processed_csv_path' => "uploads/{$fileName}"]);
+
+            // filter unavailable products for uniqueness
+            // dd($unavailableProducts);
+            $unavailableProducts = array_unique($unavailableProducts);
+
+            $customerGroup = CustomerGroup::all();
+            $warehouses = Warehouse::all();
+        } catch (\Exception $e) {
+            dd($e);
+            return redirect()->back()->withErrors(['csv_file' => 'Something went wrong: ' . $e->getMessage()]);
         }
-
-
-        if (empty($insertedRows)) {
-            return redirect()->back()->withErrors(['csv_file' => 'No valid data found in the CSV file.']);
-        }
-
-        $filteredRows = collect($insertedRows)->map(function ($row) {
-            unset($row['created_at']);
-            return $row;
-        });
-
-        $fileName = 'processed_order_' . time() . '.csv';
-        $csvPath = public_path("uploads/{$fileName}");
-
-        SimpleExcelWriter::create($csvPath)->addRows($filteredRows->toArray());
-        session(['processed_csv_path' => "uploads/{$fileName}"]);
-
-        $customerGroup = CustomerGroup::all();
-        $warehouses = Warehouse::all();
         return view('salesOrder.process-order', ['customerGroup' => $customerGroup, 'warehouses' => $warehouses, 'fileData' => $insertedRows]);
     }
 
@@ -714,7 +754,7 @@ class OrderController extends Controller
                 'Net Landing Rate' => $row['Net Landing Rate'] ?? '',
                 'PO MRP' => $row['MRP'] ?? '',
                 'Product MRP' => $row['MRP'] ?? '',
-                'Rate Confirmation' => $row['Rate Confirmation'] ?? '',
+                'MRP Confirmation' => $row['MRP Confirmation'] ?? '',
                 'PO Quantity' => $row['PO Quantity'] ?? '',
                 'Available Quantity' => $row['Available Quantity'] ?? '',
                 'Unavailable Quantity' => $row['Unavailable Quantity'] ?? '',
@@ -750,7 +790,7 @@ class OrderController extends Controller
         $writer = SimpleExcelWriter::create($tempXlsxPath);
 
         // Fetch data with relationships
-        $salesOrder = SalesOrder::with('customerGroup', 'warehouse', 'orderedProducts.product', 'orderedProducts.tempOrder', 'orderedProducts.vendorPIProduct.order', 'vendorPIs.products')->findOrFail($request->salesOrderId);
+        $salesOrder = SalesOrder::with('customerGroup', 'warehouse', 'orderedProducts.product', 'orderedProducts.warehouseStock', 'orderedProducts.tempOrder', 'orderedProducts.vendorPIProduct.order', 'vendorPIs.products')->findOrFail($request->salesOrderId);
         foreach ($salesOrder->orderedProducts as $orderedProduct) {
             $orderedProduct->warehouseStockLog = WarehouseStockLog::where('sales_order_id', $orderedProduct->sales_order_id)
                 ->where('customer_id', $orderedProduct->customer_id)
@@ -763,7 +803,7 @@ class OrderController extends Controller
 
                 $fulfilledQuantity = 0;
 
-                if ($order->product?->sets_ctn) {
+                if ($order->warehouseStock?->quantity > 0) {
                     if ($order->vendorPIProduct?->order?->status != 'completed') {
                         if (
                             $order->vendorPIProduct?->available_quantity + $order->warehouseStockLog?->block_quantity >=
@@ -772,6 +812,7 @@ class OrderController extends Controller
                             $fulfilledQuantity = $order->ordered_quantity;
                         } else {
                             $fulfilledQuantity = $order->vendorPIProduct?->available_quantity + $order->warehouseStockLog?->block_quantity;
+                            // dd($fulfilledQuantity);
                         }
                     } else {
                         if ($order->warehouseStockLog?->block_quantity >= $order->ordered_quantity) {
@@ -797,7 +838,7 @@ class OrderController extends Controller
                     'Net Landing Rate' => $order->tempOrder->net_landing_rate,
                     'PO MRP' =>  $order->tempOrder->mrp,
                     'Product MRP' => $order->tempOrder->product_mrp,
-                    'Rate Confirmation' => ($order->tempOrder->mrp == $order->tempOrder->product_mrp) ? 'Confirmed' : 'Mismatched',
+                    'MRP Confirmation' => ($order->tempOrder->mrp >= $order->tempOrder->product_mrp) ? 'Correct' : 'Incorrect',
                     'Qty Requirement' => $order->ordered_quantity,
                     'Qty Fullfilled' => $fulfilledQuantity,
                 ]);
@@ -807,7 +848,7 @@ class OrderController extends Controller
         // Close the writer
         $writer->close();
 
-        return response()->download($tempXlsxPath, 'vendor_po.xlsx', [
+        return response()->download($tempXlsxPath, 'customer_order_update_' . Str::random(8) . '.xlsx', [
             'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         ])->deleteFileAfterSend(true);
     }

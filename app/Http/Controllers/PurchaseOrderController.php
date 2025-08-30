@@ -444,14 +444,16 @@ class PurchaseOrderController extends Controller
                     'Vendor SKU Code'   => $order->tempProduct->sku ?? '',
                     'Title'             => $order->tempProduct->description ?? '',
                     'MRP'               => $order->tempProduct->mrp ?? '',
+                    'GST'               => $order->tempProduct->gst ?? '',
+                    'HSN'               => $order->tempProduct->hsn ?? '',
                     'Quantity Requirement' => $order->ordered_quantity ?? '',
                     'Available Quantity' => '',
                     'Purchase Rate Basic' => '',
-                    'GST' => '',
-                    'HSN' => '',
                 ]);
             }
         }
+
+        												
 
         // Close the writer
         $writer->close();

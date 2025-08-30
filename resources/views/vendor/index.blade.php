@@ -83,10 +83,9 @@
                                                 <a href="javascript:;" class="font-text1">{{ $vendor->email }}</a>
                                             </td>
                                             <td>{{ $vendor->phone_number }}</td>
-                                            <td>142</td>
-                                            <td>Mumbai</td>
-
-                                            <td>Nov 12, 10:45 PM</td>
+                                            <td>{{ $vendor->purchase_orders_count }}</td>
+                                            <td>{{ $vendor->shipping_city }}</td>
+                                            <td>{{ $vendor->created_at->format('M d, Y') }}</td>
                                             <td>
                                                 <div class="form-switch form-check-success">
                                                     <input class="form-check-input status-switch1" type="checkbox"

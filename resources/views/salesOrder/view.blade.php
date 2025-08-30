@@ -194,12 +194,16 @@
                                             <input class="form-check-input" type="checkbox" id="select-all">
                                         </th>
                                         <th>Customer&nbsp;Name</th>
-                                        <th>Facility&nbsp;Name</th>
-                                        <th>HSN</th>
-                                        <th>GST</th>
-                                        <th>Item&nbsp;Code</th>
+                                        <th>PO&nbsp;Number</th>
                                         <th>SKU&nbsp;Code</th>
+                                        <th>Facility&nbsp;Name</th>
+                                        <th>Facility&nbsp;Location</th>
+                                        <th>PO&nbsp;Date</th>
+                                        <th>PO&nbsp;Expiry&nbsp;Date</th>
+                                        <th>HSN</th>
+                                        <th>Item&nbsp;Code</th>
                                         <th>Title</th>
+                                        <th>GST</th>
                                         <th>Basic&nbsp;Rate</th>
                                         <th>Net&nbsp;Landing&nbsp;Rate</th>
                                         <th>PO&nbsp;MRP</th>
@@ -225,17 +229,21 @@
                                                     name="ids[]" value="{{ $order->id }}">
                                             </td>
                                             <td>{{ $order->tempOrder->customer_name }}</td>
-                                            <td>{{ $order->tempOrder->facility_name }}</td>
-                                            <td>{{ $order->tempOrder->hsn }}</td>
-                                            <td>{{ $order->tempOrder->gst }}</td>
-                                            <td>{{ $order->tempOrder->item_code }}</td>
+                                            <td>{{ $order->tempOrder->po_number }}</td>
                                             <td>{{ $order->tempOrder->sku }}</td>
+                                            <td>{{ $order->tempOrder->facility_name }}</td>
+                                            <td>{{ $order->tempOrder->facility_location }}</td>
+                                            <td>{{ $order->tempOrder->po_date }}</td>
+                                            <td>{{ $order->tempOrder->po_expiry_date }}</td>
+                                            <td>{{ $order->tempOrder->hsn }}</td>
+                                            <td>{{ $order->tempOrder->item_code }}</td>
                                             <td>{{ $order->tempOrder->description }}</td>
+                                            <td>{{ $order->tempOrder->gst }}</td>
                                             <td>{{ $order->tempOrder->basic_rate }}</td>
                                             <td>{{ $order->tempOrder->net_landing_rate }}</td>
                                             <td>{{ $order->tempOrder->mrp }}</td>
                                             <td>{{ $order->tempOrder->product_mrp }}</td>
-                                            @if ($order->tempOrder->mrp == $order->tempOrder->product_mrp)
+                                            @if ($order->tempOrder->mrp >= $order->tempOrder->product_mrp)
                                                 <td> <span class="badge text-success bg-success-subtle">Yes</span></td>
                                             @else
                                                 <td><span class="badge text-danger bg-danger-subtle">No</span></td>
@@ -243,7 +251,7 @@
                                             <td>{{ $order->ordered_quantity }}</td>
                                             @if ($order->warehouseStock?->quantity)
                                                 <td>
-                                                    @if ($order->vendorPIProduct?->order?->status != 'completed')
+                                                    @if ($order->vendorPIProduct?->order?->status == 'completed')
                                                         @if ($order->vendorPIProduct?->available_quantity >= $order->vendorPIProduct?->quantity_received)
                                                             @if (
                                                                 $order->vendorPIProduct?->quantity_received + $order->warehouseStockLog?->block_quantity >=
