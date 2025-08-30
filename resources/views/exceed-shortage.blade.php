@@ -163,7 +163,7 @@
                                                 </tr>
                                             @empty
                                                 <tr>
-                                                    <td colspan="6">No Records Found</td>
+                                                    <td colspan="14" class="text-center">No Records Found</td>
                                                 </tr>
                                             @endforelse
                                         </tbody>

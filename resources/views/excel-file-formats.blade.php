@@ -20,6 +20,21 @@
                     <div class="col-12">
                         <div class="card w-100 d-flex  flex-sm-row flex-col">
                             <ul class="col-12 list-group list-group-flush">
+
+                                customer groups 
+                                products 
+                                update products 
+                                sku mapping 
+                                check availability 
+                                customer po (blocking) 
+                                update po 
+                                manual purchase order 
+                                vendor pi 
+                                update vendor pi 
+
+                                update po (packaging list)
+
+
                                 <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                                     <span><b>Customers Group</b></span>
                                     <span>

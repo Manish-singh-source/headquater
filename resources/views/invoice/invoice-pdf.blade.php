@@ -186,9 +186,9 @@
         </tr>
         <tr>
             <td colspan="2">
-                TOTAL SETS - QTY 160<br>
-                TOTAL BOX COUNT - 15<br>
-                WEIGHT - KG 183
+                TOTAL SETS - QTY {{ $invoiceDetails->sum('quantity') }}<br>
+                TOTAL BOX COUNT - {{ $invoiceDetails->sum('box') }}<br>
+                WEIGHT - KG {{ $invoiceDetails->sum('weight') }}
             </td>
         </tr>
     </table>

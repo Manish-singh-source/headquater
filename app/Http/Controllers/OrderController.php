@@ -486,7 +486,7 @@ class OrderController extends Controller
             notifyPackagingList($salesOrder);
         } elseif ($request->status == 'ready_to_ship') {
             notifyReadyToShip($salesOrder);
-        }
+        } 
 
         if ($salesOrder->status == 'ready_to_ship') {
             $customerFacilityName = SalesOrderProduct::with('customer')
@@ -534,8 +534,11 @@ class OrderController extends Controller
         if (!$salesOrder) {
             return redirect()->back('error', 'Status Not Changed. Please Try Again.');
         }
-
-        return redirect()->route('packaging.list.index', $request->order_id)->with('success', 'Status has been changed.');
+        if($salesOrder->status == 'completed') {
+            return back()->with('success', 'Order has been completed.');
+        }
+        
+        return redirect()->route('readyToShip.view', $request->order_id)->with('success', 'Status has been changed.');
     }
 
     public function checkProductsStock(Request $request)

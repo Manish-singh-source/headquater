@@ -163,10 +163,8 @@
                                                             <th>Quantity&nbsp;Ordered</th>
                                                             <th>PI&nbsp;Quantity</th>
                                                             <th>Quantity&nbsp;Received</th>
-                                                            @if ($vendorPIs->products[0])
-                                                                <th>Issue&nbsp;Units</th>
-                                                                <th>Issue&nbsp;Reason</th>
-                                                            @endif
+                                                            <th>Issue&nbsp;Units</th>
+                                                            <th>Issue&nbsp;Reason</th>
                                                             {{-- 
                                                             <th>Purchase&nbsp;Rate&nbsp;Basic</th>
                                                             <th>GST</th>
@@ -188,6 +186,9 @@
                                                                 @if ($product->issue_item)
                                                                     <td>{{ $product->issue_item ?? '' }}</td>
                                                                     <td>{{ $product->issue_reason ?? '' }}</td>
+                                                                @else
+                                                                    <td>NA</td>
+                                                                    <td>NA</td>
                                                                 @endif
                                                                 {{-- 
                                                                 <td>{{ $product->purchase_rate }}</td>

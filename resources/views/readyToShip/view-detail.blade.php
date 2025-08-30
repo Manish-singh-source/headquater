@@ -12,12 +12,21 @@
                 </div>
                 <div class="col-6 d-flex justify-content-end text-end my-2 ">
                     <div>
-                        <select id="input9" class="form-select">
-                            <option selected="" disabled>Status</option>
-                            <option>Out For Delivery</option>
-                            <option>Delivered</option>
-                            <option>Completed</option>
-                        </select>
+                        <form id="statusForm" action="{{ route('change.order.status') }}" method="POST">
+                            @csrf
+                            @method('PUT')
+                            <input type="hidden" name="order_id" value="{{ $salesOrder->id }}">
+                            <select class="form-select border-2 border-primary" id="changeStatus"
+                                aria-label="Default select example" name="status">
+                                <option value="" selected disabled>Change Status</option>
+                                {{-- <option value="out_for_delivery" @if ($salesOrder->status == 'out_for_delivery') selected @endif>
+                                    Out For Delivery</option>
+                                <option value="delivered" @if ($salesOrder->status == 'delivered') selected @endif>
+                                    Delivered</option> --}}
+                                <option value="completed" @if ($salesOrder->status == 'completed') selected @endif>
+                                    Completed</option>
+                            </select>
+                        </form>
                     </div>
                 </div>
             </div>
@@ -105,7 +114,7 @@
                                                 <th>MRP</th>
                                                 <th>PO&nbsp;Quantity</th>
                                                 <th>Warehouse&nbsp;Stock</th>
-                                                <th>PI&nbsp;Qty</th>
+                                                {{-- <th>PI&nbsp;Qty</th> --}}
                                                 <th>Purchase&nbsp;Order&nbsp;No</th>
                                                 <th>Total&nbsp;Dispatch&nbsp;Qty</th>
                                                 <th>Final&nbsp;Dispatch&nbsp;Qty</th>
@@ -130,11 +139,74 @@
                                                     <td>{{ $order->tempOrder->mrp }}</td>
                                                     <td>{{ $order->tempOrder->po_qty }}</td>
                                                     {{-- Need to check --}}
-                                                    <td>{{ $order->warehouseStock->block_quantity ?? '0' }}</td>
-                                                    <td>{{ $order->ordered_quantity }}</td>
+                                                    {{-- <td>{{ $order->warehouseStock->block_quantity ?? '0' }}</td> --}}
+                                                    {{-- <td>{{ $order->ordered_quantity }}</td> --}}
+                                                    <td>{{ $order->warehouseStock->quantity ?? '0' }}</td>
                                                     <td>{{ $order->tempOrder->po_number }}</td>
-                                                    <td>{{ $order->warehouseStock->block_quantity ?? '0' }}</td>
-                                                    <td>{{ $order->warehouseStock->block_quantity ?? '0' }}</td>
+                                                    @if ($order->warehouseStock?->quantity)
+                                                        <td>
+                                                            @if ($order->vendorPIProduct?->order?->status != 'completed')
+                                                                @if ($order->vendorPIProduct?->available_quantity >= $order->vendorPIProduct?->quantity_received)
+                                                                    @if (
+                                                                        $order->vendorPIProduct?->quantity_received + $order->warehouseStockLog?->block_quantity >=
+                                                                            $order->ordered_quantity)
+                                                                        <span
+                                                                            class="badge text-success bg-success-subtle">{{ $order->ordered_quantity }}</span>
+                                                                    @else
+                                                                        <span
+                                                                            class="badge text-danger bg-danger-subtle">{{ $order->vendorPIProduct?->quantity_received + $order->warehouseStockLog?->block_quantity }}</span>
+                                                                    @endif
+                                                                @else
+                                                                    <span
+                                                                        class="badge text-danger bg-danger-subtle">{{ $order->vendorPIProduct?->available_quantity + $order->warehouseStockLog?->block_quantity }}</span>
+                                                                @endif
+                                                            @else
+                                                                @if ($order->warehouseStockLog?->block_quantity >= $order->ordered_quantity)
+                                                                    <span
+                                                                        class="badge text-success bg-success-subtle">{{ $order->ordered_quantity }}</span>
+                                                                @else
+                                                                    <span
+                                                                        class="badge text-danger bg-danger-subtle">{{ $order->warehouseStockLog?->block_quantity }}</span>
+                                                                @endif
+                                                            @endif
+                                                        </td>
+                                                    @else
+                                                        <td>
+                                                            <span class="badge text-danger bg-danger-subtle">0</span>
+                                                        </td>
+                                                    @endif
+                                                    @if ($order->warehouseStock?->quantity)
+                                                        <td>
+                                                            @if ($order->vendorPIProduct?->order?->status != 'completed')
+                                                                @if ($order->vendorPIProduct?->available_quantity >= $order->vendorPIProduct?->quantity_received)
+                                                                    @if (
+                                                                        $order->vendorPIProduct?->quantity_received + $order->warehouseStockLog?->block_quantity >=
+                                                                            $order->ordered_quantity)
+                                                                        <span
+                                                                            class="badge text-success bg-success-subtle">{{ $order->ordered_quantity }}</span>
+                                                                    @else
+                                                                        <span
+                                                                            class="badge text-danger bg-danger-subtle">{{ $order->vendorPIProduct?->quantity_received + $order->warehouseStockLog?->block_quantity }}</span>
+                                                                    @endif
+                                                                @else
+                                                                    <span
+                                                                        class="badge text-danger bg-danger-subtle">{{ $order->vendorPIProduct?->available_quantity + $order->warehouseStockLog?->block_quantity }}</span>
+                                                                @endif
+                                                            @else
+                                                                @if ($order->warehouseStockLog?->block_quantity >= $order->ordered_quantity)
+                                                                    <span
+                                                                        class="badge text-success bg-success-subtle">{{ $order->ordered_quantity }}</span>
+                                                                @else
+                                                                    <span
+                                                                        class="badge text-danger bg-danger-subtle">{{ $order->warehouseStockLog?->block_quantity }}</span>
+                                                                @endif
+                                                            @endif
+                                                        </td>
+                                                    @else
+                                                        <td>
+                                                            <span class="badge text-danger bg-danger-subtle">0</span>
+                                                        </td>
+                                                    @endif
                                                 </tr>
                                             @empty
                                                 <tr>
@@ -151,5 +223,15 @@
             </div>
         </div>
     </main>
-    
+@endsection
+
+
+@section('script')
+    <script>
+        document.getElementById('changeStatus').addEventListener('change', function() {
+            if (confirm('Are you sure you want to change status for order?')) {
+                document.getElementById('statusForm').submit();
+            }
+        });
+    </script>
 @endsection
