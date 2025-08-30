@@ -755,7 +755,7 @@
                 var selected = $(this).val().trim();
 
                 // Use regex for exact match
-                table3.column(2).search(selected ? '^' + selected + '$' : '', true, false).draw();
+                table3.column(3).search(selected ? '^' + selected + '$' : '', true, false).draw();
             });
 
         });
