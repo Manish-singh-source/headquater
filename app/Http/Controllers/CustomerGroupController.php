@@ -57,7 +57,19 @@ class CustomerGroupController extends Controller
             $insertCount = 0;
 
             foreach ($reader->getRows() as $record) {
-                $customer = Customer::where('client_name', $record['Client Name'])->first();
+                // $customer = Customer::where('client_name', $record['Client Name'])->first();
+                $keywords = preg_split('/[\s\-]+/', $record['Shipping Address'], -1, PREG_SPLIT_NO_EMPTY);
+                $query = DB::table('customers'); 
+
+                $query->where(function ($q) use ($keywords) {
+                    foreach ($keywords as $word) {
+                        $q->orWhere('shipping_address', 'like', "%{$word}%");
+                    }
+                });
+
+                $customer = $query->first();
+
+                // dd($customer);
 
                 if (!$customer) {
                     // 2. Insert individual customer
@@ -146,15 +158,16 @@ class CustomerGroupController extends Controller
         if (!$id) {
             return redirect()->route('customer.groups.index')->with('error', 'Invalid Group ID.');
         }
+        try {
+            $customerGroup = CustomerGroup::findOrFail($id);
+            $customerGroup->delete();
 
-        $customerGroup = CustomerGroup::findOrFail($id);
-        $customerGroup->delete();
-
-        if ($customerGroup) {
-            return redirect()->route('customer.groups.index')->with('success', 'Successfully Deleted Group');
+            if ($customerGroup) {
+                return redirect()->route('customer.groups.index')->with('success', 'Successfully Deleted Group');
+            }
+        } catch (\Exception $e) {
+            return redirect()->route('customer.groups.index')->with('error', 'You Can Not Delete This Group. You have to delete Sales Orders first.');
         }
-
-        return redirect()->route('customer.groups.index')->with('info', 'No changes made to Group Name.');
     }
 
     public function toggleStatus(Request $request)
@@ -170,19 +183,21 @@ class CustomerGroupController extends Controller
         return response()->json(['success' => false]);
     }
 
-     public function deleteSelected(Request $request)
+    public function deleteSelected(Request $request)
     {
         if (!$request->ids) {
             return redirect()->back()->with('error', 'No customer groups selected for deletion.');
         }
 
-        $ids = is_array($request->ids) ? $request->ids : explode(',', $request->ids);
-        $group = CustomerGroup::destroy($ids);
+        try {
+            $ids = is_array($request->ids) ? $request->ids : explode(',', $request->ids);
+            $group = CustomerGroup::destroy($ids);
 
-        if ($group) {
-            return redirect()->back()->with('success', 'Selected customer groups deleted successfully.');
+            if ($group) {
+                return redirect()->back()->with('success', 'Selected customer groups deleted successfully.');
+            }
+        } catch (\Exception $e) {
+            return redirect()->route('customer.groups.index')->with('error', 'You Can Not Delete This Group. You have to delete Sales Orders first.');
         }
-
-        return redirect()->back()->with('error', 'Failed to delete selected customer groups.');
     }
 }
