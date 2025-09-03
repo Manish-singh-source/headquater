@@ -17,7 +17,7 @@
         "spatie/laravel-permission": "^6.21",
         "spatie/simple-excel": "^3.7"
     },
-    "require-dev": {        
+    "require-dev": {
         "beyondcode/laravel-query-detector": "^2.1",
         "fakerphp/faker": "^1.23",
         "laravel/boost": "^1.0",
