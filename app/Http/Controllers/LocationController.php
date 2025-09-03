@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\City;
-use App\Models\Country;
 use App\Models\State;
+use App\Models\Country;
 use Illuminate\Http\Request;
 
 class LocationController extends Controller
@@ -27,7 +27,7 @@ class LocationController extends Controller
             'message' => 'Countries Not Found',
         ], 400);
     }
-   
+
     //
     public function getStates(Request $request)
     {
@@ -46,7 +46,7 @@ class LocationController extends Controller
             'message' => 'States Not Found',
         ], 400);
     }
-   
+
     //
     public function getCities(Request $request)
     {

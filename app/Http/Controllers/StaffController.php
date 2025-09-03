@@ -2,13 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Role;
-use App\Models\Staff;
-use Illuminate\Support\Str;
+use App\Models\User;
 use Illuminate\Http\Request;
-use App\Mail\StaffCredentialsMail;
+use Spatie\Permission\Models\Role;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Mail;
+use Spatie\Permission\Models\Permission;
 use Illuminate\Support\Facades\Validator;
 
 class StaffController extends Controller
@@ -16,25 +14,28 @@ class StaffController extends Controller
     //
     public function index()
     {
-        $staffs = Staff::with('role')->get();
-        return view('staffs.index', ['staffs' => $staffs]);
+        // Logic to list staff members
+        $staffMembers = User::get(); // Assuming you have a Staff model
+        return view('staffs.index', compact('staffMembers'));
     }
 
     public function create()
     {
-        $roles = Role::get();
-        return view('staffs.create', ['roles' => $roles]);
+        // Logic to show the form for creating a new staff member
+        $roles = Role::all(); // Assuming you have a Role model
+        return view('staffs.create', compact('roles'));
     }
 
     public function store(Request $request)
     {
-        $validator = Validator::make($request->all(), [
+        // Logic to store a new staff member        
+        $validated = Validator::make($request->all(), [
             'role' => 'required',
             'fname' => 'required',
             'lname' => 'required',
             'phone' => 'required|digits:10',
             'password' => 'required',
-            'email' => 'required|email|unique:staff,email',
+            'email' => 'required|email|unique:users,email',
             'permanent_address' => 'required',
             'dob' => 'required|date',
             'gender' => 'required',
@@ -46,113 +47,127 @@ class StaffController extends Controller
             'pincode' => 'required|digits:6',
         ]);
 
-        if ($validator->fails()) {
-            return back()->withErrors($validator)->withInput();
+        if ($validated->fails()) {
+            return back()->withErrors($validated)->withInput();
         }
 
-        $staff = new Staff();
-        $staff->uid = Str::uuid()->toString();
-        $staff->role_id = $request->role;
-        $staff->user_name = $request->user_name;
-        $staff->fname = $request->fname;
-        $staff->lname = $request->lname;
-        $staff->password = $request->password;
-        $staff->phone = $request->phone;
-        $staff->dob = $request->dob;
-        $staff->marital = $request->marital;
-        $staff->gender = $request->gender;
-        $staff->email = $request->email;
-        $staff->current_address  = $request->current_address;
-        $staff->permanent_address = $request->permanent_address;
-        $staff->country = $request->country;
-        $staff->state = $request->state;
-        $staff->city = $request->city;
-        $staff->pincode = $request->pincode;
-
-        $staff->status = $request->status ?? '1'; // Default to active if not set
-        $staff->created_by = Auth::id() ?? '1'; // Assuming you have an authenticated user
-        $staff->updated_by =  Auth::id() ?? '1'; // Assuming you have an
-        $staff->save();
+        $staff = User::create([
+            'user_name' => $request->user_name,
+            'fname' => $request->fname,
+            'lname' => $request->lname,
+            'password' => $request->password,
+            'phone' => $request->phone,
+            'dob' => $request->dob,
+            'marital' => $request->marital,
+            'gender' => $request->gender,
+            'email' => $request->email,
+            'current_address'  => $request->current_address,
+            'permanent_address' => $request->permanent_address,
+            'country' => $request->country,
+            'state' => $request->state,
+            'city' => $request->city,
+            'pincode' => $request->pincode
+        ]);
 
         // Send email with credentials
-         Mail::to($staff->email)->send(new StaffCredentialsMail($staff->email, $request->password));
+        //  Mail::to($staff->email)->send(new StaffCredentialsMail($staff->email, $request->password));
 
-        return redirect()->route('staff.index')->with('success', 'Staff added successfully.');
+        if ($staff) {
+            // Assign role to staff
+            $staff->roles()->attach($request->role);
+            return redirect()->route('staff.index')->with('success', 'Staff member created successfully.');
+        }
+        return back()->with('error', 'Failed to create staff member.');
     }
 
     public function edit($id)
     {
-        $staff = Staff::with('role')->findOrFail($id);
-        $roles = Role::get();
+        // Logic to show the form for editing a staff member
+        $staff = User::findOrFail($id);
+        $roles = Role::all();
         return view('staffs.edit', compact('staff', 'roles'));
     }
 
     public function update(Request $request, $id)
     {
-        $validator = Validator::make($request->all(), [
+        // Logic to update a staff member
+        $staff = User::findOrFail($id);
+        $validated = Validator::make($request->all(), [
             'role' => 'required',
             'fname' => 'required',
             'lname' => 'required',
-            'phone' => 'require',
+            'phone' => 'required',
             'email' => 'required',
             'permanent_address' => 'required',
         ]);
 
-
-        if ($validator->failed()) {
-            return back()->withErrors($validator)->withInput();
+        if ($validated->fails()) {
+            return back()->withErrors($validated)->withInput();
         }
 
-        $staff = Staff::findOrFail($id);
-        $staff->uid = Str::uuid()->toString();
-        $staff->role_id = $request->role;
-        $staff->user_name = $request->user_name;
-        $staff->fname = $request->fname;
-        $staff->lname = $request->lname;
-        $staff->phone = $request->phone;
-        $staff->dob = $request->dob;
-        $staff->marital = $request->marital;
-        $staff->gender = $request->gender;
-        $staff->email = $request->email;
-        $staff->current_address  = $request->current_address;
-        $staff->permanent_address = $request->permanent_address;
-        $staff->city = $request->city;
-        $staff->state = $request->state;
-        $staff->country = $request->country;
-        $staff->pincode = $request->pincode;
 
-        $staff->status = $request->status ?? '1'; // Default to active if not set
-        $staff->created_by = Auth::id() ?? '1'; // Assuming you have an authenticated user
-        $staff->updated_by =  Auth::id() ?? '1'; // Assuming you have an
-        $staff->save();
+        $staff->update([
+            'fname' => $request->fname,
+            'lname' => $request->lname,
+            'phone' => $request->phone,
+            'dob' => $request->dob,
+            'marital' => $request->marital,
+            'gender' => $request->gender,
+            'email' => $request->email,
+            'current_address'  => $request->current_address,
+            'permanent_address' => $request->permanent_address,
+            'city' => $request->city,
+            'state' => $request->state,
+            'country' => $request->country,
+            'pincode' => $request->pincode,
+            'status' => $request->status ?? '1', // Default to active if not set,
+        ]);
 
-        return redirect()->route('staff.index')->with('success', 'Customer updated successfully.');
+        // Update role
+        $staff->roles()->sync([$request->role]);
+
+        if ($staff) {
+            // Mail::to($staff->email)->send(new StaffCredentialsMail($staff->email, $request->password));
+            return redirect()->route('staff.index')->with('success', 'Staff member updated successfully.');
+        }
+        return back()->with('error', 'Failed to update staff member.');
     }
 
     public function destroy($id)
     {
-        $staff = Staff::findOrFail($id);
-        $staff->delete();
-
-        return redirect()->route('staff.index')->with('success', 'Staff deleted successfully.');
+        // Logic to delete a staff member
+        $staff = User::findOrFail($id);
+        if ($staff->delete()) {
+            return redirect()->route('staff.index')->with('success', 'Staff member deleted successfully.');
+        }
+        return back()->with('error', 'Failed to delete staff member.');
     }
 
     public function view($id)
     {
-        $staffs = Staff::where('id', $id)->first();
-        return view('staffs.view', ['staffs' => $staffs]);
+        // Logic to view a staff member
+        $staff = User::findOrFail($id);
+        $staffPermissions = $staff->getAllPermissions();
+        $permissions = Permission::all(); // Assuming you have a Permission model
+
+        if (!$staff) {
+            return redirect()->route('staff.index')->with('error', 'Staff member not found.');
+        }
+        // Assuming you have a view file for displaying staff details
+        return view('staffs.view', compact('staff', 'staffPermissions', 'permissions'));
     }
 
     public function deleteSelected(Request $request)
     {
         $ids = is_array($request->ids) ? $request->ids : explode(',', $request->ids);
-        Staff::destroy($ids);
+        $staff = User::destroy($ids);
+
         return redirect()->back()->with('success', 'Selected Staff deleted successfully.');
     }
-    
+
     public function toggleStatus(Request $request)
     {
-        $staff = Staff::findOrFail($request->id);
+        $staff = User::findOrFail($request->id);
         $staff->status = $request->status;
         $staff->save();
 

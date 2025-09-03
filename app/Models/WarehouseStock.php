@@ -9,15 +9,14 @@ class WarehouseStock extends Model
     //
     protected $guarded = [];
 
-    public function warehouse() {
-        return $this->hasOne(Warehouse::class, 'id', 'warehouse_id');
-    }
-
     public function product() {
-        return $this->hasOne(Product::class, 'id', 'product_id');
+        return $this->hasOne(Product::class, 'sku', 'sku');
     }
 
-    public function blockProducts() {
-        return $this->hasMany(BlockProducts::class, 'warehouse_stock_id', 'id');
+    public function warehouse() {
+        return $this->belongsTo(Warehouse::class, 'warehouse_id', 'id');
     }
+    // public function blockProducts() {
+    //     return $this->hasMany(BlockProducts::class, 'warehouse_stock_id', 'id');
+    // }
 }

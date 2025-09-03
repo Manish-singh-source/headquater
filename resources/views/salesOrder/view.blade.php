@@ -35,52 +35,21 @@
                                     <span> <b>{{ $statuses[$salesOrder->status] ?? 'On Hold' }}</b></span>
                                 </li>
                                 <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
+                                    <span><b>Total PO Quantity</b></span>
+                                    <span> <b>{{ $salesOrder->ordered_products_sum_ordered_quantity }}</b></span>
+                                </li>
+
+                                <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                                     <span><b>PO Quantity Status</b></span>
                                     <span>
                                         <b>
-                                            @php
-                                                $sum = 0;
-                                                $sum2 = 0;
-                                                foreach ($salesOrder->orderedProducts as $order) {
-                                                    $sum = $sum + (int) $order->ordered_quantity;
-                                                }
-
-                                                foreach ($salesOrder->orderedProducts as $order) {
-                                                    if ($order->product?->sets_ctn) {
-                                                        if ($order->vendorPIProduct?->order?->status != 'completed') {
-                                                            if (
-                                                                $order->vendorPIProduct?->available_quantity +
-                                                                    $order->warehouseStockLog?->block_quantity >=
-                                                                $order->ordered_quantity
-                                                            ) {
-                                                                $sum2 = $sum2 + $order->ordered_quantity;
-                                                            } else {
-                                                                $sum2 =
-                                                                    $sum2 +
-                                                                    $order->vendorPIProduct?->available_quantity +
-                                                                    $order->warehouseStockLog?->block_quantity;
-                                                            }
-                                                        } else {
-                                                            if (
-                                                                $order->warehouseStockLog?->block_quantity >=
-                                                                $order->ordered_quantity
-                                                            ) {
-                                                                $sum2 = $sum2 + $order->ordered_quantity;
-                                                            } else {
-                                                                $sum2 =
-                                                                    $sum2 + $order->warehouseStockLog?->block_quantity;
-                                                            }
-                                                        }
-                                                    } else {
-                                                        $sum2 = $sum2 + 0;
-                                                    }
-                                                }
-
-                                                $total = $sum - $sum2;
-                                            @endphp
-                                            @if ($total > 0)
+                                            @if (
+                                                $salesOrder->ordered_products_sum_ordered_quantity -
+                                                    ($availableQuantity +
+                                                        ($vendorPiFulfillmentTotal ?? 0)) >
+                                                    0)
                                                 <span class="badge text-danger bg-danger-subtle">
-                                                    {{ 'Quantity Needs To Fulfill: ' . $total }}
+                                                    {{ 'Quantity Needs To Fulfill: ' . ($salesOrder->ordered_products_sum_ordered_quantity - ($availableQuantity + ($vendorPiFulfillmentTotal ?? 0))) }}
                                                 </span>
                                             @else
                                                 <span class="badge text-success bg-success-subtle"> Quantity Fulfilled
@@ -114,7 +83,7 @@
                                 tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
                                 <div class="modal-dialog">
                                     <div class="modal-content">
-                                        <form action="{{ route('order.update') }}" method="POST"
+                                        <form action="{{ route('sales.order.update') }}" method="POST"
                                             enctype="multipart/form-data">
                                             @csrf
                                             @method('PUT')
@@ -149,7 +118,7 @@
                                 <i class="fa fa-file-excel-o"></i> Export to Excel
                             </button>
                             <ul class="nav nav-tabs" id="vendorTabs" role="tablist">
-                                <form id="statusForm" action="{{ route('change.order.status') }}" method="POST">
+                                <form id="statusForm" action="{{ route('change.sales.order.status') }}" method="POST">
                                     @csrf
                                     @method('PUT')
                                     <input type="hidden" name="order_id" value="{{ $salesOrder->id }}">
@@ -194,16 +163,13 @@
                                             <input class="form-check-input" type="checkbox" id="select-all">
                                         </th>
                                         <th>Customer&nbsp;Name</th>
-                                        <th>PO&nbsp;Number</th>
-                                        <th>SKU&nbsp;Code</th>
                                         <th>Facility&nbsp;Name</th>
                                         <th>Facility&nbsp;Location</th>
-                                        <th>PO&nbsp;Date</th>
-                                        <th>PO&nbsp;Expiry&nbsp;Date</th>
                                         <th>HSN</th>
-                                        <th>Item&nbsp;Code</th>
-                                        <th>Title</th>
                                         <th>GST</th>
+                                        <th>Item&nbsp;Code</th>
+                                        <th>SKU&nbsp;Code</th>
+                                        <th>Title</th>
                                         <th>Basic&nbsp;Rate</th>
                                         <th>Net&nbsp;Landing&nbsp;Rate</th>
                                         <th>PO&nbsp;MRP</th>
@@ -229,58 +195,34 @@
                                                     name="ids[]" value="{{ $order->id }}">
                                             </td>
                                             <td>{{ $order->tempOrder->customer_name }}</td>
-                                            <td>{{ $order->tempOrder->po_number }}</td>
-                                            <td>{{ $order->tempOrder->sku }}</td>
                                             <td>{{ $order->tempOrder->facility_name }}</td>
                                             <td>{{ $order->tempOrder->facility_location }}</td>
-                                            <td>{{ $order->tempOrder->po_date }}</td>
-                                            <td>{{ $order->tempOrder->po_expiry_date }}</td>
                                             <td>{{ $order->tempOrder->hsn }}</td>
-                                            <td>{{ $order->tempOrder->item_code }}</td>
-                                            <td>{{ $order->tempOrder->description }}</td>
                                             <td>{{ $order->tempOrder->gst }}</td>
+                                            <td>{{ $order->tempOrder->item_code }}</td>
+                                            <td>{{ $order->tempOrder->sku }}</td>
+                                            <td>{{ $order->tempOrder->description }}</td>
                                             <td>{{ $order->tempOrder->basic_rate }}</td>
                                             <td>{{ $order->tempOrder->net_landing_rate }}</td>
                                             <td>{{ $order->tempOrder->mrp }}</td>
                                             <td>{{ $order->tempOrder->product_mrp }}</td>
-                                            @if ($order->tempOrder->mrp >= $order->tempOrder->product_mrp)
-                                                <td> <span class="badge text-success bg-success-subtle">Yes</span></td>
-                                            @else
-                                                <td><span class="badge text-danger bg-danger-subtle">No</span></td>
-                                            @endif
+                                            <td>
+                                                @if ($order->tempOrder->rate_confirmation == 'Correct')
+                                                    <span
+                                                        class="badge text-success bg-success-subtle">{{ $order->tempOrder->rate_confirmation }}</span>
+                                                @else
+                                                    <span
+                                                        class="badge text-danger bg-danger-subtle">{{ $order->tempOrder->rate_confirmation }}</span>
+                                                @endif
+                                            </td>
                                             <td>{{ $order->ordered_quantity }}</td>
-                                            @if ($order->warehouseStock?->quantity)
-                                                <td>
-                                                    @if ($order->vendorPIProduct?->order?->status == 'completed')
-                                                        @if ($order->vendorPIProduct?->available_quantity >= $order->vendorPIProduct?->quantity_received)
-                                                            @if (
-                                                                $order->vendorPIProduct?->quantity_received + $order->warehouseStockLog?->block_quantity >=
-                                                                    $order->ordered_quantity)
-                                                                <span
-                                                                    class="badge text-success bg-success-subtle">{{ $order->ordered_quantity }}</span>
-                                                            @else
-                                                                <span
-                                                                    class="badge text-danger bg-danger-subtle">{{ $order->vendorPIProduct?->quantity_received + $order->warehouseStockLog?->block_quantity }}</span>
-                                                            @endif
-                                                        @else
-                                                            <span
-                                                                class="badge text-danger bg-danger-subtle">{{ $order->vendorPIProduct?->available_quantity + $order->warehouseStockLog?->block_quantity }}</span>
-                                                        @endif
-                                                    @else
-                                                        @if ($order->warehouseStockLog?->block_quantity >= $order->ordered_quantity)
-                                                            <span
-                                                                class="badge text-success bg-success-subtle">{{ $order->ordered_quantity }}</span>
-                                                        @else
-                                                            <span
-                                                                class="badge text-danger bg-danger-subtle">{{ $order->warehouseStockLog?->block_quantity }}</span>
-                                                        @endif
-                                                    @endif
-                                                </td>
-                                            @else
-                                                <td>
-                                                    <span class="badge text-danger bg-danger-subtle">0</span>
-                                                </td>
-                                            @endif
+                                            <td>
+                                                @if($order->ordered_quantity <= ($order->tempOrder->available_quantity ?? 0) + ($order->tempOrder->vendor_pi_fulfillment_quantity ?? 0))
+                                                    <span class="badge text-success bg-success-subtle">{{ ($order->tempOrder->available_quantity ?? 0) + ($order->tempOrder->vendor_pi_fulfillment_quantity ?? 0) }}</span>
+                                                @else
+                                                    <span class="badge text-danger bg-danger-subtle">{{ ($order->tempOrder->available_quantity ?? 0) + ($order->tempOrder->vendor_pi_fulfillment_quantity ?? 0) }}</span>
+                                                @endif
+                                            </td>
                                         </tr>
                                     @empty
                                         <tr>

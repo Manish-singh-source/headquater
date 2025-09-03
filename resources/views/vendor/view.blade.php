@@ -111,10 +111,10 @@
                 </div>
             </div>
 
-            @isset($orders)
+            @isset($vendor->orders)
                 <div class="card">
                     <div class="card-body">
-                        <h5 class="mb-3">Orders<span class="fw-light ms-2">({{ $orders->count() }})</span></h5>
+                        <h5 class="mb-3">Orders<span class="fw-light ms-2">({{ $vendor->orders->count() }})</span></h5>
                         <div class="product-table">
                             <div class="table-responsive white-space-nowrap">
                                 <table id="example" class="table align-middle">
@@ -122,26 +122,25 @@
                                         <tr>
                                             <th>Purchase Order No</th>
                                             <th>Vendor Name</th>
-                                            <th>SKU Code</th>
-                                            <th>Brand</th>
-                                            <th>Brand Title</th>
-                                            <th>MRP</th>
-                                            <th>Qty Requirement</th>
+                                            <th>Order Status</th>
+                                            <th>Ordered Date</th>
+                                            <th>Product Count</th>
+                                            <th>Action</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @forelse($orders as $order)
-                                            @if ($order->ordered_quantity > 0)
-                                                <tr>
-                                                    <td>{{ $order->purchase_order_id }}</td>
-                                                    <td>{{ $vendor->client_name }}</td>
-                                                    <td>{{ $order->sku }}</td>
-                                                    <td>{{ $order->product->brand }}</td>
-                                                    <td>{{ $order->product->brand_title }}</td>
-                                                    <td>{{ $order->product->mrp }}</td>
-                                                    <td>{{ $order->ordered_quantity }}</td>
-                                                </tr>
-                                            @endif
+                                        @forelse($vendor->orders as $order)
+                                            <tr>
+                                                <td>{{ $order->id }}</td>
+                                                <td>{{ $vendor->client_name }}</td>
+                                                <td>{{ $order->status }}</td>
+                                                <td>{{ $order->created_at->format('d-m-Y') }}</td>
+                                                <td>{{ $order->purchaseOrderProducts->count() }}</td>
+                                                <td>
+                                                    <a href="{{ route('purchase.order.view', $order->id) }}>"
+                                                        class="btn btn-sm btn-primary">View</a>
+                                                </td>
+                                            </tr>
                                         @empty
                                             <tr>
                                                 <td colspan="6">No Records Found</td>

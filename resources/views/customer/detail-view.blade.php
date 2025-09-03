@@ -72,43 +72,43 @@
                                 <ul class="col-12 list-group list-group-flush">
                                     <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                                         <span><b>Shipping Address</b></span>
-                                        <span> <b>{{ $customerDetails->address->shipping_address ?? 'NA' }}</b></span>
+                                        <span> <b>{{ $customerDetails->shipping_address ?? 'NA' }}</b></span>
                                     </li>
                                     <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                                         <span><b>Shipping Country</b></span>
-                                        <span> <b>{{ $customerDetails->address->shipping_country ?? 'NA' }}</b></span>
+                                        <span> <b>{{ $customerDetails->shipping_country ?? 'NA' }}</b></span>
                                     </li>
                                     <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                                         <span><b>Shipping State</b></span>
-                                        <span> <b>{{ $customerDetails->address->shipping_state ?? 'NA' }}</b></span>
+                                        <span> <b>{{ $customerDetails->shipping_state ?? 'NA' }}</b></span>
                                     </li>
                                     <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                                         <span><b>Shipping City</b></span>
-                                        <span> <b>{{ $customerDetails->address->shipping_city ?? 'NA' }}</b></span>
+                                        <span> <b>{{ $customerDetails->shipping_city ?? 'NA' }}</b></span>
                                     </li>
                                     <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                                         <span><b>Shipping Zip</b></span>
-                                        <span> <b>{{ $customerDetails->address->shipping_zip ?? 'NA' }}</b></span>
+                                        <span> <b>{{ $customerDetails->shipping_zip ?? 'NA' }}</b></span>
                                     </li>
                                     <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                                         <span><b>Billing Address</b></span>
-                                        <span> <b>{{ $customerDetails->address->billing_address ?? 'NA' }}</b></span>
+                                        <span> <b>{{ $customerDetails->billing_address ?? 'NA' }}</b></span>
                                     </li>
                                     <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                                         <span><b>Billing Country</b></span>
-                                        <span> <b>{{ $customerDetails->address->billing_country ?? 'NA' }}</b></span>
+                                        <span> <b>{{ $customerDetails->billing_country ?? 'NA' }}</b></span>
                                     </li>
                                     <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                                         <span><b>Billing State</b></span>
-                                        <span> <b>{{ $customerDetails->address->billing_state ?? 'NA' }}</b></span>
+                                        <span> <b>{{ $customerDetails->billing_state ?? 'NA' }}</b></span>
                                     </li>
                                     <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                                         <span><b>Billing City</b></span>
-                                        <span> <b>{{ $customerDetails->address->billing_city ?? 'NA' }}</b></span>
+                                        <span> <b>{{ $customerDetails->billing_city ?? 'NA' }}</b></span>
                                     </li>
                                     <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                                         <span><b>Billing Zip</b></span>
-                                        <span> <b>{{ $customerDetails->address->billing_zip ?? 'NA' }}</b></span>
+                                        <span> <b>{{ $customerDetails->billing_zip ?? 'NA' }}</b></span>
                                     </li>
                                 </ul>
                             </div>
@@ -128,11 +128,11 @@
                                 <table id="example" class="table align-middle">
                                     <thead class="table-light">
                                         <tr>
-                                            <th>Order ID</th>
+                                            <th>Order&nbsp;ID</th>
                                             <th>SKU</th>
                                             <th>Brand</th>
-                                            <th>Brand Title</th>
-                                            <th>Ordered Quantity</th>
+                                            <th>Brand&nbsp;Title</th>
+                                            <th>Ordered&nbsp;Quantity</th>
                                             <th>Date</th>
                                         </tr>
                                     </thead>
@@ -144,10 +144,10 @@
                                                     {{ $order->sku }}
                                                 </td>
                                                 <td>
-                                                    {{ $order->product->brand }}
+                                                    {{ $order->product->brand ?? 'NA' }}
                                                 </td>
                                                 <td>
-                                                    {{ $order->product->brand_title }}
+                                                    {{ $order->product->brand_title ?? $order->tempOrder->description ?? 'NA' }}
                                                 </td>
                                                 <td>
                                                     {{ $order->ordered_quantity }}

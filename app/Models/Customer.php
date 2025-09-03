@@ -9,19 +9,13 @@ class Customer extends Model
     //
     protected $guarded = [];
 
-    public function groupInfo() {
+    public function groupInfo()
+    {
         return $this->hasOne(CustomerGroupMember::class, 'customer_id', 'id');
     }
 
-    public function orders() {
+    public function orders()
+    {
         return $this->hasMany(SalesOrderProduct::class, 'customer_id', 'id');
-    }
-
-    public function address() {
-        return $this->hasOne(CustomerAddress::class, 'customer_id', 'id');
-    }
-    
-    public function addresses() {
-        return $this->hasOne(CustomerAddress::class, 'customer_id', 'id');
     }
 }
