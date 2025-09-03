@@ -6,7 +6,6 @@ use Illuminate\Database\Eloquent\Model;
 
 class Invoice extends Model
 {
-    //
     protected $fillable = [
         'warehouse_id',
         'invoice_number',
@@ -35,5 +34,17 @@ class Invoice extends Model
     public function details()
     {
         return $this->hasMany(InvoiceDetails::class);
+    }
+
+    public function appointment() {
+        return $this->hasOne(Appointment::class);
+    }
+
+    public function dns() {
+        return $this->hasOne(Dn::class);
+    }
+   
+    public function payments() {
+        return $this->hasMany(Payment::class);
     }
 }

@@ -5,8 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\Product;
 use App\Models\VendorPI;
 use App\Models\TempOrder;
-use App\Models\SalesOrder;
-use App\Models\SkuMapping;
 use App\Models\PurchaseGrn;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
@@ -15,10 +13,11 @@ use App\Models\PurchaseOrder;
 use App\Models\WarehouseStock;
 use App\Models\PurchaseInvoice;
 use App\Models\VendorPIProduct;
-use App\Models\SalesOrderProduct;
 use App\Models\WarehouseStockLog;
 use Illuminate\Support\Facades\DB;
 use App\Models\PurchaseOrderProduct;
+use Exception;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Validator;
 use Spatie\SimpleExcel\SimpleExcelReader;
 use Spatie\SimpleExcel\SimpleExcelWriter;
@@ -80,9 +79,15 @@ class PurchaseOrderController extends Controller
             }
 
             DB::commit();
+
+            // Create notification for purchase order
+            // if (isset($purchaseOrder)) {
+            //     notifyPurchaseOrder($purchaseOrder);
+            // }
+
             return redirect()->route('purchase.order.index')->with('success', 'CSV file imported successfully.');
         } catch (\Exception $e) {
-            dd($e->getMessage());
+            // dd($e->getMessage());
             DB::rollBack();
             return redirect()->back()->withErrors(['error' => 'Something went wrong: ' . $e->getMessage()]);
         }
@@ -90,17 +95,19 @@ class PurchaseOrderController extends Controller
 
     public function index()
     {
-        $purchaseOrders = PurchaseOrder::with('purchaseOrderProducts')->where('status', 'pending')->withCount('purchaseOrderProducts')->get();
-        return view('purchaseOrder.index', compact('purchaseOrders'));
+        $purchaseOrders = PurchaseOrder::with('purchaseOrderProducts')->get();
+
+        $vendorCodes = $purchaseOrders->flatMap(function ($po) {
+            return $po->purchaseOrderProducts->pluck('vendor_code');
+        })->unique()->values();
+        return view('purchaseOrder.index', compact('purchaseOrders', 'vendorCodes'));
     }
 
-    // Storing Vendor PI Products from CSV
     public function store(Request $request)
     {
         $request->validate([
             'pi_excel' => 'required|file|mimes:xlsx,csv,xls',
             'purchase_order_id' => 'required|exists:purchase_orders,id',
-            'sales_order_id' => 'required|exists:sales_orders,id',
             'vendor_code' => 'required|string|max:255',
         ]);
 
@@ -116,67 +123,24 @@ class PurchaseOrderController extends Controller
             $vendorProducts = [];
             $insertCount = 0;
 
-            // update fulfillment quantity in temp order 
-
             $vendorPi = VendorPI::create([
                 'purchase_order_id' => $request->purchase_order_id,
                 'vendor_code' => $request->vendor_code,
-                'sales_order_id' => $request->sales_order_id,
             ]);
 
             foreach ($rows as $record) {
                 if (empty($record['Vendor SKU Code'])) continue;
 
-                // map sku with product 
-                $sku = SkuMapping::where('vendor_sku', Arr::get($record, 'Vendor SKU Code'))->first();
-
-                if ($sku) {
-                    $newSku = $sku->product_sku;
-                } else {
-                    $newSku = Arr::get($record, 'Vendor SKU Code');
-                }
-
-                $salesOrderFulfillment[$newSku] = [
-                    'quantity' => $record['PI Quantity']
-                ];
-
-                // Get Temp Order ID
-                $salesOrderProduct = SalesOrderProduct::where('sales_order_id', $request->sales_order_id)
-                    ->where('sku', $newSku)
-                    ->get();
-
-
-                foreach ($salesOrderProduct as $item) {
-                    $tempProduct = TempOrder::where('id', $item->temp_order_id)->first();
-
-                    if ($tempProduct->po_qty >= $salesOrderFulfillment[$newSku]['quantity']) {
-                        if($tempProduct->po_qty > $tempProduct->available_quantity) {
-                            $tempProduct->vendor_pi_fulfillment_quantity = $salesOrderFulfillment[$newSku]['quantity'];
-                            $salesOrderFulfillment[$newSku]['quantity'] = 0;
-                        }
-                    } else { 
-                        if($tempProduct->po_qty > $tempProduct->available_quantity) {
-                            $tempProduct->vendor_pi_fulfillment_quantity = $tempProduct->po_qty;
-                            $salesOrderFulfillment[$newSku]['quantity'] = $salesOrderFulfillment[$newSku]['quantity'] - $tempProduct->po_qty;
-                        }
-                    }
-                    $tempProduct->save();
-
-                    $salesOrderFulfillment[] = $item->temp_order_id;
-                }
-
-
                 $vendorProducts[] = [
                     'purchase_order_id' => $request->purchase_order_id,
                     'vendor_pi_id' => $vendorPi->id,
-                    'vendor_sku_code' => $newSku ?? Arr::get($record, 'Vendor SKU Code'),
-                    'mrp' => Arr::get($record, 'MRP') ?? 0,
-                    'quantity_requirement' => Arr::get($record, 'PO Quantity') ?? 0,
-                    'available_quantity' => Arr::get($record, 'PI Quantity') ?? 0,
-                    'purchase_rate' => Arr::get($record, 'Purchase Rate Basic') ?? 0,
-                    'gst' => Arr::get($record, 'GST') ?? 0,
-                    'hsn' => Arr::get($record, 'HSN') ?? '',
-                    'created_at' => now(),
+                    'vendor_sku_code' => Arr::get($record, 'Vendor SKU Code'),
+                    'mrp' => Arr::get($record, 'MRP'),
+                    'quantity_requirement' => Arr::get($record, 'Quantity Requirement'),
+                    'available_quantity' => Arr::get($record, 'Available Quantity'),
+                    'purchase_rate' => Arr::get($record, 'Purchase Rate Basic'),
+                    'gst' => Arr::get($record, 'GST'),
+                    'hsn' => Arr::get($record, 'HSN'),
                     'updated_at' => now(),
                 ];
 
@@ -199,12 +163,9 @@ class PurchaseOrderController extends Controller
 
     public function view($id)
     {
-        $purchaseOrder = PurchaseOrder::with('purchaseOrderProducts.tempOrder', 'vendorPI.products.purchaseOrder.purchaseOrderProducts.tempOrder')
-            ->where('status', 'pending')
-            ->withCount('purchaseOrderProducts')
-            ->findOrFail($id);
-
-        $purchaseOrderProducts = PurchaseOrderProduct::where('purchase_order_id', $id)->with('purchaseOrder', 'tempOrder')->get();
+        $tempOrder = TempOrder::get();
+        $purchaseOrderProducts = PurchaseOrderProduct::where('purchase_order_id', $id)->with('purchaseOrder', 'tempProduct')->get();
+        // $vendors = PurchaseOrderProduct::distinct()->pluck('vendor_code');
         $vendorPI = VendorPI::with('product')->where('purchase_order_id', $id)->get();
 
         $facilityNames = VendorPI::with('product')->where('purchase_order_id', $id)
@@ -215,14 +176,16 @@ class PurchaseOrderController extends Controller
             ->unique()
             ->values();
 
+        $purchaseOrder = PurchaseOrder::with('vendorPI.product', 'purchaseInvoices')->get();
         $uploadedPIOfVendors = VendorPI::distinct()->pluck('vendor_code');
         $purchaseInvoice = PurchaseInvoice::where('purchase_order_id', $id)->get();
         $purchaseGrn = PurchaseGrn::where('purchase_order_id', $id)->get();
         $vendorPIs = VendorPI::with('products.product')->where('purchase_order_id', $id)->where('status', '!=', 'completed')->get();
 
         $vendorPIid = VendorPI::where('purchase_order_id', $id)->get();
-        // dd($purchaseOrder);
-        return view('purchaseOrder.view', compact('purchaseOrder', 'vendorPIid', 'facilityNames', 'purchaseOrderProducts', 'uploadedPIOfVendors',  'vendorPIs', 'purchaseInvoice', 'purchaseGrn'));
+
+        // dd($vendorPIs);
+        return view('purchaseOrder.view', compact('vendorPIid', 'facilityNames', 'purchaseOrderProducts', 'uploadedPIOfVendors',  'vendorPIs', 'purchaseOrder', 'purchaseInvoice', 'purchaseGrn'));
     }
 
     public function update(Request $request)
@@ -268,10 +231,12 @@ class PurchaseOrderController extends Controller
 
                 if ($issueItem = Arr::get($record, 'Issue Units')) {
                     $productData->issue_item = $issueItem ?? '';
+                    $productData->issue_reason = (Arr::get($record, 'Quantity Ordered') < Arr::get($record, 'Quantity Received') ? 'Exceed' : 'Shortage');
                     $productData->issue_reason = Arr::get($record, 'Issue Reason') ?? '';
                 } else {
                     $productData->issue_item = 0;
                     $productData->issue_reason = '';
+                    $productData->issue_description = '';
                 }
                 $productData->save();
 
@@ -304,13 +269,6 @@ class PurchaseOrderController extends Controller
         return redirect()->route('purchase.order.index')->with('success', 'Purchase Order deleted successfully.');
     }
 
-    public function multiDelete(Request $request)
-    {
-        $ids = is_array($request->ids) ? $request->ids : explode(',', $request->ids);
-        PurchaseOrder::destroy($ids);
-        return redirect()->back()->with('success', 'Purchase Orders deleted successfully.');
-    }
-
     public function SingleProductdelete($id)
     {
         $purchaseOrderProduct = PurchaseOrderProduct::findOrFail($id);
@@ -326,6 +284,16 @@ class PurchaseOrderController extends Controller
         return redirect()->back()->with('success', 'Purchase Order deleted successfully.');
     }
 
+    public function updateStatus(Request $request)
+    {
+        $vendorPI = VendorPI::with('products')->where('purchase_order_id', $request->purchase_order_id)->where('vendor_code', $request->vendor_code)->first();
+        $vendorPI->status = 'approve';
+        $vendorPI->save();
+
+        if ($vendorPI) {
+            return redirect()->back()->with('success', 'Successfully Sent For Approval.');
+        }
+    }
 
     public function approveRequest(Request $request)
     {
@@ -460,29 +428,32 @@ class PurchaseOrderController extends Controller
         $writer = SimpleExcelWriter::create($tempXlsxPath);
 
         // Fetch data with relationships
-        $purchaseOrderProducts = PurchaseOrderProduct::where('purchase_order_id', $request->purchaseOrderId)
-            ->where('vendor_code', $request->vendorCode)
-            ->with('tempOrderThrough')->get();
+        $query = PurchaseOrderProduct::where('purchase_order_id', $request->purchaseOrderId);
+        if ($request->filled('vendorCode')) {
+            $query->where('vendor_code', '=', $request->vendorCode);
+        }
+        $purchaseOrderProducts = $query->with('purchaseOrder', 'tempProduct')->get();
 
-        // dd($purchaseOrderProducts);
         // Add rows
         foreach ($purchaseOrderProducts as $order) {
             if ($order->ordered_quantity > 0) {
                 $writer->addRow([
-                    'Sales Order No' => $order->sales_order_id ?? '',
-                    'Purchase Order No' => $order->purchase_order_id ?? '',
-                    'Portal Code'            => $order->tempOrderThrough->item_code ?? '',
-                    'Vendor SKU Code'   => $order->tempOrderThrough->sku ?? '',
-                    'Title'             => $order->tempOrderThrough->description ?? '',
-                    'MRP'               => $order->tempOrderThrough->mrp ?? '',
-                    'GST' => $order->tempOrderThrough->gst ?? '',
-                    'HSN' => $order->tempOrderThrough->hsn ?? '',
-                    'PO Quantity' => $order->ordered_quantity ?? '',
-                    'PI Quantity' => '',
+                    'Order No' => $order->id,
+                    'Purchase Order No' => $request->purchaseOrderId,
+                    'Portal'            => $order->tempProduct->item_code ?? '',
+                    'Vendor SKU Code'   => $order->tempProduct->sku ?? '',
+                    'Title'             => $order->tempProduct->description ?? '',
+                    'MRP'               => $order->tempProduct->mrp ?? '',
+                    'GST'               => $order->tempProduct->gst ?? '',
+                    'HSN'               => $order->tempProduct->hsn ?? '',
+                    'Quantity Requirement' => $order->ordered_quantity ?? '',
+                    'Available Quantity' => '',
                     'Purchase Rate Basic' => '',
                 ]);
             }
         }
+
+        												
 
         // Close the writer
         $writer->close();
@@ -491,6 +462,7 @@ class PurchaseOrderController extends Controller
             'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         ])->deleteFileAfterSend(true);
     }
+
 
     // Return or Accept vendor exceeded products 
     public function  vendorProductReturn($id)

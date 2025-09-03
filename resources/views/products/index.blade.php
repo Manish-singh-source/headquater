@@ -109,8 +109,7 @@
                                         <th>GST</th>
                                         <th>Vendor&nbsp;Net&nbsp;Landing</th>
                                         <th>po&nbsp;status</th>
-                                        <th>Original&nbsp;Quantity</th>
-                                        <th>Available&nbsp;Quantity</th>
+                                        <th>Quantity</th>
                                         <th>Hold&nbsp;Qty</th>
                                         <th>Date</th>
                                         <th>Action</th>
@@ -144,22 +143,28 @@
                                             <td>{{ $product->product->gst }}</td>
                                             <td>{{ $product->product->vendor_net_landing }}</td>
                                             <td>{{ $product->product->status === '1' ? 'Active' : 'Inactive' }}</td>
-                                            <td>{{ $product->original_quantity }}</td>
-                                            <td>{{ $product->available_quantity }}</td>
+                                            <td>
+                                                @if ($product->quantity)
+                                                    {{ $product->quantity }}
+                                                @else
+                                                    <span>0</span>
+                                                @endif
+                                            </td>
                                             <td>
                                                 @if ($product->block_quantity)
                                                     <span class="badge text-danger bg-danger-subtle">
                                                         {{ $product->block_quantity }}</span>
                                                 @else
-                                                    <span>0</span>
+                                                    <span>NA</span>
                                                 @endif
                                             </td>
                                             <td>{{ $product->product->created_at->format('d-M-Y') }}</td>
                                             <td>
                                                 <div class="d-flex">
                                                     <a aria-label="anchor" data-id="{{ $product->product->id }}"
-                                                        href="javascript:void(0);"
-                                                        class="btn btn-icon btn-sm bg-warning-subtle me-1 editProductBtn">
+                                                        href="{{ route('product.edit', $product->product->id) }}"
+                                                        class="btn btn-icon btn-sm bg-warning-subtle me-1 editProductBtn"
+                                                        data-bs-toggle="modal" data-bs-target="#staticBackdrop2">
                                                         <svg xmlns="http://www.w3.org/2000/svg" width="13"
                                                             height="13" viewBox="0 0 24 24" fill="none"
                                                             stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -174,7 +179,99 @@
                                                         </svg>
                                                     </a>
 
-                                                    <!-- per-row modal removed to avoid duplicate IDs; single modal is placed once after the table -->
+                                                    <!-- Modal -->
+                                                    <div class="modal fade" id="staticBackdrop2"
+                                                        data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+                                                        aria-labelledby="staticBackdropLabel2" aria-hidden="true">
+                                                        <div class="modal-dialog">
+                                                            <div class="modal-content">
+                                                                <form id="editProductForm">
+                                                                    @csrf
+                                                                    <input type="hidden" name="id" id="id">
+
+                                                                    <div class="modal-header">
+                                                                        <h1 class="modal-title fs-5"
+                                                                            id="staticBackdropLabel2">Update Product
+                                                                        </h1>
+                                                                        <button type="button" class="btn-close"
+                                                                            data-bs-dismiss="modal"
+                                                                            aria-label="Close"></button>
+                                                                    </div>
+
+                                                                    <div class="modal-body">
+                                                                        <div class="col-12 mb-3">
+                                                                            <label for="sku" class="form-label">SKU
+                                                                                Code
+                                                                                <span class="text-danger">*</span></label>
+                                                                            <input type="text" name="sku"
+                                                                                id="sku" class="form-control"
+                                                                                value="" required="">
+                                                                        </div>
+                                                                        <div class="col-12 mb-3">
+                                                                            <label for="ean_code" class="form-label">EAN
+                                                                                Code
+                                                                                <span class="text-danger">*</span></label>
+                                                                            <input type="text" name="ean_code"
+                                                                                id="ean_code" class="form-control"
+                                                                                value="" required="">
+                                                                        </div>
+                                                                        <div class="col-12 mb-3">
+                                                                            <label for="brand" class="form-label">Brand
+                                                                                <span class="text-danger">*</span></label>
+                                                                            <input type="text" name="brand"
+                                                                                id="brand" class="form-control"
+                                                                                value="" required="">
+                                                                        </div>
+                                                                        <div class="col-12 mb-3">
+                                                                            <label for="brand_title"
+                                                                                class="form-label">Brand Title
+                                                                                <span class="text-danger">*</span></label>
+                                                                            <input type="text" name="brand_title"
+                                                                                id="brand_title" class="form-control"
+                                                                                value="" required="">
+                                                                        </div>
+                                                                        <div class="col-12 mb-3">
+                                                                            <label for="mrp" class="form-label">MRP
+                                                                                <span class="text-danger">*</span></label>
+                                                                            <input type="text" name="mrp"
+                                                                                id="mrp" class="form-control"
+                                                                                value="" required="">
+                                                                        </div>
+                                                                        <div class="col-12 mb-3">
+                                                                            <label for="category"
+                                                                                class="form-label">Category
+                                                                                <span class="text-danger">*</span></label>
+                                                                            <input type="text" name="category"
+                                                                                id="category" class="form-control"
+                                                                                value="" required="">
+                                                                        </div>
+                                                                        <div class="col-12 mb-3">
+                                                                            <label for="pcs_set"
+                                                                                class="form-label">PCS/SET
+                                                                                <span class="text-danger">*</span></label>
+                                                                            <input type="text" name="pcs_set"
+                                                                                id="pcs_set" class="form-control"
+                                                                                value="" required="">
+                                                                        </div>
+                                                                        <div class="col-12 mb-3">
+                                                                            <label for="sets_ctn"
+                                                                                class="form-label">SETS/CTN
+                                                                                <span class="text-danger">*</span></label>
+                                                                            <input type="text" name="sets_ctn"
+                                                                                id="sets_ctn" class="form-control"
+                                                                                value="" required="">
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="modal-footer">
+                                                                        <button type="button" class="btn btn-secondary"
+                                                                            data-bs-dismiss="modal">Close</button>
+                                                                        <button type="submit" id="holdOrder"
+                                                                            class="btn btn-primary">Submit</button>
+                                                                    </div>
+                                                                </form>
+                                                            </div>
+                                                        </div>
+                                                    </div>
 
                                                     <form action="{{ route('product.delete', $product->product->id) }}"
                                                         method="POST" onsubmit="return confirm('Are you sure?')">
@@ -211,66 +308,6 @@
         </div>
     </main>
     <!--end main wrapper-->
-
-    <!-- Single Edit Product Modal -->
-    <div class="modal fade" id="editProductModal" tabindex="-1" aria-labelledby="editProductModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <form id="editProductForm">
-                    @csrf
-                    <input type="hidden" name="id" id="id">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="editProductModalLabel">Update Product</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="sku" class="form-label">SKU Code</label>
-                                <input type="text" name="sku" id="sku" class="form-control" readonly>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="ean_code" class="form-label">EAN Code</label>
-                                <input type="text" name="ean_code" id="ean_code" class="form-control">
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="brand" class="form-label">Brand</label>
-                                <input type="text" name="brand" id="brand" class="form-control">
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="brand_title" class="form-label">Brand Title</label>
-                                <input type="text" name="brand_title" id="brand_title" class="form-control">
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="mrp" class="form-label">MRP</label>
-                                <input type="number" step="0.01" name="mrp" id="mrp" class="form-control">
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="category" class="form-label">Category</label>
-                                <input type="text" name="category" id="category" class="form-control">
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="pcs_set" class="form-label">PCS/Set</label>
-                                <input type="number" name="pcs_set" id="pcs_set" class="form-control">
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="sets_ctn" class="form-label">Sets/CTN</label>
-                                <input type="number" name="sets_ctn" id="sets_ctn" class="form-control">
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="original_quantity" class="form-label">Original Quantity</label>
-                                <input type="number" name="original_quantity" id="original_quantity" class="form-control">
-                            </div>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        <button type="submit" class="btn btn-primary">Save changes</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
 @endsection
 @section('script')
     <script>
@@ -315,51 +352,34 @@
             $.ajax({
                 url: '/products/' + productId + '/edit',
                 method: 'GET',
-                        success: function(data) {
-                            console.log(data);
-                            $('#id').val(data.id);
-                            $('#sku').val(data.sku);
-                            $('#ean_code').val(data.ean_code);
-                            $('#brand').val(data.brand);
-                            $('#brand_title').val(data.brand_title);
-                            $('#mrp').val(data.mrp);
-                            $('#category').val(data.category);
-                            $('#pcs_set').val(data.pcs_set);
-                            $('#sets_ctn').val(data.sets_ctn);
-                            // support both snake_case and camelCase warehouse stock
-                            const ws = data.warehouse_stock || data.warehouseStock || null;
-                            if (ws) {
-                                $('#original_quantity').val(ws.original_quantity ?? ws.originalQuantity ?? 0);
-                                $('#available_quantity').val(ws.available_quantity ?? ws.availableQuantity ?? 0);
-                            } else {
-                                $('#original_quantity').val(0);
-                                $('#available_quantity').val(0);
-                            }
-                            $('#editProductModal').modal('show');
-                        }
+                success: function(data) {
+                    $('#id').val(data.id);
+                    $('#sku').val(data.sku);
+                    $('#ean_code').val(data.ean_code);
+                    $('#brand').val(data.brand);
+                    $('#brand_title').val(data.brand_title);
+                    $('#mrp').val(data.mrp);
+                    $('#category').val(data.category);
+                    $('#pcs_set').val(data.pcs_set);
+                    $('#sets_ctn').val(data.sets_ctn);
+                    $('#editProductModal').modal('show');
+                }
             });
         });
 
         // Handle form submit
         $('#editProductForm').submit(function(e) {
             e.preventDefault();
-            var form = $(this);
             $.ajax({
-                url: '{{ route('product.update') }}',
+                url: '/products/update',
                 method: 'POST',
-                data: form.serialize(),
+                data: $(this).serialize(),
                 success: function(res) {
+                    console.log(res);
                     if (res.success) {
                         $('#editProductModal').modal('hide');
                         location.reload();
-                    } else {
-                        alert('Update failed');
                     }
-                },
-                error: function(xhr) {
-                    var message = 'Update failed';
-                    if (xhr.responseJSON && xhr.responseJSON.message) message = xhr.responseJSON.message;
-                    alert(message);
                 }
             });
         });

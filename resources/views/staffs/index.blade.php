@@ -58,7 +58,7 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach ($staffMembers as $staff)
+                                    @foreach ($staffs as $staff)
                                         <tr>
                                             <td>
                                                 <input class="form-check-input row-checkbox" type="checkbox" name="ids[]"
@@ -66,27 +66,27 @@
                                             </td>
                                             <td>
                                                 <a class="d-flex align-items-center gap-3" href="staff-detail.php">
-                                                    <p class="mb-0 customer-name fw-bold">{{ $staff->fname ?? '' }}</p>
+                                                    <p class="mb-0 customer-name fw-bold">{{ $staff->fname }}</p>
                                                 </a>
                                             </td>
 
                                             <td>
-                                                <a href="javascript:;" class="font-text1">{{ $staff->email ?? '' }}</a>
+                                                <a href="javascript:;" class="font-text1">{{ $staff->email }}</a>
                                             </td>
 
-                                            <td>{{ $staff->phone ?? '' }}</td>
+                                            <td>{{ $staff->phone }}</td>
 
 
-                                            <td>{{ $staff->roles[0]?->name ?? 'Not Assigned' }}</td>
+                                            <td>{{ $staff->role->name }}</td>
 
                                             <td>
                                                 <div class="form-switch form-check-success">
-                                                    <input class="form-check-input update-status" type="checkbox"
+                                                    <input class="form-check-input status-switch7" type="checkbox"
                                                         role="switch" data-staff-id="{{ $staff->id }}"
                                                         {{ $staff->status == 1 ? 'checked' : '' }}>
                                                 </div>
                                             </td>
-                                            <td>{{ $staff->created_by ?? 'NA' }}</td>
+                                            <td>{{ $staff->created_by }}</td>
                                             <td>
                                                 <div class="d-flex align-items-center">
                                                     <a aria-label="anchor" href="{{ route('staff.view', $staff->id) }}"
@@ -153,12 +153,12 @@
 
         </div>
     </main>
+    <!--end main wrapper-->
     <!--plugins-->
 @endsection
-
 @section('script')
     <script>
-        $(document).on('change', '.update-status', function() {
+        $(document).on('change', '.status-switch7', function() {
             var staffId = $(this).data('staff-id');
             var status = $(this).is(':checked') ? 1 : 0;
 
@@ -182,8 +182,8 @@
                 }
             });
         });
-        
-        
+    </script>
+    <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Select All functionality
             const selectAll = document.getElementById('select-all');

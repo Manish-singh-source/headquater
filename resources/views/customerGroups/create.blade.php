@@ -38,10 +38,6 @@
                                                     Add Customers Group
                                                 </h5>
                                             </div>
-                                            <div>
-                                                <a href="{{ url()->previous() }}"
-                                                    class="btn btn-primary float-end mt-n1">Back</a>
-                                            </div>
                                             {{-- <div>
                                                 <b>
                                                     #0081
@@ -79,8 +75,7 @@
                                             <div class="col-12 col-lg-3">
                                                 <label for="csv_file" class="form-label">Customers Data (Excel/CSV) <span
                                                         class="text-danger">*</span></label>
-                                                <input type="file" name="csv_file" id="csv_file"
-                                                    class="form-control @error('csv_file') is-invalid @enderror"
+                                                <input type="file" name="csv_file" id="csv_file" class="form-control @error('csv_file') is-invalid @enderror"
                                                     value="" required="" placeholder="Upload ID Document"
                                                     aria-describedby="csv_fileFeedback">
 
@@ -107,7 +102,7 @@
     </main>
     <!--end main wrapper-->
 
-
+    
     <!--bootstrap js-->
     <script src="assets/js/bootstrap.bundle.min.js"></script>
 

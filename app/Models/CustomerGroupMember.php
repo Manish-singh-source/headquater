@@ -8,14 +8,12 @@ class CustomerGroupMember extends Model
 {
     //
     protected $guarded = [];
-
-    public function customer()
-    {
-        return $this->belongsTo(Customer::class);
-    }
     
-    public function customerGroup()
-    {
+    public function customer() {
+        return $this->hasOne(Customer::class, 'id', 'customer_id');
+    }
+   
+    public function customerGroup() {
         return $this->hasOne(CustomerGroup::class, 'id', 'customer_group_id');
     }
 }

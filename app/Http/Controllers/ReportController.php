@@ -3,10 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\Invoice;
+use App\Models\InvoiceDetails;
+use App\Models\Payment;
+use App\Models\PurchaseOrder;
+use App\Models\PurchaseOrderProduct;
 use App\Models\VendorPI;
-use Illuminate\Http\Request;
-use App\Models\WarehouseStock;
 use App\Models\VendorPIProduct;
+use App\Models\WarehouseStock;
 
 class ReportController extends Controller
 {

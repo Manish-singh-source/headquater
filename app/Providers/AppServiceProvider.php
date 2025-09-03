@@ -2,6 +2,9 @@
 
 namespace App\Providers;
 
+use App\Models\Role;
+use App\Models\Staff;
+use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
@@ -21,10 +24,21 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         //
-        // $this->registerPolicies();
+        Paginator::useBootstrap();
 
-        Gate::before(function ($user, string $ability) {
-            return $user->hasRole('Super Admin') ? true : null;
+        Gate::define('PermissionChecker', function ($user, $userPermission) {
+            // return $user->hasPermission('update_profile', '');
+
+            $role = Role::find($user->role_id);
+
+            $permissions = json_decode($role->permissions, true);
+
+            foreach ($permissions as $permission) {
+                if ($permission === $userPermission) {
+                    return true;
+                }
+            }
+
         });
     }
 }
