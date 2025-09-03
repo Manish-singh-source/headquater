@@ -1,98 +1,180 @@
 @extends('layouts.master')
 @section('main-content')
+
+    @php
+        $statuses = [
+            'pending' => 'Pending',
+            'approved' => 'Approved',
+            'blocked' => 'Blocked',
+            'completed' => 'Completed',
+            'ready_to_ship' => 'Ready To Ship',
+            'ready_to_package' => 'Ready To Package',
+        ];
+    @endphp
+
     <!--start main wrapper-->
     <main class="main-wrapper">
         <div class="main-content">
-            <div class="row">
+            <!--breadcrumb-->
+            <div class="page-breadcrumb d-none d-sm-flex align-items-center justify-content-between mb-3">
+                <div>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb mb-0 p-0">
+                            <li class="breadcrumb-item"><a href="javascript:;"><i class="bx bx-home-alt"></i></a>
+                            </li>
+                            <li class="breadcrumb-item active" aria-current="page">Packaging Orders List</li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+            <div class="card mt-4">
+                <div class="card-body">
+                    <div class="customer-table">
+                        <div class="table-responsive white-space-nowrap">
+                            <table id="example" class="table table-striped">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>
+                                            <input class="form-check-input" type="checkbox" id="select-all">
+                                        </th>
+                                        {{-- <th>Sales Order Id</th> --}}
+                                        <th>Purchase Order Id</th>
+                                        <th>Vendor Code</th>
+                                        <th>Order Status</th>
+                                        <th>Total Product</th>
+                                        <th>Ordered Date</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @forelse($purchaseOrders as $order)
+                                        <tr>
+                                            <td>
+                                                <input class="form-check-input row-checkbox" type="checkbox" name="ids[]"
+                                                    value="{{ $order->id }}">
+                                            </td>
+                                            {{-- <td>{{ $order->sales_order_id }}</td> --}}
+                                            <td>{{ $order->id }}</td>
+                                            <td>
+                                                <p class="mb-0 customer-name fw-bold">
+                                                    {{ $order->vendor_code ?? 'N/A' }}
+                                                </p>
+                                            </td>
+                                            <td>
+                                                {{ $statuses[$order->status] ?? 'On Hold' }}
+                                            </td>
+                                            <td>{{ $order->purchase_order_products_count ?? 0 }}</td>
+                                            <td>{{ $order->created_at->format('d-M-Y') }}</td>
+                                            <td>
+                                                <div class="d-flex">
+                                                    <a aria-label="anchor"
+                                                        href="{{ route('received-products.view', [$order->id, $order->vendor_code]) }}"
+                                                        class="btn btn-icon btn-sm bg-primary-subtle me-1"
+                                                        data-bs-toggle="tooltip" data-bs-original-title="View">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="13"
+                                                            height="13" viewBox="0 0 24 24" fill="none"
+                                                            stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                                            stroke-linejoin="round"
+                                                            class="feather feather-eye text-primary">
+                                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                                            <circle cx="12" cy="12" r="3"></circle>
+                                                        </svg>
+                                                    </a>
 
-                <div class="col-12">
-                    <div class="row">
-                        <div class="col">
-                            <div class="card">
-                                <div class="card-header border-bottom-dashed">
-                                    <div class="row g-4 align-items-center">
-                                        <div class="col-sm">
-                                            <h5 class="card-title mb-0">
-                                                Search Received Vendor Order
-                                            </h5>
-                                        </div>
-                                    </div>
-                                </div>
+                                                    {{-- @can('PermissionChecker', 'update_purchase_order')
+                                                        <a aria-label="anchor" href="#"
+                                                            class="btn btn-icon btn-sm bg-warning-subtle me-1"
+                                                            data-bs-toggle="tooltip" data-bs-original-title="Edit">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" width="13"
+                                                                height="13" viewBox="0 0 24 24" fill="none"
+                                                                stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                                                stroke-linejoin="round"
+                                                                class="feather feather-edit text-warning">
+                                                                <path
+                                                                    d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7">
+                                                                </path>
+                                                                <path
+                                                                    d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z">
+                                                                </path>
+                                                            </svg>
+                                                        </a>
+                                                    @endcan --}}
 
-                                <div class="card-body">
-                                    <form action="{{ route('received-products.view') }}" method="POST">
-                                        @csrf
-                                        @method('POST')
-                                        <div class="row g-3 align-items-end">
-                                            <div class="col-12 col-lg-2">
-                                                <label for="purchase_order_id" class="form-label">Order id
-                                                    <span class="text-danger">*</span></label>
-                                                <select class="form-control purchaseOrder" name="purchase_order_id"
-                                                    id="purchase_order_id">
-                                                    <option selected="" disabled="" value="">-- Select --
-                                                    </option>
-                                                    @foreach ($purchaseOrders as $order)
-                                                        <option
-                                                            {{ request('purchase_order_id') == $order->id ? 'selected' : '' }}
-                                                            value="{{ $order->id }}">{{ $order->id }}
-                                                        </option>
-                                                    @endforeach
-                                                </select>
-                                            </div>
-                                            <div class="col-12 col-lg-2">
-                                                <label for="vendor_code" class="form-label">Vendor Name
-                                                    <span class="text-danger">*</span></label>
-                                                <select class="form-control" name="vendor_code" id="vendor_code">
-                                                    <option selected disabled value="">-- Select --
-                                                    </option>
-                                                </select>
-                                            </div>
-                                            <div class="col-12 col-lg-2">
-                                                <button type="submit"
-                                                    class="btn btn-success w-sm waves ripple-light text-center  mt-md-4">
-                                                    Submit
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </form>
-                                </div>
-                            </div>
+                                                    <form action="{{ route('purchase.order.delete', $order->id) }}"
+                                                        method="POST" onsubmit="return confirm('Are you sure?')">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit"
+                                                            class="btn btn-icon btn-sm bg-danger-subtle delete-row">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" width="13"
+                                                                height="13" viewBox="0 0 24 24" fill="none"
+                                                                stroke="currentColor" stroke-width="2"
+                                                                stroke-linecap="round" stroke-linejoin="round"
+                                                                class="feather feather-trash-2 text-danger">
+                                                                <polyline points="3 6 5 6 21 6"></polyline>
+                                                                <path
+                                                                    d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
+                                                                </path>
+                                                                <line x1="10" y1="11" x2="10"
+                                                                    y2="17"></line>
+                                                                <line x1="14" y1="11" x2="14"
+                                                                    y2="17"></line>
+                                                            </svg>
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    @empty
+                                        <tr>
+                                            <td colspan="7" class="text-center">No Records Found</td>
+                                        </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
             </div>
+
+
         </div>
     </main>
     <!--end main wrapper-->
 @endsection
-
-
-@section('script')
+@section('scripts')
     <script>
-        $(document).on('change', '.purchaseOrder', function() {
-            var purchaseOrderId = $(this).val();
+        document.addEventListener('DOMContentLoaded', function() {
+            // Select All functionality
+            const selectAll = document.getElementById('select-all');
+            const checkboxes = document.querySelectorAll('.row-checkbox');
+            selectAll.addEventListener('change', function() {
+                checkboxes.forEach(cb => cb.checked = selectAll.checked);
+            });
 
-            $.ajax({
-                url: '{{ route('get.vendors') }}',
-                type: 'POST',
-                data: {
-                    _token: '{{ csrf_token() }}',
-                    id: purchaseOrderId,
-                },
-                success: function(response) {
-                    if (response.success) {
-                        let itemsHtml = `<option selected disabled> -- Selected -- </option>`;
-                        
-                        itemsHtml += response.data.map(function(item) {
-                            return `<option value="${item.vendor_code}">${item.vendor_code}</option>`; // change 'name' to the actual property
-                        }).join('');
-                        $('#vendor_code').html(itemsHtml);
-                    } else {
-                        $('#vendor_code').html('<option>No items found.</option>');
-                    }
-                },
-                error: function() {
-                    $('#vendor_code').html('<option>Error loading data.</option>');
+            // Delete Selected functionality
+            document.getElementById('delete-selected').addEventListener('click', function() {
+                let selected = [];
+                document.querySelectorAll('.row-checkbox:checked').forEach(cb => {
+                    selected.push(cb.value);
+                });
+                console.log(selected)
+                if (selected.length === 0) {
+                    alert('Please select at least one record.');
+                    return;
+                }
+                if (confirm('Are you sure you want to delete selected records?')) {
+                    // Create a form and submit
+                    let form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = '{{ route('purchase.order.bulk.delete') }}';
+                    form.innerHTML = `
+                        @csrf
+                        <input type="hidden" name="_method" value="DELETE">
+                        <input type="hidden" name="ids" value="${selected.join(',')}">
+                    `;
+                    document.body.appendChild(form);
+                    form.submit();
                 }
             });
         });

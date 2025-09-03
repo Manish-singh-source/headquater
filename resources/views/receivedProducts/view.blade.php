@@ -50,7 +50,7 @@
                                             </div>
                                             <!-- Tabs Navigation -->
                                             <div class="div d-flex justify-content-end my-3 gap-2">
-                                                @can('PermissionChecker', 'update_received_products')
+                                                {{-- @can('PermissionChecker', 'update_received_products') --}}
                                                     <button class="btn btn-sm border-2 border-primary" data-bs-toggle="modal"
                                                         data-bs-target="#staticBackdrop1"
                                                         class="btn btn-sm border-2 border-primary">
@@ -76,10 +76,8 @@
 
                                                                     <div class="modal-body">
                                                                         <div class="col-12 mb-3">
-                                                                            <input type="hidden" name="purchase_order_id"
-                                                                                value="{{ request('purchase_order_id') }}">
-                                                                            <input type="hidden" name="vendor_code"
-                                                                                value="{{ request('vendor_code') }}">
+                                                                            <input type="hidden" name="vendor_pi_id"
+                                                                                value="{{ $vendorPIs->id }}">
                                                                         </div>
 
                                                                         <div class="col-12 mb-3">
@@ -101,47 +99,8 @@
                                                             </div>
                                                         </div>
                                                     </div>
-                                                @endcan
+                                                {{-- @endcan --}}
 
-                                                <!-- Modal -->
-                                                <div class="modal fade" id="staticBackdrop1" data-bs-backdrop="static"
-                                                    data-bs-keyboard="false" tabindex="-1"
-                                                    aria-labelledby="staticBackdropLabel" aria-hidden="true">
-                                                    <div class="modal-dialog">
-                                                        <div class="modal-content">
-                                                            <form action="{{ route('check.order.stock') }}" method="POST"
-                                                                enctype="multipart/form-data">
-                                                                @csrf
-                                                                @method('POST')
-                                                                <div class="modal-header">
-                                                                    <h1 class="modal-title fs-5" id="staticBackdropLabel">
-                                                                        Update
-                                                                        Products</h1>
-                                                                    <button type="button" class="btn-close"
-                                                                        data-bs-dismiss="modal" aria-label="Close"></button>
-                                                                </div>
-
-                                                                <div class="modal-body">
-                                                                    <div class="col-12 mb-3">
-                                                                        <label for="document_image" class="form-label">Updated
-                                                                            Vendor PI (CSV/XLSX) <span
-                                                                                class="text-danger">*</span></label>
-                                                                        <input type="file" name="csv_file" id="csv_file"
-                                                                            class="form-control" value=""
-                                                                            required="" placeholder="Upload ID Document"
-                                                                            multiple>
-                                                                    </div>
-                                                                </div>
-                                                                <div class="modal-footer">
-                                                                    <button type="button" class="btn btn-secondary"
-                                                                        data-bs-dismiss="modal">Close</button>
-                                                                    <button type="submit" id="holdOrder"
-                                                                        class="btn btn-primary">Submit</button>
-                                                                </div>
-                                                            </form>
-                                                        </div>
-                                                    </div>
-                                                </div>
                                                 <button class="btn btn-sm border-2 border-primary" id="exportData">
                                                     <i class="fa fa-file-excel-o"></i> Export to Excel
                                                 </button>
@@ -154,8 +113,8 @@
                                                     <thead class="table-light">
                                                         <tr>
                                                             <th>Order&nbsp;No</th>
-                                                            <th>Vendor&nbsp;Code</th>
                                                             <th>Purchase&nbsp;Order&nbsp;No</th>
+                                                            <th>Vendor&nbsp;Code</th>
                                                             <th>Vendor&nbsp;SKU&nbsp;Code</th>
                                                             {{-- <th>Portal&nbsp;Code</th> --}}
                                                             <th>Title</th>
@@ -175,10 +134,10 @@
                                                         @foreach ($vendorPIs->products as $product)
                                                             <tr>
                                                                 <td>{{ $vendorPIs->id }}</td>
-                                                                <td>{{ $vendorPIs->vendor_code }}</td>
                                                                 <td>{{ $vendorPIs->purchase_order_id }}</td>
+                                                                <td>{{ $vendorPIs->vendor_code }}</td>
                                                                 <td>{{ $product->vendor_sku_code }}</td>
-                                                                <td>{{ $product->product->brand_title }}</td>
+                                                                <td>{{ $product->product?->brand_title ?? 'NA' }}</td>
                                                                 <td>{{ $product->mrp }}</td>
                                                                 <td>{{ $product->quantity_requirement }}</td>
                                                                 <td>{{ $product->available_quantity }}</td>
@@ -208,9 +167,8 @@
                                             method="POST" onsubmit="return confirm('Are you sure?')">
                                             @csrf
                                             @method('POST')
-                                            <input type="hidden" name="purchase_order_id"
-                                                value="{{ request('purchase_order_id') }}">
-                                            <input type="hidden" name="vendor_code" value="{{ request('vendor_code') }}">
+                                            <input type="hidden" name="vendor_pi_id"
+                                                                                value="{{ $vendorPIs->id }}">
                                             <button class="btn btn-sm border-2 border-primary" type="submit">Submit</button>
                                         </form>
                                     </div>

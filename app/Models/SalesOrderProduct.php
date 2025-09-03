@@ -8,6 +8,7 @@ class SalesOrderProduct extends Model
 {
     //
     protected $guarded = [];
+
     public function product()
     {
         return $this->hasOne(Product::class, 'sku', 'sku');
@@ -30,21 +31,21 @@ class SalesOrderProduct extends Model
 
     public function warehouseStock()
     {
-        return $this->hasOne(WarehouseStock::class, 'sku', 'sku');
+        return $this->hasOne(WarehouseStock::class, 'id', 'warehouse_stock_id');
     }
-    
+
+    // public function warehouseStockLog()
+    // {
+    //     return $this->hasOne(WarehouseStockLog::class, 'sales_order_id', 'sales_order_id');
+    // }
+
     public function warehouseStockLog()
     {
-        return $this->hasOne(WarehouseStockLog::class, 'sales_order_id', 'sales_order_id');
+        return $this->hasOne(WarehouseStockLog::class, 'sales_order_id', 'id')->whereColumn('sku', 'warehouse_stock_logs.sku');
     }
 
     public function customer()
     {
         return $this->belongsTo(Customer::class, 'customer_id', 'id');
     }
-
-    // public function warehouseStockLog()
-    // {
-    //     return $this->hasOne(WarehouseStockLog::class, 'sales_order_id', 'id')->whereColumn('sku', 'warehouse_stock_logs.sku');
-    // }
 }
