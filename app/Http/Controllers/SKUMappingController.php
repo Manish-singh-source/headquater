@@ -33,9 +33,9 @@ class SKUMappingController extends Controller
 
             foreach ($reader->getRows() as $record) {
                 SkuMapping::create([
-                    'product_sku' => $record['Product SKU'],
-                    'vendor_sku' => $record['Vendor SKU'],
-                    'customer_sku' => $record['Customer SKU'],
+                    'product_sku' => $record['Product SKU'] ?? '',
+                    'vendor_sku' => $record['Vendor SKU'] ?? '',
+                    'customer_sku' => $record['Customer SKU'] ?? '',
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]);
@@ -63,9 +63,9 @@ class SKUMappingController extends Controller
     
     public function update(Request $request) {
         $skuMapping  = SkuMapping::findOrFail($request->sku_id);
-        $skuMapping->product_sku = $request->product_sku;
-        $skuMapping->customer_sku = $request->customer_sku;
-        $skuMapping->vendor_sku = $request->vendor_sku;
+        $skuMapping->product_sku = $request->product_sku ?? '';
+        $skuMapping->customer_sku = $request->customer_sku ?? '';
+        $skuMapping->vendor_sku = $request->vendor_sku ?? '';
         $skuMapping->save();
 
         return redirect()->route('sku.mapping')->with('success', 'SKU Mapping Updated Successfully.');

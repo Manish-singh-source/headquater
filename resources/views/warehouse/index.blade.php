@@ -16,10 +16,8 @@
                     <div class="row g-3 justify-content-end">
                         <div class="col-12 col-md-auto">
                             <div class="d-flex align-items-center gap-2 justify-content-lg-end">
-                                @can('PermissionChecker', 'create_warehouse')
-                                    <a href="{{ route('warehouse.create') }}"><button class="btn btn-primary px-4"><i
-                                                class="bi bi-plus-lg me-2"></i>Add Warehouse</button></a>
-                                @endcan
+                                <a href="{{ route('warehouse.create') }}"><button class="btn btn-primary px-4"><i
+                                            class="bi bi-plus-lg me-2"></i>Add Warehouse</button></a>
                                 <div class="btn-group">
                                     <button type="button" class="btn btn-outline-primary">Action</button>
                                     <button type="button"
@@ -85,64 +83,60 @@
                                             </td>
                                             <td>
                                                 <div class="d-flex">
-                                                    @can('PermissionChecker', 'view_warehouse-detail')
-                                                        <a aria-label="anchor"
-                                                            href="{{ route('warehouse.view', $warehouse->id) }}"
-                                                            class="btn btn-icon btn-sm bg-primary-subtle me-1"
-                                                            data-bs-toggle="tooltip" data-bs-original-title="View">
+                                                    <a aria-label="anchor"
+                                                        href="{{ route('warehouse.view', $warehouse->id) }}"
+                                                        class="btn btn-icon btn-sm bg-primary-subtle me-1"
+                                                        data-bs-toggle="tooltip" data-bs-original-title="View">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="13"
+                                                            height="13" viewBox="0 0 24 24" fill="none"
+                                                            stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                                            stroke-linejoin="round"
+                                                            class="feather feather-eye text-primary">
+                                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                                            <circle cx="12" cy="12" r="3"></circle>
+                                                        </svg>
+                                                    </a>
+
+                                                    <a aria-label="anchor"
+                                                        href="{{ route('warehouse.edit', $warehouse->id) }}"
+                                                        class="btn btn-icon btn-sm bg-warning-subtle me-1"
+                                                        data-bs-toggle="tooltip" data-bs-original-title="Edit">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="13"
+                                                            height="13" viewBox="0 0 24 24" fill="none"
+                                                            stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                                            stroke-linejoin="round"
+                                                            class="feather feather-edit text-warning">
+                                                            <path
+                                                                d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7">
+                                                            </path>
+                                                            <path
+                                                                d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z">
+                                                            </path>
+                                                        </svg>
+                                                    </a>
+
+                                                    <form action="{{ route('warehouse.destroy', $warehouse->id) }}"
+                                                        method="POST" onsubmit="return confirm('Are you sure?')">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit"
+                                                            class="btn btn-icon btn-sm bg-danger-subtle delete-row">
                                                             <svg xmlns="http://www.w3.org/2000/svg" width="13"
                                                                 height="13" viewBox="0 0 24 24" fill="none"
-                                                                stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                                                stroke-linejoin="round"
-                                                                class="feather feather-eye text-primary">
-                                                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                                                <circle cx="12" cy="12" r="3"></circle>
-                                                            </svg>
-                                                        </a>
-                                                    @endcan
-                                                    @can('PermissionChecker', 'update_warehouse')
-                                                        <a aria-label="anchor"
-                                                            href="{{ route('warehouse.edit', $warehouse->id) }}"
-                                                            class="btn btn-icon btn-sm bg-warning-subtle me-1"
-                                                            data-bs-toggle="tooltip" data-bs-original-title="Edit">
-                                                            <svg xmlns="http://www.w3.org/2000/svg" width="13"
-                                                                height="13" viewBox="0 0 24 24" fill="none"
-                                                                stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                                                stroke-linejoin="round"
-                                                                class="feather feather-edit text-warning">
+                                                                stroke="currentColor" stroke-width="2"
+                                                                stroke-linecap="round" stroke-linejoin="round"
+                                                                class="feather feather-trash-2 text-danger">
+                                                                <polyline points="3 6 5 6 21 6"></polyline>
                                                                 <path
-                                                                    d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7">
+                                                                    d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
                                                                 </path>
-                                                                <path
-                                                                    d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z">
-                                                                </path>
+                                                                <line x1="10" y1="11" x2="10"
+                                                                    y2="17"></line>
+                                                                <line x1="14" y1="11" x2="14"
+                                                                    y2="17"></line>
                                                             </svg>
-                                                        </a>
-                                                    @endcan
-                                                    @can('PermissionChecker', 'delete_warehouse')
-                                                        <form action="{{ route('warehouse.destroy', $warehouse->id) }}"
-                                                            method="POST" onsubmit="return confirm('Are you sure?')">
-                                                            @csrf
-                                                            @method('DELETE')
-                                                            <button type="submit"
-                                                                class="btn btn-icon btn-sm bg-danger-subtle delete-row">
-                                                                <svg xmlns="http://www.w3.org/2000/svg" width="13"
-                                                                    height="13" viewBox="0 0 24 24" fill="none"
-                                                                    stroke="currentColor" stroke-width="2"
-                                                                    stroke-linecap="round" stroke-linejoin="round"
-                                                                    class="feather feather-trash-2 text-danger">
-                                                                    <polyline points="3 6 5 6 21 6"></polyline>
-                                                                    <path
-                                                                        d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
-                                                                    </path>
-                                                                    <line x1="10" y1="11" x2="10"
-                                                                        y2="17"></line>
-                                                                    <line x1="14" y1="11" x2="14"
-                                                                        y2="17"></line>
-                                                                </svg>
-                                                            </button>
-                                                        </form>
-                                                    @endcan
+                                                        </button>
+                                                    </form>
                                                 </div>
                                             </td>
                                         </tr>

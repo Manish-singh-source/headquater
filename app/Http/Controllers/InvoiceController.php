@@ -2,15 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use PDF;
+use App\Models\Dn;
 use App\Models\Invoice;
+use App\Models\Payment;
 use App\Models\SalesOrder;
 use App\Models\Appointment;
-use App\Models\Dn;
-use App\Models\InvoiceDetails;
-use App\Models\Payment;
-use App\Models\SalesOrderProduct;
 use Illuminate\Http\Request;
+use App\Models\InvoiceDetails;
+use App\Models\SalesOrderProduct;
 use Illuminate\Support\Facades\Validator;
 
 class InvoiceController extends Controller

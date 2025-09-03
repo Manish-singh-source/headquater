@@ -2,15 +2,16 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\WarehouseFormRequest;
+use App\Models\City;
+use App\Models\State;
+use App\Models\Country;
 use App\Models\Warehouse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
+use App\Http\Requests\WarehouseFormRequest;
 
 class WarehouseController extends Controller
 {
-    //
-
+    
     public function index()
     {
         $warehouses = Warehouse::with('country')->with('state')->with('cities')->get();
@@ -20,7 +21,10 @@ class WarehouseController extends Controller
 
     public function create()
     {
-        return view('warehouse.create');
+        $countries = Country::all();
+        $states = State::all();
+        $cities = City::all();
+        return view('warehouse.create', compact('countries', 'states', 'cities'));
     }
 
     public function store(WarehouseFormRequest $request)
@@ -120,11 +124,5 @@ class WarehouseController extends Controller
         Warehouse::destroy($ids);
         return redirect()->back()->with('success', 'Selected customers deleted successfully.');
     }
-
-    // public function warehouseDetail($id)
-    // {
-    //     $warehouse = Warehouse::with('stocks.product')->findOrFail($id);
-    //     return view('warehouse.warehouse-detail', ['warehouse' => $warehouse]);
-    // }
 
 }
