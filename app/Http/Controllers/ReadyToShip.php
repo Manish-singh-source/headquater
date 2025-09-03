@@ -2,12 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Customer;
 use App\Models\Invoice;
+use App\Models\Customer;
 use App\Models\SalesOrder;
 use Illuminate\Http\Request;
-use App\Models\SalesOrderProduct;
 use App\Models\VendorPIProduct;
+use App\Models\SalesOrderProduct;
+use App\Http\Controllers\Controller;
 
 class ReadyToShip extends Controller
 {
@@ -46,9 +47,9 @@ class ReadyToShip extends Controller
             'orderedProducts.customer',
             'orderedProducts.warehouseStock',
             'orderedProducts.warehouseStockLog'
-            ])->with(['orderedProducts' => function($q) use ($c_id) {
-                $q->where('customer_id', $c_id);
-            }])->findOrFail($id);
+        ])->with(['orderedProducts' => function ($q) use ($c_id) {
+            $q->where('customer_id', $c_id);
+        }])->findOrFail($id);
 
         $customerInfo = Customer::with('address')->find($c_id);
         $invoice = Invoice::where('customer_id', $c_id)->where('sales_order_id', $id)->first();
@@ -61,12 +62,14 @@ class ReadyToShip extends Controller
     public function issuesProducts()
     {
         $vendorOrders = VendorPIProduct::with(['order', 'product'])->where('issue_item', '>', 0)->where('issue_status', 'pending')->get();
+        // dd($vendorOrders);
         return view('exceed-shortage', compact('vendorOrders'));
     }
 
     public function returnAccept()
     {
         $vendorOrders = VendorPIProduct::with(['order', 'product'])->where('issue_status', 'return')->get();
+        // dd($vendorOrders);
         return view('return-or-accept', compact('vendorOrders'));
     }
 }

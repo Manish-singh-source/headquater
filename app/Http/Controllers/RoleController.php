@@ -2,73 +2,87 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Role;
-use Illuminate\Support\Str;
 use Illuminate\Http\Request;
+use Spatie\Permission\Models\Role;
+use Spatie\Permission\Models\Permission;
 
 class RoleController extends Controller
 {
     //
     public function index()
     {
-        $roles = Role::get();
-        return view('roles.index', ['roles' => $roles]);
+        // Logic to list roles
+        $roles = Role::latest()->get(); // Assuming you have a Role model
+        return view('roles.index', compact('roles'));
     }
 
     public function create()
     {
-        return view('roles.create');
-    }
+        // Logic to show create role form
+        $permissions = Permission::all(); // Fetch all permissions
+        return view('roles.create', compact('permissions'));
+    } 
 
     public function store(Request $request)
     {
-        $role = new Role();
-        $role->name = $request->role_name;
-        $role->slug = Str::of($request->role_name)->slug('-');
-        $role->permissions = json_encode($request->permission);
-        $role->save();
+        // Logic to store a new role
+        $request->validate([
+            'name' => 'required|unique:roles,name',
+            'permissions' => 'array',
+        ]);
 
-        return redirect()->route('role.index')->with('success', 'Role added successfully.');
+        $role = Role::create(['name' => $request->name]);
+        if ($request->permissions) {
+            $role->syncPermissions($request->permissions);
+        }
+        if($role) {
+            return redirect()->route('role.index')->with('success', 'Role created successfully.');
+        }
+        return redirect()->back()->with('error', 'Failed to create role.');
+
     }
 
     public function edit($id)
     {
-        $role = Role::findOrFail($id);
-        return view('roles.edit', ['role' => $role]);
+        // Logic to show edit role form
+        $role = Role::with('permissions')->findOrFail($id);
+        $rolePermissions = $role->permissions->pluck('name')->toArray(); // Get permissions for the role
+        $permissions = Permission::all();
+        return view('roles.edit', compact('role', 'permissions', 'rolePermissions'));
     }
 
     public function update(Request $request, $id)
     {
+        // Logic to update a role
+        $request->validate([
+            'name' => 'required|unique:roles,name,' . $id,
+            'permissions' => 'array',
+        ]);
+
         $role = Role::findOrFail($id);
-        $role->name = $request->role_name;
-        $role->slug = Str::of($request->role_name)->slug('-');
-        $role->permissions = json_encode($request->permission);
+        $role->name = $request->name;
         $role->save();
 
-        return redirect()->route('role.index')->with('success', 'Role Updated Successfully.');
+        if ($request->permissions) {
+            $role->syncPermissions($request->permissions);
+        }
+
+        if($role) {
+            return redirect()->route('role.index')->with('success', 'Role updated successfully.');
+        }
+        return redirect()->back()->with('error', 'Failed to update role.');
+
     }
 
     public function destroy($id)
     {
+        // Logic to delete a role
         $role = Role::findOrFail($id);
         $role->delete();
 
-        return redirect()->route('role.index')->with('success', 'Role deleted successfully.');
-    }
-
-    public function deleteSelected(Request $request)
-    {
-        $ids = is_array($request->ids) ? $request->ids : explode(',', $request->ids);
-        Role::destroy($ids);
-        return redirect()->back()->with('success', 'Selected Role deleted successfully.');
-    }
-
-    public function toggleStatus(Request $request)
-    {
-        $role = Role::findOrFail($request->id);
-        $role->status = $request->status;
-        $role->save();
-
-        return response()->json(['success' => true]);
+        if($role) {
+            return redirect()->route('role.index')->with('success', 'Role deleted successfully.');
+        }
+        return redirect()->back()->with('error', 'Failed to delete role.');
     }
 }

@@ -14,7 +14,7 @@
                                 <h5 class="mb-3">Product Details</h5>
                             </div>
                             <div>
-                                <a href="{{ route('order.create') }}" class="btn btn-sm btn-primary">Back</a>
+                                <a href="{{ route('sales.order.create') }}" class="btn btn-sm btn-primary">Back</a>
                             </div>
                         </div>
                         <!--end breadcrumb-->
@@ -41,14 +41,14 @@
                                     {{-- 
                                     @isset($fileData)
                                         <div>
-                                            <a href="{{ route('download.order.excel') }}"
+                                            <a href="{{ route('download.sales.order.excel') }}"
                                                 class="btn btn-icon btn-sm border-2 border-primary text-primary me-1">Download</a>
                                         </div>
                                     @endisset --}}
                                     <!-- <button id="customExcelBtn" class="btn btn-sm border-2 border-primary">
                                         <i class="fa fa-file-excel-o"></i> Export to Excel
                                     </button> -->
-                                    <a href="{{ route('download.order.excel') }}"
+                                    <a href="{{ route('download.sales.order.excel') }}"
                                         class="btn btn-icon btn-sm border-2 border-primary text-primary me-1">Export to Excel</a>
 
                                 </div>
@@ -79,6 +79,7 @@
                                                             <th>PO&nbsp;Quantity</th>
                                                             <th>Available</th>
                                                             <th>Unavailable&nbsp;Qty</th>
+                                                            <th>Reason</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
@@ -104,11 +105,12 @@
                                                                 <td>{{ $data['Net Landing Rate'] }}</td>
                                                                 <td>{{ $data['MRP'] }}</td>
                                                                 <td>{{ $data['Product MRP'] }}</td>
-                                                                <td>{{ $data['Rate Confirmation'] }}</td>
+                                                                <td>{{ $data['MRP Confirmation'] }}</td>
                                                                 <td>{{ $data['Case Pack Quantity'] }}</td>
                                                                 <td>{{ $data['PO Quantity'] }}</td>
                                                                 <td>{!! $data['Available Quantity'] !!}</td>
                                                                 <td>{!! $data['Unavailable Quantity'] !!}</td>  
+                                                                <td>{!! $data['Reason'] !!}</td>  
                                                             </tr>
                                                         @empty
                                                             <tr>

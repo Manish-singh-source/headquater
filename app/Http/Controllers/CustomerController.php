@@ -3,62 +3,21 @@
 namespace App\Http\Controllers;
 
 use App\Models\City;
-use App\Models\Staff;
 use App\Models\State;
-use App\Models\Vendor;
 use App\Models\Country;
-use App\Models\Invoice;
-use App\Models\Product;
 use App\Models\Customer;
-use App\Models\Warehouse;
-use App\Models\SalesOrder;
 use Illuminate\Http\Request;
 use App\Models\CustomerGroup;
-use App\Models\PurchaseOrder;
-use App\Models\CustomerAddress;
-use App\Models\SalesOrderProduct;
 use Illuminate\Support\Facades\DB;
 use App\Models\CustomerGroupMember;
-use App\Models\PurchaseOrderProduct;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Spatie\SimpleExcel\SimpleExcelReader;
 
 class CustomerController extends Controller
 {
-
-    public function index()
-    {
-        $customersCount = Customer::count();
-        $vendorsCount = Vendor::count();
-        $salesOrdersCount = SalesOrderProduct::count();
-        $purchaseOrdersCount = PurchaseOrderProduct::count();
-        $productsCount = Product::count();
-        $warehouseCount = Warehouse::count();
-        $readyToShipOrdersCount = SalesOrder::where('status', 'ready_to_ship')->count();
-        $readyToPackageOrdersCount = SalesOrder::where('status', 'ready_to_package')->count();
-
-        // Recent Purchase Orders (Vendor) 
-        $purchaseOrders = PurchaseOrder::with('purchaseOrderProducts')->limit(4)->latest()->get();
-        $vendorCodes = $purchaseOrders->flatMap(function ($po) {
-            return $po->purchaseOrderProducts->pluck('vendor_code');
-        })->unique()->values();
-
-        // Recent Sales Orders (Cutomer)
-        $orders = SalesOrder::with('customerGroup')->limit(4)->latest()->get();
-
-        // Recent Packaging List
-        $packagingOrders = SalesOrder::where('status', 'ready_to_package')->with('customerGroup')->limit(4)->latest()->get();
-
-        // Recent Ready To Ship Orders
-        $readyToShipOrders = SalesOrder::where('status', 'ready_to_ship')->with('customerGroup')->limit(4)->latest()->get();
-
-        // Invoices Lists
-        $invoices = Invoice::with(['warehouse', 'customer', 'salesOrder'])->limit(4)->latest()->get();
-
-        return view('index', compact('purchaseOrders', 'vendorCodes', 'orders', 'packagingOrders', 'readyToShipOrders', 'invoices', 'customersCount', 'vendorsCount', 'salesOrdersCount', 'purchaseOrdersCount', 'productsCount', 'warehouseCount', 'readyToShipOrdersCount', 'readyToPackageOrdersCount'));
-    }
-
+    //
 
     public function create($g_id)
     {
@@ -94,28 +53,33 @@ class CustomerController extends Controller
             $insertCount = 0;
 
             foreach ($reader->getRows() as $record) {
+                // 1. Check if customer already exists
+                $existingCustomer = Customer::where('email', $record['Email'] ?? '')->first();
+
+                if ($existingCustomer) {
+                    // Customer exists, you can choose to update or skip
+                    continue;
+                }
+
                 // 2. Insert individual customer
                 $customer = Customer::create([
-                    'client_name'       => $record['Client Name'],
-                    'contact_name'       => $record['Contact Name'],
-                    'email'      => $record['Email'],
-                    'contact_no'      => $record['Contact No'],
-                    'gstin'      => $record['GSTIN'],
-                    'pan'      => $record['PAN'],
-                ]);
-
-                CustomerAddress::create([
-                    'customer_id' => $customer->id,
-                    'billing_address'      => $record['Billing Address'],
-                    'billing_country'      => $record['Billing Country'],
-                    'billing_state'      => $record['Billing State'],
-                    'billing_city'      => $record['Billing City'],
-                    'billing_zip'      => $record['Billing Zip'],
-                    'shipping_address'      => $record['Shipping Address'],
-                    'shipping_country'      => $record['Shipping Country'],
-                    'shipping_state'      => $record['Shipping State'],
-                    'shipping_city'      => $record['Shipping City'],
-                    'shipping_zip'      => $record['Shipping Zip'],
+                    'client_name'       => $record['Client Name'] ?? '',
+                    'contact_name'       => $record['Contact Name'] ?? '',
+                    'email'      => $record['Email'] ?? '',
+                    'contact_no'      => $record['Contact No'] ?? '',
+                    'gstin'      => $record['GSTIN'] ?? '',
+                    'pan'      => $record['PAN'] ?? '',
+                    'company_name'      => $record['Company Name'] ?? '',
+                    'billing_address'      => $record['Billing Address'] ?? '',
+                    'billing_country'      => $record['Billing Country'] ?? '',
+                    'billing_state'      => $record['Billing State'] ?? '',
+                    'billing_city'      => $record['Billing City'] ?? '',
+                    'billing_zip'      => $record['Billing Zip'] ?? '',
+                    'shipping_address'      => $record['Shipping Address'] ?? '',
+                    'shipping_country'      => $record['Shipping Country'] ?? '',
+                    'shipping_state'      => $record['Shipping State'] ?? '',
+                    'shipping_city'      => $record['Shipping City'] ?? '',
+                    'shipping_zip'      => $record['Shipping Zip'] ?? '',
                 ]);
 
                 // 3. Insert into customer_group_members
@@ -136,6 +100,7 @@ class CustomerController extends Controller
             return redirect()->route('customer.groups.index')->with('success', 'CSV file imported successfully. Group and customers created.');
         } catch (\Exception $e) {
             DB::rollBack();
+            dd($e->getMessage());
             return redirect()->back()->withErrors(['error' => 'Something went wrong: ' . $e->getMessage()]);
         }
     }
@@ -164,28 +129,24 @@ class CustomerController extends Controller
         $customer->gstin = $request->gstin;
         $customer->pan = $request->pan;
         $customer->status = $request->status;
+        $customer->shipping_address = $request->shippingAddress;
+        $customer->shipping_country = $request->shippingCountry;
+        $customer->shipping_state = $request->shippingState;
+        $customer->shipping_city = $request->shippingCity;
+        $customer->shipping_zip = $request->shippingPinCode;
+        $customer->billing_address = $request->billingAddress;
+        $customer->billing_country = $request->billingCountry;
+        $customer->billing_state = $request->billingState;
+        $customer->billing_city = $request->billingCity;
+        $customer->billing_zip = $request->billingPinCode;
         $customer->save();
-
-        $customerAddress = new CustomerAddress();
-        $customerAddress->customer_id = $customer->id;
-        $customerAddress->shipping_address = $request->shippingAddress;
-        $customerAddress->shipping_country = $request->shippingCountry;
-        $customerAddress->shipping_state = $request->shippingState;
-        $customerAddress->shipping_city = $request->shippingCity;
-        $customerAddress->shipping_zip = $request->shippingPinCode;
-        $customerAddress->billing_address = $request->billingAddress;
-        $customerAddress->billing_country = $request->billingCountry;
-        $customerAddress->billing_state = $request->billingState;
-        $customerAddress->billing_city = $request->billingCity;
-        $customerAddress->billing_zip = $request->billingPinCode;
-        $customerAddress->save();
 
         $customerGrpMember = new CustomerGroupMember();
         $customerGrpMember->customer_group_id = $request->group_id;
         $customerGrpMember->customer_id  = $customer->id;
         $customerGrpMember->save();
 
-        if ($customerAddress) {
+        if ($customer && $customerGrpMember) {
             return redirect()->route('customer.groups.view', $request->group_id)->with('success', 'Customer added successfully.');
         }
         return back()->with('error', 'Something Went Wrong.');
@@ -193,8 +154,7 @@ class CustomerController extends Controller
 
     public function edit($id, $group_id)
     {
-        $customer = Customer::with('address')->findOrFail($id);
-        // dd($customer);
+        $customer = Customer::findOrFail($id);
         return view('customer.edit', compact('customer', 'group_id'));
     }
 
@@ -223,22 +183,19 @@ class CustomerController extends Controller
         $customer->gstin = $request->gstin;
         $customer->pan = $request->pan;
         $customer->status = $request->status;
+        $customer->shipping_address = $request->shippingAddress;
+        $customer->shipping_country = $request->shippingCountry;
+        $customer->shipping_state = $request->shippingState;
+        $customer->shipping_city = $request->shippingCity;
+        $customer->shipping_zip = $request->shippingPinCode;
+        $customer->billing_address = $request->billingAddress;
+        $customer->billing_country = $request->billingCountry;
+        $customer->billing_state = $request->billingState;
+        $customer->billing_city = $request->billingCity;
+        $customer->billing_zip = $request->billingPinCode;
         $customer->save();
 
-        $customerAddress = CustomerAddress::where('customer_id', $id)->first();
-        $customerAddress->customer_id = $customer->id;
-        $customerAddress->shipping_address = $request->shippingAddress;
-        $customerAddress->shipping_country = $request->shippingCountry;
-        $customerAddress->shipping_state = $request->shippingState;
-        $customerAddress->shipping_city = $request->shippingCity;
-        $customerAddress->shipping_zip = $request->shippingPinCode;
-        $customerAddress->billing_address = $request->billingAddress;
-        $customerAddress->billing_country = $request->billingCountry;
-        $customerAddress->billing_state = $request->billingState;
-        $customerAddress->billing_city = $request->billingCity;
-        $customerAddress->billing_zip = $request->billingPinCode;
-        $customerAddress->save();
-
+        // Update customer group membership 
         return redirect()->route('customer.groups.view', $request->group_id)->with('success', 'Customer updated successfully.');
     }
 
@@ -253,8 +210,8 @@ class CustomerController extends Controller
 
     public function detail($id)
     {
-        $customerDetails = Customer::with('groupInfo.customerGroup', 'orders.product', 'address')->where('id', $id)->first();
-        // $salesOrder = SalesOrder::with('customerGroup', 'warehouse', 'orderedProducts.product', 'orderedProducts.tempOrder')->findOrFail($id);
+        $customerDetails = Customer::with('groupInfo.customerGroup', 'orders.product', 'orders.tempOrder')->where('id', $id)->first();
+        // dd($customerDetails);
         return view('customer.detail-view', compact('customerDetails'));
     }
 
@@ -277,7 +234,7 @@ class CustomerController extends Controller
             return back()->withErrors($validator)->withInput();
         }
 
-        $user = Staff::findOrFail($id);
+        $user = User::findOrFail($id);
         $user->fname = $request->fname;
         $user->lname = $request->lname;
         $user->email = $request->email;
@@ -301,42 +258,15 @@ class CustomerController extends Controller
         return redirect()->route('user-profile')->with('success', 'Profile updated successfully.');
     }
 
-    public function toggleStatus(Request $request)
-    {
-        $customer = CustomerGroup::findOrFail($request->id);
-        $customer->status = $request->status;
-        $customer->save();
-
-        return response()->json(['success' => true]);
-    }
 
     public function deleteSelected(Request $request)
     {
         $ids = is_array($request->ids) ? $request->ids : explode(',', $request->ids);
-        Customer::destroy($ids);
-        return redirect()->back()->with('success', 'Selected customers deleted successfully.');
+        $customerGroupMember = CustomerGroupMember::where('customer_group_id', $request->groupId)->whereIn('id', $ids)->delete();
+
+        if ($customerGroupMember) {
+            return redirect()->back()->with('success', 'Selected customers deleted successfully.');
+        }
+        return redirect()->back()->with('error', 'Failed to delete selected customers.');
     }
-
-
-
-
-    // public function userview()
-    // {
-    //     $user = Auth::user();
-    //     // $user = auth()->user();
-    //     return view('user-profile', compact('user'));
-    // }
-
-    // public function Customercount()
-    // {
-    //     $customersCount = Customer::count();
-    //     return view('index', compact('customersCount'));
-    // }
-
-    // public function detailCustomer($id)
-    // {
-    //     $customer = Customer::where('group_id', $id)->get();
-
-    //     return view('customer.customer-detail', compact('customer'));
-    // }
 }

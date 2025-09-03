@@ -119,7 +119,7 @@
                                                     <td><a
                                                             href="{{ route('purchase.order.view', $order->purchase_order_id ?? 0) }}">{{ $order->purchase_order_id ?? 0 }}</a>
                                                     </td>
-                                                    <td>{{ $order->product->brand_title }}</td>
+                                                    <td>{{ $order->product->brand_title ?? 'NA' }}</td>
                                                     <td>{{ $order->vendor_sku_code }}</td>
                                                     <td>{{ $order->mrp }}</td>
                                                     <td>{{ $order->gst }}</td>
@@ -133,21 +133,25 @@
                                                     <td>{{ $order->issue_description }}</td>
                                                     <td>
                                                         <div class="d-flex justify-content-center align-items-center">
-                                                            <a aria-label="return"
-                                                                href="{{ route('vendor.product.return', $order->id) }}"
-                                                                class="btn btn-icon btn-sm bg-warning-subtle me-1"
-                                                                data-bs-toggle="tooltip" data-bs-original-title="Return">
-                                                                <svg xmlns="http://www.w3.org/2000/svg" width="13"
-                                                                    height="13" viewBox="0 0 24 24" fill="none"
-                                                                    stroke="currentColor" stroke-width="2"
-                                                                    stroke-linecap="round" stroke-linejoin="round"
-                                                                    class="feather feather-corner-up-left text-warning">
-                                                                    <polyline points="9 14 4 9 9 4"></polyline>
-                                                                    <path d="M20 20v-7a4 4 0 0 0-4-4H4"></path>
-                                                                </svg>
-                                                            </a>
+                                                            @if ($order->issue_reason === 'Exceed')
+                                                                <a aria-label="return"
+                                                                    href="{{ route('vendor.product.return', $order->id) }}"
+                                                                    class="btn btn-icon btn-sm bg-warning-subtle me-1"
+                                                                    data-bs-toggle="tooltip"
+                                                                    data-bs-original-title="Return">
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="13"
+                                                                        height="13" viewBox="0 0 24 24" fill="none"
+                                                                        stroke="currentColor" stroke-width="2"
+                                                                        stroke-linecap="round" stroke-linejoin="round"
+                                                                        class="feather feather-corner-up-left text-warning">
+                                                                        <polyline points="9 14 4 9 9 4"></polyline>
+                                                                        <path d="M20 20v-7a4 4 0 0 0-4-4H4"></path>
+                                                                    </svg>
+                                                                </a>
+                                                            @endif
 
-                                                            <a aria-label="accept" href="{{ route('vendor.product.accept', $order->id) }}"
+                                                            <a aria-label="accept"
+                                                                href="{{ route('vendor.product.accept', $order->id) }}"
                                                                 class="btn btn-icon btn-sm bg-success-subtle me-1"
                                                                 data-bs-toggle="tooltip" data-bs-original-title="Accept">
                                                                 <svg xmlns="http://www.w3.org/2000/svg" width="13"

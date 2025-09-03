@@ -13,11 +13,15 @@
                             <div class="col-lg-12">
                                 <div class="card">
                                     <div class="card-header border-bottom-dashed">
-                                        <div class="row g-4 align-items-center">
-                                            <div class="col-sm">
+                                        <div class="d-flex g-4 flex-row align-items-center justify-content-between">
+                                            <div>
                                                 <h5 class="card-title mb-0">
                                                     Role Access
                                                 </h5>
+                                            </div>
+                                            <div>
+                                                <a href="{{ url()->previous() }}"
+                                                    class="btn btn-primary float-end mt-n1">Back</a>
                                             </div>
                                         </div>
                                     </div>
@@ -42,23 +46,6 @@
                                                 @enderror
 
                                             </div>
-                                            {{-- <div class="col-12 col-md-6">
-                                                <label for="marital" class="form-label">Status
-                                                    <span class="text-danger">*</span></label>
-                                                <select class="form-control @error('status') is-invalid @enderror"
-                                                    name="status" id="marital">
-                                                    <option selected="" disabled="" value="">-- Select --
-                                                    </option>
-                                                    <option value="1">Active</option>
-                                                    <option value="0">Inactive</option>
-                                                </select>
-                                                @error('status')
-                                                    <div class="invalid-feedback">
-                                                        {{ $message }}
-                                                    </div>
-                                                @enderror
-
-                                            </div> --}}
                                         </div>
                                     </div>
                                 </div>

@@ -13,11 +13,15 @@
                             <div class="col-lg-12">
                                 <div class="card">
                                     <div class="card-header border-bottom-dashed">
-                                        <div class="row g-4 align-items-center">
-                                            <div class="col-sm">
+                                        <div class="d-flex g-4 flex-row align-items-center justify-content-between">
+                                            <div>
                                                 <h5 class="card-title mb-0">
                                                     Role Access
                                                 </h5>
+                                            </div>
+                                            <div>
+                                                <a href="{{ url()->previous() }}"
+                                                    class="btn btn-primary float-end mt-n1">Back</a>
                                             </div>
                                         </div>
                                     </div>
@@ -30,7 +34,7 @@
                                                 <select class="form-control" name="role" id="role">
                                                     <option disabled value="">-- Select --</option>
                                                     @foreach ($roles as $role)
-                                                        @if ($role->id === $staff->role->id)
+                                                        @if ($role->id === $staff->role_id)
                                                             <option selected value="{{ $role->id }}">{{ $role->name }}
                                                             </option>
                                                         @else
@@ -44,10 +48,11 @@
                                                     <span class="text-danger">*</span></label>
                                                 <select class="form-control" name="status" id="status">
                                                     <option disabled value="">-- Select --</option>
-                                                    <option value="1" {{ $staff->status == '1' ? 'selected' : '' }}>
-                                                        Active</option>
-                                                    <option value="0" {{ $staff->status == '0' ? 'selected' : '' }}>
-                                                        Inactive</option>
+                                                    @if ($staff->status == '1')
+                                                        <option selected value="1">Active</option>
+                                                    @else
+                                                        <option selected value="0">Inactive</option>
+                                                    @endif
                                                 </select>
                                             </div>
                                         </div>
@@ -95,8 +100,7 @@
                                                 <label for="email" class="form-label">E-mail address <span
                                                         class="text-danger">*</span></label>
                                                 <input type="email" name="email" id="email" class="form-control"
-                                                    value="{{ $staff->email }}" placeholder="Enter Email id"
-                                                    required="">
+                                                    value="{{ $staff->email }}" placeholder="Enter Email id" required="">
                                             </div>
 
                                             <div class="col-12 col-md-6">
