@@ -9,7 +9,7 @@
                         <ol class="breadcrumb mb-0 p-0">
                             <li class="breadcrumb-item"><a href="javascript:;"><i class="bx bx-home-alt"></i></a>
                             </li>
-                            <li class="breadcrumb-item active" aria-current="page">Roles List</li>
+                            <li class="breadcrumb-item active" aria-current="page">Role List</li>
                         </ol>
                     </nav>
                 </div>
@@ -20,6 +20,18 @@
                                 <a href="{{ route('role.create') }}" class="btn btn-primary px-4"><i
                                         class="bi bi-plus-lg me-2"></i>Add
                                     Role</a>
+                                <div class="ms-auto">
+                                    <div class="btn-group">
+                                        <button type="button" class="btn btn-outline-primary">Action</button>
+                                        <button type="button"
+                                            class="btn btn-outline-primary split-bg-primary dropdown-toggle dropdown-toggle-split"
+                                            data-bs-toggle="dropdown"> <span class="visually-hidden">Toggle Dropdown</span>
+                                        </button>
+                                        <div class="dropdown-menu dropdown-menu-right dropdown-menu-lg-end">
+                                            <a class="dropdown-item cursor-pointer" id="delete-selected">Delete All</a>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -37,6 +49,8 @@
                                             <input class="form-check-input" type="checkbox" id="select-all">
                                         </th>
                                         <th>Name</th>
+                                        <th>Status</th>
+                                        <th>Created By</th>
                                         <th>Action</th>
                                     </tr>
                                 </thead>
@@ -52,6 +66,14 @@
                                                     <p class="mb-0 customer-name fw-bold">{{ $role->name }}</p>
                                                 </a>
                                             </td>
+                                            <td>
+                                                <div class="form-switch form-check-success">
+                                                    <input class="form-check-input status-switch6" type="checkbox"
+                                                        role="switch" data-role-id="{{ $role->id }}"
+                                                        {{ $role->status == 1 ? 'checked' : '' }}>
+                                                </div>
+                                            </td>
+                                            <td>{{ $role->admins->name ?? 'NA' }}</td>
                                             <td>
                                                 <div class="d-flex">
                                                     <a aria-label="anchor" href="{{ route('role.edit', $role->id) }}"
@@ -109,4 +131,67 @@
         </div>
     </main>
     <!--end main wrapper-->
-@endsection 
+@endsection
+@section('script')
+    <script>
+        $(document).on('change', '.status-switch6', function() {
+            var roleId = $(this).data('role-id');
+            var status = $(this).is(':checked') ? 1 : 0;
+
+            $.ajax({
+                url: '{{ route('role.toggleStatus') }}',
+                type: 'POST',
+                data: {
+                    _token: '{{ csrf_token() }}',
+                    id: roleId,
+                    status: status
+                },
+                success: function(response) {
+                    if (response.success) {
+                        alert('Status updated successfully!');
+                    } else {
+                        alert('Failed to update status.');
+                    }
+                },
+                error: function() {
+                    alert('Status update failed!');
+                }
+            });
+        });
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Select All functionality
+            const selectAll = document.getElementById('select-all');
+            const checkboxes = document.querySelectorAll('.row-checkbox');
+            selectAll.addEventListener('change', function() {
+                checkboxes.forEach(cb => cb.checked = selectAll.checked);
+            });
+
+            // Delete Selected functionality
+            document.getElementById('delete-selected').addEventListener('click', function() {
+                let selected = [];
+                document.querySelectorAll('.row-checkbox:checked').forEach(cb => {
+                    selected.push(cb.value);
+                });
+                if (selected.length === 0) {
+                    alert('Please select at least one record.');
+                    return;
+                }
+                if (confirm('Are you sure you want to delete selected records?')) {
+                    // Create a form and submit
+                    let form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = '{{ route('delete.selected.role') }}';
+                    form.innerHTML = `
+                        @csrf
+                        <input type="hidden" name="_method" value="DELETE">
+                        <input type="hidden" name="ids" value="${selected.join(',')}">
+                    `;
+                    document.body.appendChild(form);
+                    form.submit();
+                }
+            });
+        });
+    </script>
+@endsection

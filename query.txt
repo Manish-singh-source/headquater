@@ -1,0 +1,133 @@
+================ Access Control ====================
+1. Roles and permissions 
+
+2. Display all staff:
+    -- CRUD
+    -- Update status 
+    -- Multi select delete
+    -- after view staff details display permissions 
+
+3. Display all Roles:
+    -- CRUD
+    -- Remove status column 
+    -- Multi select delete
+
+4. Add permissions tab: 
+    -- CRUD 
+    -- 11 AM
+================ Completed ====================
+
+================ Masters ====================
+5. Customer Group 
+    -- CRUD                                                      -- done
+    -- Multi select delete                                       -- done
+    -- View Customers details                                    -- done
+        -- CRUD                                                  -- done
+        -- Multi select delete                                   -- done
+        -- auto fill form with state, city, country 
+        -- View Customer Details 
+            -- View Customer Orders 
+                -- View Customer Order 
+    -- 12 PM
+
+
+6. Vendor:
+    -- CRUD 
+    -- Multi select delete 
+        -- auto fill form with state, city, country 
+        -- View Vendor Orders 
+            -- View Vendor Order 
+
+7. Products: 
+    -- Add Products (bulk)
+    -- Display Products List with hold quantity
+    -- Edit product details 
+    -- delete product 
+
+    -- download products list 
+    -- change data and update 
+
+    -- multi select delete                          -- not working 
+
+    -- check all table columns 
+
+    -- 1 PM 
+
+
+8. SkU Mapping: 
+    -- upload sku mapping 
+    -- export sku's 
+    -- search sku 
+
+9. Warehouse: 
+    -- CRUD 
+    -- update status 
+    -- multi select delete 
+    -- products list 
+    -- 2 PM 
+
+
+
+==================== Purchase Order ==============
+10. Purchase Order 
+    -- Create Custom PO 
+    -- Auto Generate PO of Sales Unavailable products 
+    -- View products list 
+        -- export file 
+        -- upload vendor PI 
+        -- check if the sales order fulfilled for that PI or not 
+        -- create custom order (in this order only) 
+        -- add grn & paypment info 
+
+
+11. Sales Order 
+    -- Availibility Check 
+
+        -- Upload Customers PO 
+        -- Check for Availibility 
+        -- map with sku code                customer sku == product sku 
+        -- check for customer               if customer available or not 
+        -- check for vendor                 if vendor available or not 
+        -- check for product                if product available or not 
+
+        -- export (download) file with available & Unavailable products 
+    -- After downloading fill block and vendor columns then upload and create sales order 
+    -- List all orders 
+    -- Filter by status         
+    -- After Order deletes unblock all products quantity that are blocked by this order 
+    -- View Sales Order 
+        --  display all products list 
+            -- rate confirmation 
+            -- quantity requirement 
+            -- qty fulfillment 
+        -- export order 
+        -- change values and re-upload for update 
+        multi select delete 
+    -- change order status -- by default blocked (if not all fulfilled)
+
+    -- 4 PM 
+
+============================== =============================
+
+    -- 6 PM 
+
+
+
+
+
+
+
+
+
+step 1: 
+php artisan install:broadcasting 
+    -- install reverb - yes 
+    -- node dependencies - yes 
+    
+
+
+
+============ common =======================
+
+
+multi select delete 

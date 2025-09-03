@@ -2,13 +2,13 @@
 
 namespace App\Models;
 
+use App\Models\VendorPI;
 use Illuminate\Database\Eloquent\Model;
 
 class PurchaseOrder extends Model
 {
     //
     protected $guarded = [];
-
     public function purchaseOrderProducts()
     {
         return $this->hasMany(PurchaseOrderProduct::class, 'purchase_order_id', 'id');

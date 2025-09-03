@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Customer;
 use App\Models\SalesOrder;
-use Illuminate\Http\Request;
 use App\Models\SalesOrderProduct;
+use Illuminate\Http\Request;
 
 class PackagingController extends Controller
 {

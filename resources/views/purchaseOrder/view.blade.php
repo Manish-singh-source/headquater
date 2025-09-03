@@ -14,6 +14,20 @@
                         </ol>
                     </nav>
                 </div>
+                <div class="justify-end">
+                    @empty($purchaseOrderProducts)
+                        <a href="{{ route('purches.create') }}" class="btn btn-primary px-4"><i
+                                class="bi bi-plus-lg me-2"></i>Create Order</a>
+                    @endempty
+                    @isset($purchaseOrderProducts[0])
+                        <a href="{{ route('purches.create', $purchaseOrderProducts[0]?->purchase_order_id) }}"
+                            class="btn btn-primary px-4"><i class="bi bi-plus-lg me-2"></i>Create Order</a>
+                    @endisset
+                    {{-- @if ($purchaseOrderProducts[0]?->purchase_order_id)
+                        <a href="{{ route('purches.create') }}" class="btn btn-primary px-4"><i
+                                class="bi bi-plus-lg me-2"></i>Create Order</a>
+                    @endif --}}
+                </div>
             </div>
 
             <div class="div my-2">
@@ -23,17 +37,28 @@
                             <ul class="col-12 list-group list-group-flush">
                                 <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                                     <span><b>Order Id</b></span>
-                                    <span id="purchase-order-id">{{ $purchaseOrder->id }}</span>
-                                </li>
-                                <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
-                                    <span><b>Sales Order Id</b></span>
-                                    <span id="sales-order-id">{{ $purchaseOrder->sales_order_id }}</span>
+                                    @isset($purchaseOrderProducts[0])
+                                        <span id="purchase-order-id">{{ $purchaseOrderProducts[0]->purchase_order_id }}</span>
+                                    @endisset
                                 </li>
                                 <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                                     <span><b>Vendor Name</b></span>
                                     <span>
-                                        <b class="d-inline-block text-truncate" style="max-width: 150px;" id="vendor-code">
-                                            {{ $purchaseOrder->vendor_code ?? 'NA' }}
+                                        <b class="d-inline-block text-truncate" style="max-width: 150px;">
+                                            {{-- @foreach ($vendors as $vendor)
+                                                {{ $vendor . ',' }}
+                                            @endforeach --}}
+                                            @php
+                                                $vendors = $purchaseOrderProducts
+                                                    ->pluck('vendor_code')
+                                                    ->filter()
+                                                    ->unique();
+                                            @endphp
+                                            @forelse($vendors as $vendor)
+                                                {{ $vendor }},
+                                            @empty
+                                                NA
+                                            @endforelse
                                         </b>
                                     </span>
                                 </li>
@@ -52,7 +77,9 @@
                                     <span><b>Status</b></span>
                                     <span>
                                         <b>
-                                            {{ $statuses[$purchaseOrder->status] ?? 'Unknown Status' }}
+                                            @isset($purchaseOrderProducts[0])
+                                                {{ $statuses[$purchaseOrderProducts[0]->purchaseOrder->status] ?? 'On Hold' }}
+                                            @endisset
                                         </b>
                                     </span>
                                 </li>
@@ -224,12 +251,34 @@
                                             </div>
 
                                             <div class="modal-body">
-                                                <input type="hidden" name="purchase_order_id"
-                                                    value="{{ $purchaseOrder->id }}">
-                                                <input type="hidden" name="vendor_code"
-                                                    value="{{ $purchaseOrder->vendor_code }}">
-                                                <input type="hidden" name="sales_order_id"
-                                                    value="{{ $purchaseOrder->sales_order_id }}">
+                                                <div class="col-12 mb-3">
+                                                    @isset($purchaseOrderProducts[0])
+                                                        <input type="hidden" name="purchase_order_id"
+                                                            value="{{ $purchaseOrderProducts[0]->purchase_order_id }}">
+                                                    @endisset
+                                                    <label for="vendor_code" class="form-label">Vendor Name
+                                                        <span class="text-danger">*</span></label>
+                                                    <select class="form-control" name="vendor_code" id="vendor_code">
+                                                        <option selected disabled value="">-- Select --</option>
+                                                        {{-- @foreach ($vendors as $vendor)
+                                                            <option value="{{ $vendor }}">{{ $vendor }}
+                                                            </option>
+                                                        @endforeach --}}
+                                                        @php
+                                                            $vendors = $purchaseOrderProducts
+                                                                ->pluck('vendor_code')
+                                                                ->filter()
+                                                                ->unique();
+                                                        @endphp
+                                                        @forelse($vendors as $vendor)
+                                                            <option value="{{ $vendor }}">{{ $vendor }}
+                                                            </option>
+                                                        @empty
+                                                            NA
+                                                        @endforelse
+                                                    </select>
+                                                </div>
+
                                                 <div class="col-12 mb-3">
                                                     <label for="pi_excel" class="form-label">Vendor PI (CSV/ELSX) <span
                                                             class="text-danger">*</span></label>
@@ -240,7 +289,8 @@
                                             <div class="modal-footer">
                                                 <button type="button" class="btn btn-secondary"
                                                     data-bs-dismiss="modal">Close</button>
-                                                <button type="submit" class="btn btn-primary">Submit</button>
+                                                <button type="submit" id="holdOrder"
+                                                    class="btn btn-primary">Submit</button>
                                             </div>
                                         </form>
                                     </div>
@@ -250,7 +300,24 @@
                             <button class="btn btn-icon btn-sm border-2 border-primary me-1" id="exportData">
                                 <i class="fa fa-file-excel-o"></i> Export to Excel
                             </button>
+                            {{-- <a href="#" class="btn btn-icon btn-sm border-2 border-primary me-1"
+                                id="exportData">Export to Excel</a> --}}
 
+                            <ul class="nav nav-tabs" id="vendorTabs" role="tablist">
+                                <select class="form-select border-2 border-primary" id="vendorPOSelect"
+                                    aria-label="Default select example">
+                                    <option value="" selected>All Vendors</option>
+                                    @php
+                                        $vendors = $purchaseOrderProducts->pluck('vendor_code')->filter()->unique();
+                                    @endphp
+                                    @forelse($vendors as $vendor)
+                                        <option value="{{ $vendor }}">{{ $vendor }}
+                                        </option>
+                                    @empty
+                                        <option value="">NA</option>
+                                    @endforelse
+                                </select>
+                            </ul>
                             <div class="ms-auto">
                                 <div class="btn-group">
                                     <button type="button" class="btn border-2 border-primary">Action</button>
@@ -262,6 +329,8 @@
                                         <a class="dropdown-item cursor-pointer" id="delete-selected">Delete All</a>
                                     </div>
                                 </div>
+                                {{-- <a href="{{ route('add-customer') }}" class="btn btn-primary px-4"><i
+                                        class="bi bi-plus-lg me-2"></i>Add Customers</a> --}}
                             </div>
                         </div>
                     </div>
@@ -274,7 +343,7 @@
                                         <th>
                                             <input class="form-check-input" type="checkbox" id="select-all">
                                         </th>
-                                        <th>Sales&nbsp;Order&nbsp;No</th>
+                                        <th>Order&nbsp;No</th>
                                         <th>Purchase&nbsp;Order&nbsp;No</th>
                                         <th>Vendor&nbsp;Code</th>
                                         <th>Portal&nbsp;Code</th>
@@ -286,22 +355,36 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @forelse($purchaseOrder->purchaseOrderProducts as $order)
+                                    @forelse($purchaseOrderProducts as $order)
                                         <tr>
                                             <td>
                                                 <input class="form-check-input row-checkbox" type="checkbox"
                                                     name="ids[]" value="{{ $order->id }}">
                                             </td>
-                                            <td>{{ $order->sales_order_id }}</td>
+                                            <td>{{ $order->purchase_order_id }}</td>
                                             <td>{{ $order->purchase_order_id }}</td>
                                             <td>{{ $order->vendor_code }}</td>
-                                            <td>{{ $order->tempOrder->item_code ?? 'NA' }}</td>
-                                            <td>{{ $order->tempOrder->sku ?? 'NA' }}</td>
-                                            <td>{{ $order->tempOrder->description ?? 'NA' }}</td>
-                                            <td>{{ $order->tempOrder->mrp ?? 'NA' }}</td>
+                                            <td>{{ $order->tempProduct->item_code ?? 'NA' }}</td>
+                                            <td>{{ $order->tempProduct->sku ?? 'NA' }}</td>
+                                            <td>{{ $order->tempProduct->description ?? 'NA' }}</td>
+                                            <td>{{ $order->tempProduct->mrp ?? 'NA' }}</td>
                                             <td>{{ $order->ordered_quantity ?? 'NA' }}</td>
                                             <td>
                                                 <div class="d-flex">
+                                                    {{-- 
+                                                    <a aria-label="anchor" href="{{ route('order.view', $order->id) }}"
+                                                        class="btn btn-icon btn-sm bg-primary-subtle me-1"
+                                                        data-bs-toggle="tooltip" data-bs-original-title="View">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="13"
+                                                            height="13" viewBox="0 0 24 24" fill="none"
+                                                            stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                                            stroke-linejoin="round"
+                                                            class="feather feather-eye text-primary">
+                                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                                            <circle cx="12" cy="12" r="3"></circle>
+                                                        </svg>
+                                                    </a> 
+                                                    --}}
                                                     <form
                                                         action="{{ route('purchase.order.product.delete', $order->id) }}"
                                                         method="POST" onsubmit="return confirm('Are you sure?')">
@@ -341,7 +424,7 @@
             </div>
 
 
-            @isset($purchaseOrder->vendorPI[0]->id)
+            @isset($vendorPIs[0]->id)
                 <div class="card">
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-center my-2">
@@ -366,9 +449,21 @@
                                                 @method('POST')
                                                 <div class="modal-body">
                                                     <div class="col-12 mb-3">
-                                                        <input type="hidden" name="purchase_order_id"
-                                                            value="{{ $purchaseOrder->id }}">
-                                                        <input type="hidden" name="vendor_code" value="{{ $purchaseOrder->vendor_code }}">
+                                                        @isset($purchaseOrderProducts[0])
+                                                            <input type="hidden" name="purchase_order_id"
+                                                                value="{{ $purchaseOrderProducts[0]->purchase_order_id }}">
+                                                        @endisset
+                                                        <label for="marital" class="form-label">Vendor Name
+                                                            <span class="text-danger">*</span></label>
+                                                        <select class="form-control" name="vendor_code" id="vendor_code">
+                                                            <option selected disabled value="">-- Select --</option>
+                                                            @forelse($facilityNames as $vendor)
+                                                                <option value="{{ $vendor }}">{{ $vendor }}
+                                                                </option>
+                                                            @empty
+                                                                <option value="">NA</option>
+                                                            @endforelse
+                                                        </select>
                                                     </div>
 
                                                     <div class="col-12 mb-3">
@@ -406,9 +501,21 @@
                                                 @method('POST')
                                                 <div class="modal-body">
                                                     <div class="col-12 mb-3">
-                                                        <input type="hidden" name="purchase_order_id"
-                                                            value="{{ $purchaseOrder->id }}">
-                                                        <input type="hidden" name="vendor_code" value="{{ $purchaseOrder->vendor_code }}">
+                                                        @isset($purchaseOrderProducts[0])
+                                                            <input type="hidden" name="purchase_order_id"
+                                                                value="{{ $purchaseOrderProducts[0]->purchase_order_id }}">
+                                                        @endisset
+                                                        <label for="marital" class="form-label">Vendor Name
+                                                            <span class="text-danger">*</span></label>
+                                                        <select class="form-control" name="vendor_code" id="vendor_code">
+                                                            <option selected disabled value="">-- Select --</option>
+                                                            @forelse($facilityNames as $vendor)
+                                                                <option value="{{ $vendor }}">{{ $vendor }}
+                                                                </option>
+                                                            @empty
+                                                                <option value="">NA</option>
+                                                            @endforelse
+                                                        </select>
                                                     </div>
 
                                                     <div class="col-12 mb-3">
@@ -428,6 +535,20 @@
                                         </div>
                                     </div>
                                 </div>
+                                <ul class="nav nav-tabs" role="tablist">
+                                    <select class="form-select border-2 border-primary" id="vendorSelect2"
+                                        aria-label="Default select example">
+                                        <option value="" selected>All Vendors</option>
+                                        {{-- @php
+                                            $vendors = $vendorPIs->pluck('vendor_code')->filter()->unique();
+                                        @endphp --}}
+                                        @forelse($facilityNames as $vendor)
+                                            <option value="{{ $vendor }}">{{ $vendor }}</option>
+                                        @empty
+                                            <option value="">NA</option>
+                                        @endforelse
+                                    </select>
+                                </ul>
                             </div>
                         </div>
 
@@ -441,32 +562,31 @@
                                             <th>Vendor&nbsp;Code</th>
                                             <th>Vendor&nbsp;SKU&nbsp;Code</th>
                                             <th>Title</th>
-                                            <th>GST</th>
-                                            <th>HSN</th>
                                             <th>MRP</th>
-                                            <th>Purchase&nbsp;Rate&nbsp;Basic</th>
                                             <th>Quantity&nbsp;Requirement</th>
                                             <th>PI&nbsp;Quantity</th>
                                             <th>Quantity&nbsp;Received</th>
+                                            <th>Purchase&nbsp;Rate&nbsp;Basic</th>
+                                            <th>GST</th>
+                                            <th>HSN</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @forelse ($purchaseOrder->vendorPI as $vendorPI)
+                                        @forelse ($vendorPIs as $vendorPI)
                                             @foreach ($vendorPI->products as $product)
                                                 <tr>
                                                     <td>{{ $product->id }}</td>
                                                     <td>{{ $vendorPI->purchase_order_id }}</td>
                                                     <td>{{ $vendorPI->vendor_code }}</td>
                                                     <td>{{ $product->vendor_sku_code }}</td>
-                                                    <td>{{ $product->purchaseOrder->purchaseOrderProducts[0]->tempOrder->description ?? 'N/A' }}
-                                                    </td>
-                                                    <td>{{ $product->gst }}</td>
-                                                    <td>{{ $product->hsn }}</td>
+                                                    <td>{{ $product->product->brand_title }}</td>
                                                     <td>{{ $product->mrp }}</td>
-                                                    <td>{{ $product->purchase_rate }}</td>
                                                     <td>{{ $product->quantity_requirement }}</td>
                                                     <td>{{ $product->available_quantity }}</td>
                                                     <td>{{ $product->quantity_received ?? '' }}</td>
+                                                    <td>{{ $product->purchase_rate }}</td>
+                                                    <td>{{ $product->gst }}</td>
+                                                    <td>{{ $product->hsn }}</td>
                                                 </tr>
                                             @endforeach
                                         @empty
@@ -567,8 +687,8 @@
 @section('script')
     <script>
         $(document).on('click', '#exportData', function() {
-            var purchaseOrderId = $("#purchase-order-id").text().trim();
-            var vendorCode = $("#vendor-code").text().trim();
+            var purchaseOrderId = $("#purchase-order-id").text();
+            var vendorCode = $("#vendorPOSelect").val();
 
             // Construct download URL with parameters
             var downloadUrl = '{{ route('download.vendor.po.excel') }}' +

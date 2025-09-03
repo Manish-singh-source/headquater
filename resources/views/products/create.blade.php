@@ -8,15 +8,11 @@
                         <div class="col">
                             <div class="card">
                                 <div class="card-header border-bottom-dashed">
-                                    <div class="d-flex g-4 flex-row align-items-center justify-content-between">
-                                        <div>
+                                    <div class="row g-4 align-items-center">
+                                        <div class="col-sm">
                                             <h5 class="card-title mb-0">
                                                 Add New Products
                                             </h5>
-                                        </div>
-                                        <div>
-                                            <a href="{{ url()->previous() }}"
-                                                class="btn btn-primary float-end mt-n1">Back</a>
                                         </div>
                                     </div>
                                 </div>

@@ -27,7 +27,7 @@
                                                 aria-labelledby="staticBackdropLabel" aria-hidden="true">
                                                 <div class="modal-dialog">
                                                     <div class="modal-content">
-                                                        <form action="{{ route('check.sales.order.stock') }}" method="POST"
+                                                        <form action="{{ route('check.order.stock') }}" method="POST"
                                                             enctype="multipart/form-data">
                                                             @csrf
                                                             @method('POST')
@@ -98,7 +98,7 @@
 
                                 <div>
                                     <div class="card-body">
-                                        <form action="{{ route('sales.order.store') }}" method="POST" onsubmit="return confirm('Have You Checked Availibility?')"
+                                        <form action="{{ route('order.store') }}" method="POST" onsubmit="return confirm('Have You Checked Availibility?')"
                                             enctype="multipart/form-data">
                                             @csrf
                                             @method('POST')

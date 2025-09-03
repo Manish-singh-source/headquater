@@ -118,7 +118,7 @@
                                 <div class="col-md-12">
                                     <label for="shippingAddress" class="form-label">Shipping Address</label>
                                     <textarea class="form-control  @error('shippingAddress') is-invalid @enderror" value="" id="shippingAddress"
-                                        placeholder="Enter Full Address" rows="3" name="shippingAddress">{{ old('shippingAddress', $customer->shipping_address) }}</textarea>
+                                        placeholder="Enter Full Address" rows="3" name="shippingAddress">{{ old('shippingAddress', $customer->address?->shipping_address) }}</textarea>
                                     @error('shippingAddress')
                                         <div class="invalid-feedback">
                                             {{ $message }}
@@ -151,7 +151,7 @@
                                     <label for="shippingPinCode" class="form-label">Pin Code</label>
                                     <input type="text"
                                         class="form-control  @error('shippingPinCode') is-invalid @enderror"
-                                        value="{{ old('shippingPinCode', $customer->shippingPinCode) }}"
+                                        value="{{ old('shippingPinCode', $customer->address?->shippingPinCode) }}"
                                         id="shippingPinCode" placeholder="Enter Pin Code" name="shipping_zip">
                                     @error('shippingPinCode')
                                         <div class="invalid-feedback">
@@ -163,7 +163,7 @@
                                 <div class="col-md-12">
                                     <label for="billingAddress" class="form-label">Billing Address</label>
                                     <textarea class="form-control  @error('billingAddress') is-invalid @enderror" value="" id="billingAddress"
-                                        placeholder="Enter Full Address" rows="3" name="billingAddress">{{ old('billingAddress', $customer->billing_address) }}</textarea>
+                                        placeholder="Enter Full Address" rows="3" name="billingAddress">{{ old('billingAddress', $customer->address?->billing_address) }}</textarea>
                                     @error('billingAddress')
                                         <div class="invalid-feedback">
                                             {{ $message }}
@@ -196,7 +196,7 @@
                                     <label for="billingPinCode" class="form-label">Pin Code</label>
                                     <input type="text"
                                         class="form-control  @error('billingPinCode') is-invalid @enderror"
-                                        value="{{ old('billingPinCode', $customer->billing_zip) }}" id="billingPinCode"
+                                        value="{{ old('billingPinCode', $customer->address?->billing_zip) }}" id="billingPinCode"
                                         placeholder="Enter Pin Code" name="billingPinCode">
                                     @error('billingPinCode')
                                         <div class="invalid-feedback">

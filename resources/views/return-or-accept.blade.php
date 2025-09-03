@@ -45,7 +45,7 @@
                                                         <a
                                                             href="{{ route('purchase.order.view', $order->purchase_order_id ?? 0) }}">{{ $order->purchase_order_id ?? 0 }}</a>
                                                     </td>
-                                                    <td>{{ $order->product->brand_title ?? 'NA' }}</td>
+                                                    <td>{{ $order->product->brand_title }}</td>
                                                     <td>{{ $order->vendor_sku_code }}</td>
                                                     <td>{{ $order->mrp }}</td>
                                                     <td>{{ $order->purchase_rate }}</td>

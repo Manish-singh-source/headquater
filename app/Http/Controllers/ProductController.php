@@ -3,11 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
+use App\Models\TempOrder;
 use App\Models\Warehouse;
+use App\Models\SkuMapping;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Models\WarehouseStock;
+use App\Models\WarehouseStockLog;
 use Illuminate\Support\Facades\DB;
 use Spatie\SimpleExcel\SimpleExcelReader;
 use Spatie\SimpleExcel\SimpleExcelWriter;
@@ -15,22 +18,19 @@ use Spatie\SimpleExcel\SimpleExcelWriter;
 class ProductController extends Controller
 {
     //
-    // done
+
     public function index()
     {
         $products = WarehouseStock::with('product', 'warehouse')->get();
-        // dd($products);
         return view('products.index', compact('products'));
     }
 
-    // done
     public function create()
     {
         $warehouses = Warehouse::all();
         return view('products.create', ['warehouses' => $warehouses]);
     }
 
-    // done
     public function store(Request $request)
     {
         $file = $request->file('products_excel');
@@ -48,6 +48,7 @@ class ProductController extends Controller
             $insertCount = 0;
 
             foreach ($reader->getRows() as $record) {
+                // dd($record);
                 $product = Product::create([
                     'sku' => $record['SKU Code'] ?? '',
                     'ean_code' => $record['EAN Code'] ?? '',
@@ -64,16 +65,21 @@ class ProductController extends Controller
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]);
-
+                
                 $warehouseStock = new WarehouseStock();
                 $warehouseStock->warehouse_id = $request->warehouse_id;
+                $warehouseStock->product_id = $product->id;
                 $warehouseStock->sku = $record['SKU Code'];
-                isset($record['Stock']) ? $warehouseStock->original_quantity = $record['Stock'] : $warehouseStock->original_quantity = 0;
-                isset($record['Stock']) ? $warehouseStock->available_quantity = $record['Stock'] : $warehouseStock->available_quantity = 0;
+                if(isset($record['Stock'])) {
+                    $warehouseStock->quantity = $record['Stock'] ?? 0;
+                }else {
+                    $warehouseStock->quantity = 0;
+                }
                 $warehouseStock->save();
 
                 // $warehouseStock = new WarehouseStockLog();
                 // $warehouseStock->warehouse_id = $request->warehouse_id;
+                // $warehouseStock->product_id = $product->id;
                 // $warehouseStock->sku = $record['SKU Code'];
                 // $warehouseStock->quantity = $record['Sets/CTN'];
                 // $warehouseStock->save();
@@ -149,6 +155,10 @@ class ProductController extends Controller
             Product::upsert($products, ['sku']);
 
             DB::commit();
+
+            // Create notification for products received
+            // notifyProductsReceived($insertCount);
+
             return redirect()->route('products.index')->with('success', 'CSV file imported successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
@@ -158,77 +168,41 @@ class ProductController extends Controller
 
     public function editProduct($id)
     {
-        $product = Product::with('warehouseStock')->findOrFail($id);
-
-        if (!$product) {
-            return redirect()->back()->withErrors(['error' => 'Product not found.']);
-        }
+        $product = Product::findOrFail($id);
         return response()->json($product); // send data to AJAX
     }
 
     public function updateProduct(Request $request)
     {
-        $product = Product::findOrFail($request->id);        
-        $product->ean_code = $request->ean_code;
-        $product->brand = $request->brand;
-        $product->brand_title = $request->brand_title;
-        $product->mrp = $request->mrp;
-        $product->category = $request->category;
-        $product->pcs_set = $request->pcs_set;
-        $product->sets_ctn = $request->sets_ctn;
-        $product->save();
-
-        // Update warehouse stock
-        $warehouseStock = WarehouseStock::where('sku', $product->sku)->first();
-        if ($warehouseStock) {
-            if ($request->original_quantity !== null) {
-                $warehouseStock->available_quantity = $request->original_quantity - $warehouseStock->block_quantity;
-                $warehouseStock->original_quantity = $request->original_quantity;
-            }
-            $warehouseStock->save();
-        }
+        $product = Product::findOrFail($request->id);
+        $product->update([
+            'sku' => $request->sku,
+            'ean_code' => $request->ean_code,
+            'brand' => $request->brand,
+            'brand_title' => $request->brand_title,
+            'mrp' => $request->mrp,
+            'category' => $request->category,
+            'pcs_set' => $request->pcs_set,
+            'sets_ctn' => $request->sets_ctn,
+        ]);
 
         return response()->json(['success' => true]);
     }
 
-    // done
     public function destroy($id)
     {
-        // Find the product by ID
         $product = Product::findOrFail($id);
-
-        if ($product) {
-            $warehouseStock = WarehouseStock::where('sku', $product->sku)->first();
-            $warehouseStock->delete();
-            $product->delete();
-        }
+        $product->delete();
 
         return redirect()->back()->with('success', 'Product deleted successfully.');
     }
 
-    // done
     public function deleteSelected(Request $request)
     {
-        $request->validate([
-            'ids' => 'required',
-        ]);
-
         $ids = is_array($request->ids) ? $request->ids : explode(',', $request->ids);
-
-        DB::transaction(function () use ($ids) {
-            // Get product SKUs before deleting
-            $skus = Product::whereIn('id', $ids)->pluck('sku');
-
-            // Delete related warehouse stocks
-            WarehouseStock::whereIn('sku', $skus)->delete();
-
-            // Delete products
-            Product::destroy($ids);
-        });
-
-        return redirect()->back()->with('success', 'Selected products deleted successfully.');
+        Product::destroy($ids);
+        return redirect()->back()->with('success', 'Selected customers deleted successfully.');
     }
-
 
 
     public function downloadProductSheet(Request $request)
@@ -264,7 +238,7 @@ class ProductController extends Controller
         // Close the writer
         $writer->close();
 
-        return response()->download($tempXlsxPath, 'vendor_po.xlsx', [
+        return response()->download($tempXlsxPath, 'update_products.xlsx', [
             'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         ])->deleteFileAfterSend(true);
     }

@@ -46,39 +46,38 @@
                                 @method('POST')
                                 <div class="col-12">
                                     <label for="email" class="form-label">Email</label>
-                                        <input type="email" class="form-control @error('email') is-invalid @enderror"
-                                            id="email" name="email"
-                                            value="{{ old('email') }}"
-                                            @error('email') aria-describedby="validationServer05Feedback"  @enderror
-                                            placeholder="example@gmail.com">
-                                        @error('email')
-                                            <div id="validationServer05Feedback" class="invalid-feedback">
-                                                {{ $message }}
-                                            </div>
-                                        @enderror
+                                    <input type="email" class="form-control @error('email') is-invalid @enderror"
+                                        id="email" name="email"
+                                        @error('email') aria-describedby="validationServer05Feedback"  @enderror
+                                        placeholder="example@gmail.com">
+                                    @error('email')
+                                        <div id="validationServer05Feedback" class="invalid-feedback">
+                                            {{ $message }}
+                                        </div>
+                                    @enderror
                                 </div>
                                 <div class="col-12">
                                     <label for="password" class="form-label">Password</label>
                                     <div class="input-group" id="show_hide_password">
-                                            <input type="password"
-                                                class="form-control border-end-0 @error('password') is-invalid @enderror"
-                                                id="password" name="password"
-                                                @error('password') aria-describedby="validationServer06Feedback"  @enderror
-                                                placeholder="Enter Password">
-                                            <a href="javascript:;" class="input-group-text bg-transparent text-white"><i
-                                                    class="bi bi-eye-slash-fill"></i></a>
-                                            @error('password')
-                                                <div id="validationServer06Feedback" class="invalid-feedback">
-                                                    {{ $message }}
-                                                </div>
-                                            @enderror
+                                        <input type="password"
+                                            class="form-control border-end-0 @error('password') is-invalid @enderror"
+                                            id="password" name="password"
+                                            @error('password') aria-describedby="validationServer06Feedback"  @enderror
+                                            placeholder="Enter Password">
+                                        <a href="javascript:;" class="input-group-text bg-transparent text-white"><i
+                                                class="bi bi-eye-slash-fill"></i></a>
+                                        @error('password')
+                                            <div id="validationServer05Feedback" class="invalid-feedback">
+                                                {{ $message }}
+                                            </div>
+                                        @enderror
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-check form-switch">
-                                            <input class="form-check-input" type="checkbox" id="flexSwitchCheckChecked" name="remember"
-                                                {{ old('remember') ? 'checked' : '' }}>
-                                            <label class="form-check-label" for="flexSwitchCheckChecked">Remember Me</label>
+                                        <input class="form-check-input" type="checkbox" id="flexSwitchCheckChecked"
+                                            checked>
+                                        <label class="form-check-label" for="flexSwitchCheckChecked">Remember Me</label>
                                     </div>
                                 </div>
                                 <div class="col-md-6 text-end"> <a href="auth-boxed-forgot-password.html">Forgot
