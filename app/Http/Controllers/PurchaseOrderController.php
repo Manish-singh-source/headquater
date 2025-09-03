@@ -514,7 +514,8 @@ class PurchaseOrderController extends Controller
 
         $product = WarehouseStock::where('sku', $vendorPIProduct->vendor_sku_code)->first();
         if ($product) {
-            $product->quantity += $vendorPIProduct->issue_item;
+            $product->original_quantity += $vendorPIProduct->issue_item;
+            $product->available_quantity += $vendorPIProduct->issue_item;
             $product->save();
         }
         $vendorPIProduct->save();

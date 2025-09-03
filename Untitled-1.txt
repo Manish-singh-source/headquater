@@ -1,18 +1,18 @@
 
 Module - Customer Group
 
-1. create customer group 
-2. edit customer group 
-3. delete customer group 
-4. change status of customer group 
-5. multi delete customer groups 
-6. view customer group info 
-    -- a. add single customer 
-    -- b. add customers in bulk 
-    -- c. edit customer info 
-    -- d. delete customer 
-    -- e. view customer info 
-    -- f. multi delete customers 
+1. create customer group               -- done
+2. edit customer group                 -- done 
+3. delete customer group               -- done 
+4. change status of customer group     -- done
+5. multi delete customer groups        -- done 
+6. view customer group info            -- done
+    -- a. add single customer          -- done 
+    -- b. add customers in bulk        -- 
+    -- c. edit customer info           -- done 
+    -- d. delete customer              -- done 
+    -- e. view customer info           -- done 
+    -- f. multi delete customers       -- done 
 
 
 Module - Vendor 
@@ -78,3 +78,24 @@ Module - Purchase Order
 
 
 Module - Invoice 
+
+
+
+
+
+
+
+
+
+
+
+
+--- sales order --- 
+
+1. qty fulfilled  - qty requirement    = 100
+    -- available warehouse stock       = 30
+    -- blocked stock of this product   = 20
+    -- vendor fulfillment qty          = 50
+    --------------- total              = 100 
+
+2. rate confirmation 

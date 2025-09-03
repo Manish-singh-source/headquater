@@ -54,39 +54,54 @@ class CustomerController extends Controller
 
             foreach ($reader->getRows() as $record) {
                 // 1. Check if customer already exists
-                $existingCustomer = Customer::where('email', $record['Email'] ?? '')->first();
+                // $existingCustomer = Customer::where('email', $record['Email'] ?? '')->first();
+                $keywords = preg_split('/[\s\-]+/', $record['Shipping Address'], -1, PREG_SPLIT_NO_EMPTY);
+                $query = DB::table('customers'); // your table
+
+                $query->where(function ($q) use ($keywords) {
+                    foreach ($keywords as $word) {
+                        $q->orWhere('shipping_address', 'like', "%{$word}%");
+                    }
+                });
+
+                $existingCustomer = $query->first();
 
                 if ($existingCustomer) {
                     // Customer exists, you can choose to update or skip
-                    continue;
+                    $customerGroupMember = new CustomerGroupMember();
+                    $customerGroupMember->customer_group_id = $g_id;
+                    $customerGroupMember->customer_id = $existingCustomer->id;
+                    $customerGroupMember->save();
+                    // dd($customerGroupMember);
+                    // continue;
+                } else {
+                    // 2. Insert individual customer
+                    $customer = Customer::create([
+                        'client_name'       => $record['Client Name'] ?? '',
+                        'contact_name'       => $record['Contact Name'] ?? '',
+                        'email'      => $record['Email'] ?? '',
+                        'contact_no'      => $record['Contact No'] ?? '',
+                        'gstin'      => $record['GSTIN'] ?? '',
+                        'pan'      => $record['PAN'] ?? '',
+                        'company_name'      => $record['Company Name'] ?? '',
+                        'billing_address'      => $record['Billing Address'] ?? '',
+                        'billing_country'      => $record['Billing Country'] ?? '',
+                        'billing_state'      => $record['Billing State'] ?? '',
+                        'billing_city'      => $record['Billing City'] ?? '',
+                        'billing_zip'      => $record['Billing Zip'] ?? '',
+                        'shipping_address'      => $record['Shipping Address'] ?? '',
+                        'shipping_country'      => $record['Shipping Country'] ?? '',
+                        'shipping_state'      => $record['Shipping State'] ?? '',
+                        'shipping_city'      => $record['Shipping City'] ?? '',
+                        'shipping_zip'      => $record['Shipping Zip'] ?? '',
+                    ]);
+    
+                    // 3. Insert into customer_group_members
+                    CustomerGroupMember::create([
+                        'customer_id' => $customer->id,
+                        'customer_group_id' => $g_id,
+                    ]);
                 }
-
-                // 2. Insert individual customer
-                $customer = Customer::create([
-                    'client_name'       => $record['Client Name'] ?? '',
-                    'contact_name'       => $record['Contact Name'] ?? '',
-                    'email'      => $record['Email'] ?? '',
-                    'contact_no'      => $record['Contact No'] ?? '',
-                    'gstin'      => $record['GSTIN'] ?? '',
-                    'pan'      => $record['PAN'] ?? '',
-                    'company_name'      => $record['Company Name'] ?? '',
-                    'billing_address'      => $record['Billing Address'] ?? '',
-                    'billing_country'      => $record['Billing Country'] ?? '',
-                    'billing_state'      => $record['Billing State'] ?? '',
-                    'billing_city'      => $record['Billing City'] ?? '',
-                    'billing_zip'      => $record['Billing Zip'] ?? '',
-                    'shipping_address'      => $record['Shipping Address'] ?? '',
-                    'shipping_country'      => $record['Shipping Country'] ?? '',
-                    'shipping_state'      => $record['Shipping State'] ?? '',
-                    'shipping_city'      => $record['Shipping City'] ?? '',
-                    'shipping_zip'      => $record['Shipping Zip'] ?? '',
-                ]);
-
-                // 3. Insert into customer_group_members
-                CustomerGroupMember::create([
-                    'customer_id' => $customer->id,
-                    'customer_group_id' => $g_id,
-                ]);
 
                 $insertCount++;
             }
@@ -99,8 +114,8 @@ class CustomerController extends Controller
             DB::commit();
             return redirect()->route('customer.groups.index')->with('success', 'CSV file imported successfully. Group and customers created.');
         } catch (\Exception $e) {
+            // dd($e->getMessage());
             DB::rollBack();
-            dd($e->getMessage());
             return redirect()->back()->withErrors(['error' => 'Something went wrong: ' . $e->getMessage()]);
         }
     }

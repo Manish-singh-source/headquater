@@ -117,35 +117,35 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach ($products as $product)
+                                    @forelse ($products as $product)
                                         <tr>
                                             <td>
                                                 <input class="form-check-input row-checkbox" type="checkbox" name="ids[]"
                                                     value="{{ $product->id }}">
                                             </td>
                                             <td>{{ $product->warehouse->name ?? 'NA' }}</td>
-                                            <td>{{ $product->product->sku }}</td>
-                                            <td>{{ $product->product->ean_code }}</td>
+                                            <td>{{ $product->product->sku ?? 'NA' }}</td>
+                                            <td>{{ $product->product->ean_code ?? 'NA' }}</td>
                                             <td>
                                                 <div class="d-flex align-items-center gap-3">
                                                     <div class="product-info">
                                                         <a href="javascript:;"
-                                                            class="product-title">{{ $product->product->brand }}</a>
+                                                            class="product-title">{{ $product->product->brand ?? 'NA' }}</a>
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td>{{ $product->product->brand_title }}</td>
-                                            <td>{{ $product->product->mrp }}</td>
-                                            <td>{{ $product->product->category }}</td>
-                                            <td>{{ $product->product->pcs_set }}</td>
-                                            <td>{{ $product->product->sets_ctn }}</td>
-                                            <td>{{ $product->product->vendor_name }}</td>
-                                            <td>{{ $product->product->vendor_purchase_rate }}</td>
-                                            <td>{{ $product->product->gst }}</td>
-                                            <td>{{ $product->product->vendor_net_landing }}</td>
+                                            <td>{{ $product->product->brand_title ?? 'NA'}}</td>
+                                            <td>{{ $product->product->mrp ?? 'NA' }}</td>
+                                            <td>{{ $product->product->category ?? 'NA'}}</td>
+                                            <td>{{ $product->product->pcs_set ?? 'NA' }}</td>
+                                            <td>{{ $product->product->sets_ctn ?? 'NA' }}</td>
+                                            <td>{{ $product->product->vendor_name ?? 'NA' }}</td>
+                                            <td>{{ $product->product->vendor_purchase_rate ?? 'NA' }}</td>
+                                            <td>{{ $product->product->gst ?? 'NA' }}</td>
+                                            <td>{{ $product->product->vendor_net_landing ?? 'NA' }}</td>
                                             <td>{{ $product->product->status === '1' ? 'Active' : 'Inactive' }}</td>
-                                            <td>{{ $product->original_quantity }}</td>
-                                            <td>{{ $product->available_quantity }}</td>
+                                            <td>{{ $product->original_quantity ?? 'NA' }}</td>
+                                            <td>{{ $product->available_quantity ?? 'NA' }}</td>
                                             <td>
                                                 @if ($product->block_quantity)
                                                     <span class="badge text-danger bg-danger-subtle">
@@ -201,7 +201,11 @@
                                                 </div>
                                             </td>
                                         </tr>
-                                    @endforeach
+                                    @empty 
+                                        <tr>
+                                            <td colspan="12" class="text-center">No products found.</td>
+                                        </tr>
+                                    @endforelse
                                 </tbody>
                             </table>
                         </div>

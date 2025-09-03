@@ -345,8 +345,19 @@ class SalesOrderController extends Controller
 
                 // $customerInfo = Customer::where('client_name', $record['Facility Name'])
                 //     ->first();
-                $customerInfo = Customer::where('shipping_address', 'like', '%' . $record['Facility Location'] . '%')
-                    ->first();
+                // $customerInfo = Customer::where('shipping_address', 'like', '%' . $record['Facility Location'] . '%')
+                //     ->first();
+                $keywords = preg_split('/[\s\-]+/', $record['Facility Location'], -1, PREG_SPLIT_NO_EMPTY);
+                $query = DB::table('customers'); // your table
+
+                $query->where(function ($q) use ($keywords) {
+                    foreach ($keywords as $word) {
+                        $q->orWhere('shipping_address', 'like', "%{$word}%");
+                    }
+                });
+
+                $customerInfo = $query->first();
+
                 $salesOrderProductUpdate = SalesOrderProduct::where('sku', $record['SKU Code'])->where('sales_order_id', $request->sales_order_id)->where('customer_id', $customerInfo->id)->first();
 
                 $products[] = [
@@ -470,15 +481,15 @@ class SalesOrderController extends Controller
         $ids = is_array($request->ids) ? $request->ids : explode(',', $request->ids);
 
         foreach ($ids as $salesOrderIdKey => $salesOrderId) {
-            $salesOrderProduct = SalesOrderProduct::where('id', $salesOrderId)->first();
-            $blockQuantity = WarehouseStockLog::where('sales_order_id', $salesOrderProduct->sales_order_id)
-                ->where('customer_id', $salesOrderProduct->customer_id)
-                ->where('sku', $salesOrderProduct->sku)
-                ->first();
 
-            if ($blockQuantity->block_quantity > 0) {
-                $WarehouseStockUpdate = WarehouseStock::where('sku', $salesOrderProduct->sku)->first();
-                $WarehouseStockUpdate->block_quantity = $WarehouseStockUpdate->block_quantity - $blockQuantity->block_quantity;
+            $salesOrderProduct = SalesOrderProduct::with('tempOrder')->where('id', $salesOrderId)->first();
+
+            if ($salesOrderProduct->tempOrder->block > 0) {
+                $WarehouseStockUpdate = WarehouseStock::where('id', $salesOrderProduct->warehouse_stock_id)
+                    ->first();
+
+                $WarehouseStockUpdate->block_quantity = $WarehouseStockUpdate->block_quantity - $salesOrderProduct->tempOrder->block;
+                $WarehouseStockUpdate->available_quantity = $WarehouseStockUpdate->available_quantity + $salesOrderProduct->tempOrder->block;
                 $WarehouseStockUpdate->save();
 
                 // Released Products now ready to available for another products  
