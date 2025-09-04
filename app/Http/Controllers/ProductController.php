@@ -135,7 +135,13 @@ class ProductController extends Controller
                 ];
 
                 $warehouseStockUpdate = WarehouseStock::where('sku', $record['SKU Code'])->first();
-                $warehouseStockUpdate->quantity = $record['Stock'];
+                if($record['Stock'] < $warehouseStockUpdate->available_quantity) {
+                    $warehouseStockUpdate->original_quantity -= $record['Stock'];
+                    $warehouseStockUpdate->available_quantity = $record['Stock'];
+                }else {
+                    $warehouseStockUpdate->original_quantity += $record['Stock'];
+                    $warehouseStockUpdate->available_quantity = $record['Stock'];
+                }
                 $warehouseStockUpdate->save();
 
                 $insertCount++;
@@ -231,7 +237,7 @@ class ProductController extends Controller
 
 
 
-    public function downloadProductSheet(Request $request)
+    public function downloadProductSheet(Request $request, $id = null)
     {
         // Create temporary .xlsx file path
         $tempXlsxPath = storage_path('app/product_sheet_' . Str::random(8) . '.xlsx');
@@ -240,7 +246,9 @@ class ProductController extends Controller
         $writer = SimpleExcelWriter::create($tempXlsxPath);
 
         // Fetch data with relationships
-        $products = WarehouseStock::with('product', 'warehouse')->get();
+        $products = WarehouseStock::with('product', 'warehouse')->when($id, function ($query) use ($id) {
+            $query->where('warehouse_id', $id);
+        })->get();
 
         // Add rows
         foreach ($products as $product) {
@@ -264,7 +272,7 @@ class ProductController extends Controller
         // Close the writer
         $writer->close();
 
-        return response()->download($tempXlsxPath, 'vendor_po.xlsx', [
+        return response()->download($tempXlsxPath, 'products_sheet.xlsx', [
             'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         ])->deleteFileAfterSend(true);
     }

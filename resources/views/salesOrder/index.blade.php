@@ -33,9 +33,9 @@
                             <table id="example" class="table table-striped">
                                 <thead class="table-light">
                                     <tr>
-                                        <th>
-                                            <input class="form-check-input" type="checkbox">
-                                        </th>
+                                        {{-- <th>
+                                            <input class="form-check-input" type="checkbox" id="select-all">
+                                        </th> --}}
                                         <th>Order Id</th>
                                         <th>Customer Group Name</th>
                                         <th>Order Status</th>
@@ -56,9 +56,9 @@
                                     @endphp
                                     @foreach ($orders as $order)
                                         <tr>
-                                            <td>
-                                                <input class="form-check-input" type="checkbox">
-                                            </td>
+                                            {{-- <td>
+                                                <input class="form-check-input row-checkbox" type="checkbox" name="ids[]" value="{{ $order->id }}">
+                                            </td> --}}
                                             <td>{{ $order->id }}</td>
                                             <td>
                                                 <p class="mb-0 customer-name fw-bold">
@@ -71,7 +71,8 @@
                                             <td>{{ $order->created_at->format('d-M-Y') }}</td>
                                             <td>
                                                 <div class="d-flex">
-                                                    <a aria-label="anchor" href="{{ route('sales.order.view', $order->id) }}"
+                                                    <a aria-label="anchor"
+                                                        href="{{ route('sales.order.view', $order->id) }}"
                                                         class="btn btn-icon btn-sm bg-primary-subtle me-1"
                                                         data-bs-toggle="tooltip" data-bs-original-title="View">
                                                         <svg xmlns="http://www.w3.org/2000/svg" width="13"
@@ -103,8 +104,8 @@
                                                             </svg>
                                                         </a>
                                                     --}}
-                                                    <form action="{{ route('sales.order.delete', $order->id) }}" method="POST"
-                                                        onsubmit="return confirm('Are you sure?')">
+                                                    <form action="{{ route('sales.order.delete', $order->id) }}"
+                                                        method="POST" onsubmit="return confirm('Are you sure?')">
                                                         @csrf
                                                         @method('DELETE')
                                                         <button type="submit"
@@ -137,4 +138,43 @@
             </div>
         </div>
     </main>
+@endsection
+
+
+@section('script')
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Select All functionality
+            const selectAll = document.getElementById('select-all');
+            const checkboxes = document.querySelectorAll('.row-checkbox');
+            selectAll.addEventListener('change', function() {
+                checkboxes.forEach(cb => cb.checked = selectAll.checked);
+            });
+
+            // Delete Selected functionality
+            document.getElementById('delete-selected').addEventListener('click', function() {
+                let selected = [];
+                document.querySelectorAll('.row-checkbox:checked').forEach(cb => {
+                    selected.push(cb.value);
+                });
+                if (selected.length === 0) {
+                    alert('Please select at least one record.');
+                    return;
+                }
+                if (confirm('Are you sure you want to delete selected records?')) {
+                    // Create a form and submit
+                    let form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = '{{ route('delete.selected.order') }}';
+                    form.innerHTML = `
+                        @csrf
+                        <input type="hidden" name="_method" value="DELETE">
+                        <input type="hidden" name="ids" value="${selected.join(',')}">
+                    `;
+                    document.body.appendChild(form);
+                    form.submit();
+                }
+            });
+        });
+    </script>
 @endsection

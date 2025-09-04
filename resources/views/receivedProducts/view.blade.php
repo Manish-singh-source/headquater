@@ -119,11 +119,12 @@
                                                             {{-- <th>Portal&nbsp;Code</th> --}}
                                                             <th>Title</th>
                                                             <th>MRP</th>
-                                                            <th>Quantity&nbsp;Ordered</th>
+                                                            <th>PO&nbsp;Quantity</th>
                                                             <th>PI&nbsp;Quantity</th>
                                                             <th>Quantity&nbsp;Received</th>
                                                             <th>Issue&nbsp;Units</th>
                                                             <th>Issue&nbsp;Reason</th>
+                                                            <th>Issue&nbsp;Description</th>
                                                             {{-- 
                                                             <th>Purchase&nbsp;Rate&nbsp;Basic</th>
                                                             <th>GST</th>
@@ -143,9 +144,11 @@
                                                                 <td>{{ $product->available_quantity }}</td>
                                                                 <td>{{ $product->quantity_received }}</td>
                                                                 @if ($product->issue_item)
-                                                                    <td>{{ $product->issue_item ?? '' }}</td>
+                                                                    <td>{{ $product->issue_item ?? 0 }}</td>
                                                                     <td>{{ $product->issue_reason ?? '' }}</td>
+                                                                    <td>{{ $product->issue_description ?? '' }}</td>
                                                                 @else
+                                                                    <td>0</td>
                                                                     <td>NA</td>
                                                                     <td>NA</td>
                                                                 @endif

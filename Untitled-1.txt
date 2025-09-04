@@ -8,7 +8,7 @@ Module - Customer Group
 5. multi delete customer groups        -- done 
 6. view customer group info            -- done
     -- a. add single customer          -- done 
-    -- b. add customers in bulk        -- 
+    -- b. add customers in bulk        --    something wrong - customer group members not added
     -- c. edit customer info           -- done 
     -- d. delete customer              -- done 
     -- e. view customer info           -- done 
@@ -17,64 +17,90 @@ Module - Customer Group
 
 Module - Vendor 
 
-1. create vendor 
-2. edit vendor 
-3. delete vendor 
-4. change status vendor 
-5. multi delete vendor 
-6. view vendor 
+1. create vendor           -- done 
+2. edit vendor             -- done -- need to add auto select address 
+3. delete vendor           -- done 
+4. change status vendor    -- done 
+5. multi delete vendor     -- done 
+6. view vendor             -- done 
 
 
 Module - products 
-1. add products 
-2. update product 
-3. delete product 
-4. delete multiple products 
-5. update bulk products 
+1. add products            -- done 
+2. update product          -- done 
+3. delete product          -- done 
+4. delete multiple products   -- done 
+5. update bulk products     -- done 
 
 
 Module - SKU Mapping 
-1. add skus 
-2. edit skus 
-3. delete skus 
+1. add skus          -- done 
+2. edit skus         -- done 
+3. delete skus       -- done 
 
 
 Module - Warehouse 
-1. add warehouse 
-2. edit warehouse 
-3. delete warehouse 
-4. delete multiple warehouses 
-5. change status 
-6. view warehouse details
-    -- add product 
-    -- export products 
+1. add warehouse     -- done 
+2. edit warehouse    -- done 
+3. delete warehouse  -- done 
+4. delete multiple warehouses     -- done 
+5. change status     -- done 
+6. view warehouse details  -- done 
+    -- add product         -- removed feature
+    -- export products     -- done 
+
+
+
+
+
+
+
 
 
 Module - Sales Order 
 1. create new sales order 
-    -- check availibility 
-    -- download availibility file 
-    -- upload blocked products file
-2. view sales order 
-    -- multi delete products 
-    -- download excel file 
-    -- update po order 
-    -- change order status
+    -- check availibility             -- done 
+    -- download availibility file     -- done 
+    -- upload blocked products file   -- done 
+    -- delte sales order              -- done          -- need to verify 
+    -- multi delete sales order       -- removed 
 
-3. delete sales order 
-4. multi delete sales order 
+2. view sales order                   -- done 
+    -- download excel file            -- done 
+    -- multi delete products          -- done          -- when delete 1 or more products release blocked products for that order 
+                                                       -- release block from warehouse stock 
+                                                       -- delete tempOrder 
+                                                       -- check if vendor PI available then assign that quantity to other sku 
+
+    -- update po order                -- done          -- which fields update 
+                                                       -- when updating PO order recheck for block order 
+    -- change order status            --               -- 
+
+
+
+
+
+
 
 
 Module - Purchase Order 
-1. create a customer purchase order 
-2. delete purchase order 
-3. delete multiple purchase orders 
-4. view purchase order 
-    -- delete product from purchase order 
-    -- export vendor PO 
-    -- add vendor PI 
-    -- add vendor GRN 
-    -- add vendor Invoice 
+1. create a customer purchase order -- auto generate      -- done 
+2. create a customer purchase order -- manual generate    -- need to fix format of uploading file 
+2. delete purchase order                                  -- done 
+3. delete multiple purchase orders                        -- done 
+4. view purchase order                                    -- done 
+    -- delete product from purchase order                 -- done 
+    -- export vendor PO                                   -- done 
+    -- add vendor PI                                      -- done 
+    -- add vendor GRN                                     -- done 
+    -- add vendor Invoice                                 -- done 
+
+
+
+
+
+
+
 
 
 Module - Invoice 
@@ -86,16 +112,3 @@ Module - Invoice
 
 
 
-
-
-
-
---- sales order --- 
-
-1. qty fulfilled  - qty requirement    = 100
-    -- available warehouse stock       = 30
-    -- blocked stock of this product   = 20
-    -- vendor fulfillment qty          = 50
-    --------------- total              = 100 
-
-2. rate confirmation 

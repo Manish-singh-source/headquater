@@ -150,12 +150,12 @@ class PurchaseOrderController extends Controller
                     $tempProduct = TempOrder::where('id', $item->temp_order_id)->first();
 
                     if ($tempProduct->po_qty >= $salesOrderFulfillment[$newSku]['quantity']) {
-                        if($tempProduct->po_qty > $tempProduct->available_quantity) {
+                        if ($tempProduct->po_qty > $tempProduct->available_quantity) {
                             $tempProduct->vendor_pi_fulfillment_quantity = $salesOrderFulfillment[$newSku]['quantity'];
                             $salesOrderFulfillment[$newSku]['quantity'] = 0;
                         }
-                    } else { 
-                        if($tempProduct->po_qty > $tempProduct->available_quantity) {
+                    } else {
+                        if ($tempProduct->po_qty > $tempProduct->available_quantity) {
                             $tempProduct->vendor_pi_fulfillment_quantity = $tempProduct->po_qty;
                             $salesOrderFulfillment[$newSku]['quantity'] = $salesOrderFulfillment[$newSku]['quantity'] - $tempProduct->po_qty;
                         }
@@ -199,12 +199,14 @@ class PurchaseOrderController extends Controller
 
     public function view($id)
     {
-        $purchaseOrder = PurchaseOrder::with('purchaseOrderProducts.tempOrder', 'vendorPI.products.purchaseOrder.purchaseOrderProducts.tempOrder')
+        // using 
+        $purchaseOrder = PurchaseOrder::with('purchaseOrderProducts.tempOrder', 'vendorPI.products.purchaseOrder.purchaseOrderProducts.tempOrder', 'vendorPI.products.tempOrder')
             ->where('status', 'pending')
             ->withCount('purchaseOrderProducts')
             ->findOrFail($id);
 
         $purchaseOrderProducts = PurchaseOrderProduct::where('purchase_order_id', $id)->with('purchaseOrder', 'tempOrder')->get();
+        // dd($purchaseOrder);
         $vendorPI = VendorPI::with('product')->where('purchase_order_id', $id)->get();
 
         $facilityNames = VendorPI::with('product')->where('purchase_order_id', $id)
@@ -220,9 +222,8 @@ class PurchaseOrderController extends Controller
         $purchaseGrn = PurchaseGrn::where('purchase_order_id', $id)->get();
         $vendorPIs = VendorPI::with('products.product')->where('purchase_order_id', $id)->where('status', '!=', 'completed')->get();
 
-        $vendorPIid = VendorPI::where('purchase_order_id', $id)->get();
-        // dd($purchaseOrder);
-        return view('purchaseOrder.view', compact('purchaseOrder', 'vendorPIid', 'facilityNames', 'purchaseOrderProducts', 'uploadedPIOfVendors',  'vendorPIs', 'purchaseInvoice', 'purchaseGrn'));
+        // dd($vendorPIid);
+        return view('purchaseOrder.view', compact('purchaseOrder', 'facilityNames', 'purchaseOrderProducts', 'uploadedPIOfVendors',  'vendorPIs', 'purchaseInvoice', 'purchaseGrn'));
     }
 
     public function update(Request $request)
@@ -306,9 +307,13 @@ class PurchaseOrderController extends Controller
 
     public function multiDelete(Request $request)
     {
-        $ids = is_array($request->ids) ? $request->ids : explode(',', $request->ids);
-        PurchaseOrder::destroy($ids);
-        return redirect()->back()->with('success', 'Purchase Orders deleted successfully.');
+        try {
+            $ids = is_array($request->ids) ? $request->ids : explode(',', $request->ids);
+            PurchaseOrder::destroy($ids);
+            return redirect()->back()->with('success', 'Purchase Orders deleted successfully.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with(['error' => 'Something went wrong: ' . $e->getMessage()]);
+        }
     }
 
     public function SingleProductdelete($id)
@@ -332,43 +337,77 @@ class PurchaseOrderController extends Controller
         DB::beginTransaction();
 
         try {
-
             $vendorPI = VendorPI::with('products')->where('purchase_order_id', $request->purchase_order_id)->where('vendor_code', $request->vendor_code)->first();
             $vendorPI->status = 'completed';
+            $vendorPI->approve_or_reject_reason = $request->approve_or_reject_reason ?? null;
             $vendorPI->save();
 
-            // update warehouse stock 
             // find products 
             $vendorPIProducts = VendorPI::with('products')->where('purchase_order_id', $request->purchase_order_id)->where('vendor_code', $request->vendor_code)->first();
 
             foreach ($vendorPIProducts->products as $product) {
                 $updateStock = WarehouseStock::where('sku', $product->vendor_sku_code)->first();
                 if (isset($updateStock)) {
-                    $updateStock->quantity = $updateStock->quantity + $product->available_quantity;
-                    $updateStock->block_quantity = $updateStock->block_quantity + $product->available_quantity;
+                    $updateStock->available_quantity = $updateStock->available_quantity + $product->quantity_received;
+                    $updateStock->original_quantity = $updateStock->original_quantity + $product->quantity_received;
                     $updateStock->save();
                 } else {
                     $storeStock = WarehouseStock::create([
                         'warehouse_id' => '0',
                         'product_id' => '0',
                         'sku' => $product->vendor_sku_code,
-                        'quantity' => '0',
+                        'original_quantity' => '0',
+                        'available_quantity' => '0',
                         'block_quantity' => '0',
                     ]);
                 }
 
-                $warehouseStockBlockLogs = WarehouseStockLog::where('sku', $product->vendor_sku_code)->first();
-                $warehouseStockBlockLogs->block_quantity = $warehouseStockBlockLogs->block_quantity + $product->available_quantity;
-                $warehouseStockBlockLogs->reason = "Block Quantity Removed - " . $warehouseStockBlockLogs->block_quantity;
-                $warehouseStockBlockLogs->save();
-
-                $updateProductStock = Product::where('sku', $product->vendor_sku_code)->first();
-                $updateProductStock->sets_ctn = $updateProductStock->sets_ctn + $product->available_quantity;
-                $updateProductStock->save();
+                // $updateProductStock = Product::where('sku', $product->vendor_sku_code)->first();
+                // $updateProductStock->sets_ctn = $updateProductStock->sets_ctn + $product->available_quantity;
+                // $updateProductStock->save();
             }
 
             DB::commit();
             return redirect()->back()->with('success', 'Successfully Approved Received Products');
+        } catch (\Exception $e) {
+            dd($e->getMessage());
+            DB::rollBack();
+            return redirect()->back()->withErrors(['error' => 'Something went wrong: ' . $e->getMessage()]);
+        }
+    }
+
+    public function rejectRequest(Request $request)
+    {
+        DB::beginTransaction();
+
+        try {
+
+            $vendorPI = VendorPI::with('products')->where('purchase_order_id', $request->purchase_order_id)->where('vendor_code', $request->vendor_code)->first();
+            $vendorPI->status = 'rejected';
+            $vendorPI->approve_or_reject_reason = $request->approve_or_reject_reason ?? null;
+            $vendorPI->save();
+
+            // update warehouse stock 
+            // find products 
+            // $vendorPIProducts = VendorPI::with('products')->where('purchase_order_id', $request->purchase_order_id)->where('vendor_code', $request->vendor_code)->first();
+
+            // foreach ($vendorPIProducts->products as $product) {
+            //     // update temp order vendor_pi_fulfillment_quantity
+            //     $salesOrderProduct = SalesOrderProduct::where('sales_order_id', $vendorPI->sales_order_id)
+            //         ->where('sku', $product->vendor_sku_code)
+            //         ->get();
+
+            //     foreach ($salesOrderProduct as $item) {
+            //         $tempProduct = TempOrder::where('id', $item->temp_order_id)->first();
+            //         if ($tempProduct) {
+            //             $tempProduct->vendor_pi_fulfillment_quantity = 0;
+            //             $tempProduct->save();
+            //         }
+            //     }
+            // }
+
+            DB::commit();
+            return redirect()->back()->with('success', 'Successfully Rejected Received Products');
         } catch (\Exception $e) {
             DB::rollBack();
             return redirect()->back()->withErrors(['error' => 'Something went wrong: ' . $e->getMessage()]);

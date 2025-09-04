@@ -163,7 +163,8 @@
     </main>
     <!--end main wrapper-->
 @endsection
-@section('scripts')
+@section('script')
+    
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Select All functionality
@@ -179,7 +180,8 @@
                 document.querySelectorAll('.row-checkbox:checked').forEach(cb => {
                     selected.push(cb.value);
                 });
-                console.log(selected)
+                console.log(selected);
+
                 if (selected.length === 0) {
                     alert('Please select at least one record.');
                     return;

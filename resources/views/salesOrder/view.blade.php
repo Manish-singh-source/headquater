@@ -175,7 +175,7 @@
                                         <th>PO&nbsp;MRP</th>
                                         <th>Product&nbsp;MRP</th>
                                         <th>Rate&nbsp;Confirmation</th>
-                                        <th>Qty&nbsp;Requirement</th>
+                                        <th>PO&nbsp;Quantity</th>
                                         <th>Qty&nbsp;Fullfilled</th>
                                     </tr>
                                 </thead>
@@ -194,33 +194,33 @@
                                                 <input class="form-check-input row-checkbox" type="checkbox"
                                                     name="ids[]" value="{{ $order->id }}">
                                             </td>
-                                            <td>{{ $order->tempOrder->customer_name }}</td>
-                                            <td>{{ $order->tempOrder->facility_name }}</td>
-                                            <td>{{ $order->tempOrder->facility_location }}</td>
-                                            <td>{{ $order->tempOrder->hsn }}</td>
-                                            <td>{{ $order->tempOrder->gst }}</td>
-                                            <td>{{ $order->tempOrder->item_code }}</td>
-                                            <td>{{ $order->tempOrder->sku }}</td>
-                                            <td>{{ $order->tempOrder->description }}</td>
-                                            <td>{{ $order->tempOrder->basic_rate }}</td>
-                                            <td>{{ $order->tempOrder->net_landing_rate }}</td>
-                                            <td>{{ $order->tempOrder->mrp }}</td>
-                                            <td>{{ $order->tempOrder->product_mrp }}</td>
+                                            <td>{{ $order->tempOrder?->customer_name }}</td>
+                                            <td>{{ $order->tempOrder?->facility_name }}</td>
+                                            <td>{{ $order->tempOrder?->facility_location }}</td>
+                                            <td>{{ $order->tempOrder?->hsn }}</td>
+                                            <td>{{ $order->tempOrder?->gst }}</td>
+                                            <td>{{ $order->tempOrder?->item_code }}</td>
+                                            <td>{{ $order->tempOrder?->sku }}</td>
+                                            <td>{{ $order->tempOrder?->description }}</td>
+                                            <td>{{ $order->tempOrder?->basic_rate }}</td>
+                                            <td>{{ $order->tempOrder?->net_landing_rate }}</td>
+                                            <td>{{ $order->tempOrder?->mrp }}</td>
+                                            <td>{{ $order->tempOrder?->product_mrp }}</td>
                                             <td>
-                                                @if ($order->tempOrder->rate_confirmation == 'Correct')
+                                                @if ($order->tempOrder?->rate_confirmation == 'Correct')
                                                     <span
-                                                        class="badge text-success bg-success-subtle">{{ $order->tempOrder->rate_confirmation }}</span>
+                                                        class="badge text-success bg-success-subtle">{{ $order->tempOrder?->rate_confirmation }}</span>
                                                 @else
                                                     <span
-                                                        class="badge text-danger bg-danger-subtle">{{ $order->tempOrder->rate_confirmation }}</span>
+                                                        class="badge text-danger bg-danger-subtle">{{ $order->tempOrder?->rate_confirmation }}</span>
                                                 @endif
                                             </td>
                                             <td>{{ $order->ordered_quantity }}</td>
                                             <td>
-                                                @if($order->ordered_quantity <= ($order->tempOrder->available_quantity ?? 0) + ($order->tempOrder->vendor_pi_fulfillment_quantity ?? 0))
-                                                    <span class="badge text-success bg-success-subtle">{{ ($order->tempOrder->available_quantity ?? 0) + ($order->tempOrder->vendor_pi_fulfillment_quantity ?? 0) }}</span>
+                                                @if($order->ordered_quantity <= ($order->tempOrder?->available_quantity ?? 0) + ($order->tempOrder?->vendor_pi_fulfillment_quantity ?? 0))
+                                                    <span class="badge text-success bg-success-subtle">{{ ($order->tempOrder?->available_quantity ?? 0) + ($order->tempOrder?->vendor_pi_fulfillment_quantity ?? 0) }}</span>
                                                 @else
-                                                    <span class="badge text-danger bg-danger-subtle">{{ ($order->tempOrder->available_quantity ?? 0) + ($order->tempOrder->vendor_pi_fulfillment_quantity ?? 0) }}</span>
+                                                    <span class="badge text-danger bg-danger-subtle">{{ ($order->tempOrder?->available_quantity ?? 0) + ($order->tempOrder?->vendor_pi_fulfillment_quantity ?? 0) }}</span>
                                                 @endif
                                             </td>
                                         </tr>
