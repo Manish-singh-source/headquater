@@ -149,7 +149,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/products/{id}/edit', 'editProduct')->name('product.edit');
 
         // Route::get('/products/{id}', 'edit')->name('product.edit');
-        Route::get('/download-product-sheet', 'downloadProductSheet')->name('download.product.sheet');
+        Route::get('/download-product-sheet/{id?}', 'downloadProductSheet')->name('download.product.sheet');
         Route::post('/products/update', 'updateProduct')->name('product.update');
 
         Route::delete('/product-order/{id}', 'destroy')->name('product.delete');
@@ -192,6 +192,7 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/purchase-order-product-delete/{id}', 'SingleProductdelete')->name('purchase.order.product.delete');
         Route::delete('/purchase-order-products-delete', 'multiProductdelete')->name('purchase.order.products.delete');
         Route::post('/approve-vendor-pi-request', 'approveRequest')->name('approve.vendor.pi.request');
+        Route::post('/reject-vendor-pi-request', 'rejectRequest')->name('reject.vendor.pi.request');
         Route::post('/purchase-order-invoice-store', 'invoiceStore')->name('purchase.order.invoice.store');
         Route::post('/purchase-order-grn-store', 'grnStore')->name('purchase.order.grn.store');
         Route::get('/download-vendor-po-excel', 'downloadVendorPO')->name('download.vendor.po.excel');

@@ -10,7 +10,7 @@
                         <ol class="breadcrumb mb-0 p-0">
                             <li class="breadcrumb-item"><a href="javascript:;"><i class="bx bx-home-alt"></i></a>
                             </li>
-                            <li class="breadcrumb-item active" aria-current="page">Enter Vendor Details</li>
+                            <li class="breadcrumb-item active" aria-current="page">Create Purchase Order</li>
                         </ol>
                     </nav>
                 </div>
@@ -61,66 +61,6 @@
 @section('script')
     <script>
         $(document).ready(function() {
-
-            function getLocationData(url, id, tag, data = null) {
-                $.ajax({
-                    url: url,
-                    method: 'GET',
-                    data: data,
-                    success: function(data) {
-                        console.log(data.data);
-                        $(id).empty().append(
-                            `<option value="">Select ${tag}</option>`);
-                        data.data.map(function(country) {
-                            $(id).append(
-                                $('<option>', {
-                                    value: country.id,
-                                    text: country.name
-                                })
-                            );
-                        });
-                    },
-                    error: function(xhr, status, error) {
-                        console.error('Error:', error);
-                    }
-                });
-            }
-
-            getLocationData("/countries", '#shipping_country', "Country");
-
-            $("#shipping_country").on("change", function() {
-                let countryId = $(this).val();
-                console.log(countryId);
-                getLocationData("/states", "#shipping_state", "State", {
-                    countryId: countryId
-                });
-            });
-
-            $("#shipping_state").on("change", function() {
-                let stateId = $(this).val();
-                console.log(stateId);
-                getLocationData("/cities", "#shipping_city", "City", {
-                    stateId: stateId
-                });
-            });
-
-            getLocationData("/countries", '#billing_country', "Country");
-
-            $("#billing_country").on("change", function() {
-                let countryId = $(this).val();
-                console.log(countryId);
-                getLocationData("/states", "#billing_state", "State", {
-                    countryId: countryId
-                });
-            });
-
-            $("#billing_state").on("change", function() {
-                let stateId = $(this).val();
-                console.log(stateId);
-                getLocationData("/cities", "#billing_city", "City", {
-                    stateId: stateId
-                });
-            });
 
         });
     </script>

@@ -56,133 +56,114 @@
                                         </b>
                                     </span>
                                 </li>
-                                @foreach ($vendorPIid as $vendorPI)
+                                @foreach ($purchaseOrder->vendorPI as $vendorPI)
                                     @if ($vendorPI->status == 'approve')
                                         <li
                                             class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                                             <span><b>Packaged Received from {{ $vendorPI->vendor_code }}</b></span>
                                             <span>
                                                 <div class="d-flex gap-2 justify-content-center align-items-center">
-                                                    <form action="{{ route('approve.vendor.pi.request') }}" method="POST">
-                                                        @csrf
-                                                        @method('POST')
-                                                        <button class="btn btn-sm border-2 border-success"
-                                                            data-bs-toggle="modal" data-bs-target="#approvePopup"
-                                                            class="btn btn-sm border-2 border-success">
-                                                            Approve
-                                                        </button>
-                                                        <!-- Modal -->
-                                                        <div class="modal fade" id="approvePopup" data-bs-backdrop="approve"
-                                                            data-bs-keyboard="false" tabindex="-1"
-                                                            aria-labelledby="approvePopupLabel" aria-hidden="true">
-                                                            <div class="modal-dialog">
-                                                                <div class="modal-content">
-                                                                    <form action="{{ route('purchase.order.store') }}"
-                                                                        method="POST" enctype="multipart/form-data">
-                                                                        @csrf
-                                                                        @method('POST')
-                                                                        <div class="modal-header">
-                                                                            <h1 class="modal-title fs-5"
-                                                                                id="approvePopupLabel">
-                                                                                Approve Reason</h1>
-                                                                            <button type="button" class="btn-close"
-                                                                                data-bs-dismiss="modal"
-                                                                                aria-label="Close"></button>
+                                                    <button class="btn btn-sm border-2 border-success"
+                                                        data-bs-toggle="modal" data-bs-target="#approvePopup"
+                                                        class="btn btn-sm border-2 border-success">
+                                                        Approve
+                                                    </button>
+                                                    <!-- Modal -->
+                                                    <div class="modal fade" id="approvePopup" data-bs-backdrop="approve"
+                                                        data-bs-keyboard="false" tabindex="-1"
+                                                        aria-labelledby="approvePopupLabel" aria-hidden="true">
+                                                        <div class="modal-dialog">
+                                                            <div class="modal-content">
+                                                                <form action="{{ route('approve.vendor.pi.request') }}"
+                                                                    method="POST">
+                                                                    @csrf
+                                                                    @method('POST')
+                                                                    <div class="modal-header">
+                                                                        <h1 class="modal-title fs-5" id="approvePopupLabel">
+                                                                            Approve Reason</h1>
+                                                                        <button type="button" class="btn-close"
+                                                                            data-bs-dismiss="modal"
+                                                                            aria-label="Close"></button>
+                                                                    </div>
+
+                                                                    <div class="modal-body">
+                                                                        <div class="col-12 mb-3">
+                                                                            <input type="hidden" name="purchase_order_id"
+                                                                                value="{{ $purchaseOrder->id }}">
+                                                                            <input type="hidden" name="vendor_code"
+                                                                                value="{{ $purchaseOrder->vendor_code }}">
                                                                         </div>
 
-                                                                        <div class="modal-body">
-                                                                            <div class="col-12 mb-3">
-                                                                                @isset($purchaseOrderProducts[0])
-                                                                                    <input type="hidden"
-                                                                                        name="purchase_order_id"
-                                                                                        value="{{ $vendorPI->purchase_order_id }}">
-                                                                                @endisset
-                                                                                <input type="hidden" name="vendor_code"
-                                                                                    value="{{ $vendorPI->vendor_code }}">
-                                                                            </div>
-
-                                                                            <div class="col-12 mb-3">
-                                                                                <label for="approve_reason"
-                                                                                    class="form-label">Reason<span
-                                                                                        class="text-danger">*</span></label>
-                                                                                <input type="text" name="approve_reason"
-                                                                                    id="approve_reason" class="form-control"
-                                                                                    value="" required="">
-                                                                            </div>
+                                                                        <div class="col-12 mb-3">
+                                                                            <label for="approve_reason"
+                                                                                class="form-label">Reason<span
+                                                                                    class="text-danger">*</span></label>
+                                                                            <input type="text"
+                                                                                name="approve_or_reject_reason"
+                                                                                id="approve_reason" class="form-control"
+                                                                                value="" required="">
                                                                         </div>
-                                                                        <div class="modal-footer">
-                                                                            <button type="button" class="btn btn-secondary"
-                                                                                data-bs-dismiss="modal">Close</button>
-                                                                            <button type="submit" id="holdOrder"
-                                                                                class="btn btn-primary">Submit</button>
-                                                                        </div>
-                                                                    </form>
-                                                                </div>
+                                                                    </div>
+                                                                    <div class="modal-footer">
+                                                                        <button type="button" class="btn btn-secondary"
+                                                                            data-bs-dismiss="modal">Close</button>
+                                                                        <button type="submit" id="holdOrder"
+                                                                            class="btn btn-primary">Submit</button>
+                                                                    </div>
+                                                                </form>
                                                             </div>
                                                         </div>
-                                                    </form>
+                                                    </div>
 
-                                                    <form action="" method="POST">
-                                                        @csrf
-                                                        @method('POST')
-                                                        <button class="btn btn-sm border-2 border-danger"
-                                                            data-bs-toggle="modal" data-bs-target="#rejectPopup"
-                                                            class="btn btn-sm border-2 border-danger">
-                                                            Reject
-                                                        </button>
-                                                        <!-- Modal -->
-                                                        <div class="modal fade" id="rejectPopup" data-bs-backdrop="reject"
-                                                            data-bs-keyboard="false" tabindex="-1"
-                                                            aria-labelledby="rejectPopupLabel" aria-hidden="true">
-                                                            <div class="modal-dialog">
-                                                                <div class="modal-content">
-                                                                    <form action="{{ route('purchase.order.store') }}"
-                                                                        method="POST" enctype="multipart/form-data">
-                                                                        @csrf
-                                                                        @method('POST')
-                                                                        <div class="modal-header">
-                                                                            <h1 class="modal-title fs-5"
-                                                                                id="rejectPopupLabel">
-                                                                                Reject Reason</h1>
-                                                                            <button type="button" class="btn-close"
-                                                                                data-bs-dismiss="modal"
-                                                                                aria-label="Close"></button>
+                                                    <button class="btn btn-sm border-2 border-danger" data-bs-toggle="modal"
+                                                        data-bs-target="#rejectPopup"
+                                                        class="btn btn-sm border-2 border-danger">
+                                                        Reject
+                                                    </button>
+                                                    <!-- Modal -->
+                                                    <div class="modal fade" id="rejectPopup" data-bs-backdrop="reject"
+                                                        data-bs-keyboard="false" tabindex="-1"
+                                                        aria-labelledby="rejectPopupLabel" aria-hidden="true">
+                                                        <div class="modal-dialog">
+                                                            <div class="modal-content">
+                                                                <form action="{{ route('reject.vendor.pi.request') }}" method="POST">
+                                                                    @csrf
+                                                                    @method('POST')
+                                                                    <div class="modal-header">
+                                                                        <h1 class="modal-title fs-5" id="rejectPopupLabel">
+                                                                            Reject Reason</h1>
+                                                                        <button type="button" class="btn-close"
+                                                                            data-bs-dismiss="modal"
+                                                                            aria-label="Close"></button>
+                                                                    </div>
+
+                                                                    <div class="modal-body">
+                                                                        <div class="col-12 mb-3">
+                                                                            <input type="hidden" name="purchase_order_id"
+                                                                                value="{{ $purchaseOrder->id }}">
+                                                                            <input type="hidden" name="vendor_code"
+                                                                                value="{{ $purchaseOrder->vendor_code }}">
                                                                         </div>
 
-                                                                        <div class="modal-body">
-                                                                            <div class="col-12 mb-3">
-                                                                                @isset($purchaseOrderProducts[0])
-                                                                                    <input type="hidden"
-                                                                                        name="purchase_order_id"
-                                                                                        value="{{ $purchaseOrderProducts[0]->purchase_order_id }}">
-                                                                                @endisset
-                                                                                <input type="hidden" name="vendor_code"
-                                                                                    value="">
-                                                                            </div>
-
-                                                                            <div class="col-12 mb-3">
-                                                                                <label for="approve_reason"
-                                                                                    class="form-label">Reason<span
-                                                                                        class="text-danger">*</span></label>
-                                                                                <input type="text"
-                                                                                    name="approve_reason"
-                                                                                    id="approve_reason"
-                                                                                    class="form-control" value=""
-                                                                                    required="">
-                                                                            </div>
+                                                                        <div class="col-12 mb-3">
+                                                                            <label for="approve_reason"
+                                                                                class="form-label">Reason<span
+                                                                                    class="text-danger">*</span></label>
+                                                                            <input type="text" name="approve_or_reject_reason"
+                                                                                id="approve_reason" class="form-control"
+                                                                                value="" required="">
                                                                         </div>
-                                                                        <div class="modal-footer">
-                                                                            <button type="button"
-                                                                                class="btn btn-secondary"
-                                                                                data-bs-dismiss="modal">Close</button>
-                                                                            <button type="submit" id="holdOrder"
-                                                                                class="btn btn-primary">Submit</button>
-                                                                        </div>
-                                                                    </form>
-                                                                </div>
+                                                                    </div>
+                                                                    <div class="modal-footer">
+                                                                        <button type="button" class="btn btn-secondary"
+                                                                            data-bs-dismiss="modal">Close</button>
+                                                                        <button type="submit" id="holdOrder"
+                                                                            class="btn btn-primary">Submit</button>
+                                                                    </div>
+                                                                </form>
                                                             </div>
                                                         </div>
-                                                    </form>
+                                                    </div>
                                                 </div>
                                             </span>
                                         </li>
@@ -368,7 +349,8 @@
                                                     <div class="col-12 mb-3">
                                                         <input type="hidden" name="purchase_order_id"
                                                             value="{{ $purchaseOrder->id }}">
-                                                        <input type="hidden" name="vendor_code" value="{{ $purchaseOrder->vendor_code }}">
+                                                        <input type="hidden" name="vendor_code"
+                                                            value="{{ $purchaseOrder->vendor_code }}">
                                                     </div>
 
                                                     <div class="col-12 mb-3">
@@ -408,7 +390,8 @@
                                                     <div class="col-12 mb-3">
                                                         <input type="hidden" name="purchase_order_id"
                                                             value="{{ $purchaseOrder->id }}">
-                                                        <input type="hidden" name="vendor_code" value="{{ $purchaseOrder->vendor_code }}">
+                                                        <input type="hidden" name="vendor_code"
+                                                            value="{{ $purchaseOrder->vendor_code }}">
                                                     </div>
 
                                                     <div class="col-12 mb-3">
@@ -445,7 +428,7 @@
                                             <th>HSN</th>
                                             <th>MRP</th>
                                             <th>Purchase&nbsp;Rate&nbsp;Basic</th>
-                                            <th>Quantity&nbsp;Requirement</th>
+                                            <th>PO&nbsp;Quantity</th>
                                             <th>PI&nbsp;Quantity</th>
                                             <th>Quantity&nbsp;Received</th>
                                         </tr>

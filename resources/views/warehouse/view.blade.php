@@ -65,9 +65,11 @@
             <div class="row g-3 justify-content-end">
                 <div class="col-12 col-md-auto">
                     <div class="d-flex align-items-center gap-2 justify-content-lg-end">
-                        <button class="btn btn-filter px-4"><i class="bi bi-box-arrow-right me-2"></i>Export</button>
-                        <a href="{{ route('products.create') }}" class="btn btn-primary px-4"><i
-                                class="bi bi-plus-lg me-2"></i>Add Product</a>
+                        <button class="btn btn-icon border-2 border-primary me-1" id="exportData">
+                            <i class="fa fa-file-excel-o"></i> Export to Excel
+                        </button>
+                        {{-- <a href="{{ route('products.create') }}" class="btn btn-primary px-4"><i
+                                class="bi bi-plus-lg me-2"></i>Add Product</a> --}}
                     </div>
                 </div>
             </div>
@@ -156,4 +158,17 @@
         </div>
     </main>
     <!--end main wrapper-->
+@endsection
+
+@section('script')
+    <script>
+        $(document).on('click', '#exportData', function() {
+
+            // Construct download URL with parameters
+            var downloadUrl = '{{ route('download.product.sheet', $warehouse->id) }}';
+
+            // Trigger browser download
+            window.location.href = downloadUrl;
+        });
+    </script>
 @endsection

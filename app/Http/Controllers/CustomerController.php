@@ -39,7 +39,7 @@ class CustomerController extends Controller
 
         $file = $request->file('csv_file');
         if (!$file) {
-            return redirect()->back()->withErrors(['csv_file' => 'Please upload a CSV file.']);
+            return redirect()->back()->with('error', 'Please upload a CSV file.');
         }
 
         DB::beginTransaction();
@@ -68,12 +68,10 @@ class CustomerController extends Controller
 
                 if ($existingCustomer) {
                     // Customer exists, you can choose to update or skip
-                    $customerGroupMember = new CustomerGroupMember();
-                    $customerGroupMember->customer_group_id = $g_id;
-                    $customerGroupMember->customer_id = $existingCustomer->id;
-                    $customerGroupMember->save();
-                    // dd($customerGroupMember);
-                    // continue;
+                    CustomerGroupMember::create([
+                        'customer_id' => $existingCustomer->id,
+                        'customer_group_id' => $g_id,
+                    ]);
                 } else {
                     // 2. Insert individual customer
                     $customer = Customer::create([
@@ -114,9 +112,8 @@ class CustomerController extends Controller
             DB::commit();
             return redirect()->route('customer.groups.index')->with('success', 'CSV file imported successfully. Group and customers created.');
         } catch (\Exception $e) {
-            // dd($e->getMessage());
             DB::rollBack();
-            return redirect()->back()->withErrors(['error' => 'Something went wrong: ' . $e->getMessage()]);
+            return redirect()->back()->with(['error' => 'Something went wrong: ' . $e->getMessage()]);
         }
     }
 

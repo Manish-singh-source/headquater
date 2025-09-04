@@ -11,7 +11,7 @@ use App\Http\Requests\WarehouseFormRequest;
 
 class WarehouseController extends Controller
 {
-    
+
     public function index()
     {
         $warehouses = Warehouse::with('country')->with('state')->with('cities')->get();
@@ -96,10 +96,17 @@ class WarehouseController extends Controller
 
     public function destroy($id)
     {
-        $warehouse = Warehouse::findOrFail($id);
-        $warehouse->delete();
+        try {
+            $warehouse = Warehouse::findOrFail($id);
+            $warehouse->delete();
 
-        return redirect()->route('warehouse.index')->with('success', 'Customer deleted successfully.');
+            if (!$warehouse) {
+                return redirect()->back()->with('error', 'Something Went Wrong. Warehouse Not Deleted');
+            }
+            return redirect()->route('warehouse.index')->with('success', 'Warehouse deleted successfully.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Something Went Wrong. Warehouse Not Deleted. Please Delete related Products first.');
+        }
     }
 
     public function view($id)
@@ -120,9 +127,12 @@ class WarehouseController extends Controller
 
     public function deleteSelected(Request $request)
     {
-        $ids = is_array($request->ids) ? $request->ids : explode(',', $request->ids);
-        Warehouse::destroy($ids);
-        return redirect()->back()->with('success', 'Selected customers deleted successfully.');
+        try {
+            $ids = is_array($request->ids) ? $request->ids : explode(',', $request->ids);
+            Warehouse::destroy($ids);
+            return redirect()->back()->with('success', 'Selected warehouses deleted successfully.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Something Went Wrong. Warehouses Not Deleted. Please Delete related Products first.');
+        }
     }
-
 }
