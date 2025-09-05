@@ -10,7 +10,7 @@
                         <ol class="breadcrumb mb-0 p-0">
                             <li class="breadcrumb-item"><a href="javascript:;"><i class="bx bx-home-alt"></i></a>
                             </li>
-                            <li class="hidden" id="customerGroupId">{{ $customerGroup->id }}</li>
+                            <li class="hidden" style="display:none" id="customerGroupId">{{ $customerGroup->id }}</li>
                             <li class="breadcrumb-item active" aria-current="page"><b>Customers Group:</b>
                                 {{ $customerGroup->name }}</li>
                         </ol>

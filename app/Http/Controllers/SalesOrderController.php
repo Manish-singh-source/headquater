@@ -216,6 +216,20 @@ class SalesOrderController extends Controller
                     'product_status' => $productStatus ?? 'Found',
                 ]);
 
+                // Block Quantity in WarehouseStock Table
+                if ($product) {
+                    if (intval($product->block_quantity ?? 0) + intval($record['Block']) > intval($product->available_quantity)) {
+                        $blockQuantity = $product->block_quantity + $product->available_quantity;
+                    } else {
+                        $blockQuantity = $product->block_quantity + $record['Block'];
+                    }
+
+                    // Block Quantity from WarehouseStock Table and Update WarehouseStockLog Table 
+                    $product->available_quantity = intval($productStockCache[$sku]['available']) ?? 0;
+                    $product->block_quantity = $blockQuantity;
+                    $product->save();
+                }
+
 
                 $saveOrderProduct = new SalesOrderProduct();
                 $saveOrderProduct->sales_order_id = $salesOrder->id;
@@ -277,20 +291,6 @@ class SalesOrderController extends Controller
                         $purchaseOrderProduct->ordered_quantity = $shortQty;
                         $purchaseOrderProduct->save();
                     }
-                }
-
-                // Block Quantity in WarehouseStock Table
-                if ($product) {
-                    if (intval($product->block_quantity ?? 0) + intval($record['Block']) > intval($product->available_quantity)) {
-                        $blockQuantity = $product->available_quantity;
-                    } else {
-                        $blockQuantity = $product->block_quantity + $record['Block'];
-                    }
-
-                    // Block Quantity from WarehouseStock Table and Update WarehouseStockLog Table 
-                    $product->available_quantity = intval($productStockCache[$sku]['available']) ?? 0;
-                    $product->block_quantity = $blockQuantity ?? 0;
-                    $product->save();
                 }
 
                 $insertCount++;

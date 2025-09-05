@@ -62,8 +62,10 @@ Module - Sales Order
     -- check availibility             -- done 
     -- download availibility file     -- done 
     -- upload blocked products file   -- done 
-    -- delte sales order              -- done          -- need to verify 
+    -- delete sales order             -- done          -- need to verify 
     -- multi delete sales order       -- removed 
+
+
 
 2. view sales order                   -- done 
     -- download excel file            -- done 
@@ -74,7 +76,12 @@ Module - Sales Order
 
     -- update po order                -- done          -- which fields update 
                                                        -- when updating PO order recheck for block order 
-    -- change order status            --               -- 
+    -- change order status            -- done          -- statuses cases 
+                                                            -- pending          -- when order is not fulfilled/newly created
+                                                            -- blocked          -- if product blocked in warehouse stock 
+                                                            -- ready to package -- when order is fulfilled for warehouse 
+                                                            -- ready to ship    -- when order is ready for shipped
+                                                            -- completed        -- when payment is done 
 
 
 

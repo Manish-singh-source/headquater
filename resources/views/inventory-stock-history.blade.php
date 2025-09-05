@@ -195,8 +195,8 @@
                                             <td>{{ $product->product->mrp }}</td>
                                             <td>{{ $product->product->status === '1' ? 'Active' : 'Inactive' }}</td>
                                             <td>
-                                                @if ($product->quantity)
-                                                    {{ $product->quantity }}
+                                                @if ($product->available_quantity)
+                                                    {{ $product->available_quantity }}
                                                 @else
                                                     <span>NA</span>
                                                 @endif
