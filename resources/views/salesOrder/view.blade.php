@@ -43,11 +43,7 @@
                                     <span><b>PO Quantity Status</b></span>
                                     <span>
                                         <b>
-                                            @if (
-                                                $salesOrder->ordered_products_sum_ordered_quantity -
-                                                    ($availableQuantity +
-                                                        ($vendorPiFulfillmentTotal ?? 0)) >
-                                                    0)
+                                            @if ($salesOrder->ordered_products_sum_ordered_quantity - ($availableQuantity + ($vendorPiFulfillmentTotal ?? 0)) > 0)
                                                 <span class="badge text-danger bg-danger-subtle">
                                                     {{ 'Quantity Needs To Fulfill: ' . ($salesOrder->ordered_products_sum_ordered_quantity - ($availableQuantity + ($vendorPiFulfillmentTotal ?? 0))) }}
                                                 </span>
@@ -125,14 +121,14 @@
                                     <select class="form-select border-2 border-primary" id="changeStatus"
                                         aria-label="Default select example" name="status">
                                         <option value="" selected disabled>Change Status</option>
-                                        <option value="pending" @if ($salesOrder->status == 'pending') selected @endif>Pending
-                                        </option>
-                                        <option value="blocked" @if ($salesOrder->status == 'blocked') selected @endif>Blocked
-                                        </option>
-                                        <option value="ready_to_package" @if ($salesOrder->status == 'ready_to_package') selected @endif>
-                                            Ready To Package</option>
-                                        <option value="ready_to_ship" @if ($salesOrder->status == 'ready_to_ship') selected @endif>
-                                            Ready To Ship</option>
+                                        <option value="pending" @if ($salesOrder->status == 'pending') selected @endif
+                                            @if (in_array($salesOrder->status, ['blocked', 'ready_to_package', 'ready_to_ship', 'completed'])) disabled @endif>Pending</option>
+                                        <option value="blocked" @if ($salesOrder->status == 'blocked') selected @endif
+                                            @if (in_array($salesOrder->status, ['ready_to_package', 'ready_to_ship', 'completed'])) disabled @endif>Blocked</option>
+                                        <option value="ready_to_package" @if ($salesOrder->status == 'ready_to_package') selected @endif
+                                            @if (in_array($salesOrder->status, ['ready_to_ship', 'completed'])) disabled @endif>Ready To Package</option>
+                                        <option value="ready_to_ship" @if ($salesOrder->status == 'ready_to_ship') selected @endif
+                                            @if (in_array($salesOrder->status, ['completed'])) disabled @endif>Ready To Ship</option>
                                         <option value="completed" @if ($salesOrder->status == 'completed') selected @endif>
                                             Completed</option>
                                     </select>
@@ -217,10 +213,14 @@
                                             </td>
                                             <td>{{ $order->ordered_quantity }}</td>
                                             <td>
-                                                @if($order->ordered_quantity <= ($order->tempOrder?->available_quantity ?? 0) + ($order->tempOrder?->vendor_pi_fulfillment_quantity ?? 0))
-                                                    <span class="badge text-success bg-success-subtle">{{ ($order->tempOrder?->available_quantity ?? 0) + ($order->tempOrder?->vendor_pi_fulfillment_quantity ?? 0) }}</span>
+                                                @if (
+                                                    $order->ordered_quantity <=
+                                                        ($order->tempOrder?->available_quantity ?? 0) + ($order->tempOrder?->vendor_pi_fulfillment_quantity ?? 0))
+                                                    <span
+                                                        class="badge text-success bg-success-subtle">{{ ($order->tempOrder?->available_quantity ?? 0) + ($order->tempOrder?->vendor_pi_fulfillment_quantity ?? 0) }}</span>
                                                 @else
-                                                    <span class="badge text-danger bg-danger-subtle">{{ ($order->tempOrder?->available_quantity ?? 0) + ($order->tempOrder?->vendor_pi_fulfillment_quantity ?? 0) }}</span>
+                                                    <span
+                                                        class="badge text-danger bg-danger-subtle">{{ ($order->tempOrder?->available_quantity ?? 0) + ($order->tempOrder?->vendor_pi_fulfillment_quantity ?? 0) }}</span>
                                                 @endif
                                             </td>
                                         </tr>

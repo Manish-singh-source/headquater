@@ -21,7 +21,7 @@ class ReceivedProductsController extends Controller
         $purchaseOrders = PurchaseOrder::with(['purchaseOrderProducts', 'vendorPI'])
             ->where('status', 'pending')
             ->withCount('purchaseOrderProducts')
-            ->whereHas('vendorPI', function($query) {
+            ->whereHas('vendorPI', function ($query) {
                 $query->where('status', 'pending');
             }) // ensures vendorPI exists
             ->get();
@@ -35,12 +35,12 @@ class ReceivedProductsController extends Controller
         // dd($vendorPIs);
         if ($vendorPIs) {
             return view('receivedProducts.view', compact('vendorPIs'));
-        } 
+        }
 
         return back()->with('error', 'Vendor PI not found.');
     }
 
-    
+
     public function updateStatus(Request $request)
     {
         $vendorPI = VendorPI::with('products')->where('id', $request->vendor_pi_id)->first();
@@ -90,14 +90,14 @@ class ReceivedProductsController extends Controller
                 // 'HSN' => $product->hsn ?? '',
                 'Quantity Received' => '',
                 'Issue Units' => '',
-                'Issue Reason' => '',
+                'Issue Description' => '',
             ]);
         }
 
         // Close the writer
         $writer->close();
 
-        return response()->download($tempXlsxPath, 'Received-Products-'.$request->vendorCode.'.xlsx', [
+        return response()->download($tempXlsxPath, 'Received-Products-' . $request->vendorCode . '.xlsx', [
             'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         ])->deleteFileAfterSend(true);
     }
@@ -136,15 +136,15 @@ class ReceivedProductsController extends Controller
         $file = $request->file('pi_excel');
         $filepath = $file->getPathname();
         $extension = $file->getClientOriginalExtension();
-        
+
         DB::beginTransaction();
-        
+
         try {
             $reader = SimpleExcelReader::create($filepath, $extension);
             $rows = $reader->getRows();
             // $products = [];
             $insertCount = 0;
-            
+
             $vendorPIid = VendorPI::with('products')->where('id', $request->vendor_pi_id)->first();
 
             foreach ($rows as $record) {
@@ -153,7 +153,7 @@ class ReceivedProductsController extends Controller
                 }
 
                 $productData = VendorPIProduct::where('vendor_sku_code', Arr::get($record, 'Vendor SKU Code'))->where('vendor_pi_id', $vendorPIid->id)->first();
-                
+
                 if (Arr::get($record, 'PI Quantity')) {
                     $productData->quantity_requirement = Arr::get($record, 'PI Quantity');
                 }
@@ -163,7 +163,7 @@ class ReceivedProductsController extends Controller
                 if ($issueItem = Arr::get($record, 'Issue Units')) {
                     $productData->issue_item = $issueItem ?? '';
                     $productData->issue_reason = (Arr::get($record, 'PI Quantity') < Arr::get($record, 'Quantity Received') ? 'Exceed' : 'Shortage');
-                    $productData->issue_description = Arr::get($record, 'Issue Reason') ?? '';
+                    $productData->issue_description = Arr::get($record, 'Issue Description') ?? '';
                 } else {
                     $productData->issue_item = 0;
                     $productData->issue_reason = '';

@@ -22,7 +22,7 @@ class ReadyToShip extends Controller
     public function view($id)
     {
 
-        $order = SalesOrder::where('status', 'ready_to_ship')->find($id);
+        $order = SalesOrder::with('orderedProducts')->where('status', 'ready_to_ship')->find($id);
 
         $facilityNames = SalesOrderProduct::with('customer')
             ->where('sales_order_id', $id)
@@ -31,8 +31,9 @@ class ReadyToShip extends Controller
             ->filter()
             ->unique('client_name')
             ->pluck('id');
+            
         $customerInfo = Customer::with('groupInfo.customerGroup')->withCount('orders')->whereIn('id', $facilityNames)->get();
-        // dd($customerInfo);
+        // dd($order);
 
         return view('readyToShip.view', compact('customerInfo', 'order'));
     }
@@ -46,13 +47,13 @@ class ReadyToShip extends Controller
             'orderedProducts.tempOrder',
             'orderedProducts.customer',
             'orderedProducts.warehouseStock',
-            'orderedProducts.warehouseStockLog'
         ])->with(['orderedProducts' => function ($q) use ($c_id) {
             $q->where('customer_id', $c_id);
         }])->findOrFail($id);
 
-        $customerInfo = Customer::with('address')->find($c_id);
+        $customerInfo = Customer::find($c_id);
         $invoice = Invoice::where('customer_id', $c_id)->where('sales_order_id', $id)->first();
+        // dd($salesOrder);
 
         // dd($salesOrder->orderedProducts);
         // dd(json_encode($salesOrder, JSON_PRETTY_PRINT));

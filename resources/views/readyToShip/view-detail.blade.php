@@ -12,17 +12,13 @@
                 </div>
                 <div class="col-6 d-flex justify-content-end text-end my-2 ">
                     <div>
-                        <form id="statusForm" action="{{ route('change.order.status') }}" method="POST">
+                        <form id="statusForm" action="{{ route('change.sales.order.status') }}" method="POST">
                             @csrf
                             @method('PUT')
                             <input type="hidden" name="order_id" value="{{ $salesOrder->id }}">
                             <select class="form-select border-2 border-primary" id="changeStatus"
                                 aria-label="Default select example" name="status">
                                 <option value="" selected disabled>Change Status</option>
-                                {{-- <option value="out_for_delivery" @if ($salesOrder->status == 'out_for_delivery') selected @endif>
-                                    Out For Delivery</option>
-                                <option value="delivered" @if ($salesOrder->status == 'delivered') selected @endif>
-                                    Delivered</option> --}}
                                 <option value="completed" @if ($salesOrder->status == 'completed') selected @endif>
                                     Completed</option>
                             </select>
@@ -63,11 +59,11 @@
                             </li>
                             <li class="list-group-item d-flex justify-content-between align-items-center  mb-2 pe-3">
                                 <span><b>Billing Address</b></span>
-                                <span> {{ $customerInfo->address->billing_address ?? 'NA' }} </span>
+                                <span> {{ $customerInfo->billing_address ?? 'NA' }} </span>
                             </li>
                             <li class="list-group-item d-flex justify-content-between align-items-center  mb-2 pe-3">
                                 <span><b> Shipping Address</b></span>
-                                <span> {{ $customerInfo->address->shipping_address ?? 'NA' }}</span>
+                                <span> {{ $customerInfo->shipping_address ?? 'NA' }}</span>
                             </li>
                             <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                                 <span><b>Invoices PDF</b></span>

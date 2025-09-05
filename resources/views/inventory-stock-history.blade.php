@@ -166,8 +166,9 @@
                                         <th>PCS/Set</th>
                                         <th>Sets/CTN</th>
                                         <th>MRP</th>
-                                        <th>po&nbsp;status</th>
-                                        <th>Quantity</th>
+                                        {{-- <th>po&nbsp;status</th> --}}
+                                        <th>Original&nbsp;Quantity</th>
+                                        <th>Available&nbsp;Quantity</th>
                                         <th>Hold&nbsp;Qty</th>
                                         <th>Date</th>
                                     </tr>
@@ -193,22 +194,10 @@
                                             <td>{{ $product->product->pcs_set }}</td>
                                             <td>{{ $product->product->sets_ctn }}</td>
                                             <td>{{ $product->product->mrp }}</td>
-                                            <td>{{ $product->product->status === '1' ? 'Active' : 'Inactive' }}</td>
-                                            <td>
-                                                @if ($product->available_quantity)
-                                                    {{ $product->available_quantity }}
-                                                @else
-                                                    <span>NA</span>
-                                                @endif
-                                            </td>
-                                            <td>
-                                                @if ($product->block_quantity)
-                                                    <span class="badge text-danger bg-danger-subtle">
-                                                        {{ $product->block_quantity }}</span>
-                                                @else
-                                                    <span>NA</span>
-                                                @endif
-                                            </td>
+                                            {{-- <td>{{ $product->product->status === '1' ? 'Active' : 'Inactive' }}</td> --}}
+                                            <td>{{ $product->original_quantity ?? 0 }}</td>
+                                            <td>{{ $product->available_quantity ?? 0 }}</td>
+                                            <td>{{ $product->block_quantity ?? 0 }}</td>
                                             <td>{{ $product->product->created_at->format('d-m-Y') }}</td>
                                         </tr>
                                     @endforeach

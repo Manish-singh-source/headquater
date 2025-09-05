@@ -22,6 +22,7 @@ class ReportController extends Controller
     public function inventoryStockHistory()
     {
         $products = WarehouseStock::with('product', 'warehouse')->get();
+        
         $productsSum = WarehouseStock::sum('original_quantity');
         $blockProductsSum = WarehouseStock::sum('block_quantity');
         return view('inventory-stock-history', compact('products', 'productsSum', 'blockProductsSum'));

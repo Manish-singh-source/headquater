@@ -99,12 +99,12 @@ class SalesOrderController extends Controller
                 // after checking sku mapping check if product actual present or not in db
                 // if no stock entry present in table
                 if (!isset($product)) {
-                    $productStockCache[$sku] = [
-                        'available' => 0,
-                    ];
-                    continue;
+                    // $productStockCache[$sku] = [
+                    //     'available' => 0,
+                    // ];
                     // Store Product & Stock Quantity as well
                     $productStatus = 'Not Found';
+                    continue;
                 }
 
                 // check for customer and vendor available or not
@@ -118,7 +118,11 @@ class SalesOrderController extends Controller
                 });
                 $customerInfo = $query->first();
                 // cuastomer availibility check done
+
                 if (!$customerInfo) {
+                    // $productStockCache[$sku] = [
+                    //     'available' => 0,
+                    // ];
                     // If customer not found, skip this record
                     $customerStatus = 'Not Found';
                     continue;
@@ -130,6 +134,9 @@ class SalesOrderController extends Controller
                 // vendor availibility check done
 
                 if (!$vendorInfo) {
+                    // $productStockCache[$sku] = [
+                    //     'available' => 0,
+                    // ];
                     // If vendor not found, skip this record
                     $vendorStatus = 'Not Found';
                     continue;
@@ -180,9 +187,6 @@ class SalesOrderController extends Controller
                     $casePackQty = (int)$product->product->pcs_set * (int)$product->product->sets_ctn;
                 }
 
-                // 
-
-
                 $tempSalesOrder = TempOrder::create([
                     'customer_name' => $record['Customer Name'] ?? '',
                     'po_number' => $record['PO Number'] ?? '',
@@ -218,7 +222,7 @@ class SalesOrderController extends Controller
 
                 // Block Quantity in WarehouseStock Table
                 if ($product) {
-                    if (intval($product->block_quantity ?? 0) + intval($record['Block']) > intval($product->available_quantity)) {
+                    if (intval($record['Block']) > intval($product->available_quantity)) {
                         $blockQuantity = $product->block_quantity + $product->available_quantity;
                     } else {
                         $blockQuantity = $product->block_quantity + $record['Block'];
@@ -529,6 +533,7 @@ class SalesOrderController extends Controller
                     $invoice->sales_order_id = $salesOrder->id;
                     $invoice->invoice_date = now();
                     $invoice->round_off = 0;
+                    
                     $invoice->total_amount = $salesOrder->orderedProducts->sum(function ($product) {
                         return $product->ordered_quantity * $product->product->price; // Assuming 'price' is the field in Product model
                     });

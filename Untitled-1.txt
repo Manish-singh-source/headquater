@@ -111,7 +111,34 @@ Module - Purchase Order
 
 
 Module - Invoice 
+    -- create invoices      
 
+
+
+Module - Received Products 
+    -- list received products by purchase order      -- done 
+    -- view received products list                   -- done 
+    -- delete received                               -- done 
+
+    
+
+Module - Packaging List 
+
+Module - Ready To Ship
+
+Module - Product Issues 
+
+Module - Product Return 
+
+Module - Track Order 
+
+Module - Vendor Purchase 
+
+Module - Inventory Stock 
+
+Module - Customer Sales 
+
+Module - Excel Formats 
 
 
 

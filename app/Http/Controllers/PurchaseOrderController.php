@@ -82,7 +82,7 @@ class PurchaseOrderController extends Controller
             DB::commit();
             return redirect()->route('purchase.order.index')->with('success', 'CSV file imported successfully.');
         } catch (\Exception $e) {
-            dd($e->getMessage());
+            // dd($e->getMessage());
             DB::rollBack();
             return redirect()->back()->withErrors(['error' => 'Something went wrong: ' . $e->getMessage()]);
         }
@@ -342,12 +342,17 @@ class PurchaseOrderController extends Controller
             $vendorPI->approve_or_reject_reason = $request->approve_or_reject_reason ?? null;
             $vendorPI->save();
 
+            $purchaseOrder = PurchaseOrder::where('id', $request->purchase_order_id)->first();
+            $purchaseOrder->status = 'completed';
+            $purchaseOrder->save();
+
             // find products 
             $vendorPIProducts = VendorPI::with('products')->where('purchase_order_id', $request->purchase_order_id)->where('vendor_code', $request->vendor_code)->first();
 
             foreach ($vendorPIProducts->products as $product) {
                 $updateStock = WarehouseStock::where('sku', $product->vendor_sku_code)->first();
                 if (isset($updateStock)) {
+                    // logic for updating warehouse stock and block quantity 
                     $updateStock->available_quantity = $updateStock->available_quantity + $product->quantity_received;
                     $updateStock->original_quantity = $updateStock->original_quantity + $product->quantity_received;
                     $updateStock->save();
@@ -370,7 +375,7 @@ class PurchaseOrderController extends Controller
             DB::commit();
             return redirect()->back()->with('success', 'Successfully Approved Received Products');
         } catch (\Exception $e) {
-            dd($e->getMessage());
+            // dd($e->getMessage());
             DB::rollBack();
             return redirect()->back()->withErrors(['error' => 'Something went wrong: ' . $e->getMessage()]);
         }

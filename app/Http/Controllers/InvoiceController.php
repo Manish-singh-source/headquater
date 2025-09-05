@@ -180,7 +180,6 @@ class InvoiceController extends Controller
     public function invoiceDetails($id)
     {
         $invoiceDetails = Invoice::with(['appointment', 'dns', 'payments', 'customer', 'warehouse'])->findOrFail($id);
-        // dd($invoiceDetails);
         return view('invoice.invoice-details', compact('invoiceDetails'));
     }
 }
