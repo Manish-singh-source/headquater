@@ -96,13 +96,13 @@
         </tr>
         <tr>
             <td>Address:</td>
-            <td colspan="3">{{ $invoice->customer->address->billing_address }}</td>
+            <td colspan="3">{{ $invoice->customer->billing_address }}</td>
         </tr>
         <tr>
             <td>GSTIN:</td>
             <td>{{ $invoice->customer->gstin }}</td>
             <td>State:</td>
-            <td>{{ $invoice->customer->address->shipping_state }}</td>
+            <td>{{ $invoice->customer->shipping_state }}</td>
         </tr>
     </table>
 
@@ -161,8 +161,8 @@
     <table>
         <tr>
             <td>Total Invoice amount in words:</td>
-            <td colspan="3">{{ ucfirst(numberToWords(floor($totalAmountSum))) }} Rupees Only</td>
-            {{-- <td colspan="3">{{ $totalAmountSum }}</td> --}}
+            {{-- <td colspan="3">{{ ucfirst(numberToWords(floor($totalAmountSum))) }} Rupees Only</td> --}}
+            <td colspan="3">{{ $totalAmountSum }}</td>
         </tr>
     </table>
 

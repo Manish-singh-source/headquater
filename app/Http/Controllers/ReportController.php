@@ -16,7 +16,6 @@ class ReportController extends Controller
         $purchaseOrdersTotal = VendorPIProduct::sum('mrp');
         $purchaseOrders = VendorPI::with('products')->where('status', 'approve')->get();
         $purchaseOrdersVendors = VendorPI::where('status', 'approve')->pluck('vendor_code', 'vendor_code');
-        // dd($purchaseOrders);
         return view('vendor-purchase-history', compact('purchaseOrders', 'purchaseOrdersTotal', 'purchaseOrdersVendors'));
     }
 
@@ -25,7 +24,6 @@ class ReportController extends Controller
         $products = WarehouseStock::with('product', 'warehouse')->get();
         $productsSum = WarehouseStock::sum('original_quantity');
         $blockProductsSum = WarehouseStock::sum('block_quantity');
-        // dd($products);
         return view('inventory-stock-history', compact('products', 'productsSum', 'blockProductsSum'));
     }
 
@@ -42,7 +40,6 @@ class ReportController extends Controller
                 return $invoice->customer->client_name ?? null;
             })
         ];
-        // dd($data);
         return view('customer-sales-history', $data);
     }
 }

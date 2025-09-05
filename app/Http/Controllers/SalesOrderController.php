@@ -199,7 +199,7 @@ class SalesOrderController extends Controller
                     'description' => $record['Description'] ?? '',
                     'basic_rate' => $record['Basic Rate'] ?? '',
                     'net_landing_rate' => $record['Net Landing Rate'] ?? '',
-                    'mrp' => $record['PO MRP'] ?? '',
+                    'mrp' => $record['MRP'] ?? '',
                     'product_mrp' => $record['Product MRP'] ?? '',
                     // rate confirmation ?? want to store -- first create rate_confirmation column in db
                     // 'rate_confirmation' => $record['Rate Confirmation'],
@@ -367,9 +367,9 @@ class SalesOrderController extends Controller
                     'description' => Arr::get($record, 'Title') ?? '',
                     'basic_rate' => Arr::get($record, 'Basic Rate') ?? '',
                     'net_landing_rate' => Arr::get($record, 'Net Landing Rate') ?? '',
-                    'mrp' =>  Arr::get($record, 'PO MRP') ?? '',
+                    'mrp' =>  Arr::get($record, 'MRP') ?? '',
                     // 'product_mrp' => Arr::get($record, 'Product MRP') ?? '',
-                    'rate_confirmation' => ($record['PO MRP'] >= ($salesOrderProductUpdate->product->mrp ?? 0)) ? 'Correct' : 'Incorrect',
+                    'rate_confirmation' => ($record['MRP'] >= ($salesOrderProductUpdate->product->mrp ?? 0)) ? 'Correct' : 'Incorrect',
                     'po_qty' => Arr::get($record, 'PO Quantity') ?? '',
                     // 'block' => Arr::get($record, 'Qty Requirement') ?? '',
                     'created_at' => now(),
@@ -377,7 +377,7 @@ class SalesOrderController extends Controller
                 ];
 
                 $salesOrderProductUpdate->ordered_quantity = $record['PO Quantity'];
-                $salesOrderProductUpdate->price = $record['PO MRP'];
+                $salesOrderProductUpdate->price = $record['MRP'];
                 $salesOrderProductUpdate->subtotal = ($record['Basic Rate'] ?? 0) * ($record['PO Quantity'] ?? 0);
                 $salesOrderProductUpdate->save();
 
@@ -876,7 +876,7 @@ class SalesOrderController extends Controller
                 'Title' => $order->tempOrder->description,
                 'Basic Rate' => $order->tempOrder->basic_rate,
                 'Net Landing Rate' => $order->tempOrder->net_landing_rate,
-                'PO MRP' =>  $order->tempOrder->mrp,
+                'MRP' =>  $order->tempOrder->mrp,
                 'Product MRP' => $order->tempOrder->product_mrp,
                 'Rate Confirmation' => $order->tempOrder->rate_confirmation ?? 'Incorrect',
                 'PO Quantity' => $order->ordered_quantity,

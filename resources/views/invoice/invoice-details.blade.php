@@ -26,12 +26,12 @@
                                 </li>
                                 <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                                     <span><b>Address</b></span>
-                                    <span>{{ $invoiceDetails->customer->address->billing_address }}</span>
+                                    <span>{{ $invoiceDetails->customer->billing_address }}</span>
                                 </li>
                             </ul>
                         </div>
 
-                        @if ($invoiceDetails->appointment)
+                        @if (!empty($invoiceDetails->appointment) && $invoiceDetails->appointment->count() > 0)
                             <div class="card w-100 d-flex  flex-sm-row flex-col">
                                 <ul class="col-12 list-group list-group-flush">
                                     <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
@@ -51,7 +51,7 @@
                                 </ul>
                             </div>
                         @endif
-                        @if ($invoiceDetails->dns)
+                        @if (!empty($invoiceDetails->dns) && $invoiceDetails->dns->count() > 0)
                             <div class="card w-100 d-flex  flex-sm-row flex-col">
                                 <ul class="col-12 list-group list-group-flush">
                                     {{-- <li>DN Details</li> --}}
@@ -73,7 +73,7 @@
                             </div>
                         @endif
 
-                        @if ($invoiceDetails->payments)
+                        @if (!empty($invoiceDetails->payments) && $invoiceDetails->payments->count() > 0)
                             <div class="card w-100 d-flex  flex-sm-row flex-col">
                                 <ul class="col-12 list-group list-group-flush">
                                     <li class="list-group-item">Payment Details:</li>
