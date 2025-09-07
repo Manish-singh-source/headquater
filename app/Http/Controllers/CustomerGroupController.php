@@ -58,22 +58,46 @@ class CustomerGroupController extends Controller
 
             foreach ($reader->getRows() as $record) {
                 // $customer = Customer::where('client_name', $record['Client Name'])->first();
-                $keywords = preg_split('/[\s\-]+/', $record['Shipping Address'], -1, PREG_SPLIT_NO_EMPTY);
-                $query = DB::table('customers'); 
+                // $keywords = preg_split('/[\s\-]+/', $record['Shipping Address'], -1, PREG_SPLIT_NO_EMPTY);
+                // $query = DB::table('customers'); 
 
-                $query->where(function ($q) use ($keywords) {
-                    foreach ($keywords as $word) {
-                        $q->orWhere('shipping_address', 'like', "%{$word}%");
-                    }
-                });
+                // $query->where(function ($q) use ($keywords) {
+                //     foreach ($keywords as $word) {
+                //         $q->orWhere('shipping_address', 'like', "%{$word}%");
+                //     }
+                // });
 
-                $customer = $query->first();
-
-                // dd($customer);
-
+                // $customer = $query->first();
+                $customer = Customer::where('client_name', 'like', '%' . trim($record['Client Name']) . '%')
+                    ->where('shipping_address', 'like', '%' . trim($record['Shipping Address']) . '%')
+                    ->first();
+                    
                 if (!$customer) {
                     // 2. Insert individual customer
                     $customer = Customer::create([
+                        'client_name'       => $record['Client Name'] ?? '',
+                        'contact_name'       => $record['Contact Name'] ?? '',
+                        'email'      => $record['Email'] ?? '',
+                        'contact_no'      => $record['Contact No'] ?? '',
+                        'company_name'      => $record['Company Name'] ?? '',
+                        'gstin'      => $record['GSTIN'] ?? '',
+                        'pan'      => $record['PAN'] ?? '',
+                        'gst_treatment'      => $record['GST Treatment'] ?? '',
+                        'private_details'      => $record['Private Details'] ?? '',
+                        'billing_address'      => $record['Billing Address'] ?? '',
+                        'billing_country'      => $record['Billing Country'] ?? '',
+                        'billing_state'      => $record['Billing State'] ?? '',
+                        'billing_city'      => $record['Billing City'] ?? '',
+                        'billing_zip'      => $record['Billing Zip'] ?? '',
+                        'shipping_address'      => $record['Shipping Address'] ?? '',
+                        'shipping_country'      => $record['Shipping Country'] ?? '',
+                        'shipping_state'      => $record['Shipping State'] ?? '',
+                        'shipping_city'      => $record['Shipping City'] ?? '',
+                        'shipping_zip'      => $record['Shipping Zip'] ?? '',
+                    ]);
+                } else {
+                    // update customer 
+                    $customer->update([
                         'client_name'       => $record['Client Name'] ?? '',
                         'contact_name'       => $record['Contact Name'] ?? '',
                         'email'      => $record['Email'] ?? '',
@@ -113,7 +137,6 @@ class CustomerGroupController extends Controller
             DB::commit();
             return redirect()->route('customer.groups.index')->with('success', 'CSV file imported successfully. Group and customers created.');
         } catch (\Exception $e) {
-            // dd($e);
             DB::rollBack();
             return redirect()->back()->withErrors(['error' => 'Something went wrong: ' . $e->getMessage()]);
         }

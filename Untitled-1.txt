@@ -1,5 +1,5 @@
 
-Module - Customer Group
+Module 1 - Customer Group
 
 1. create customer group               -- done
 2. edit customer group                 -- done 
@@ -15,7 +15,7 @@ Module - Customer Group
     -- f. multi delete customers       -- done 
 
 
-Module - Vendor 
+Module 2 - Vendor 
 
 1. create vendor           -- done 
 2. edit vendor             -- done -- need to add auto select address 
@@ -25,7 +25,7 @@ Module - Vendor
 6. view vendor             -- done 
 
 
-Module - products 
+Module 3 - products 
 1. add products            -- done 
 2. update product          -- done 
 3. delete product          -- done 
@@ -33,13 +33,13 @@ Module - products
 5. update bulk products     -- done 
 
 
-Module - SKU Mapping 
+Module 4 - SKU Mapping 
 1. add skus          -- done 
 2. edit skus         -- done 
 3. delete skus       -- done 
 
 
-Module - Warehouse 
+Module 5 - Warehouse 
 1. add warehouse     -- done 
 2. edit warehouse    -- done 
 3. delete warehouse  -- done 
@@ -57,25 +57,38 @@ Module - Warehouse
 
 
 
-Module - Sales Order 
+Module 6 - Sales Order 
 1. create new sales order 
-    -- check availibility             -- done 
-    -- download availibility file     -- done 
-    -- upload blocked products file   -- done 
-    -- delete sales order             -- done          -- need to verify 
+    -- check availibility             -- done          -- if all available / not available
+    -- download availibility file     -- done          -- enter vendor code if all available 
+                                                       -- enter vendor code with block quantity if not available
+
+    
+    -- upload blocked products file   -- done          -- if all available then create sales order with status ready to package 
+                                                       -- if partially available then create sales order with status blocked  
+
+    -- delete sales order             -- done          -- first need to delete all products from order 
     -- multi delete sales order       -- removed 
 
 
 
-2. view sales order                   -- done 
-    -- download excel file            -- done 
+2. view sales order                   -- pending          -- display all products in order 
+                                                       -- display blocked products in order 
+                                                       -- display available products in order 
+                                                       -- display not found products/vendors/customers for download file 
+                                                       -- display quantity status 
+
+    -- download excel file            -- done          -- download file with all products in order for update sales order 
     -- multi delete products          -- done          -- when delete 1 or more products release blocked products for that order 
                                                        -- release block from warehouse stock 
                                                        -- delete tempOrder 
                                                        -- check if vendor PI available then assign that quantity to other sku 
+                                                       -- assign available quantity to another sales order product when delete one/more
+
 
     -- update po order                -- done          -- which fields update 
                                                        -- when updating PO order recheck for block order 
+
     -- change order status            -- done          -- statuses cases 
                                                             -- pending          -- when order is not fulfilled/newly created
                                                             -- blocked          -- if product blocked in warehouse stock 
@@ -108,23 +121,18 @@ Module - Purchase Order
 
 
 
+Module - Received Products 
+
+
+
+Module - Packaging List 
+
+Module - Ready To Ship
 
 
 Module - Invoice 
     -- create invoices      
 
-
-
-Module - Received Products 
-    -- list received products by purchase order      -- done 
-    -- view received products list                   -- done 
-    -- delete received                               -- done 
-
-    
-
-Module - Packaging List 
-
-Module - Ready To Ship
 
 Module - Product Issues 
 
@@ -137,12 +145,7 @@ Module - Vendor Purchase
 Module - Inventory Stock 
 
 Module - Customer Sales 
-
+    
 Module - Excel Formats 
-
-
-
-
-
-
+    -- list all file formats             -- pending
 

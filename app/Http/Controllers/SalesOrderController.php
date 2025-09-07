@@ -18,6 +18,7 @@ use App\Models\PurchaseOrder;
 use App\Models\InvoiceDetails;
 use App\Models\WarehouseStock;
 use Illuminate\Support\Carbon;
+use App\Models\NotFoundTempOrder;
 use App\Models\SalesOrderProduct;
 use App\Models\WarehouseStockLog;
 use Illuminate\Support\Facades\DB;
@@ -71,9 +72,9 @@ class SalesOrderController extends Controller
             $salesOrder->warehouse_id = $warehouse_id;
             $salesOrder->customer_group_id = $customer_group_id;
             $salesOrder->save();
+            // sales order created
 
-
-            // Iterate Excel file 
+            // Iterate Excel file
             foreach ($reader->getRows() as $record) {
                 $sku = trim($record['SKU Code']);
                 $poQty = (int)$record['PO Quantity'];
@@ -84,6 +85,9 @@ class SalesOrderController extends Controller
                 $availableQty = 0;
                 $shortQty = 0;
                 $casePackQty = 0;
+                $productStatus = '';
+                $customerStatus = '';
+                $vendorStatus = '';
 
                 // SKU Mapping
                 $skuMapping = SkuMapping::where('customer_sku', $sku)->first();
@@ -96,15 +100,13 @@ class SalesOrderController extends Controller
                 }
                 // sku mapping done
 
+                // ------------ checking product/customer/vendor -----------------
                 // after checking sku mapping check if product actual present or not in db
                 // if no stock entry present in table
                 if (!isset($product)) {
-                    // $productStockCache[$sku] = [
-                    //     'available' => 0,
-                    // ];
                     // Store Product & Stock Quantity as well
                     $productStatus = 'Not Found';
-                    continue;
+                    // continue;
                 }
 
                 // check for customer and vendor available or not
@@ -117,15 +119,12 @@ class SalesOrderController extends Controller
                     }
                 });
                 $customerInfo = $query->first();
-                // cuastomer availibility check done
+                // customer availibility check done
 
                 if (!$customerInfo) {
-                    // $productStockCache[$sku] = [
-                    //     'available' => 0,
-                    // ];
                     // If customer not found, skip this record
                     $customerStatus = 'Not Found';
-                    continue;
+                    // continue;
                 }
 
                 // vendor availibility check
@@ -134,15 +133,51 @@ class SalesOrderController extends Controller
                 // vendor availibility check done
 
                 if (!$vendorInfo) {
-                    // $productStockCache[$sku] = [
-                    //     'available' => 0,
-                    // ];
                     // If vendor not found, skip this record
                     $vendorStatus = 'Not Found';
-                    continue;
+                    // continue;
                 }
 
+                if ($customerStatus == 'Not Found' || $vendorStatus == 'Not Found' || $productStatus == 'Not Found') {
+                    NotFoundTempOrder::create([
+                        'customer_name' => $record['Customer Name'] ?? '',
+                        'po_number' => $record['PO Number'] ?? '',
+                        'sku' => $record['SKU Code'] ?? '',
+                        'facility_name' => $record['Facility Name'] ?? '',
+                        'facility_location' => $record['Facility Location'] ?? '',
+                        'po_date' => $record['PO Date'] ?? '',
+                        'po_expiry_date' => $record['PO Expiry Date'] ?? '',
+                        'hsn' => $record['HSN'] ?? '',
+                        'gst' => ($record['GST'] < 1 && $record['GST'] > 0)
+                            ? intval(round($record['GST'] * 100))  // convert decimals (0.18 -> 18)
+                            : intval($record['GST']),              // already integer (e.g., 18)
+                        'item_code' => $record['Item Code'] ?? '',
+                        'description' => $record['Description'] ?? '',
+                        'basic_rate' => $record['Basic Rate'] ?? '',
+                        'net_landing_rate' => $record['Net Landing Rate'] ?? '',
+                        'mrp' => $record['MRP'] ?? '',
+                        'product_mrp' => $record['Product MRP'] ?? '',
+                        // rate confirmation ?? want to store -- first create rate_confirmation column in db
+                        // 'rate_confirmation' => $record['Rate Confirmation'],
+                        'po_qty' => $record['PO Quantity'] ?? '',
+                        'available_quantity' => $availableQty ?? 0,
+                        'unavailable_quantity' => $shortQty ?? 0,
+                        'block' => ($record['Block'] > $availableQty) ? $availableQty : $record['Block'],
+                        'rate_confirmation' => $record['MRP Confirmation'] ?? '',
+                        'case_pack_quantity' => $casePackQty ?? '',
+                        'purchase_order_quantity' => $record['Purchase Order Quantity'] ?? '',
+                        'vendor_code' => $record['Vendor Code'] ?? '',
+                        'customer_status' => $customerStatus ?? '',
+                        'vendor_status' => $vendorStatus ?? '',
+                        'product_status' => $productStatus ?? '',
+                    ]);
+                    continue;
+                }
+                // ------------ checking product/customer/vendor -----------------
 
+
+
+                // 
                 // check if product sku present in cache or not 
                 if (!isset($productStockCache[$sku])) {
                     // Fetch stock if not already cached
@@ -166,6 +201,7 @@ class SalesOrderController extends Controller
                         }
                     }
                 }
+                // checked if product sku present in cache or not 
 
 
                 // Use cached values
@@ -215,9 +251,9 @@ class SalesOrderController extends Controller
                     'case_pack_quantity' => $casePackQty ?? '',
                     'purchase_order_quantity' => $record['Purchase Order Quantity'] ?? '',
                     'vendor_code' => $record['Vendor Code'] ?? '',
-                    'customer_status' => $customerStatus ?? 'Found',
-                    'vendor_status' => $vendorStatus ?? 'Found',
-                    'product_status' => $productStatus ?? 'Found',
+                    'customer_status' => 'Found',
+                    'vendor_status' => 'Found',
+                    'product_status' => 'Found',
                 ]);
 
                 // Block Quantity in WarehouseStock Table
@@ -250,15 +286,21 @@ class SalesOrderController extends Controller
 
 
 
-                // Make a purchase order if one or more than one products have less quantity in warehouse  
+                // Make a purchase order if one or more than one products have less quantity in warehouse
                 if ($shortQty > 0) {
+
+                    // change sales order status to blocked
+                    $salesOrderStatus = SalesOrder::find($salesOrder->id);
+                    $salesOrderStatus->status = 'blocked';
+                    $salesOrderStatus->save();
+                    // sales order status changed to blocked 
 
                     if (!isset($productStockCache[$vendorCode])) {
                         $productStockCache[$vendorCode] = [
                             'vendor_code' => $vendorCode,
                         ];
 
-                        // Create a new purchase order for the vendor if not already created 
+                        // Create a new purchase order for the vendor if not already created
                         $purchaseOrder = new PurchaseOrder();
                         $purchaseOrder->sales_order_id = $salesOrder->id;
                         $purchaseOrder->warehouse_id = $warehouse_id;
@@ -480,32 +522,73 @@ class SalesOrderController extends Controller
     {
         $ids = is_array($request->ids) ? $request->ids : explode(',', $request->ids);
 
-        foreach ($ids as $salesOrderId) {
+        try {
+            foreach ($ids as $salesOrderProductId) {
 
-            $salesOrderProduct = SalesOrderProduct::with('tempOrder')->where('id', $salesOrderId)->first();
+                $salesOrderProduct = SalesOrderProduct::with('tempOrder')->find($salesOrderProductId);
 
-            if ($salesOrderProduct->tempOrder->block > 0) {
-                $WarehouseStockUpdate = WarehouseStock::where('id', $salesOrderProduct->warehouse_stock_id)
-                    ->first();
+                if (!$salesOrderProduct) {
+                    continue; // Skip if not found
+                }
 
-                $WarehouseStockUpdate->block_quantity = $WarehouseStockUpdate->block_quantity - $salesOrderProduct->tempOrder->block;
-                $WarehouseStockUpdate->available_quantity = $WarehouseStockUpdate->available_quantity + $salesOrderProduct->tempOrder->block;
-                $WarehouseStockUpdate->save();
+                if ($salesOrderProduct->tempOrder && $salesOrderProduct->tempOrder->block > 0) {
+                    $warehouseStock = WarehouseStock::find($salesOrderProduct->warehouse_stock_id);
 
-                // Released Products now ready to available for another products  
-                // $allowToAnotherAvailableQuantityToBlock = SalesOrderProduct::whereNot('customer_id', $salesOrderProduct->customer_id)->where('sales_order_id', $salesOrderProduct->sales_order_id)->where('sku', $salesOrderProduct->sku)->first();
+                    if ($warehouseStock) {
+                        $availableQty = $warehouseStock->available_quantity + $salesOrderProduct->tempOrder->block;
+                        $blockQty = $warehouseStock->block_quantity - $salesOrderProduct->tempOrder->block;
+
+                        while ($availableQty > 0) {
+                            $checkProduct = SalesOrderProduct::where('id', '!=', $salesOrderProduct->id)
+                                ->where('sales_order_id', $salesOrderProduct->sales_order_id)
+                                ->where('sku', $salesOrderProduct->sku)
+                                ->whereHas('tempOrder', function ($query) {
+                                    $query->where('unavailable_quantity', '>', 0);
+                                })
+                                ->with('tempOrder')
+                                ->first();
+
+                            if (!$checkProduct || !$checkProduct->tempOrder) {
+                                break; // No more matching products
+                            }
+
+                            $tempOrder = $checkProduct->tempOrder;
+                            $wanted = $tempOrder->po_qty - $tempOrder->available_quantity;
+
+                            if ($wanted <= 0) {
+                                break; // No more quantity needed
+                            }
+
+                            $allocated = min($wanted, $availableQty);
+                            $availableQty -= $allocated;
+                            $blockQty += $allocated;
+
+                            $tempOrder->available_quantity += $allocated;
+                            $tempOrder->unavailable_quantity -= $allocated;
+                            $tempOrder->block += $allocated;
+                            $tempOrder->save();
+                        }
+
+                        $warehouseStock->block_quantity = $blockQty;
+                        $warehouseStock->available_quantity = $availableQty;
+                        $warehouseStock->save();
+                    }
+                }
+
+                // Delete temp order if exists
+                if ($salesOrderProduct->tempOrder) {
+                    $salesOrderProduct->tempOrder->delete();
+                }
+
+                $salesOrderProduct->delete();
             }
 
-            // Delete Temp Order Entry 
-            if (isset($salesOrderProduct->tempOrder)) {
-                $salesOrderProduct->tempOrder->delete();
-            }
+            return redirect()->back()->with('success', 'Selected products deleted successfully.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with(['error' => 'Something went wrong: ' . $e->getMessage()]);
         }
-
-        SalesOrderProduct::destroy($ids);
-
-        return redirect()->back()->with('success', 'Selected customers deleted successfully.');
     }
+
 
     public function  changeStatus(Request $request)
     {
@@ -533,7 +616,7 @@ class SalesOrderController extends Controller
                     $invoice->sales_order_id = $salesOrder->id;
                     $invoice->invoice_date = now();
                     $invoice->round_off = 0;
-                    
+
                     $invoice->total_amount = $salesOrder->orderedProducts->sum(function ($product) {
                         return $product->ordered_quantity * $product->product->price; // Assuming 'price' is the field in Product model
                     });
@@ -602,6 +685,7 @@ class SalesOrderController extends Controller
                 $availableQty = 0;
                 $shortQty = 0;
                 $casePackQty = 0;
+                $reason = '';
 
                 // map sku with product
                 $skuMapping = SkuMapping::where('customer_sku', $sku)->first();
@@ -616,33 +700,34 @@ class SalesOrderController extends Controller
                 // after checking sku mapping check if product actual present or not in db 
                 if (!$product) {
                     // Handle SKU not found case
-                    $insertedRows[] = [
-                        'Customer Name' => $record['Customer Name'] ?? '',
-                        'PO Number' => $record['PO Number'] ?? '',
-                        'SKU Code' => $sku ?? '',
-                        'Facility Name' => $record['Facility Name'] ?? '',
-                        'Facility Location' => $record['Facility Location'] ?? '',
-                        'PO Date' => Carbon::parse($record['PO Date'])->format('d-m-Y'),
-                        'PO Expiry Date' => Carbon::parse($record['PO Expiry Date'])->format('d-m-Y'),
-                        'HSN' => $record['HSN'] ?? '',
-                        'Item Code' => $record['Item Code'] ?? '',
-                        'Description' => $record['Description'] ?? '',
-                        'GST' => ($record['GST'] < 1 && $record['GST'] > 0)
-                            ? intval(round($record['GST'] * 100))  // convert decimals (0.18 -> 18)
-                            : intval($record['GST']),              // already integer (e.g., 18)
-                        'Basic Rate' => $record['Basic Rate'] ?? '',
-                        'Net Landing Rate' => $record['Net Landing Rate'] ?? '',
-                        // rate confirmation need to add 
-                        'MRP' => $record['MRP'] ?? '',
-                        'Product MRP' => $product->mrp ?? 0,
-                        'MRP Confirmation' => ($record['MRP'] >= ($product->mrp ?? 0)) ? 'Correct' : 'Incorrect',
-                        'Case Pack Quantity' => $casePackQty ?? 0,
-                        'PO Quantity' => $poQty,
-                        'Available Quantity' => 0,
-                        'Unavailable Quantity' => 0,
-                        'Reason' => 'SKU Not Found'
-                    ];
-                    continue;
+                    // $insertedRows[] = [
+                    //     'Customer Name' => $record['Customer Name'] ?? '',
+                    //     'PO Number' => $record['PO Number'] ?? '',
+                    //     'SKU Code' => $sku ?? '',
+                    //     'Facility Name' => $record['Facility Name'] ?? '',
+                    //     'Facility Location' => $record['Facility Location'] ?? '',
+                    //     'PO Date' => Carbon::parse($record['PO Date'])->format('d-m-Y'),
+                    //     'PO Expiry Date' => Carbon::parse($record['PO Expiry Date'])->format('d-m-Y'),
+                    //     'HSN' => $record['HSN'] ?? '',
+                    //     'Item Code' => $record['Item Code'] ?? '',
+                    //     'Description' => $record['Description'] ?? '',
+                    //     'GST' => ($record['GST'] < 1 && $record['GST'] > 0)
+                    //         ? intval(round($record['GST'] * 100))  // convert decimals (0.18 -> 18)
+                    //         : intval($record['GST']),              // already integer (e.g., 18)
+                    //     'Basic Rate' => $record['Basic Rate'] ?? '',
+                    //     'Net Landing Rate' => $record['Net Landing Rate'] ?? '',
+                    //     // rate confirmation need to add 
+                    //     'MRP' => $record['MRP'] ?? '',
+                    //     'Product MRP' => $product->mrp ?? 0,
+                    //     'MRP Confirmation' => ($record['MRP'] >= ($product->mrp ?? 0)) ? 'Correct' : 'Incorrect',
+                    //     'Case Pack Quantity' => $casePackQty ?? 0,
+                    //     'PO Quantity' => $poQty,
+                    //     'Available Quantity' => 0,
+                    //     'Unavailable Quantity' => 0,
+                    //     'Reason' => 'SKU Not Found'
+                    // ];
+                    $reason = 'SKU Not Found';
+                    // continue;
                 }
 
                 // check customer is available or not
@@ -665,6 +750,38 @@ class SalesOrderController extends Controller
                 // Check if customer is present
                 if (!$customer) {
                     // Handle customer not found case
+                    // $insertedRows[] = [
+                    //     'Customer Name' => $record['Customer Name'] ?? '',
+                    //     'PO Number' => $record['PO Number'] ?? '',
+                    //     'SKU Code' => $sku ?? '',
+                    //     'Facility Name' => $record['Facility Name'] ?? '',
+                    //     'Facility Location' => $record['Facility Location'] ?? '',
+                    //     'PO Date' => Carbon::parse($record['PO Date'])->format('d-m-Y'),
+                    //     'PO Expiry Date' => Carbon::parse($record['PO Expiry Date'])->format('d-m-Y'),
+                    //     'HSN' => $record['HSN'] ?? '',
+                    //     'Item Code' => $record['Item Code'] ?? '',
+                    //     'Description' => $record['Description'] ?? '',
+                    //     // if in % convert in normal integer
+                    //     'GST' => ($record['GST'] < 1 && $record['GST'] > 0)
+                    //         ? intval(round($record['GST'] * 100))  // convert decimals (0.18 -> 18)
+                    //         : intval($record['GST']),              // already integer (e.g., 18)
+                    //     'Basic Rate' => $record['Basic Rate'] ?? '',
+                    //     'Net Landing Rate' => $record['Net Landing Rate'] ?? '',
+                    //     'MRP' => $record['MRP'] ?? '',
+                    //     'Product MRP' => $stockEntry->product->mrp ?? 0,
+                    //     'MRP Confirmation' => ($record['MRP'] >= ($stockEntry->product->mrp ?? 0)) ? 'Correct' : 'Incorrect',
+                    //     'Case Pack Quantity' => $casePackQty ?? 0,
+                    //     'PO Quantity' => $poQty,
+                    //     'Available Quantity' => 0,
+                    //     'Unavailable Quantity' => 0,
+                    //     'Reason' => 'Customer Not Found'
+                    // ];
+
+                    $reason += ' | Customer Not Found';
+                    // continue;
+                }
+
+                if ($reason != '') {
                     $insertedRows[] = [
                         'Customer Name' => $record['Customer Name'] ?? '',
                         'PO Number' => $record['PO Number'] ?? '',
@@ -689,7 +806,7 @@ class SalesOrderController extends Controller
                         'PO Quantity' => $poQty,
                         'Available Quantity' => 0,
                         'Unavailable Quantity' => 0,
-                        'Reason' => 'Customer Not Found'
+                        'Reason' => $reason
                     ];
                     continue;
                 }

@@ -441,7 +441,7 @@
                                                     <td>{{ $vendorPI->purchase_order_id }}</td>
                                                     <td>{{ $vendorPI->vendor_code }}</td>
                                                     <td>{{ $product->vendor_sku_code }}</td>
-                                                    <td>{{ $product->purchaseOrder->purchaseOrderProducts[0]->tempOrder->description ?? 'N/A' }}
+                                                    <td>{{ $product->tempOrder->description ?? 'N/A' }}
                                                     </td>
                                                     <td>{{ $product->gst }}</td>
                                                     <td>{{ $product->hsn }}</td>
