@@ -140,6 +140,7 @@ class SalesOrderController extends Controller
 
                 if ($customerStatus == 'Not Found' || $vendorStatus == 'Not Found' || $productStatus == 'Not Found') {
                     NotFoundTempOrder::create([
+                        'sales_order_id' => $salesOrder->id,
                         'customer_name' => $record['Customer Name'] ?? '',
                         'po_number' => $record['PO Number'] ?? '',
                         'sku' => $record['SKU Code'] ?? '',
@@ -474,6 +475,9 @@ class SalesOrderController extends Controller
             // ->withSum('orderedProducts.tempOrder', 'available_quantity')
             // ->withSum('tempOrders', 'available_quantity')
             // ->withSum('tempOrders', 'vendor_pi_fulfillment_quantity')
+            ->withCount('notFoundTempOrderByProduct')
+            ->withCount('notFoundTempOrderByCustomer')
+            ->withCount('notFoundTempOrderByVendor')
             ->findOrFail($id);
 
 

@@ -81,7 +81,7 @@
                                 </div>
                             </div>
 
-                            <button id="customExcelBtn" class="btn btn-sm border-2 border-primary">
+                            <button class="btn btn-sm border-2 border-primary">
                                 <i class="fa fa-file-excel-o"></i> Export to Excel
                             </button>
 
@@ -133,10 +133,10 @@
                                             <td>{{ $order->tempOrder->mrp }}</td>
                                             <td>{{ $order->tempOrder->po_qty }}</td>
                                             {{-- Need to check --}}
-                                            <td>{{ $order->warehouseStockLog->block_quantity }}</td>
+                                            <td>{{ $order->warehouseStock->original_quantity }}</td>
                                             <td>{{ $order->ordered_quantity }}</td>
                                             <td>{{ $order->tempOrder->po_number }}</td>
-                                            <td>{{ $order->warehouseStockLog->block_quantity }}</td>
+                                            <td>{{ $order->tempOrder->block }}</td>
                                         </tr>
                                     @empty
                                         <tr>
@@ -163,7 +163,7 @@
                     </a>
                 </div> --}}
                 <div class="text-end">
-                    <form action="{{ route('change.order.status') }}" method="POST"
+                    <form action="{{ route('change.sales.order.status') }}" method="POST"
                         onsubmit="return confirm('Are you sure?')">
                         @csrf
                         @method('PUT')
@@ -196,7 +196,7 @@
                 // Filter by client name
                 $('#customerPOTable').on('change', function() {
                     var selected = $(this).val().trim();
-                    customerPOTableList.column(3).search(selected ? '^' + selected + '$' : '', true, false)
+                    customerPOTableList.column(0).search(selected ? '^' + selected + '$' : '', true, false)
                         .draw();
                 });
             }

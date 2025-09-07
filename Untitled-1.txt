@@ -67,12 +67,12 @@ Module 6 - Sales Order
     -- upload blocked products file   -- done          -- if all available then create sales order with status ready to package 
                                                        -- if partially available then create sales order with status blocked  
 
-    -- delete sales order             -- done          -- first need to delete all products from order 
+    -- delete sales order             -- pending          -- first need to delete all products from order 
     -- multi delete sales order       -- removed 
 
 
 
-2. view sales order                   -- pending          -- display all products in order 
+2. view sales order                   -- pending       -- display all products in order 
                                                        -- display blocked products in order 
                                                        -- display available products in order 
                                                        -- display not found products/vendors/customers for download file 
@@ -115,6 +115,10 @@ Module - Purchase Order
     -- add vendor GRN                                     -- done 
     -- add vendor Invoice                                 -- done 
 
+-- tasks 
+    - apply filters pending, completed, received 
+    - create change status to complete button in view page 
+
 
 
 
@@ -122,30 +126,139 @@ Module - Purchase Order
 
 
 Module - Received Products 
+    -- view list                                -- done
+    -- download received products file          -- done                                
+    -- upload received products file            -- done 
+    -- update received products list            -- done
+    
+    -- approve received products list
+        (in purchase orders view page)          -- done 
+                                            -- after approving need to change status of purchase order to completed
+                                            -- and reflect product in warehouse stock 
+                                            -- so that are available for other orders/ if purchase order related to other sales order 
+                                            then allow these products to that order first 
+                                            -- then if sales order is completed then change status of sales order to ready to package 
+                                            -- if not completed then change status of sales order to blocked (remains same as before)
+
+
+    -- reject received products list        -- done     -- after rejecting 
+                                            -- need to change status of purchase order to rejected 
+                                            -- need to change status of sales order to blocked 
+                                            -- need to update sales order that these products are not available 
+                                            -- need to update warehouse stock that these products are not available 
+                                            -- need to make another purchase order for these products so sales order will fulfill 
+                                            
+tasks 
+    - apply filters pending, completed, sent for approve 
+    - after updating products reflect changes in warehouse stock   -- not working
+    - 
+
 
 
 
 Module - Packaging List 
+    -- Display List                 -- done 
+    -- View Packaging List          -- done 
+    -- export excel                 -- pending 
+    -- update excel                 -- pending 
+    
+
+
+
 
 Module - Ready To Ship
+    -- Display List                                         -- done 
+        -- View Orders by customer                          -- done 
+        
+        -- view Order                                       -- done
+            -- change status from pending to completed      -- pending
+            -- group orders by customer name 
+            -- then update their status one by one 
+            -- cause these orders are will be sent on different dates  
+            -- so their status will be changed one by one 
 
+        -- display proper dispatch quantity                 -- pending
+
+
+
+    
 
 Module - Invoice 
-    -- create invoices      
+    -- display sales orders list 
+        -- display list of invoices group by customers 
+            -- display invoice
+            -- add appointment date, pod, grn, 
+            -- add dn amount, dn reason, dn receipt 
+            -- add payment details i.e. utr no, payment amount, payment method, payment status
+
+    -- create custom invoice 
+    
 
 
 Module - Product Issues 
+    -- view product issues list 
+    -- return products to vendor      -- from received products (vendor)
+        -- when return products to vendor then change status of product to return  
+        -- and reflect changes in warehouse stock 
+            -- reorder missing/damaged products (create purchase order) -- optional 
+    -- accept products from vendor    -- from received products (vendor)
+    -- cancel accept request         -- from received products (vendor) 
+
+    -- missing/damaged products from warehouse    -- need to create purchase order 
+
+
 
 Module - Product Return 
+    -- list of returned products    -- done 
+    -- cancel return request        -- pending 
+    -- accept return request        -- pending 
 
 Module - Track Order 
+    -- view sales order details             -- done 
+
+
+
+
+---------------- Reports ------------------
 
 Module - Vendor Purchase 
+    -- display reports of vendor purchase orders 
+    -- display total amount of purchase orders 
+    -- display total amount generated by orders to pay
+    -- display total paid amount i.e. paid amount to the vendor 
+    -- display total due amount i.e. amount not paid to the vendor  
+    -- add filters 
+        -- date filter 
+        -- vendor name filter 
+    -- generate report (export excel file) 
+    -- display data in table 
+
 
 Module - Inventory Stock 
+    -- display total available products count 
+    -- display total blocked products count 
+    -- display total shortage/missing and damaged products count 
+    -- display total exceed(extra) products count 
+    -- add filters 
+        -- date filter 
+    -- generate report (export excel file) 
+    -- display data in table 
+
 
 Module - Customer Sales 
-    
+    -- display total customers orders count 
+    -- display total customers orders amount 
+    -- display paid amount 
+    -- display due amount 
+    -- add filters 
+        -- date filter 
+        -- customer name filter 
+    -- generate report (export excel file) 
+    -- display data in table 
+
+    -- view invoice 
+
+
 Module - Excel Formats 
     -- list all file formats             -- pending
 

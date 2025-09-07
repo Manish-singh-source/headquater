@@ -19,11 +19,11 @@ class ReceivedProductsController extends Controller
     public function index()
     {
         $purchaseOrders = PurchaseOrder::with(['purchaseOrderProducts', 'vendorPI'])
-            ->where('status', 'pending')
+            // ->where('status', 'pending')
             ->withCount('purchaseOrderProducts')
-            ->whereHas('vendorPI', function ($query) {
-                $query->where('status', 'pending');
-            }) // ensures vendorPI exists
+            // ->whereHas('vendorPI', function ($query) {
+            //     $query->where('status', 'pending');
+            // }) 
             ->get();
         // dd($purchaseOrders);
         return view('receivedProducts.index', compact('purchaseOrders'));
@@ -31,7 +31,11 @@ class ReceivedProductsController extends Controller
 
     public function view($id, $vendorCode)
     {
-        $vendorPIs = VendorPI::with('products.product')->where('purchase_order_id', $id)->where('vendor_code', $vendorCode)->where('status', 'pending')->first();
+        $vendorPIs = VendorPI::with('products.product')
+            ->where('purchase_order_id', $id)
+            ->where('vendor_code', $vendorCode)
+            // ->where('status', 'pending')
+            ->first();
         // dd($vendorPIs);
         if ($vendorPIs) {
             return view('receivedProducts.view', compact('vendorPIs'));

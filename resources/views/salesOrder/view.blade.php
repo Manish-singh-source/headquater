@@ -39,6 +39,7 @@
                                     <span> <b>{{ $salesOrder->ordered_products_sum_ordered_quantity }}</b></span>
                                 </li>
 
+
                                 <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                                     <span><b>PO Quantity Status</b></span>
                                     <span>
@@ -54,6 +55,31 @@
                                         </b>
                                     </span>
                                 </li>
+                                @if ($salesOrder->not_found_temp_order_by_product_count > 0)
+                                    <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
+                                        <span><b>Products SKU Not
+                                                Found
+                                                <span
+                                                    class="badge text-danger bg-danger-subtle">({{ $salesOrder->not_found_temp_order_by_product_count }})</span></b></span>
+                                        <span> <a href="#">Download</a></span>
+                                    </li>
+                                @endif
+                                @if ($salesOrder->not_found_temp_order_by_customer_count > 0)
+                                    <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
+                                        <span><b>Customer Not Found
+                                                <span
+                                                    class="badge text-danger bg-danger-subtle">({{ $salesOrder->not_found_temp_order_by_customer_count }})</span></b></span>
+                                        <span> <a href="#">Download</a></span>
+                                    </li>
+                                @endif
+                                @if ($salesOrder->not_found_temp_order_by_vendor_count > 0)
+                                    <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
+                                        <span><b>Vendor Not Found
+                                                <span
+                                                    class="badge text-danger bg-danger-subtle">({{ $salesOrder->not_found_temp_order_by_vendor_count }})</span></b></span>
+                                        <span> <a href="#">Download</a></span>
+                                    </li>
+                                @endif
                             </ul>
                         </div>
                     </div>

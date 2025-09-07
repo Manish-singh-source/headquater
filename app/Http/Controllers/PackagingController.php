@@ -11,13 +11,23 @@ class PackagingController extends Controller
     //
     public function index()
     {
-        $orders = SalesOrder::where('status', 'ready_to_package')->with('customerGroup')->get();
+        $orders = SalesOrder::with('customerGroup')->get();
         return view('packagingList.index', compact('orders'));
     }
 
     public function view($id)
     {
-        $salesOrder = SalesOrder::with('orderedProducts.product', 'orderedProducts.customer', 'orderedProducts.tempOrder', 'orderedProducts.warehouseStock', 'orderedProducts.warehouseStockLog')->findOrFail($id);
+
+        $salesOrder = SalesOrder::with([
+            'customerGroup',
+            'warehouse',
+            'orderedProducts.product',
+            'orderedProducts.customer',
+            'orderedProducts.tempOrder',
+            'orderedProducts.warehouseStock',
+        ])
+            ->findOrFail($id);
+
 
         $facilityNames = SalesOrderProduct::with('customer')
             ->where('sales_order_id', $id)

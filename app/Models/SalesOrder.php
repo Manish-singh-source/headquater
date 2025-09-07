@@ -24,6 +24,26 @@ class SalesOrder extends Model
         return $this->hasMany(SalesOrderProduct::class, 'sales_order_id', 'id');
     }
 
+    public function notFoundTempOrder()
+    {
+        return $this->hasMany(NotFoundTempOrder::class, 'sales_order_id', 'id');
+    }
+
+    public function notFoundTempOrderByProduct()
+    {
+        return $this->hasMany(NotFoundTempOrder::class, 'sales_order_id', 'id')->where('product_status', 'Not Found');
+    }
+
+    public function notFoundTempOrderByCustomer()
+    {
+        return $this->hasMany(NotFoundTempOrder::class, 'sales_order_id', 'id')->where('customer_status', 'Not Found');
+    }
+
+    public function notFoundTempOrderByVendor()
+    {
+        return $this->hasMany(NotFoundTempOrder::class, 'sales_order_id', 'id')->where('vendor_status', 'Not Found');
+    }
+
 
     public function vendorPIs()
     {

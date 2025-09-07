@@ -88,7 +88,7 @@
                                                             alt="bank-card-back-side--v1" />
                                                     </a>
                                                 @endif
-                                                @if ($invoice->payments->sum('amount') < $invoice->total_amount)
+                                                {{-- @if ($invoice->payments->sum('amount') < $invoice->total_amount) --}}
                                                     <a type="button" class="btn btn-icon btn-sm bg-success-subtle me-1"
                                                         data-bs-toggle="modal"
                                                         data-bs-target="#paymentView-{{ $invoice->id }}">
@@ -96,7 +96,7 @@
                                                             src="https://img.icons8.com/ios/50/bank-card-back-side--v1.png"
                                                             alt="bank-card-back-side--v1" />
                                                     </a>
-                                                @endif
+                                                {{-- @endif --}}
                                                 <div class="modal fade" id="appointmentView-{{ $invoice->id }}"
                                                     data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
                                                     aria-labelledby="staticBackdropLabel" aria-hidden="true">

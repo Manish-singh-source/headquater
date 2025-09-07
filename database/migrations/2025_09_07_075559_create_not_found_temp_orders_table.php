@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('not_found_temp_orders', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('sales_order_id')->constrained()->onDelete('cascade');
             $table->string('customer_name')->nullable();
             $table->string('po_number')->nullable();
             $table->string('sku')->nullable();

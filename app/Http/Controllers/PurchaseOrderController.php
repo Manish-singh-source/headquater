@@ -90,7 +90,7 @@ class PurchaseOrderController extends Controller
 
     public function index()
     {
-        $purchaseOrders = PurchaseOrder::with('purchaseOrderProducts')->where('status', 'pending')->withCount('purchaseOrderProducts')->get();
+        $purchaseOrders = PurchaseOrder::with('purchaseOrderProducts')->withCount('purchaseOrderProducts')->get();
         return view('purchaseOrder.index', compact('purchaseOrders'));
     }
 
@@ -199,15 +199,11 @@ class PurchaseOrderController extends Controller
 
     public function view($id)
     {
-        // using 
         $purchaseOrder = PurchaseOrder::with('purchaseOrderProducts.tempOrder', 'vendorPI.products.purchaseOrder.purchaseOrderProducts.tempOrder', 'vendorPI.products.tempOrder')
-            ->where('status', 'pending')
             ->withCount('purchaseOrderProducts')
             ->findOrFail($id);
 
         $purchaseOrderProducts = PurchaseOrderProduct::where('purchase_order_id', $id)->with('purchaseOrder', 'tempOrder')->get();
-        // dd($purchaseOrder);
-        $vendorPI = VendorPI::with('product')->where('purchase_order_id', $id)->get();
 
         $facilityNames = VendorPI::with('product')->where('purchase_order_id', $id)
             ->where('status', '!=', 'completed')
@@ -222,7 +218,6 @@ class PurchaseOrderController extends Controller
         $purchaseGrn = PurchaseGrn::where('purchase_order_id', $id)->get();
         $vendorPIs = VendorPI::with('products.product')->where('purchase_order_id', $id)->where('status', '!=', 'completed')->get();
 
-        // dd($vendorPIid);
         return view('purchaseOrder.view', compact('purchaseOrder', 'facilityNames', 'purchaseOrderProducts', 'uploadedPIOfVendors',  'vendorPIs', 'purchaseInvoice', 'purchaseGrn'));
     }
 
@@ -343,7 +338,7 @@ class PurchaseOrderController extends Controller
             $vendorPI->save();
 
             $purchaseOrder = PurchaseOrder::where('id', $request->purchase_order_id)->first();
-            $purchaseOrder->status = 'completed';
+            $purchaseOrder->status = 'received';
             $purchaseOrder->save();
 
             // find products 

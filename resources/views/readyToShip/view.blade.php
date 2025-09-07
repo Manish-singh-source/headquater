@@ -27,11 +27,12 @@
                                         <th>
                                             <input class="form-check-input" type="checkbox">
                                         </th>
-                                        <th>Order Id</th>
-                                        <th>Customer Group Name</th>
-                                        <th>Client Name</th>
-                                        <th>Contact Name</th>
-                                        <th>Product</th>
+                                        <th>Order&nbsp;Id</th>
+                                        <th>Customer&nbsp;Group&nbsp;Name</th>
+                                        <th>Client&nbsp;Name</th>
+                                        <th>Contact&nbsp;Name</th>
+                                        <th>Products</th>
+                                        <th>Status</th>
                                         <th>Action</th>
                                     </tr>
                                 </thead>
@@ -59,6 +60,9 @@
                                             <td>{{ $customerOrders->client_name }}</td>
                                             <td>
                                                 {{ $customerOrders->contact_name }}
+                                            </td>
+                                            <td>
+                                                {{ $customerOrders->orders_count }}
                                             </td>
                                             <td>
                                                 {{ $customerOrders->orders_count }}

@@ -137,72 +137,24 @@
                                                     {{-- Need to check --}}
                                                     {{-- <td>{{ $order->warehouseStock->block_quantity ?? '0' }}</td> --}}
                                                     {{-- <td>{{ $order->ordered_quantity }}</td> --}}
-                                                    <td>{{ $order->warehouseStock->quantity ?? '0' }}</td>
+                                                    <td>{{ $order->warehouseStock->original_quantity ?? '0' }}</td>
                                                     <td>{{ $order->tempOrder->po_number }}</td>
-                                                    @if ($order->warehouseStock?->quantity)
-                                                        <td>
-                                                            @if ($order->vendorPIProduct?->order?->status != 'completed')
-                                                                @if ($order->vendorPIProduct?->available_quantity >= $order->vendorPIProduct?->quantity_received)
-                                                                    @if (
-                                                                        $order->vendorPIProduct?->quantity_received + $order->warehouseStockLog?->block_quantity >=
-                                                                            $order->ordered_quantity)
-                                                                        <span
-                                                                            class="badge text-success bg-success-subtle">{{ $order->ordered_quantity }}</span>
-                                                                    @else
-                                                                        <span
-                                                                            class="badge text-danger bg-danger-subtle">{{ $order->vendorPIProduct?->quantity_received + $order->warehouseStockLog?->block_quantity }}</span>
-                                                                    @endif
-                                                                @else
-                                                                    <span
-                                                                        class="badge text-danger bg-danger-subtle">{{ $order->vendorPIProduct?->available_quantity + $order->warehouseStockLog?->block_quantity }}</span>
-                                                                @endif
-                                                            @else
-                                                                @if ($order->warehouseStockLog?->block_quantity >= $order->ordered_quantity)
-                                                                    <span
-                                                                        class="badge text-success bg-success-subtle">{{ $order->ordered_quantity }}</span>
-                                                                @else
-                                                                    <span
-                                                                        class="badge text-danger bg-danger-subtle">{{ $order->warehouseStockLog?->block_quantity }}</span>
-                                                                @endif
-                                                            @endif
-                                                        </td>
-                                                    @else
-                                                        <td>
+                                                    <td>
+                                                        @if ($order->tempOrder->block <= $order->tempOrder->po_qty)
+                                                            <span
+                                                                class="badge text-success bg-success-subtle">{{ $order->tempOrder->block }}</span>
+                                                        @else
+                                                            <span class="badge text-danger bg-danger-subtle">{{ $order->tempOrder->block }}</span>
+                                                        @endif
+                                                    </td>
+                                                    <td>
+                                                        @if ($order->tempOrder->block > 0)
+                                                            <span
+                                                                class="badge text-success bg-success-subtle">{{ $order->tempOrder->block }}</span>
+                                                        @else
                                                             <span class="badge text-danger bg-danger-subtle">0</span>
-                                                        </td>
-                                                    @endif
-                                                    @if ($order->warehouseStock?->quantity)
-                                                        <td>
-                                                            @if ($order->vendorPIProduct?->order?->status != 'completed')
-                                                                @if ($order->vendorPIProduct?->available_quantity >= $order->vendorPIProduct?->quantity_received)
-                                                                    @if (
-                                                                        $order->vendorPIProduct?->quantity_received + $order->warehouseStockLog?->block_quantity >=
-                                                                            $order->ordered_quantity)
-                                                                        <span
-                                                                            class="badge text-success bg-success-subtle">{{ $order->ordered_quantity }}</span>
-                                                                    @else
-                                                                        <span
-                                                                            class="badge text-danger bg-danger-subtle">{{ $order->vendorPIProduct?->quantity_received + $order->warehouseStockLog?->block_quantity }}</span>
-                                                                    @endif
-                                                                @else
-                                                                    <span
-                                                                        class="badge text-danger bg-danger-subtle">{{ $order->vendorPIProduct?->available_quantity + $order->warehouseStockLog?->block_quantity }}</span>
-                                                                @endif
-                                                            @else
-                                                                @if ($order->warehouseStockLog?->block_quantity >= $order->ordered_quantity)
-                                                                    <span
-                                                                        class="badge text-success bg-success-subtle">{{ $order->ordered_quantity }}</span>
-                                                                @else
-                                                                    <span
-                                                                        class="badge text-danger bg-danger-subtle">{{ $order->warehouseStockLog?->block_quantity }}</span>
-                                                                @endif
-                                                            @endif
-                                                        </td>
-                                                    @else
-                                                        <td>
-                                                            <span class="badge text-danger bg-danger-subtle">0</span>
-                                                        </td>
-                                                    @endif
+                                                        @endif
+                                                    </td>
                                                 </tr>
                                             @empty
                                                 <tr>
