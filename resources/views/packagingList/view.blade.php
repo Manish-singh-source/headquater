@@ -14,7 +14,7 @@
         <div class="main-content">
             <div class="div d-flex my-2">
                 <div class="col">
-                    <h5 class="mb-3">Packaging List: {{ $salesOrder->id }}</h5>
+                    <h5 class="mb-3">Packaging List: <span id="salesOrderId">{{ $salesOrder->id }}</span></h5>
                 </div>
             </div>
             <div class="card">
@@ -81,10 +81,9 @@
                                 </div>
                             </div>
 
-                            <button class="btn btn-sm border-2 border-primary">
+                            <button id="exportPackagingProducts" class="btn btn-sm border-2 border-primary">
                                 <i class="fa fa-file-excel-o"></i> Export to Excel
                             </button>
-
                         </div>
                     </div>
 
@@ -109,7 +108,7 @@
                                         <th>MRP</th>
                                         <th>PO&nbsp;Quantity</th>
                                         <th>Warehouse&nbsp;Stock</th>
-                                        <th>PI&nbsp;Qty</th>
+                                        <th>PI&nbsp;Quantity</th>
                                         <th>Purchase&nbsp;Order&nbsp;No</th>
                                         <th>Total&nbsp;Dispatch&nbsp;Qty</th>
                                     </tr>
@@ -134,9 +133,25 @@
                                             <td>{{ $order->tempOrder->po_qty }}</td>
                                             {{-- Need to check --}}
                                             <td>{{ $order->warehouseStock->original_quantity }}</td>
-                                            <td>{{ $order->ordered_quantity }}</td>
+                                            <td>{{ $order->tempOrder?->vendor_pi_fulfillment_quantity }}</td>
                                             <td>{{ $order->tempOrder->po_number }}</td>
-                                            <td>{{ $order->tempOrder->block }}</td>
+                                            <td>
+                                                @php
+                                                    if ($order->tempOrder?->vendor_pi_received_quantity) {
+                                                        $order->tempOrder->vendor_pi_fulfillment_quantity =
+                                                            $order->tempOrder->vendor_pi_received_quantity;
+                                                    }
+                                                @endphp
+                                                @if (
+                                                    $order->ordered_quantity <=
+                                                        ($order->tempOrder?->available_quantity ?? 0) + ($order->tempOrder?->vendor_pi_fulfillment_quantity ?? 0))
+                                                    <span
+                                                        class="badge text-success bg-success-subtle">{{ $order->ordered_quantity }}</span>
+                                                @else
+                                                    <span
+                                                        class="badge text-danger bg-danger-subtle">{{ ($order->tempOrder?->available_quantity ?? 0) + ($order->tempOrder?->vendor_pi_fulfillment_quantity ?? 0) }}</span>
+                                                @endif
+                                            </td>
                                         </tr>
                                     @empty
                                         <tr>
@@ -196,10 +211,46 @@
                 // Filter by client name
                 $('#customerPOTable').on('change', function() {
                     var selected = $(this).val().trim();
-                    customerPOTableList.column(0).search(selected ? '^' + selected + '$' : '', true, false)
+                    customerPOTableList.column(3).search(selected ? '^' + selected + '$' : '', true, false)
                         .draw();
                 });
             }
+
+            $("#exportPackagingProducts").on("click", function() {
+                var customerFacilityName = $("#customerPOTable").val().trim();
+                var salesOrderId = $("#salesOrderId").text().trim();
+
+                $.ajax({
+                    url: '/download-packing-products-excel',
+                    method: 'GET',
+                    data: {
+                        id: salesOrderId,
+                        facility_name: customerFacilityName,
+                    },
+                    xhrFields: {
+                        responseType: 'blob' // important for binary files
+                    },
+                    success: function(data, status, xhr) {
+                        // Get filename from response header (optional)
+                        var filename = xhr.getResponseHeader("Content-Disposition")
+                            ?.split("filename=")[1] || "products.xlsx";
+
+                        var url = window.URL.createObjectURL(data);
+                        var a = document.createElement("a");
+                        a.href = url;
+                        a.download = filename;
+                        document.body.appendChild(a);
+                        a.click();
+                        a.remove();
+                        window.URL.revokeObjectURL(url);
+                    },
+                    error: function(xhr, status, error) {
+                        console.error("Error:", error);
+                        alert("Error");
+                    }
+                });
+            });
+
         });
     </script>
 @endsection

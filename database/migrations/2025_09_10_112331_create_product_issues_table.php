@@ -11,22 +11,19 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('vendor_p_i_products', function (Blueprint $table) {
+        Schema::create('product_issues', function (Blueprint $table) {
             $table->id();
             $table->string('purchase_order_id')->nullable();
             $table->string('vendor_pi_id')->nullable();
+            $table->string('vendor_pi_product_id')->nullable();
             $table->string('vendor_sku_code')->nullable();
-            $table->string('title')->nullable();
-            $table->string('mrp')->nullable();
             $table->string('quantity_requirement')->nullable();
             $table->string('available_quantity')->nullable();
             $table->string('quantity_received')->nullable()->default(0);
-            $table->string('purchase_rate')->nullable();
-            $table->string('gst')->nullable();
-            $table->string('hsn')->nullable();
             $table->string('issue_item')->default(0);
             $table->string('issue_reason')->nullable();
             $table->string('issue_description')->nullable();
+            $table->enum('issue_from', ['warehouse', 'vendor'])->nullable()->comment('warehouse - Issue generated from warehouse for customer order, vendor - Issue generated from warehouse for vendors received purchase order');
             $table->enum('issue_status', ['pending', 'return', 'accept', 'completed'])->nullable()->default('pending')->comment('pending, return, accept,completed');
             $table->timestamps();
         });
@@ -37,6 +34,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('vendor_p_i_products');
+        Schema::dropIfExists('product_issues');
     }
 };

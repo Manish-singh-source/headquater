@@ -38,6 +38,7 @@ return new class extends Migration
             $table->string('vendor_code')->nullable();
             $table->string('vendor_pi_id')->nullable();
             $table->string('vendor_pi_fulfillment_quantity')->nullable()->default(0);
+            $table->string('vendor_pi_received_quantity')->nullable()->default(0);
             $table->string('customer_status')->nullable(); 
             $table->string('vendor_status')->nullable(); 
             $table->string('product_status')->nullable();

@@ -111,14 +111,15 @@ class SalesOrderController extends Controller
 
                 // check for customer and vendor available or not
                 // customer availibility check
-                $keywords = preg_split('/[\s\-]+/', $record['Facility Location'], -1, PREG_SPLIT_NO_EMPTY);
-                $query = DB::table('customers'); // your table
-                $query->where(function ($q) use ($keywords) {
-                    foreach ($keywords as $word) {
-                        $q->orWhere('shipping_address', 'like', "%{$word}%");
-                    }
-                });
-                $customerInfo = $query->first();
+                // $keywords = preg_split('/[\s\-]+/', $record['Facility Location'], -1, PREG_SPLIT_NO_EMPTY);
+                // $query = DB::table('customers'); // your table
+                // $query->where(function ($q) use ($keywords) {
+                //     foreach ($keywords as $word) {
+                //         $q->orWhere('shipping_address', 'like', "%{$word}%");
+                //     }
+                // });
+                // $customerInfo = $query->first();
+                $customerInfo = Customer::where('facility_name', $record['Facility Name'])->first();
                 // customer availibility check done
 
                 if (!$customerInfo) {
@@ -380,75 +381,175 @@ class SalesOrderController extends Controller
 
         try {
             $reader = SimpleExcelReader::create($filepath, $extension);
-            $rows = $reader->getRows();
+            $rows = $reader->getRows()->toArray(); // convert to array so we can check duplicates easily
+
+            // 🔹 Step 1: Check for duplicates (Customer + SKU)
+            $seen = [];
+            foreach ($rows as $record) {
+                if (empty($record['SKU Code']) || empty($record['Facility Name'])) {
+                    continue;
+                }
+
+                $key = strtolower(trim($record['Facility Name'])) . '|' . strtolower(trim($record['SKU Code']));
+
+                if (isset($seen[$key])) {
+                    DB::rollBack();
+                    return redirect()->back()->withErrors([
+                        'products_excel' => 'Please check excel file: duplicate SKU (' . $record['SKU Code'] . ') found for same customer (' . $record['Facility Name'] . ').'
+                    ]);
+                }
+
+                $seen[$key] = true;
+            }
             $products = [];
             $insertCount = 0;
 
-
+            // 🔹 Step 2: Process records if no duplicates
             foreach ($rows as $record) {
-                if (empty($record['SKU Code'])) continue;
+                if (empty($record['SKU Code'])) {
+                    continue;
+                }
 
-                $keywords = preg_split('/[\s\-]+/', $record['Facility Location'], -1, PREG_SPLIT_NO_EMPTY);
-                $query = DB::table('customers'); // your table
+                // Find customer
+                // $customerFacilityName = preg_replace('/^moonstone ventures llp\s*/i', '', $record['Facility Location']);
+                // // $customer = Customer::where('shipping_address', $customerFacilityName)->first();
+                // $parts = explode(',', $customerFacilityName);
 
-                $query->where(function ($q) use ($keywords) {
-                    foreach ($keywords as $word) {
-                        $q->orWhere('shipping_address', 'like', "%{$word}%");
-                    }
-                });
+                // // Take only first 3 parts to match street/area
+                // $trimmedAddress = implode(',', array_slice($parts, 0, 3));
 
-                $customerInfo = $query->first();
+                // $keywords = preg_split('/[\s\-]+/', $trimmedAddress, -1, PREG_SPLIT_NO_EMPTY);
 
-                $salesOrderProductUpdate = SalesOrderProduct::with('product', 'tempOrder')->where('sku', $record['SKU Code'])->where('sales_order_id', $request->sales_order_id)->where('customer_id', $customerInfo->id)->first();
+                // $query = DB::table('customers');
+                // $query->where(function ($q) use ($keywords) {
+                //     foreach ($keywords as $word) {
+                //         $q->orWhere('shipping_address', 'like', "%{$word}%");
+                //     }
+                // });
+                // $customerInfo = $query->first();
 
+                // $keywords = preg_split('/[\s\-]+/', $record['Facility Location'], -1, PREG_SPLIT_NO_EMPTY);
+                // $query = DB::table('customers');
+                // $query->where(function ($q) use ($keywords) {
+                //     foreach ($keywords as $word) {
+                //         $q->orWhere('shipping_address', 'like', "%{$word}%");
+                //     }
+                // });
+                // $customerInfo = $query->first();
+
+                $customerInfo = Customer::where('facility_name', $record['Facility Name'])->first();
+
+                if (!$customerInfo) {
+                    continue;
+                }
+
+                // Find sales order product
+                $salesOrderProductUpdate = SalesOrderProduct::with('product', 'tempOrder.purchaseOrderProduct')
+                    ->where('sku', $record['SKU Code'])
+                    ->where('sales_order_id', $request->sales_order_id)
+                    ->where('customer_id', $customerInfo->id)
+                    ->first();
+                // dd($salesOrderProductUpdate);
+
+                if (!$salesOrderProductUpdate) {
+                    continue;
+                }
+                // 3. Build products array for TempOrder::upsert()
                 $products[] = [
                     'id' => $salesOrderProductUpdate->temp_order_id,
-                    // 'customer_name' => Arr::get($record, 'Customer Name') ?? '',
-                    // 'facility_name' => Arr::get($record, 'Facility Name') ?? '',
-                    // 'hsn' => Arr::get($record, 'HSN') ?? '',
-                    // 'gst' => (Arr::get($record, 'GST') < 1 && Arr::get($record, 'GST') > 0)
-                    //     ? intval(round(Arr::get($record, 'GST') * 100))
-                    //     : intval(Arr::get($record, 'GST')),
-                    'item_code' =>  Arr::get($record, 'Item Code') ?? '',
-                    // 'sku' => Arr::get($record, 'SKU Code') ?? '',
-                    'description' => Arr::get($record, 'Title') ?? '',
-                    'basic_rate' => Arr::get($record, 'Basic Rate') ?? '',
-                    'net_landing_rate' => Arr::get($record, 'Net Landing Rate') ?? '',
-                    'mrp' =>  Arr::get($record, 'MRP') ?? '',
-                    // 'product_mrp' => Arr::get($record, 'Product MRP') ?? '',
+                    'item_code' => Arr::get($record, 'Item Code', ''),
+                    'description' => Arr::get($record, 'Title', ''),
+                    'basic_rate' => Arr::get($record, 'Basic Rate', 0),
+                    'net_landing_rate' => Arr::get($record, 'Net Landing Rate', 0),
+                    'mrp' => Arr::get($record, 'MRP', 0),
                     'rate_confirmation' => ($record['MRP'] >= ($salesOrderProductUpdate->product->mrp ?? 0)) ? 'Correct' : 'Incorrect',
-                    'po_qty' => Arr::get($record, 'PO Quantity') ?? '',
-                    // 'block' => Arr::get($record, 'Qty Requirement') ?? '',
                     'created_at' => now(),
                     'updated_at' => now(),
                 ];
 
-                $salesOrderProductUpdate->ordered_quantity = $record['PO Quantity'];
-                $salesOrderProductUpdate->price = $record['MRP'];
+                // 4. Update SalesOrderProduct
+                $salesOrderProductUpdate->price = $record['MRP'] ?? 0;
                 $salesOrderProductUpdate->subtotal = ($record['Basic Rate'] ?? 0) * ($record['PO Quantity'] ?? 0);
-                $salesOrderProductUpdate->save();
+                $salesOrderProductUpdate->ordered_quantity = $record['PO Quantity'] ?? 0;
 
-                // Updating warehouse stock only if PO quantity is changed from previous one
-                if ($salesOrderProductUpdate->tempOrder->po_qty != $record['PO Quantity']) {
+                // 5. Update warehouse stock if PO quantity changed
+                if ($salesOrderProductUpdate->tempOrder && $salesOrderProductUpdate->tempOrder->po_qty != $record['PO Quantity']) {
 
-                    $warehouseStockUpdate = WarehouseStock::where('id', $salesOrderProductUpdate->warehouse_stock_id)->first();
+                    $warehouseStockUpdate = WarehouseStock::find($salesOrderProductUpdate->warehouse_stock_id);
+                    if ($warehouseStockUpdate) {
 
-                    if ($salesOrderProductUpdate->tempOrder->po_qty > $record['PO Quantity']) {
-                        // Handle blocking logic
-                        if ($salesOrderProductUpdate->tempOrder->block > $record['PO Quantity']) {
-                            $blockQuantity = $salesOrderProductUpdate->tempOrder->block - $record['PO Quantity'];
-                            $salesOrderProductUpdate->tempOrder->block -= $blockQuantity;
-                            $warehouseStockUpdate->block_quantity = $warehouseStockUpdate->block_quantity - $blockQuantity;
+                        if ($salesOrderProductUpdate->tempOrder->po_qty > $record['PO Quantity']) {
+
+                            if ($salesOrderProductUpdate->tempOrder->block > $record['PO Quantity']) {
+                                $extraBlockQuantity = $salesOrderProductUpdate->tempOrder->block - $record['PO Quantity'];
+
+                                // Prevent negative values
+                                $warehouseStockUpdate->block_quantity = max(0, $warehouseStockUpdate->block_quantity - $extraBlockQuantity);
+
+                                // update tempOrder  
+                                $salesOrderProductUpdate->tempOrder->po_qty = $record['PO Quantity'];
+                                $salesOrderProductUpdate->tempOrder->purchase_order_quantity = $record['PO Quantity'];
+
+                                $salesOrderProductUpdate->tempOrder->block = max(0, $salesOrderProductUpdate->tempOrder->block - $extraBlockQuantity);
+                                $salesOrderProductUpdate->tempOrder->available_quantity = max(0, $salesOrderProductUpdate->tempOrder->block - $extraBlockQuantity);
+                                $salesOrderProductUpdate->tempOrder->unavailable_quantity = max(0, ($salesOrderProductUpdate->tempOrder->block - $extraBlockQuantity) - $record['PO Quantity']);
+                                $salesOrderProductUpdate->tempOrder->purchaseOrderProduct->ordered_quantity = max(0, ($salesOrderProductUpdate->tempOrder->block - $extraBlockQuantity) - $record['PO Quantity']);
+                            } else if ($salesOrderProductUpdate->tempOrder->block < $record['PO Quantity']) {
+                                $salesOrderProductUpdate->tempOrder->unavailable_quantity = $record['PO Quantity'];
+                                $salesOrderProductUpdate->tempOrder->purchaseOrderProduct->ordered_quantity = $record['PO Quantity'];
+
+                                $salesOrderProductUpdate->tempOrder->purchase_order_quantity = $record['PO Quantity'];
+                                $salesOrderProductUpdate->tempOrder->po_qty = $record['PO Quantity'];
+                            }
+
+                            $warehouseStockUpdate->save();
+                            $salesOrderProductUpdate->tempOrder->purchaseOrderProduct->save();
+                            $salesOrderProductUpdate->tempOrder->save();
+                        } else {
+                            if ($salesOrderProductUpdate->tempOrder->block < $record['PO Quantity']) {
+                                $extraBlockQuantity = $record['PO Quantity'] - $salesOrderProductUpdate->tempOrder->po_qty;
+
+                                // check if warehouse has available quantity so we will block for this product 
+                                if ($warehouseStockUpdate->available_quantity >= $extraBlockQuantity) {
+                                    $warehouseStockUpdate->available_quantity -= $extraBlockQuantity;
+                                    $warehouseStockUpdate->block_quantity += $extraBlockQuantity;
+
+                                    $salesOrderProductUpdate->tempOrder->block += $extraBlockQuantity;
+                                    $salesOrderProductUpdate->tempOrder->available_quantity += $extraBlockQuantity;
+                                    $salesOrderProductUpdate->tempOrder->unavailable_quantity -= $extraBlockQuantity;
+                                    $salesOrderProductUpdate->tempOrder->purchaseOrderProduct->ordered_quantity -= $extraBlockQuantity;
+
+                                    $salesOrderProductUpdate->tempOrder->purchase_order_quantity = $record['PO Quantity'];
+                                    $salesOrderProductUpdate->tempOrder->po_qty = $record['PO Quantity'];
+                                } else {
+
+                                    $salesOrderProductUpdate->tempOrder->unavailable_quantity += $extraBlockQuantity;
+                                    $salesOrderProductUpdate->tempOrder->purchaseOrderProduct->ordered_quantity += $extraBlockQuantity;
+                                    $salesOrderProductUpdate->tempOrder->purchase_order_quantity = $record['PO Quantity'];
+                                    $salesOrderProductUpdate->tempOrder->po_qty = $record['PO Quantity'];
+                                }
+                            }
+
+                            $warehouseStockUpdate->save();
+                            $salesOrderProductUpdate->tempOrder->purchaseOrderProduct->save();
+                            $salesOrderProductUpdate->tempOrder->save();
                         }
                     }
-                    $warehouseStockUpdate->save();
-                    $salesOrderProductUpdate->tempOrder->save();
                 }
+                $salesOrderProductUpdate->save();
 
                 $insertCount++;
             }
 
-            TempOrder::upsert($products, ['id']);
+
+            // Upsert TempOrder
+            if (!empty($products)) {
+                TempOrder::upsert(
+                    $products,
+                    ['id'],
+                    ['item_code', 'description', 'basic_rate', 'net_landing_rate', 'mrp', 'rate_confirmation', 'updated_at']
+                );
+            }
 
             if ($insertCount === 0) {
                 DB::rollBack();
@@ -468,7 +569,7 @@ class SalesOrderController extends Controller
         $salesOrder = SalesOrder::with([
             'customerGroup',
             'warehouse',
-            'orderedProducts.tempOrder',
+            'orderedProducts.tempOrder.vendorPIProduct',
             'orderedProducts.warehouseStock',
         ])
             ->withSum('orderedProducts', 'ordered_quantity')
@@ -483,8 +584,19 @@ class SalesOrderController extends Controller
 
         $vendorPiFulfillmentTotal = 0;
         $availableQuantity = 0;
+        // dd($salesOrder->orderedProducts);
+        $caching = [];
         foreach ($salesOrder->orderedProducts as $product) {
             if (isset($product->tempOrder)) {
+                if ($product->tempOrder?->vendor_pi_received_quantity) {
+                    $product->tempOrder->vendor_pi_fulfillment_quantity = $product->tempOrder->vendor_pi_received_quantity;
+                }
+
+                if($product->tempOrder->po_qty <= ($product->tempOrder?->available_quantity ?? 0) + ($product->tempOrder?->vendor_pi_fulfillment_quantity ?? 0)) {
+                    $product->tempOrder->vendor_pi_fulfillment_quantity = $product->tempOrder->po_qty;
+                }
+                
+                $caching[] = $product->tempOrder->po_qty . ' ' . $product->tempOrder?->vendor_pi_fulfillment_quantity;
                 $vendorPiFulfillmentTotal += $product->tempOrder->vendor_pi_fulfillment_quantity;
                 $availableQuantity += $product->tempOrder->available_quantity;
             }
@@ -651,9 +763,9 @@ class SalesOrderController extends Controller
                 return redirect()->back()->with('error', 'Status Not Changed. Please Try Again.');
             }
             if ($salesOrder->status == 'ready_to_package') {
-                return redirect()->route('packaging.list.index', $request->order_id)->with('success', 'Status has been changed.');
+                return redirect()->route('packing.products.view', $request->order_id)->with('success', 'Status has been changed.');
             } else if ($salesOrder->status == 'ready_to_ship') {
-                return redirect()->route('readyToShip.index', $request->order_id)->with('success', 'Status has been changed.');
+                return redirect()->route('readyToShip.view', $request->order_id)->with('success', 'Status has been changed.');
             } else {
                 return redirect()->back()->with('error', 'Status Not Changed. Please Try Again.');
             }
@@ -740,16 +852,17 @@ class SalesOrderController extends Controller
                 //         ->first();
 
                 // Split into words (remove symbols like "-" for cleaner matching)
-                $keywords = preg_split('/[\s\-]+/', $record['Facility Location'], -1, PREG_SPLIT_NO_EMPTY);
-                $query = DB::table('customers'); // your table
+                // $keywords = preg_split('/[\s\-]+/', $record['Facility Location'], -1, PREG_SPLIT_NO_EMPTY);
+                // $query = DB::table('customers'); // your table
 
-                $query->where(function ($q) use ($keywords) {
-                    foreach ($keywords as $word) {
-                        $q->orWhere('shipping_address', 'like', "%{$word}%");
-                    }
-                });
+                // $query->where(function ($q) use ($keywords) {
+                //     foreach ($keywords as $word) {
+                //         $q->orWhere('shipping_address', 'like', "%{$word}%");
+                //     }
+                // });
 
-                $customer = $query->first();
+                // $customer = $query->first();
+                $customer = Customer::where('facility_name', $record['Facility Name'])->first();
 
                 // Check if customer is present
                 if (!$customer) {
@@ -1014,6 +1127,145 @@ class SalesOrderController extends Controller
         $writer->close();
 
         return response()->download($tempXlsxPath, 'vendor_po.xlsx', [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ])->deleteFileAfterSend(true);
+    }
+
+
+    public function downloadNotFoundSku($id)
+    {
+        if (!$id) {
+            return back()->with('error', 'Please Try Again.');
+        }
+
+        // Create temporary .xlsx file path
+        $tempXlsxPath = storage_path('app/not_found_sku_' . Str::random(8) . '.xlsx');
+
+        // Create writer
+        $writer = SimpleExcelWriter::create($tempXlsxPath);
+
+        // Fetch data with relationships
+        $notFoundSku = NotFoundTempOrder::where('sales_order_id', $id)->where('product_status', 'Not Found')->get();
+
+        // Add rows
+        foreach ($notFoundSku as $product) {
+            $writer->addRow([
+                'Sales Order No' => $product->sales_order_id ?? '',
+                'Customer Name' => $product->customer_name ?? '',
+                'PO Number' => $product->po_number ?? '',
+                'SKU Code' => $product->sku ?? '',
+                'Facility Name' => $product->facility_name ?? '',
+                'Facility Location' => $product->facility_location ?? '',
+                'PO Date' => $product->po_date ?? '',
+                'PO Expiry Date' => $product->po_expiry_date ?? '',
+                'HSN' => $product->hsn ?? '',
+                'Item Code' => $product->item_code ?? '',
+                'Description' => $product->description ?? '',
+                'Basic Rate' => $product->basic_rate ?? '',
+                'GST' => $product->gst ?? '',
+                'Net Landing Rate' => $product->net_landing_rate ?? '',
+                'MRP' => $product->mrp ?? '',
+                'PO Quantity' => $product->po_qty ?? '',
+                'SKU Status' => $product->product_status,
+            ]);
+        }
+
+        // Close the writer
+        $writer->close();
+
+        return response()->download($tempXlsxPath, 'Products-SKU-Not-Found.xlsx', [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ])->deleteFileAfterSend(true);
+    }
+
+    public function downloadNotFoundCustomer($id)
+    {
+        if (!$id) {
+            return back()->with('error', 'Please Try Again.');
+        }
+
+        // Create temporary .xlsx file path
+        $tempXlsxPath = storage_path('app/not_found_customer_' . Str::random(8) . '.xlsx');
+
+        // Create writer
+        $writer = SimpleExcelWriter::create($tempXlsxPath);
+
+        // Fetch data with relationships
+        $notFoundSku = NotFoundTempOrder::where('sales_order_id', $id)->where('customer_status', 'Not Found')->get();
+
+        // Add rows
+        foreach ($notFoundSku as $product) {
+            $writer->addRow([
+                'Sales Order No' => $product->sales_order_id ?? '',
+                'Customer Name' => $product->customer_name ?? '',
+                'PO Number' => $product->po_number ?? '',
+                'SKU Code' => $product->sku ?? '',
+                'Facility Name' => $product->facility_name ?? '',
+                'Facility Location' => $product->facility_location ?? '',
+                'PO Date' => $product->po_date ?? '',
+                'PO Expiry Date' => $product->po_expiry_date ?? '',
+                'HSN' => $product->hsn ?? '',
+                'Item Code' => $product->item_code ?? '',
+                'Description' => $product->description ?? '',
+                'Basic Rate' => $product->basic_rate ?? '',
+                'GST' => $product->gst ?? '',
+                'Net Landing Rate' => $product->net_landing_rate ?? '',
+                'MRP' => $product->mrp ?? '',
+                'PO Quantity' => $product->po_qty ?? '',
+                'Customer Status' => $product->customer_status,
+            ]);
+        }
+
+        // Close the writer
+        $writer->close();
+
+        return response()->download($tempXlsxPath, 'Products-Customer-Not-Found.xlsx', [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ])->deleteFileAfterSend(true);
+    }
+
+    public function downloadNotFoundVendor($id)
+    {
+        if (!$id) {
+            return back()->with('error', 'Please Try Again.');
+        }
+
+        // Create temporary .xlsx file path
+        $tempXlsxPath = storage_path('app/not_found_vendor_' . Str::random(8) . '.xlsx');
+
+        // Create writer
+        $writer = SimpleExcelWriter::create($tempXlsxPath);
+
+        // Fetch data with relationships
+        $notFoundSku = NotFoundTempOrder::where('sales_order_id', $id)->where('vendor_status', 'Not Found')->get();
+
+        // Add rows
+        foreach ($notFoundSku as $product) {
+            $writer->addRow([
+                'Sales Order No' => $product->sales_order_id ?? '',
+                'Customer Name' => $product->customer_name ?? '',
+                'PO Number' => $product->po_number ?? '',
+                'SKU Code' => $product->sku ?? '',
+                'Facility Name' => $product->facility_name ?? '',
+                'Facility Location' => $product->facility_location ?? '',
+                'PO Date' => $product->po_date ?? '',
+                'PO Expiry Date' => $product->po_expiry_date ?? '',
+                'HSN' => $product->hsn ?? '',
+                'Item Code' => $product->item_code ?? '',
+                'Description' => $product->description ?? '',
+                'Basic Rate' => $product->basic_rate ?? '',
+                'GST' => $product->gst ?? '',
+                'Net Landing Rate' => $product->net_landing_rate ?? '',
+                'MRP' => $product->mrp ?? '',
+                'PO Quantity' => $product->po_qty ?? '',
+                'Vendor Status' => $product->vendor_status,
+            ]);
+        }
+
+        // Close the writer
+        $writer->close();
+
+        return response()->download($tempXlsxPath, 'Products-Vendor-Not-Found.xlsx', [
             'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         ])->deleteFileAfterSend(true);
     }

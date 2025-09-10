@@ -203,7 +203,7 @@
                                         </tr>
                                     @empty 
                                         <tr>
-                                            <td colspan="12" class="text-center">No products found.</td>
+                                            <td colspan="20" class="text-center">No products found.</td>
                                         </tr>
                                     @endforelse
                                 </tbody>

@@ -55,16 +55,17 @@ class CustomerController extends Controller
             foreach ($reader->getRows() as $record) {
                 // 1. Check if customer already exists
                 // $existingCustomer = Customer::where('email', $record['Email'] ?? '')->first();
-                $keywords = preg_split('/[\s\-]+/', $record['Shipping Address'], -1, PREG_SPLIT_NO_EMPTY);
-                $query = DB::table('customers'); // your table
+                // $keywords = preg_split('/[\s\-]+/', $record['Shipping Address'], -1, PREG_SPLIT_NO_EMPTY);
+                // $query = DB::table('customers'); // your table
 
-                $query->where(function ($q) use ($keywords) {
-                    foreach ($keywords as $word) {
-                        $q->orWhere('shipping_address', 'like', "%{$word}%");
-                    }
-                });
+                // $query->where(function ($q) use ($keywords) {
+                //     foreach ($keywords as $word) {
+                //         $q->orWhere('shipping_address', 'like', "%{$word}%");
+                //     }
+                // });
 
-                $existingCustomer = $query->first();
+                // $existingCustomer = $query->first();
+                $existingCustomer = Customer::where('facility_name', $record['Facility Name'])->first();
 
                 if ($existingCustomer) {
                     // Customer exists, you can choose to update or skip
@@ -75,6 +76,7 @@ class CustomerController extends Controller
                 } else {
                     // 2. Insert individual customer
                     $customer = Customer::create([
+                        'facility_name'       => $record['Facility Name'] ?? '',
                         'client_name'       => $record['Client Name'] ?? '',
                         'contact_name'       => $record['Contact Name'] ?? '',
                         'email'      => $record['Email'] ?? '',
@@ -133,6 +135,7 @@ class CustomerController extends Controller
         }
 
         $customer = new Customer();
+        $customer->facility_name = $request->facility_name;
         $customer->client_name = $request->client_name;
         $customer->contact_name = $request->contact_name;
         $customer->email = $request->email;
@@ -187,6 +190,7 @@ class CustomerController extends Controller
         }
 
         $customer = Customer::findOrFail($id);
+        $customer->facility_name = $request->facility_name;
         $customer->client_name = $request->client_name;
         $customer->contact_name = $request->contact_name;
         $customer->email = $request->email;

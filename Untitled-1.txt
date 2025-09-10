@@ -72,7 +72,7 @@ Module 6 - Sales Order
 
 
 
-2. view sales order                   -- pending       -- display all products in order 
+2. view sales order                   -- done       -- display all products in order 
                                                        -- display blocked products in order 
                                                        -- display available products in order 
                                                        -- display not found products/vendors/customers for download file 
@@ -86,7 +86,7 @@ Module 6 - Sales Order
                                                        -- assign available quantity to another sales order product when delete one/more
 
 
-    -- update po order                -- done          -- which fields update 
+    -- update po order                -- pending       -- which fields update 
                                                        -- when updating PO order recheck for block order 
 
     -- change order status            -- done          -- statuses cases 
@@ -96,6 +96,21 @@ Module 6 - Sales Order
                                                             -- ready to ship    -- when order is ready for shipped
                                                             -- completed        -- when payment is done 
 
+
+
+1. Shop Page:
+    -- List of collections 
+        -- the primary sections:
+            1. Ready-to-Wear (Tops, Knitwear, Dresses, Jackets, etc.) 
+            2. Discover (Gift Card, Archives, Solidarity Products, Personalization, etc.)
+        -- NEW IN (sub-items like New In, Leather, Checked, Double-Face Fabric, New Bags, Lookbook, Back In Stock, Sézane welcomes Léa Sfez)
+        -- BEST SELLERS (Shirts & Blouses; Dresses; Knitwear; Jackets & Coats; Denim; Bottoms; Tops, T-Shirts & Sweats; Leather goods; Shoes; Jewelry; Belts)
+        -- ACCESSORIES – New Collection (Bags; Shoes; Jewelry; Belts; Small Leather Goods; Sunglasses; Tights & Socks; Stoles & Scarves; Lifestyle)
+        -- LAST CHANCE
+        -- KIDS – New Collection
+    
+    Click any collection: 
+        -- List of products will be visible 
 
 
 
@@ -261,4 +276,13 @@ Module - Customer Sales
 
 Module - Excel Formats 
     -- list all file formats             -- pending
+
+
+
+
+
+
+
+
+
 

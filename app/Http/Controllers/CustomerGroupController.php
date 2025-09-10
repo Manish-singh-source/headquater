@@ -68,13 +68,12 @@ class CustomerGroupController extends Controller
                 // });
 
                 // $customer = $query->first();
-                $customer = Customer::where('client_name', 'like', '%' . trim($record['Client Name']) . '%')
-                    ->where('shipping_address', 'like', '%' . trim($record['Shipping Address']) . '%')
-                    ->first();
-                    
+                $customer = Customer::where('facility_name', $record['Facility Name'])->first();
+
                 if (!$customer) {
                     // 2. Insert individual customer
                     $customer = Customer::create([
+                        'facility_name'       => $record['Facility Name'] ?? '',
                         'client_name'       => $record['Client Name'] ?? '',
                         'contact_name'       => $record['Contact Name'] ?? '',
                         'email'      => $record['Email'] ?? '',
@@ -98,6 +97,7 @@ class CustomerGroupController extends Controller
                 } else {
                     // update customer 
                     $customer->update([
+                        'facility_name'       => $record['Facility Name'] ?? '',
                         'client_name'       => $record['Client Name'] ?? '',
                         'contact_name'       => $record['Contact Name'] ?? '',
                         'email'      => $record['Email'] ?? '',

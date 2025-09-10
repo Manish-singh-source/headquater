@@ -180,6 +180,9 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/check-products-stock', 'checkProductsStock')->name('check.sales.order.stock');
         Route::get('/download-block-order-csv', 'downloadBlockedCSV')->name('download.sales.order.excel');
         Route::get('/products-download-po-excel', 'downloadPoExcel')->name('products.download.po.excel');
+        Route::get('/download-not-found-sku/{id}', 'downloadNotFoundSku')->name('download.not.found.sku.excel');
+        Route::get('/download-not-found-customer/{id}', 'downloadNotFoundCustomer')->name('download.not.found.customer.excel');
+        Route::get('/download-not-found-vendor/{id}', 'downloadNotFoundVendor')->name('download.not.found.vendor.excel');
     });
 
     // Place Order
@@ -198,6 +201,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/download-vendor-po-excel', 'downloadVendorPO')->name('download.vendor.po.excel');
         Route::get('/purchase-order-create/{purchaseId?}', 'customPurchaseCreate')->name('purches.create');
         Route::post('/purchase-custom-order-store', 'customPurchaseStore')->name('store.purchase.order');
+        Route::put('/change-purchase-order-status', 'changeStatus')->name('change.purchase.order.status');
+
 
         // Return or accept packaging products 
         Route::get('/vendor-product-return/{id}', 'vendorProductReturn')->name('vendor.product.return');
@@ -221,6 +226,7 @@ Route::middleware(['auth'])->group(function () {
     Route::controller(PackagingController::class)->group(function () {
         Route::get('/packaging-list', 'index')->name('packaging.list.index');
         Route::get('/packing-products-list/{id}', 'view')->name('packing.products.view');
+        Route::get('/download-packing-products-excel', 'downloadPackagingProducts')->name('download.packing.products.excel');
     });
 
     // 

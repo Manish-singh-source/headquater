@@ -1,6 +1,15 @@
 @extends('layouts.master')
 @section('main-content')
     <!--start main wrapper-->
+    @php
+        $statuses = [
+            'pending' => 'Pending',
+            'blocked' => 'Blocked',
+            'received' => 'Products Received',
+            'completed' => 'Completed',
+        ];
+    @endphp
+
     <main class="main-wrapper">
         <div class="main-content">
 
@@ -13,6 +22,26 @@
                             <li class="breadcrumb-item active" aria-current="page">Purchase Order Details</li>
                         </ol>
                     </nav>
+                </div>
+
+                <div>
+                    <form id="statusForm" action="{{ route('change.purchase.order.status') }}" method="POST">
+                        @csrf
+                        @method('PUT')
+                        <input type="hidden" name="order_id" value="{{ $purchaseOrder->id }}">
+                        <select class="form-select border-2 border-primary" id="changeStatus"
+                            aria-label="Default select example" name="status">
+                            <option value="" selected disabled>Change Status</option>
+                            <option value="pending" @if ($purchaseOrder->status == 'pending') selected @endif
+                                @if (in_array($purchaseOrder->status, ['blocked', 'received', 'completed'])) disabled @endif>Pending</option>
+                            <option value="blocked" @if ($purchaseOrder->status == 'blocked') selected @endif
+                                @if (in_array($purchaseOrder->status, ['received', 'completed'])) disabled @endif>Blocked</option>
+                            <option value="ready_to_package" @if ($purchaseOrder->status == 'received') selected @endif
+                                @if (in_array($purchaseOrder->status, ['completed'])) disabled @endif>Received</option>
+                            <option value="completed" @if ($purchaseOrder->status == 'completed') selected @endif>
+                                Completed</option>
+                        </select>
+                    </form>
                 </div>
             </div>
 
@@ -37,15 +66,6 @@
                                         </b>
                                     </span>
                                 </li>
-                                @php
-                                    $statuses = [
-                                        'pending' => 'Pending',
-                                        'blocked' => 'Blocked',
-                                        'completed' => 'Completed',
-                                        'ready_to_ship' => 'Ready To Ship',
-                                        'ready_to_package' => 'Ready To Package',
-                                    ];
-                                @endphp
 
 
                                 <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
@@ -126,11 +146,13 @@
                                                         aria-labelledby="rejectPopupLabel" aria-hidden="true">
                                                         <div class="modal-dialog">
                                                             <div class="modal-content">
-                                                                <form action="{{ route('reject.vendor.pi.request') }}" method="POST">
+                                                                <form action="{{ route('reject.vendor.pi.request') }}"
+                                                                    method="POST">
                                                                     @csrf
                                                                     @method('POST')
                                                                     <div class="modal-header">
-                                                                        <h1 class="modal-title fs-5" id="rejectPopupLabel">
+                                                                        <h1 class="modal-title fs-5"
+                                                                            id="rejectPopupLabel">
                                                                             Reject Reason</h1>
                                                                         <button type="button" class="btn-close"
                                                                             data-bs-dismiss="modal"
@@ -149,7 +171,8 @@
                                                                             <label for="approve_reason"
                                                                                 class="form-label">Reason<span
                                                                                     class="text-danger">*</span></label>
-                                                                            <input type="text" name="approve_or_reject_reason"
+                                                                            <input type="text"
+                                                                                name="approve_or_reject_reason"
                                                                                 id="approve_reason" class="form-control"
                                                                                 value="" required="">
                                                                         </div>
@@ -175,151 +198,155 @@
                 </div>
             </div>
 
-            <div class="card">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center my-2">
-                        <div class="div d-flex justify-content-end my-3 gap-2">
-                            <h6 class="mb-3">Vendor PO Table</h6>
-                        </div>
-                        <!-- Tabs Navigation -->
-                        <div class="div d-flex justify-content-end my-3 gap-2">
-                            <button class="btn btn-sm border-2 border-primary" data-bs-toggle="modal"
-                                data-bs-target="#approveBackdrop1" class="btn btn-sm border-2 border-primary">
-                                Add Vendor PI
-                            </button>
+            @if (in_array($purchaseOrder->status, ['pending', 'blocked']))
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center my-2">
+                            <div class="div d-flex justify-content-end my-3 gap-2">
+                                <h6 class="mb-3">Vendor PO Table</h6>
+                            </div>
+                            <!-- Tabs Navigation -->
+                            <div class="div d-flex justify-content-end my-3 gap-2">
+                                <button class="btn btn-sm border-2 border-primary" data-bs-toggle="modal"
+                                    data-bs-target="#approveBackdrop1" class="btn btn-sm border-2 border-primary">
+                                    Add Vendor PI
+                                </button>
 
-                            <!-- Modal -->
-                            <div class="modal fade" id="approveBackdrop1" data-bs-backdrop="approve"
-                                data-bs-keyboard="false" tabindex="-1" aria-labelledby="approveBackdropLabel"
-                                aria-hidden="true">
-                                <div class="modal-dialog">
-                                    <div class="modal-content">
-                                        <form action="{{ route('purchase.order.store') }}" method="POST"
-                                            enctype="multipart/form-data">
-                                            @csrf
-                                            @method('POST')
-                                            <div class="modal-header">
-                                                <h1 class="modal-title fs-5" id="approveBackdropLabel">Add Vendor PI</h1>
-                                                <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                                    aria-label="Close"></button>
-                                            </div>
-
-                                            <div class="modal-body">
-                                                <input type="hidden" name="purchase_order_id"
-                                                    value="{{ $purchaseOrder->id }}">
-                                                <input type="hidden" name="vendor_code"
-                                                    value="{{ $purchaseOrder->vendor_code }}">
-                                                <input type="hidden" name="sales_order_id"
-                                                    value="{{ $purchaseOrder->sales_order_id }}">
-                                                <div class="col-12 mb-3">
-                                                    <label for="pi_excel" class="form-label">Vendor PI (CSV/ELSX) <span
-                                                            class="text-danger">*</span></label>
-                                                    <input type="file" name="pi_excel" id="pi_excel"
-                                                        class="form-control" value="" required="">
+                                <!-- Modal -->
+                                <div class="modal fade" id="approveBackdrop1" data-bs-backdrop="approve"
+                                    data-bs-keyboard="false" tabindex="-1" aria-labelledby="approveBackdropLabel"
+                                    aria-hidden="true">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <form action="{{ route('purchase.order.store') }}" method="POST"
+                                                enctype="multipart/form-data">
+                                                @csrf
+                                                @method('POST')
+                                                <div class="modal-header">
+                                                    <h1 class="modal-title fs-5" id="approveBackdropLabel">Add Vendor PI
+                                                    </h1>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                        aria-label="Close"></button>
                                                 </div>
-                                            </div>
-                                            <div class="modal-footer">
-                                                <button type="button" class="btn btn-secondary"
-                                                    data-bs-dismiss="modal">Close</button>
-                                                <button type="submit" class="btn btn-primary">Submit</button>
-                                            </div>
-                                        </form>
+
+                                                <div class="modal-body">
+                                                    <input type="hidden" name="purchase_order_id"
+                                                        value="{{ $purchaseOrder->id }}">
+                                                    <input type="hidden" name="vendor_code"
+                                                        value="{{ $purchaseOrder->vendor_code }}">
+                                                    <input type="hidden" name="sales_order_id"
+                                                        value="{{ $purchaseOrder->sales_order_id }}">
+                                                    <div class="col-12 mb-3">
+                                                        <label for="pi_excel" class="form-label">Vendor PI (CSV/ELSX)
+                                                            <span class="text-danger">*</span></label>
+                                                        <input type="file" name="pi_excel" id="pi_excel"
+                                                            class="form-control" value="" required="">
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary"
+                                                        data-bs-dismiss="modal">Close</button>
+                                                    <button type="submit" class="btn btn-primary">Submit</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <button class="btn btn-icon btn-sm border-2 border-primary me-1" id="exportData">
+                                    <i class="fa fa-file-excel-o"></i> Export to Excel
+                                </button>
+
+                                <div class="ms-auto">
+                                    <div class="btn-group">
+                                        <button type="button" class="btn border-2 border-primary">Action</button>
+                                        <button type="button"
+                                            class="btn border-2 border-primary split-bg-primary dropdown-toggle dropdown-toggle-split"
+                                            data-bs-toggle="dropdown"> <span class="visually-hidden">Toggle
+                                                Dropdown</span>
+                                        </button>
+                                        <div class="dropdown-menu dropdown-menu-right dropdown-menu-lg-end">
+                                            <a class="dropdown-item cursor-pointer" id="delete-selected">Delete All</a>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-
-                            <button class="btn btn-icon btn-sm border-2 border-primary me-1" id="exportData">
-                                <i class="fa fa-file-excel-o"></i> Export to Excel
-                            </button>
-
-                            <div class="ms-auto">
-                                <div class="btn-group">
-                                    <button type="button" class="btn border-2 border-primary">Action</button>
-                                    <button type="button"
-                                        class="btn border-2 border-primary split-bg-primary dropdown-toggle dropdown-toggle-split"
-                                        data-bs-toggle="dropdown"> <span class="visually-hidden">Toggle Dropdown</span>
-                                    </button>
-                                    <div class="dropdown-menu dropdown-menu-right dropdown-menu-lg-end">
-                                        <a class="dropdown-item cursor-pointer" id="delete-selected">Delete All</a>
-                                    </div>
-                                </div>
-                            </div>
                         </div>
-                    </div>
 
-                    <div class="product-table">
-                        <div class="table-responsive white-space-nowrap">
-                            <table id="vendorPOTable" class="table align-middle">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th>
-                                            <input class="form-check-input" type="checkbox" id="select-all">
-                                        </th>
-                                        <th>Sales&nbsp;Order&nbsp;No</th>
-                                        <th>Purchase&nbsp;Order&nbsp;No</th>
-                                        <th>Vendor&nbsp;Code</th>
-                                        <th>Portal&nbsp;Code</th>
-                                        <th>SKU&nbsp;Code</th>
-                                        <th>Title</th>
-                                        <th>MRP</th>
-                                        <th>Qty&nbsp;Requirement</th>
-                                        <th>Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @forelse($purchaseOrder->purchaseOrderProducts as $order)
+                        <div class="product-table">
+                            <div class="table-responsive white-space-nowrap">
+                                <table id="vendorPOTable" class="table align-middle">
+                                    <thead class="table-light">
                                         <tr>
-                                            <td>
-                                                <input class="form-check-input row-checkbox" type="checkbox"
-                                                    name="ids[]" value="{{ $order->id }}">
-                                            </td>
-                                            <td>{{ $order->sales_order_id }}</td>
-                                            <td>{{ $order->purchase_order_id }}</td>
-                                            <td>{{ $order->vendor_code }}</td>
-                                            <td>{{ $order->tempOrder->item_code ?? 'NA' }}</td>
-                                            <td>{{ $order->tempOrder->sku ?? 'NA' }}</td>
-                                            <td>{{ $order->tempOrder->description ?? 'NA' }}</td>
-                                            <td>{{ $order->tempOrder->mrp ?? 'NA' }}</td>
-                                            <td>{{ $order->ordered_quantity ?? 'NA' }}</td>
-                                            <td>
-                                                <div class="d-flex">
-                                                    <form
-                                                        action="{{ route('purchase.order.product.delete', $order->id) }}"
-                                                        method="POST" onsubmit="return confirm('Are you sure?')">
-                                                        @csrf
-                                                        @method('DELETE')
-                                                        <button type="submit"
-                                                            class="btn btn-icon btn-sm bg-danger-subtle delete-row">
-                                                            <svg xmlns="http://www.w3.org/2000/svg" width="13"
-                                                                height="13" viewBox="0 0 24 24" fill="none"
-                                                                stroke="currentColor" stroke-width="2"
-                                                                stroke-linecap="round" stroke-linejoin="round"
-                                                                class="feather feather-trash-2 text-danger">
-                                                                <polyline points="3 6 5 6 21 6"></polyline>
-                                                                <path
-                                                                    d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
-                                                                </path>
-                                                                <line x1="10" y1="11" x2="10"
-                                                                    y2="17"></line>
-                                                                <line x1="14" y1="11" x2="14"
-                                                                    y2="17"></line>
-                                                            </svg>
-                                                        </button>
-                                                    </form>
-                                                </div>
-                                            </td>
+                                            <th>
+                                                <input class="form-check-input" type="checkbox" id="select-all">
+                                            </th>
+                                            <th>Sales&nbsp;Order&nbsp;No</th>
+                                            <th>Purchase&nbsp;Order&nbsp;No</th>
+                                            <th>Vendor&nbsp;Code</th>
+                                            <th>Portal&nbsp;Code</th>
+                                            <th>SKU&nbsp;Code</th>
+                                            <th>Title</th>
+                                            <th>MRP</th>
+                                            <th>Qty&nbsp;Requirement</th>
+                                            <th>Action</th>
                                         </tr>
-                                    @empty
-                                        <tr>
-                                            <td colspan="10" class="text-center">No Records Found</td>
-                                        </tr>
-                                    @endforelse
-                                </tbody>
-                            </table>
+                                    </thead>
+                                    <tbody>
+                                        @forelse($purchaseOrder->purchaseOrderProducts as $order)
+                                            <tr>
+                                                <td>
+                                                    <input class="form-check-input row-checkbox" type="checkbox"
+                                                        name="ids[]" value="{{ $order->id }}">
+                                                </td>
+                                                <td>{{ $order->sales_order_id }}</td>
+                                                <td>{{ $order->purchase_order_id }}</td>
+                                                <td>{{ $order->vendor_code }}</td>
+                                                <td>{{ $order->tempOrder->item_code ?? 'NA' }}</td>
+                                                <td>{{ $order->tempOrder->sku ?? 'NA' }}</td>
+                                                <td>{{ $order->tempOrder->description ?? 'NA' }}</td>
+                                                <td>{{ $order->tempOrder->mrp ?? 'NA' }}</td>
+                                                <td>{{ $order->ordered_quantity ?? 'NA' }}</td>
+                                                <td>
+                                                    <div class="d-flex">
+                                                        <form
+                                                            action="{{ route('purchase.order.product.delete', $order->id) }}"
+                                                            method="POST" onsubmit="return confirm('Are you sure?')">
+                                                            @csrf
+                                                            @method('DELETE')
+                                                            <button type="submit"
+                                                                class="btn btn-icon btn-sm bg-danger-subtle delete-row">
+                                                                <svg xmlns="http://www.w3.org/2000/svg" width="13"
+                                                                    height="13" viewBox="0 0 24 24" fill="none"
+                                                                    stroke="currentColor" stroke-width="2"
+                                                                    stroke-linecap="round" stroke-linejoin="round"
+                                                                    class="feather feather-trash-2 text-danger">
+                                                                    <polyline points="3 6 5 6 21 6"></polyline>
+                                                                    <path
+                                                                        d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
+                                                                    </path>
+                                                                    <line x1="10" y1="11" x2="10"
+                                                                        y2="17"></line>
+                                                                    <line x1="14" y1="11" x2="14"
+                                                                        y2="17"></line>
+                                                                </svg>
+                                                            </button>
+                                                        </form>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        @empty
+                                            <tr>
+                                                <td colspan="10" class="text-center">No Records Found</td>
+                                            </tr>
+                                        @endforelse
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            @endif
 
 
             @isset($purchaseOrder->vendorPI[0]->id)
@@ -331,10 +358,12 @@
                             </div>
                             <!-- Tabs Navigation -->
                             <div class="div d-flex justify-content-end my-3 gap-2">
-                                <button class="btn btn-sm border-2 border-primary" data-bs-toggle="modal"
-                                    data-bs-target="#grnUpload" class="btn btn-sm border-2 border-primary">
-                                    Add Vendor GRN
-                                </button>
+                                @if ($purchaseOrder->status != 'completed')
+                                    <button class="btn btn-sm border-2 border-primary" data-bs-toggle="modal"
+                                        data-bs-target="#grnUpload" class="btn btn-sm border-2 border-primary">
+                                        Add Vendor GRN
+                                    </button>
+                                @endif
 
                                 <!-- Modal -->
                                 <div class="modal fade" id="grnUpload" data-bs-backdrop="approve" data-bs-keyboard="false"
@@ -371,10 +400,12 @@
                                     </div>
                                 </div>
 
-                                <button class="btn btn-sm border-2 border-primary" data-bs-toggle="modal"
-                                    data-bs-target="#invoiceUpload" class="btn btn-sm border-2 border-primary">
-                                    Add Vendor Invoice
-                                </button>
+                                @if ($purchaseOrder->status != 'completed')
+                                    <button class="btn btn-sm border-2 border-primary" data-bs-toggle="modal"
+                                        data-bs-target="#invoiceUpload" class="btn btn-sm border-2 border-primary">
+                                        Add Vendor Invoice
+                                    </button>
+                                @endif
 
                                 <!-- Modal -->
                                 <div class="modal fade" id="invoiceUpload" data-bs-backdrop="approve"
@@ -441,8 +472,7 @@
                                                     <td>{{ $vendorPI->purchase_order_id }}</td>
                                                     <td>{{ $vendorPI->vendor_code }}</td>
                                                     <td>{{ $product->vendor_sku_code }}</td>
-                                                    <td>{{ $product->tempOrder->description ?? 'N/A' }}
-                                                    </td>
+                                                    <td>{{ $product->title ?? 'N/A' }}</td>
                                                     <td>{{ $product->gst }}</td>
                                                     <td>{{ $product->hsn }}</td>
                                                     <td>{{ $product->mrp }}</td>
@@ -548,6 +578,13 @@
 
 
 @section('script')
+    <script>
+        document.getElementById('changeStatus').addEventListener('change', function() {
+            if (confirm('Are you sure you want to change status for order?')) {
+                document.getElementById('statusForm').submit();
+            }
+        });
+    </script>
     <script>
         $(document).on('click', '#exportData', function() {
             var purchaseOrderId = $("#purchase-order-id").text().trim();

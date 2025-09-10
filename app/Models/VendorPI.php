@@ -19,6 +19,9 @@ class VendorPI extends Model
         return $this->hasMany(VendorPIProduct::class, 'vendor_pi_id', 'id');
     }
 
+    public function purchaseOrder() {
+        return $this->hasOne(PurchaseOrder::class, 'id', 'purchase_order_id');
+    }
     
 
 }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\NotFoundTempOrder;
 use App\Models\Product;
 use App\Models\VendorPI;
 use App\Models\TempOrder;
@@ -152,11 +153,13 @@ class PurchaseOrderController extends Controller
                     if ($tempProduct->po_qty >= $salesOrderFulfillment[$newSku]['quantity']) {
                         if ($tempProduct->po_qty > $tempProduct->available_quantity) {
                             $tempProduct->vendor_pi_fulfillment_quantity = $salesOrderFulfillment[$newSku]['quantity'];
+                            $tempProduct->vendor_pi_id = $vendorPi->id;
                             $salesOrderFulfillment[$newSku]['quantity'] = 0;
                         }
                     } else {
                         if ($tempProduct->po_qty > $tempProduct->available_quantity) {
                             $tempProduct->vendor_pi_fulfillment_quantity = $tempProduct->po_qty;
+                            $tempProduct->vendor_pi_id = $vendorPi->id;
                             $salesOrderFulfillment[$newSku]['quantity'] = $salesOrderFulfillment[$newSku]['quantity'] - $tempProduct->po_qty;
                         }
                     }
@@ -170,6 +173,7 @@ class PurchaseOrderController extends Controller
                     'purchase_order_id' => $request->purchase_order_id,
                     'vendor_pi_id' => $vendorPi->id,
                     'vendor_sku_code' => $newSku ?? Arr::get($record, 'Vendor SKU Code'),
+                    'title' => Arr::get($record, 'Title'),
                     'mrp' => Arr::get($record, 'MRP') ?? 0,
                     'quantity_requirement' => Arr::get($record, 'PO Quantity') ?? 0,
                     'available_quantity' => Arr::get($record, 'PI Quantity') ?? 0,
@@ -190,10 +194,10 @@ class PurchaseOrderController extends Controller
 
             VendorPIProduct::insert($vendorProducts);
             DB::commit();
-            return redirect()->route('purchase.order.view')->with('success', 'CSV file imported successfully.');
+            return redirect()->back()->with('success', 'CSV file imported successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return redirect()->back()->withErrors(['error' => 'Something went wrong: ' . $e->getMessage()]);
+            return redirect()->back()->with(['error' => 'Something went wrong: ' . $e->getMessage()]);
         }
     }
 
@@ -362,15 +366,14 @@ class PurchaseOrderController extends Controller
                     ]);
                 }
 
-                // $updateProductStock = Product::where('sku', $product->vendor_sku_code)->first();
-                // $updateProductStock->sets_ctn = $updateProductStock->sets_ctn + $product->available_quantity;
-                // $updateProductStock->save();
+                $tempOrder = TempOrder::where('vendor_pi_id', $product->vendor_pi_id)->where('sku', $product->vendor_sku_code)->first();
+                $tempOrder->vendor_pi_received_quantity = $product->quantity_received;
+                $tempOrder->save();
             }
 
             DB::commit();
             return redirect()->back()->with('success', 'Successfully Approved Received Products');
         } catch (\Exception $e) {
-            // dd($e->getMessage());
             DB::rollBack();
             return redirect()->back()->withErrors(['error' => 'Something went wrong: ' . $e->getMessage()]);
         }
@@ -563,5 +566,24 @@ class PurchaseOrderController extends Controller
         }
 
         return back()->with('error', 'Something went wrong.');
+    }
+
+
+    public function  changeStatus(Request $request)
+    {
+        try {
+
+            $purchaseOrder = PurchaseOrder::findOrFail($request->order_id);
+            $purchaseOrder->status = $request->status;
+            $purchaseOrder->save();
+
+            if (!$purchaseOrder) {
+                return redirect()->back()->with('error', 'Status Not Changed. Please Try Again.');
+            }
+
+            return redirect()->back()->with('success', 'Status has been changed.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Status Not Changed. Please Try Again.');
+        }
     }
 }

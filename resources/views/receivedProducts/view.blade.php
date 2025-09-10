@@ -51,54 +51,56 @@
                                             <!-- Tabs Navigation -->
                                             <div class="div d-flex justify-content-end my-3 gap-2">
                                                 {{-- @can('PermissionChecker', 'update_received_products') --}}
+                                                @if ($vendorPIs->purchaseOrder->status != 'completed')
                                                     <button class="btn btn-sm border-2 border-primary" data-bs-toggle="modal"
                                                         data-bs-target="#staticBackdrop1"
                                                         class="btn btn-sm border-2 border-primary">
                                                         Update PI Products
                                                     </button>
+                                                @endif
 
-                                                    <!-- Modal -->
-                                                    <div class="modal fade" id="staticBackdrop1" data-bs-backdrop="static"
-                                                        data-bs-keyboard="false" tabindex="-1"
-                                                        aria-labelledby="staticBackdropLabel" aria-hidden="true">
-                                                        <div class="modal-dialog">
-                                                            <div class="modal-content">
-                                                                <form action="{{ route('received.products.pi.update') }}"
-                                                                    method="POST" enctype="multipart/form-data">
-                                                                    @csrf
-                                                                    @method('POST')
-                                                                    <div class="modal-header">
-                                                                        <h1 class="modal-title fs-5" id="staticBackdropLabel">Update
-                                                                            PI Products</h1>
-                                                                        <button type="button" class="btn-close"
-                                                                            data-bs-dismiss="modal" aria-label="Close"></button>
+                                                <!-- Modal -->
+                                                <div class="modal fade" id="staticBackdrop1" data-bs-backdrop="static"
+                                                    data-bs-keyboard="false" tabindex="-1"
+                                                    aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                                                    <div class="modal-dialog">
+                                                        <div class="modal-content">
+                                                            <form action="{{ route('received.products.pi.update') }}"
+                                                                method="POST" enctype="multipart/form-data">
+                                                                @csrf
+                                                                @method('POST')
+                                                                <div class="modal-header">
+                                                                    <h1 class="modal-title fs-5" id="staticBackdropLabel">Update
+                                                                        PI Products</h1>
+                                                                    <button type="button" class="btn-close"
+                                                                        data-bs-dismiss="modal" aria-label="Close"></button>
+                                                                </div>
+
+                                                                <div class="modal-body">
+                                                                    <div class="col-12 mb-3">
+                                                                        <input type="hidden" name="vendor_pi_id"
+                                                                            value="{{ $vendorPIs->id }}">
                                                                     </div>
 
-                                                                    <div class="modal-body">
-                                                                        <div class="col-12 mb-3">
-                                                                            <input type="hidden" name="vendor_pi_id"
-                                                                                value="{{ $vendorPIs->id }}">
-                                                                        </div>
-
-                                                                        <div class="col-12 mb-3">
-                                                                            <label for="pi_excel" class="form-label">Updated Vendor
-                                                                                PI
-                                                                                (CSV/ELSX) <span
-                                                                                    class="text-danger">*</span></label>
-                                                                            <input type="file" name="pi_excel" id="pi_excel"
-                                                                                class="form-control" value="" required="">
-                                                                        </div>
+                                                                    <div class="col-12 mb-3">
+                                                                        <label for="pi_excel" class="form-label">Updated Vendor
+                                                                            PI
+                                                                            (CSV/ELSX) <span
+                                                                                class="text-danger">*</span></label>
+                                                                        <input type="file" name="pi_excel" id="pi_excel"
+                                                                            class="form-control" value="" required="">
                                                                     </div>
-                                                                    <div class="modal-footer">
-                                                                        <button type="button" class="btn btn-secondary"
-                                                                            data-bs-dismiss="modal">Close</button>
-                                                                        <button type="submit" id="holdOrder"
-                                                                            class="btn btn-primary">Submit</button>
-                                                                    </div>
-                                                                </form>
-                                                            </div>
+                                                                </div>
+                                                                <div class="modal-footer">
+                                                                    <button type="button" class="btn btn-secondary"
+                                                                        data-bs-dismiss="modal">Close</button>
+                                                                    <button type="submit" id="holdOrder"
+                                                                        class="btn btn-primary">Submit</button>
+                                                                </div>
+                                                            </form>
                                                         </div>
                                                     </div>
+                                                </div>
                                                 {{-- @endcan --}}
 
                                                 <button class="btn btn-sm border-2 border-primary" id="exportData">
@@ -164,18 +166,20 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="col-lg-12">
-                                    <div class="row justify-content-between mb-3">
-                                        <form class="col-12 text-end" action="{{ route('received.products.status') }}"
-                                            method="POST" onsubmit="return confirm('Are you sure?')">
-                                            @csrf
-                                            @method('POST')
-                                            <input type="hidden" name="vendor_pi_id"
-                                                                                value="{{ $vendorPIs->id }}">
-                                            <button class="btn btn-sm border-2 border-primary" type="submit">Submit</button>
-                                        </form>
+                                @if ($vendorPIs->purchaseOrder->status != 'completed')
+                                    <div class="col-lg-12">
+                                        <div class="row justify-content-between mb-3">
+                                            <form class="col-12 text-end" action="{{ route('received.products.status') }}"
+                                                method="POST" onsubmit="return confirm('Are you sure?')">
+                                                @csrf
+                                                @method('POST')
+                                                <input type="hidden" name="vendor_pi_id" value="{{ $vendorPIs->id }}">
+                                                <button class="btn btn-sm border-2 border-primary"
+                                                    type="submit">Submit</button>
+                                            </form>
+                                        </div>
                                     </div>
-                                </div>
+                                @endif
                             @endisset
                         </div>
                     </div>

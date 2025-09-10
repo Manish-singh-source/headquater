@@ -61,7 +61,8 @@
                                                 Found
                                                 <span
                                                     class="badge text-danger bg-danger-subtle">({{ $salesOrder->not_found_temp_order_by_product_count }})</span></b></span>
-                                        <span> <a href="#">Download</a></span>
+                                        <span> <a
+                                                href="{{ route('download.not.found.sku.excel', $salesOrder->id) }}">Download</a></span>
                                     </li>
                                 @endif
                                 @if ($salesOrder->not_found_temp_order_by_customer_count > 0)
@@ -69,7 +70,8 @@
                                         <span><b>Customer Not Found
                                                 <span
                                                     class="badge text-danger bg-danger-subtle">({{ $salesOrder->not_found_temp_order_by_customer_count }})</span></b></span>
-                                        <span> <a href="#">Download</a></span>
+                                        <span> <a
+                                                href="{{ route('download.not.found.customer.excel', $salesOrder->id) }}">Download</a></span>
                                     </li>
                                 @endif
                                 @if ($salesOrder->not_found_temp_order_by_vendor_count > 0)
@@ -77,7 +79,8 @@
                                         <span><b>Vendor Not Found
                                                 <span
                                                     class="badge text-danger bg-danger-subtle">({{ $salesOrder->not_found_temp_order_by_vendor_count }})</span></b></span>
-                                        <span> <a href="#">Download</a></span>
+                                        <span> <a
+                                                href="{{ route('download.not.found.vendor.excel', $salesOrder->id) }}">Download</a></span>
                                     </li>
                                 @endif
                             </ul>
@@ -239,11 +242,16 @@
                                             </td>
                                             <td>{{ $order->ordered_quantity }}</td>
                                             <td>
+                                                @php
+                                                    if ($order->tempOrder?->vendor_pi_received_quantity) {
+                                                        $order->tempOrder->vendor_pi_fulfillment_quantity = $order->tempOrder->vendor_pi_received_quantity;
+                                                    }
+                                                @endphp
                                                 @if (
                                                     $order->ordered_quantity <=
                                                         ($order->tempOrder?->available_quantity ?? 0) + ($order->tempOrder?->vendor_pi_fulfillment_quantity ?? 0))
                                                     <span
-                                                        class="badge text-success bg-success-subtle">{{ ($order->tempOrder?->available_quantity ?? 0) + ($order->tempOrder?->vendor_pi_fulfillment_quantity ?? 0) }}</span>
+                                                        class="badge text-success bg-success-subtle">{{ ($order->ordered_quantity) }}</span>
                                                 @else
                                                     <span
                                                         class="badge text-danger bg-danger-subtle">{{ ($order->tempOrder?->available_quantity ?? 0) + ($order->tempOrder?->vendor_pi_fulfillment_quantity ?? 0) }}</span>

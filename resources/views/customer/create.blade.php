@@ -30,6 +30,18 @@
                                 <input type="hidden" name="group_id" value="{{ $group_id }}">
 
                                 <div class="col-md-6">
+                                    <label for="facility_name" class="form-label">Facility Name</label>
+                                    <input type="text" class="form-control @error('facility_name') is-invalid @enderror"
+                                        value="{{ old('facility_name') }}" id="facility_name" name="facility_name"
+                                        placeholder="Enter Facility Name">
+                                    @error('facility_name')
+                                        <div class="invalid-feedback">
+                                            {{ $message }}
+                                        </div>
+                                    @enderror
+                                </div>
+                                
+                                <div class="col-md-6">
                                     <label for="client_name" class="form-label">Client Name</label>
                                     <input type="text" class="form-control @error('client_name') is-invalid @enderror"
                                         value="{{ old('client_name') }}" id="client_name" name="client_name"
