@@ -6,26 +6,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>HEADQUATERS | Admin Dashboard</title>
     <!--favicon-->
-    <link rel="icon" href="assets/images/favicon-32x32.png" type="image/png">
+    <link rel="icon" href="{{ asset('assets/images/favicon-32x32.png') }}" type="image/png">
     <!-- loader-->
-    <link href="assets/css/pace.min.css" rel="stylesheet">
-    <script src="assets/js/pace.min.js"></script>
+    <link href="{{ asset('assets/css/pace.min.css') }}" rel="stylesheet">
+    <script src="{{ asset('assets/js/pace.min.js') }}"></script>
 
     <!--plugins-->
-    <link href="assets/plugins/perfect-scrollbar/css/perfect-scrollbar.css" rel="stylesheet">
-    <link rel="stylesheet" type="text/css" href="assets/plugins/metismenu/metisMenu.min.css">
-    <link rel="stylesheet" type="text/css" href="assets/plugins/metismenu/mm-vertical.css">
+    <link href="{{ asset('assets/plugins/perfect-scrollbar/css/perfect-scrollbar.css') }}" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="{{ asset('assets/plugins/metismenu/metisMenu.min.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ asset('assets/plugins/metismenu/mm-vertical.css') }}">
     <!--bootstrap css-->
-    <link href="assets/css/bootstrap.min.css" rel="stylesheet">
+    <link href="{{ asset('assets/css/bootstrap.min.css') }}" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@300;400;500;600&amp;display=swap"
         rel="stylesheet">
     <link href="https://fonts.googleapis.com/css?family=Material+Icons+Outlined" rel="stylesheet">
     <!--main css-->
-    <link href="assets/css/bootstrap-extended.css" rel="stylesheet">
-    <link href="sass/main.css" rel="stylesheet">
-    <link href="sass/dark-theme.css" rel="stylesheet">
-    <link href="sass/blue-theme.css" rel="stylesheet">
-    <link href="sass/responsive.css" rel="stylesheet">
+    <link href="{{ asset('assets/css/bootstrap-extended.css') }}" rel="stylesheet">
+    <link href="{{ asset('sass/main.css') }}" rel="stylesheet">
+    <link href="{{ asset('sass/dark-theme.css') }}" rel="stylesheet">
+    <link href="{{ asset('sass/blue-theme.css') }}" rel="stylesheet">
+    <link href="{{ asset('sass/responsive.css') }}" rel="stylesheet">
 
 </head>
 
@@ -36,7 +36,7 @@
             <div class="row g-4">
                 <div class="col-lg-6 d-flex">
                     <div class="card-body">
-                        <img src="assets/images/logo1.png" class="mb-4" width="145" alt="">
+                        <img src="{{ asset('assets/images/logo1.png') }}" class="mb-4" width="145" alt="">
                         <h4 class="fw-bold">Get Started Now</h4>
                         <p class="mb-0">Enter your credentials to login your account</p>
 
@@ -102,7 +102,7 @@
                 </div>
                 <div class="col-lg-6 d-lg-flex d-none">
                     <div class="p-3 rounded-4 w-100 d-flex align-items-center justify-content-center bg-grd-info">
-                        <img src="assets/images/auth/login1.png" class="img-fluid" alt="">
+                        <img src="{{ asset('assets/images/auth/login1.png') }}" class="img-fluid" alt="">
                     </div>
                 </div>
 
@@ -112,7 +112,7 @@
     </div>
 
     <!--plugins-->
-    <script src="assets/js/jquery.min.js"></script>
+    <script src="{{ asset('assets/js/jquery.min.js') }}"></script>
 
     <script>
         $(document).ready(function() {
