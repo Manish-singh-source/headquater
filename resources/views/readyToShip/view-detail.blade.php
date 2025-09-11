@@ -139,22 +139,8 @@
                                                     {{-- <td>{{ $order->ordered_quantity }}</td> --}}
                                                     <td>{{ $order->warehouseStock->original_quantity ?? '0' }}</td>
                                                     <td>{{ $order->tempOrder->po_number }}</td>
-                                                    <td>
-                                                        @if ($order->tempOrder->block <= $order->tempOrder->po_qty)
-                                                            <span
-                                                                class="badge text-success bg-success-subtle">{{ $order->tempOrder->block }}</span>
-                                                        @else
-                                                            <span class="badge text-danger bg-danger-subtle">{{ $order->tempOrder->block }}</span>
-                                                        @endif
-                                                    </td>
-                                                    <td>
-                                                        @if ($order->tempOrder->block > 0)
-                                                            <span
-                                                                class="badge text-success bg-success-subtle">{{ $order->tempOrder->block }}</span>
-                                                        @else
-                                                            <span class="badge text-danger bg-danger-subtle">0</span>
-                                                        @endif
-                                                    </td>
+                                                    <td>{{ $order->dispatched_quantity ?? 0 }}</td>
+                                                    <td>{{ $order->final_dispatched_quantity ?? 0 }}</td>
                                                 </tr>
                                             @empty
                                                 <tr>

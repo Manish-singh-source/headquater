@@ -13,14 +13,16 @@ return new class extends Migration
     {
         Schema::create('sales_order_products', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('sales_order_id')->constrained()->onDelete('cascade');
+            $table->integer('warehouse_stock_id')->nullable();
             $table->unsignedBigInteger('temp_order_id')->nullable();
+            $table->foreignId('sales_order_id')->constrained()->onDelete('cascade');
             $table->foreignId('customer_id')->nullable()->constrained()->onDelete('cascade');
             $table->string('vendor_code')->nullable();
-            $table->integer('ordered_quantity')->nullable();
             $table->integer('product_id')->nullable();
-            $table->integer('warehouse_stock_id')->nullable();
             $table->string('sku')->nullable();  // sku from the vendor
+            $table->integer('ordered_quantity')->nullable();
+            $table->integer('dispatched_quantity')->nullable();
+            $table->integer('final_dispatched_quantity')->nullable();
             $table->decimal('price', 10, 2)->nullable(); // snapshot of price at order time
             $table->decimal('subtotal', 12, 2)->nullable(); // qty * price
             

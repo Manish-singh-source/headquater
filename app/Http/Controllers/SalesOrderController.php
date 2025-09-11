@@ -592,10 +592,10 @@ class SalesOrderController extends Controller
                     $product->tempOrder->vendor_pi_fulfillment_quantity = $product->tempOrder->vendor_pi_received_quantity;
                 }
 
-                if($product->tempOrder->po_qty <= ($product->tempOrder?->available_quantity ?? 0) + ($product->tempOrder?->vendor_pi_fulfillment_quantity ?? 0)) {
+                if ($product->tempOrder->po_qty <= ($product->tempOrder?->available_quantity ?? 0) + ($product->tempOrder?->vendor_pi_fulfillment_quantity ?? 0)) {
                     $product->tempOrder->vendor_pi_fulfillment_quantity = $product->tempOrder->po_qty;
                 }
-                
+
                 $caching[] = $product->tempOrder->po_qty . ' ' . $product->tempOrder?->vendor_pi_fulfillment_quantity;
                 $vendorPiFulfillmentTotal += $product->tempOrder->vendor_pi_fulfillment_quantity;
                 $availableQuantity += $product->tempOrder->available_quantity;
@@ -734,7 +734,7 @@ class SalesOrderController extends Controller
                     $invoice->round_off = 0;
 
                     $invoice->total_amount = $salesOrder->orderedProducts->sum(function ($product) {
-                        return $product->ordered_quantity * $product->product->price; // Assuming 'price' is the field in Product model
+                        return $product->ordered_quantity * $product->product->mrp; // Assuming 'price' is the field in Product model
                     });
                     $invoice->save();
 
@@ -750,11 +750,54 @@ class SalesOrderController extends Controller
                             'discount' => 0, // Assuming no discount for simplicity
                             'amount' => $detail->ordered_quantity * $product->mrp,
                             'tax' => $product->gst ?? 0, // Assuming tax is a field in Product model
-                            'total_price' => ($detail->ordered_quantity * $product->price) - 0, // Total price after discount
+                            'total_price' => ($detail->ordered_quantity * $product->mrp) - 0, // Total price after discount
                             'description' => isset($detail->tempOrder) ? $detail->tempOrder->description : null, // Assuming description is in TempOrder
                         ];
                     }
                     InvoiceDetails::insert($invoiceDetails);
+                }
+
+                $salesOrderUpdate = SalesOrder::with([
+                    'customerGroup',
+                    'warehouse',
+                    'orderedProducts.product',
+                    'orderedProducts.customer',
+                    'orderedProducts.tempOrder',
+                    'orderedProducts.warehouseStock',
+                ])
+                    ->findOrFail($request->order_id);
+
+                foreach ($salesOrderUpdate->orderedProducts as $order) {
+                    if ($order->tempOrder?->vendor_pi_received_quantity) {
+                        $order->tempOrder->vendor_pi_fulfillment_quantity = $order->tempOrder->vendor_pi_received_quantity;
+                    }
+                    if ($order->ordered_quantity <= ($order->tempOrder?->available_quantity ?? 0) + ($order->tempOrder?->vendor_pi_fulfillment_quantity ?? 0)) {
+                        $order->final_dispatched_quantity = $order->ordered_quantity;
+                    } else {
+                        $order->final_dispatched_quantity = ($order->tempOrder?->available_quantity ?? 0) + ($order->tempOrder?->vendor_pi_fulfillment_quantity ?? 0);
+                    }
+                    $order->save();
+                }
+            } else if ($salesOrder->status == 'ready_to_package') {
+                $salesOrderUpdate = SalesOrder::with([
+                    'customerGroup',
+                    'warehouse',
+                    'orderedProducts.product',
+                    'orderedProducts.customer',
+                    'orderedProducts.tempOrder',
+                    'orderedProducts.warehouseStock',
+                ])
+                    ->findOrFail($request->order_id);
+                foreach ($salesOrderUpdate->orderedProducts as $order) {
+                    if ($order->tempOrder?->vendor_pi_received_quantity) {
+                        $order->tempOrder->vendor_pi_fulfillment_quantity = $order->tempOrder->vendor_pi_received_quantity;
+                    }
+                    if ($order->ordered_quantity <= ($order->tempOrder?->available_quantity ?? 0) + ($order->tempOrder?->vendor_pi_fulfillment_quantity ?? 0)) {
+                        $order->dispatched_quantity = $order->ordered_quantity;
+                    } else {
+                        $order->dispatched_quantity = ($order->tempOrder?->available_quantity ?? 0) + ($order->tempOrder?->vendor_pi_fulfillment_quantity ?? 0);
+                    }
+                    $order->save();
                 }
             }
             $salesOrder->save();
@@ -770,7 +813,7 @@ class SalesOrderController extends Controller
                 return redirect()->back()->with('error', 'Status Not Changed. Please Try Again.');
             }
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Status Not Changed. Please Try Again.');
+            return redirect()->back()->with('error', 'Status Not Changed. Please Try Again.' . $e->getMessage());
         }
     }
 

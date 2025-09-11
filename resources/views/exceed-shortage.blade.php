@@ -83,14 +83,14 @@
                                 <div class="col">
                                     <h6 class="mb-3">Products Table</h6>
                                 </div>
-                                <ul class="nav nav-tabs" id="vendorTabs" role="tablist">
+                                {{-- <ul class="nav nav-tabs" id="vendorTabs" role="tablist">
                                     <select class="form-select border-2 border-primary" id="shortExceedSelect"
                                         aria-label="Default select example">
                                         <option value="" selected>All Products</option>
                                         <option value="Shortage">Shortage Products</option>
                                         <option value="Exceed">Exceed Products</option>
                                     </select>
-                                </ul>
+                                </ul> --}}
                             </div>
                             <div class="product-table" id="poTable">
                                 <div class="table-responsive white-space-nowrap">
@@ -206,7 +206,7 @@
                 var selected = $(this).val().trim();
 
                 // Use regex for exact match
-                table3.column(-3).search(selected ? '^' + selected + '$' : '', true, false).draw();
+                table3.column(-4).search(selected ? '^' + selected + '$' : '', true, false).draw();
             });
 
         });

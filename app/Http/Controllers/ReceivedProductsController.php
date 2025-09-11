@@ -19,11 +19,11 @@ class ReceivedProductsController extends Controller
     public function index()
     {
         $purchaseOrders = PurchaseOrder::with(['purchaseOrderProducts', 'vendorPI'])
-            // ->where('status', 'pending')
+            ->where('status', 'pending')
             ->withCount('purchaseOrderProducts')
-            // ->whereHas('vendorPI', function ($query) {
-            //     $query->where('status', 'pending');
-            // }) 
+            ->whereHas('vendorPI', function ($query) {
+                $query->where('status', 'pending');
+            }) 
             ->get();
         // dd($purchaseOrders);
         return view('receivedProducts.index', compact('purchaseOrders'));

@@ -227,6 +227,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/packaging-list', 'index')->name('packaging.list.index');
         Route::get('/packing-products-list/{id}', 'view')->name('packing.products.view');
         Route::get('/download-packing-products-excel', 'downloadPackagingProducts')->name('download.packing.products.excel');
+        Route::post('/update-packaging-products', 'updatePackagingProducts')->name('update.packing.products');
     });
 
     // 

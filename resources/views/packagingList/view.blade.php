@@ -47,7 +47,7 @@
                                 tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
                                 <div class="modal-dialog">
                                     <div class="modal-content">
-                                        <form action="{{ route('purchase.order.store') }}" method="POST"
+                                        <form action="{{ route('update.packing.products') }}" method="POST"
                                             enctype="multipart/form-data">
                                             @csrf
                                             @method('POST')
@@ -60,7 +60,7 @@
 
                                             <div class="modal-body">
                                                 <div class="col-12 mb-3">
-                                                    <input type="hidden" name="purchase_order_id" value="">
+                                                    <input type="hidden" name="salesOrderId" value="{{ $salesOrder->id }}">
                                                 </div>
 
                                                 <div class="col-12 mb-3">
@@ -108,7 +108,7 @@
                                         <th>MRP</th>
                                         <th>PO&nbsp;Quantity</th>
                                         <th>Warehouse&nbsp;Stock</th>
-                                        <th>PI&nbsp;Quantity</th>
+                                        {{-- <th>PI&nbsp;Quantity</th> --}}
                                         <th>Purchase&nbsp;Order&nbsp;No</th>
                                         <th>Total&nbsp;Dispatch&nbsp;Qty</th>
                                     </tr>
@@ -133,24 +133,10 @@
                                             <td>{{ $order->tempOrder->po_qty }}</td>
                                             {{-- Need to check --}}
                                             <td>{{ $order->warehouseStock->original_quantity }}</td>
-                                            <td>{{ $order->tempOrder?->vendor_pi_fulfillment_quantity }}</td>
+                                            {{-- <td>{{ $order->tempOrder?->vendor_pi_fulfillment_quantity }}</td> --}}
                                             <td>{{ $order->tempOrder->po_number }}</td>
                                             <td>
-                                                @php
-                                                    if ($order->tempOrder?->vendor_pi_received_quantity) {
-                                                        $order->tempOrder->vendor_pi_fulfillment_quantity =
-                                                            $order->tempOrder->vendor_pi_received_quantity;
-                                                    }
-                                                @endphp
-                                                @if (
-                                                    $order->ordered_quantity <=
-                                                        ($order->tempOrder?->available_quantity ?? 0) + ($order->tempOrder?->vendor_pi_fulfillment_quantity ?? 0))
-                                                    <span
-                                                        class="badge text-success bg-success-subtle">{{ $order->ordered_quantity }}</span>
-                                                @else
-                                                    <span
-                                                        class="badge text-danger bg-danger-subtle">{{ ($order->tempOrder?->available_quantity ?? 0) + ($order->tempOrder?->vendor_pi_fulfillment_quantity ?? 0) }}</span>
-                                                @endif
+                                                {{ $order->dispatched_quantity ?? 0 }}
                                             </td>
                                         </tr>
                                     @empty
@@ -220,35 +206,39 @@
                 var customerFacilityName = $("#customerPOTable").val().trim();
                 var salesOrderId = $("#salesOrderId").text().trim();
 
-                $.ajax({
-                    url: '/download-packing-products-excel',
-                    method: 'GET',
-                    data: {
-                        id: salesOrderId,
-                        facility_name: customerFacilityName,
-                    },
-                    xhrFields: {
-                        responseType: 'blob' // important for binary files
-                    },
-                    success: function(data, status, xhr) {
-                        // Get filename from response header (optional)
-                        var filename = xhr.getResponseHeader("Content-Disposition")
-                            ?.split("filename=")[1] || "products.xlsx";
+                if (customerFacilityName != "" && salesOrderId != "") {
+                    $.ajax({
+                        url: '/download-packing-products-excel',
+                        method: 'GET',
+                        data: {
+                            id: salesOrderId,
+                            facility_name: customerFacilityName,
+                        },
+                        xhrFields: {
+                            responseType: 'blob' // important for binary files
+                        },
+                        success: function(data, status, xhr) {
+                            // Get filename from response header (optional)
+                            var filename = xhr.getResponseHeader("Content-Disposition")
+                                ?.split("filename=")[1] || "products.xlsx";
 
-                        var url = window.URL.createObjectURL(data);
-                        var a = document.createElement("a");
-                        a.href = url;
-                        a.download = filename;
-                        document.body.appendChild(a);
-                        a.click();
-                        a.remove();
-                        window.URL.revokeObjectURL(url);
-                    },
-                    error: function(xhr, status, error) {
-                        console.error("Error:", error);
-                        alert("Error");
-                    }
-                });
+                            var url = window.URL.createObjectURL(data);
+                            var a = document.createElement("a");
+                            a.href = url;
+                            a.download = filename;
+                            document.body.appendChild(a);
+                            a.click();
+                            a.remove();
+                            window.URL.revokeObjectURL(url);
+                        },
+                        error: function(xhr, status, error) {
+                            console.error("Error:", error);
+                            alert("Error");
+                        }
+                    });
+                } else {
+                    alert("Please Select Client Name.");
+                }
             });
 
         });

@@ -28,34 +28,69 @@
                                                 <th>Brand&nbsp;Title</th>
                                                 <th>SKU&nbsp;Code</th>
                                                 <th>MRP</th>
-                                                <th>Purchase&nbsp;Rate</th>
                                                 <th>GST</th>
                                                 <th>HSN</th>
                                                 <th>Quantity&nbsp;Requirement</th>
-                                                {{-- <th>Available&nbsp;Quantity</th> --}}
+                                                <th>Available&nbsp;Quantity</th>
+                                                <th>Purchase&nbsp;Rate</th>
                                                 <th>Received&nbsp;Quantity</th>
                                                 <th>Issue</th>
-                                                <th>Returned&nbsp;Items</th>
+                                                <th>Issue&nbsp;Items</th>
+                                                <th>Issue&nbsp;Reason</th>
+                                                <th>Action</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             @forelse($vendorOrders as $order)
                                                 <tr>
-                                                    <td>
-                                                        <a
+                                                    <td><a
                                                             href="{{ route('purchase.order.view', $order->purchase_order_id ?? 0) }}">{{ $order->purchase_order_id ?? 0 }}</a>
                                                     </td>
                                                     <td>{{ $order->product->brand_title ?? 'NA' }}</td>
                                                     <td>{{ $order->vendor_sku_code }}</td>
                                                     <td>{{ $order->mrp }}</td>
-                                                    <td>{{ $order->purchase_rate }}</td>
                                                     <td>{{ $order->gst }}</td>
                                                     <td>{{ $order->hsn }}</td>
                                                     <td>{{ $order->quantity_requirement }}</td>
-                                                    {{-- <td>{{ $order->available_quantity }}</td> --}}
+                                                    <td>{{ $order->available_quantity }}</td>
+                                                    <td>{{ $order->purchase_rate }}</td>
                                                     <td>{{ $order->quantity_received }}</td>
                                                     <td>{{ ucfirst($order->issue_reason) }}</td>
                                                     <td>{{ $order->issue_item }}</td>
+                                                    <td>{{ $order->issue_description }}</td>
+                                                    <td>
+                                                        <div class="d-flex justify-content-center align-items-center">
+                                                            @if ($order->issue_reason === 'Exceed')
+                                                                <a aria-label="return"
+                                                                    href="{{ route('vendor.product.return', $order->id) }}"
+                                                                    class="btn btn-icon btn-sm bg-warning-subtle me-1"
+                                                                    data-bs-toggle="tooltip"
+                                                                    data-bs-original-title="Return">
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="13"
+                                                                        height="13" viewBox="0 0 24 24" fill="none"
+                                                                        stroke="currentColor" stroke-width="2"
+                                                                        stroke-linecap="round" stroke-linejoin="round"
+                                                                        class="feather feather-corner-up-left text-warning">
+                                                                        <polyline points="9 14 4 9 9 4"></polyline>
+                                                                        <path d="M20 20v-7a4 4 0 0 0-4-4H4"></path>
+                                                                    </svg>
+                                                                </a>
+                                                            @endif
+
+                                                            <a aria-label="accept"
+                                                                href="{{ route('vendor.product.accept', $order->id) }}"
+                                                                class="btn btn-icon btn-sm bg-success-subtle me-1"
+                                                                data-bs-toggle="tooltip" data-bs-original-title="Accept">
+                                                                <svg xmlns="http://www.w3.org/2000/svg" width="13"
+                                                                    height="13" viewBox="0 0 24 24" fill="none"
+                                                                    stroke="currentColor" stroke-width="2"
+                                                                    stroke-linecap="round" stroke-linejoin="round"
+                                                                    class="feather feather-check text-success">
+                                                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                                                </svg>
+                                                            </a>
+                                                        </div>
+                                                    </td>
                                                 </tr>
                                             @empty
                                                 <tr>

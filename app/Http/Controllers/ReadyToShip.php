@@ -52,22 +52,20 @@ class ReadyToShip extends Controller
 
         $customerInfo = Customer::find($c_id);
         $invoice = Invoice::where('customer_id', $c_id)->where('sales_order_id', $id)->first();
-        // dd($salesOrder);
-
-        // dd($salesOrder->orderedProducts);
+        
         // dd(json_encode($salesOrder, JSON_PRETTY_PRINT));
         return view('readyToShip.view-detail', compact('salesOrder', 'customerInfo', 'invoice'));
     }
 
     public function issuesProducts()
     {
-        $vendorOrders = VendorPIProduct::with(['order', 'product'])->where('issue_item', '>', 0)->where('issue_status', 'pending')->get();
+        $vendorOrders = VendorPIProduct::with(['order', 'product'])->where('issue_reason', 'Shortage')->where('issue_status', 'pending')->get();
         return view('exceed-shortage', compact('vendorOrders'));
     }
 
     public function returnAccept()
     {
-        $vendorOrders = VendorPIProduct::with(['order', 'product'])->where('issue_status', 'return')->get();
+        $vendorOrders = VendorPIProduct::with(['order', 'product'])->where('issue_reason', 'Exceed')->where('issue_status', 'pending')->get();
         // dd($vendorOrders);
         return view('return-or-accept', compact('vendorOrders'));
     }

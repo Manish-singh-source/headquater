@@ -4,10 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Models\VendorPI;
 use App\Models\SalesOrder;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Models\SalesOrderProduct;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Spatie\SimpleExcel\SimpleExcelReader;
 use Spatie\SimpleExcel\SimpleExcelWriter;
 
 class PackagingController extends Controller
@@ -23,13 +26,13 @@ class PackagingController extends Controller
     {
 
         $salesOrder = SalesOrder::with([
-            'customerGroup',
-            'warehouse',
-            'orderedProducts.product',
-            'orderedProducts.customer',
-            'orderedProducts.tempOrder',
-            'orderedProducts.warehouseStock',
-        ])
+                'customerGroup',
+                'warehouse',
+                'orderedProducts.product',
+                'orderedProducts.customer',
+                'orderedProducts.tempOrder',
+                'orderedProducts.warehouseStock',
+            ])
             ->findOrFail($id);
 
         $facilityNames = collect();
@@ -85,7 +88,7 @@ class PackagingController extends Controller
             } else {
                 $totalDispatchQty = ($order->tempOrder?->available_quantity ?? 0) + ($order->tempOrder?->vendor_pi_fulfillment_quantity ?? 0);
             }
-            if ($order->tempOrder->facility_name != $request->facility_name) {
+            if (isset($request->facility_name) && $order->tempOrder->facility_name != $request->facility_name) {
                 continue;
             }
             $writer->addRow([
@@ -105,7 +108,7 @@ class PackagingController extends Controller
                 'MRP' => $order->tempOrder->mrp,
                 'PO Quantity' => $order->tempOrder->po_qty,
                 'Warehouse Stock' => $order->warehouseStock->original_quantity,
-                'PI Quantity' => $order->tempOrder?->vendor_pi_fulfillment_quantity,
+                // 'PI Quantity' => $order->tempOrder?->vendor_pi_fulfillment_quantity,
                 'Purchase Order No' => $order->tempOrder->po_number,
                 'Total Dispatch Qty' => $totalDispatchQty
             ]);
@@ -117,5 +120,63 @@ class PackagingController extends Controller
         return response()->download($tempXlsxPath, 'Packaging-Products.xlsx', [
             'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         ])->deleteFileAfterSend(true);
+    }
+
+    public function updatePackagingProducts(Request $request)
+    {
+        $request->validate([
+            'products_excel' => 'required|file|mimes:xlsx,csv,xls',
+        ]);
+
+        $file = $request->file('products_excel');
+        $filepath = $file->getPathname();
+        $extension = $file->getClientOriginalExtension();
+
+        DB::beginTransaction();
+
+        try {
+            $reader = SimpleExcelReader::create($filepath, $extension);
+            $rows = $reader->getRows();
+            $products = [];
+            $warehouseStockUpdate = [];
+            $insertCount = 0;
+
+            foreach ($rows as $record) {
+                if (empty($record['SKU Code'])) continue;
+
+                $products[] = [
+                    'sku' => Arr::get($record, 'SKU Code') ?? '',
+                    'ean_code' => Arr::get($record, 'EAN Code') ?? '',
+                    'brand' => Arr::get($record, 'Brand') ?? '',
+                    'brand_title' => Arr::get($record, 'Brand Title') ?? '',
+                    'mrp' => Arr::get($record, 'MRP') ?? '',
+                    'category' => Arr::get($record, 'Category') ?? '',
+                    'pcs_set' => Arr::get($record, 'PCS/Set') ?? '',
+                    'sets_ctn' => Arr::get($record, 'Sets/CTN') ?? '',
+                    'vendor_name' => Arr::get($record, 'Vendor Name') ?? '',
+                    'vendor_purchase_rate' => Arr::get($record, 'Vendor Purchase Rate') ?? '',
+                    'gst' => Arr::get($record, 'GST') ?? '',
+                    'vendor_net_landing' => Arr::get($record, 'Vendor Net Landing') ?? '',
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ];
+
+
+                $insertCount++;
+            }
+
+            if ($insertCount === 0) {
+                DB::rollBack();
+                return redirect()->back()->withErrors(['products_excel' => 'No valid data found in the file.']);
+            }
+
+            // Product::upsert($products, ['sku']);
+
+            DB::commit();
+            return redirect()->route('products.index')->with('success', 'CSV file imported successfully.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->withErrors(['error' => 'Something went wrong: ' . $e->getMessage()]);
+        }
     }
 }
