@@ -42,7 +42,7 @@ Route::controller(RegisterController::class)->group(function () {
 Route::middleware(['auth'])->group(function () {
     Route::get('/', function () {
         return view('index');
-    })->middleware('auth')->name('index');
+    })->name('index');
 
 
     //Access Control
