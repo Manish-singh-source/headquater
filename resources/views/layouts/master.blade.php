@@ -561,6 +561,7 @@
                       </a>
                   </li>
 
+                  {{-- 
                   <li class="menu-label">Activity Logs</li>
                   <li>
                       <a href="{{ route('activity.log') }}">
@@ -568,7 +569,8 @@
                           </div>
                           <div class="menu-title">Activity Logs</div>
                       </a>
-                  </li>
+                  </li> 
+                  --}}
 
                   <li class="menu-label">Excel Formats</li>
                   <li>
