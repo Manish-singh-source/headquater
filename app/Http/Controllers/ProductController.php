@@ -15,11 +15,9 @@ use Spatie\SimpleExcel\SimpleExcelWriter;
 class ProductController extends Controller
 {
     //
-    // done
     public function index()
     {
         $products = WarehouseStock::with('product', 'warehouse')->get();
-        // dd($products);
         return view('products.index', compact('products'));
     }
 
@@ -72,12 +70,6 @@ class ProductController extends Controller
                 isset($record['Stock']) ? $warehouseStock->available_quantity = $record['Stock'] : $warehouseStock->available_quantity = 0;
                 $warehouseStock->save();
 
-                // $warehouseStock = new WarehouseStockLog();
-                // $warehouseStock->warehouse_id = $request->warehouse_id;
-                // $warehouseStock->sku = $record['SKU Code'];
-                // $warehouseStock->quantity = $record['Sets/CTN'];
-                // $warehouseStock->save();
-
                 $insertCount++;
             }
 
@@ -89,7 +81,6 @@ class ProductController extends Controller
             DB::commit();
             return redirect()->route('products.index')->with('success', 'CSV file imported successfully.');
         } catch (\Exception $e) {
-            // dd($e->getMessage());
             DB::rollBack();
             return redirect()->back()->withErrors(['error' => 'Something went wrong: ' . $e->getMessage()]);
         }

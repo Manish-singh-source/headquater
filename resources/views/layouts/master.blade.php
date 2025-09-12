@@ -561,15 +561,15 @@
                       </a>
                   </li>
 
-                  {{-- <li class="menu-label">Activity Logs</li>
+                  <li class="menu-label">Activity Logs</li>
                   <li>
                       <a href="{{ route('activity.log') }}">
                           <div class="parent-icon"><i class="material-icons-outlined">store</i>
                           </div>
                           <div class="menu-title">Activity Logs</div>
                       </a>
-                  </li> --}}
-                  
+                  </li>
+
                   <li class="menu-label">Excel Formats</li>
                   <li>
                       <a href="{{ route('excel-file-formats') }}">
@@ -738,18 +738,23 @@
       </div>
       <!--end cart-->
 
+      <!--plugins-->
+      <script src="{{ asset('assets/js/jquery.min.js') }}"></script>
 
       <!--bootstrap js-->
       <script src="{{ asset('assets/js/bootstrap.bundle.min.js') }}"></script>
 
       <!--plugins-->
-      <script src="{{ asset('assets/js/jquery.min.js') }}"></script>
-      <!--plugins-->
       <script src="{{ asset('assets/plugins/perfect-scrollbar/js/perfect-scrollbar.js') }}"></script>
       <script src="{{ asset('assets/plugins/metismenu/metisMenu.min.js') }}"></script>
       <script src="{{ asset('assets/plugins/simplebar/js/simplebar.min.js') }}"></script>
-      <script src="{{ asset('assets/js/main.js') }}"></script>
 
+      <script src="{{ asset('assets/js/main.js') }}"></script>
+      <script>
+          $(function() {
+              $('#sidenav').metisMenu();
+          });
+      </script>
 
       <script src="{{ asset('assets/plugins/datatable/js/jquery.dataTables.min.js') }}"></script>
       <script src="{{ asset('assets/plugins/datatable/js/dataTables.bootstrap5.min.js') }}"></script>

@@ -104,9 +104,7 @@ class SalesOrderController extends Controller
                 // after checking sku mapping check if product actual present or not in db
                 // if no stock entry present in table
                 if (!isset($product)) {
-                    // Store Product & Stock Quantity as well
                     $productStatus = 'Not Found';
-                    // continue;
                 }
 
                 // check for customer and vendor available or not
@@ -123,9 +121,7 @@ class SalesOrderController extends Controller
                 // customer availibility check done
 
                 if (!$customerInfo) {
-                    // If customer not found, skip this record
                     $customerStatus = 'Not Found';
-                    // continue;
                 }
 
                 // vendor availibility check
@@ -134,9 +130,7 @@ class SalesOrderController extends Controller
                 // vendor availibility check done
 
                 if (!$vendorInfo) {
-                    // If vendor not found, skip this record
                     $vendorStatus = 'Not Found';
-                    // continue;
                 }
 
                 if ($customerStatus == 'Not Found' || $vendorStatus == 'Not Found' || $productStatus == 'Not Found') {
@@ -207,7 +201,6 @@ class SalesOrderController extends Controller
 
 
                 // Use cached values
-                // $remaining = $productStockCache[$sku]['remaining'];
                 $availableQty = $productStockCache[$sku]['available'];
 
                 // Stock check
@@ -411,32 +404,6 @@ class SalesOrderController extends Controller
                 }
 
                 // Find customer
-                // $customerFacilityName = preg_replace('/^moonstone ventures llp\s*/i', '', $record['Facility Location']);
-                // // $customer = Customer::where('shipping_address', $customerFacilityName)->first();
-                // $parts = explode(',', $customerFacilityName);
-
-                // // Take only first 3 parts to match street/area
-                // $trimmedAddress = implode(',', array_slice($parts, 0, 3));
-
-                // $keywords = preg_split('/[\s\-]+/', $trimmedAddress, -1, PREG_SPLIT_NO_EMPTY);
-
-                // $query = DB::table('customers');
-                // $query->where(function ($q) use ($keywords) {
-                //     foreach ($keywords as $word) {
-                //         $q->orWhere('shipping_address', 'like', "%{$word}%");
-                //     }
-                // });
-                // $customerInfo = $query->first();
-
-                // $keywords = preg_split('/[\s\-]+/', $record['Facility Location'], -1, PREG_SPLIT_NO_EMPTY);
-                // $query = DB::table('customers');
-                // $query->where(function ($q) use ($keywords) {
-                //     foreach ($keywords as $word) {
-                //         $q->orWhere('shipping_address', 'like', "%{$word}%");
-                //     }
-                // });
-                // $customerInfo = $query->first();
-
                 $customerInfo = Customer::where('facility_name', $record['Facility Name'])->first();
 
                 if (!$customerInfo) {
@@ -449,7 +416,6 @@ class SalesOrderController extends Controller
                     ->where('sales_order_id', $request->sales_order_id)
                     ->where('customer_id', $customerInfo->id)
                     ->first();
-                // dd($salesOrderProductUpdate);
 
                 if (!$salesOrderProductUpdate) {
                     continue;
@@ -584,8 +550,8 @@ class SalesOrderController extends Controller
 
         $vendorPiFulfillmentTotal = 0;
         $availableQuantity = 0;
-        // dd($salesOrder->orderedProducts);
         $caching = [];
+
         foreach ($salesOrder->orderedProducts as $product) {
             if (isset($product->tempOrder)) {
                 if ($product->tempOrder?->vendor_pi_received_quantity) {
@@ -856,89 +822,16 @@ class SalesOrderController extends Controller
                     $product = Product::where('sku', $sku)->first();
                 }
 
-                // after checking sku mapping check if product actual present or not in db 
+                // check if product is present
                 if (!$product) {
-                    // Handle SKU not found case
-                    // $insertedRows[] = [
-                    //     'Customer Name' => $record['Customer Name'] ?? '',
-                    //     'PO Number' => $record['PO Number'] ?? '',
-                    //     'SKU Code' => $sku ?? '',
-                    //     'Facility Name' => $record['Facility Name'] ?? '',
-                    //     'Facility Location' => $record['Facility Location'] ?? '',
-                    //     'PO Date' => Carbon::parse($record['PO Date'])->format('d-m-Y'),
-                    //     'PO Expiry Date' => Carbon::parse($record['PO Expiry Date'])->format('d-m-Y'),
-                    //     'HSN' => $record['HSN'] ?? '',
-                    //     'Item Code' => $record['Item Code'] ?? '',
-                    //     'Description' => $record['Description'] ?? '',
-                    //     'GST' => ($record['GST'] < 1 && $record['GST'] > 0)
-                    //         ? intval(round($record['GST'] * 100))  // convert decimals (0.18 -> 18)
-                    //         : intval($record['GST']),              // already integer (e.g., 18)
-                    //     'Basic Rate' => $record['Basic Rate'] ?? '',
-                    //     'Net Landing Rate' => $record['Net Landing Rate'] ?? '',
-                    //     // rate confirmation need to add 
-                    //     'MRP' => $record['MRP'] ?? '',
-                    //     'Product MRP' => $product->mrp ?? 0,
-                    //     'MRP Confirmation' => ($record['MRP'] >= ($product->mrp ?? 0)) ? 'Correct' : 'Incorrect',
-                    //     'Case Pack Quantity' => $casePackQty ?? 0,
-                    //     'PO Quantity' => $poQty,
-                    //     'Available Quantity' => 0,
-                    //     'Unavailable Quantity' => 0,
-                    //     'Reason' => 'SKU Not Found'
-                    // ];
                     $reason = 'SKU Not Found';
-                    // continue;
                 }
 
-                // check customer is available or not
-                // $customer = Customer::where('client_name', $record['Facility Name'])->first();
-                // $customer = Customer::where('shipping_address', 'like', '%'.$record['Facility Location'] .'%')
-                //         ->first();
-
-                // Split into words (remove symbols like "-" for cleaner matching)
-                // $keywords = preg_split('/[\s\-]+/', $record['Facility Location'], -1, PREG_SPLIT_NO_EMPTY);
-                // $query = DB::table('customers'); // your table
-
-                // $query->where(function ($q) use ($keywords) {
-                //     foreach ($keywords as $word) {
-                //         $q->orWhere('shipping_address', 'like', "%{$word}%");
-                //     }
-                // });
-
-                // $customer = $query->first();
                 $customer = Customer::where('facility_name', $record['Facility Name'])->first();
 
                 // Check if customer is present
                 if (!$customer) {
-                    // Handle customer not found case
-                    // $insertedRows[] = [
-                    //     'Customer Name' => $record['Customer Name'] ?? '',
-                    //     'PO Number' => $record['PO Number'] ?? '',
-                    //     'SKU Code' => $sku ?? '',
-                    //     'Facility Name' => $record['Facility Name'] ?? '',
-                    //     'Facility Location' => $record['Facility Location'] ?? '',
-                    //     'PO Date' => Carbon::parse($record['PO Date'])->format('d-m-Y'),
-                    //     'PO Expiry Date' => Carbon::parse($record['PO Expiry Date'])->format('d-m-Y'),
-                    //     'HSN' => $record['HSN'] ?? '',
-                    //     'Item Code' => $record['Item Code'] ?? '',
-                    //     'Description' => $record['Description'] ?? '',
-                    //     // if in % convert in normal integer
-                    //     'GST' => ($record['GST'] < 1 && $record['GST'] > 0)
-                    //         ? intval(round($record['GST'] * 100))  // convert decimals (0.18 -> 18)
-                    //         : intval($record['GST']),              // already integer (e.g., 18)
-                    //     'Basic Rate' => $record['Basic Rate'] ?? '',
-                    //     'Net Landing Rate' => $record['Net Landing Rate'] ?? '',
-                    //     'MRP' => $record['MRP'] ?? '',
-                    //     'Product MRP' => $stockEntry->product->mrp ?? 0,
-                    //     'MRP Confirmation' => ($record['MRP'] >= ($stockEntry->product->mrp ?? 0)) ? 'Correct' : 'Incorrect',
-                    //     'Case Pack Quantity' => $casePackQty ?? 0,
-                    //     'PO Quantity' => $poQty,
-                    //     'Available Quantity' => 0,
-                    //     'Unavailable Quantity' => 0,
-                    //     'Reason' => 'Customer Not Found'
-                    // ];
-
                     $reason += ' | Customer Not Found';
-                    // continue;
                 }
 
                 if ($reason != '') {

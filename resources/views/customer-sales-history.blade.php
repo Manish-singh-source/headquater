@@ -25,7 +25,7 @@
                                 <div class="ms-2">
                                     <p class="text-dark mb-1">Total Customer Orders</p>
                                     <div class="d-inline-flex align-items-center flex-wrap gap-2">
-                                        <h4 class="text-dark">{{ $invoices->count() }}</h4>
+                                        <h4 class="text-dark">{{ $customers->count() }}</h4>
                                         <!-- <span class="badge badge-soft-primary text-dark"><i class="ti ti-arrow-up me-1"></i>+22%</span> -->
                                     </div>
                                 </div>
@@ -87,64 +87,40 @@
 
             <div class="card mt-4">
                 <div class="card-body pb-1">
-                    <form action="customer-report.html">
-                        <div class="row align-items-end">
-                            <div class="col-lg-10">
-                                <div class="row">
-                                    <div class="col-md-3">
-                                        <div class="mb-3">
-                                            <label class="form-label">Choose Date</label>
-                                            <div class="input-icon-start position-relative">
-                                                <input type="date" class="form-control date-range bookingrange"
-                                                    id="date-select" placeholder="dd/mm/yyyy">
-                                                <span class="input-icon-left">
-                                                    <i class="ti ti-calendar"></i>
-                                                </span>
-                                            </div>
+                    <div class="row align-items-end">
+                        <div class="col-lg-10">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <div class="mb-3">
+                                        <label class="form-label">Choose Date</label>
+                                        <div class="input-icon-start position-relative">
+                                            <input type="date" class="form-control date-range bookingrange"
+                                                id="date-select" placeholder="dd/mm/yyyy">
+                                            <span class="input-icon-left">
+                                                <i class="ti ti-calendar"></i>
+                                            </span>
                                         </div>
                                     </div>
-                                    <div class="col-md-3">
-                                        <div class="mb-3">
-                                            <label class="form-label">Customer Name</label>
-                                            <select id="customer-select" class="form-select">
-                                                <option selected>-- Select --</option>
-                                                @foreach ($customers as $customer)
-                                                    <option value="{{ $customer }}">{{ $customer }} </option>
-                                                @endforeach
-                                            </select>
-                                        </div>
-                                    </div>
-                                    {{-- <div class="col-md-3">
-                                        <div class="mb-3">
-                                            <label class="form-label">Payment Method</label>
-                                            <select id="status" class="form-select">
-                                                <option disabled selected>-- Select --</option>
-                                                <option>Cash</option>
-                                                <option>Paypal</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-3">
-                                        <div class="mb-3">
-                                            <label class="form-label">Payment Status</label>
-                                            <select id="status" class="form-select">
-                                                <option disabled selected>-- Select --</option>
-                                                <option>All</option>
-                                                <option>Paid</option>
-                                                <option>Unpaid </option>
-                                                <option>Paid</option>
-                                            </select>
-                                        </div>
-                                    </div> --}}
                                 </div>
-                            </div>
-                            <div class="col-lg-2">
-                                <div class="mb-3">
-                                    <a href="#" class="btn btn-danger w-100" type="">Generate Report</a>
+                                <div class="col-md-3">
+                                    <div class="mb-3">
+                                        <label class="form-label">Customer Name</label>
+                                        <select id="customer-select" class="form-select">
+                                            <option selected>-- Select --</option>
+                                            @foreach ($customers as $customer)
+                                                <option value="{{ $customer['id'] }}" data-name="{{ $customer['name'] }}">{{ $customer['name'] }} </option>
+                                            @endforeach
+                                        </select>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </form>
+                        <div class="col-lg-2">
+                            <div class="mb-3">
+                                <button id="exportData" class="btn btn-danger w-100">Generate Report</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -219,6 +195,23 @@
 @section('script')
     <script>
         $(document).ready(function() {
+            $(document).on('click', '#exportData', function() {
+                var selectedDate = $("#date-select").val().trim();
+                if (selectedDate) {
+                    var parts = selectedDate.split('-');
+                    var formatted = parts[2] + '-' + parts[1] + '-' + parts[0];
+                }
+                var customerId = $("#customer-select").val();
+
+                // Construct download URL with parameters
+                var downloadUrl = '{{ route('customer.sales.history.excel') }}' +
+                    '?selectedDate=' + encodeURIComponent(selectedDate) +
+                    '&customerId=' + encodeURIComponent(customerId);
+
+                // Trigger browser download
+                window.location.href = downloadUrl;
+            });
+
             var customerSalesHistoryTable = $('#customer-sales-history-table').DataTable({
                 "columnDefs": [{
                         "orderable": false,
@@ -236,7 +229,7 @@
 
             $('#date-select').on('change', function() {
                 var selected = $(this).val().trim();
-                // date formatting 
+                // date formatting
                 // if (selected) {
                 //     var parts = selected.split('-');
                 //     var formatted = parts[2] + '-' + parts[1] + '-' + parts[0];
@@ -248,8 +241,9 @@
             });
 
             $('#customer-select').on('change', function() {
-                var selected = $(this).val().trim();
-                console.log(selected);
+                // var selected = $(this).val().trim();
+                var selected = $("#customer-select option:selected").data('name');
+                console.log(selected)
                 customerSalesHistoryTable.column(2).search(selected ? '^' + selected + '$' : '', true,
                         false)
                     .draw();

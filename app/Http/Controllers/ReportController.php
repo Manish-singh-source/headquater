@@ -66,7 +66,7 @@ class ReportController extends Controller
                 'Total Amount' => $record->products->sum('mrp'),
                 'Paid' => $record->products->sum('paid_amount') ?? '0',
                 'Due' => $record->products->sum('due_amount') ?? '0',
-                'Ordered Dat' => $record->created_at?->format('d-m-Y') ?? 'NA',
+                'Ordered Date' => $record->created_at?->format('d-m-Y') ?? 'NA',
             ]);
         }
 
@@ -151,10 +151,73 @@ class ReportController extends Controller
             'invoicesAmountPaidSum' => Invoice::with('payments')->get()->sum(function ($invoice) {
                 return $invoice->payments->sum('amount');
             }),
+            'customers' => Invoice::with('customer')
+                ->get()
+                ->pluck('customer') // get the customer relation
+                ->filter()           // remove nulls
+                ->unique('id')       // get distinct by id
+                ->values()           // reset keys
+                ->map(function ($customer) {
+                    return [
+                        'id' => $customer->id,
+                        'name' => $customer->client_name,
+                    ];
+                })
+        ];
+        return view('customer-sales-history', $data);
+    }
+
+
+    public function customerSalesHistoryExcel(Request $request)
+    {
+        $validated = Validator::make($request->all(), [
+            'selectedDate' => 'required|date',
+            'customerId' => 'required',
+        ]);
+
+        if ($validated->failed()) {
+            return back()->with('error', 'Please Try Again.');
+        }
+
+        // Create temporary .xlsx file path
+        $tempXlsxPath = storage_path('app/customer_sales_history_' . Str::random(8) . '.xlsx');
+
+        // Create writer
+        $writer = SimpleExcelWriter::create($tempXlsxPath);
+
+        // Fetch data with relationships
+        $data = [
+            'title' => 'Invoices',
+            'invoices' => Invoice::with(['warehouse', 'customer', 'salesOrder', 'payments'])->get(),
+            'invoicesAmountSum' => Invoice::sum('total_amount'),
+            'invoicesAmountPaidSum' => Invoice::with('payments')->get()->sum(function ($invoice) {
+                return $invoice->payments->sum('amount');
+            }),
             'customers' => Invoice::with('customer')->get()->map(function ($invoice) {
                 return $invoice->customer->client_name ?? null;
             })
         ];
-        return view('customer-sales-history', $data);
+
+
+        // Add rows
+        foreach ($data['invoices'] as $invoice) {
+            $writer->addRow([
+                'Reference' => $invoice->invoice_number ?? 'NA',
+                'Customer Name' => $invoice->customer->client_name ?? 'NA',
+                'Ordered Date' => $invoice->invoice_date ?? 'NA',
+                'Total Amount' => number_format($invoice->total_amount, 2) ?? '0',
+                'Paid' => number_format($invoice->payments?->sum('amount'), 2) ?? '0',
+                'Due' => number_format($invoice->total_amount - $invoice->payments?->sum('amount'), 2) ?? '0',
+            ]);
+        }
+
+        // Close the writer
+        $writer->close();
+
+        $fileName = 'Customer-Sales-History.xlsx';
+
+        return response()->download($tempXlsxPath, $fileName, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ])->deleteFileAfterSend(true);
     }
 }

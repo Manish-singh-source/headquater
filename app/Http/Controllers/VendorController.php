@@ -58,7 +58,6 @@ class VendorController extends Controller
         $vendor->status = $request->status;
         $vendor->save();
 
-
         return redirect()->route('vendor.index')->with('success', 'Customer added successfully.');
     }
 
@@ -118,7 +117,6 @@ class VendorController extends Controller
     public function view($id)
     {
         $vendor = Vendor::with('orders.purchaseOrderProducts')->findOrFail($id);
-        // dd($vendor);
         return view('vendor.view', compact('vendor'));
     }
 

@@ -255,6 +255,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/customer-sales-history', 'customerSalesHistory')->name('customer-sales-history');
         Route::get('/vendor-purchase-history-excel', 'vendorPurchaseHistoryExcel')->name('vendor.purchase.history.excel');
         Route::get('/inventory-stock-history-excel', 'inventoryStockHistoryExcel')->name('inventory.stock.history.excel');
+        Route::get('/customer-sales-history-excel', 'customerSalesHistoryExcel')->name('customer.sales.history.excel');
     });
 
     // invoice
