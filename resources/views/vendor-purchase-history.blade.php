@@ -41,7 +41,8 @@
                                 <div class="ms-2">
                                     <p class="text-dark mb-1">Total Amount</p>
                                     <div class="d-inline-flex align-items-center flex-wrap gap-2">
-                                        <h4 class="text-dark">{{ $purchaseOrdersTotal . '₹' }}</h4>
+                                        <h4 class="text-dark">
+                                            {{ $purchaseOrdersTotal * $purchaseOrdersTotalQuantity . '₹' }}</h4>
                                         <!-- <span class="badge badge-soft-primary text-dark"><i class="ti ti-arrow-up me-1"></i>+22%</span> -->
                                     </div>
                                 </div>
@@ -86,34 +87,34 @@
 
             <div class="card mt-4">
                 <div class="card-body pb-1">
-                    <form action="customer-report.html">
-                        <div class="row align-items-end">
-                            <div class="col-lg-10">
-                                <div class="row">
-                                    <div class="col-md-3">
-                                        <div class="mb-3">
-                                            <label class="form-label">Choose Date</label>
-                                            <div class="input-icon-start position-relative">
-                                                <input type="date" class="form-control date-range bookingrange"
-                                                    id="date-select" placeholder="dd/mm/yyyy">
-                                                <span class="input-icon-left">
-                                                    <i class="ti ti-calendar"></i>
-                                                </span>
-                                            </div>
+                    <div class="row align-items-end">
+                        <div class="col-lg-10">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <div class="mb-3">
+                                        <label class="form-label">Choose Date</label>
+                                        <div class="input-icon-start position-relative">
+                                            <input type="date" class="form-control date-range bookingrange"
+                                                id="date-select" placeholder="dd/mm/yyyy">
+                                            <span class="input-icon-left">
+                                                <i class="ti ti-calendar"></i>
+                                            </span>
                                         </div>
                                     </div>
-                                    <div class="col-md-3">
-                                        <div class="mb-3">
-                                            <label class="form-label">Vendor Name</label>
-                                            <select id="vendor-select" class="form-select">
-                                                <option value="" selected>-- Select --</option>
-                                                @foreach ($purchaseOrdersVendors as $purchaseOrdersVendor)
-                                                    <option value="{{ $purchaseOrdersVendor }}">{{ $purchaseOrdersVendor }}</option>
-                                                @endforeach
-                                            </select>
-                                        </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="mb-3">
+                                        <label class="form-label">Vendor Name</label>
+                                        <select id="vendor-code" class="form-select">
+                                            <option value="" selected>-- Select --</option>
+                                            @foreach ($purchaseOrdersVendors as $purchaseOrdersVendor)
+                                                <option value="{{ $purchaseOrdersVendor }}">{{ $purchaseOrdersVendor }}
+                                                </option>
+                                            @endforeach
+                                        </select>
                                     </div>
-                                    {{-- <div class="col-md-3">
+                                </div>
+                                {{-- <div class="col-md-3">
                                         <div class="mb-3">
                                             <label class="form-label">Payment Method</label>
                                             <select id="status" class="form-select">
@@ -135,15 +136,14 @@
                                             </select>
                                         </div>
                                     </div> --}}
-                                </div>
-                            </div>
-                            <div class="col-lg-2">
-                                <div class="mb-3">
-                                    <a href="#" class="btn btn-danger w-100" type="">Generate Report</a>
-                                </div>
                             </div>
                         </div>
-                    </form>
+                        <div class="col-lg-2">
+                            <div class="mb-3">
+                                <button id="exportData" class="btn btn-danger w-100">Generate Report</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -218,6 +218,25 @@
 @section('script')
     <script>
         $(document).ready(function() {
+
+            $(document).on('click', '#exportData', function() {
+                var selectedDate = $("#date-select").val().trim();
+                if (selectedDate) {
+                    var parts = selectedDate.split('-');
+                    var formatted = parts[2] + '-' + parts[1] + '-' + parts[0];
+                }
+                var vendorCode = $("#vendor-code").val();
+
+                // Construct download URL with parameters
+                var downloadUrl = '{{ route('vendor.purchase.history.excel') }}' +
+                    '?selectedDate=' + encodeURIComponent(selectedDate) +
+                    '&vendorCode=' + encodeURIComponent(vendorCode);
+
+                // Trigger browser download
+                window.location.href = downloadUrl;
+            });
+
+
             var vendorHistoryTable = $('#vendor-purchase-history-table').DataTable({
                 "columnDefs": [{
                         "orderable": false,
@@ -243,7 +262,7 @@
                     .draw();
             });
 
-            $('#vendor-select').on('change', function() {
+            $('#vendor-code').on('change', function() {
                 var selected = $(this).val().trim();
                 vendorHistoryTable.column(2).search(selected ? '^' + selected + '$' : '', true, false)
                     .draw();

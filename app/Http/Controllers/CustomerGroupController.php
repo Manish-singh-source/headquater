@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\CustomerGroup;
 use Illuminate\Support\Facades\DB;
 use App\Models\CustomerGroupMember;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Spatie\SimpleExcel\SimpleExcelReader;
 
@@ -135,10 +136,17 @@ class CustomerGroupController extends Controller
             }
 
             DB::commit();
+            // Log activity
+            activity()
+                ->performedOn($customerGroup)
+                ->causedBy(Auth::user())
+                ->withProperties(['attributes' => $customerGroup->toArray()])
+                ->event('created')
+                ->log("Customer Group created");
             return redirect()->route('customer.groups.index')->with('success', 'CSV file imported successfully. Group and customers created.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return redirect()->back()->withErrors(['error' => 'Something went wrong: ' . $e->getMessage()]);
+            return redirect()->back()->with(['error' => 'Something went wrong: ' . $e->getMessage()]);
         }
     }
 
@@ -169,6 +177,17 @@ class CustomerGroupController extends Controller
         $customerGroup->save();
 
         if ($customerGroup) {
+            activity()
+                ->performedOn($customerGroup)
+                ->causedBy(Auth::user())
+                ->withProperties([
+                    'old' => $customerGroup->getPrevious(),
+                    'new' => $customerGroup->getChanges()
+                ])
+                ->event('updated')
+                ->log("Customer Group updated");
+
+
             return redirect()->route('customer.groups.index')->with('success', 'Group Name Updated Successfully.');
         }
 
@@ -186,6 +205,12 @@ class CustomerGroupController extends Controller
             $customerGroup->delete();
 
             if ($customerGroup) {
+                activity()
+                    ->performedOn($customerGroup)
+                    ->causedBy(Auth::user())
+                    ->event('deleted')
+                    ->log("Customer Group Deleted");
+
                 return redirect()->route('customer.groups.index')->with('success', 'Successfully Deleted Group');
             }
         } catch (\Exception $e) {

@@ -112,6 +112,7 @@ class CustomerController extends Controller
             }
 
             DB::commit();
+            activity()->log('Customer Group Created' . $g_id . ' with ' . $insertCount . ' customers.' . ' by ' . Auth::user()->name);
             return redirect()->route('customer.groups.index')->with('success', 'CSV file imported successfully. Group and customers created.');
         } catch (\Exception $e) {
             DB::rollBack();

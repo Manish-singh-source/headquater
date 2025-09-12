@@ -561,6 +561,15 @@
                       </a>
                   </li>
 
+                  {{-- <li class="menu-label">Activity Logs</li>
+                  <li>
+                      <a href="{{ route('activity.log') }}">
+                          <div class="parent-icon"><i class="material-icons-outlined">store</i>
+                          </div>
+                          <div class="menu-title">Activity Logs</div>
+                      </a>
+                  </li> --}}
+                  
                   <li class="menu-label">Excel Formats</li>
                   <li>
                       <a href="{{ route('excel-file-formats') }}">

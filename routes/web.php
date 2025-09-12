@@ -8,6 +8,7 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\VendorController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\ActivityController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\LocationController;
 use App\Http\Controllers\RegisterController;
@@ -238,8 +239,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/product-issues', 'issuesProducts')->name('exceed.shortage.products');
         Route::get('/return-accept', 'returnAccept')->name('return.accept');
     });
-
-
+    
+    
 
     // Track order 
     Route::controller(TrackOrderController::class)->group(function () {
@@ -252,6 +253,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/vendor-purchase-history', 'vendorPurchaseHistory')->name('vendor-purchase-history');
         Route::get('/inventory-stock-history', 'inventoryStockHistory')->name('inventory-stock-history');
         Route::get('/customer-sales-history', 'customerSalesHistory')->name('customer-sales-history');
+        Route::get('/vendor-purchase-history-excel', 'vendorPurchaseHistoryExcel')->name('vendor.purchase.history.excel');
+        Route::get('/inventory-stock-history-excel', 'inventoryStockHistoryExcel')->name('inventory.stock.history.excel');
     });
 
     // invoice
@@ -277,6 +280,11 @@ Route::middleware(['auth'])->group(function () {
 
 
     Route::view('/excel-file-formats', 'excel-file-formats')->name('excel-file-formats');
+
+    // Activity Log
+    Route::controller(ActivityController::class)->group(function () {
+        Route::get('activity-log', 'index')->name('activity.log');
+    });
 });
 
 

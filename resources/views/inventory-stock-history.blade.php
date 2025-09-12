@@ -86,65 +86,29 @@
 
             <div class="card mt-4">
                 <div class="card-body pb-1">
-                    <form action="customer-report.html">
-                        <div class="row align-items-end">
-                            <div class="col-lg-10">
-                                <div class="row">
-                                    <div class="col-md-3">
-                                        <div class="mb-3">
-                                            <label class="form-label">Choose Date</label>
-                                            <div class="input-icon-start position-relative">
-                                                <input type="date" class="form-control date-range bookingrange"
-                                                    id="date-select" placeholder="dd/mm/yyyy">
-                                                <span class="input-icon-left">
-                                                    <i class="ti ti-calendar"></i>
-                                                </span>
-                                            </div>
+                    <div class="row align-items-end">
+                        <div class="col-lg-10">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <div class="mb-3">
+                                        <label class="form-label">Choose Date</label>
+                                        <div class="input-icon-start position-relative">
+                                            <input type="date" class="form-control date-range bookingrange"
+                                                id="date-select" placeholder="dd/mm/yyyy">
+                                            <span class="input-icon-left">
+                                                <i class="ti ti-calendar"></i>
+                                            </span>
                                         </div>
                                     </div>
-                                    {{-- <div class="col-md-3">
-                                        <div class="mb-3">
-                                            <label class="form-label">Vendor Name</label>
-                                            <select id="vendor-select" class="form-select">
-                                                <option value="" selected>-- Select --</option>
-                                                @foreach ($purchaseOrdersVendors as $purchaseOrdersVendor)
-                                                    <option value="{{ $purchaseOrdersVendor }}">{{ $purchaseOrdersVendor }}
-                                                    </option>
-                                                @endforeach
-                                            </select>
-                                        </div>
-                                    </div> --}}
-                                    {{-- <div class="col-md-3">
-                                        <div class="mb-3">
-                                            <label class="form-label">Product Status</label>
-                                            <select id="status" class="form-select">
-                                                <option disabled selected>-- Select --</option>
-                                                <option>Available</option>
-                                                <option>Hold</option>
-                                            </select>
-                                        </div>
-                                    </div> --}}
-                                    {{-- <div class="col-md-3">
-                                        <div class="mb-3">
-                                            <label class="form-label">Sort</label>
-                                            <select id="status" class="form-select">
-                                                <option disabled selected>-- Select --</option>
-                                                <option>Asc</option>
-                                                <option>Dce</option>
-                                                <option>High To Low</option>
-                                                <option>Low To High</option>
-                                            </select>
-                                        </div>
-                                    </div> --}}
-                                </div>
-                            </div>
-                            <div class="col-lg-2">
-                                <div class="mb-3">
-                                    <a href="#" class="btn btn-danger w-100" type="">Generate Report</a>
                                 </div>
                             </div>
                         </div>
-                    </form>
+                        <div class="col-lg-2">
+                            <div class="mb-3">
+                                <button id="exportData" class="btn btn-danger w-100">Generate Report</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -217,6 +181,23 @@
 @section('script')
     <script>
         $(document).ready(function() {
+
+            $(document).on('click', '#exportData', function() {
+                var selectedDate = $("#date-select").val().trim();
+                if (selectedDate) {
+                    var parts = selectedDate.split('-');
+                    var formatted = parts[2] + '-' + parts[1] + '-' + parts[0];
+                }
+
+                // Construct download URL with parameters
+                var downloadUrl = '{{ route('inventory.stock.history.excel') }}' +
+                    '?selectedDate=' + encodeURIComponent(selectedDate);
+
+                // Trigger browser download
+                window.location.href = downloadUrl;
+            });
+
+
             var vendorHistoryTable = $('#inventory-stock-history-table').DataTable({
                 "columnDefs": [{
                         "orderable": false,

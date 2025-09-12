@@ -16,6 +16,9 @@ return new class extends Migration
             $table->foreignId('purchase_order_id')->constrained()->onDelete('cascade');
             $table->string('vendor_code')->nullable();
             $table->integer('sales_order_id')->nullable();
+            $table->string('total_amount')->nullable();
+            $table->string('total_paid_amount')->nullable();
+            $table->string('total_due_amount')->nullable();
             $table->enum('status', ['pending', 'approve', 'reject', 'completed'])->default('pending');
             $table->string('approve_or_reject_reason')->nullable();
             $table->timestamps();
