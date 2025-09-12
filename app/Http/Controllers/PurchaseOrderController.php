@@ -118,7 +118,6 @@ class PurchaseOrderController extends Controller
             $insertCount = 0;
 
             // update fulfillment quantity in temp order 
-
             $vendorPi = VendorPI::create([
                 'purchase_order_id' => $request->purchase_order_id,
                 'vendor_code' => $request->vendor_code,
@@ -127,6 +126,11 @@ class PurchaseOrderController extends Controller
 
             foreach ($rows as $record) {
                 if (empty($record['Vendor SKU Code'])) continue;
+
+                // check if vendor code of request and excel file is same 
+                if ($request->vendor_code != $record['Vendor Code']) {
+                    throw new \Exception('Vendor Code is not same. Please check the file.');
+                }
 
                 // map sku with product 
                 $sku = SkuMapping::where('vendor_sku', Arr::get($record, 'Vendor SKU Code'))->first();
@@ -252,6 +256,11 @@ class PurchaseOrderController extends Controller
                     continue;
                 }
 
+                // check if vendor code of request and excel file is same  
+                if ($request->vendor_code != $record['Vendor Code']) {
+                    throw new \Exception('Vendor Code is not same. Please check the file.');
+                }
+
                 $productData = VendorPIProduct::where('vendor_sku_code', Arr::get($record, 'Vendor SKU Code'))->where('vendor_pi_id', $vendorPIid->id)->first();
                 if (Arr::get($record, 'MRP')) {
                     $productData->mrp = Arr::get($record, 'MRP');
@@ -277,7 +286,6 @@ class PurchaseOrderController extends Controller
 
                 $insertCount++;
             }
-
 
 
             if ($insertCount === 0) {

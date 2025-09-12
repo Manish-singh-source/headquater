@@ -69,6 +69,10 @@ class CustomerGroupController extends Controller
                 // });
 
                 // $customer = $query->first();
+                if(!isset($record['Facility Name']) || empty($record['Facility Name'])) {
+                    throw new \Exception('Facility Name is required');
+                }
+
                 $customer = Customer::where('facility_name', $record['Facility Name'])->first();
 
                 if (!$customer) {
@@ -146,7 +150,7 @@ class CustomerGroupController extends Controller
             return redirect()->route('customer.groups.index')->with('success', 'CSV file imported successfully. Group and customers created.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return redirect()->back()->with(['error' => 'Something went wrong: ' . $e->getMessage()]);
+            return redirect()->back()->with(['error' => 'Something went wrong: Please Make Sure File has Facility Name Column Filled.' . $e->getMessage()]);
         }
     }
 
@@ -186,7 +190,6 @@ class CustomerGroupController extends Controller
                 ])
                 ->event('updated')
                 ->log("Customer Group updated");
-
 
             return redirect()->route('customer.groups.index')->with('success', 'Group Name Updated Successfully.');
         }

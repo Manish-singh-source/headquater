@@ -64,6 +64,10 @@ class CustomerController extends Controller
                 //     }
                 // });
 
+                if (!isset($record['Facility Name']) || empty($record['Facility Name'])) {
+                    throw new \Exception('Facility Name is required');
+                }
+                
                 // $existingCustomer = $query->first();
                 $existingCustomer = Customer::where('facility_name', $record['Facility Name'])->first();
 
@@ -95,7 +99,7 @@ class CustomerController extends Controller
                         'shipping_city'      => $record['Shipping City'] ?? '',
                         'shipping_zip'      => $record['Shipping Zip'] ?? '',
                     ]);
-    
+
                     // 3. Insert into customer_group_members
                     CustomerGroupMember::create([
                         'customer_id' => $customer->id,
@@ -123,6 +127,7 @@ class CustomerController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
+            'facility_name' => 'required|min:3',
             'client_name' => 'required|min:3',
             'contact_name' => 'required|min:3',
             'email' => 'required|email|unique:customers,email',
@@ -178,6 +183,7 @@ class CustomerController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'group_id' => 'required',
+            'facility_name' => 'required',
             'client_name' => 'required|min:3',
             'contact_name' => 'required|min:3',
             'email' => 'required|email|unique:customers,email,' . $id,
