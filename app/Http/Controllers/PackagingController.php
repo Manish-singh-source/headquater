@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Customer;
 use App\Models\VendorPI;
 use App\Models\SalesOrder;
 use Illuminate\Support\Arr;
@@ -18,7 +19,7 @@ class PackagingController extends Controller
     //
     public function index()
     {
-        $orders = SalesOrder::with('customerGroup')->get();
+        $orders = SalesOrder::with('customerGroup')->where('status', 'ready_to_package')->get();
         return view('packagingList.index', compact('orders'));
     }
 
@@ -26,13 +27,13 @@ class PackagingController extends Controller
     {
 
         $salesOrder = SalesOrder::with([
-                'customerGroup',
-                'warehouse',
-                'orderedProducts.product',
-                'orderedProducts.customer',
-                'orderedProducts.tempOrder',
-                'orderedProducts.warehouseStock',
-            ])
+            'customerGroup',
+            'warehouse',
+            'orderedProducts.product',
+            'orderedProducts.customer',
+            'orderedProducts.tempOrder',
+            'orderedProducts.warehouseStock',
+        ])
             ->findOrFail($id);
 
         $facilityNames = collect();
@@ -92,25 +93,26 @@ class PackagingController extends Controller
                 continue;
             }
             $writer->addRow([
-                'Customer Name' => $order->customer->contact_name,
-                'PO Number' => $order->tempOrder->po_number,
-                'SKU Code' => $order->tempOrder->sku,
-                'Facility Name' => $order->tempOrder->facility_name,
-                'Facility Location' => $order->tempOrder->facility_location,
-                'PO Date' => $order->tempOrder->po_date,
-                'PO Expiry Date' => $order->tempOrder->po_expiry_date,
-                'HSN' => $order->tempOrder->hsn,
-                'Item Code' => $order->tempOrder->item_code,
-                'Description' => $order->tempOrder->description,
-                'Basic Rate' => $order->tempOrder->basic_rate,
-                'GST' => $order->tempOrder->gst,
-                'Net Landing Rate' => $order->tempOrder->net_landing_rate,
-                'MRP' => $order->tempOrder->mrp,
-                'PO Quantity' => $order->tempOrder->po_qty,
-                'Warehouse Stock' => $order->warehouseStock->original_quantity,
+                'Customer Name' => $order->customer->contact_name ?? '',
+                'PO Number' => $order->tempOrder->po_number ?? '',
+                'SKU Code' => $order->tempOrder->sku ?? '',
+                'Facility Name' => $order->tempOrder->facility_name ?? '',
+                'Facility Location' => $order->tempOrder->facility_location ?? '',
+                'PO Date' => $order->tempOrder->po_date ?? '',
+                'PO Expiry Date' => $order->tempOrder->po_expiry_date ?? '',
+                'HSN' => $order->tempOrder->hsn ?? '',
+                'Item Code' => $order->tempOrder->item_code ?? '',
+                'Description' => $order->tempOrder->description ?? '',
+                'Basic Rate' => $order->tempOrder->basic_rate ?? '',
+                'GST' => $order->tempOrder->gst ?? '',
+                'Net Landing Rate' => $order->tempOrder->net_landing_rate ?? '',
+                'MRP' => $order->tempOrder->mrp ?? '',
+                'PO Quantity' => $order->tempOrder->po_qty ?? '',
+                'Warehouse Stock' => $order->warehouseStock->original_quantity ?? '',
                 // 'PI Quantity' => $order->tempOrder?->vendor_pi_fulfillment_quantity,
-                'Purchase Order No' => $order->tempOrder->po_number,
-                'Total Dispatch Qty' => $totalDispatchQty
+                'Purchase Order No' => $order->tempOrder->po_number ?? '',
+                'Total Dispatch Qty' => $totalDispatchQty ?? 0,
+                'Final Dispatch Qty' => ''
             ]);
         }
 
@@ -125,10 +127,14 @@ class PackagingController extends Controller
     public function updatePackagingProducts(Request $request)
     {
         $request->validate([
-            'products_excel' => 'required|file|mimes:xlsx,csv,xls',
+            'pi_excel' => 'required|file|mimes:xlsx,csv,xls',
         ]);
 
-        $file = $request->file('products_excel');
+        if(!$request->salesOrderId) {
+            return back()->with('error', 'Please Try Again.');
+        }
+
+        $file = $request->file('pi_excel');
         $filepath = $file->getPathname();
         $extension = $file->getClientOriginalExtension();
 
@@ -144,39 +150,38 @@ class PackagingController extends Controller
             foreach ($rows as $record) {
                 if (empty($record['SKU Code'])) continue;
 
-                $products[] = [
-                    'sku' => Arr::get($record, 'SKU Code') ?? '',
-                    'ean_code' => Arr::get($record, 'EAN Code') ?? '',
-                    'brand' => Arr::get($record, 'Brand') ?? '',
-                    'brand_title' => Arr::get($record, 'Brand Title') ?? '',
-                    'mrp' => Arr::get($record, 'MRP') ?? '',
-                    'category' => Arr::get($record, 'Category') ?? '',
-                    'pcs_set' => Arr::get($record, 'PCS/Set') ?? '',
-                    'sets_ctn' => Arr::get($record, 'Sets/CTN') ?? '',
-                    'vendor_name' => Arr::get($record, 'Vendor Name') ?? '',
-                    'vendor_purchase_rate' => Arr::get($record, 'Vendor Purchase Rate') ?? '',
-                    'gst' => Arr::get($record, 'GST') ?? '',
-                    'vendor_net_landing' => Arr::get($record, 'Vendor Net Landing') ?? '',
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ];
+                $customer = Customer::where('facility_name', $record['Facility Name'])->first();
+                if (!$customer) {
+                    continue;
+                }
 
+                if (empty($record['Final Dispatch Qty'])) {
+                    $order = SalesOrderProduct::where('customer_id', $customer->id)->where('sales_order_id', $request->salesOrderId)->where('sku', $record['SKU Code'])->first();
+                    if ($order) {
+                        $order->final_dispatched_quantity = $order->dispatched_quantity;
+                        $order->save();
+                    }
+                } else {
+                    $order = SalesOrderProduct::where('customer_id', $customer->id)->where('sales_order_id', $request->salesOrderId)->where('sku', $record['SKU Code'])->first();
+                    if ($order) {
+                        $order->final_dispatched_quantity = $record['Final Dispatch Qty'];
+                        $order->save();
+                    }
+                }
 
                 $insertCount++;
             }
 
             if ($insertCount === 0) {
                 DB::rollBack();
-                return redirect()->back()->withErrors(['products_excel' => 'No valid data found in the file.']);
+                return redirect()->back()->with(['pi_excel' => 'No valid data found in the file.']);
             }
 
-            // Product::upsert($products, ['sku']);
-
             DB::commit();
-            return redirect()->route('products.index')->with('success', 'CSV file imported successfully.');
+            return redirect()->route('packaging.list.index')->with('success', 'CSV file imported successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return redirect()->back()->withErrors(['error' => 'Something went wrong: ' . $e->getMessage()]);
+            return redirect()->back()->with(['error' => 'Something went wrong: ' . $e->getMessage()]);
         }
     }
 }

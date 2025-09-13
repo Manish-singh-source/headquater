@@ -207,10 +207,14 @@
                             </div>
                             <!-- Tabs Navigation -->
                             <div class="div d-flex justify-content-end my-3 gap-2">
-                                <button class="btn btn-sm border-2 border-primary" data-bs-toggle="modal"
-                                    data-bs-target="#approveBackdrop1" class="btn btn-sm border-2 border-primary">
-                                    Add Vendor PI
-                                </button>
+                                @if (
+                                    ($purchaseOrder?->purchaseOrderProducts->count() ?? 0) !=
+                                        (isset($purchaseOrder?->vendorPI[0]) ? $purchaseOrder?->vendorPI[0]?->products->count() : 0))
+                                    <button class="btn btn-sm border-2 border-primary" data-bs-toggle="modal"
+                                        data-bs-target="#approveBackdrop1" class="btn btn-sm border-2 border-primary">
+                                        Add Vendor PI
+                                    </button>
+                                @endif
 
                                 <!-- Modal -->
                                 <div class="modal fade" id="approveBackdrop1" data-bs-backdrop="approve"
@@ -358,7 +362,7 @@
                             </div>
                             <!-- Tabs Navigation -->
                             <div class="div d-flex justify-content-end my-3 gap-2">
-                                @if ($purchaseOrder->status != 'completed')
+                                @if (!isset($purchaseGrn[0]->vendor_code) && $purchaseOrder->status != 'completed')
                                     <button class="btn btn-sm border-2 border-primary" data-bs-toggle="modal"
                                         data-bs-target="#grnUpload" class="btn btn-sm border-2 border-primary">
                                         Add Vendor GRN
@@ -400,7 +404,7 @@
                                     </div>
                                 </div>
 
-                                @if ($purchaseOrder->status != 'completed')
+                                @if ($purchaseOrder->status != 'completed' && !isset($purchaseInvoice[0]->vendor_code))
                                     <button class="btn btn-sm border-2 border-primary" data-bs-toggle="modal"
                                         data-bs-target="#invoiceUpload" class="btn btn-sm border-2 border-primary">
                                         Add Vendor Invoice

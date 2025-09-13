@@ -276,9 +276,24 @@ Module - Customer Sales
 
 Module - Excel Formats 
     -- list all file formats             -- pending
+        -- customer group -- customers list (group ) 
+        -- customer       -- customer info (customer)
+        -- products 
+        -- export products (change & update products)
+        -- sku mapping 
+        -- customer PO (check availability)
+        -- customer PO (final with vendor code)
+        -- customer PO Update (export & update order) 
+        -- purchase order (vendor PO)    -- manual 
+        -- vendor PI (export & update) 
+        -- received products (export & update) 
+        --
 
 
 
+   
+        -- when updating customer po then store old po quantity also 
+        -- when deleting vendor PO (mark status of that product/order as cancelled)
 
 
 

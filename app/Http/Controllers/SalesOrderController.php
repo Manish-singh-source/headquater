@@ -724,13 +724,13 @@ class SalesOrderController extends Controller
                 }
 
                 $salesOrderUpdate = SalesOrder::with([
-                    'customerGroup',
-                    'warehouse',
-                    'orderedProducts.product',
-                    'orderedProducts.customer',
-                    'orderedProducts.tempOrder',
-                    'orderedProducts.warehouseStock',
-                ])
+                        'customerGroup',
+                        'warehouse',
+                        'orderedProducts.product',
+                        'orderedProducts.customer',
+                        'orderedProducts.tempOrder',
+                        'orderedProducts.warehouseStock',
+                    ])
                     ->findOrFail($request->order_id);
 
                 foreach ($salesOrderUpdate->orderedProducts as $order) {
@@ -738,8 +738,17 @@ class SalesOrderController extends Controller
                         $order->tempOrder->vendor_pi_fulfillment_quantity = $order->tempOrder->vendor_pi_received_quantity;
                     }
                     if ($order->ordered_quantity <= ($order->tempOrder?->available_quantity ?? 0) + ($order->tempOrder?->vendor_pi_fulfillment_quantity ?? 0)) {
-                        $order->final_dispatched_quantity = $order->ordered_quantity;
+                        if(!empty($order->final_dispatched_quantity)) {
+                            $order->final_dispatched_quantity = $order->final_dispatched_quantity;
+                        } else {
+                            $order->final_dispatched_quantity = $order->ordered_quantity;
+                        }
                     } else {
+                        if(!empty($order->final_dispatched_quantity)) {
+                            $order->final_dispatched_quantity = $order->final_dispatched_quantity;
+                        } else {
+                            $order->final_dispatched_quantity = ($order->tempOrder?->available_quantity ?? 0) + ($order->tempOrder?->vendor_pi_fulfillment_quantity ?? 0);
+                        }
                         $order->final_dispatched_quantity = ($order->tempOrder?->available_quantity ?? 0) + ($order->tempOrder?->vendor_pi_fulfillment_quantity ?? 0);
                     }
                     $order->save();
@@ -775,6 +784,8 @@ class SalesOrderController extends Controller
                 return redirect()->route('packing.products.view', $request->order_id)->with('success', 'Status has been changed.');
             } else if ($salesOrder->status == 'ready_to_ship') {
                 return redirect()->route('readyToShip.view', $request->order_id)->with('success', 'Status has been changed.');
+            } else if($salesOrder->status == 'completed') {
+                return redirect()->route('sales.order.index')->with('success', 'Status has been changed.');
             } else {
                 return redirect()->back()->with('error', 'Status Not Changed. Please Try Again.');
             }

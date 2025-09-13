@@ -360,7 +360,7 @@ class PurchaseOrderController extends Controller
                 $updateStock = WarehouseStock::where('sku', $product->vendor_sku_code)->first();
                 if (isset($updateStock)) {
                     // logic for updating warehouse stock and block quantity 
-                    $updateStock->available_quantity = $updateStock->available_quantity + $product->quantity_received;
+                    $updateStock->block_quantity = $updateStock->block_quantity + $product->quantity_received;
                     $updateStock->original_quantity = $updateStock->original_quantity + $product->quantity_received;
                     $updateStock->save();
                 } else {
@@ -521,6 +521,7 @@ class PurchaseOrderController extends Controller
                 $writer->addRow([
                     'Sales Order No' => $order->sales_order_id ?? '',
                     'Purchase Order No' => $order->purchase_order_id ?? '',
+                    'Vendor Code'            => $order->vendor_code ?? '',
                     'Portal Code'            => $order->tempOrderThrough->item_code ?? '',
                     'Vendor SKU Code'   => $order->tempOrderThrough->sku ?? '',
                     'Title'             => $order->tempOrderThrough->description ?? '',

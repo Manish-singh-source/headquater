@@ -45,12 +45,15 @@
                                     <span>
                                         <b>
                                             @if ($salesOrder->ordered_products_sum_ordered_quantity - ($availableQuantity + ($vendorPiFulfillmentTotal ?? 0)) > 0)
-                                                <span class="badge text-danger bg-danger-subtle">
-                                                    {{ 'Quantity Needs To Fulfill: ' . ($salesOrder->ordered_products_sum_ordered_quantity - ($availableQuantity + ($vendorPiFulfillmentTotal ?? 0))) }}
+                                                <span class="badge text-danger bg-danger-subtle">Quantity Needs To Fulfill:
+                                                    <span id="quantityNeedsToFullfill">
+                                                        {{ $salesOrder->ordered_products_sum_ordered_quantity - ($availableQuantity + ($vendorPiFulfillmentTotal ?? 0)) }}
+                                                    </span>
                                                 </span>
                                             @else
-                                                <span class="badge text-success bg-success-subtle"> Quantity Fulfilled
-                                                </span>
+                                                <span class="badge text-success bg-success-subtle"> Quantity
+                                                    Fulfilled</span>
+                                                <span id="quantityNeedsToFullfill">0</span>
                                             @endif
                                         </b>
                                     </span>
@@ -244,14 +247,15 @@
                                             <td>
                                                 @php
                                                     if ($order->tempOrder?->vendor_pi_received_quantity) {
-                                                        $order->tempOrder->vendor_pi_fulfillment_quantity = $order->tempOrder->vendor_pi_received_quantity;
+                                                        $order->tempOrder->vendor_pi_fulfillment_quantity =
+                                                            $order->tempOrder->vendor_pi_received_quantity;
                                                     }
                                                 @endphp
                                                 @if (
                                                     $order->ordered_quantity <=
                                                         ($order->tempOrder?->available_quantity ?? 0) + ($order->tempOrder?->vendor_pi_fulfillment_quantity ?? 0))
                                                     <span
-                                                        class="badge text-success bg-success-subtle">{{ ($order->ordered_quantity) }}</span>
+                                                        class="badge text-success bg-success-subtle">{{ $order->ordered_quantity }}</span>
                                                 @else
                                                     <span
                                                         class="badge text-danger bg-danger-subtle">{{ ($order->tempOrder?->available_quantity ?? 0) + ($order->tempOrder?->vendor_pi_fulfillment_quantity ?? 0) }}</span>
@@ -277,7 +281,13 @@
 @section('script')
     <script>
         document.getElementById('changeStatus').addEventListener('change', function() {
-            if (confirm('Are you sure you want to change status for order?')) {
+            if (confirm('Are you sure you want to change status for order?')) { 
+                var quantityNeedsToFullfill = document.getElementById('quantityNeedsToFullfill').innerHTML;
+                // if (quantityNeedsToFullfill > 0) {
+                //     alert('Please fulfill the quantity before changing the status.');
+                //     location.reload();
+                // }
+                
                 document.getElementById('statusForm').submit();
             }
         });

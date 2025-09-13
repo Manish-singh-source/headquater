@@ -18,7 +18,7 @@ class InvoiceController extends Controller
 
     public function index()
     {
-        $orders = SalesOrder::where('status', 'ready_to_ship')->with('customerGroup')->get();
+        $orders = SalesOrder::whereIn('status', ['ready_to_ship', 'completed'])->with('customerGroup')->get();
         return view('invoice.index', compact('orders'));
     }
 
@@ -29,14 +29,13 @@ class InvoiceController extends Controller
             'title' => 'Invoices',
             'invoices' => Invoice::with(['warehouse', 'customer', 'salesOrder', 'appointment', 'dns', 'payments'])->where('sales_order_id', $id)->get(),
         ];
-        // dd($data);
         return view('invoice.invoices', $data);
     }
 
     public function downloadPdf($id)
     {
         $data = [
-            'title' => 'Welcome to ItSolutionStuff.com',
+            'title' => 'Welcome to Headquaters',
             'date' => date('m/d/Y')
         ];
         $invoice = Invoice::with(['warehouse', 'customer', 'salesOrder'])->findOrFail($id);
