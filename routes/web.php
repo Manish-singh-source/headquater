@@ -290,3 +290,8 @@ Route::middleware(['auth'])->group(function () {
 
 
 Route::view('/404', 'errors.404');
+
+
+
+// vendor code in product file so that product fixed for that vendor 
+// add vendor code in product 

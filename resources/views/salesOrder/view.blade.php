@@ -204,6 +204,7 @@
                                         <th>Product&nbsp;MRP</th>
                                         <th>Rate&nbsp;Confirmation</th>
                                         <th>PO&nbsp;Quantity</th>
+                                        <th>Purchase&nbsp;Order&nbsp;Quantity</th>
                                         <th>Qty&nbsp;Fullfilled</th>
                                     </tr>
                                 </thead>
@@ -244,6 +245,7 @@
                                                 @endif
                                             </td>
                                             <td>{{ $order->ordered_quantity }}</td>
+                                            <td>{{ $order->tempOrder?->purchase_order_quantity }}</td>
                                             <td>
                                                 @php
                                                     if ($order->tempOrder?->vendor_pi_received_quantity) {
