@@ -147,4 +147,54 @@ Module 6: Warehouse
 
 
 
-Module 7: 
+Module 7: Sales Order 
+    -- display total no of sales orders in card format
+    -- display total no of pending, completed, blocked, ready to ship, ready to package orders in card format 
+    -- list of total no of sales orders in table format 
+    -- with action column where logged in user can take action such as view, delete 
+    -- after clicking view it should show all info of that sales order 
+        -- display details of sales order in card format 
+        -- display total no of products in that sales order in card format 
+        -- display total no of blocked products in that sales order in card format 
+        -- display total no of available products in that sales order in card format 
+        -- display total no of not available products in that sales order in card format 
+        -- display list of products in that sales order in table format 
+        -- with action column where logged in user can take action such as edit, delete 
+        -- after clicking edit it should open a form where user can edit that sales order's info and after saving it should reflect in the list and also in the database 
+        -- after clicking delete it should delete that sales order products from the list and also from the database  
+        -- there should be option to delete multiple sales orders products at once from the list and also from the database  
+    -- there should be option to delete multiple sales orders at once from the list and also from the database  
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+----------------------- Problems ------------------------ 
+
+1. when updating sales order of customer after receiving vendor products then it is not updating dispatched quantity properly 
+
+-- page: http://127.0.0.1:8000/packing-products-list/1
+1. there are 2 columns same PO Number 
+2. if user wants to set dispatch quantity to 0 then set it to 0 but how?? 
+
+
+-- page: http://127.0.0.1:8000/purchase-order-view/1 
+1. if delete purchase order then it should delete pi order related to that order 
+
+
+-- page: vendor purchase order 
+    -- total amount is not showing properly 
+    -- total paid amount is not showing properly 
+    -- total due amount is not showing properly 
+
