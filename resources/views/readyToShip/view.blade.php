@@ -32,7 +32,7 @@
                                         <th>Client&nbsp;Name</th>
                                         <th>Contact&nbsp;Name</th>
                                         <th>Products</th>
-                                        <th>Status</th>
+                                        {{-- <th>Status</th> --}}
                                         <th>Action</th>
                                     </tr>
                                 </thead>
@@ -64,9 +64,11 @@
                                             <td>
                                                 {{ $customerOrders->orders_count }}
                                             </td>
+                                            {{-- 
                                             <td>
                                                 {{ $customerOrders->orders_count }}
-                                            </td>
+                                            </td> 
+                                            --}}
                                             <td>
                                                 <a aria-label="anchor"
                                                     href="{{ route('readyToShip.view.detail', ['id' => $order->id, 'c_id' => $customerOrders->id]) }}"

@@ -67,6 +67,9 @@ class SalesOrderController extends Controller
             $skuNotFoundRows = [];
             $insertCount = 0;
 
+            // Not Found Temp Order
+            $vendorsNotFound = [];
+
             // Creating a new Sales order for customer
             $salesOrder = new SalesOrder();
             $salesOrder->warehouse_id = $warehouse_id;
@@ -77,7 +80,8 @@ class SalesOrderController extends Controller
             // Iterate Excel file
             foreach ($reader->getRows() as $record) {
                 $sku = trim($record['SKU Code']);
-                $poQty = (int)$record['PO Quantity'];
+                // $poQty = (int)$record['PO Quantity'];
+                $poQty = (int)$record['Purchase Order Quantity'];
                 $warehouseId = $request->warehouse_id;
                 $vendorCode = $record['Vendor Code'];
 
@@ -130,6 +134,7 @@ class SalesOrderController extends Controller
                 // vendor availibility check done
 
                 if (!$vendorInfo) {
+                    $vendorsNotFound[] = $record['Vendor Code'];
                     $vendorStatus = 'Not Found';
                 }
 
@@ -272,13 +277,15 @@ class SalesOrderController extends Controller
                 $saveOrderProduct->customer_id = $customerInfo->id ?? null;
                 $saveOrderProduct->vendor_code = $vendorInfo->id ?? null;
                 $saveOrderProduct->ordered_quantity = $record['PO Quantity'];
+                $saveOrderProduct->purchase_ordered_quantity = $record['Purchase Order Quantity'];
                 $saveOrderProduct->product_id = $product->product->id ?? null;
                 $saveOrderProduct->warehouse_stock_id = $product->id ?? null;
                 $saveOrderProduct->sku = $sku;
                 $saveOrderProduct->price = $record['Basic Rate'] ?? null;
-                $saveOrderProduct->subtotal = ($record['Basic Rate'] ?? 0) * ($record['PO Quantity'] ?? 0);
+                // what is exactly subtotal ?? 
+                // basic rate * po quantity or basic rate * purchase order quantity 
+                $saveOrderProduct->subtotal = ($record['Basic Rate'] ?? 0) * ($record['Purchase Order Quantity'] ?? 0);
                 $saveOrderProduct->save();
-
 
 
                 // Make a purchase order if one or more than one products have less quantity in warehouse
@@ -337,10 +344,13 @@ class SalesOrderController extends Controller
                 $insertCount++;
             }
 
+
             if ($insertCount === 0) {
                 DB::rollBack();
-                return redirect()->back()->withErrors(['csv_file' => 'No valid data found in the CSV file.']);
+                $uniqueString = implode(', ', array_unique($vendorsNotFound));
+                return redirect()->back()->with(['error' => 'No valid data found in the CSV file. Please check Vendor Codes: ' . $uniqueString]);
             }
+
             DB::commit();
             return redirect()->route('sales.order.index')->with('success', 'Order Completed Successful.');
         } catch (\Exception $e) {
@@ -378,6 +388,7 @@ class SalesOrderController extends Controller
 
             // 🔹 Step 1: Check for duplicates (Customer + SKU)
             $seen = [];
+
             foreach ($rows as $record) {
                 if (empty($record['SKU Code']) || empty($record['Facility Name'])) {
                     continue;
@@ -396,6 +407,7 @@ class SalesOrderController extends Controller
             }
             $products = [];
             $insertCount = 0;
+
 
             // 🔹 Step 2: Process records if no duplicates
             foreach ($rows as $record) {
@@ -420,6 +432,8 @@ class SalesOrderController extends Controller
                 if (!$salesOrderProductUpdate) {
                     continue;
                 }
+
+
                 // 3. Build products array for TempOrder::upsert()
                 $products[] = [
                     'id' => $salesOrderProductUpdate->temp_order_id,
@@ -437,34 +451,32 @@ class SalesOrderController extends Controller
                 $salesOrderProductUpdate->price = $record['MRP'] ?? 0;
                 $salesOrderProductUpdate->subtotal = ($record['Basic Rate'] ?? 0) * ($record['PO Quantity'] ?? 0);
                 $salesOrderProductUpdate->ordered_quantity = $record['PO Quantity'] ?? 0;
+                $salesOrderProductUpdate->purchase_ordered_quantity = $record['Purchase Order Quantity'] ?? 0;
 
                 // 5. Update warehouse stock if PO quantity changed
-                if ($salesOrderProductUpdate->tempOrder && $salesOrderProductUpdate->tempOrder->po_qty != $record['PO Quantity']) {
-
+                if ($salesOrderProductUpdate->tempOrder && $salesOrderProductUpdate->tempOrder->purchase_order_quantity != $record['Purchase Order Quantity']) {
                     $warehouseStockUpdate = WarehouseStock::find($salesOrderProductUpdate->warehouse_stock_id);
                     if ($warehouseStockUpdate) {
-
-                        if ($salesOrderProductUpdate->tempOrder->po_qty > $record['PO Quantity']) {
-
-                            if ($salesOrderProductUpdate->tempOrder->block > $record['PO Quantity']) {
-                                $extraBlockQuantity = $salesOrderProductUpdate->tempOrder->block - $record['PO Quantity'];
+                        if ($salesOrderProductUpdate->tempOrder->purchase_order_quantity > $record['Purchase Order Quantity']) {
+                            if ($salesOrderProductUpdate->tempOrder->block > $record['Purchase Order Quantity']) {
+                                $extraBlockQuantity = $salesOrderProductUpdate->tempOrder->block - $record['Purchase Order Quantity'];
 
                                 // Prevent negative values
                                 $warehouseStockUpdate->block_quantity = max(0, $warehouseStockUpdate->block_quantity - $extraBlockQuantity);
 
                                 // update tempOrder  
                                 $salesOrderProductUpdate->tempOrder->po_qty = $record['PO Quantity'];
-                                $salesOrderProductUpdate->tempOrder->purchase_order_quantity = $record['PO Quantity'];
+                                $salesOrderProductUpdate->tempOrder->purchase_order_quantity = $record['Purchase Order Quantity'];
 
                                 $salesOrderProductUpdate->tempOrder->block = max(0, $salesOrderProductUpdate->tempOrder->block - $extraBlockQuantity);
                                 $salesOrderProductUpdate->tempOrder->available_quantity = max(0, $salesOrderProductUpdate->tempOrder->block - $extraBlockQuantity);
-                                $salesOrderProductUpdate->tempOrder->unavailable_quantity = max(0, ($salesOrderProductUpdate->tempOrder->block - $extraBlockQuantity) - $record['PO Quantity']);
-                                $salesOrderProductUpdate->tempOrder->purchaseOrderProduct->ordered_quantity = max(0, ($salesOrderProductUpdate->tempOrder->block - $extraBlockQuantity) - $record['PO Quantity']);
-                            } else if ($salesOrderProductUpdate->tempOrder->block < $record['PO Quantity']) {
-                                $salesOrderProductUpdate->tempOrder->unavailable_quantity = $record['PO Quantity'];
-                                $salesOrderProductUpdate->tempOrder->purchaseOrderProduct->ordered_quantity = $record['PO Quantity'];
+                                $salesOrderProductUpdate->tempOrder->unavailable_quantity = max(0, ($salesOrderProductUpdate->tempOrder->block - $extraBlockQuantity) - $record['Purchase Order Quantity']);
+                                $salesOrderProductUpdate->tempOrder->purchaseOrderProduct->ordered_quantity = max(0, ($salesOrderProductUpdate->tempOrder->block - $extraBlockQuantity) - $record['Purchase Order Quantity']);
+                            } else if ($salesOrderProductUpdate->tempOrder->block < $record['Purchase Order Quantity']) {
+                                $salesOrderProductUpdate->tempOrder->unavailable_quantity = $record['Purchase Order Quantity'];
+                                $salesOrderProductUpdate->tempOrder->purchaseOrderProduct->ordered_quantity = $record['Purchase Order Quantity'];
 
-                                $salesOrderProductUpdate->tempOrder->purchase_order_quantity = $record['PO Quantity'];
+                                $salesOrderProductUpdate->tempOrder->purchase_order_quantity = $record['Purchase Order Quantity'];
                                 $salesOrderProductUpdate->tempOrder->po_qty = $record['PO Quantity'];
                             }
 
@@ -472,8 +484,8 @@ class SalesOrderController extends Controller
                             $salesOrderProductUpdate->tempOrder->purchaseOrderProduct->save();
                             $salesOrderProductUpdate->tempOrder->save();
                         } else {
-                            if ($salesOrderProductUpdate->tempOrder->block < $record['PO Quantity']) {
-                                $extraBlockQuantity = $record['PO Quantity'] - $salesOrderProductUpdate->tempOrder->po_qty;
+                            if ($salesOrderProductUpdate->tempOrder->block < $record['Purchase Order Quantity']) {
+                                $extraBlockQuantity = $record['Purchase Order Quantity'] - $salesOrderProductUpdate->tempOrder->purchase_order_quantity;
 
                                 // check if warehouse has available quantity so we will block for this product 
                                 if ($warehouseStockUpdate->available_quantity >= $extraBlockQuantity) {
@@ -485,13 +497,13 @@ class SalesOrderController extends Controller
                                     $salesOrderProductUpdate->tempOrder->unavailable_quantity -= $extraBlockQuantity;
                                     $salesOrderProductUpdate->tempOrder->purchaseOrderProduct->ordered_quantity -= $extraBlockQuantity;
 
-                                    $salesOrderProductUpdate->tempOrder->purchase_order_quantity = $record['PO Quantity'];
+                                    $salesOrderProductUpdate->tempOrder->purchase_order_quantity = $record['Purchase Order Quantity'];
                                     $salesOrderProductUpdate->tempOrder->po_qty = $record['PO Quantity'];
                                 } else {
 
                                     $salesOrderProductUpdate->tempOrder->unavailable_quantity += $extraBlockQuantity;
                                     $salesOrderProductUpdate->tempOrder->purchaseOrderProduct->ordered_quantity += $extraBlockQuantity;
-                                    $salesOrderProductUpdate->tempOrder->purchase_order_quantity = $record['PO Quantity'];
+                                    $salesOrderProductUpdate->tempOrder->purchase_order_quantity = $record['Purchase Order Quantity'];
                                     $salesOrderProductUpdate->tempOrder->po_qty = $record['PO Quantity'];
                                 }
                             }
@@ -506,7 +518,6 @@ class SalesOrderController extends Controller
 
                 $insertCount++;
             }
-
 
             // Upsert TempOrder
             if (!empty($products)) {
@@ -529,7 +540,6 @@ class SalesOrderController extends Controller
             return redirect()->back()->with(['error' => 'Something went wrong: ' . $e->getMessage()]);
         }
     }
-
     public function view($id)
     {
         $salesOrder = SalesOrder::with([
@@ -538,7 +548,7 @@ class SalesOrderController extends Controller
             'orderedProducts.tempOrder.vendorPIProduct',
             'orderedProducts.warehouseStock',
         ])
-            ->withSum('orderedProducts', 'ordered_quantity')
+            ->withSum('orderedProducts', 'purchase_ordered_quantity')
             // ->withSum('orderedProducts.tempOrder', 'available_quantity')
             // ->withSum('tempOrders', 'available_quantity')
             // ->withSum('tempOrders', 'vendor_pi_fulfillment_quantity')
@@ -546,7 +556,6 @@ class SalesOrderController extends Controller
             ->withCount('notFoundTempOrderByCustomer')
             ->withCount('notFoundTempOrderByVendor')
             ->findOrFail($id);
-
 
         $vendorPiFulfillmentTotal = 0;
         $availableQuantity = 0;
@@ -558,11 +567,11 @@ class SalesOrderController extends Controller
                     $product->tempOrder->vendor_pi_fulfillment_quantity = $product->tempOrder->vendor_pi_received_quantity;
                 }
 
-                if ($product->tempOrder->po_qty <= ($product->tempOrder?->available_quantity ?? 0) + ($product->tempOrder?->vendor_pi_fulfillment_quantity ?? 0)) {
-                    $product->tempOrder->vendor_pi_fulfillment_quantity = $product->tempOrder->po_qty;
+                if ($product->tempOrder->purchase_order_quantity <= ($product->tempOrder?->available_quantity ?? 0) + ($product->tempOrder?->vendor_pi_fulfillment_quantity ?? 0)) {
+                    $product->tempOrder->vendor_pi_fulfillment_quantity = $product->tempOrder->purchase_order_quantity;
                 }
 
-                $caching[] = $product->tempOrder->po_qty . ' ' . $product->tempOrder?->vendor_pi_fulfillment_quantity;
+                $caching[] = $product->tempOrder->purchase_order_quantity . ' ' . $product->tempOrder?->vendor_pi_fulfillment_quantity;
                 $vendorPiFulfillmentTotal += $product->tempOrder->vendor_pi_fulfillment_quantity;
                 $availableQuantity += $product->tempOrder->available_quantity;
             }
@@ -679,6 +688,7 @@ class SalesOrderController extends Controller
             $salesOrder = SalesOrder::findOrFail($request->order_id);
             $salesOrderDetails = SalesOrderProduct::where('sales_order_id', $salesOrder->id)->get();
 
+
             $salesOrder->status = $request->status;
 
             if ($salesOrder->status == 'ready_to_ship') {
@@ -706,19 +716,21 @@ class SalesOrderController extends Controller
 
                     $invoiceDetails = [];
                     foreach ($salesOrderDetails as $detail) {
-                        $product = Product::where('sku', $detail->sku)->first();
-
-                        $invoiceDetails[] = [
-                            'invoice_id' => $invoice->id,
-                            'product_id' => $product->id,
-                            'quantity' => $detail->ordered_quantity,
-                            'unit_price' => $product->mrp,
-                            'discount' => 0, // Assuming no discount for simplicity
-                            'amount' => $detail->ordered_quantity * $product->mrp,
-                            'tax' => $product->gst ?? 0, // Assuming tax is a field in Product model
-                            'total_price' => ($detail->ordered_quantity * $product->mrp) - 0, // Total price after discount
-                            'description' => isset($detail->tempOrder) ? $detail->tempOrder->description : null, // Assuming description is in TempOrder
-                        ];
+                        if ($detail->customer_id == $customer_id) {
+                            $product = Product::where('sku', $detail->sku)->first();
+                            $invoiceDetails[] = [
+                                'invoice_id' => $invoice->id,
+                                'product_id' => $product->id,
+                                'temp_order_id' => $detail->temp_order_id,
+                                'quantity' => $detail->ordered_quantity,
+                                'unit_price' => $product->mrp,
+                                'discount' => 0, // Assuming no discount for simplicity
+                                'amount' => $detail->ordered_quantity * $product->mrp,
+                                'tax' => $product->gst ?? 0, // Assuming tax is a field in Product model
+                                'total_price' => ($detail->ordered_quantity * $product->mrp) - 0, // Total price after discount
+                                'description' => isset($detail->tempOrder) ? $detail->tempOrder->description : null, // Assuming description is in TempOrder
+                            ];
+                        }
                     }
                     InvoiceDetails::insert($invoiceDetails);
                 }
@@ -867,9 +879,9 @@ class SalesOrderController extends Controller
                         'Basic Rate' => $record['Basic Rate'] ?? '',
                         'Net Landing Rate' => $record['Net Landing Rate'] ?? '',
                         'MRP' => $record['MRP'] ?? '',
-                        'Product MRP' => $stockEntry->product->mrp ?? 0,
-                        'MRP Confirmation' => ($record['MRP'] >= ($stockEntry->product->mrp ?? 0)) ? 'Correct' : 'Incorrect',
-                        'Case Pack Quantity' => $casePackQty ?? 0,
+                        'Product MRP' =>  0,
+                        'MRP Confirmation' => 'Incorrect',
+                        'Case Pack Quantity' => 0,
                         'PO Quantity' => $poQty,
                         'Available Quantity' => 0,
                         'Unavailable Quantity' => 0,
@@ -913,6 +925,8 @@ class SalesOrderController extends Controller
 
                 if ($stockEntry) {
                     $casePackQty = (int)$stockEntry->product->pcs_set * (int)$stockEntry->product->sets_ctn;
+                    $productMrp = $stockEntry->product->mrp ?? 0;
+                    $rateConfirmation = ($record['MRP'] >= $productMrp) ? 'Correct' : 'Incorrect';
                 }
 
                 $insertedRows[] = [
@@ -932,8 +946,8 @@ class SalesOrderController extends Controller
                     'Basic Rate' => $record['Basic Rate'],
                     'Net Landing Rate' => $record['Net Landing Rate'],
                     'MRP' => $record['MRP'],
-                    'Product MRP' => $stockEntry->product->mrp ?? 0,
-                    'MRP Confirmation' => ($record['MRP'] >= ($stockEntry->product->mrp ?? 0)) ? 'Correct' : 'Incorrect',
+                    'Product MRP' => $productMrp,
+                    'MRP Confirmation' => $rateConfirmation,
                     'Case Pack Quantity' => $casePackQty ?? 0,
                     'PO Quantity' => $poQty,
                     'Available Quantity' => $availableQty,
@@ -982,6 +996,9 @@ class SalesOrderController extends Controller
 
         // Add rows while transforming
         SimpleExcelReader::create($originalPath)->getRows()->each(function (array $row) use ($writer) {
+
+            $product = Product::where('sku', $row['SKU Code'])->first();
+
             $writer->addRow([
                 'Customer Name' => $row['Customer Name'] ?? '',
                 'PO Number' => $row['PO Number'] ?? '',
@@ -1005,7 +1022,7 @@ class SalesOrderController extends Controller
                 'Case Pack Quantity' => $row['Case Pack Quantity'] ?? '',
                 'Purchase Order Quantity' => $row['Unavailable Quantity'] ?? '',
                 'Block' => '',
-                'Vendor Code' => '',
+                'Vendor Code' => $product->vendor_code ?? '',
                 'Reason' => $row['Reason'] ?? '',
             ]);
         });
@@ -1069,6 +1086,7 @@ class SalesOrderController extends Controller
                 'Product MRP' => $order->tempOrder->product_mrp,
                 'Rate Confirmation' => $order->tempOrder->rate_confirmation ?? 'Incorrect',
                 'PO Quantity' => $order->ordered_quantity,
+                'Purchase Order Quantity' => $order->purchase_ordered_quantity,
                 'Qty Fullfilled' => $fulfilledQuantity,
             ]);
         }

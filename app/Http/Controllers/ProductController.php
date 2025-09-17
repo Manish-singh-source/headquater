@@ -55,6 +55,7 @@ class ProductController extends Controller
                     'category' => $record['Category'] ?? '',
                     'pcs_set' => $record['PCS/Set'] ?? '',
                     'sets_ctn' => $record['Sets/CTN'] ?? '',
+                    'vendor_code' => $record['Vendor Code'] ?? '',
                     'vendor_name' => $record['Vendor Name'] ?? '',
                     'vendor_purchase_rate' => $record['Vendor Purchase Rate'] ?? '',
                     'gst' => $record['GST'] ?? '',

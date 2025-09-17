@@ -21,6 +21,7 @@ return new class extends Migration
             $table->integer('product_id')->nullable();
             $table->string('sku')->nullable();  // sku from the vendor
             $table->integer('ordered_quantity')->nullable();
+            $table->integer('purchase_ordered_quantity')->nullable();
             $table->integer('dispatched_quantity')->nullable();
             $table->integer('final_dispatched_quantity')->nullable();
             $table->decimal('price', 10, 2)->nullable(); // snapshot of price at order time

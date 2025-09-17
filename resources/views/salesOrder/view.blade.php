@@ -36,7 +36,7 @@
                                 </li>
                                 <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                                     <span><b>Total PO Quantity</b></span>
-                                    <span> <b>{{ $salesOrder->ordered_products_sum_ordered_quantity }}</b></span>
+                                    <span> <b>{{ $salesOrder->ordered_products_sum_purchase_ordered_quantity }}</b></span>
                                 </li>
 
 
@@ -44,10 +44,13 @@
                                     <span><b>PO Quantity Status</b></span>
                                     <span>
                                         <b>
-                                            @if ($salesOrder->ordered_products_sum_ordered_quantity - ($availableQuantity + ($vendorPiFulfillmentTotal ?? 0)) > 0)
+                                            @if (
+                                                $salesOrder->ordered_products_sum_purchase_ordered_quantity -
+                                                    ($availableQuantity + ($vendorPiFulfillmentTotal ?? 0)) >
+                                                    0)
                                                 <span class="badge text-danger bg-danger-subtle">Quantity Needs To Fulfill:
                                                     <span id="quantityNeedsToFullfill">
-                                                        {{ $salesOrder->ordered_products_sum_ordered_quantity - ($availableQuantity + ($vendorPiFulfillmentTotal ?? 0)) }}
+                                                        {{ $salesOrder->ordered_products_sum_purchase_ordered_quantity - ($availableQuantity + ($vendorPiFulfillmentTotal ?? 0)) }}
                                                     </span>
                                                 </span>
                                             @else
@@ -254,10 +257,10 @@
                                                     }
                                                 @endphp
                                                 @if (
-                                                    $order->ordered_quantity <=
+                                                    $order->tempOrder?->purchase_order_quantity <=
                                                         ($order->tempOrder?->available_quantity ?? 0) + ($order->tempOrder?->vendor_pi_fulfillment_quantity ?? 0))
                                                     <span
-                                                        class="badge text-success bg-success-subtle">{{ $order->ordered_quantity }}</span>
+                                                        class="badge text-success bg-success-subtle">{{ $order->tempOrder?->purchase_order_quantity }}</span>
                                                 @else
                                                     <span
                                                         class="badge text-danger bg-danger-subtle">{{ ($order->tempOrder?->available_quantity ?? 0) + ($order->tempOrder?->vendor_pi_fulfillment_quantity ?? 0) }}</span>
@@ -283,13 +286,13 @@
 @section('script')
     <script>
         document.getElementById('changeStatus').addEventListener('change', function() {
-            if (confirm('Are you sure you want to change status for order?')) { 
+            if (confirm('Are you sure you want to change status for order?')) {
                 var quantityNeedsToFullfill = document.getElementById('quantityNeedsToFullfill').innerHTML;
                 // if (quantityNeedsToFullfill > 0) {
                 //     alert('Please fulfill the quantity before changing the status.');
                 //     location.reload();
                 // }
-                
+
                 document.getElementById('statusForm').submit();
             }
         });

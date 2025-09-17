@@ -44,7 +44,7 @@ class InvoiceController extends Controller
         $data = [
             'title' => 'Invoice',
             'invoice' => $invoice,
-            'invoiceDetails' => InvoiceDetails::with('product')->where('invoice_id', $id)->get(),
+            'invoiceDetails' => InvoiceDetails::with('product', 'tempOrder')->where('invoice_id', $id)->get(),
             'salesOrderProducts' => $salesOrderProducts,
         ];
         $pdf = \PDF::loadView('invoice/invoice-pdf', $data);

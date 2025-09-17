@@ -29,4 +29,9 @@ class InvoiceDetails extends Model
         return $this->belongsTo(Product::class);
     }
 
+    public function tempOrder()
+    {
+        return $this->belongsTo(TempOrder::class, 'temp_order_id', 'id');
+    }
+
 }

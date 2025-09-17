@@ -21,6 +21,7 @@ return new class extends Migration
             $table->string('category')->nullable();
             $table->string('pcs_set')->nullable()->default('1');
             $table->string('sets_ctn')->nullable()->default('1');
+            $table->string('vendor_code')->nullable();
             $table->string('vendor_name')->nullable();
             $table->string('vendor_purchase_rate')->nullable();
             $table->string('gst')->nullable();

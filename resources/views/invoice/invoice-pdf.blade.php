@@ -70,16 +70,16 @@
 
     <table>
         <tr>
-            <td colspan="4" class="title">Tax Invoice</td>
+            <td colspan="4" class="title">Tax&nbsp;Invoice</td>
         </tr>
         <tr>
-            <td>Invoice No:</td>
+            <td>Invoice&nbsp;No:</td>
             <td>{{ $invoice->invoice_number }}</td>
-            <td>Invoice date:</td>
+            <td>Invoice&nbsp;date:</td>
             <td>{{ $invoice->invoice_date }}</td>
         </tr>
         <tr>
-            <td>Reverse Charge (Y/N):</td>
+            <td>Reverse&nbsp;Charge&nbsp;(Y/N):</td>
             <td>N</td>
             <td>State: {{ $invoice->state }}</td>
             <td>Code: {{ $invoice->code }}</td>
@@ -88,7 +88,7 @@
 
     <table>
         <tr>
-            <td colspan="4" class="section-title">Bill to Party</td>
+            <td colspan="4" class="section-title">Bill&nbsp;to&nbsp;Party</td>
         </tr>
         <tr>
             <td>Name:</td>
@@ -108,17 +108,17 @@
 
     <table>
         <tr class="section-title">
-            <th>S. No.</th>
+            <th>S.&nbsp;No.</th>
             <th>ASIN</th>
-            <th>PRODUCT CODE</th>
+            <th>PRODUCT&nbsp;CODE</th>
             <th>Description</th>
-            <th>HSN Code</th>
+            <th>HSN&nbsp;Code</th>
             <th>Qty</th>
             <th>BOX</th>
             <th>Rate</th>
             <th>Amount</th>
-            <th>IGST Rate</th>
-            <th>IGST Amount</th>
+            <th>IGST&nbsp;Rate</th>
+            <th>IGST&nbsp;Amount</th>
             <th>Total</th>
         </tr>
         @php
@@ -126,7 +126,7 @@
             $totalIgstSum = 0;
         @endphp
         @foreach ($invoiceDetails as $index => $detail)
-            <tr>
+        <tr>
                 {{ $igstAmount = ($detail->tax / 100) * $detail->amount }}
                 {{ $totalAmount = $igstAmount + $detail->amount }}
                 {{ $totalAmountSum = $totalAmount + $totalAmountSum }}
@@ -136,12 +136,12 @@
                 <td>{{ $detail->product->ean_code }}</td>
                 <td>{{ $detail->product->sku }}</td>
                 <td>{{ $detail->product->brand_title }}</td>
-                <td>{{ $detail->product->tempOrder?->hsn }}</td>
+                <td>{{ $detail->tempOrder?->hsn }}</td>
                 <td>{{ $detail->quantity }}</td>
                 <td>{{ $detail->box }}</td>
                 <td>{{ $detail->unit_price }}</td>
                 <td>{{ $detail->amount }}</td>
-                <td>{{ $detail->tax }}</td>
+                <td>{{ floor($detail->tax) }}%</td>
                 <td>{{ $igstAmount }}</td>
                 <td>{{ $totalAmount }}</td>
             </tr>
@@ -160,7 +160,7 @@
 
     <table>
         <tr>
-            <td>Total Invoice amount in words:</td>
+            <td>Total&nbsp;Invoice&nbsp;amount&nbsp;in&nbsp;words:</td>
             {{-- <td colspan="3">{{ ucfirst(numberToWords(floor($totalAmountSum))) }} Rupees Only</td> --}}
             <td colspan="3">{{ $totalAmountSum }}</td>
         </tr>
@@ -168,27 +168,27 @@
 
     <table>
         <tr>
-            <td colspan="2" class="section-title">Bank Details</td>
+            <td colspan="2" class="section-title">Bank&nbsp;Details</td>
         </tr>
         <tr>
-            <td>Bank A/C:</td>
+            <td>Bank&nbsp;A/C:</td>
             <td></td>
         </tr>
         <tr>
-            <td>Bank IFSC:</td>
+            <td>Bank&nbsp;IFSC:</td>
             <td></td>
         </tr>
     </table>
 
     <table>
         <tr>
-            <td colspan="2" class="section-title">Terms & Conditions</td>
+            <td colspan="2" class="section-title">Terms&nbsp;&&nbsp;Conditions</td>
         </tr>
         <tr>
             <td colspan="2">
-                TOTAL SETS - QTY {{ $invoiceDetails->sum('quantity') }}<br>
-                TOTAL BOX COUNT - {{ $invoiceDetails->sum('box') }}<br>
-                WEIGHT - KG {{ $invoiceDetails->sum('weight') }}
+                TOTAL&nbsp;SETS&nbsp;-&nbsp;QTY {{ $invoiceDetails->sum('quantity') }}<br>
+                TOTAL&nbsp;BOX&nbsp;COUNT&nbsp;- {{ $invoiceDetails->sum('box') }}<br>
+                WEIGHT&nbsp;-&nbsp;KG {{ $invoiceDetails->sum('weight') }}
             </td>
         </tr>
     </table>

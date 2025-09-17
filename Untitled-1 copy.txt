@@ -1,0 +1,150 @@
+Module 1: Access Control 
+    -- Staffs 
+        -- there should be option to add new staff member
+        -- display total no of active staffs, inactive staffs, and blocked staffs in card format
+        -- list of total no of staffs in table format
+        -- with action column where logged in user can take action such as view, edit, delete, change status 
+        -- after changing status of staff, it should reflect in the list and also in the database 
+        -- after clicking view it should show all info of that staff member 
+        -- after clicking edit it should open a form where user can edit that info and form fields should be prefilled with that staff member's info and after saving it should reflect in the list and also in the database 
+        -- after clicking delete it should delete that staff member from the list and also from the database  
+        -- there should be option to delete multiple staff members at once from the list and also from the database  
+        -- there should be option to change status of multiple staff members at once from the list and also in the database  
+
+    -- Roles 
+        -- there should be option to add new role 
+            -- one input field for role name 
+            -- one checkbox for each permission that is designed already 
+            -- after saving it should reflect in the list and also in the database 
+        -- display total no of roles in card format
+        -- list of total no of roles in table format
+        -- with action column where logged in user can take action such as edit, delete 
+        -- after clicking edit it should open similar form as of adding new role and form fields should be prefilled with that role's info and after saving it should reflect in the list and also in the database 
+        -- after clicking delete it should delete that role from the list and also from the database  
+
+    -- Permissions 
+        -- there should be option to add new permission 
+            -- one input field for permission name 
+            -- after saving it should reflect in the list and also in the database 
+        -- display total no of permissions in card format
+        -- list of total no of permissions in table format
+        -- with action column where logged in user can take action such as edit, delete 
+        -- after clicking edit it should open a form where user can edit that permission's name and after saving it should reflect in the list and also in the database 
+        -- after clicking delete it should delete that permission from the list and also from the database  
+        -- there should be option to delete multiple permissions at once from the list and also from the database  
+        -- there should be option to change status of multiple permissions at once from the list and also in the database  
+
+Module 2: Customer Groups 
+    -- there should be option to add new customer group 
+        -- one input field for customer group name 
+        -- and one file input to upload customer list in excel format 
+        -- after submit redirect to customer group list page 
+        -- and show success message 
+        -- and show error message if any error occurs 
+        -- after successful submission show total no of customers added in that group 
+        -- and total no of customers already exist in that group 
+        -- and total no of customers not added due to some error 
+    -- display total no of customer groups in card format
+    -- list of total no of customer groups in table format
+    -- with action column where logged in user can take action such as view, edit, delete, change status 
+    -- after changing status of customer group, it should reflect in the list and also in the database 
+    -- after clicking view it should show all info of that customer group 
+        -- there should be option to add new customer in that group 
+        -- there should be option to add multiple customers in that group at once 
+        -- display total no of customers in that group in card format
+        -- list of total no of customers in that group in table format
+        -- with action column where logged in user can take action such as view, edit, delete, change status 
+        -- after clicking view it should show all info of that customer 
+        -- after clicking edit it should open a form where user can edit that customer's info and after saving it should reflect in the list and also in the database 
+        -- after clicking delete it should delete that customer from the list and also from the database  
+        -- there should be option to delete multiple customers at once from the list and also from the database  
+        -- there should be option to change status of multiple customers at once from the list and also in the database  
+    -- after clicking edit it should open a form where user can edit that customer group's name and after saving it should reflect in the list and also in the database 
+    -- after clicking delete it should delete that customer group from the list and also from the database  
+
+
+Module 3: Vendors 
+    -- there should be option to add new vendor 
+        -- create vendor form that already exist in the app 
+        -- after submit redirect to vendor list page 
+        -- and show success message 
+        -- and show error message if any error occurs 
+    -- display total no of vendors in card format
+    -- list of total no of vendors in table format
+    -- with action column where logged in user can take action such as view, edit, delete, change status 
+    -- after changing status of vendor, it should reflect in the list and also in the database 
+    -- after clicking view it should show all info of that vendor 
+    -- after clicking edit it should open a form where user can edit that vendor's info and after saving it should reflect in the list and also in the database 
+    -- after clicking delete it should delete that vendor from the list and also from the database  
+    -- there should be option to delete multiple vendors at once from the list and also from the database  
+    -- there should be option to change status of multiple vendors at once from the list and also in the database  
+
+
+
+Module 4: Products
+    -- there should be option to add new products list using excel format
+        -- one select input for warehouse to select in which warehouse products are added. that warehouse list should be fetched from the database warehouses table
+        -- one file input to upload products list in excel format 
+        -- after submit redirect to products list page 
+        -- and show success message 
+        -- and show error message if any error occurs 
+        -- after successful submission show total no of products added in that warehouse 
+        -- and total no of products already exist in that warehouse 
+        -- and total no of products not added due to some error 
+
+    -- display total no of products in card format
+    -- list of total no of products in table format
+    -- with action column where logged in user can take action such as view, edit, delete, change status  
+    -- after changing status of product, it should reflect in the list and also in the database 
+    -- after clicking view it should show all info of that product 
+    -- after clicking edit it should open a popup form where user can edit that product's info and after saving it should reflect in the list and also in the database 
+    -- after clicking delete it should delete that product from the list and also from the database  
+    -- there should be option to delete multiple products at once from the list and also from the database  
+    -- there should be option to change status of multiple products at once from the list and also in the database  
+    -- there should be option to download products list in excel format from the list 
+    -- and update products list using excel format (same downloaded format can be used to update products list)
+
+
+Module 5: SKU Mapping 
+    -- there should be option to add new sku mapping using excel format
+        -- after clicking add new sku mapping button it should open a popup form 
+        -- one file input to upload sku mapping list in excel format 
+        -- after submit redirect to sku mapping list page 
+        -- and show success message 
+        -- and show error message if any error occurs 
+        -- after successful submission show total no of sku mappings added 
+        -- and total no of sku mappings already exist 
+        -- and total no of sku mappings not added due to some error 
+
+    -- display total no of sku mappings in card format
+    -- list of total no of sku mappings in table format
+    -- with action column where logged in user can take action such as edit, delete
+    -- after clicking edit it should open a popup form where user can edit that sku mapping's info and after saving it should reflect in the list and also in the database 
+    -- after clicking delete it should delete that sku mapping from the list and also from the database  
+    -- there should be option to delete multiple sku mappings at once from the list and also from the database  
+    -- there should be option to download sku mappings list in excel format from the list 
+    -- and update sku mappings list using excel format (same downloaded format can be used to update sku mappings list)
+
+
+Module 6: Warehouse 
+    -- there should be option to add new warehouse 
+        -- create warehouse form that already exist in the app 
+        -- after submit redirect to warehouse list page 
+        -- and show success message 
+        -- and show error message if any error occurs 
+    -- display total no of warehouses in card format
+    -- list of total no of warehouses in table format
+    -- with action column where logged in user can take action such as view, edit, delete, change status 
+    -- after changing status of warehouse, it should reflect in the list and also in the database 
+    -- after clicking view it should show all info of that warehouse 
+        -- display details of warehouse in card format 
+        -- display total no of products in that warehouse in card format 
+        -- display total no of blocked products in that warehouse in card format 
+        -- display total no of shortage products in that warehouse in card format 
+        -- display total no of excess products in that warehouse in card format 
+    -- after clicking edit it should open a form where user can edit that warehouse's info and after saving it should reflect in the list and also in the database 
+    -- after clicking delete it should delete that warehouse from the list and also from the database  
+
+
+
+Module 7: 
