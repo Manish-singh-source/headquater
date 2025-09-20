@@ -30,7 +30,7 @@
                                         <th>Order Id</th>
                                         <th>Customer Group Name</th>
                                         <th>Ordered Date</th>
-                                        <th>Delivery Date</th>
+                                        {{-- <th>Delivery Date</th> --}}
                                         <th>Status</th>
                                         <th>Action</th>
                                     </tr>
@@ -57,7 +57,7 @@
                                                 </p>
                                             </td>
                                             <td>{{ $order->created_at->format('d-M-Y') }}</td>
-                                            <td>NA</td>
+                                            {{-- <td>NA</td> --}}
                                             <td>
                                                 {{ $statuses[$order->status] ?? 'On Hold' }}
                                             </td>

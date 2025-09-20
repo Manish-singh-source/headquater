@@ -4,9 +4,14 @@
     @php
         $statuses = [
             'pending' => 'Pending',
-            'blocked' => 'Blocked',
             'received' => 'Products Received',
             'completed' => 'Completed',
+        ];
+        
+        $payment_statuses = [
+            'pending' => 'Pending',
+            'partial_paid' => 'Partial Paid',
+            'paid' => 'Paid',
         ];
     @endphp
 
@@ -23,25 +28,57 @@
                         </ol>
                     </nav>
                 </div>
-
-                <div>
-                    <form id="statusForm" action="{{ route('change.purchase.order.status') }}" method="POST">
-                        @csrf
-                        @method('PUT')
-                        <input type="hidden" name="order_id" value="{{ $purchaseOrder->id }}">
-                        <select class="form-select border-2 border-primary" id="changeStatus"
-                            aria-label="Default select example" name="status">
-                            <option value="" selected disabled>Change Status</option>
-                            <option value="pending" @if ($purchaseOrder->status == 'pending') selected @endif
-                                @if (in_array($purchaseOrder->status, ['blocked', 'received', 'completed'])) disabled @endif>Pending</option>
-                            <option value="blocked" @if ($purchaseOrder->status == 'blocked') selected @endif
-                                @if (in_array($purchaseOrder->status, ['received', 'completed'])) disabled @endif>Blocked</option>
+                <div class="d-flex gap-2 align-items-center">
+                    @if ($purchaseOrder->status == 'received')
+                        <div>
+                            <form id="statusForm" action="{{ route('change.purchase.order.status') }}" method="POST">
+                                @csrf
+                                @method('PUT')
+                                <input type="hidden" name="order_id" value="{{ $purchaseOrder->id }}">
+                                <select class="border-2 btn btn-sm border-primary text-start" id="changeStatus"
+                                    aria-label="Default select example" name="status">
+                                    <option value="" selected disabled>Change Status</option>
+                                    {{-- <option value="pending" @if ($purchaseOrder->status == 'pending') selected @endif
+                                @if (in_array($purchaseOrder->status, ['received', 'completed'])) disabled @endif>Pending</option>
                             <option value="ready_to_package" @if ($purchaseOrder->status == 'received') selected @endif
-                                @if (in_array($purchaseOrder->status, ['completed'])) disabled @endif>Received</option>
-                            <option value="completed" @if ($purchaseOrder->status == 'completed') selected @endif>
-                                Completed</option>
-                        </select>
-                    </form>
+                                @if (in_array($purchaseOrder->status, ['completed'])) disabled @endif>Received</option> --}}
+                                    <option value="completed" @if ($purchaseOrder->status == 'completed') selected @endif>
+                                        Completed</option>
+                                </select>
+                            </form>
+                        </div>
+                    @endif
+                    <!-- Tabs Navigation -->
+                    <div class="div d-flex justify-content-end my-3 gap-2">
+                        {{-- Payment Details Module --}}
+                        @if (isset($purchaseOrder->vendorPI[0]->total_due_amount) && $purchaseOrder->vendorPI[0]->total_due_amount > 0)
+                            <button class="btn btn-sm border-2 border-primary" data-bs-toggle="modal"
+                                data-bs-target="#paymentUploadSection" class="btn btn-sm border-2 border-primary">
+                                Add Payment Details
+                            </button>
+                        @endif
+                        {{-- Payment Details Module --}}
+
+                        {{-- GRN uploading Module --}}
+                        @if (!isset($purchaseGrn[0]->vendor_code) && $purchaseOrder->status != 'completed')
+                            <button class="btn btn-sm border-2 border-primary" data-bs-toggle="modal"
+                                data-bs-target="#grnUpload" class="btn btn-sm border-2 border-primary">
+                                Add Vendor GRN
+                            </button>
+                        @endif
+
+                        {{-- GRN uploading Module --}}
+
+                        {{-- Invoice uploading Module --}}
+                        @if ($purchaseOrder->status != 'completed' && !isset($purchaseInvoice[0]->vendor_code))
+                            <button class="btn btn-sm border-2 border-primary" data-bs-toggle="modal"
+                                data-bs-target="#invoiceUpload" class="btn btn-sm border-2 border-primary">
+                                Add Vendor Invoice
+                            </button>
+                        @endif
+
+                        {{-- Invoice uploading Module --}}
+                    </div>
                 </div>
             </div>
 
@@ -66,7 +103,40 @@
                                         </b>
                                     </span>
                                 </li>
+                                @if (isset($purchaseOrder->vendorPI[0]->total_amount) && $purchaseOrder->vendorPI[0]->total_amount > 0)
+                                    <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
+                                        <span><b>Total Amount</b></span>
+                                        <span class="fw-bold"
+                                            id="sales-order-id">{{ $purchaseOrder->vendorPI[0]->total_amount ?? 0 }}
+                                            Rs.</span>
+                                    </li>
+                                @endif
 
+                                @if (isset($purchaseOrder->vendorPI[0]->total_paid_amount) && $purchaseOrder->vendorPI[0]->total_paid_amount > 0)
+                                    <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
+                                        <span><b>Total Paid Amount</b></span>
+                                        <span class="fw-bold"
+                                            id="sales-order-id">{{ $purchaseOrder->vendorPI[0]->total_paid_amount ?? 0 }}
+                                            Rs.</span>
+                                    </li>
+                                @endif
+
+                                @if (isset($purchaseOrder->vendorPI[0]->total_due_amount) && $purchaseOrder->vendorPI[0]->total_due_amount > 0)
+                                    <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
+                                        <span><b>Total Due Amount</b></span>
+                                        <span class="fw-bold"
+                                            id="sales-order-id">{{ $purchaseOrder->vendorPI[0]->total_due_amount ?? 0 }}
+                                            Rs.</span>
+                                    </li>
+                                @endif
+
+                                @if (isset($purchaseOrder->vendorPI[0]->payment_status))
+                                    <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
+                                        <span><b>Payment Status</b></span>
+                                        <span class="fw-bold"
+                                            id="sales-order-id">{{ $payment_statuses[$purchaseOrder->vendorPI[0]->payment_status] }}</span>
+                                    </li>
+                                @endif
 
                                 <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                                     <span><b>Status</b></span>
@@ -135,8 +205,8 @@
                                                         </div>
                                                     </div>
 
-                                                    <button class="btn btn-sm border-2 border-danger" data-bs-toggle="modal"
-                                                        data-bs-target="#rejectPopup"
+                                                    <button class="btn btn-sm border-2 border-danger"
+                                                        data-bs-toggle="modal" data-bs-target="#rejectPopup"
                                                         class="btn btn-sm border-2 border-danger">
                                                         Reject
                                                     </button>
@@ -197,6 +267,84 @@
                     </div>
                 </div>
             </div>
+
+
+            @isset($purchaseInvoice[0]->vendor_code)
+                <div class="card">
+
+                    <div class="card-header border-bottom-dashed">
+                        <div class="row g-4 align-items-center">
+                            <div class="col-sm">
+                                <h5 class="card-title mb-0">
+                                    Invoices
+                                </h5>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card-body">
+                        <table class="table align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Vendor Name</th>
+                                    <th>Invoice File</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($purchaseInvoice as $invoiceDetail)
+                                    <tr>
+                                        <th> {{ $invoiceDetail->vendor_code }}</th>
+                                        <th>
+                                            <a href="{{ asset('uploads/invoices/' . $invoiceDetail->invoice_file) }}"
+                                                class="btn btn-sm border-2 border-success w-sm waves ripple-light">
+                                                Preview
+                                            </a>
+                                        </th>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+
+                </div>
+            @endisset
+            @isset($purchaseGrn[0]->vendor_code)
+                <div class="card">
+                    <div class="card-header border-bottom-dashed">
+                        <div class="row g-4 align-items-center">
+                            <div class="col-sm">
+                                <h5 class="card-title mb-0">
+                                    GRNs
+                                </h5>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card-body">
+                        <table class="table align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Vendor Name</th>
+                                    <th>GRN File</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($purchaseGrn as $grnDetail)
+                                    <tr>
+                                        <th> {{ $grnDetail->vendor_code }}</th>
+                                        <th>
+                                            <a href="{{ asset('uploads/invoices/' . $grnDetail->grn_file) }}"
+                                                class="btn btn-sm border-2 border-success w-sm waves ripple-light">
+                                                Preview
+                                            </a>
+                                        </th>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            @endisset
 
             @if (in_array($purchaseOrder->status, ['pending', 'blocked']))
                 <div class="card">
@@ -293,7 +441,11 @@
                                             <th>Title</th>
                                             <th>MRP</th>
                                             <th>Qty&nbsp;Requirement</th>
-                                            <th>Action</th>
+                                            @if (
+                                                ($purchaseOrder?->purchaseOrderProducts->count() ?? 0) !=
+                                                    (isset($purchaseOrder?->vendorPI[0]) ? $purchaseOrder?->vendorPI[0]?->products->count() : 0))
+                                                <th>Action</th>
+                                            @endif
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -311,33 +463,37 @@
                                                 <td>{{ $order->tempOrder->description ?? 'NA' }}</td>
                                                 <td>{{ $order->tempOrder->mrp ?? 'NA' }}</td>
                                                 <td>{{ $order->ordered_quantity ?? 'NA' }}</td>
-                                                <td>
-                                                    <div class="d-flex">
-                                                        <form
-                                                            action="{{ route('purchase.order.product.delete', $order->id) }}"
-                                                            method="POST" onsubmit="return confirm('Are you sure?')">
-                                                            @csrf
-                                                            @method('DELETE')
-                                                            <button type="submit"
-                                                                class="btn btn-icon btn-sm bg-danger-subtle delete-row">
-                                                                <svg xmlns="http://www.w3.org/2000/svg" width="13"
-                                                                    height="13" viewBox="0 0 24 24" fill="none"
-                                                                    stroke="currentColor" stroke-width="2"
-                                                                    stroke-linecap="round" stroke-linejoin="round"
-                                                                    class="feather feather-trash-2 text-danger">
-                                                                    <polyline points="3 6 5 6 21 6"></polyline>
-                                                                    <path
-                                                                        d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
-                                                                    </path>
-                                                                    <line x1="10" y1="11" x2="10"
-                                                                        y2="17"></line>
-                                                                    <line x1="14" y1="11" x2="14"
-                                                                        y2="17"></line>
-                                                                </svg>
-                                                            </button>
-                                                        </form>
-                                                    </div>
-                                                </td>
+                                                @if (
+                                                    ($purchaseOrder?->purchaseOrderProducts->count() ?? 0) !=
+                                                        (isset($purchaseOrder?->vendorPI[0]) ? $purchaseOrder?->vendorPI[0]?->products->count() : 0))
+                                                    <td>
+                                                        <div class="d-flex">
+                                                            <form
+                                                                action="{{ route('purchase.order.product.delete', $order->id) }}"
+                                                                method="POST" onsubmit="return confirm('Are you sure?')">
+                                                                @csrf
+                                                                @method('DELETE')
+                                                                <button type="submit"
+                                                                    class="btn btn-icon btn-sm bg-danger-subtle delete-row">
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="13"
+                                                                        height="13" viewBox="0 0 24 24" fill="none"
+                                                                        stroke="currentColor" stroke-width="2"
+                                                                        stroke-linecap="round" stroke-linejoin="round"
+                                                                        class="feather feather-trash-2 text-danger">
+                                                                        <polyline points="3 6 5 6 21 6"></polyline>
+                                                                        <path
+                                                                            d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
+                                                                        </path>
+                                                                        <line x1="10" y1="11"
+                                                                            x2="10" y2="17"></line>
+                                                                        <line x1="14" y1="11"
+                                                                            x2="14" y2="17"></line>
+                                                                    </svg>
+                                                                </button>
+                                                            </form>
+                                                        </div>
+                                                    </td>
+                                                @endif
                                             </tr>
                                         @empty
                                             <tr>
@@ -360,93 +516,6 @@
                             <div class="div d-flex justify-content-end my-3 gap-2">
                                 <h6 class="mb-3">Vendor PI Table</h6>
                             </div>
-                            <!-- Tabs Navigation -->
-                            <div class="div d-flex justify-content-end my-3 gap-2">
-                                @if (!isset($purchaseGrn[0]->vendor_code) && $purchaseOrder->status != 'completed')
-                                    <button class="btn btn-sm border-2 border-primary" data-bs-toggle="modal"
-                                        data-bs-target="#grnUpload" class="btn btn-sm border-2 border-primary">
-                                        Add Vendor GRN
-                                    </button>
-                                @endif
-
-                                <!-- Modal -->
-                                <div class="modal fade" id="grnUpload" data-bs-backdrop="approve" data-bs-keyboard="false"
-                                    tabindex="-1" aria-labelledby="grnUploadSection" aria-hidden="true">
-                                    <div class="modal-dialog">
-                                        <div class="modal-content">
-                                            <form action="{{ route('purchase.order.grn.store') }}" method="post"
-                                                enctype="multipart/form-data">
-                                                @csrf
-                                                @method('POST')
-                                                <div class="modal-body">
-                                                    <div class="col-12 mb-3">
-                                                        <input type="hidden" name="purchase_order_id"
-                                                            value="{{ $purchaseOrder->id }}">
-                                                        <input type="hidden" name="vendor_code"
-                                                            value="{{ $purchaseOrder->vendor_code }}">
-                                                    </div>
-
-                                                    <div class="col-12 mb-3">
-                                                        <label for="grn_file" class="form-label">Upload GRN <span
-                                                                class="text-danger">*</span></label>
-                                                        <input type="file" name="grn_file" id="grn_file"
-                                                            class="form-control" placeholder="Upload ID Document">
-                                                    </div>
-                                                </div>
-                                                <div class="modal-footer">
-                                                    <button type="button" class="btn btn-secondary"
-                                                        data-bs-dismiss="modal">Close</button>
-                                                    <button type="submit" class="btn btn-primary">Submit</button>
-                                                </div>
-                                            </form>
-
-                                        </div>
-                                    </div>
-                                </div>
-
-                                @if ($purchaseOrder->status != 'completed' && !isset($purchaseInvoice[0]->vendor_code))
-                                    <button class="btn btn-sm border-2 border-primary" data-bs-toggle="modal"
-                                        data-bs-target="#invoiceUpload" class="btn btn-sm border-2 border-primary">
-                                        Add Vendor Invoice
-                                    </button>
-                                @endif
-
-                                <!-- Modal -->
-                                <div class="modal fade" id="invoiceUpload" data-bs-backdrop="approve"
-                                    data-bs-keyboard="false" tabindex="-1" aria-labelledby="invoiceUploadSection"
-                                    aria-hidden="true">
-                                    <div class="modal-dialog">
-                                        <div class="modal-content">
-                                            <form action="{{ route('purchase.order.invoice.store') }}" method="post"
-                                                enctype="multipart/form-data">
-                                                @csrf
-                                                @method('POST')
-                                                <div class="modal-body">
-                                                    <div class="col-12 mb-3">
-                                                        <input type="hidden" name="purchase_order_id"
-                                                            value="{{ $purchaseOrder->id }}">
-                                                        <input type="hidden" name="vendor_code"
-                                                            value="{{ $purchaseOrder->vendor_code }}">
-                                                    </div>
-
-                                                    <div class="col-12 mb-3">
-                                                        <label for="invoice_file" class="form-label">Upload Invoice <span
-                                                                class="text-danger">*</span></label>
-                                                        <input type="file" name="invoice_file" id="invoice_file"
-                                                            class="form-control" placeholder="Upload ID Document">
-                                                    </div>
-                                                </div>
-                                                <div class="modal-footer">
-                                                    <button type="button" class="btn btn-secondary"
-                                                        data-bs-dismiss="modal">Close</button>
-                                                    <button type="submit" class="btn btn-primary">Submit</button>
-                                                </div>
-                                            </form>
-
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
                         </div>
 
                         <div class="product-table">
@@ -462,7 +531,9 @@
                                             <th>GST</th>
                                             <th>HSN</th>
                                             <th>MRP</th>
+                                            <th>Basic&nbsp;Rate</th>
                                             <th>Purchase&nbsp;Rate&nbsp;Basic</th>
+                                            <th>Rate&nbsp;Confirmation</th>
                                             <th>PO&nbsp;Quantity</th>
                                             <th>PI&nbsp;Quantity</th>
                                             <th>Quantity&nbsp;Received</th>
@@ -472,7 +543,7 @@
                                         @forelse ($purchaseOrder->vendorPI as $vendorPI)
                                             @foreach ($vendorPI->products as $product)
                                                 <tr>
-                                                    <td>{{ $product->id }}</td>
+                                                    <td>{{ $vendorPI->sales_order_id }}</td>
                                                     <td>{{ $vendorPI->purchase_order_id }}</td>
                                                     <td>{{ $vendorPI->vendor_code }}</td>
                                                     <td>{{ $product->vendor_sku_code }}</td>
@@ -480,7 +551,15 @@
                                                     <td>{{ $product->gst }}</td>
                                                     <td>{{ $product->hsn }}</td>
                                                     <td>{{ $product->mrp }}</td>
+                                                    <td>{{ $product->product->vendor_purchase_rate }}</td>
                                                     <td>{{ $product->purchase_rate }}</td>
+                                                    <td>
+                                                        @if ($product->purchase_rate <= $product->product->vendor_purchase_rate)
+                                                            <span class="badge text-success bg-success-subtle">Correct</span>
+                                                        @else
+                                                            <span class="badge text-danger bg-danger-subtle">Incorrect</span>
+                                                        @endif
+                                                    </td>
                                                     <td>{{ $product->quantity_requirement }}</td>
                                                     <td>{{ $product->available_quantity }}</td>
                                                     <td>{{ $product->quantity_received ?? '' }}</td>
@@ -500,82 +579,139 @@
             @endisset
 
 
-            @isset($purchaseInvoice[0]->vendor_code)
-                <div class="card">
+            {{-- Models Section --}}
 
-                    <div class="card-header border-bottom-dashed">
-                        <div class="row g-4 align-items-center">
-                            <div class="col-sm">
-                                <h5 class="card-title mb-0">
-                                    Invoices
-                                </h5>
-                            </div>
+            <!-- Modal -->
+            {{-- Payment Details Module --}}
+            <div class="modal fade" id="paymentUploadSection" data-bs-backdrop="approve" data-bs-keyboard="false"
+                tabindex="-1" aria-labelledby="paymentUploadSection" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h1 class="modal-title fs-5" id="staticBackdropLabel">
+                                Add Payment Details</h1>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                aria-label="Close"></button>
                         </div>
-                    </div>
 
-                    <div class="card-body">
-                        <table class="table align-middle">
-                            <thead>
-                                <tr>
-                                    <th>Vendor Name</th>
-                                    <th>Invoice File</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach ($purchaseInvoice as $invoiceDetail)
-                                    <tr>
-                                        <th> {{ $invoiceDetail->vendor_code }}</th>
-                                        <th>
-                                            <a href="{{ asset('uploads/invoices/' . $invoiceDetail->invoice_file) }}"
-                                                class="btn btn-sm border-2 border-success w-sm waves ripple-light">
-                                                Preview
-                                            </a>
-                                        </th>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
+                        <form action="{{ route('vendor.invoice.payment.store') }}" method="post"
+                            enctype="multipart/form-data">
+                            @csrf
+                            @method('POST')
+                            <div class="modal-body">
+                                <div class="col-12 mb-3">
+                                    <input type="hidden" name="vendor_pi_id"
+                                        value="{{ $purchaseOrder->vendorPI[0]->id ?? '' }}">
+                                </div>
 
-                </div>
-            @endisset
-            @isset($purchaseGrn[0]->vendor_code)
-                <div class="card">
-                    <div class="card-header border-bottom-dashed">
-                        <div class="row g-4 align-items-center">
-                            <div class="col-sm">
-                                <h5 class="card-title mb-0">
-                                    GRNs
-                                </h5>
+                                <div class="col-12 mb-3">
+                                    <label for="utr_no" class="form-label">UTR
+                                        No<span class="text-danger">*</span></label>
+                                    <input type="text" name="utr_no" id="utr_no" class="form-control"
+                                        value="" required="" placeholder="UTR No">
+                                </div>
+
+                                <div class="col-12 mb-3">
+                                    <label for="payment_status" class="form-label">Payment Amount<span
+                                            class="text-danger">*</span></label>
+                                    <input type="text" name="pay_amount" class="form-control"
+                                        placeholder="Enter Payment Amount">
+                                </div>
+
+                                <div class="col-12 mb-3">
+                                    <label for="payment_method" class="form-label">Payment Method<span
+                                            class="text-danger">*</span></label>
+                                    <select id="payment_method" name="payment_method" class="form-select">
+                                        <option selected="" disabled>Payment Method
+                                        </option>
+                                        <option value="cash">Cash</option>
+                                        <option value="bank_transfers">Bank Transfers
+                                        </option>
+                                        <option value="checks">Checks</option>
+                                        <option value="mobile_payments">Mobile Payments
+                                        </option>
+                                    </select>
+                                </div>
                             </div>
-                        </div>
-                    </div>
-
-                    <div class="card-body">
-                        <table class="table align-middle">
-                            <thead>
-                                <tr>
-                                    <th>Vendor Name</th>
-                                    <th>GRN File</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach ($purchaseGrn as $grnDetail)
-                                    <tr>
-                                        <th> {{ $grnDetail->vendor_code }}</th>
-                                        <th>
-                                            <a href="{{ asset('uploads/invoices/' . $grnDetail->grn_file) }}"
-                                                class="btn btn-sm border-2 border-success w-sm waves ripple-light">
-                                                Preview
-                                            </a>
-                                        </th>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                <button type="submit" class="btn btn-primary">Submit</button>
+                            </div>
+                        </form>
                     </div>
                 </div>
-            @endisset
+            </div>
+            {{-- Payment Details Module --}}
+
+
+            {{-- GRN uploading Module --}}
+            <!-- Modal -->
+            <div class="modal fade" id="grnUpload" data-bs-backdrop="approve" data-bs-keyboard="false" tabindex="-1"
+                aria-labelledby="grnUploadSection" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <form action="{{ route('purchase.order.grn.store') }}" method="post"
+                            enctype="multipart/form-data">
+                            @csrf
+                            @method('POST')
+                            <div class="modal-body">
+                                <div class="col-12 mb-3">
+                                    <input type="hidden" name="purchase_order_id" value="{{ $purchaseOrder->id }}">
+                                    <input type="hidden" name="vendor_code" value="{{ $purchaseOrder->vendor_code }}">
+                                </div>
+
+                                <div class="col-12 mb-3">
+                                    <label for="grn_file" class="form-label">Upload GRN <span
+                                            class="text-danger">*</span></label>
+                                    <input type="file" name="grn_file" id="grn_file" class="form-control"
+                                        placeholder="Upload ID Document">
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                <button type="submit" class="btn btn-primary">Submit</button>
+                            </div>
+                        </form>
+
+                    </div>
+                </div>
+            </div>
+            {{-- GRN uploading Module --}}
+
+            <!-- Modal -->
+            {{-- Invoice uploading Module --}}
+            <div class="modal fade" id="invoiceUpload" data-bs-backdrop="approve" data-bs-keyboard="false"
+                tabindex="-1" aria-labelledby="invoiceUploadSection" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <form action="{{ route('purchase.order.invoice.store') }}" method="post"
+                            enctype="multipart/form-data">
+                            @csrf
+                            @method('POST')
+                            <div class="modal-body">
+                                <div class="col-12 mb-3">
+                                    <input type="hidden" name="purchase_order_id" value="{{ $purchaseOrder->id }}">
+                                    <input type="hidden" name="vendor_code" value="{{ $purchaseOrder->vendor_code }}">
+                                </div>
+
+                                <div class="col-12 mb-3">
+                                    <label for="invoice_file" class="form-label">Upload Invoice <span
+                                            class="text-danger">*</span></label>
+                                    <input type="file" name="invoice_file" id="invoice_file" class="form-control"
+                                        placeholder="Upload ID Document">
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                <button type="submit" class="btn btn-primary">Submit</button>
+                            </div>
+                        </form>
+
+                    </div>
+                </div>
+            </div>
+            {{-- Invoice uploading Module --}}
+            {{-- Models Section --}}
         </div>
     </main>
 @endsection

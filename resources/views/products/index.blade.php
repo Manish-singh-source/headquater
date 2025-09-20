@@ -104,6 +104,7 @@
                                         <th>Category</th>
                                         <th>PCS/Set </th>
                                         <th>Sets/CTN</th>
+                                        <th>Vendor&nbsp;Code</th>
                                         <th>Vendor&nbsp;Name</th>
                                         <th>Vendor&nbsp;Purchase&nbsp;Rate</th>
                                         <th>GST</th>
@@ -139,6 +140,7 @@
                                             <td>{{ $product->product->category ?? 'NA'}}</td>
                                             <td>{{ $product->product->pcs_set ?? 'NA' }}</td>
                                             <td>{{ $product->product->sets_ctn ?? 'NA' }}</td>
+                                            <td>{{ $product->product->vendor_code ?? 'NA' }}</td>
                                             <td>{{ $product->product->vendor_name ?? 'NA' }}</td>
                                             <td>{{ $product->product->vendor_purchase_rate ?? 'NA' }}</td>
                                             <td>{{ $product->product->gst ?? 'NA' }}</td>
@@ -203,7 +205,7 @@
                                         </tr>
                                     @empty 
                                         <tr>
-                                            <td colspan="20" class="text-center">No products found.</td>
+                                            <td colspan="21" class="text-center">No products found.</td>
                                         </tr>
                                     @endforelse
                                 </tbody>

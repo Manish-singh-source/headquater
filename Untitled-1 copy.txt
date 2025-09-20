@@ -148,6 +148,31 @@ Module 6: Warehouse
 
 
 Module 7: Sales Order 
+
+    1. before creating sales order we will check if product quantity is available in warehouse or not 
+        -- there will be one button to check availability 
+        -- after clicking that button it should show a popup form where user can upload excel file to check availability by choosing warehouse 
+        -- after uploading file it should show a list of products with their availability in the warehouse 
+        -- also checks if customer, product is available in db or not. 
+        -- if customer is not available in db then show customer, product not found in reason column such as "customer not found | product not found"
+
+        -- then we will go to back out main sales order page where we can make sales order 
+        -- we can select customer group and warehouse and upload excel file to create sales order 
+        -- after uploading file it will check if product is available in warehouse or not, if customer is available or not, if vendor is available or not 
+        -- not found customers/vendors/products will be stored in not found table 
+        -- all other products will be stored in temp order table 
+        -- unavailable quantity of products will be go to the purchase order so that quantity of products will be ordered from vendor 
+        -- our vendors are fixed for particular product 
+        -- 
+
+        -- in availability column show available quantity if full quantity is available then color it green else red 
+        -- in unavailable column show unavailable quantity if full quantity is available then show 0 else show unavailable quantity 
+        -- there should be one more column for rate confirmation in this column if product rate is <= po rate then show correct (color it green) else show incorrect (color it red)
+        -- there should be one more column for case pack quantity that will be fetched from products table as pcs_set * sets_ctn = case pack quantity
+        -- one more column for reason if product is not available or customer is not available in db 
+        -- there should be one button to download that list in excel format 
+
+
     -- display total no of sales orders in card format
     -- display total no of pending, completed, blocked, ready to ship, ready to package orders in card format 
     -- list of total no of sales orders in table format 
@@ -198,3 +223,12 @@ Module 7: Sales Order
     -- total paid amount is not showing properly 
     -- total due amount is not showing properly 
 
+
+
+-- Re-Order: 
+    -- short products quantity re-order quantity from vendor 
+
+-- Return Or Accept: 
+    -- extra products return to vendor 
+    -- extra products accept from vendor and store to warehouse stock 
+    

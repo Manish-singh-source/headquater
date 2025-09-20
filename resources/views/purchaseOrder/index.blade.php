@@ -5,6 +5,7 @@
         $statuses = [
             'pending' => 'Pending',
             'blocked' => 'Blocked',
+            'received' => 'Products Received',
             'completed' => 'Completed',
             'ready_to_ship' => 'Ready To Ship',
             'ready_to_package' => 'Ready To Package',
@@ -58,12 +59,15 @@
                                         <th>
                                             <input class="form-check-input" type="checkbox" id="select-all">
                                         </th>
-                                        <th>Sales Order Id</th>
-                                        <th>Purchase Order Id</th>
-                                        <th>Vendor Code</th>
-                                        <th>Order Status</th>
-                                        <th>Total Product</th>
-                                        <th>Ordered Date</th>
+                                        <th>Sales&nbsp;Order&nbsp;Id</th>
+                                        <th>Purchase&nbsp;Order&nbsp;Id</th>
+                                        <th>Vendor&nbsp;Code</th>
+                                        <th>Order&nbsp;Status</th>
+                                        <th>Total&nbsp;Product</th>
+                                        <th>Total&nbsp;Amount</th>
+                                        <th>Total&nbsp;Paid&nbsp;Amount</th>
+                                        <th>Total&nbsp;Due&nbsp;Amount</th>
+                                        <th>Ordered&nbsp;Date</th>
                                         <th>Action</th>
                                     </tr>
                                 </thead>
@@ -85,6 +89,9 @@
                                                 {{ $statuses[$order->status] ?? 'On Hold' }}
                                             </td>
                                             <td>{{ $order->purchase_order_products_count ?? 0 }}</td>
+                                            <td>{{ $order->vendorPI[0]->total_amount ?? 0 }}</td>
+                                            <td>{{ $order->vendorPI[0]->total_paid_amount ?? 0 }}</td>
+                                            <td>{{ $order->vendorPI[0]->total_due_amount ?? 0 }}</td>
                                             <td>{{ $order->created_at->format('d-M-Y') }}</td>
                                             <td>
                                                 <div class="d-flex">

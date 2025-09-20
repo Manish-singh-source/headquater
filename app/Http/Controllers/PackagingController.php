@@ -108,11 +108,14 @@ class PackagingController extends Controller
                 'Net Landing Rate' => $order->tempOrder->net_landing_rate ?? '',
                 'MRP' => $order->tempOrder->mrp ?? '',
                 'PO Quantity' => $order->tempOrder->po_qty ?? '',
+                'Purchase Order Quantity' => $order->tempOrder->purchase_order_quantity ?? '',
                 'Warehouse Stock' => $order->warehouseStock->original_quantity ?? '',
                 // 'PI Quantity' => $order->tempOrder?->vendor_pi_fulfillment_quantity,
                 'Purchase Order No' => $order->tempOrder->po_number ?? '',
                 'Total Dispatch Qty' => $totalDispatchQty ?? 0,
-                'Final Dispatch Qty' => ''
+                'Final Dispatch Qty' => '',
+                'Issue Units' => '',
+                'Issue Reason' => ''
             ]);
         }
 
@@ -130,7 +133,7 @@ class PackagingController extends Controller
             'pi_excel' => 'required|file|mimes:xlsx,csv,xls',
         ]);
 
-        if(!$request->salesOrderId) {
+        if (!$request->salesOrderId) {
             return back()->with('error', 'Please Try Again.');
         }
 
@@ -143,28 +146,63 @@ class PackagingController extends Controller
         try {
             $reader = SimpleExcelReader::create($filepath, $extension);
             $rows = $reader->getRows();
-            $products = [];
-            $warehouseStockUpdate = [];
             $insertCount = 0;
 
             foreach ($rows as $record) {
-                if (empty($record['SKU Code'])) continue;
-
+                if (empty($record['SKU Code'])) {
+                    continue;
+                }
                 $customer = Customer::where('facility_name', $record['Facility Name'])->first();
                 if (!$customer) {
                     continue;
                 }
 
-                if (empty($record['Final Dispatch Qty'])) {
+                // if final dispatch qty is empty or 0 then set it to dispatched quantity
+                // if user wants to set dispatch quantity to 0 then set it to 0 but how?? 
+                if (empty($record['Final Dispatch Qty']) || $record['Final Dispatch Qty'] == 0) {
                     $order = SalesOrderProduct::where('customer_id', $customer->id)->where('sales_order_id', $request->salesOrderId)->where('sku', $record['SKU Code'])->first();
-                    if ($order) {
+                    if (!$order) {
+                        continue;
+                    }
+                    if ($order->dispatched_quantity > $record['Final Dispatch Qty']) {
+                        $order->final_dispatched_quantity = $record['Final Dispatch Qty'];
+                        $order->issue_item = $record['Issue Units'];
+                        $order->issue_reason = 'Shortage';
+                        $order->issue_description = $record['Issue Reason'];
+                        $order->status = 'packaged';
+                        $order->save();
+                    } elseif ($order->dispatched_quantity < $record['Final Dispatch Qty']) {
                         $order->final_dispatched_quantity = $order->dispatched_quantity;
+                        $order->issue_item = 'Exceed';
+                        $order->issue_description = $record['Issue Reason'];
+                        $order->status = 'packaged';
+                        $order->save();
+                    } else {
+                        $order->final_dispatched_quantity = $order->dispatched_quantity;
+                        $order->status = 'packaged';
                         $order->save();
                     }
                 } else {
                     $order = SalesOrderProduct::where('customer_id', $customer->id)->where('sales_order_id', $request->salesOrderId)->where('sku', $record['SKU Code'])->first();
-                    if ($order) {
+                    if (!$order) {
+                        continue;
+                    }
+                    if ($order->dispatched_quantity > $record['Final Dispatch Qty']) {
                         $order->final_dispatched_quantity = $record['Final Dispatch Qty'];
+                        $order->issue_item = $record['Issue Units'];
+                        $order->issue_reason = 'Shortage';
+                        $order->issue_description = $record['Issue Reason'];
+                        $order->status = 'packaged';
+                        $order->save();
+                    } elseif ($order->dispatched_quantity < $record['Final Dispatch Qty']) {
+                        $order->final_dispatched_quantity = $order->dispatched_quantity;
+                        $order->issue_item = 'Exceed';
+                        $order->issue_description = $record['Issue Reason'];
+                        $order->status = 'packaged';
+                        $order->save();
+                    } else {
+                        $order->final_dispatched_quantity = $order->dispatched_quantity;
+                        $order->status = 'packaged';
                         $order->save();
                     }
                 }

@@ -107,10 +107,12 @@
                                         <th>Net&nbsp;Landing&nbsp;Rate</th>
                                         <th>MRP</th>
                                         <th>PO&nbsp;Quantity</th>
+                                        <th>Purchase&nbsp;Order&nbsp;Quantity</th>
                                         <th>Warehouse&nbsp;Stock</th>
                                         {{-- <th>PI&nbsp;Quantity</th> --}}
                                         <th>Purchase&nbsp;Order&nbsp;No</th>
                                         <th>Total&nbsp;Dispatch&nbsp;Qty</th>
+                                        <th>Final&nbsp;Dispatch&nbsp;Qty</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -131,12 +133,16 @@
                                             <td>{{ $order->tempOrder->net_landing_rate }}</td>
                                             <td>{{ $order->tempOrder->mrp }}</td>
                                             <td>{{ $order->tempOrder->po_qty }}</td>
+                                            <td>{{ $order->tempOrder->purchase_order_quantity }}</td>
                                             {{-- Need to check --}}
                                             <td>{{ $order->warehouseStock->original_quantity }}</td>
                                             {{-- <td>{{ $order->tempOrder?->vendor_pi_fulfillment_quantity }}</td> --}}
                                             <td>{{ $order->tempOrder->po_number }}</td>
                                             <td>
                                                 {{ $order->dispatched_quantity ?? 0 }}
+                                            </td>
+                                            <td>
+                                                {{ $order->final_dispatched_quantity ?? 0 }}
                                             </td>
                                         </tr>
                                     @empty

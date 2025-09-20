@@ -19,8 +19,10 @@
                             <select class="form-select border-2 border-primary" id="changeStatus"
                                 aria-label="Default select example" name="status">
                                 <option value="" selected disabled>Change Status</option>
-                                <option value="completed" @if ($salesOrder->status == 'completed') selected @endif>
-                                    Completed</option>
+                                {{-- <option value="dispatched" @if ($salesOrder->status == 'dispatched') selected @endif>
+                                    Dispatched</option> --}}
+                                <option value="delivered" @if ($salesOrder->status == 'delivered') selected @endif>
+                                    delivered</option>
                             </select>
                         </form>
                     </div>

@@ -41,9 +41,8 @@ Route::controller(RegisterController::class)->group(function () {
 });
 
 Route::middleware(['auth'])->group(function () {
-    Route::get('/', function () {
-        return view('index');
-    })->name('index');
+    // Dashboard
+    Route::get('/', [RegisterController::class, 'index'])->name('index');
 
 
     //Access Control
@@ -204,7 +203,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/purchase-custom-order-store', 'customPurchaseStore')->name('store.purchase.order');
         Route::put('/change-purchase-order-status', 'changeStatus')->name('change.purchase.order.status');
 
-
+        Route::post('/vendor-invoice-payment-update', 'vendorInvoicePaymentStore')->name('vendor.invoice.payment.store');
         // Return or accept packaging products 
         Route::get('/vendor-product-return/{id}', 'vendorProductReturn')->name('vendor.product.return');
         Route::get('/vendor-product-accept/{id}', 'vendorProductAccept')->name('vendor.product.accept');

@@ -549,6 +549,7 @@ class SalesOrderController extends Controller
             'orderedProducts.warehouseStock',
         ])
             ->withSum('orderedProducts', 'purchase_ordered_quantity')
+            ->withSum('orderedProducts', 'ordered_quantity')
             // ->withSum('orderedProducts.tempOrder', 'available_quantity')
             // ->withSum('tempOrders', 'available_quantity')
             // ->withSum('tempOrders', 'vendor_pi_fulfillment_quantity')
@@ -557,6 +558,7 @@ class SalesOrderController extends Controller
             ->withCount('notFoundTempOrderByVendor')
             ->findOrFail($id);
 
+        // dd($salesOrder);
         $vendorPiFulfillmentTotal = 0;
         $availableQuantity = 0;
         $caching = [];
@@ -688,10 +690,7 @@ class SalesOrderController extends Controller
             $salesOrder = SalesOrder::findOrFail($request->order_id);
             $salesOrderDetails = SalesOrderProduct::where('sales_order_id', $salesOrder->id)->get();
 
-
-            $salesOrder->status = $request->status;
-
-            if ($salesOrder->status == 'ready_to_ship') {
+            if ($request->status == 'ready_to_ship') {
                 $customerFacilityName = SalesOrderProduct::with('customer')
                     ->where('sales_order_id', $salesOrder->id)
                     ->get()
@@ -730,6 +729,9 @@ class SalesOrderController extends Controller
                                 'total_price' => ($detail->ordered_quantity * $product->mrp) - 0, // Total price after discount
                                 'description' => isset($detail->tempOrder) ? $detail->tempOrder->description : null, // Assuming description is in TempOrder
                             ];
+
+                            $detail->status = 'dispatched';
+                            $detail->save();
                         }
                     }
                     InvoiceDetails::insert($invoiceDetails);
@@ -765,7 +767,9 @@ class SalesOrderController extends Controller
                     }
                     $order->save();
                 }
-            } else if ($salesOrder->status == 'ready_to_package') {
+
+                $salesOrder->status = $request->status;
+            } else if ($request->status == 'ready_to_package') {
                 $salesOrderUpdate = SalesOrder::with([
                     'customerGroup',
                     'warehouse',
@@ -775,6 +779,7 @@ class SalesOrderController extends Controller
                     'orderedProducts.warehouseStock',
                 ])
                     ->findOrFail($request->order_id);
+                    
                 foreach ($salesOrderUpdate->orderedProducts as $order) {
                     if ($order->tempOrder?->vendor_pi_received_quantity) {
                         $order->tempOrder->vendor_pi_fulfillment_quantity = $order->tempOrder->vendor_pi_received_quantity;
@@ -784,8 +789,33 @@ class SalesOrderController extends Controller
                     } else {
                         $order->dispatched_quantity = ($order->tempOrder?->available_quantity ?? 0) + ($order->tempOrder?->vendor_pi_fulfillment_quantity ?? 0);
                     }
+                    $order->status = 'packaging';
                     $order->save();
                 }
+                $salesOrderUpdate->save();
+
+                $salesOrder->status = $request->status;
+            } else if ($request->status == 'delivered') {
+                $customerFacilityName = SalesOrderProduct::with('customer')
+                    ->where('sales_order_id', $salesOrder->id)
+                    ->get()
+                    ->pluck('customer')
+                    ->filter()
+                    ->unique('client_name')
+                    ->pluck('client_name', 'id',);
+
+                foreach ($customerFacilityName as $customer_id => $facility_name) {
+                    foreach ($salesOrderDetails as $detail) {
+                        if ($detail->customer_id == $customer_id) {
+                            $detail->status = $request->status;
+                            $detail->save();
+                        }
+                    }
+                }
+
+                $salesOrder->status = $request->status;
+            } else if ($request->status == 'completed') {
+                $salesOrder->status = $request->status;
             }
             $salesOrder->save();
 
@@ -797,6 +827,8 @@ class SalesOrderController extends Controller
             } else if ($salesOrder->status == 'ready_to_ship') {
                 return redirect()->route('readyToShip.view', $request->order_id)->with('success', 'Status has been changed.');
             } else if ($salesOrder->status == 'completed') {
+                return redirect()->route('sales.order.index')->with('success', 'Status has been changed.');
+            } else if ($salesOrder->status == 'delivered') {
                 return redirect()->route('sales.order.index')->with('success', 'Status has been changed.');
             } else {
                 return redirect()->back()->with('error', 'Status Not Changed. Please Try Again.');
@@ -1226,6 +1258,7 @@ class SalesOrderController extends Controller
                 'Net Landing Rate' => $product->net_landing_rate ?? '',
                 'MRP' => $product->mrp ?? '',
                 'PO Quantity' => $product->po_qty ?? '',
+                'Vendor Code' => $product->vendor_code ?? '',
                 'Vendor Status' => $product->vendor_status,
             ]);
         }

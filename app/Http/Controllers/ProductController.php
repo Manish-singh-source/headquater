@@ -46,44 +46,75 @@ class ProductController extends Controller
             $insertCount = 0;
 
             foreach ($reader->getRows() as $record) {
-                $product = Product::create([
-                    'sku' => $record['SKU Code'] ?? '',
-                    'ean_code' => $record['EAN Code'] ?? '',
-                    'brand' => $record['Brand'] ?? '',
-                    'brand_title' => $record['Brand Title'] ?? '',
-                    'mrp' => $record['MRP'] ?? '',
-                    'category' => $record['Category'] ?? '',
-                    'pcs_set' => $record['PCS/Set'] ?? '',
-                    'sets_ctn' => $record['Sets/CTN'] ?? '',
-                    'vendor_code' => $record['Vendor Code'] ?? '',
-                    'vendor_name' => $record['Vendor Name'] ?? '',
-                    'vendor_purchase_rate' => $record['Vendor Purchase Rate'] ?? '',
-                    'gst' => $record['GST'] ?? '',
-                    'vendor_net_landing' => $record['Vendor Net Landing'] ?? '',
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ]);
 
-                $warehouseStock = new WarehouseStock();
-                $warehouseStock->warehouse_id = $request->warehouse_id;
-                $warehouseStock->sku = $record['SKU Code'];
-                isset($record['Stock']) ? $warehouseStock->original_quantity = $record['Stock'] : $warehouseStock->original_quantity = 0;
-                isset($record['Stock']) ? $warehouseStock->available_quantity = $record['Stock'] : $warehouseStock->available_quantity = 0;
-                $warehouseStock->save();
+                if (empty($record['SKU Code'])) {
+                    continue;
+                }
+
+                $existingProduct = Product::where('sku', $record['SKU Code'])->first();
+                
+                if ($existingProduct) {
+                    $product = Product::upsert([
+                        'sku' => $record['SKU Code'] ?? '',
+                        'ean_code' => $record['EAN Code'] ?? '',
+                        'brand' => $record['Brand'] ?? '',
+                        'brand_title' => $record['Brand Title'] ?? '',
+                        'mrp' => $record['MRP'] ?? '',
+                        'category' => $record['Category'] ?? '',
+                        'pcs_set' => $record['PCS/Set'] ?? '',
+                        'sets_ctn' => $record['Sets/CTN'] ?? '',
+                        'vendor_code' => $record['Vendor Code'] ?? '',
+                        'vendor_name' => $record['Vendor Name'] ?? '',
+                        'vendor_purchase_rate' => $record['Vendor Purchase Rate'] ?? '',
+                        'gst' => $record['GST'] ?? '',
+                        'vendor_net_landing' => $record['Vendor Net Landing'] ?? '',
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ], ['sku']);
+
+                    $warehouseStock = WarehouseStock::where('sku', $record['SKU Code'])->where('warehouse_id', $request->warehouse_id)->first();
+                    isset($record['Stock']) ? $warehouseStock->original_quantity = $record['Stock'] : $warehouseStock->original_quantity = 0;
+                    isset($record['Stock']) ? $warehouseStock->available_quantity = $record['Stock'] : $warehouseStock->available_quantity = 0;
+                    $warehouseStock->save();
+                }else {
+                    $product = Product::create([
+                        'sku' => $record['SKU Code'] ?? '',
+                        'ean_code' => $record['EAN Code'] ?? '',
+                        'brand' => $record['Brand'] ?? '',
+                        'brand_title' => $record['Brand Title'] ?? '',
+                        'mrp' => $record['MRP'] ?? '',
+                        'category' => $record['Category'] ?? '',
+                        'pcs_set' => $record['PCS/Set'] ?? '',
+                        'sets_ctn' => $record['Sets/CTN'] ?? '',
+                        'vendor_code' => $record['Vendor Code'] ?? '',
+                        'vendor_name' => $record['Vendor Name'] ?? '',
+                        'vendor_purchase_rate' => $record['Vendor Purchase Rate'] ?? '',
+                        'gst' => $record['GST'] ?? '',
+                        'vendor_net_landing' => $record['Vendor Net Landing'] ?? '',
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+                    $warehouseStock = new WarehouseStock();
+                    $warehouseStock->warehouse_id = $request->warehouse_id;
+                    $warehouseStock->sku = $record['SKU Code'];
+                    isset($record['Stock']) ? $warehouseStock->original_quantity = $record['Stock'] : $warehouseStock->original_quantity = 0;
+                    isset($record['Stock']) ? $warehouseStock->available_quantity = $record['Stock'] : $warehouseStock->available_quantity = 0;
+                    $warehouseStock->save();
+                }
 
                 $insertCount++;
             }
 
             if ($insertCount === 0) {
                 DB::rollBack();
-                return redirect()->back()->withErrors(['csv_file' => 'No valid data found in the CSV file.']);
+                return redirect()->back()->with(['csv_file' => 'No valid data found in the CSV file.']);
             }
 
             DB::commit();
             return redirect()->route('products.index')->with('success', 'CSV file imported successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return redirect()->back()->withErrors(['error' => 'Something went wrong: ' . $e->getMessage()]);
+            return redirect()->back()->with(['error' => 'Something went wrong: ' . $e->getMessage()]);
         }
     }
 
@@ -127,10 +158,10 @@ class ProductController extends Controller
                 ];
 
                 $warehouseStockUpdate = WarehouseStock::where('sku', $record['SKU Code'])->first();
-                if($record['Stock'] < $warehouseStockUpdate->available_quantity) {
+                if ($record['Stock'] < $warehouseStockUpdate->available_quantity) {
                     $warehouseStockUpdate->original_quantity -= $record['Stock'];
                     $warehouseStockUpdate->available_quantity = $record['Stock'];
-                }else {
+                } else {
                     $warehouseStockUpdate->original_quantity += $record['Stock'];
                     $warehouseStockUpdate->available_quantity = $record['Stock'];
                 }
@@ -166,7 +197,7 @@ class ProductController extends Controller
 
     public function updateProduct(Request $request)
     {
-        $product = Product::findOrFail($request->id);        
+        $product = Product::findOrFail($request->id);
         $product->ean_code = $request->ean_code;
         $product->brand = $request->brand;
         $product->brand_title = $request->brand_title;

@@ -24,9 +24,12 @@ return new class extends Migration
             $table->integer('purchase_ordered_quantity')->nullable();
             $table->integer('dispatched_quantity')->nullable();
             $table->integer('final_dispatched_quantity')->nullable();
+            $table->string('issue_item')->default(0);
+            $table->string('issue_reason')->nullable();
+            $table->string('issue_description')->nullable();
             $table->decimal('price', 10, 2)->nullable(); // snapshot of price at order time
             $table->decimal('subtotal', 12, 2)->nullable(); // qty * price
-            
+            $table->enum('status', ['pending', 'packaging', 'packaged', 'ready_to_ship', 'dispatched', 'shipped', 'completed'])->default('pending');
             // $table->enum('customer_status', ['available', 'unavailable'])->nullable()->default('available');
             // $table->enum('vendor_status', ['available', 'unavailable'])->nullable()->default('available');
             // $table->enum('sku_status', ['available', 'unavailable'])->nullable()->default('available');

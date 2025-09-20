@@ -36,21 +36,25 @@
                                 </li>
                                 <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                                     <span><b>Total PO Quantity</b></span>
+                                    <span> <b>{{ $salesOrder->ordered_products_sum_ordered_quantity }}</b></span>
+                                </li>
+                                
+                                <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
+                                    <span><b>Total Purchase Order Quantity</b></span>
                                     <span> <b>{{ $salesOrder->ordered_products_sum_purchase_ordered_quantity }}</b></span>
                                 </li>
-
 
                                 <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                                     <span><b>PO Quantity Status</b></span>
                                     <span>
                                         <b>
                                             @if (
-                                                $salesOrder->ordered_products_sum_purchase_ordered_quantity -
+                                                $salesOrder->ordered_products_sum_ordered_quantity -
                                                     ($availableQuantity + ($vendorPiFulfillmentTotal ?? 0)) >
                                                     0)
                                                 <span class="badge text-danger bg-danger-subtle">Quantity Needs To Fulfill:
                                                     <span id="quantityNeedsToFullfill">
-                                                        {{ $salesOrder->ordered_products_sum_purchase_ordered_quantity - ($availableQuantity + ($vendorPiFulfillmentTotal ?? 0)) }}
+                                                        {{ $salesOrder->ordered_products_sum_ordered_quantity - ($availableQuantity + ($vendorPiFulfillmentTotal ?? 0)) }}
                                                     </span>
                                                 </span>
                                             @else
@@ -256,11 +260,12 @@
                                                             $order->tempOrder->vendor_pi_received_quantity;
                                                     }
                                                 @endphp
+                                                {{-- change po_qty to purchase_order_quantity --}}
                                                 @if (
-                                                    $order->tempOrder?->purchase_order_quantity <=
+                                                    $order->tempOrder?->po_qty <=
                                                         ($order->tempOrder?->available_quantity ?? 0) + ($order->tempOrder?->vendor_pi_fulfillment_quantity ?? 0))
                                                     <span
-                                                        class="badge text-success bg-success-subtle">{{ $order->tempOrder?->purchase_order_quantity }}</span>
+                                                        class="badge text-success bg-success-subtle">{{ $order->tempOrder?->po_qty }}</span>
                                                 @else
                                                     <span
                                                         class="badge text-danger bg-danger-subtle">{{ ($order->tempOrder?->available_quantity ?? 0) + ($order->tempOrder?->vendor_pi_fulfillment_quantity ?? 0) }}</span>

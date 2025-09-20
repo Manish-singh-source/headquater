@@ -20,6 +20,7 @@ use App\Models\SalesOrderProduct;
 use App\Models\WarehouseStockLog;
 use Illuminate\Support\Facades\DB;
 use App\Models\PurchaseOrderProduct;
+use App\Models\VendorPayment;
 use Illuminate\Support\Facades\Validator;
 use Spatie\SimpleExcel\SimpleExcelReader;
 use Spatie\SimpleExcel\SimpleExcelWriter;
@@ -207,7 +208,7 @@ class PurchaseOrderController extends Controller
 
     public function view($id)
     {
-        $purchaseOrder = PurchaseOrder::with('purchaseOrderProducts.tempOrder', 'vendorPI.products.purchaseOrder.purchaseOrderProducts.tempOrder', 'vendorPI.products.tempOrder')
+        $purchaseOrder = PurchaseOrder::with('purchaseOrderProducts.tempOrder', 'vendorPI.products.purchaseOrder.purchaseOrderProducts.tempOrder', 'vendorPI.products.product',  'vendorPI.products.tempOrder')
             ->withCount('purchaseOrderProducts')
             ->findOrFail($id);
 
@@ -344,10 +345,12 @@ class PurchaseOrderController extends Controller
         DB::beginTransaction();
 
         try {
+
+            $total_amount = 0;
+
             $vendorPI = VendorPI::with('products')->where('purchase_order_id', $request->purchase_order_id)->where('vendor_code', $request->vendor_code)->first();
             $vendorPI->status = 'completed';
             $vendorPI->approve_or_reject_reason = $request->approve_or_reject_reason ?? null;
-            $vendorPI->save();
 
             $purchaseOrder = PurchaseOrder::where('id', $request->purchase_order_id)->first();
             $purchaseOrder->status = 'received';
@@ -357,6 +360,7 @@ class PurchaseOrderController extends Controller
             $vendorPIProducts = VendorPI::with('products')->where('purchase_order_id', $request->purchase_order_id)->where('vendor_code', $request->vendor_code)->first();
 
             foreach ($vendorPIProducts->products as $product) {
+                $total_amount += $product->mrp * $product->quantity_received;
                 $updateStock = WarehouseStock::where('sku', $product->vendor_sku_code)->first();
                 if (isset($updateStock)) {
                     // logic for updating warehouse stock and block quantity 
@@ -378,6 +382,10 @@ class PurchaseOrderController extends Controller
                 $tempOrder->vendor_pi_received_quantity = $product->quantity_received;
                 $tempOrder->save();
             }
+
+            $vendorPI->total_amount = $total_amount;
+            $vendorPI->total_due_amount = $total_amount;
+            $vendorPI->save();
 
             DB::commit();
             return redirect()->back()->with('success', 'Successfully Approved Received Products');
@@ -594,5 +602,70 @@ class PurchaseOrderController extends Controller
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Status Not Changed. Please Try Again.');
         }
+    }
+
+    public function vendorInvoicePaymentStore(Request $request)
+    {
+        // Logic to add invoice payment details
+        $validated = Validator::make($request->all(), [
+            'vendor_pi_id' => 'required',
+            'utr_no' => 'required',
+            'pay_amount' => 'required|numeric|min:1',
+            'payment_method' => 'required|string',
+        ]);
+
+        if ($validated->fails()) {
+            // If validation fails, redirect back with errors
+            return back()->withErrors($validated)->withInput();
+        }
+
+        if ($request->input('pay_amount') == 0) {
+            return back()->with('error', 'Payment amount is required.');
+        }
+
+        DB::beginTransaction();
+        try {
+            $payment = new VendorPayment();
+            $payment->vendor_pi_id = $request->vendor_pi_id;
+            $payment->payment_utr_no = $request->input('utr_no');
+            $payment->amount = $request->input('pay_amount');
+            $payment->payment_method = $request->input('payment_method');
+
+            $vendorPI = VendorPI::findOrFail($request->vendor_pi_id);
+            if ($vendorPI->total_due_amount == 0) {
+                DB::rollBack();
+                return back()->with('error', 'Payment amount is already paid.');
+            }
+
+            if ($vendorPI->total_due_amount < $request->input('pay_amount')) {
+                DB::rollBack();
+                return back()->with('error', 'Payment amount is greater than due amount.');
+                dd($vendorPI->total_due_amount, $request->input('pay_amount'));
+            }
+
+            if ($vendorPI->total_due_amount > 0 && $vendorPI->total_due_amount <= $vendorPI->total_amount) {
+                $vendorPI->total_due_amount -= $request->input('pay_amount');
+                $vendorPI->total_paid_amount += $request->input('pay_amount');
+                if($vendorPI->total_due_amount == 0) {
+                    $vendorPI->payment_status = 'paid';
+                } else {
+                    $vendorPI->payment_status = 'partial_paid';
+                }
+                $vendorPI->save();
+            }
+
+            if ($vendorPI->total_due_amount == $request->input('pay_amount')) {
+                $payment->payment_status = 'completed';
+            } else {
+                $payment->payment_status = 'partial';
+            }
+            $payment->save();
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Failed to add payment: ' . $e->getMessage());
+        }
+
+        return back()->with('success', 'Payment added successfully.');
     }
 }
