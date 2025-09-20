@@ -69,8 +69,8 @@ Module 3: Vendors
         -- after submit redirect to vendor list page 
         -- and show success message 
         -- and show error message if any error occurs 
-    -- display total no of vendors in card format
-    -- list of total no of vendors in table format
+    -- display total no of vendors in card format 
+    -- list of total no of vendors in table format 
     -- with action column where logged in user can take action such as view, edit, delete, change status 
     -- after changing status of vendor, it should reflect in the list and also in the database 
     -- after clicking view it should show all info of that vendor 
@@ -152,45 +152,41 @@ Module 7: Sales Order
     1. before creating sales order we will check if product quantity is available in warehouse or not 
         -- there will be one button to check availability 
         -- after clicking that button it should show a popup form where user can upload excel file to check availability by choosing warehouse 
-        -- after uploading file it should show a list of products with their availability in the warehouse 
+        -- after uploading file it should show list of products with their availability in the warehouse 
         -- also checks if customer, product is available in db or not. 
         -- if customer is not available in db then show customer, product not found in reason column such as "customer not found | product not found"
+        -- then we will download that file and make changes in blocked quantity and Purchase Order Quantity(for vendor)
+        -- if PO quantity changed then make sure to get backup as old po quantity in other column in sales order product table so we can track any time 
 
-        -- then we will go to back out main sales order page where we can make sales order 
+        -- then we will go to back, our main sales order page where we can make sales order (by uploading excel file that we downloaded after checking availability)
         -- we can select customer group and warehouse and upload excel file to create sales order 
-        -- after uploading file it will check if product is available in warehouse or not, if customer is available or not, if vendor is available or not 
+        -- after uploading file it will check if product is available in warehouse or not(same as above), if customer is available or not(same as above), if vendor is available or not (then store in not found table all these records which are not found)
         -- not found customers/vendors/products will be stored in not found table 
         -- all other products will be stored in temp order table 
         -- unavailable quantity of products will be go to the purchase order so that quantity of products will be ordered from vendor 
-        -- our vendors are fixed for particular product 
-        -- 
+        -- our vendors are fixed for particular product that is fetched from products table 
+        -- after creating sales order redirect to sales order list page 
 
-        -- in availability column show available quantity if full quantity is available then color it green else red 
-        -- in unavailable column show unavailable quantity if full quantity is available then show 0 else show unavailable quantity 
-        -- there should be one more column for rate confirmation in this column if product rate is <= po rate then show correct (color it green) else show incorrect (color it red)
-        -- there should be one more column for case pack quantity that will be fetched from products table as pcs_set * sets_ctn = case pack quantity
-        -- one more column for reason if product is not available or customer is not available in db 
-        -- there should be one button to download that list in excel format 
+    2. display sales order details after genarating sales order 
+        -- display total no of sales orders in card format
+        -- display total no of pending, completed, blocked, ready to ship, ready to package orders in card format 
+        -- list of total no of sales orders in table format 
+        -- with action column where logged in user can take action such as view, delete 
+        -- after clicking view it should show all info of that sales order 
+            -- display details of sales order in card format 
+            -- display total no of products in that sales order in card format 
+            -- display total no of blocked products in that sales order in card format 
+            -- display total no of available products in that sales order in card format 
+            -- display total no of not available products in that sales order in card format 
+            -- display list of products in that sales order in table format 
+            -- with action column where logged in user can take action such as edit, delete 
+            -- after clicking edit it should open a form where user can edit that sales order's info and after saving it should reflect in the list and also in the database 
+            -- after clicking delete it should delete that sales order products from the list and also from the database  
+            -- there should be option to delete multiple sales orders products at once from the list and also from the database  
+        -- there should be option to delete multiple sales orders at once from the list and also from the database  
+        
 
-
-    -- display total no of sales orders in card format
-    -- display total no of pending, completed, blocked, ready to ship, ready to package orders in card format 
-    -- list of total no of sales orders in table format 
-    -- with action column where logged in user can take action such as view, delete 
-    -- after clicking view it should show all info of that sales order 
-        -- display details of sales order in card format 
-        -- display total no of products in that sales order in card format 
-        -- display total no of blocked products in that sales order in card format 
-        -- display total no of available products in that sales order in card format 
-        -- display total no of not available products in that sales order in card format 
-        -- display list of products in that sales order in table format 
-        -- with action column where logged in user can take action such as edit, delete 
-        -- after clicking edit it should open a form where user can edit that sales order's info and after saving it should reflect in the list and also in the database 
-        -- after clicking delete it should delete that sales order products from the list and also from the database  
-        -- there should be option to delete multiple sales orders products at once from the list and also from the database  
-    -- there should be option to delete multiple sales orders at once from the list and also from the database  
-    
-
+Module 8: Purchase Order 
 
 
 
@@ -232,3 +228,37 @@ Module 7: Sales Order
     -- extra products return to vendor 
     -- extra products accept from vendor and store to warehouse stock 
     
+
+
+
+
+
+
+
+-- sales order creates - pending
+    -- sales order ready to package - packaging
+    -- when 
+
+
+
+================================= Changes ===================================== 
+1. MPR confirmation 
+    -- PO MRP == Product MRP 
+    -- all other incorrect 
+2. Basic Rate in product master -- add it  
+3. Net landing rate 
+    -- calculate 
+        -- basic rate + gst 
+        -- 100 + (5% of basic rate == 5) 
+        -- 105 
+4. PCS/SET * SETS/CTN = case pack quantity 
+5. PO Quantity, Purchase Order Quantity 
+6. Purchase Rate Basic auto filled from db when we download vendor PO 
+7. Purchase Order detail 
+    -- display vendor Name 
+8. Received Quantity 
+9. 2nd PO no is customer PO number that will present in customer sales order (Purchase Order) 
+    -- based on that PO number invoices will be generate 
+10. Invoice will be generate on selected products 
+11. Invoice can be generate if want to sort using brands, etc. 
+
