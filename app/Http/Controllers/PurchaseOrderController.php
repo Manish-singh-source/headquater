@@ -92,7 +92,9 @@ class PurchaseOrderController extends Controller
 
     public function index()
     {
-        $purchaseOrders = PurchaseOrder::with('purchaseOrderProducts')->withCount('purchaseOrderProducts')->get();
+        $purchaseOrders = PurchaseOrder::with('purchaseOrderProducts')
+            ->withSum('purchaseOrderProducts', 'ordered_quantity')
+            ->withCount('purchaseOrderProducts')->get();
         return view('purchaseOrder.index', compact('purchaseOrders'));
     }
 
@@ -208,7 +210,7 @@ class PurchaseOrderController extends Controller
 
     public function view($id)
     {
-        $purchaseOrder = PurchaseOrder::with('purchaseOrderProducts.tempOrder', 'vendorPI.products.purchaseOrder.purchaseOrderProducts.tempOrder', 'vendorPI.products.product',  'vendorPI.products.tempOrder')
+        $purchaseOrder = PurchaseOrder::with('vendor', 'purchaseOrderProducts.tempOrder', 'vendorPI.products.purchaseOrder.purchaseOrderProducts.tempOrder', 'vendorPI.products.product',  'vendorPI.products.tempOrder')
             ->withCount('purchaseOrderProducts')
             ->findOrFail($id);
 
@@ -646,7 +648,7 @@ class PurchaseOrderController extends Controller
             if ($vendorPI->total_due_amount > 0 && $vendorPI->total_due_amount <= $vendorPI->total_amount) {
                 $vendorPI->total_due_amount -= $request->input('pay_amount');
                 $vendorPI->total_paid_amount += $request->input('pay_amount');
-                if($vendorPI->total_due_amount == 0) {
+                if ($vendorPI->total_due_amount == 0) {
                     $vendorPI->payment_status = 'paid';
                 } else {
                     $vendorPI->payment_status = 'partial_paid';

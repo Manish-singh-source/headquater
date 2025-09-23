@@ -37,7 +37,7 @@ Route::controller(RegisterController::class)->group(function () {
     Route::get('/login', 'showLoginForm')->name('login');
     Route::post('/login', 'login')->name('login.auth.check');
 
-    Route::post('/logout', 'logout')->name('logout');
+    Route::get('/logout', 'logout')->name('logout');
 });
 
 Route::middleware(['auth'])->group(function () {

@@ -104,6 +104,9 @@
                                         <th>Category</th>
                                         <th>PCS/Set </th>
                                         <th>Sets/CTN</th>
+                                        <th>Basic&nbsp;Rate</th>
+                                        <th>Net&nbsp;Landing&nbsp;Rate</th>
+                                        <th>Case&nbsp;Pack&nbsp;Quantity</th>
                                         <th>Vendor&nbsp;Code</th>
                                         <th>Vendor&nbsp;Name</th>
                                         <th>Vendor&nbsp;Purchase&nbsp;Rate</th>
@@ -140,6 +143,9 @@
                                             <td>{{ $product->product->category ?? 'NA'}}</td>
                                             <td>{{ $product->product->pcs_set ?? 'NA' }}</td>
                                             <td>{{ $product->product->sets_ctn ?? 'NA' }}</td>
+                                            <td>{{ $product->product->basic_rate ?? 'NA' }}</td>
+                                            <td>{{ $product->product->net_landing_rate ?? 'NA' }}</td>
+                                            <td>{{ $product->product->case_pack_quantity ?? 'NA' }}</td>
                                             <td>{{ $product->product->vendor_code ?? 'NA' }}</td>
                                             <td>{{ $product->product->vendor_name ?? 'NA' }}</td>
                                             <td>{{ $product->product->vendor_purchase_rate ?? 'NA' }}</td>
@@ -205,7 +211,7 @@
                                         </tr>
                                     @empty 
                                         <tr>
-                                            <td colspan="21" class="text-center">No products found.</td>
+                                            <td colspan="24" class="text-center">No products found.</td>
                                         </tr>
                                     @endforelse
                                 </tbody>

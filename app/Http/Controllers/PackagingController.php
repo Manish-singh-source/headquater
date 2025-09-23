@@ -94,7 +94,7 @@ class PackagingController extends Controller
             }
             $writer->addRow([
                 'Customer Name' => $order->customer->contact_name ?? '',
-                'PO Number' => $order->tempOrder->po_number ?? '',
+                // 'PO Number' => $order->tempOrder->po_number ?? '',
                 'SKU Code' => $order->tempOrder->sku ?? '',
                 'Facility Name' => $order->tempOrder->facility_name ?? '',
                 'Facility Location' => $order->tempOrder->facility_location ?? '',
@@ -103,8 +103,8 @@ class PackagingController extends Controller
                 'HSN' => $order->tempOrder->hsn ?? '',
                 'Item Code' => $order->tempOrder->item_code ?? '',
                 'Description' => $order->tempOrder->description ?? '',
-                'Basic Rate' => $order->tempOrder->basic_rate ?? '',
                 'GST' => $order->tempOrder->gst ?? '',
+                'Basic Rate' => $order->tempOrder->basic_rate ?? '',
                 'Net Landing Rate' => $order->tempOrder->net_landing_rate ?? '',
                 'MRP' => $order->tempOrder->mrp ?? '',
                 'PO Quantity' => $order->tempOrder->po_qty ?? '',

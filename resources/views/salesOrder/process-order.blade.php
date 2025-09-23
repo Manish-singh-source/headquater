@@ -67,14 +67,18 @@
                                                             <th>PO&nbsp;Date</th>
                                                             <th>PO&nbsp;Expiry&nbsp;Date</th>
                                                             <th>HSN</th>
-                                                            <th>GST</th>
                                                             <th>Item&nbsp;Code</th>
                                                             <th>Description</th>
+                                                            <th>GST</th>
                                                             <th>Basic&nbsp;Rate</th>
+                                                            <th>Product&nbsp;Basic&nbsp;Rate</th>
+                                                            <th>Basic&nbsp;Rate&nbsp;Confirmation</th>
                                                             <th>Net&nbsp;Landing&nbsp;Rate</th>
+                                                            <th>Product&nbsp;Net&nbsp;Landing&nbsp;Rate</th>
+                                                            <th>Net&nbsp;Landing&nbsp;Rate&nbsp;Confirmation</th>
                                                             <th>PO&nbsp;MRP</th>
                                                             <th>Product&nbsp;MRP</th>
-                                                            <th>Rate&nbsp;Confirmation</th>
+                                                            <th>MRP&nbsp;Confirmation</th>
                                                             <th>Case&nbsp;Pack&nbsp;Quantity</th>
                                                             <th>PO&nbsp;Quantity</th>
                                                             <th>Available</th>
@@ -98,11 +102,15 @@
                                                                 <td>{{ $data['PO Date'] }}</td>
                                                                 <td>{{ $data['PO Expiry Date'] }}</td>
                                                                 <td>{{ $data['HSN'] }}</td>
-                                                                <td>{{ $data['GST'] }}</td>
                                                                 <td>{{ $data['Item Code'] }}</td>
                                                                 <td>{{ $data['Description'] }}</td>
+                                                                <td>{{ $data['GST'] }}</td>
                                                                 <td>{{ $data['Basic Rate'] }}</td>
+                                                                <td>{{ $data['Product Basic Rate'] }}</td>
+                                                                <td>{{ $data['Basic Rate Confirmation'] }}</td>
                                                                 <td>{{ $data['Net Landing Rate'] }}</td>
+                                                                <td>{{ $data['Product Net Landing Rate'] }}</td>
+                                                                <td>{{ $data['Net Landing Rate Confirmation'] }}</td>
                                                                 <td>{{ $data['MRP'] }}</td>
                                                                 <td>{{ $data['Product MRP'] }}</td>
                                                                 <td>{{ $data['MRP Confirmation'] }}</td>
@@ -134,7 +142,3 @@
     <!--end main wrapper-->
 @endsection
 
-
-
-@section('script')
-@endsection

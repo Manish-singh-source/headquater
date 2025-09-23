@@ -137,7 +137,7 @@
                                                 <td>{{ $order->created_at->format('d-m-Y') }}</td>
                                                 <td>{{ $order->purchaseOrderProducts->count() }}</td>
                                                 <td>
-                                                    <a href="{{ route('purchase.order.view', $order->id) }}>"
+                                                    <a href="{{ route('purchase.order.view', $order->id) }}"
                                                         class="btn btn-sm btn-primary">View</a>
                                                 </td>
                                             </tr>

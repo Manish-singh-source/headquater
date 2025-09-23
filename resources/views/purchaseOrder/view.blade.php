@@ -7,7 +7,7 @@
             'received' => 'Products Received',
             'completed' => 'Completed',
         ];
-        
+
         $payment_statuses = [
             'pending' => 'Pending',
             'partial_paid' => 'Partial Paid',
@@ -96,10 +96,29 @@
                                     <span id="sales-order-id">{{ $purchaseOrder->sales_order_id }}</span>
                                 </li>
                                 <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
-                                    <span><b>Vendor Name</b></span>
+                                    <span><b>Vendor Code</b></span>
+                                    <span>
+                                        <a href="{{ route('vendor.view', $purchaseOrder->vendor->id) }}">
+                                            <b class="d-inline-block text-truncate" style="max-width: 150px;"
+                                                id="vendor-code">
+                                                {{ $purchaseOrder->vendor_code ?? 'NA' }}
+                                            </b>
+                                        </a>
+                                    </span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
+                                    <span><b>Vendor Client Name</b></span>
                                     <span>
                                         <b class="d-inline-block text-truncate" style="max-width: 150px;" id="vendor-code">
-                                            {{ $purchaseOrder->vendor_code ?? 'NA' }}
+                                            {{ $purchaseOrder->vendor->client_name ?? 'NA' }}
+                                        </b>
+                                    </span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
+                                    <span><b>Vendor Contact Name</b></span>
+                                    <span>
+                                        <b class="d-inline-block text-truncate" style="max-width: 150px;" id="vendor-code">
+                                            {{ $purchaseOrder->vendor->contact_name ?? 'NA' }}
                                         </b>
                                     </span>
                                 </li>

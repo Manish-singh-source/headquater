@@ -49,6 +49,7 @@
                                         $statuses = [
                                             'pending' => 'Pending',
                                             'blocked' => 'Blocked',
+                                            'delivered' => 'Delivered',
                                             'completed' => 'Completed',
                                             'ready_to_ship' => 'Ready To Ship',
                                             'ready_to_package' => 'Ready To Package',

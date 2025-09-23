@@ -25,15 +25,23 @@ return new class extends Migration
             $table->string('gst')->nullable();
             $table->string('item_code')->nullable();
             $table->string('description')->nullable();
-            $table->string('basic_rate')->nullable();
-            $table->string('net_landing_rate')->nullable();
-            $table->string('mrp')->nullable();
+            
+            $table->string('basic_rate')->nullable()->default(0);
+            $table->string('product_basic_rate')->nullable()->default(0);
+            $table->string('rate_confirmation')->nullable();
+
+            $table->string('net_landing_rate')->nullable()->default(0);
+            $table->string('product_net_landing_rate')->nullable()->default(0);
+            $table->string('net_landing_rate_confirmation')->nullable();
+
+            $table->string('mrp')->nullable()->default(0);
             $table->double('product_mrp', 10, 2)->default(0);
+            $table->string('mrp_confirmation')->nullable();
+
             $table->string('po_qty')->nullable();
             $table->string('available_quantity')->nullable();
             $table->string('unavailable_quantity')->nullable();
             $table->string('block')->nullable();
-            $table->string('rate_confirmation')->nullable();
             $table->string('case_pack_quantity')->nullable();
             $table->string('purchase_order_quantity')->nullable();
             $table->string('vendor_code')->nullable();

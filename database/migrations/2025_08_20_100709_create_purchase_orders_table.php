@@ -18,6 +18,9 @@ return new class extends Migration
             $table->string('customer_group_id')->nullable();
             $table->string('vendor_id')->nullable();
             $table->string('vendor_code')->nullable();
+            $table->double('total_amount')->nullable()->default(0);
+            $table->double('total_paid_amount')->nullable()->default(0);
+            $table->double('total_due_amount')->nullable()->default(0);
             $table->enum('status', ['pending', 'completed', 'received', 'ready_to_ship', 'ready_to_package'])->default('pending');
             $table->timestamps();
         });

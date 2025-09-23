@@ -31,7 +31,7 @@ class ReceivedProductsController extends Controller
 
     public function view($id, $vendorCode)
     {
-        $vendorPIs = VendorPI::with('products.product', 'purchaseOrder')
+        $vendorPIs = VendorPI::with('products.product', 'purchaseOrder', 'vendor')
             ->where('purchase_order_id', $id)
             ->where('vendor_code', $vendorCode)
             // ->where('status', 'pending')

@@ -10,6 +10,10 @@ Module 1: Access Control
         -- after clicking delete it should delete that staff member from the list and also from the database  
         -- there should be option to delete multiple staff members at once from the list and also from the database  
         -- there should be option to change status of multiple staff members at once from the list and also in the database  
+    -- database columns: 
+        'users' table: 
+            id, user_name, fname, lname, phone, password, dob, marital, gender, email, current_address, permanent_address, city, state, country, pincode, profile_image, status, email_verified_at, remember_token
+
 
     -- Roles 
         -- there should be option to add new role 
@@ -33,6 +37,7 @@ Module 1: Access Control
         -- after clicking delete it should delete that permission from the list and also from the database  
         -- there should be option to delete multiple permissions at once from the list and also from the database  
         -- there should be option to change status of multiple permissions at once from the list and also in the database  
+
 
 Module 2: Customer Groups 
     -- there should be option to add new customer group 
@@ -62,6 +67,17 @@ Module 2: Customer Groups
     -- after clicking edit it should open a form where user can edit that customer group's name and after saving it should reflect in the list and also in the database 
     -- after clicking delete it should delete that customer group from the list and also from the database  
 
+    -- database columns: 
+        1. 'customers' table: 
+            id, facility_name, client_name, contact_name, email, contact_no, company_name, gstin, pan, gst_treatment, private_details, billing_address, billing_country, billing_state, billing_city, billing_zip, shipping_address, shipping_country, shipping_state, shipping_city, shipping_zip, status, 
+
+        2. 'customer_groups' table: 
+            id, name, status
+
+        3. 'customer_group_members' table: 
+            id, customer_group_id, customer_id
+
+
 
 Module 3: Vendors 
     -- there should be option to add new vendor 
@@ -79,6 +95,9 @@ Module 3: Vendors
     -- there should be option to delete multiple vendors at once from the list and also from the database  
     -- there should be option to change status of multiple vendors at once from the list and also in the database  
 
+    -- database columns: 
+        'Vendors' table: 
+            id, vendor_code, client_name, contact_name, phone_number, email, gst_number, gst_treatment, pan_number, billing_address, billing_country, billing_state, billing_city, billing_zip, shipping_address, shipping_country, shipping_state, shipping_city, shipping_zip, status, 
 
 
 Module 4: Products
@@ -104,6 +123,16 @@ Module 4: Products
     -- there should be option to download products list in excel format from the list 
     -- and update products list using excel format (same downloaded format can be used to update products list)
 
+    -- database columns: 
+        'products' table: 
+            id, sku, ean_code, brand, brand_title, mrp, category, pcs_set, sets_ctn, gst,  basic_rate, net_landing_rate, case_pack_quantity, vendor_code, vendor_name, vendor_purchase_rate, vendor_net_landing, status
+
+    -- net_landing_rate = basic_rate + (basic_rate * gst / 100) 
+    -- case_pack_quantity = pcs_set * sets_ctn 
+    -- vendor_net_landing = vendor_purchase_rate + (vendor_purchase_rate * gst / 100)     -- (optional)
+
+
+
 
 Module 5: SKU Mapping 
     -- there should be option to add new sku mapping using excel format
@@ -125,6 +154,11 @@ Module 5: SKU Mapping
     -- there should be option to download sku mappings list in excel format from the list 
     -- and update sku mappings list using excel format (same downloaded format can be used to update sku mappings list)
 
+    -- database columns: 
+        'sku_mappings' table: 
+            id, product_sku, vendor_sku, customer_sku
+
+
 
 Module 6: Warehouse 
     -- there should be option to add new warehouse 
@@ -145,6 +179,13 @@ Module 6: Warehouse
     -- after clicking edit it should open a form where user can edit that warehouse's info and after saving it should reflect in the list and also in the database 
     -- after clicking delete it should delete that warehouse from the list and also from the database  
 
+    -- database columns: 
+        'warehouses' table: 
+            id, name, type, contact_person_name, phone, alt_phone, email, gst_number, pan_number, address_line_1, address_line_2, licence_doc, max_storage_capacity, country_id, state_id, city_id, pincode, operations, status
+
+        'warehouse_stock' table: 
+            id, warehouse_id, product_id, sku, original_quantity, available_quantity, block_quantity
+
 
 
 Module 7: Sales Order 
@@ -153,20 +194,68 @@ Module 7: Sales Order
         -- there will be one button to check availability 
         -- after clicking that button it should show a popup form where user can upload excel file to check availability by choosing warehouse 
         -- after uploading file it should show list of products with their availability in the warehouse 
-        -- also checks if customer, product is available in db or not. 
-        -- if customer is not available in db then show customer, product not found in reason column such as "customer not found | product not found"
+        -- also checks if customer and product is available in db or not. 
+        -- if customer or/and product is not available in db then show reason in reason column such as "customer not found | product not found"
         -- then we will download that file and make changes in blocked quantity and Purchase Order Quantity(for vendor)
         -- if PO quantity changed then make sure to get backup as old po quantity in other column in sales order product table so we can track any time 
 
-        -- then we will go to back, our main sales order page where we can make sales order (by uploading excel file that we downloaded after checking availability)
-        -- we can select customer group and warehouse and upload excel file to create sales order 
-        -- after uploading file it will check if product is available in warehouse or not(same as above), if customer is available or not(same as above), if vendor is available or not (then store in not found table all these records which are not found)
+        -- then we will go to back, our main sales order page where we can make sales order (by uploading excel file that we downloaded after checking availability and updated)
+        -- we can select same customer group and same warehouse and upload excel file to create sales order 
+        -- after uploading file it will check if product is available in warehouse or not(same as above), if customer is available or not(same as above), if vendor is available or not (then store in 'not found table' if any of these records which are not found)
         -- not found customers/vendors/products will be stored in not found table 
-        -- all other products will be stored in temp order table 
-        -- unavailable quantity of products will be go to the purchase order so that quantity of products will be ordered from vendor 
-        -- our vendors are fixed for particular product that is fetched from products table 
+        -- all other products will be stored in temp order table (which are found)
         -- after creating sales order redirect to sales order list page 
 
+    2. Create purchase order (based on sales order products auto generated)
+        -- the products that are stored in temp order table will be used to create purchase order but whose quantity is not available in warehouse will be go to the purchase order  
+        -- our vendors are fixed for particular product that is fetched from products table (i.e. stored in products table)
+        -- after creating purchase order redirect to purchase order list page 
+        -- display total no of purchase orders in card format 
+        -- display total no of pending, completed, received orders in card format  
+        -- list of total no of purchase orders in table format 
+        -- with action column where logged in user can take action such as view, delete, change status 
+        -- after changing status of purchase order, it should reflect in the list and also in the database 
+        -- after clicking view it should show all info of that purchase order 
+        -- display details of purchase order in card format. vendors info, total amount, total paid amount, total due amount, status, etc. 
+        -- display list of products in that purchase order in table format 
+        -- with action column where logged in user can take action such as edit, delete 
+        -- after clicking edit it should open a form where user can edit that purchase order's info and after saving it should reflect in the list and also in the database     
+        -- after clicking delete it should delete that purchase order from the list and also from the database  
+        -- there should be option to delete multiple purchase orders at once from the list and also from the database  
+        -- there should be option to change status of multiple purchase orders at once from the list and also in the database   
+        -- there should be option to download purchase order list in excel format from the list 
+        -- and update purchase order list using excel format (same downloaded format can be used to update purchase order list) 
+        -- there should be option to add vendor pi 
+    
+    3. Create vendor PI 
+        -- there should be option to add new vendor pi for that purchase order 
+        -- after clicking add new vendor pi button it should open a popup form 
+        -- one file input to upload vendor pi in excel format 
+        -- update vendor pi for pi quantity(downloaded vendor pi file that is updated) that is receiving from vendor  
+        -- diaplay total no of products in that vendor pi in card format 
+        -- display list of products in that vendor pi in table format (update same table as purchase order products table)
+        -- after uploading vendor pi - updating purchase order action buttons will be disabled 
+        -- after uploading vendor pi - show button to approve or reject vendor pi 
+
+
+    4. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+        
     2. display sales order details after genarating sales order 
         -- display total no of sales orders in card format
         -- display total no of pending, completed, blocked, ready to ship, ready to package orders in card format 
@@ -186,9 +275,76 @@ Module 7: Sales Order
         -- there should be option to delete multiple sales orders at once from the list and also from the database  
         
 
+    -- database columns: 
+        1. 'sales_orders' table: 
+            id, warehouse_id, customer_group_id, status
+
+        2. 'sales_order_products' table: 
+            id, sales_order_id, temp_order_id, customer_id, vendor_code, product_id, warehouse_stock_id, sku, ordered_quantity, purchase_ordered_quantity, dispatched_quantity, final_dispatched_quantity, issue_item, issue_reason, issue_description, price, subtotal, status  
+
+        3. 'temp_orders' table: 
+            id, customer_name, po_number, sku, facility_name, facility_location, po_date, po_expiry_date, hsn, gst, item_code, description, basic_rate, product_basic_rate, mrp, product_mrp, quantity, available_quantity, block_quantity, purchase_order_quantity, vendor_code, vendor_pi_id, vendor_pi_fulfillment_quantity, vendor_pi_received_quantity, customer_status, vendor_status, product_status
+
+        4. 'not_found_temp_orders' table: 
+            id, sales_order_id, customer_name, po_number, sku, facility_name, facility_location, po_date, po_expiry_date, hsn, gst, item_code, description, basic_rate, product_basic_rate, rate_confirmation, net_landing_rate, product_net_landing_rate, net_landing_rate_confirmation, mrp, product_mrp, mrp_confirmation, po_qty, available_quantity, unavailable_quantity, block, case_pack_quantity, purchase_order_quantity, vendor_code, vendor_pi_id, vendor_pi_fulfillment_quantity, customer_status, vendor_status, product_status
+
+
+        5. 'purchase_orders' table: 
+            id, sales_order_id, warehouse_id, customer_group_id, vendor_id, vendor_code, total_amount, total_paid_amount, total_due_amount, status
+            
+
+        6. 'purchase_order_products' table: 
+            id, temp_order_id, purchase_order_id, sales_order_id, sales_order_product_id, product_id, sku, vendor_code, ordered_quantity
+
+
+        7. 'vendor_pi' table: 
+            id, purchase_order_id, vendor_code, sales_order_id, total_amount, total_paid_amount, total_due_amount, payment_status, status, approve_or_reject_reason
+
+
+        8. 'vendor_pi_products' table: 
+            id, purchase_order_id, vendor_pi_id, vendor_sku_code, title, mrp, quantity_requirement, available_quantity, quantity_received, purchase_rate, gst, hsn, issue_item, issue_reason, issue_description, issue_status
+
+        9. 'purchase_grns' table: 
+            id, purchase_order_id, vendor_code, grn_file
+        
+        
+        10. 'purchase_invoices' table: 
+            id, purchase_order_id, vendor_code, invoice_file
+            
+
+        11. 'payments' table: 
+            id, invoice_id, amount, payment_utr_no, payment_method, payment_status
+
+        12. 'appointments' table: 
+            id, invoice_id, appointment_date, pod, grn 
+
+        13. 'dns' table: 
+            id, invoice_id, dn_amount, dn_reason, dn_receipt
+
+        14. 'invoices' table: 
+            id, warehouse_id, invoice_number, customer_id, sales_order_id, invoice_date, round_off, total_amount 
+        
+        15. 'invoice_details' table:  
+            id, invoice_id, product_id, temp_order_id, quantity, unit_price, discount, amount, tax, total_price, description 
+        
+        16. 'product_issues' table: 
+            id, purchase_order_id, vendor_pi_id, vendor_pi_product_id, vendor_sku_code, quantity_requirement, available_quantity, quantity_received, issue_item, issue_reason, issue_description, issue_from, issue_status 
+
+        17. 'vendor_payments' table: 
+            id, vendor_pi_id, amount, payment_utr_no, payment_method, payment_status 
+
+        18. 'vendor_return_products' table: 
+            id, vendor_pi_product_id, return_quantity, return_reason, return_description, return_status 
+
+
+
 Module 8: Purchase Order 
-
-
+        -- there should be option to add new purchase order (manual entry) 
+        -- display total no of purchase orders in card format
+        -- display total no of pending, completed, received orders in card format 
+        -- list of all purchase orders that are created automatically from sales order 
+        -- with action column where logged in user can take action such as view, edit, delete, change status 
+        -- after changing status of purchase order, it should reflect in the list and also in the database 
 
 
 
@@ -205,12 +361,12 @@ Module 8: Purchase Order
 
 1. when updating sales order of customer after receiving vendor products then it is not updating dispatched quantity properly 
 
--- page: http://127.0.0.1:8000/packing-products-list/1
-1. there are 2 columns same PO Number 
-2. if user wants to set dispatch quantity to 0 then set it to 0 but how?? 
+-- page: http://127.0.0.1:8000/packing-products-list/1                                               -- solved    
+1. there are 2 columns same PO Number                                                                -- solved 
+2. if user wants to set dispatch quantity to 0 then set it to 0 but how??                            -- solved 
 
 
--- page: http://127.0.0.1:8000/purchase-order-view/1 
+-- page: http://127.0.0.1:8000/purchase-order-view/1                                                 -- solved 
 1. if delete purchase order then it should delete pi order related to that order 
 
 
@@ -233,32 +389,56 @@ Module 8: Purchase Order
 
 
 
-
-
--- sales order creates - pending
-    -- sales order ready to package - packaging
-    -- when 
-
-
-
 ================================= Changes ===================================== 
 1. MPR confirmation 
-    -- PO MRP == Product MRP 
-    -- all other incorrect 
-2. Basic Rate in product master -- add it  
+    -- PO MRP == Product MRP                         -- done 
+    -- all other incorrect                           -- done 
+
+2. Basic Rate in product master -- add it            -- done 
 3. Net landing rate 
     -- calculate 
         -- basic rate + gst 
         -- 100 + (5% of basic rate == 5) 
-        -- 105 
-4. PCS/SET * SETS/CTN = case pack quantity 
-5. PO Quantity, Purchase Order Quantity 
-6. Purchase Rate Basic auto filled from db when we download vendor PO 
-7. Purchase Order detail 
-    -- display vendor Name 
-8. Received Quantity 
-9. 2nd PO no is customer PO number that will present in customer sales order (Purchase Order) 
+        -- 105                                       -- done 
+
+4. PCS/SET * SETS/CTN = case pack quantity           -- done 
+5. PO Quantity(customer quantity), Purchase Order Quantity(vendor quantity we ordering)                   -- done 
+6. PO Number (system generated), Purchase Order Number (customer PO number uploaded from customer po)     -- done  
+7. Purchase Rate Basic auto filled from db when we download vendor PO                                     -- not done 
+8. Purchase Order detail 
+    -- display vendor Name                           -- done 
+10. 2nd PO no is customer PO number that will present in customer sales order (Purchase Order) 
     -- based on that PO number invoices will be generate 
 10. Invoice will be generate on selected products 
 11. Invoice can be generate if want to sort using brands, etc. 
 
+
+
+products table 
+
+vendor_purchase_rate == basic_rate  
+vendor_net_landing == net_landing_rate 
+
+------------- temp order for sales order ----------
+
+
+
+
+
+
+
+
+
+
+
+
+--- product shortages && product extras --- 
+
+Order From Vendors 
+    -- if quantity is short accept that quantity  (optional)
+    -- if quantity is short(damaged) return that quantity to vendor 
+    -- if quantity is extra return that quantity to vendor or accept 
+
+
+---------------- not done -------------------
+-- purchase order (received products) - reject() 

@@ -26,8 +26,16 @@
                                                 id="purchase-order-id">{{ $vendorPIs->purchase_order_id }}</span></b></span>
                                 </li>
                                 <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
-                                    <span><b>Vendor Name</b></span>
+                                    <span><b>Vendor Code</b></span>
                                     <span> <b id="vendor-code">{{ $vendorPIs->vendor_code }}</b></span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
+                                    <span><b>Vendor Client Name</b></span>
+                                    <span> <b id="vendor-name">{{ $vendorPIs->vendor->client_name }}</b></span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
+                                    <span><b>Vendor Contact Name</b></span>
+                                    <span> <b id="vendor-name">{{ $vendorPIs->vendor->contact_name }}</b></span>
                                 </li>
                             </ul>
                         </div>

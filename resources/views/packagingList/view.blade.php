@@ -93,7 +93,7 @@
                                 <thead class="table-light">
                                     <tr>
                                         <th>Customer&nbsp;Name</th>
-                                        <th>PO&nbsp;Number</th>
+                                        {{-- <th>PO&nbsp;Number</th> --}}
                                         <th>SKU&nbsp;Code</th>
                                         <th>Facility&nbsp;Name</th>
                                         <th>Facility&nbsp;Location</th>
@@ -102,8 +102,8 @@
                                         <th>HSN</th>
                                         <th>Item&nbsp;Code</th>
                                         <th>Description</th>
-                                        <th>Basic&nbsp;Rate</th>
                                         <th>GST</th>
+                                        <th>Basic&nbsp;Rate</th>
                                         <th>Net&nbsp;Landing&nbsp;Rate</th>
                                         <th>MRP</th>
                                         <th>PO&nbsp;Quantity</th>
@@ -119,7 +119,7 @@
                                     @forelse($salesOrder->orderedProducts as $order)
                                         <tr>
                                             <td>{{ $order->customer->contact_name }}</td>
-                                            <td>{{ $order->tempOrder->po_number }}</td>
+                                            {{-- <td>{{ $order->tempOrder->po_number }}</td> --}}
                                             <td>{{ $order->tempOrder->sku }}</td>
                                             <td>{{ $order->tempOrder->facility_name }}</td>
                                             <td>{{ $order->tempOrder->facility_location }}</td>
@@ -128,8 +128,8 @@
                                             <td>{{ $order->tempOrder->hsn }}</td>
                                             <td>{{ $order->tempOrder->item_code }}</td>
                                             <td>{{ $order->tempOrder->description }}</td>
-                                            <td>{{ $order->tempOrder->basic_rate }}</td>
                                             <td>{{ $order->tempOrder->gst }}</td>
+                                            <td>{{ $order->tempOrder->basic_rate }}</td>
                                             <td>{{ $order->tempOrder->net_landing_rate }}</td>
                                             <td>{{ $order->tempOrder->mrp }}</td>
                                             <td>{{ $order->tempOrder->po_qty }}</td>
@@ -203,7 +203,7 @@
                 // Filter by client name
                 $('#customerPOTable').on('change', function() {
                     var selected = $(this).val().trim();
-                    customerPOTableList.column(3).search(selected ? '^' + selected + '$' : '', true, false)
+                    customerPOTableList.column(2).search(selected ? '^' + selected + '$' : '', true, false)
                         .draw();
                 });
             }

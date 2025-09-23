@@ -52,7 +52,7 @@ class ProductController extends Controller
                 }
 
                 $existingProduct = Product::where('sku', $record['SKU Code'])->first();
-                
+
                 if ($existingProduct) {
                     $product = Product::upsert([
                         'sku' => $record['SKU Code'] ?? '',
@@ -63,10 +63,17 @@ class ProductController extends Controller
                         'category' => $record['Category'] ?? '',
                         'pcs_set' => $record['PCS/Set'] ?? '',
                         'sets_ctn' => $record['Sets/CTN'] ?? '',
+                        'gst' => $record['GST'] ?? '',
+
+                        'basic_rate' => $record['Basic Rate'] ?? '',
+                        'net_landing_rate' => isset($record['Basic Rate'], $record['GST'])
+                            ? number_format($record['Basic Rate'] + ($record['Basic Rate'] * $record['GST'] / 100), 2, '.', '')
+                            : null,
+                        'case_pack_quantity' => ($record['PCS/Set'] ?? 0) * ($record['Sets/CTN'] ?? 0),
+                        
                         'vendor_code' => $record['Vendor Code'] ?? '',
                         'vendor_name' => $record['Vendor Name'] ?? '',
                         'vendor_purchase_rate' => $record['Vendor Purchase Rate'] ?? '',
-                        'gst' => $record['GST'] ?? '',
                         'vendor_net_landing' => $record['Vendor Net Landing'] ?? '',
                         'created_at' => now(),
                         'updated_at' => now(),
@@ -76,7 +83,7 @@ class ProductController extends Controller
                     isset($record['Stock']) ? $warehouseStock->original_quantity = $record['Stock'] : $warehouseStock->original_quantity = 0;
                     isset($record['Stock']) ? $warehouseStock->available_quantity = $record['Stock'] : $warehouseStock->available_quantity = 0;
                     $warehouseStock->save();
-                }else {
+                } else {
                     $product = Product::create([
                         'sku' => $record['SKU Code'] ?? '',
                         'ean_code' => $record['EAN Code'] ?? '',
@@ -86,14 +93,20 @@ class ProductController extends Controller
                         'category' => $record['Category'] ?? '',
                         'pcs_set' => $record['PCS/Set'] ?? '',
                         'sets_ctn' => $record['Sets/CTN'] ?? '',
+                        'gst' => $record['GST'] ?? '',
+                        'basic_rate' => $record['Basic Rate'] ?? '',
+                        'net_landing_rate' => isset($record['Basic Rate'], $record['GST'])
+                            ? number_format($record['Basic Rate'] + ($record['Basic Rate'] * $record['GST'] / 100), 2, '.', '')
+                            : null,
+                        'case_pack_quantity' => ($record['PCS/Set'] ?? 0) * ($record['Sets/CTN'] ?? 0),
                         'vendor_code' => $record['Vendor Code'] ?? '',
                         'vendor_name' => $record['Vendor Name'] ?? '',
                         'vendor_purchase_rate' => $record['Vendor Purchase Rate'] ?? '',
-                        'gst' => $record['GST'] ?? '',
                         'vendor_net_landing' => $record['Vendor Net Landing'] ?? '',
                         'created_at' => now(),
                         'updated_at' => now(),
                     ]);
+
                     $warehouseStock = new WarehouseStock();
                     $warehouseStock->warehouse_id = $request->warehouse_id;
                     $warehouseStock->sku = $record['SKU Code'];
@@ -149,9 +162,16 @@ class ProductController extends Controller
                     'category' => Arr::get($record, 'Category') ?? '',
                     'pcs_set' => Arr::get($record, 'PCS/Set') ?? '',
                     'sets_ctn' => Arr::get($record, 'Sets/CTN') ?? '',
+                    'gst' => Arr::get($record, 'GST') ?? '',
+
+                    'basic_rate' => $record['Basic Rate'] ?? '',
+                    'net_landing_rate' => isset($record['Basic Rate'], $record['GST'])
+                        ? number_format($record['Basic Rate'] + ($record['Basic Rate'] * $record['GST'] / 100), 2, '.', '')
+                        : null,
+                    'case_pack_quantity' => ($record['PCS/Set'] ?? 0) * ($record['Sets/CTN'] ?? 0),
+                    
                     'vendor_name' => Arr::get($record, 'Vendor Name') ?? '',
                     'vendor_purchase_rate' => Arr::get($record, 'Vendor Purchase Rate') ?? '',
-                    'gst' => Arr::get($record, 'GST') ?? '',
                     'vendor_net_landing' => Arr::get($record, 'Vendor Net Landing') ?? '',
                     'created_at' => now(),
                     'updated_at' => now(),
@@ -205,6 +225,11 @@ class ProductController extends Controller
         $product->category = $request->category;
         $product->pcs_set = $request->pcs_set;
         $product->sets_ctn = $request->sets_ctn;
+        $product->basic_rate = $request->basic_rate;
+        // $product->net_landing_rate = $request->net_landing_rate;
+        // $product->case_pack_quantity = $request->case_pack_quantity;
+        $net_landing_rate = $request->basic_rate + ($request->basic_rate * $product->gst / 100) ?? 0;
+        $product->net_landing_rate = number_format($net_landing_rate, 2, '.', '');
         $product->save();
 
         // Update warehouse stock
@@ -284,6 +309,9 @@ class ProductController extends Controller
                 'Category' =>  $product->product->category,
                 'PCS/Set' => $product->product->pcs_set,
                 'Sets/CTN' => $product->product->sets_ctn,
+                'Basic Rate' => $product->product->basic_rate,
+                'Net Landing Rate' => $product->product->net_landing_rate,
+                // 'Case Pack Quantity' => $product->product->case_pack_quantity,
                 'Vendor Name' => $product->product->vendor_name,
                 'Vendor Purchase Rate' => $product->product->vendor_purchase_rate,
                 'GST' =>  $product->product->gst,

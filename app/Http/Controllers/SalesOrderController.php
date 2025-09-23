@@ -152,19 +152,27 @@ class SalesOrderController extends Controller
                         'gst' => ($record['GST'] < 1 && $record['GST'] > 0)
                             ? intval(round($record['GST'] * 100))  // convert decimals (0.18 -> 18)
                             : intval($record['GST']),              // already integer (e.g., 18)
+
                         'item_code' => $record['Item Code'] ?? '',
                         'description' => $record['Description'] ?? '',
-                        'basic_rate' => $record['Basic Rate'] ?? '',
-                        'net_landing_rate' => $record['Net Landing Rate'] ?? '',
-                        'mrp' => $record['MRP'] ?? '',
-                        'product_mrp' => $record['Product MRP'] ?? '',
-                        // rate confirmation ?? want to store -- first create rate_confirmation column in db
-                        // 'rate_confirmation' => $record['Rate Confirmation'],
+
+                        'basic_rate' => $record['Basic Rate'] ?? 0,
+                        'product_basic_rate' => $record['Product Basic Rate'] ?? 0,
+                        'rate_confirmation' => $record['Basic Rate Confirmation'] ?? 'Incorrect',
+
+                        'net_landing_rate' => $record['Net Landing Rate'] ?? 0,
+                        'product_net_landing_rate' => $record['Product Net Landing Rate'] ?? 0,
+                        'net_landing_rate_confirmation' => $record['Net Landing Rate Confirmation'] ?? 'Incorrect',
+                        
+                        'mrp' => $record['MRP'] ?? 0,
+                        'product_mrp' => $record['Product MRP'] ?? 0,
+                        'mrp_confirmation' => $record['MRP Confirmation'] ?? 'Incorrect',
+                        
                         'po_qty' => $record['PO Quantity'] ?? '',
                         'available_quantity' => $availableQty ?? 0,
                         'unavailable_quantity' => $shortQty ?? 0,
                         'block' => ($record['Block'] > $availableQty) ? $availableQty : $record['Block'],
-                        'rate_confirmation' => $record['MRP Confirmation'] ?? '',
+
                         'case_pack_quantity' => $casePackQty ?? '',
                         'purchase_order_quantity' => $record['Purchase Order Quantity'] ?? '',
                         'vendor_code' => $record['Vendor Code'] ?? '',
@@ -237,17 +245,24 @@ class SalesOrderController extends Controller
                         : intval($record['GST']),              // already integer (e.g., 18)
                     'item_code' => $record['Item Code'] ?? '',
                     'description' => $record['Description'] ?? '',
-                    'basic_rate' => $record['Basic Rate'] ?? '',
-                    'net_landing_rate' => $record['Net Landing Rate'] ?? '',
-                    'mrp' => $record['MRP'] ?? '',
-                    'product_mrp' => $record['Product MRP'] ?? '',
-                    // rate confirmation ?? want to store -- first create rate_confirmation column in db
-                    // 'rate_confirmation' => $record['Rate Confirmation'],
+
+                    'basic_rate' => $record['Basic Rate'] ?? 0,
+                    'product_basic_rate' => $record['Product Basic Rate'] ?? 0,
+                    'rate_confirmation' => $record['Basic Rate Confirmation'] ?? '',
+
+                    'net_landing_rate' => $record['Net Landing Rate'] ?? 0,
+                    'product_net_landing_rate' => $record['Product Net Landing Rate'] ?? 0,
+                    'net_landing_rate_confirmation' => $record['Net Landing Rate Confirmation'] ?? '',
+                    
+                    'mrp' => $record['MRP'] ?? 0,
+                    'product_mrp' => $record['Product MRP'] ?? 0,
+                    'mrp_confirmation' => $record['MRP Confirmation'] ?? '',
+                    
                     'po_qty' => $record['PO Quantity'] ?? '',
                     'available_quantity' => $availableQty ?? 0,
                     'unavailable_quantity' => $shortQty ?? 0,
                     'block' => ($record['Block'] > $availableQty) ? $availableQty : $record['Block'],
-                    'rate_confirmation' => $record['MRP Confirmation'] ?? '',
+
                     'case_pack_quantity' => $casePackQty ?? '',
                     'purchase_order_quantity' => $record['Purchase Order Quantity'] ?? '',
                     'vendor_code' => $record['Vendor Code'] ?? '',
@@ -283,14 +298,13 @@ class SalesOrderController extends Controller
                 $saveOrderProduct->sku = $sku;
                 $saveOrderProduct->price = $record['Basic Rate'] ?? null;
                 // what is exactly subtotal ?? 
-                // basic rate * po quantity or basic rate * purchase order quantity 
-                $saveOrderProduct->subtotal = ($record['Basic Rate'] ?? 0) * ($record['Purchase Order Quantity'] ?? 0);
+                // basic rate * po quantity(customers quantity) or basic rate * purchase order quantity(vendors quantity)
+                $saveOrderProduct->subtotal = ($record['Basic Rate'] ?? 0) * ($record['PO Quantity'] ?? 0);
                 $saveOrderProduct->save();
 
 
                 // Make a purchase order if one or more than one products have less quantity in warehouse
                 if ($shortQty > 0) {
-
                     // change sales order status to blocked
                     $salesOrderStatus = SalesOrder::find($salesOrder->id);
                     $salesOrderStatus->status = 'blocked';
@@ -314,7 +328,6 @@ class SalesOrderController extends Controller
                     }
 
                     $vendorCode = $productStockCache[$vendorCode]['vendor_code'];
-
 
                     // create purchase order product entry
                     $existingProduct = PurchaseOrderProduct::where('purchase_order_id', $purchaseOrder->id)
@@ -442,7 +455,7 @@ class SalesOrderController extends Controller
                     'basic_rate' => Arr::get($record, 'Basic Rate', 0),
                     'net_landing_rate' => Arr::get($record, 'Net Landing Rate', 0),
                     'mrp' => Arr::get($record, 'MRP', 0),
-                    'rate_confirmation' => ($record['MRP'] >= ($salesOrderProductUpdate->product->mrp ?? 0)) ? 'Correct' : 'Incorrect',
+                    'rate_confirmation' => ($record['MRP'] == ($salesOrderProductUpdate->product->mrp ?? 0)) ? 'Correct' : 'Incorrect',
                     'created_at' => now(),
                     'updated_at' => now(),
                 ];
@@ -543,11 +556,11 @@ class SalesOrderController extends Controller
     public function view($id)
     {
         $salesOrder = SalesOrder::with([
-            'customerGroup',
-            'warehouse',
-            'orderedProducts.tempOrder.vendorPIProduct',
-            'orderedProducts.warehouseStock',
-        ])
+                'customerGroup',
+                'warehouse',
+                'orderedProducts.tempOrder.vendorPIProduct',
+                'orderedProducts.warehouseStock',
+            ])
             ->withSum('orderedProducts', 'purchase_ordered_quantity')
             ->withSum('orderedProducts', 'ordered_quantity')
             // ->withSum('orderedProducts.tempOrder', 'available_quantity')
@@ -558,28 +571,32 @@ class SalesOrderController extends Controller
             ->withCount('notFoundTempOrderByVendor')
             ->findOrFail($id);
 
-        // dd($salesOrder);
         $vendorPiFulfillmentTotal = 0;
+        $vendorPiReceivedTotal = 0;
         $availableQuantity = 0;
         $caching = [];
 
         foreach ($salesOrder->orderedProducts as $product) {
             if (isset($product->tempOrder)) {
-                if ($product->tempOrder?->vendor_pi_received_quantity) {
-                    $product->tempOrder->vendor_pi_fulfillment_quantity = $product->tempOrder->vendor_pi_received_quantity;
-                }
-
-                if ($product->tempOrder->purchase_order_quantity <= ($product->tempOrder?->available_quantity ?? 0) + ($product->tempOrder?->vendor_pi_fulfillment_quantity ?? 0)) {
-                    $product->tempOrder->vendor_pi_fulfillment_quantity = $product->tempOrder->purchase_order_quantity;
-                }
-
-                $caching[] = $product->tempOrder->purchase_order_quantity . ' ' . $product->tempOrder?->vendor_pi_fulfillment_quantity;
                 $vendorPiFulfillmentTotal += $product->tempOrder->vendor_pi_fulfillment_quantity;
-                $availableQuantity += $product->tempOrder->available_quantity;
+                if ($product->tempOrder?->vendor_pi_received_quantity) {
+                    // $product->tempOrder->vendor_pi_fulfillment_quantity = $product->tempOrder->vendor_pi_received_quantity;
+                    $vendorPiReceivedTotal += $product->tempOrder->vendor_pi_received_quantity;
+                }
+
+                // if ($product->tempOrder->purchase_order_quantity <= ($product->tempOrder?->available_quantity ?? 0) + ($product->tempOrder?->vendor_pi_fulfillment_quantity ?? 0)) {
+                //     $product->tempOrder->vendor_pi_fulfillment_quantity = $product->tempOrder->purchase_order_quantity;
+                // }
+
+                // $caching[] = $product->tempOrder->purchase_order_quantity . ' ' . $product->tempOrder?->vendor_pi_fulfillment_quantity;
+                // $vendorPiFulfillmentTotal += $product->tempOrder->vendor_pi_fulfillment_quantity;
+                // $availableQuantity += $product->tempOrder->available_quantity;
             }
         }
 
-        return view('salesOrder.view', compact('salesOrder', 'vendorPiFulfillmentTotal', 'availableQuantity'));
+        // dd($salesOrder, $vendorPiFulfillmentTotal, $vendorPiReceivedTotal);
+
+        return view('salesOrder.view', compact('salesOrder', 'vendorPiFulfillmentTotal', 'availableQuantity', 'vendorPiReceivedTotal'));
     }
 
     public function destroy($id)
@@ -779,7 +796,7 @@ class SalesOrderController extends Controller
                     'orderedProducts.warehouseStock',
                 ])
                     ->findOrFail($request->order_id);
-                    
+
                 foreach ($salesOrderUpdate->orderedProducts as $order) {
                     if ($order->tempOrder?->vendor_pi_received_quantity) {
                         $order->tempOrder->vendor_pi_fulfillment_quantity = $order->tempOrder->vendor_pi_received_quantity;
@@ -807,12 +824,11 @@ class SalesOrderController extends Controller
                 foreach ($customerFacilityName as $customer_id => $facility_name) {
                     foreach ($salesOrderDetails as $detail) {
                         if ($detail->customer_id == $customer_id) {
-                            $detail->status = $request->status;
+                            $detail->status = 'completed';
                             $detail->save();
                         }
                     }
                 }
-
                 $salesOrder->status = $request->status;
             } else if ($request->status == 'completed') {
                 $salesOrder->status = $request->status;
@@ -893,6 +909,12 @@ class SalesOrderController extends Controller
                 }
 
                 if ($reason != '') {
+                    $gst = ($record['GST'] < 1 && $record['GST'] > 0)
+                        ? intval(round($record['GST'] * 100))  // convert decimals (0.18 -> 18)
+                        : intval($record['GST']);
+                    $netLandingRate = intval($record['Basic Rate']) + (intval($record['Basic Rate']) * $gst / 100);
+                    $netLandingRate = number_format($netLandingRate, 2, '.', '');
+
                     $insertedRows[] = [
                         'Customer Name' => $record['Customer Name'] ?? '',
                         'PO Number' => $record['PO Number'] ?? '',
@@ -904,15 +926,20 @@ class SalesOrderController extends Controller
                         'HSN' => $record['HSN'] ?? '',
                         'Item Code' => $record['Item Code'] ?? '',
                         'Description' => $record['Description'] ?? '',
-                        // if in % convert in normal integer
-                        'GST' => ($record['GST'] < 1 && $record['GST'] > 0)
-                            ? intval(round($record['GST'] * 100))  // convert decimals (0.18 -> 18)
-                            : intval($record['GST']),              // already integer (e.g., 18)
-                        'Basic Rate' => $record['Basic Rate'] ?? '',
-                        'Net Landing Rate' => $record['Net Landing Rate'] ?? '',
-                        'MRP' => $record['MRP'] ?? '',
+                        'GST' => $gst,            
+                        
+                        'Basic Rate' => $record['Basic Rate'] ?? 0,
+                        'Product Basic Rate' => 0,
+                        'Basic Rate Confirmation' => 'Incorrect',
+
+                        'Net Landing Rate' => $netLandingRate ?? 0,
+                        'Product Net Landing Rate' => 0,
+                        'Net Landing Rate Confirmation' => 'Incorrect',
+                        
+                        'MRP' => $record['MRP'] ?? 0,
                         'Product MRP' =>  0,
                         'MRP Confirmation' => 'Incorrect',
+                        
                         'Case Pack Quantity' => 0,
                         'PO Quantity' => $poQty,
                         'Available Quantity' => 0,
@@ -957,8 +984,22 @@ class SalesOrderController extends Controller
 
                 if ($stockEntry) {
                     $casePackQty = (int)$stockEntry->product->pcs_set * (int)$stockEntry->product->sets_ctn;
-                    $productMrp = $stockEntry->product->mrp ?? 0;
-                    $rateConfirmation = ($record['MRP'] >= $productMrp) ? 'Correct' : 'Incorrect';
+
+
+                    $gst = ($record['GST'] < 1 && $record['GST'] > 0)
+                        ? intval(round($record['GST'] * 100))  // convert decimals (0.18 -> 18)
+                        : intval($record['GST']);
+                    $netLandingRate = $record['Basic Rate'] + ($record['Basic Rate'] * $gst / 100);
+                    $netLandingRate = number_format($netLandingRate, 2, '.', '');
+
+                    $tolerance = 0.5; // define how close is acceptable
+                    $isNearlyEqual = abs(intval($record['Basic Rate']) - intval($stockEntry->product->basic_rate)) <= $tolerance;
+                    $rateConfirmation = ($isNearlyEqual) ? 'Correct' : 'Incorrect';
+                    $netLandingRateConfirmation = ($isNearlyEqual) ? 'Correct' : 'Incorrect';
+                    
+                    // $rateConfirmation = ($record['Basic Rate'] == $stockEntry->product->basic_rate) ? 'Correct' : 'Incorrect';
+                    // $netLandingRateConfirmation = ($netLandingRate == $stockEntry->product->net_landing_rate) ? 'Correct' : 'Incorrect';
+                    $mrpConfirmation = abs(intval($record['MRP']) - intval($stockEntry->product->mrp)) <= $tolerance ? 'Correct' : 'Incorrect';
                 }
 
                 $insertedRows[] = [
@@ -972,14 +1013,20 @@ class SalesOrderController extends Controller
                     'HSN' => $record['HSN'],
                     'Item Code' => $record['Item Code'],
                     'Description' => $record['Description'],
-                    'GST' => ($record['GST'] < 1 && $record['GST'] > 0)
-                        ? intval(round($record['GST'] * 100))  // convert decimals (0.18 -> 18)
-                        : intval($record['GST']),
+                    'GST' => $gst,
+
                     'Basic Rate' => $record['Basic Rate'],
-                    'Net Landing Rate' => $record['Net Landing Rate'],
+                    'Product Basic Rate' => $stockEntry->product->basic_rate ?? 0,
+                    'Basic Rate Confirmation' => $rateConfirmation,
+                    
+                    'Net Landing Rate' => $netLandingRate,
+                    'Product Net Landing Rate' => $stockEntry->product->net_landing_rate ?? 0,
+                    'Net Landing Rate Confirmation' => $netLandingRateConfirmation,
+                    
                     'MRP' => $record['MRP'],
-                    'Product MRP' => $productMrp,
-                    'MRP Confirmation' => $rateConfirmation,
+                    'Product MRP' => $stockEntry->product->mrp ?? 0,
+                    'MRP Confirmation' => $mrpConfirmation,
+                    
                     'Case Pack Quantity' => $casePackQty ?? 0,
                     'PO Quantity' => $poQty,
                     'Available Quantity' => $availableQty,
@@ -1028,7 +1075,6 @@ class SalesOrderController extends Controller
 
         // Add rows while transforming
         SimpleExcelReader::create($originalPath)->getRows()->each(function (array $row) use ($writer) {
-
             $product = Product::where('sku', $row['SKU Code'])->first();
 
             $writer->addRow([
@@ -1043,12 +1089,20 @@ class SalesOrderController extends Controller
                 'GST' => $row['GST'] ?? '',
                 'Item Code' => $row['Item Code'] ?? '',
                 'Description' => $row['Description'] ?? '',
-                'Basic Rate' => $row['Basic Rate'] ?? '',
-                'Net Landing Rate' => $row['Net Landing Rate'] ?? '',
-                'MRP' => $row['MRP'] ?? '',
-                'Product MRP' => $row['Product MRP'] ?? '',
-                'MRP Confirmation' => $row['MRP Confirmation'] ?? '',
-                'PO Quantity' => $row['PO Quantity'] ?? '',
+
+                'Basic Rate' => $row['Basic Rate'] ?? 0,
+                'Product Basic Rate' => $row['Product Basic Rate'] ?? 0,
+                'Basic Rate Confirmation' => $row['Basic Rate Confirmation'] ?? 'Incorrect',
+                
+                'Net Landing Rate' => $row['Net Landing Rate'] ?? 0,
+                'Product Net Landing Rate' => $row['Product Net Landing Rate'] ?? 0,
+                'Net Landing Rate Confirmation' => $row['Net Landing Rate Confirmation'] ?? 'Incorrect',
+                
+                'MRP' => $row['MRP'] ?? 0,
+                'Product MRP' => $row['Product MRP'] ?? 0,
+                'MRP Confirmation' => $row['MRP Confirmation'] ?? 'Incorrect',
+                
+                'PO Quantity' => $row['PO Quantity'] ?? 0,
                 'Available Quantity' => $row['Available Quantity'] ?? '',
                 'Unavailable Quantity' => $row['Unavailable Quantity'] ?? '',
                 'Case Pack Quantity' => $row['Case Pack Quantity'] ?? '',

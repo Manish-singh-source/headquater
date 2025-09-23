@@ -4,6 +4,7 @@
         $statuses = [
             'pending' => 'Pending',
             'blocked' => 'Blocked',
+            'delivered' => 'Delivered',
             'completed' => 'Completed',
             'ready_to_ship' => 'Ready To Ship',
             'ready_to_package' => 'Ready To Package',
@@ -206,12 +207,17 @@
                                         <th>SKU&nbsp;Code</th>
                                         <th>Title</th>
                                         <th>Basic&nbsp;Rate</th>
+                                        <th>Product&nbsp;Basic&nbsp;Rate</th>
+                                        <th>Basic&nbsp;Rate&nbsp;Confirmation</th>
                                         <th>Net&nbsp;Landing&nbsp;Rate</th>
+                                        <th>Product&nbsp;Net&nbsp;Landing&nbsp;Rate</th>
+                                        <th>Net&nbsp;Landing&nbsp;Rate&nbsp;Confirmation</th>
                                         <th>PO&nbsp;MRP</th>
                                         <th>Product&nbsp;MRP</th>
-                                        <th>Rate&nbsp;Confirmation</th>
+                                        <th>MRP&nbsp;Confirmation</th>
                                         <th>PO&nbsp;Quantity</th>
                                         <th>Purchase&nbsp;Order&nbsp;Quantity</th>
+                                        <th>Block&nbsp;Quantity</th>
                                         <th>Qty&nbsp;Fullfilled</th>
                                     </tr>
                                 </thead>
@@ -239,10 +245,15 @@
                                             <td>{{ $order->tempOrder?->sku }}</td>
                                             <td>{{ $order->tempOrder?->description }}</td>
                                             <td>{{ $order->tempOrder?->basic_rate }}</td>
+                                            <td>{{ $order->tempOrder?->product_basic_rate }}</td>
+                                            <td>{{ $order->tempOrder?->rate_confirmation }}</td>
                                             <td>{{ $order->tempOrder?->net_landing_rate }}</td>
+                                            <td>{{ $order->tempOrder?->product_net_landing_rate }}</td>
+                                            <td>{{ $order->tempOrder?->net_landing_rate_confirmation }}</td>
                                             <td>{{ $order->tempOrder?->mrp }}</td>
                                             <td>{{ $order->tempOrder?->product_mrp }}</td>
-                                            <td>
+                                            <td>{{ $order->tempOrder?->mrp_confirmation }}</td>
+                                            {{-- <td>
                                                 @if ($order->tempOrder?->rate_confirmation == 'Correct')
                                                     <span
                                                         class="badge text-success bg-success-subtle">{{ $order->tempOrder?->rate_confirmation }}</span>
@@ -250,9 +261,10 @@
                                                     <span
                                                         class="badge text-danger bg-danger-subtle">{{ $order->tempOrder?->rate_confirmation }}</span>
                                                 @endif
-                                            </td>
+                                            </td> --}}
                                             <td>{{ $order->ordered_quantity }}</td>
                                             <td>{{ $order->tempOrder?->purchase_order_quantity }}</td>
+                                            <td>{{ $order->tempOrder?->block }}</td>
                                             <td>
                                                 @php
                                                     if ($order->tempOrder?->vendor_pi_received_quantity) {

@@ -14,10 +14,11 @@ class PurchaseOrder extends Model
         return $this->hasMany(PurchaseOrderProduct::class, 'purchase_order_id', 'id');
     }
 
-    public function purchaseInvoices() {
+    public function purchaseInvoices()
+    {
         return $this->hasMany(PurchaseInvoice::class, 'purchase_order_id', 'id');
     }
-    
+
     public function vendorPI()
     {
         return $this->hasMany(VendorPI::class, 'purchase_order_id', 'id');
@@ -27,4 +28,10 @@ class PurchaseOrder extends Model
     {
         return $this->hasOne(SalesOrder::class, 'id', 'sales_order_id');
     }
+
+    public function vendor()
+    {
+        return $this->hasOne(Vendor::class, 'id', 'vendor_id');
+    }
+
 }
