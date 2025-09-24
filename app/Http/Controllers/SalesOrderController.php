@@ -163,11 +163,11 @@ class SalesOrderController extends Controller
                         'net_landing_rate' => $record['Net Landing Rate'] ?? 0,
                         'product_net_landing_rate' => $record['Product Net Landing Rate'] ?? 0,
                         'net_landing_rate_confirmation' => $record['Net Landing Rate Confirmation'] ?? 'Incorrect',
-                        
+
                         'mrp' => $record['MRP'] ?? 0,
                         'product_mrp' => $record['Product MRP'] ?? 0,
                         'mrp_confirmation' => $record['MRP Confirmation'] ?? 'Incorrect',
-                        
+
                         'po_qty' => $record['PO Quantity'] ?? '',
                         'available_quantity' => $availableQty ?? 0,
                         'unavailable_quantity' => $shortQty ?? 0,
@@ -253,11 +253,11 @@ class SalesOrderController extends Controller
                     'net_landing_rate' => $record['Net Landing Rate'] ?? 0,
                     'product_net_landing_rate' => $record['Product Net Landing Rate'] ?? 0,
                     'net_landing_rate_confirmation' => $record['Net Landing Rate Confirmation'] ?? '',
-                    
+
                     'mrp' => $record['MRP'] ?? 0,
                     'product_mrp' => $record['Product MRP'] ?? 0,
                     'mrp_confirmation' => $record['MRP Confirmation'] ?? '',
-                    
+
                     'po_qty' => $record['PO Quantity'] ?? '',
                     'available_quantity' => $availableQty ?? 0,
                     'unavailable_quantity' => $shortQty ?? 0,
@@ -556,11 +556,11 @@ class SalesOrderController extends Controller
     public function view($id)
     {
         $salesOrder = SalesOrder::with([
-                'customerGroup',
-                'warehouse',
-                'orderedProducts.tempOrder.vendorPIProduct',
-                'orderedProducts.warehouseStock',
-            ])
+            'customerGroup',
+            'warehouse',
+            'orderedProducts.tempOrder.vendorPIProduct',
+            'orderedProducts.warehouseStock',
+        ])
             ->withSum('orderedProducts', 'purchase_ordered_quantity')
             ->withSum('orderedProducts', 'ordered_quantity')
             // ->withSum('orderedProducts.tempOrder', 'available_quantity')
@@ -705,7 +705,7 @@ class SalesOrderController extends Controller
         try {
 
             $salesOrder = SalesOrder::findOrFail($request->order_id);
-            $salesOrderDetails = SalesOrderProduct::where('sales_order_id', $salesOrder->id)->get();
+            $salesOrderDetails = SalesOrderProduct::with('tempOrder')->where('sales_order_id', $salesOrder->id)->get();
 
             if ($request->status == 'ready_to_ship') {
                 $customerFacilityName = SalesOrderProduct::with('customer')
@@ -729,6 +729,8 @@ class SalesOrderController extends Controller
                         return $product->ordered_quantity * $product->product->mrp; // Assuming 'price' is the field in Product model
                     });
                     $invoice->save();
+
+
 
                     $invoiceDetails = [];
                     foreach ($salesOrderDetails as $detail) {
@@ -926,8 +928,8 @@ class SalesOrderController extends Controller
                         'HSN' => $record['HSN'] ?? '',
                         'Item Code' => $record['Item Code'] ?? '',
                         'Description' => $record['Description'] ?? '',
-                        'GST' => $gst,            
-                        
+                        'GST' => $gst,
+
                         'Basic Rate' => $record['Basic Rate'] ?? 0,
                         'Product Basic Rate' => 0,
                         'Basic Rate Confirmation' => 'Incorrect',
@@ -935,11 +937,11 @@ class SalesOrderController extends Controller
                         'Net Landing Rate' => $netLandingRate ?? 0,
                         'Product Net Landing Rate' => 0,
                         'Net Landing Rate Confirmation' => 'Incorrect',
-                        
+
                         'MRP' => $record['MRP'] ?? 0,
                         'Product MRP' =>  0,
                         'MRP Confirmation' => 'Incorrect',
-                        
+
                         'Case Pack Quantity' => 0,
                         'PO Quantity' => $poQty,
                         'Available Quantity' => 0,
@@ -996,7 +998,7 @@ class SalesOrderController extends Controller
                     $isNearlyEqual = abs(intval($record['Basic Rate']) - intval($stockEntry->product->basic_rate)) <= $tolerance;
                     $rateConfirmation = ($isNearlyEqual) ? 'Correct' : 'Incorrect';
                     $netLandingRateConfirmation = ($isNearlyEqual) ? 'Correct' : 'Incorrect';
-                    
+
                     // $rateConfirmation = ($record['Basic Rate'] == $stockEntry->product->basic_rate) ? 'Correct' : 'Incorrect';
                     // $netLandingRateConfirmation = ($netLandingRate == $stockEntry->product->net_landing_rate) ? 'Correct' : 'Incorrect';
                     $mrpConfirmation = abs(intval($record['MRP']) - intval($stockEntry->product->mrp)) <= $tolerance ? 'Correct' : 'Incorrect';
@@ -1018,15 +1020,15 @@ class SalesOrderController extends Controller
                     'Basic Rate' => $record['Basic Rate'],
                     'Product Basic Rate' => $stockEntry->product->basic_rate ?? 0,
                     'Basic Rate Confirmation' => $rateConfirmation,
-                    
+
                     'Net Landing Rate' => $netLandingRate,
                     'Product Net Landing Rate' => $stockEntry->product->net_landing_rate ?? 0,
                     'Net Landing Rate Confirmation' => $netLandingRateConfirmation,
-                    
+
                     'MRP' => $record['MRP'],
                     'Product MRP' => $stockEntry->product->mrp ?? 0,
                     'MRP Confirmation' => $mrpConfirmation,
-                    
+
                     'Case Pack Quantity' => $casePackQty ?? 0,
                     'PO Quantity' => $poQty,
                     'Available Quantity' => $availableQty,
@@ -1093,15 +1095,15 @@ class SalesOrderController extends Controller
                 'Basic Rate' => $row['Basic Rate'] ?? 0,
                 'Product Basic Rate' => $row['Product Basic Rate'] ?? 0,
                 'Basic Rate Confirmation' => $row['Basic Rate Confirmation'] ?? 'Incorrect',
-                
+
                 'Net Landing Rate' => $row['Net Landing Rate'] ?? 0,
                 'Product Net Landing Rate' => $row['Product Net Landing Rate'] ?? 0,
                 'Net Landing Rate Confirmation' => $row['Net Landing Rate Confirmation'] ?? 'Incorrect',
-                
+
                 'MRP' => $row['MRP'] ?? 0,
                 'Product MRP' => $row['Product MRP'] ?? 0,
                 'MRP Confirmation' => $row['MRP Confirmation'] ?? 'Incorrect',
-                
+
                 'PO Quantity' => $row['PO Quantity'] ?? 0,
                 'Available Quantity' => $row['Available Quantity'] ?? '',
                 'Unavailable Quantity' => $row['Unavailable Quantity'] ?? '',
@@ -1323,5 +1325,81 @@ class SalesOrderController extends Controller
         return response()->download($tempXlsxPath, 'Products-Vendor-Not-Found.xlsx', [
             'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         ])->deleteFileAfterSend(true);
+    }
+
+
+    public function generateInvoice(Request $request)
+    {
+        $validated = Validator::make($request->all(), [
+            'ids' => 'required',
+        ]);
+
+        if ($validated->fails()) {
+            return redirect()->back()->withErrors($validated->errors());
+        }
+
+        $ids = explode(',', $request->ids);
+
+        try {
+            // Fetch all selected sales order products with relations
+            $salesOrderProducts = SalesOrderProduct::with(['tempOrder', 'product', 'customer'])
+                ->whereIn('id', $ids)
+                ->get();
+
+            if ($salesOrderProducts->isEmpty()) {
+                return redirect()->back()->with('error', 'No sales order products found.');
+            }
+
+            // Group by unique combination: customer_address + po_number
+            $grouped = $salesOrderProducts->groupBy(function ($item) {
+                $customerAddress = $item->customer->address ?? '';
+                $poNumber = $item->po_number ?? '';
+                return $customerAddress . '|' . $poNumber;
+            });
+
+            foreach ($grouped as $groupKey => $groupItems) {
+                $firstItem = $groupItems->first();
+
+                // Create Invoice
+                $invoice = new Invoice();
+                $invoice->warehouse_id   = $firstItem->warehouse_id ?? 1;
+                $invoice->invoice_number = 'INV-' . time() . '-' . $firstItem->customer_id;
+                $invoice->customer_id    = $firstItem->customer_id;
+                $invoice->sales_order_id = $firstItem->sales_order_id;
+                $invoice->invoice_date   = now();
+                $invoice->round_off      = 0;
+
+                // Calculate total amount of all grouped items
+                $invoice->total_amount = $groupItems->sum(function ($detail) {
+                    return $detail->ordered_quantity * $detail->product->mrp;
+                });
+
+                $invoice->save();
+
+                // Create Invoice Details
+                foreach ($groupItems as $salesOrderDetail) {
+                    $invoiceDetail = new InvoiceDetails();
+                    $invoiceDetail->invoice_id   = $invoice->id;
+                    $invoiceDetail->product_id   = $salesOrderDetail->product_id;
+                    $invoiceDetail->temp_order_id = $salesOrderDetail->temp_order_id;
+                    $invoiceDetail->quantity     = $salesOrderDetail->ordered_quantity;
+                    $invoiceDetail->unit_price   = $salesOrderDetail->product->mrp;
+                    $invoiceDetail->discount     = 0;
+                    $invoiceDetail->amount       = $salesOrderDetail->ordered_quantity * $salesOrderDetail->product->mrp;
+                    $invoiceDetail->tax          = $salesOrderDetail->product->gst ?? 0;
+                    $invoiceDetail->total_price  = $invoiceDetail->amount; // no discount applied
+                    $invoiceDetail->description  = $salesOrderDetail->tempOrder->description ?? null;
+                    $invoiceDetail->save();
+
+                    // Optional: update product status
+                    $salesOrderDetail->status = 'dispatched';
+                    $salesOrderDetail->save();
+                }
+            }
+
+            return redirect()->back()->with('success', 'Invoices generated successfully.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Invoice generation failed. ' . $e->getMessage());
+        }
     }
 }

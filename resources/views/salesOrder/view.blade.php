@@ -153,6 +153,10 @@
                             <button class="btn btn-icon btn-sm border-2 border-primary me-1" id="exportData">
                                 <i class="fa fa-file-excel-o"></i> Export to Excel
                             </button>
+                            
+                            <button class="btn btn-icon btn-sm border-2 border-primary me-1" id="generateInvoice">
+                                <i class="fa fa-file-excel-o"></i> Generate Invoice
+                            </button>
                             <ul class="nav nav-tabs" id="vendorTabs" role="tablist">
                                 <form id="statusForm" action="{{ route('change.sales.order.status') }}" method="POST">
                                     @csrf
@@ -205,6 +209,7 @@
                                         <th>GST</th>
                                         <th>Item&nbsp;Code</th>
                                         <th>SKU&nbsp;Code</th>
+                                        <th>Brand</th>
                                         <th>Title</th>
                                         <th>Basic&nbsp;Rate</th>
                                         <th>Product&nbsp;Basic&nbsp;Rate</th>
@@ -215,6 +220,7 @@
                                         <th>PO&nbsp;MRP</th>
                                         <th>Product&nbsp;MRP</th>
                                         <th>MRP&nbsp;Confirmation</th>
+                                        <th>PO&nbsp;Number</th>
                                         <th>PO&nbsp;Quantity</th>
                                         <th>Purchase&nbsp;Order&nbsp;Quantity</th>
                                         <th>Block&nbsp;Quantity</th>
@@ -243,6 +249,7 @@
                                             <td>{{ $order->tempOrder?->gst }}</td>
                                             <td>{{ $order->tempOrder?->item_code }}</td>
                                             <td>{{ $order->tempOrder?->sku }}</td>
+                                            <td>{{ $order->product?->brand ?? '' }}</td>
                                             <td>{{ $order->tempOrder?->description }}</td>
                                             <td>{{ $order->tempOrder?->basic_rate }}</td>
                                             <td>{{ $order->tempOrder?->product_basic_rate }}</td>
@@ -253,6 +260,7 @@
                                             <td>{{ $order->tempOrder?->mrp }}</td>
                                             <td>{{ $order->tempOrder?->product_mrp }}</td>
                                             <td>{{ $order->tempOrder?->mrp_confirmation }}</td>
+                                            <td>{{ $order->tempOrder?->po_number }}</td>
                                             {{-- <td>
                                                 @if ($order->tempOrder?->rate_confirmation == 'Correct')
                                                     <span
@@ -286,7 +294,7 @@
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="6">No Records Found</td>
+                                            <td colspan="24" class="text-center">No Records Found</td>
                                         </tr>
                                     @endforelse
                                 </tbody>
@@ -348,8 +356,36 @@
                     form.submit();
                 }
             });
+
+            // Generate Invoice functionality
+            document.getElementById('generateInvoice').addEventListener('click', function() {
+                let selected = [];
+                document.querySelectorAll('.row-checkbox:checked').forEach(cb => {
+                    selected.push(cb.value);
+                });
+
+                if (selected.length === 0) {
+                    alert('Please select at least one record.');
+                    return;
+                }
+
+                if (confirm('Are you sure you want to delete selected records?')) {
+                    // Create a form and submit
+                    let form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = '{{ route('generate.invoice') }}';
+                    form.innerHTML = `
+                        @csrf
+                        <input type="hidden" name="_method" value="POST">
+                        <input type="hidden" name="ids" value="${selected.join(',')}">
+                    `;
+                    document.body.appendChild(form);
+                    form.submit();
+                }
+            });
         });
     </script>
+
 
     <script>
         $(document).on('click', '#exportData', function() {
