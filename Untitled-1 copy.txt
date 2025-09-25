@@ -462,3 +462,30 @@ also invoice will be generate on selected products only also there will apply co
 when completing the generating invoice logic display this generated invoices in sales order (views/salesOrder/view.blade.php) page in card format and list format for download the invoice 
 also list these invoices in invoice module (views/invoice/index.blade.php) page in card format and list format for download the invoice 
 the invoices will be also generate based on change status where status will changed to ready_to_ship 
+
+
+
+
+
+
+
+
+
+--------------------- products issues --------------------------- 
+
+
+received products -- 
+    -- update received products 
+        -- do not save extra products 
+        -- extra products will store in vendor_return_products 
+            -- return_quantity = extra quantity 
+            -- return_reason = extra 
+            -- return_description = extra products return to vendor 
+            -- return_status = pending 
+            -- if return_status = returned (then no need to update anything)
+            -- if return_status = accepted (then add that quantity to warehouse stock and update vendor_return_product table with accepted status)
+
+        -- if quantity is short accept that quantity  (optional) 
+        -- if quantity is short(damaged) return that quantity to vendor 
+        -- if quantity is short(damaged) accept that quantity  (optional) 
+

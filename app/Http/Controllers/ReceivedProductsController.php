@@ -155,7 +155,7 @@ class ReceivedProductsController extends Controller
                 if (empty($record['Vendor SKU Code'])) {
                     continue;
                 }
-
+                
                 $productData = VendorPIProduct::where('vendor_sku_code', Arr::get($record, 'Vendor SKU Code'))->where('vendor_pi_id', $vendorPIid->id)->first();
 
                 if (Arr::get($record, 'PI Quantity')) {

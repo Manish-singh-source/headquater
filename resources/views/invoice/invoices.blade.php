@@ -36,6 +36,7 @@
                                         </th>
                                         <th>Order&nbsp;Id</th>
                                         <th>Invoice&nbsp;No</th>
+                                        <th>PO&nbsp;No</th>
                                         <th>Customer&nbsp;Name</th>
                                         <th>Due&nbsp;Date</th>
                                         <th>Amount</th>
@@ -52,6 +53,7 @@
                                             </td>
                                             <td>#{{ $invoice->sales_order_id }}</td>
                                             <td>{{ $invoice->invoice_number }}</td>
+                                            <td>{{ $invoice->po_number }}</td>
                                             <td>{{ $invoice->customer->client_name }}</td>
                                             <td>
                                                 {{ $invoice->appointment?->appointment_date ?? 'NA' }}

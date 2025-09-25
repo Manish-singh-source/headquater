@@ -31,7 +31,7 @@ class ReadyToShip extends Controller
             ->filter()
             ->unique('client_name')
             ->pluck('id');
-            
+
         $customerInfo = Customer::with('groupInfo.customerGroup')->withCount('orders')->whereIn('id', $facilityNames)->get();
 
         return view('readyToShip.view', compact('customerInfo', 'order'));

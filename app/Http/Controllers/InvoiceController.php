@@ -18,7 +18,7 @@ class InvoiceController extends Controller
 
     public function index()
     {
-        $orders = SalesOrder::whereIn('status', ['ready_to_ship', 'completed'])->with('customerGroup')->get();
+        $orders = SalesOrder::with('customerGroup')->get();
         return view('invoice.index', compact('orders'));
     }
 
@@ -47,6 +47,7 @@ class InvoiceController extends Controller
             'invoiceDetails' => InvoiceDetails::with('product', 'tempOrder')->where('invoice_id', $id)->get(),
             'salesOrderProducts' => $salesOrderProducts,
         ];
+        // dd($data);
         $pdf = \PDF::loadView('invoice/invoice-pdf', $data);
         $pdf->setPaper('a4', 'landscape');
         return $pdf->stream('invoice.pdf');

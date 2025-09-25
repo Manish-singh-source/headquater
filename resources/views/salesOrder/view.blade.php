@@ -39,7 +39,7 @@
                                     <span><b>Total PO Quantity</b></span>
                                     <span> <b>{{ $salesOrder->ordered_products_sum_ordered_quantity }}</b></span>
                                 </li>
-                                
+
                                 <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                                     <span><b>Total Purchase Order Quantity</b></span>
                                     <span> <b>{{ $salesOrder->ordered_products_sum_purchase_ordered_quantity }}</b></span>
@@ -49,19 +49,16 @@
                                     <span><b>PO Quantity Status</b></span>
                                     <span>
                                         <b>
-                                            @if (
-                                                $salesOrder->ordered_products_sum_ordered_quantity -
-                                                    ($availableQuantity + ($vendorPiFulfillmentTotal ?? 0)) >
-                                                    0)
+                                            @if ($remainingQuantity > 0)
                                                 <span class="badge text-danger bg-danger-subtle">Quantity Needs To Fulfill:
                                                     <span id="quantityNeedsToFullfill">
-                                                        {{ $salesOrder->ordered_products_sum_ordered_quantity - ($availableQuantity + ($vendorPiFulfillmentTotal ?? 0)) }}
+                                                        {{ $remainingQuantity }}
                                                     </span>
                                                 </span>
                                             @else
                                                 <span class="badge text-success bg-success-subtle"> Quantity
                                                     Fulfilled</span>
-                                                <span id="quantityNeedsToFullfill">0</span>
+                                                <span id="quantityNeedsToFullfill" hidden>0</span>
                                             @endif
                                         </b>
                                     </span>
@@ -153,10 +150,19 @@
                             <button class="btn btn-icon btn-sm border-2 border-primary me-1" id="exportData">
                                 <i class="fa fa-file-excel-o"></i> Export to Excel
                             </button>
-                            
+
                             <button class="btn btn-icon btn-sm border-2 border-primary me-1" id="generateInvoice">
                                 <i class="fa fa-file-excel-o"></i> Generate Invoice
                             </button>
+                            <div>
+                                <select class="form-select border-2 border-primary" id="selectBrand"
+                                    aria-label="Default select example" name="status">
+                                    <option value="" selected>Select Brand</option>
+                                    @foreach ($uniqueBrands as $brand)
+                                        <option value="{{ $brand }}">{{ $brand }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
                             <ul class="nav nav-tabs" id="vendorTabs" role="tablist">
                                 <form id="statusForm" action="{{ route('change.sales.order.status') }}" method="POST">
                                     @csrf
@@ -166,13 +172,15 @@
                                         aria-label="Default select example" name="status">
                                         <option value="" selected disabled>Change Status</option>
                                         <option value="pending" @if ($salesOrder->status == 'pending') selected @endif
-                                            @if (in_array($salesOrder->status, ['blocked', 'ready_to_package', 'ready_to_ship', 'completed'])) disabled @endif>Pending</option>
+                                            @if (in_array($salesOrder->status, ['blocked', 'ready_to_package', 'ready_to_ship', 'delivered', 'completed'])) disabled @endif>Pending</option>
                                         <option value="blocked" @if ($salesOrder->status == 'blocked') selected @endif
-                                            @if (in_array($salesOrder->status, ['ready_to_package', 'ready_to_ship', 'completed'])) disabled @endif>Blocked</option>
+                                            @if (in_array($salesOrder->status, ['ready_to_package', 'ready_to_ship', 'delivered', 'completed'])) disabled @endif>Blocked</option>
                                         <option value="ready_to_package" @if ($salesOrder->status == 'ready_to_package') selected @endif
-                                            @if (in_array($salesOrder->status, ['ready_to_ship', 'completed'])) disabled @endif>Ready To Package</option>
+                                            @if (in_array($salesOrder->status, ['ready_to_ship', 'delivered', 'completed'])) disabled @endif>Ready To Package</option>
                                         <option value="ready_to_ship" @if ($salesOrder->status == 'ready_to_ship') selected @endif
-                                            @if (in_array($salesOrder->status, ['completed'])) disabled @endif>Ready To Ship</option>
+                                            @if (in_array($salesOrder->status, ['delivered', 'completed'])) disabled @endif>Ready To Ship</option>
+                                        <option value="delivered" @if ($salesOrder->status == 'delivered') selected @endif
+                                            @if (in_array($salesOrder->status, ['completed'])) disabled @endif>Delivered</option>
                                         <option value="completed" @if ($salesOrder->status == 'completed') selected @endif>
                                             Completed</option>
                                     </select>
@@ -196,7 +204,7 @@
                     </div>
                     <div class="product-table" id="poTable">
                         <div class="table-responsive white-space-nowrap">
-                            <table id="example" class="table align-middle">
+                            <table id="po_table" class="table align-middle">
                                 <thead class="table-light">
                                     <tr>
                                         <th>
@@ -282,10 +290,10 @@
                                                 @endphp
                                                 {{-- change po_qty to purchase_order_quantity --}}
                                                 @if (
-                                                    $order->tempOrder?->po_qty <=
+                                                    $order->ordered_quantity <=
                                                         ($order->tempOrder?->available_quantity ?? 0) + ($order->tempOrder?->vendor_pi_fulfillment_quantity ?? 0))
                                                     <span
-                                                        class="badge text-success bg-success-subtle">{{ $order->tempOrder?->po_qty }}</span>
+                                                        class="badge text-success bg-success-subtle">{{ $order->ordered_quantity }}</span>
                                                 @else
                                                     <span
                                                         class="badge text-danger bg-danger-subtle">{{ ($order->tempOrder?->available_quantity ?? 0) + ($order->tempOrder?->vendor_pi_fulfillment_quantity ?? 0) }}</span>
@@ -364,9 +372,15 @@
                     selected.push(cb.value);
                 });
 
+                let brand = document.getElementById('selectBrand').value;
+
                 if (selected.length === 0) {
-                    alert('Please select at least one record.');
-                    return;
+                    // return;
+                    checkboxes.forEach(cb => cb.checked = selectAll.checked);
+                    // alert('Please select at least one record.');
+                    document.querySelectorAll('.row-checkbox:checked').forEach(cb => {
+                        selected.push(cb.value);
+                    });
                 }
 
                 if (confirm('Are you sure you want to delete selected records?')) {
@@ -377,6 +391,8 @@
                     form.innerHTML = `
                         @csrf
                         <input type="hidden" name="_method" value="POST">
+                        <input type="hidden" name="order_id" value="{{ $salesOrder->id }}">
+                        <input type="hidden" name="brand" value="${brand}">
                         <input type="hidden" name="ids" value="${selected.join(',')}">
                     `;
                     document.body.appendChild(form);
@@ -397,6 +413,28 @@
 
             // Trigger browser download
             window.location.href = downloadUrl;
+        });
+    </script>
+    <script>
+        $(document).ready(function() {
+            var brandSelection = $('#po_table').DataTable({
+                "columnDefs": [{
+                    "orderable": false,
+                }],
+                lengthChange: true,
+                buttons: [{
+                    extend: 'excelHtml5',
+                    className: 'd-none', // hide the default button
+                }]
+            });
+
+            $('#selectBrand').on('change', function() {
+                var selected = $(this).val().trim();
+
+                // Use regex for exact match
+                brandSelection.column(8).search(selected ? '^' + selected + '$' : '', true, false).draw();
+            });
+
         });
     </script>
 @endsection
