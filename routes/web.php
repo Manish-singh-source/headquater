@@ -183,6 +183,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/download-not-found-sku/{id}', 'downloadNotFoundSku')->name('download.not.found.sku.excel');
         Route::get('/download-not-found-customer/{id}', 'downloadNotFoundCustomer')->name('download.not.found.customer.excel');
         Route::get('/download-not-found-vendor/{id}', 'downloadNotFoundVendor')->name('download.not.found.vendor.excel');
+        Route::post('/generate-invoice', 'generateInvoice')->name('generate.invoice');
     });
 
     // Place Order
@@ -212,7 +213,7 @@ Route::middleware(['auth'])->group(function () {
 
     // Check code from here
 
-    // received products From Vendors PI Order
+    // received products From Vendors PI Order  
     Route::controller(ReceivedProductsController::class)->group(function () {
         Route::get('/received-products', 'index')->name('received-products.index');
         Route::get('/received-products/{id}/{vendorCode}', 'view')->name('received-products.view');
@@ -238,8 +239,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/product-issues', 'issuesProducts')->name('exceed.shortage.products');
         Route::get('/return-accept', 'returnAccept')->name('return.accept');
     });
-    
-    
+
+
 
     // Track order 
     Route::controller(TrackOrderController::class)->group(function () {

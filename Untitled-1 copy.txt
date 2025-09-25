@@ -442,3 +442,50 @@ Order From Vendors
 
 ---------------- not done -------------------
 -- purchase order (received products) - reject() 
+
+
+
+
+
+
+
+
+
+
+be remember these all points and complete them 
+generate invoice based on customer address (customers table) and po number (temp_orders table) the logic is already defined in sales order controller in changeStatus() method but has issues in that 
+in my view.blade.php file that is placed in views/salesOrder folder i displayed sales orders products list we want to filter that table and on filtered data we want to generate invoice
+these filters are customer address, customer name, brand and po number 
+if the filters are not apllied then it should generate invoice for all products of that sales order but take customer address and po number for generating invoice as unique 
+so my invoices will generate for unique columns for all/2 columns customer address(customers table - compulsory), po number (temp_orders table - compulsory), brand (products table - optional), customer name (customers table - optional) 
+also invoice will be generate on selected products only also there will apply compulsory filters 
+when completing the generating invoice logic display this generated invoices in sales order (views/salesOrder/view.blade.php) page in card format and list format for download the invoice 
+also list these invoices in invoice module (views/invoice/index.blade.php) page in card format and list format for download the invoice 
+the invoices will be also generate based on change status where status will changed to ready_to_ship 
+
+
+
+
+
+
+
+
+
+--------------------- products issues --------------------------- 
+
+
+received products -- 
+    -- update received products 
+        -- do not save extra products 
+        -- extra products will store in vendor_return_products 
+            -- return_quantity = extra quantity 
+            -- return_reason = extra 
+            -- return_description = extra products return to vendor 
+            -- return_status = pending 
+            -- if return_status = returned (then no need to update anything)
+            -- if return_status = accepted (then add that quantity to warehouse stock and update vendor_return_product table with accepted status)
+
+        -- if quantity is short accept that quantity  (optional) 
+        -- if quantity is short(damaged) return that quantity to vendor 
+        -- if quantity is short(damaged) accept that quantity  (optional) 
+

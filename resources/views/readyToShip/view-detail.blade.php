@@ -70,11 +70,11 @@
                             <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                                 <span><b>Invoices PDF</b></span>
                                 <span>
-                                    <a aria-label="anchor" href="{{ route('invoice.downloadPdf', $invoice->id) }}"
+                                    {{-- <a aria-label="anchor" href="{{ route('invoice.downloadPdf', $invoice->id) }}"
                                         class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip"
                                         data-bs-original-title="View">
                                         Download
-                                    </a>
+                                    </a> --}}
                                 </span>
                             </li>
                         </ul>

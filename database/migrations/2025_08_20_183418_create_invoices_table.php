@@ -20,6 +20,7 @@ return new class extends Migration
             $table->date('invoice_date');
             $table->decimal('round_off', 10, 2)->default(0);
             $table->decimal('total_amount', 10, 2);
+            $table->string('po_number')->nullable();
             $table->timestamps();
         });
     }

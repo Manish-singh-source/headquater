@@ -380,8 +380,10 @@ class PurchaseOrderController extends Controller
                     ]);
                 }
 
+                // need of foreach ?.....
                 $tempOrder = TempOrder::where('vendor_pi_id', $product->vendor_pi_id)->where('sku', $product->vendor_sku_code)->first();
                 $tempOrder->vendor_pi_received_quantity = $product->quantity_received;
+                $tempOrder->block += $product->quantity_received;
                 $tempOrder->save();
             }
 

@@ -23,6 +23,7 @@ return new class extends Migration
             $table->decimal('tax', 10, 2)->default(0);
             $table->decimal('total_price', 10, 2);
             $table->string('description')->nullable();
+            $table->string('po_number')->nullable();
             $table->timestamps();
         });
     }

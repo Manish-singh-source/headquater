@@ -81,8 +81,9 @@
         <tr>
             <td>Reverse&nbsp;Charge&nbsp;(Y/N):</td>
             <td>N</td>
-            <td>State: {{ $invoice->state }}</td>
-            <td>Code: {{ $invoice->code }}</td>
+            <td>State: {{ $invoice->customer->shipping_state }}</td>
+            {{-- <td>Code: {{ $invoice->customer->shipping_zip }}</td> --}}
+            <td>PO No: {{ $invoice->po_number }}</td>
         </tr>
     </table>
 
