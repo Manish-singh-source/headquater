@@ -110,7 +110,7 @@
                                                 <th>Issue</th>
                                                 <th>Issue&nbsp;Items</th>
                                                 <th>Issue&nbsp;Reason</th>
-                                                <th>Action</th>
+                                                {{-- <th>Action</th> --}}
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -131,7 +131,7 @@
                                                     <td>{{ ucfirst($order->issue_reason) }}</td>
                                                     <td>{{ $order->issue_item }}</td>
                                                     <td>{{ $order->issue_description }}</td>
-                                                    <td>
+                                                    {{-- <td>
                                                         <div class="d-flex justify-content-center align-items-center">
                                                             @if ($order->issue_reason === 'Exceed')
                                                                 <a aria-label="return"
@@ -163,7 +163,7 @@
                                                                 </svg>
                                                             </a>
                                                         </div>
-                                                    </td>
+                                                    </td> --}}
                                                 </tr>
                                             @empty
                                                 <tr>

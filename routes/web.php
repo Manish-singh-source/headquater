@@ -238,6 +238,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/ready-to-ship-detail-view/{id}/{c_id}', 'viewDetail')->name('readyToShip.view.detail');
         Route::get('/product-issues', 'issuesProducts')->name('exceed.shortage.products');
         Route::get('/return-accept', 'returnAccept')->name('return.accept');
+        Route::get('/accept-vendor-products/{id}', 'acceptVendorProducts')->name('accept.vendor.products');
+        Route::get('/return-vendor-products/{id}', 'returnVendorProducts')->name('return.vendor.products');
     });
 
 
