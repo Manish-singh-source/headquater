@@ -7,6 +7,7 @@ use App\Models\VendorPI;
 use App\Models\SalesOrder;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
+use App\Models\ProductIssue;
 use Illuminate\Http\Request;
 use App\Models\SalesOrderProduct;
 use Illuminate\Support\Facades\DB;
@@ -152,18 +153,22 @@ class PackagingController extends Controller
                 if (empty($record['SKU Code'])) {
                     continue;
                 }
+                
                 $customer = Customer::where('facility_name', $record['Facility Name'])->first();
                 if (!$customer) {
                     continue;
                 }
-
+                
                 // if final dispatch qty is empty or 0 then set it to dispatched quantity
                 // if user wants to set dispatch quantity to 0 then set it to 0 but how?? 
-                if (empty($record['Final Dispatch Qty']) || $record['Final Dispatch Qty'] == 0) {
-                    $order = SalesOrderProduct::where('customer_id', $customer->id)->where('sales_order_id', $request->salesOrderId)->where('sku', $record['SKU Code'])->first();
+                if (!empty($record['Final Dispatch Qty']) || $record['Final Dispatch Qty'] == 0) {
+                    $order = SalesOrderProduct::with('tempOrder')->where('customer_id', $customer->id)->where('sales_order_id', $request->salesOrderId)->where('sku', $record['SKU Code'])->first();
                     if (!$order) {
                         continue;
                     }
+                    
+                    $tempOrder = $order->tempOrder;
+                    
                     if ($order->dispatched_quantity > $record['Final Dispatch Qty']) {
                         $order->final_dispatched_quantity = $record['Final Dispatch Qty'];
                         $order->issue_item = $record['Issue Units'];
@@ -171,6 +176,26 @@ class PackagingController extends Controller
                         $order->issue_description = $record['Issue Reason'];
                         $order->status = 'packaged';
                         $order->save();
+                        
+                        $lessQuantity = $order->dispatched_quantity - $record['Final Dispatch Qty'];
+                        
+                        // create entry in products issues table
+                        // create entry in vendor return products issues table
+                        ProductIssue::create([
+                            'purchase_order_id' => $tempOrder->purchase_order_id,
+                            'vendor_pi_id' => $tempOrder->vendor_pi_id,
+                            'vendor_pi_product_id' => $tempOrder->vendorPIProduct->id,
+                            'vendor_sku_code' => $tempOrder->vendor_sku_code,
+                            'quantity_requirement' => $tempOrder->vendorPIProduct->quantity_requirement,
+                            'available_quantity' => $tempOrder->available_quantity,
+                            'quantity_received' => $tempOrder->vendorPIProduct->quantity_received,
+                            'issue_item' => $lessQuantity,
+                            'issue_reason' => 'Shortage',
+                            'issue_description' => 'Shortage products',
+                            'issue_from' => 'warehouse',
+                            'issue_status' => 'pending',
+                        ]);
+                        
                     } elseif ($order->dispatched_quantity < $record['Final Dispatch Qty']) {
                         $order->final_dispatched_quantity = $order->dispatched_quantity;
                         $order->issue_item = 'Exceed';

@@ -11,6 +11,7 @@ use App\Models\VendorPIProduct;
 use App\Models\SalesOrderProduct;
 use App\Models\VendorReturnProduct;
 use App\Http\Controllers\Controller;
+use App\Models\ProductIssue;
 
 class ReadyToShip extends Controller
 {
@@ -60,7 +61,8 @@ class ReadyToShip extends Controller
 
     public function issuesProducts()
     {
-        $vendorOrders = VendorPIProduct::with(['order', 'product'])->where('issue_reason', 'Shortage')->where('issue_status', 'pending')->get();
+        $vendorOrders = ProductIssue::with(['order', 'product', 'purchaseOrder', 'tempOrder'])->get();
+        // dd($vendorOrders);
         return view('exceed-shortage', compact('vendorOrders'));
     }
 

@@ -153,13 +153,12 @@ class ReceivedProductsController extends Controller
             $insertCount = 0;
 
             $vendorPIid = VendorPI::with('products')->where('id', $request->vendor_pi_id)->first();
-
             foreach ($rows as $record) {
                 if (empty($record['Vendor SKU Code'])) {
                     continue;
                 }
-
-                $productData = VendorPIProduct::where('vendor_sku_code', Arr::get($record, 'Vendor SKU Code'))->where('vendor_pi_id', $vendorPIid->id)->first();
+                
+                $productData = VendorPIProduct::with('tempOrder')->where('vendor_sku_code', Arr::get($record, 'Vendor SKU Code'))->where('vendor_pi_id', $vendorPIid->id)->first();
 
                 if (Arr::get($record, 'Quantity Received')) {
                     if ($productData->quantity_requirement < Arr::get($record, 'Quantity Received')) {
@@ -190,7 +189,7 @@ class ReceivedProductsController extends Controller
                             'available_quantity' => $productData->available_quantity,
                             'quantity_received' => $productData->quantity_received,
                             'issue_item' => $lessQuantity,
-                            'issue_reason' => 'Shortage',
+                            'issue_reason' => 'Shortage',   
                             'issue_description' => 'Shortage products',
                             'issue_from' => 'vendor',
                             'issue_status' => 'pending',
@@ -218,9 +217,9 @@ class ReceivedProductsController extends Controller
                 DB::rollBack();
                 return redirect()->back()->withErrors(['pi_excel' => 'No valid data found in the CSV file.']);
             }
-
+            
             DB::commit();
-            return redirect()->route('purchase.order.view', $vendorPIid->purchase_order_id)->with('success', 'CSV file imported successfully.');
+            return redirect()->back()->with('success', 'CSV file imported successfully.');
         } catch (\Exception $e) {
             dd($e);
             DB::rollBack();

@@ -54,7 +54,7 @@
                                                     <td>{{ $order->vendorPIProduct->quantity_requirement }}</td>
                                                     <td>{{ $order->vendorPIProduct->available_quantity }}</td>
                                                     <td>{{ $order->vendorPIProduct->purchase_rate }}</td>
-                                                    <td>{{ $order->vendorPIProduct->quantity_received }}</td>
+                                                    <td>{{ $order->vendorPIProduct->quantity_received + $order->return_quantity }}</td>
                                                     <td>{{ ucfirst($order->return_reason) }}</td>
                                                     <td>{{ $order->return_quantity }}</td>
                                                     <td>{{ $order->return_description }}</td>
