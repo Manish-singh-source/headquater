@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('vendor_return_products', function (Blueprint $table) {
             $table->id();
             $table->integer('vendor_pi_product_id')->nullable();
+            $table->string('sku')->nullable();
             $table->integer('return_quantity')->nullable();
             $table->string('return_reason')->nullable();
             $table->string('return_description')->nullable();

@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Product;
+use App\Models\ProductIssue;
 use App\Models\VendorPI;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
@@ -9,6 +11,7 @@ use Illuminate\Http\Request;
 use App\Models\PurchaseOrder;
 use App\Models\VendorPIProduct;
 use Illuminate\Support\Facades\DB;
+use App\Models\VendorReturnProduct;
 use Illuminate\Support\Facades\Validator;
 use Spatie\SimpleExcel\SimpleExcelReader;
 use Spatie\SimpleExcel\SimpleExcelWriter;
@@ -23,7 +26,7 @@ class ReceivedProductsController extends Controller
             ->withCount('purchaseOrderProducts')
             ->whereHas('vendorPI', function ($query) {
                 $query->where('status', 'pending');
-            }) 
+            })
             ->get();
         // dd($purchaseOrders);
         return view('receivedProducts.index', compact('purchaseOrders'));
@@ -155,18 +158,52 @@ class ReceivedProductsController extends Controller
                 if (empty($record['Vendor SKU Code'])) {
                     continue;
                 }
-                
+
                 $productData = VendorPIProduct::where('vendor_sku_code', Arr::get($record, 'Vendor SKU Code'))->where('vendor_pi_id', $vendorPIid->id)->first();
 
-                if (Arr::get($record, 'PI Quantity')) {
-                    $productData->quantity_requirement = Arr::get($record, 'PI Quantity');
-                }
                 if (Arr::get($record, 'Quantity Received')) {
-                    $productData->quantity_received = Arr::get($record, 'Quantity Received');
+                    if ($productData->quantity_requirement < Arr::get($record, 'Quantity Received')) {
+                        $extraQuantity = Arr::get($record, 'Quantity Received') - $productData->quantity_requirement;
+                        $productData->quantity_received = $productData->quantity_requirement;
+                        
+                        // create entry in vendor return products table
+                        // the products that are extra will be returned to vendor 
+                        VendorReturnProduct::create([
+                            'vendor_pi_product_id' => $productData->id,
+                            'sku' => $productData->vendor_sku_code,
+                            'return_quantity' => $extraQuantity,
+                            'return_reason' => 'Extra',
+                            'return_description' => 'Extra products returned to vendor',
+                        ]);
+
+                    } else if ($productData->quantity_requirement > Arr::get($record, 'Quantity Received')) {
+                        $lessQuantity = $productData->quantity_requirement - Arr::get($record, 'Quantity Received');
+                        $productData->quantity_received = Arr::get($record, 'Quantity Received');
+
+                        // create entry in vendor return products issues table
+                        ProductIssue::create([
+                            'purchase_order_id' => $vendorPIid->purchase_order_id,
+                            'vendor_pi_id' => $vendorPIid->id,
+                            'vendor_pi_product_id' => $productData->id,
+                            'vendor_sku_code' => $productData->vendor_sku_code,
+                            'quantity_requirement' => $productData->quantity_requirement,
+                            'available_quantity' => $productData->available_quantity,
+                            'quantity_received' => $productData->quantity_received,
+                            'issue_item' => $lessQuantity,
+                            'issue_reason' => 'Shortage',
+                            'issue_description' => 'Shortage products',
+                            'issue_from' => 'vendor',
+                            'issue_status' => 'pending',
+                        ]);
+
+                    } else {
+                        $productData->quantity_received = Arr::get($record, 'Quantity Received');
+                    }
                 }
+
                 if ($issueItem = Arr::get($record, 'Issue Units')) {
                     $productData->issue_item = $issueItem ?? '';
-                    $productData->issue_reason = (Arr::get($record, 'PI Quantity') < Arr::get($record, 'Quantity Received') ? 'Exceed' : 'Shortage');
+                    $productData->issue_reason = ($productData->quantity_requirement < Arr::get($record, 'Quantity Received') ? 'Exceed' : 'Shortage');
                     $productData->issue_description = Arr::get($record, 'Issue Description') ?? '';
                 } else {
                     $productData->issue_item = 0;
@@ -183,9 +220,9 @@ class ReceivedProductsController extends Controller
             }
 
             DB::commit();
-            return redirect()->route('purchase.order.view', $request->purchase_order_id)->with('success', 'CSV file imported successfully.');
+            return redirect()->route('purchase.order.view', $vendorPIid->purchase_order_id)->with('success', 'CSV file imported successfully.');
         } catch (\Exception $e) {
-            // dd($e->getMessage());
+            dd($e);
             DB::rollBack();
             return redirect()->back()->withErrors(['error' => 'Something went wrong: ' . $e->getMessage()]);
         }

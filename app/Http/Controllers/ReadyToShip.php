@@ -6,8 +6,10 @@ use App\Models\Invoice;
 use App\Models\Customer;
 use App\Models\SalesOrder;
 use Illuminate\Http\Request;
+use App\Models\WarehouseStock;
 use App\Models\VendorPIProduct;
 use App\Models\SalesOrderProduct;
+use App\Models\VendorReturnProduct;
 use App\Http\Controllers\Controller;
 
 class ReadyToShip extends Controller
@@ -64,8 +66,34 @@ class ReadyToShip extends Controller
 
     public function returnAccept()
     {
-        $vendorOrders = VendorPIProduct::with(['order', 'product'])->where('issue_reason', 'Exceed')->where('issue_status', 'pending')->get();
-        // dd($vendorOrders);
+        $vendorOrders = VendorReturnProduct::with('vendorPIProduct')->where('return_status', 'pending')->get();
+        // $vendorOrders = VendorPIProduct::with(['order', 'product'])->where('issue_reason', 'Exceed')->where('issue_status', 'pending')->get();
         return view('return-or-accept', compact('vendorOrders'));
     }
+
+    public function acceptVendorProducts($id)
+    {
+        $vendorReturnProduct = VendorReturnProduct::findOrFail($id);
+        $vendorReturnProduct->return_status = 'accepted';
+        $vendorReturnProduct->save();
+
+        $warehouseStock = WarehouseStock::where('sku', $vendorReturnProduct->sku)->first();
+        if ($warehouseStock) {
+            $warehouseStock->available_quantity += $vendorReturnProduct->return_quantity;
+            $warehouseStock->original_quantity += $vendorReturnProduct->return_quantity;
+            $warehouseStock->save();
+        }
+
+        return back()->with('success', 'Products are accepted');
+    }
+
+    public function returnVendorProducts($id)
+    {
+        $vendorReturnProduct = VendorReturnProduct::findOrFail($id);
+        $vendorReturnProduct->return_status = 'returned';
+        $vendorReturnProduct->save();
+
+        return back()->with('success', 'Products are returned');
+    }
+
 }

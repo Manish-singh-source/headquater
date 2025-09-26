@@ -489,3 +489,13 @@ received products --
         -- if quantity is short(damaged) return that quantity to vendor 
         -- if quantity is short(damaged) accept that quantity  (optional) 
 
+
+
+
+---------------------------- Refresh button --------------------------
+
+view sales order - add refresh button that can 
+                    - recheck for available quantity in warehouse stock and update ordered po quantity accordingly 
+
+======================================================================
+======================================================================
