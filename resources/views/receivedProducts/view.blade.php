@@ -175,18 +175,20 @@
                                     </div>
                                 </div>
                                 @if ($vendorPIs->purchaseOrder->status != 'completed')
-                                    <div class="col-lg-12">
-                                        <div class="row justify-content-between mb-3">
-                                            <form class="col-12 text-end" action="{{ route('received.products.status') }}"
-                                                method="POST" onsubmit="return confirm('Are you sure?')">
-                                                @csrf
-                                                @method('POST')
-                                                <input type="hidden" name="vendor_pi_id" value="{{ $vendorPIs->id }}">
-                                                <button class="btn btn-sm border-2 border-primary"
-                                                    type="submit">Submit</button>
-                                            </form>
+                                    @if($vendorPIs->products[0]->quantity_received > 0)
+                                        <div class="col-lg-12">
+                                            <div class="row justify-content-between mb-3">
+                                                <form class="col-12 text-end" action="{{ route('received.products.status') }}"
+                                                    method="POST" onsubmit="return confirm('Are you sure?')">
+                                                    @csrf
+                                                    @method('POST')
+                                                    <input type="hidden" name="vendor_pi_id" value="{{ $vendorPIs->id }}">
+                                                    <button class="btn btn-sm border-2 border-primary"
+                                                        type="submit">Submit</button>
+                                                </form>
+                                            </div>
                                         </div>
-                                    </div>
+                                    @endif
                                 @endif
                             @endisset
                         </div>

@@ -881,7 +881,7 @@ class SalesOrderController extends Controller
                 $salesOrderDetails->whereIn('id', $request->ids);
             }
 
-            if ($request->has('brand')) {
+            if ($request->filled('brand')) {
                 $salesOrderDetails->whereHas('product', function ($query) use ($request) {
                     $query->where('brand', $request->brand);
                 });
@@ -889,8 +889,6 @@ class SalesOrderController extends Controller
 
             // Execute the query and get the collection
             $salesOrderDetails = $salesOrderDetails->get();
-
-            // filter sales order products on id 
 
             // Base compulsory grouping: customer address + PO number
             $invoicesGroup = [];
@@ -963,7 +961,6 @@ class SalesOrderController extends Controller
             return redirect()->back()->with('success', 'Invoice generated successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
-            dd($e);
             return redirect()->back()->with('error', 'Status Not Changed. Please Try Again.' . $e->getMessage());
         }
     }

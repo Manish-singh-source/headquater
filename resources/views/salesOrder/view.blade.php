@@ -383,7 +383,7 @@
                     });
                 }
 
-                if (confirm('Are you sure you want to delete selected records?')) {
+                if (confirm('Are you sure you want to Create Invoice for selected/all records?')) {
                     // Create a form and submit
                     let form = document.createElement('form');
                     form.method = 'POST';

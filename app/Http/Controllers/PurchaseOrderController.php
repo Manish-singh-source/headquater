@@ -381,10 +381,28 @@ class PurchaseOrderController extends Controller
                 }
 
                 // need of foreach ?.....
-                $tempOrder = TempOrder::where('vendor_pi_id', $product->vendor_pi_id)->where('sku', $product->vendor_sku_code)->first();
-                $tempOrder->vendor_pi_received_quantity = $product->quantity_received;
-                $tempOrder->block += $product->quantity_received;
-                $tempOrder->save();
+                // update temp order vendor_pi_received_quantity
+                $receivedQuantity = $product->quantity_received ?? 0;
+
+                $tempOrderProducts = TempOrder::where('vendor_pi_id', $product->vendor_pi_id)->where('sku', $product->vendor_sku_code)->get();
+                foreach ($tempOrderProducts as $tempOrderproduct) {
+                    if ($tempOrderproduct->unavailable_quantity <= $receivedQuantity) {
+                        $tempOrderproduct->available_quantity += $tempOrderproduct->unavailable_quantity;
+                        $tempOrderproduct->block += $tempOrderproduct->unavailable_quantity; 
+                        $tempOrderproduct->vendor_pi_received_quantity = $tempOrderproduct->unavailable_quantity; 
+                        $tempOrderproduct->unavailable_quantity = 0; 
+                        $receivedQuantity -= $tempOrderproduct->unavailable_quantity;
+                    } else {
+                        $required = $tempOrderproduct->unavailable_quantity - $receivedQuantity;
+                        $tempOrderproduct->available_quantity += $required;
+                        $tempOrderproduct->block += $required;
+                        $tempOrderproduct->vendor_pi_received_quantity = $required;
+                        $tempOrderproduct->unavailable_quantity -= $required;
+                        $receivedQuantity = 0;
+                    }
+                    // $requiredQuantity = $receivedQuantity - $tempOrderproduct->unavailable_quantity;
+                    $tempOrderproduct->save();
+                }
             }
 
             $vendorPI->total_amount = $total_amount;

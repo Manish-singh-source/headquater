@@ -29,6 +29,7 @@ class InvoiceController extends Controller
             'title' => 'Invoices',
             'invoices' => Invoice::with(['warehouse', 'customer', 'salesOrder', 'appointment', 'dns', 'payments'])->where('sales_order_id', $id)->get(),
         ];
+        // dd($data);
         return view('invoice.invoices', $data);
     }
 
