@@ -186,6 +186,7 @@ class NotificationService
         $userId = $userId ?? Auth::id();
         
         return Notification::forUser($userId)
+            ->unread()
             ->recent($limit)
             ->get();
     }
