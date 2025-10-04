@@ -15,6 +15,7 @@ use App\Models\VendorReturnProduct;
 use Illuminate\Support\Facades\Validator;
 use Spatie\SimpleExcel\SimpleExcelReader;
 use Spatie\SimpleExcel\SimpleExcelWriter;
+use App\Services\NotificationService;
 
 class ReceivedProductsController extends Controller
 {
@@ -55,6 +56,10 @@ class ReceivedProductsController extends Controller
         $vendorPI->save();
 
         if ($vendorPI) {
+            // Create notification for products received
+            $productCount = $vendorPI->products->count();
+            NotificationService::productsReceived('purchase', $vendorPI->purchase_order_id, $productCount);
+
             return redirect()->route('received-products.index')->with('success', 'Successfully Sent For Approval.');
         }
 
@@ -219,6 +224,10 @@ class ReceivedProductsController extends Controller
             }
             
             DB::commit();
+
+            // Create notification for received products update
+            NotificationService::productsReceived('purchase', $vendorPIid->purchase_order_id, $insertCount);
+
             return redirect()->back()->with('success', 'CSV file imported successfully.');
         } catch (\Exception $e) {
             dd($e);

@@ -12,6 +12,7 @@ use App\Models\SalesOrderProduct;
 use App\Models\VendorReturnProduct;
 use App\Http\Controllers\Controller;
 use App\Models\ProductIssue;
+use App\Services\NotificationService;
 
 class ReadyToShip extends Controller
 {
@@ -84,6 +85,9 @@ class ReadyToShip extends Controller
             $warehouseStock->available_quantity += $vendorReturnProduct->return_quantity;
             $warehouseStock->original_quantity += $vendorReturnProduct->return_quantity;
             $warehouseStock->save();
+
+            // Create notification for accepted products
+            NotificationService::warehouseProductAdded($vendorReturnProduct->sku, $vendorReturnProduct->return_quantity);
         }
 
         return back()->with('success', 'Products are accepted');
