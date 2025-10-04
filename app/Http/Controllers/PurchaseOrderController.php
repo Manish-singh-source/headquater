@@ -24,6 +24,7 @@ use App\Models\VendorPayment;
 use Illuminate\Support\Facades\Validator;
 use Spatie\SimpleExcel\SimpleExcelReader;
 use Spatie\SimpleExcel\SimpleExcelWriter;
+use App\Services\NotificationService;
 
 class PurchaseOrderController extends Controller
 {
@@ -82,7 +83,11 @@ class PurchaseOrderController extends Controller
             }
 
             DB::commit();
-            return redirect()->route('purchase.order.index')->with('success', 'CSV file imported successfully.');
+
+            // Create notification
+            NotificationService::orderCreated('purchase', $purchaseOrder->id);
+
+            return redirect()->route('purchase.order.index')->with('success', 'Purchase Order created successfully! Order ID: ' . $purchaseOrder->id);
         } catch (\Exception $e) {
             // dd($e->getMessage());
             DB::rollBack();
@@ -201,7 +206,7 @@ class PurchaseOrderController extends Controller
 
             VendorPIProduct::insert($vendorProducts);
             DB::commit();
-            return redirect()->back()->with('success', 'CSV file imported successfully.');
+            return redirect()->back()->with('success', 'Purchase Order products imported successfully! Vendor PI ID: ' . $vendorPi->id);
         } catch (\Exception $e) {
             DB::rollBack();
             return redirect()->back()->with(['error' => 'Something went wrong: ' . $e->getMessage()]);
@@ -613,6 +618,7 @@ class PurchaseOrderController extends Controller
         try {
 
             $purchaseOrder = PurchaseOrder::findOrFail($request->order_id);
+            $oldStatus = $purchaseOrder->status;
             $purchaseOrder->status = $request->status;
             $purchaseOrder->save();
 
@@ -620,7 +626,10 @@ class PurchaseOrderController extends Controller
                 return redirect()->back()->with('error', 'Status Not Changed. Please Try Again.');
             }
 
-            return redirect()->back()->with('success', 'Status has been changed.');
+            // Create status change notification
+            NotificationService::statusChanged('purchase', $purchaseOrder->id, $oldStatus, $purchaseOrder->status);
+
+            return redirect()->back()->with('success', 'Purchase Order status changed to "' . ucfirst(str_replace('_', ' ', $request->status)) . '" successfully! Order ID: ' . $purchaseOrder->id);
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Status Not Changed. Please Try Again.');
         }
