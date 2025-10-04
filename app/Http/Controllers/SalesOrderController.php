@@ -26,6 +26,7 @@ use App\Models\PurchaseOrderProduct;
 use Illuminate\Support\Facades\Validator;
 use Spatie\SimpleExcel\SimpleExcelReader;
 use Spatie\SimpleExcel\SimpleExcelWriter;
+use App\Services\NotificationService;
 
 class SalesOrderController extends Controller
 {
@@ -377,7 +378,11 @@ class SalesOrderController extends Controller
             }
 
             DB::commit();
-            return redirect()->route('sales.order.index')->with('success', 'Order Completed Successful.');
+
+            // Create notification
+            NotificationService::orderCreated('sales', $salesOrder->id);
+
+            return redirect()->route('sales.order.index')->with('success', 'Sales Order created successfully! Order ID: ' . $salesOrder->id);
         } catch (\Exception $e) {
             DB::rollBack();
             return redirect()->back()->with(['error' => 'Something went wrong: ' . $e->getMessage()]);
@@ -848,19 +853,25 @@ class SalesOrderController extends Controller
             } else if ($request->status == 'completed') {
                 $salesOrder->status = $request->status;
             }
+
+            $oldStatus = $salesOrder->getOriginal('status');
             $salesOrder->save();
 
             if (!$salesOrder) {
                 return redirect()->back()->with('error', 'Status Not Changed. Please Try Again.');
             }
+
+            // Create status change notification
+            NotificationService::statusChanged('sales', $salesOrder->id, $oldStatus, $salesOrder->status);
+
             if ($salesOrder->status == 'ready_to_package') {
-                return redirect()->route('packing.products.view', $request->order_id)->with('success', 'Status has been changed.');
+                return redirect()->route('packing.products.view', $request->order_id)->with('success', 'Order status changed to "Ready to Package" successfully! Order ID: ' . $salesOrder->id);
             } else if ($salesOrder->status == 'ready_to_ship') {
-                return redirect()->route('readyToShip.view', $request->order_id)->with('success', 'Status has been changed.');
+                return redirect()->route('readyToShip.view', $request->order_id)->with('success', 'Order status changed to "Ready to Ship" successfully! Order ID: ' . $salesOrder->id);
             } else if ($salesOrder->status == 'completed') {
-                return redirect()->route('sales.order.index')->with('success', 'Status has been changed.');
+                return redirect()->route('sales.order.index')->with('success', 'Order marked as "Completed" successfully! Order ID: ' . $salesOrder->id);
             } else if ($salesOrder->status == 'delivered') {
-                return redirect()->route('sales.order.index')->with('success', 'Status has been changed.');
+                return redirect()->route('sales.order.index')->with('success', 'Order marked as "Delivered" successfully! Order ID: ' . $salesOrder->id);
             } else {
                 return redirect()->back()->with('error', 'Status Not Changed. Please Try Again.');
             }
@@ -958,7 +969,11 @@ class SalesOrderController extends Controller
                 }
             }
             DB::commit();
-            return redirect()->back()->with('success', 'Invoice generated successfully.');
+
+            // Create invoice notification
+            NotificationService::invoiceGenerated($invoice->id, $salesOrder->id);
+
+            return redirect()->back()->with('success', 'Invoice generated successfully! Invoice ID: ' . $invoice->id . ' for Order ID: ' . $salesOrder->id);
         } catch (\Exception $e) {
             DB::rollBack();
             return redirect()->back()->with('error', 'Status Not Changed. Please Try Again.' . $e->getMessage());

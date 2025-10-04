@@ -21,6 +21,7 @@ use App\Http\Controllers\TrackOrderController;
 use App\Http\Controllers\CustomerGroupController;
 use App\Http\Controllers\PurchaseOrderController;
 use App\Http\Controllers\ReceivedProductsController;
+use App\Http\Controllers\NotificationController;
 
 
 Route::controller(LocationController::class)->group(function () {
@@ -288,12 +289,50 @@ Route::middleware(['auth'])->group(function () {
     Route::controller(ActivityController::class)->group(function () {
         Route::get('activity-log', 'index')->name('activity.log');
     });
+
+    // Notifications
+    Route::controller(NotificationController::class)->group(function () {
+        Route::get('/notifications/get', 'getNotifications')->name('notifications.get');
+        Route::post('/notifications/{id}/mark-read', 'markAsRead')->name('notifications.mark-read');
+        Route::post('/notifications/{id}/remove', 'removeNotification')->name('notifications.remove');
+        Route::post('/notifications/mark-all-read', 'markAllAsRead')->name('notifications.mark-all-read');
+    });
 });
 
 
 Route::view('/404', 'errors.404');
 
+// Test notification routes
+Route::get('/test-notifications', function() {
+    // Create some test notifications
+    \App\Services\NotificationService::orderCreated('sales', 12345);
+    \App\Services\NotificationService::orderCreated('purchase', 67890);
+    \App\Services\NotificationService::invoiceGenerated(111, 12345);
+    \App\Services\NotificationService::statusChanged('sales', 12345, 'pending', 'ready_to_ship');
+    \App\Services\NotificationService::warehouseProductAdded('Test Product ABC', 50);
+    \App\Services\NotificationService::productsReceived('purchase', 67890, 25);
 
+    return redirect()->route('index')->with('success', 'Test notifications created! Check the notification dropdown.');
+})->name('test.notifications');
 
-// vendor code in product file so that product fixed for that vendor 
-// add vendor code in product 
+// Test notification deletion
+Route::get('/test-notification-delete', function() {
+    $notifications = \App\Models\Notification::where('user_id', auth()->id())->get();
+    $count = $notifications->count();
+
+    return response()->json([
+        'total_notifications' => $count,
+        'notifications' => $notifications->map(function($n) {
+            return [
+                'id' => $n->id,
+                'title' => $n->title,
+                'message' => $n->message,
+                'is_read' => $n->is_read,
+                'created_at' => $n->created_at
+            ];
+        })
+    ]);
+})->name('test.notification.delete');
+
+// vendor code in product file so that product fixed for that vendor
+// add vendor code in product

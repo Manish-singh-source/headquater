@@ -188,11 +188,11 @@
 
                   <li class="nav-item dropdown">
                       <a class="nav-link dropdown-toggle dropdown-toggle-nocaret position-relative"
-                          data-bs-auto-close="outside" data-bs-toggle="dropdown" href="javascript:;"><i
+                          data-bs-auto-close="outside" data-bs-toggle="dropdown" href="javascript:;" id="notificationDropdown"><i
                               class="material-icons-outlined">notifications</i>
-                          {{-- <span class="badge-notify">5</span> --}}
+                          <span class="badge-notify" id="notificationBadge" style="display: none;">0</span>
                       </a>
-                      {{-- <div class="dropdown-menu dropdown-notify dropdown-menu-end shadow">
+                      <div class="dropdown-menu dropdown-notify dropdown-menu-end shadow" id="notificationDropdownMenu">
                           <div class="px-3 py-1 d-flex align-items-center justify-content-between border-bottom">
                               <h5 class="notiy-title mb-0">Notifications</h5>
                               <div class="dropdown">
@@ -204,140 +204,21 @@
                                   </button>
                                   <div class="dropdown-menu dropdown-option dropdown-menu-end shadow">
                                       <div><a class="dropdown-item d-flex align-items-center gap-2 py-2"
-                                              href="javascript:;"><i
-                                                  class="material-icons-outlined fs-6">inventory_2</i>Archive All</a>
-                                      </div>
-                                      <div><a class="dropdown-item d-flex align-items-center gap-2 py-2"
-                                              href="javascript:;"><i
+                                              href="javascript:;" onclick="markAllAsRead()"><i
                                                   class="material-icons-outlined fs-6">done_all</i>Mark all as read</a>
                                       </div>
-                                      <div><a class="dropdown-item d-flex align-items-center gap-2 py-2"
-                                              href="javascript:;"><i
-                                                  class="material-icons-outlined fs-6">mic_off</i>Disable
-                                              Notifications</a></div>
-                                      <div><a class="dropdown-item d-flex align-items-center gap-2 py-2"
-                                              href="javascript:;"><i
-                                                  class="material-icons-outlined fs-6">grade</i>What's new ?</a></div>
-                                      <div>
-                                          <hr class="dropdown-divider">
-                                      </div>
-                                      <div><a class="dropdown-item d-flex align-items-center gap-2 py-2"
-                                              href="javascript:;"><i
-                                                  class="material-icons-outlined fs-6">leaderboard</i>Reports</a></div>
                                   </div>
                               </div>
                           </div>
-                          <div class="notify-list">
-                              <div>
-                                  <a class="dropdown-item border-bottom py-2" href="javascript:;">
-                                      <div class="d-flex align-items-center gap-3">
-                                          <div class="">
-                                              <img src="assets/images/avatars/01.png" class="rounded-circle"
-                                                  width="45" height="45" alt="">
-                                          </div>
-                                          <div class="">
-                                              <h5 class="notify-title">Congratulations Jhon</h5>
-                                              <p class="mb-0 notify-desc">Many congtars jhon. You have won the gifts.
-                                              </p>
-                                              <p class="mb-0 notify-time">Today</p>
-                                          </div>
-                                          <div class="notify-close position-absolute end-0 me-3">
-                                              <i class="material-icons-outlined fs-6">close</i>
-                                          </div>
-                                      </div>
-                                  </a>
-                              </div>
-                              <div>
-                                  <a class="dropdown-item border-bottom py-2" href="javascript:;">
-                                      <div class="d-flex align-items-center gap-3">
-                                          <div class="user-wrapper bg-primary text-primary bg-opacity-10">
-                                              <span>RS</span>
-                                          </div>
-                                          <div class="">
-                                              <h5 class="notify-title">New Account Created</h5>
-                                              <p class="mb-0 notify-desc">From USA an user has registered.</p>
-                                              <p class="mb-0 notify-time">Yesterday</p>
-                                          </div>
-                                          <div class="notify-close position-absolute end-0 me-3">
-                                              <i class="material-icons-outlined fs-6">close</i>
-                                          </div>
-                                      </div>
-                                  </a>
-                              </div>
-                              <div>
-                                  <a class="dropdown-item border-bottom py-2" href="javascript:;">
-                                      <div class="d-flex align-items-center gap-3">
-                                          <div class="">
-                                              <img src="assets/images/apps/13.png" class="rounded-circle"
-                                                  width="45" height="45" alt="">
-                                          </div>
-                                          <div class="">
-                                              <h5 class="notify-title">Payment Recived</h5>
-                                              <p class="mb-0 notify-desc">New payment recived successfully</p>
-                                              <p class="mb-0 notify-time">1d ago</p>
-                                          </div>
-                                          <div class="notify-close position-absolute end-0 me-3">
-                                              <i class="material-icons-outlined fs-6">close</i>
-                                          </div>
-                                      </div>
-                                  </a>
-                              </div>
-                              <div>
-                                  <a class="dropdown-item border-bottom py-2" href="javascript:;">
-                                      <div class="d-flex align-items-center gap-3">
-                                          <div class="">
-                                              <img src="assets/images/apps/14.png" class="rounded-circle"
-                                                  width="45" height="45" alt="">
-                                          </div>
-                                          <div class="">
-                                              <h5 class="notify-title">New Order Recived</h5>
-                                              <p class="mb-0 notify-desc">Recived new order from michle</p>
-                                              <p class="mb-0 notify-time">2:15 AM</p>
-                                          </div>
-                                          <div class="notify-close position-absolute end-0 me-3">
-                                              <i class="material-icons-outlined fs-6">close</i>
-                                          </div>
-                                      </div>
-                                  </a>
-                              </div>
-                              <div>
-                                  <a class="dropdown-item border-bottom py-2" href="javascript:;">
-                                      <div class="d-flex align-items-center gap-3">
-                                          <div class="">
-                                              <img src="assets/images/avatars/06.png" class="rounded-circle"
-                                                  width="45" height="45" alt="">
-                                          </div>
-                                          <div class="">
-                                              <h5 class="notify-title">Congratulations Jhon</h5>
-                                              <p class="mb-0 notify-desc">Many congtars jhon. You have won the gifts.
-                                              </p>
-                                              <p class="mb-0 notify-time">Today</p>
-                                          </div>
-                                          <div class="notify-close position-absolute end-0 me-3">
-                                              <i class="material-icons-outlined fs-6">close</i>
-                                          </div>
-                                      </div>
-                                  </a>
-                              </div>
-                              <div>
-                                  <a class="dropdown-item py-2" href="javascript:;">
-                                      <div class="d-flex align-items-center gap-3">
-                                          <div class="user-wrapper bg-danger text-danger bg-opacity-10">
-                                              <span>PK</span>
-                                          </div>
-                                          <div class="">
-                                              <h5 class="notify-title">New Account Created</h5>
-                                              <p class="mb-0 notify-desc">From USA an user has registered.</p>
-                                              <p class="mb-0 notify-time">Yesterday</p>
-                                          </div>
-                                          <div class="notify-close position-absolute end-0 me-3">
-                                              <i class="material-icons-outlined fs-6">close</i>
-                                          </div>
-                                      </div>
-                                  </a>
+                          <div class="notify-list" id="notificationList">
+                              <!-- Notifications will be loaded here via AJAX -->
+                              <div class="text-center py-3" id="notificationLoader">
+                                  <div class="spinner-border spinner-border-sm" role="status">
+                                      <span class="visually-hidden">Loading...</span>
+                                  </div>
                               </div>
                           </div>
-                      </div> --}}
+                      </div>
                   </li>
 
                   <li class="nav-item dropdown">
@@ -588,6 +469,9 @@
       <!--end sidebar-->
 
       @yield('main-content')
+
+      <!-- Notification Container -->
+      <div id="notification-container"></div>
 
       <!--start footer-->
       <!--start overlay-->
@@ -880,6 +764,127 @@
                   checkboxes.forEach(cb => cb.checked = selectAll.checked);
               });
           });
+      </script>
+
+      <!-- Notification Script -->
+      <script>
+          $(document).ready(function() {
+              // Load notifications on page load
+              loadNotifications();
+
+              // Refresh notifications every 30 seconds
+              setInterval(loadNotifications, 30000);
+
+              // Load notifications when dropdown is clicked
+              $('#notificationDropdown').on('click', function() {
+                  loadNotifications();
+              });
+          });
+
+          // Load notifications via AJAX
+          function loadNotifications() {
+              $.ajax({
+                  url: '{{ route("notifications.get") }}',
+                  type: 'GET',
+                  success: function(response) {
+                      $('#notificationList').html(response.html);
+                      $('#notificationLoader').hide();
+
+                      // Update badge
+                      if (response.unread_count > 0) {
+                          $('#notificationBadge').text(response.unread_count).show();
+                      } else {
+                          $('#notificationBadge').hide();
+                      }
+                  },
+                  error: function() {
+                      $('#notificationLoader').hide();
+                      $('#notificationList').html('<div class="text-center py-3 text-danger">Failed to load notifications</div>');
+                  }
+              });
+          }
+
+          // Mark notification as read
+          function markAsRead(notificationId, event) {
+              if (event) {
+                  event.stopPropagation();
+              }
+
+              $.ajax({
+                  url: '/notifications/' + notificationId + '/mark-read',
+                  type: 'POST',
+                  data: {
+                      _token: '{{ csrf_token() }}'
+                  },
+                  success: function(response) {
+                      loadNotifications(); // Reload notifications
+                  }
+              });
+          }
+
+          // Remove notification from UI
+          function removeNotification(notificationId, event) {
+              if (event) {
+                  event.stopPropagation();
+              }
+
+              // Remove from UI immediately with animation
+              $('#notification-' + notificationId).fadeOut(300, function() {
+                  $(this).remove();
+              });
+
+              $.ajax({
+                  url: '/notifications/' + notificationId + '/remove',
+                  type: 'POST',
+                  data: {
+                      _token: '{{ csrf_token() }}'
+                  },
+                  success: function(response) {
+                      if (response.success) {
+                          // Update badge count
+                          if (response.unread_count > 0) {
+                              $('#notificationBadge').text(response.unread_count).show();
+                          } else {
+                              $('#notificationBadge').hide();
+                          }
+                          console.log('Notification deleted successfully');
+                      }
+                  },
+                  error: function(xhr, status, error) {
+                      console.error('Error deleting notification:', error);
+                      // If there's an error, reload notifications to sync with server
+                      loadNotifications();
+                  }
+              });
+          }
+
+          // Mark notification as read and redirect
+          function markAsReadAndRedirect(notificationId, url) {
+              $.ajax({
+                  url: '/notifications/' + notificationId + '/mark-read',
+                  type: 'POST',
+                  data: {
+                      _token: '{{ csrf_token() }}'
+                  },
+                  success: function(response) {
+                      window.location.href = url;
+                  }
+              });
+          }
+
+          // Mark all notifications as read
+          function markAllAsRead() {
+              $.ajax({
+                  url: '{{ route("notifications.mark-all-read") }}',
+                  type: 'POST',
+                  data: {
+                      _token: '{{ csrf_token() }}'
+                  },
+                  success: function(response) {
+                      loadNotifications(); // Reload notifications
+                  }
+              });
+          }
       </script>
 
       @yield('script')

@@ -11,6 +11,7 @@ use App\Models\WarehouseStock;
 use Illuminate\Support\Facades\DB;
 use Spatie\SimpleExcel\SimpleExcelReader;
 use Spatie\SimpleExcel\SimpleExcelWriter;
+use App\Services\NotificationService;
 
 class ProductController extends Controller
 {
@@ -124,6 +125,10 @@ class ProductController extends Controller
             }
 
             DB::commit();
+
+            // Create notification for warehouse products added
+            NotificationService::warehouseProductAdded("Multiple products", $insertCount);
+
             return redirect()->route('products.index')->with('success', 'CSV file imported successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
@@ -198,6 +203,10 @@ class ProductController extends Controller
             Product::upsert($products, ['sku']);
 
             DB::commit();
+
+            // Create notification for warehouse products updated
+            NotificationService::warehouseProductAdded("Product stock updated", $insertCount);
+
             return redirect()->route('products.index')->with('success', 'CSV file imported successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
