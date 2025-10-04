@@ -113,14 +113,6 @@ class SalesOrderController extends Controller
 
                 // check for customer and vendor available or not
                 // customer availibility check
-                // $keywords = preg_split('/[\s\-]+/', $record['Facility Location'], -1, PREG_SPLIT_NO_EMPTY);
-                // $query = DB::table('customers'); // your table
-                // $query->where(function ($q) use ($keywords) {
-                //     foreach ($keywords as $word) {
-                //         $q->orWhere('shipping_address', 'like', "%{$word}%");
-                //     }
-                // });
-                // $customerInfo = $query->first();
                 $customerInfo = Customer::where('facility_name', $record['Facility Name'])->first();
                 // customer availibility check done
 
@@ -395,44 +387,47 @@ class SalesOrderController extends Controller
         return view('salesOrder.edit', compact('salesOrder'));
     }
 
+
+
     public function update(Request $request)
     {
         $request->validate([
             'products_excel' => 'required|file|mimes:xlsx,csv,xls',
         ]);
-
+        
         $file = $request->file('products_excel');
         $filepath = $file->getPathname();
         $extension = $file->getClientOriginalExtension();
-
+        
         DB::beginTransaction();
-
+        
         try {
             $reader = SimpleExcelReader::create($filepath, $extension);
             $rows = $reader->getRows()->toArray(); // convert to array so we can check duplicates easily
-
+            
             // 🔹 Step 1: Check for duplicates (Customer + SKU)
             $seen = [];
-
+            
             foreach ($rows as $record) {
                 if (empty($record['SKU Code']) || empty($record['Facility Name'])) {
                     continue;
                 }
-
+                
                 $key = strtolower(trim($record['Facility Name'])) . '|' . strtolower(trim($record['SKU Code']));
-
+                
                 if (isset($seen[$key])) {
                     DB::rollBack();
-                    return redirect()->back()->withErrors([
-                        'products_excel' => 'Please check excel file: duplicate SKU (' . $record['SKU Code'] . ') found for same customer (' . $record['Facility Name'] . ').'
+                    return redirect()->back()->with([
+                        'error' => 'Please check excel file: duplicate SKU (' . $record['SKU Code'] . ') found for same customer (' . $record['Facility Name'] . ').'
                     ]);
                 }
-
+                
                 $seen[$key] = true;
             }
+            
             $products = [];
             $insertCount = 0;
-
+            
 
             // 🔹 Step 2: Process records if no duplicates
             foreach ($rows as $record) {
