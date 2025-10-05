@@ -1,0 +1,49 @@
+You are working on an existing Laravel project. The database schema already exists and migrations/models/controllers/routes/views are partially implemented. Your job is to **improve and complete** the existing module as per the following requirements — do NOT rewrite the entire structure, only enhance current code where needed.
+
+
+
+Module 1: Warehouse 
+
+    -- database columns: 
+        'warehouses' table: 
+            id, name, type, contact_person_name, phone, alt_phone, email, gst_number, pan_number, address_line_1, address_line_2, licence_doc, max_storage_capacity, country_id, state_id, city_id, pincode, operations, status
+
+    Task 1: list of warehouses (http://127.0.0.1:8000/warehouses) 
+        -- display list of warehouses in card format, active warehouses, inactive warehouses, etc. 
+        -- display list of warehouses in table format with columns: sr. no., Warehouse Id, warehouse name, type, contact person name, phone, email, location(city,state), max storage capacity, current stock, Default Warehouse, status, action(view, edit, delete)
+        -- there should be a button for creating new warehouse (http://127.0.0.1:8000/create-warehouses) with this link 
+        -- there should be option for multi select delete and multi select status changing 
+        -- add links for view (http://127.0.0.1:8000/warehouses/view/{id}), edit(http://127.0.0.1:8000/warehouses/{id}), delete(http://127.0.0.1:8000/warehouses/{id})
+                                       
+
+        Sub Task 2: create warehouse (http://127.0.0.1:8000/create-warehouses) 
+            -- a new page for creating new warehouse with all the fields mentioned in the database columns above 
+            -- after creating a warehouse, redirect to the list of warehouses page with success message 
+            -- if there is any error, display the error message on the same page
+            -- there should be a button for going back to the list of warehouses page 
+        
+        Sub Task 3: delete warehouse (http://127.0.0.1:8000/warehouses/{id}) 
+            -- soft delete the warehouse 
+            -- after deleting a warehouse, redirect to the same page with success message
+            -- if there is any error, display the error message on the same page 
+
+        Sub Task 4: edit warehouse (http://127.0.0.1:8000/warehouses/{id}) 
+            -- a new page for editing the warehouse with all the fields mentioned in the database columns above 
+            -- after editing a warehouse, redirect to the list of warehouses page with success message 
+            -- if there is any error, display the error message on the same page
+            -- there should be a button for going back to the list of warehouses page 
+
+        Sub Task 5: view warehouse (http://127.0.0.1:8000/warehouses/view/{id}) 
+            -- a new page for viewing the warehouse with all the fields mentioned in the database columns above 
+            -- there should be a button for going back to the list of warehouses page
+            -- there should be a button for editing the warehouse which will redirect to the edit warehouse page 
+            -- there should be a button for deleting the warehouse which will redirect to the delete warehouse page 
+            -- there should be a button for going back to the list of warehouses page 
+        
+        Sub Task 6: multi select delete and multi select status changing 
+            -- on the list of warehouses page, there should be a checkbox for each warehouse 
+            -- there should be a button for deleting the selected warehouses 
+            -- there should be a button for changing the status of the selected warehouses to active/inactive 
+            -- after performing the action, redirect to the same page with success message 
+            -- if there is any error, display the error message on the same page 
+    

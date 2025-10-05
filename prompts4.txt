@@ -1,0 +1,42 @@
+You are working on an existing Laravel project. The database schema already exists and migrations/models/controllers/routes/views are partially implemented. Your job is to **improve and complete** the existing module as per the following requirements — do NOT rewrite the entire structure, only enhance current code where needed.
+
+
+
+Module 4: SKU Mapping 
+
+    -- database columns: 
+        'sku_mappings' table: 
+            id, product_sku, vendor_sku, customer_sku
+
+    Task 1: 
+        -- there should be a button for multi select delete of SKU mappings 
+        -- there should be a button to export all SKU mappings to an excel file 
+        -- there should be a button to add a new SKU mapping 
+        -- after clicking the button, a form should appear as popup/modal to add a new SKU mapping. 
+        -- the form should have fields as upload file (excel file). 
+        -- on submitting the form, the excel file should be parsed and all SKU mappings should be stored in the database.
+
+        -- display a list of all SKU mappings in a table view with columns: product sku, customer sku, vendor sku, action (edit, delete). 
+    
+        Sub Task 1: edit 
+            -- after clicking edit, a form should appear as popup/modal to edit the SKU mapping.
+            -- the form should have fields as product sku, customer sku, vendor sku. 
+            -- on submitting the form, the SKU mapping should be updated in the database. 
+
+        Sub Task 2: export
+            -- on clicking the export button, an excel file should be generated and downloaded with all SKU mappings. 
+
+        Sub Task 3: add
+            -- after clicking the add button, a form should appear as popup/modal to add a new SKU mapping.
+            -- the form should have fields as product sku, customer sku, vendor sku. 
+            -- on submitting the form, the SKU mapping should be stored in the database.
+            
+        Sub Task 4: delete
+            -- after clicking delete, a confirmation popup should appear.
+            -- on confirming, the SKU mapping should be deleted from the database. 
+
+        Sub Task 5: multi select delete
+            -- there should be a checkbox for each SKU mapping in the table view.
+            -- there should be a button to delete all selected SKU mappings.
+            -- on clicking the button, a confirmation popup should appear.
+            -- on confirming, all selected SKU mappings should be deleted from the database. 
