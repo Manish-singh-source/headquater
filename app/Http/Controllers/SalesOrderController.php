@@ -86,7 +86,7 @@ class SalesOrderController extends Controller
                 $seen[$key] = true;
             }
 
-            
+
             $productStockCache = []; // Cache stock by SKU
             $insertedRows = [];
             $skuNotFoundRows = [];
@@ -626,7 +626,7 @@ class SalesOrderController extends Controller
             }
         }
 
-        $remainingQuantity = $orderedQuantity - ($availableQuantity + $vendorPiFulfillmentTotal);
+        $remainingQuantity = $orderedQuantity - ($blockQuantity);
 
         // fetch unique brand names from orderedProducts 
         $uniqueBrands = $salesOrder->orderedProducts->pluck('product.brand')->unique();
@@ -1014,6 +1014,28 @@ class SalesOrderController extends Controller
 
         $productStockCache = []; // Cache stock by SKU
         $insertedRows = [];
+
+        $rows = $reader->getRows()->toArray(); // convert to array so we can check duplicates easily
+
+        // 🔹 Step 1: Check for duplicates (Customer + SKU)
+        $seen = [];
+
+        foreach ($rows as $record) {
+            if (empty($record['SKU Code']) || empty($record['Facility Name'])) {
+                continue;
+            }
+
+            $key = strtolower(trim($record['Facility Name'])) . '|' . strtolower(trim($record['SKU Code']));
+
+            if (isset($seen[$key])) {
+                DB::rollBack();
+                return redirect()->back()->with([
+                    'error' => 'Please check excel file: duplicate SKU (' . $record['SKU Code'] . ') found for same customer (' . $record['Facility Name'] . ').'
+                ]);
+            }
+
+            $seen[$key] = true;
+        }
 
         try {
 

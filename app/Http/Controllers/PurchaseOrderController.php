@@ -393,20 +393,22 @@ class PurchaseOrderController extends Controller
                 foreach ($tempOrderProducts as $tempOrderproduct) {
                     if ($tempOrderproduct->unavailable_quantity <= $receivedQuantity) {
                         $tempOrderproduct->available_quantity += $tempOrderproduct->unavailable_quantity;
-                        $tempOrderproduct->block += $tempOrderproduct->unavailable_quantity; 
-                        $tempOrderproduct->vendor_pi_received_quantity = $tempOrderproduct->unavailable_quantity; 
-                        $tempOrderproduct->unavailable_quantity = 0; 
+                        $tempOrderproduct->block += $tempOrderproduct->unavailable_quantity;
+                        $tempOrderproduct->vendor_pi_received_quantity = $tempOrderproduct->unavailable_quantity;
                         $receivedQuantity -= $tempOrderproduct->unavailable_quantity;
+                        $tempOrderproduct->unavailable_quantity = 0;
                     } else {
-                        $required = $tempOrderproduct->unavailable_quantity - $receivedQuantity;
-                        $tempOrderproduct->available_quantity += $required;
-                        $tempOrderproduct->block += $required;
-                        $tempOrderproduct->vendor_pi_received_quantity = $required;
-                        $tempOrderproduct->unavailable_quantity -= $required;
+                        $tempOrderproduct->available_quantity += $receivedQuantity;
+                        $tempOrderproduct->block += $receivedQuantity;
+                        $tempOrderproduct->vendor_pi_received_quantity = $receivedQuantity;
+                        $tempOrderproduct->unavailable_quantity -= $receivedQuantity;
                         $receivedQuantity = 0;
                     }
-                    // $requiredQuantity = $receivedQuantity - $tempOrderproduct->unavailable_quantity;
                     $tempOrderproduct->save();
+
+                    if ($receivedQuantity <= 0) {
+                        break; // Stop if we've allocated all received quantity
+                    }
                 }
             }
 
@@ -421,7 +423,7 @@ class PurchaseOrderController extends Controller
             return redirect()->back()->withErrors(['error' => 'Something went wrong: ' . $e->getMessage()]);
         }
     }
-
+    
     public function rejectRequest(Request $request)
     {
         DB::beginTransaction();
