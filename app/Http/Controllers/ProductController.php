@@ -46,6 +46,27 @@ class ProductController extends Controller
             $reader = SimpleExcelReader::create($file, $file_extension);
             $insertCount = 0;
 
+            $rows = $reader->getRows()->toArray(); // convert to array so we can check duplicates easily    
+            // 🔹 Step 1: Check for duplicates (Customer + SKU)
+            $seen = [];
+
+            foreach ($rows as $record) {
+                if (empty($record['SKU Code'])) {
+                    continue;
+                }
+
+                $key = strtolower(trim($record['SKU Code']));
+
+                if (isset($seen[$key])) {
+                    DB::rollBack();
+                    return redirect()->back()->with([
+                        'error' => "Please check excel file: duplicate SKU (" . $record['SKU Code'] . ") found in the file."
+                    ]);
+                }
+
+                $seen[$key] = true;
+            }
+
             foreach ($reader->getRows() as $record) {
 
                 if (empty($record['SKU Code'])) {
@@ -71,7 +92,7 @@ class ProductController extends Controller
                             ? number_format($record['Basic Rate'] + ($record['Basic Rate'] * $record['GST'] / 100), 2, '.', '')
                             : null,
                         'case_pack_quantity' => ($record['PCS/Set'] ?? 0) * ($record['Sets/CTN'] ?? 0),
-                        
+
                         'vendor_code' => $record['Vendor Code'] ?? '',
                         'vendor_name' => $record['Vendor Name'] ?? '',
                         'vendor_purchase_rate' => $record['Vendor Purchase Rate'] ?? '',
@@ -174,7 +195,7 @@ class ProductController extends Controller
                         ? number_format($record['Basic Rate'] + ($record['Basic Rate'] * $record['GST'] / 100), 2, '.', '')
                         : null,
                     'case_pack_quantity' => ($record['PCS/Set'] ?? 0) * ($record['Sets/CTN'] ?? 0),
-                    
+
                     'vendor_name' => Arr::get($record, 'Vendor Name') ?? '',
                     'vendor_purchase_rate' => Arr::get($record, 'Vendor Purchase Rate') ?? '',
                     'vendor_net_landing' => Arr::get($record, 'Vendor Net Landing') ?? '',
