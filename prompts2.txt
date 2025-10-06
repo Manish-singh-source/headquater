@@ -1,0 +1,46 @@
+You are working on an existing Laravel project. The database schema already exists and migrations/models/controllers/routes/views are partially implemented. Your job is to **improve and complete** the existing module as per the following requirements — do NOT rewrite the entire structure, only enhance current code where needed.
+
+
+Module 2: Vendors Management
+    -- database columns: 
+    'vendors' table: 
+        id, vendor_code, client_name, contact_name, phone_number, email, gst_number, gst_treatment, pan_number, billing_address, billing_country, billing_state, billing_city, billing_zip, shipping_address, shipping_country, shipping_state, shipping_city, shipping_zip, status, 
+
+
+    Task 1: 
+    -- http://127.0.0.1:8000/vendors
+        -- display no of vendors in card view, active vendors, inactive vendors, etc.
+        -- display list of vendors table with columns: sr. no., vendor code, vendor name, email, contact number, location, joined at, status, action (view(http://127.0.0.1:8000/vendors/view/{id}), edit(http://127.0.0.1:8000/vendors/{id}), delete(http://127.0.0.1:8000/vendors/{id})) 
+        -- there should be a button for creating new vendor (http://127.0.0.1:8000/create-vendors) with this link
+        -- there should be option for multi select delete and multi select status changing 
+
+        Sub Task 1: delete(http://127.0.0.1:8000/vendors/{id})
+            -- after clicking on delete button that vendor will be deleted 
+            -- handle errors if any occurred 
+            -- after delete redirect to (http://127.0.0.1:8000/vendors) 
+
+        Sub Task 2: edit(http://127.0.0.1:8000/vendors/{id})
+            -- after clicking on edit button a form will be open where we can update that vendor information 
+            -- after update redirect to (http://127.0.0.1:8000/vendors) 
+            -- handle errors if any occurred 
+            -- there is back button for go to back page 
+    
+        Sub Task 3: view(http://127.0.0.1:8000/vendors/view/{id})
+            -- display total number of orders for that vendor, total amount paid, total amount due, etc.
+            -- display all the information about selected vendor with their personal information, address information, and orders, etc. 
+            -- there is back button for go to back page 
+
+        Sub Task 4: create-vendors (http://127.0.0.1:8000/create-vendors)
+            -- there should be a new page with form to add new vendor 
+            -- after creating a vendor redirect to (http://127.0.0.1:8000/vendors) 
+            -- handle errors if any occurred
+            -- there is back button for go to back page 
+    
+        Sub Task 5: multi select delete and multi select status changing
+            -- there should be checkbox for each row in the vendors table to select multiple vendors 
+            -- there should be a delete button to delete selected vendors 
+            -- there should be a status dropdown to change status of selected vendors (active/inactive) 
+            -- after performing these actions redirect to (http://127.0.0.1:8000/vendors)
+            -- handle errors if any occurred
+
+            
