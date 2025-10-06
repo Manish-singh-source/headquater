@@ -19,13 +19,13 @@ class VendorPI extends Model
         return $this->hasMany(VendorPIProduct::class, 'vendor_pi_id', 'id');
     }
 
-    public function purchaseOrder() {
+    public function purchaseOrder()
+    {
         return $this->hasOne(PurchaseOrder::class, 'id', 'purchase_order_id');
     }
 
-    public function vendor() {
+    public function vendor()
+    {
         return $this->hasOne(Vendor::class, 'vendor_code', 'vendor_code');
     }
-    
-
 }

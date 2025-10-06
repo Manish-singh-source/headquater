@@ -5,7 +5,6 @@ namespace Database\Seeders;
 use App\Models\Country;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\File;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class CountrySeeder extends Seeder
 {
@@ -21,10 +20,10 @@ class CountrySeeder extends Seeder
         foreach ($countries as $country) {
             if ($country->iso2 === 'IN') {
                 Country::create([
-                    'id'    => $country->id, // important for linking states
-                    'name'  => $country->name,
-                    'iso2'  => $country->iso2,
-                    'iso3'  => $country->iso3,
+                    'id' => $country->id, // important for linking states
+                    'name' => $country->name,
+                    'iso2' => $country->iso2,
+                    'iso3' => $country->iso3,
                 ]);
             }
         }

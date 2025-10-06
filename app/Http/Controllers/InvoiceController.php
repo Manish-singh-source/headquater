@@ -2,33 +2,33 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Appointment;
 use App\Models\Dn;
 use App\Models\Invoice;
+use App\Models\InvoiceDetails;
 use App\Models\Payment;
 use App\Models\SalesOrder;
-use App\Models\Appointment;
-use Illuminate\Http\Request;
-use App\Models\InvoiceDetails;
 use App\Models\SalesOrderProduct;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
-use Barryvdh\DomPDF\PDF;
 
 class InvoiceController extends Controller
 {
-
     public function index()
     {
         $orders = SalesOrder::with('customerGroup')->get();
+
         return view('invoice.index', compact('orders'));
     }
 
     public function view($id)
     {
-        
+
         $data = [
             'title' => 'Invoices',
             'invoices' => Invoice::with(['warehouse', 'customer', 'salesOrder', 'appointment', 'dns', 'payments'])->where('sales_order_id', $id)->get(),
         ];
+
         // dd($data);
         return view('invoice.invoices', $data);
     }
@@ -37,7 +37,7 @@ class InvoiceController extends Controller
     {
         $data = [
             'title' => 'Welcome to Headquaters',
-            'date' => date('m/d/Y')
+            'date' => date('m/d/Y'),
         ];
         $invoice = Invoice::with(['warehouse', 'customer', 'salesOrder'])->findOrFail($id);
         $salesOrderProducts = SalesOrderProduct::with('product', 'tempOrder')->where('sales_order_id', $invoice->sales_order_id)->where('customer_id', $invoice->customer_id)->get();
@@ -51,9 +51,9 @@ class InvoiceController extends Controller
         // dd($data);
         $pdf = \PDF::loadView('invoice/invoice-pdf', $data);
         $pdf->setPaper('a4', 'landscape');
+
         return $pdf->stream('invoice.pdf');
     }
-
 
     public function invoiceAppointmentUpdate(Request $request, $id)
     {
@@ -73,14 +73,14 @@ class InvoiceController extends Controller
 
         try {
 
-            $appointment = new Appointment();
+            $appointment = new Appointment;
             $appointment->invoice_id = $id;
             $appointment->appointment_date = $request->input('appointment_date');
 
             if ($request->hasFile('pod')) {
                 $pod = $request->file('pod');
                 $ext = $pod->getClientOriginalExtension();
-                $podName = time() . '.' . $ext;
+                $podName = time().'.'.$ext;
 
                 // Store original image
                 $pod->move(public_path('uploads/pod'), $podName);
@@ -90,7 +90,7 @@ class InvoiceController extends Controller
             if ($request->hasFile('grn')) {
                 $grn = $request->file('grn');
                 $ext = $grn->getClientOriginalExtension();
-                $grnName = time() . '.' . $ext;
+                $grnName = time().'.'.$ext;
 
                 // Store original image
                 $grn->move(public_path('uploads/grn'), $grnName);
@@ -99,7 +99,7 @@ class InvoiceController extends Controller
 
             $appointment->save();
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Failed to update invoice: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Failed to update invoice: '.$e->getMessage());
         }
 
         return redirect()->back()->with('success', 'Invoice updated successfully.');
@@ -123,7 +123,7 @@ class InvoiceController extends Controller
 
         try {
 
-            $dn = new Dn();
+            $dn = new Dn;
             $dn->invoice_id = $id;
             $dn->dn_amount = $request->input('dn_amount');
             $dn->dn_reason = $request->input('dn_reason');
@@ -131,7 +131,7 @@ class InvoiceController extends Controller
             if ($request->hasFile('dn_receipt')) {
                 $dnReceipt = $request->file('dn_receipt');
                 $ext = $dnReceipt->getClientOriginalExtension();
-                $dnReceiptName = time() . '.' . $ext;
+                $dnReceiptName = time().'.'.$ext;
 
                 // Store original image
                 $dnReceipt->move(public_path('uploads/dn_receipts'), $dnReceiptName);
@@ -140,7 +140,7 @@ class InvoiceController extends Controller
 
             $dn->save();
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Failed to update invoice: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Failed to update invoice: '.$e->getMessage());
         }
 
         return redirect()->back()->with('success', 'Invoice updated successfully.');
@@ -162,7 +162,7 @@ class InvoiceController extends Controller
         }
 
         try {
-            $payment = new Payment();
+            $payment = new Payment;
             $payment->invoice_id = $id;
             $payment->payment_utr_no = $request->input('utr_no');
             $payment->amount = $request->input('pay_amount');
@@ -170,7 +170,7 @@ class InvoiceController extends Controller
             $payment->payment_status = $request->input('payment_status');
             $payment->save();
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Failed to update invoice: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Failed to update invoice: '.$e->getMessage());
         }
 
         return redirect()->back()->with('success', 'Invoice updated successfully.');
@@ -179,6 +179,7 @@ class InvoiceController extends Controller
     public function invoiceDetails($id)
     {
         $invoiceDetails = Invoice::with(['appointment', 'dns', 'payments', 'customer', 'warehouse'])->findOrFail($id);
+
         return view('invoice.invoice-details', compact('invoiceDetails'));
     }
 }

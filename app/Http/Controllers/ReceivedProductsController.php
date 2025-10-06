@@ -2,24 +2,22 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Product;
 use App\Models\ProductIssue;
-use App\Models\VendorPI;
-use Illuminate\Support\Arr;
-use Illuminate\Support\Str;
-use Illuminate\Http\Request;
 use App\Models\PurchaseOrder;
+use App\Models\VendorPI;
 use App\Models\VendorPIProduct;
-use Illuminate\Support\Facades\DB;
 use App\Models\VendorReturnProduct;
+use App\Services\NotificationService;
+use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 use Spatie\SimpleExcel\SimpleExcelReader;
 use Spatie\SimpleExcel\SimpleExcelWriter;
-use App\Services\NotificationService;
 
 class ReceivedProductsController extends Controller
 {
-
     public function index()
     {
         $purchaseOrders = PurchaseOrder::with(['purchaseOrderProducts', 'vendorPI'])
@@ -29,6 +27,7 @@ class ReceivedProductsController extends Controller
                 $query->where('status', 'pending');
             })
             ->get();
+
         // dd($purchaseOrders);
         return view('receivedProducts.index', compact('purchaseOrders'));
     }
@@ -47,7 +46,6 @@ class ReceivedProductsController extends Controller
 
         return back()->with('error', 'Vendor PI not found.');
     }
-
 
     public function updateStatus(Request $request)
     {
@@ -78,7 +76,7 @@ class ReceivedProductsController extends Controller
         }
 
         // Create temporary .xlsx file path
-        $tempXlsxPath = storage_path('app/received_' . Str::random(8) . '.xlsx');
+        $tempXlsxPath = storage_path('app/received_'.Str::random(8).'.xlsx');
 
         // Create writer
         $writer = SimpleExcelWriter::create($tempXlsxPath);
@@ -92,9 +90,9 @@ class ReceivedProductsController extends Controller
                 'Order No' => $vendorPIs->id,
                 'Purchase Order No' => $vendorPIs->purchase_order_id ?? '',
                 // 'Vendor Code' => $vendorPIs->vendor_code ?? '',
-                'Vendor SKU Code'   => $product->vendor_sku_code ?? '',
-                'Title'             => $product->product->brand_title ?? '',
-                'MRP'               => $product->mrp ?? '',
+                'Vendor SKU Code' => $product->vendor_sku_code ?? '',
+                'Title' => $product->product->brand_title ?? '',
+                'MRP' => $product->mrp ?? '',
                 'PO Quantity' => $product->quantity_requirement ?? '',
                 'PI Quantity' => $product->available_quantity ?? '',
                 // 'Purchase Rate Basic' => $product->purchase_rate ?? '',
@@ -109,7 +107,7 @@ class ReceivedProductsController extends Controller
         // Close the writer
         $writer->close();
 
-        return response()->download($tempXlsxPath, 'Received-Products-' . $request->vendorCode . '.xlsx', [
+        return response()->download($tempXlsxPath, 'Received-Products-'.$request->vendorCode.'.xlsx', [
             'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         ])->deleteFileAfterSend(true);
     }
@@ -134,7 +132,7 @@ class ReceivedProductsController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Vendors retrieved successfully',
-            'data' => $vendorsList
+            'data' => $vendorsList,
         ], 200);
     }
 
@@ -162,16 +160,16 @@ class ReceivedProductsController extends Controller
                 if (empty($record['Vendor SKU Code'])) {
                     continue;
                 }
-                
+
                 $productData = VendorPIProduct::with('tempOrder')->where('vendor_sku_code', Arr::get($record, 'Vendor SKU Code'))->where('vendor_pi_id', $vendorPIid->id)->first();
 
                 if (Arr::get($record, 'Quantity Received')) {
                     if ($productData->quantity_requirement < Arr::get($record, 'Quantity Received')) {
                         $extraQuantity = Arr::get($record, 'Quantity Received') - $productData->quantity_requirement;
                         $productData->quantity_received = $productData->quantity_requirement;
-                        
+
                         // create entry in vendor return products table
-                        // the products that are extra will be returned to vendor 
+                        // the products that are extra will be returned to vendor
                         VendorReturnProduct::create([
                             'vendor_pi_product_id' => $productData->id,
                             'sku' => $productData->vendor_sku_code,
@@ -180,7 +178,7 @@ class ReceivedProductsController extends Controller
                             'return_description' => 'Extra products returned to vendor',
                         ]);
 
-                    } else if ($productData->quantity_requirement > Arr::get($record, 'Quantity Received')) {
+                    } elseif ($productData->quantity_requirement > Arr::get($record, 'Quantity Received')) {
                         $lessQuantity = $productData->quantity_requirement - Arr::get($record, 'Quantity Received');
                         $productData->quantity_received = Arr::get($record, 'Quantity Received');
 
@@ -194,7 +192,7 @@ class ReceivedProductsController extends Controller
                             'available_quantity' => $productData->available_quantity,
                             'quantity_received' => $productData->quantity_received,
                             'issue_item' => $lessQuantity,
-                            'issue_reason' => 'Shortage',   
+                            'issue_reason' => 'Shortage',
                             'issue_description' => 'Shortage products',
                             'issue_from' => 'vendor',
                             'issue_status' => 'pending',
@@ -220,9 +218,10 @@ class ReceivedProductsController extends Controller
 
             if ($insertCount === 0) {
                 DB::rollBack();
+
                 return redirect()->back()->withErrors(['pi_excel' => 'No valid data found in the CSV file.']);
             }
-            
+
             DB::commit();
 
             // Create notification for received products update
@@ -232,7 +231,8 @@ class ReceivedProductsController extends Controller
         } catch (\Exception $e) {
             dd($e);
             DB::rollBack();
-            return redirect()->back()->withErrors(['error' => 'Something went wrong: ' . $e->getMessage()]);
+
+            return redirect()->back()->withErrors(['error' => 'Something went wrong: '.$e->getMessage()]);
         }
     }
 }

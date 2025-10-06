@@ -33,5 +33,4 @@ class InvoiceDetails extends Model
     {
         return $this->belongsTo(TempOrder::class, 'temp_order_id', 'id');
     }
-
 }

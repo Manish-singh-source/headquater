@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('invoice_id')->constrained()->onDelete('cascade');
             $table->date('appointment_date');
             $table->string('pod')->nullable();
-            $table->string('grn')->nullable(); 
+            $table->string('grn')->nullable();
             $table->timestamps();
         });
     }

@@ -4,11 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\Invoice;
 use App\Models\VendorPI;
-use Illuminate\Support\Str;
-use Illuminate\Http\Request;
-use App\Models\WarehouseStock;
 use App\Models\VendorPIProduct;
+use App\Models\WarehouseStock;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 use Spatie\SimpleExcel\SimpleExcelWriter;
 
 class ReportController extends Controller
@@ -21,6 +21,7 @@ class ReportController extends Controller
 
         $purchaseOrders = VendorPI::with('products')->where('status', 'completed')->get();
         $purchaseOrdersVendors = VendorPI::where('status', 'completed')->pluck('vendor_code', 'vendor_code');
+
         // dd($purchaseOrders);
         return view('vendor-purchase-history', compact('purchaseOrders', 'purchaseOrdersTotal', 'purchaseOrdersTotalQuantity', 'purchaseOrdersVendors'));
     }
@@ -32,13 +33,12 @@ class ReportController extends Controller
             'vendorCode' => 'required',
         ]);
 
-
         if ($validated->failed()) {
             return back()->with('error', 'Please Try Again.');
         }
 
         // Create temporary .xlsx file path
-        $tempXlsxPath = storage_path('app/vendor_purchase_history_' . Str::random(8) . '.xlsx');
+        $tempXlsxPath = storage_path('app/vendor_purchase_history_'.Str::random(8).'.xlsx');
 
         // Create writer
         $writer = SimpleExcelWriter::create($tempXlsxPath);
@@ -53,7 +53,6 @@ class ReportController extends Controller
                 $query->whereDate('created_at', $request->selectedDate);
             })
             ->get();
-
 
         // Add rows
         foreach ($VendorReport as $record) {
@@ -73,7 +72,7 @@ class ReportController extends Controller
         // Close the writer
         $writer->close();
         if ($request->vendorCode) {
-            $fileName = 'Vendor-Purchase-History-' . $request->vendorCode . '.xlsx';
+            $fileName = 'Vendor-Purchase-History-'.$request->vendorCode.'.xlsx';
         } else {
             $fileName = 'Vendor-Purchase-History.xlsx';
         }
@@ -88,6 +87,7 @@ class ReportController extends Controller
         $products = WarehouseStock::with('product', 'warehouse')->get();
         $productsSum = WarehouseStock::sum('original_quantity');
         $blockProductsSum = WarehouseStock::sum('block_quantity');
+
         return view('inventory-stock-history', compact('products', 'productsSum', 'blockProductsSum'));
     }
 
@@ -102,7 +102,7 @@ class ReportController extends Controller
         }
 
         // Create temporary .xlsx file path
-        $tempXlsxPath = storage_path('app/inventory_stock_history_' . Str::random(8) . '.xlsx');
+        $tempXlsxPath = storage_path('app/inventory_stock_history_'.Str::random(8).'.xlsx');
 
         // Create writer
         $writer = SimpleExcelWriter::create($tempXlsxPath);
@@ -162,11 +162,11 @@ class ReportController extends Controller
                         'id' => $customer->id,
                         'name' => $customer->client_name,
                     ];
-                })
+                }),
         ];
+
         return view('customer-sales-history', $data);
     }
-
 
     public function customerSalesHistoryExcel(Request $request)
     {
@@ -180,7 +180,7 @@ class ReportController extends Controller
         }
 
         // Create temporary .xlsx file path
-        $tempXlsxPath = storage_path('app/customer_sales_history_' . Str::random(8) . '.xlsx');
+        $tempXlsxPath = storage_path('app/customer_sales_history_'.Str::random(8).'.xlsx');
 
         // Create writer
         $writer = SimpleExcelWriter::create($tempXlsxPath);
@@ -195,9 +195,8 @@ class ReportController extends Controller
             }),
             'customers' => Invoice::with('customer')->get()->map(function ($invoice) {
                 return $invoice->customer->client_name ?? null;
-            })
+            }),
         ];
-
 
         // Add rows
         foreach ($data['invoices'] as $invoice) {

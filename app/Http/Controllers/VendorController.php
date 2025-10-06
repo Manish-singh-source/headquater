@@ -8,11 +8,11 @@ use Illuminate\Support\Facades\Validator;
 
 class VendorController extends Controller
 {
-
     //
     public function index()
     {
         $vendors = Vendor::get();
+
         return view('vendor.index', compact('vendors'));
     }
 
@@ -35,8 +35,7 @@ class VendorController extends Controller
             return back()->withErrors($validator)->withInput();
         }
 
-
-        $vendor = new Vendor();
+        $vendor = new Vendor;
         $vendor->client_name = $request->client_name;
         $vendor->contact_name = $request->contact_name;
         $vendor->phone_number = $request->phone_number;
@@ -64,7 +63,8 @@ class VendorController extends Controller
     public function edit($id)
     {
         $vendor = Vendor::findOrFail($id);
-        return view('vendor.edit',  compact('vendor'));
+
+        return view('vendor.edit', compact('vendor'));
     }
 
     public function update(Request $request, $id)
@@ -74,7 +74,7 @@ class VendorController extends Controller
             'client_name' => 'required|min:3',
             'contact_name' => 'required|min:3',
             'phone_number' => 'required|min:10',
-            'email' => 'required|email|unique:vendors,email,' . $id,
+            'email' => 'required|email|unique:vendors,email,'.$id,
         ]);
 
         if ($validator->fails()) {
@@ -117,13 +117,14 @@ class VendorController extends Controller
     public function view($id)
     {
         $vendor = Vendor::with('orders.purchaseOrderProducts')->findOrFail($id);
+
         return view('vendor.view', compact('vendor'));
     }
-
 
     public function singleVendorOrderView($purchaseOrderId, $vendorCode)
     {
         $vendor = Vendor::where('vendor_code', $vendorCode)->first();
+
         return view('vendor.single-vendor-order-view', compact('orders', 'vendor'));
     }
 
@@ -140,6 +141,7 @@ class VendorController extends Controller
     {
         $ids = is_array($request->ids) ? $request->ids : explode(',', $request->ids);
         Vendor::destroy($ids);
+
         return redirect()->back()->with('success', 'Selected vendor deleted successfully.');
     }
 }

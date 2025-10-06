@@ -33,5 +33,4 @@ class PurchaseOrder extends Model
     {
         return $this->hasOne(Vendor::class, 'id', 'vendor_id');
     }
-
 }

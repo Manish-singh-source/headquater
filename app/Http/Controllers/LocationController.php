@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\City;
-use App\Models\State;
 use App\Models\Country;
+use App\Models\State;
 use Illuminate\Http\Request;
 
 class LocationController extends Controller
@@ -18,7 +18,7 @@ class LocationController extends Controller
             return response()->json([
                 'status' => true,
                 'message' => 'Countries retrieved successfully',
-                'data' => $countries
+                'data' => $countries,
             ], 200);
         }
 
@@ -37,7 +37,7 @@ class LocationController extends Controller
             return response()->json([
                 'status' => true,
                 'message' => 'States retrieved successfully',
-                'data' => $states
+                'data' => $states,
             ], 200);
         }
 
@@ -56,7 +56,7 @@ class LocationController extends Controller
             return response()->json([
                 'status' => true,
                 'message' => 'City retrieved successfully',
-                'data' => $city
+                'data' => $city,
             ], 200);
         }
 

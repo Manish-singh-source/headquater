@@ -9,11 +9,13 @@ class WarehouseStock extends Model
     //
     protected $guarded = [];
 
-    public function product() {
+    public function product()
+    {
         return $this->hasOne(Product::class, 'sku', 'sku');
     }
 
-    public function warehouse() {
+    public function warehouse()
+    {
         return $this->belongsTo(Warehouse::class, 'warehouse_id', 'id');
     }
     // public function blockProducts() {

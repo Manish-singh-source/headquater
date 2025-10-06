@@ -4,14 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 use App\Models\Warehouse;
-use Illuminate\Support\Arr;
-use Illuminate\Support\Str;
-use Illuminate\Http\Request;
 use App\Models\WarehouseStock;
+use App\Services\NotificationService;
+use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Spatie\SimpleExcel\SimpleExcelReader;
 use Spatie\SimpleExcel\SimpleExcelWriter;
-use App\Services\NotificationService;
 
 class ProductController extends Controller
 {
@@ -19,6 +19,7 @@ class ProductController extends Controller
     public function index()
     {
         $products = WarehouseStock::with('product', 'warehouse')->get();
+
         return view('products.index', compact('products'));
     }
 
@@ -26,6 +27,7 @@ class ProductController extends Controller
     public function create()
     {
         $warehouses = Warehouse::all();
+
         return view('products.create', ['warehouses' => $warehouses]);
     }
 
@@ -33,7 +35,7 @@ class ProductController extends Controller
     public function store(Request $request)
     {
         $file = $request->file('products_excel');
-        if (!$file) {
+        if (! $file) {
             return redirect()->back()->withErrors(['products_excel' => 'Please upload a CSV file.']);
         }
 
@@ -46,7 +48,7 @@ class ProductController extends Controller
             $reader = SimpleExcelReader::create($file, $file_extension);
             $insertCount = 0;
 
-            $rows = $reader->getRows()->toArray(); // convert to array so we can check duplicates easily    
+            $rows = $reader->getRows()->toArray(); // convert to array so we can check duplicates easily
             // 🔹 Step 1: Check for duplicates (Customer + SKU)
             $seen = [];
 
@@ -59,8 +61,9 @@ class ProductController extends Controller
 
                 if (isset($seen[$key])) {
                     DB::rollBack();
+
                     return redirect()->back()->with([
-                        'error' => "Please check excel file: duplicate SKU (" . $record['SKU Code'] . ") found in the file."
+                        'error' => 'Please check excel file: duplicate SKU ('.$record['SKU Code'].') found in the file.',
                     ]);
                 }
 
@@ -129,7 +132,7 @@ class ProductController extends Controller
                         'updated_at' => now(),
                     ]);
 
-                    $warehouseStock = new WarehouseStock();
+                    $warehouseStock = new WarehouseStock;
                     $warehouseStock->warehouse_id = $request->warehouse_id;
                     $warehouseStock->sku = $record['SKU Code'];
                     isset($record['Stock']) ? $warehouseStock->original_quantity = $record['Stock'] : $warehouseStock->original_quantity = 0;
@@ -142,18 +145,20 @@ class ProductController extends Controller
 
             if ($insertCount === 0) {
                 DB::rollBack();
+
                 return redirect()->back()->with(['csv_file' => 'No valid data found in the CSV file.']);
             }
 
             DB::commit();
 
             // Create notification for warehouse products added
-            NotificationService::warehouseProductAdded("Multiple products", $insertCount);
+            NotificationService::warehouseProductAdded('Multiple products', $insertCount);
 
             return redirect()->route('products.index')->with('success', 'CSV file imported successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return redirect()->back()->with(['error' => 'Something went wrong: ' . $e->getMessage()]);
+
+            return redirect()->back()->with(['error' => 'Something went wrong: '.$e->getMessage()]);
         }
     }
 
@@ -177,7 +182,9 @@ class ProductController extends Controller
             $insertCount = 0;
 
             foreach ($rows as $record) {
-                if (empty($record['SKU Code'])) continue;
+                if (empty($record['SKU Code'])) {
+                    continue;
+                }
 
                 $products[] = [
                     'sku' => Arr::get($record, 'SKU Code') ?? '',
@@ -218,6 +225,7 @@ class ProductController extends Controller
 
             if ($insertCount === 0) {
                 DB::rollBack();
+
                 return redirect()->back()->withErrors(['products_excel' => 'No valid data found in the file.']);
             }
 
@@ -226,12 +234,13 @@ class ProductController extends Controller
             DB::commit();
 
             // Create notification for warehouse products updated
-            NotificationService::warehouseProductAdded("Product stock updated", $insertCount);
+            NotificationService::warehouseProductAdded('Product stock updated', $insertCount);
 
             return redirect()->route('products.index')->with('success', 'CSV file imported successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return redirect()->back()->withErrors(['error' => 'Something went wrong: ' . $e->getMessage()]);
+
+            return redirect()->back()->withErrors(['error' => 'Something went wrong: '.$e->getMessage()]);
         }
     }
 
@@ -239,9 +248,10 @@ class ProductController extends Controller
     {
         $product = Product::with('warehouseStock')->findOrFail($id);
 
-        if (!$product) {
+        if (! $product) {
             return redirect()->back()->withErrors(['error' => 'Product not found.']);
         }
+
         return response()->json($product); // send data to AJAX
     }
 
@@ -313,12 +323,10 @@ class ProductController extends Controller
         return redirect()->back()->with('success', 'Selected products deleted successfully.');
     }
 
-
-
     public function downloadProductSheet(Request $request, $id = null)
     {
         // Create temporary .xlsx file path
-        $tempXlsxPath = storage_path('app/product_sheet_' . Str::random(8) . '.xlsx');
+        $tempXlsxPath = storage_path('app/product_sheet_'.Str::random(8).'.xlsx');
 
         // Create writer
         $writer = SimpleExcelWriter::create($tempXlsxPath);
@@ -336,7 +344,7 @@ class ProductController extends Controller
                 'Brand' => $product->product->brand,
                 'Brand Title' => $product->product->brand_title,
                 'MRP' => $product->product->mrp,
-                'Category' =>  $product->product->category,
+                'Category' => $product->product->category,
                 'PCS/Set' => $product->product->pcs_set,
                 'Sets/CTN' => $product->product->sets_ctn,
                 'Basic Rate' => $product->product->basic_rate,
@@ -344,7 +352,7 @@ class ProductController extends Controller
                 // 'Case Pack Quantity' => $product->product->case_pack_quantity,
                 'Vendor Name' => $product->product->vendor_name,
                 'Vendor Purchase Rate' => $product->product->vendor_purchase_rate,
-                'GST' =>  $product->product->gst,
+                'GST' => $product->product->gst,
                 'Vendor Net Landing' => $product->product->vendor_net_landing,
                 'Stock' => $product->quantity ?? '',
             ]);

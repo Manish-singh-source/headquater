@@ -2,31 +2,31 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Vendor;
-use App\Models\Invoice;
-use App\Models\Product;
 use App\Models\Customer;
-use App\Models\TempOrder;
-use App\Models\Warehouse;
-use App\Models\SalesOrder;
-use App\Models\SkuMapping;
-use Illuminate\Support\Arr;
-use Illuminate\Support\Str;
-use Illuminate\Http\Request;
 use App\Models\CustomerGroup;
-use App\Models\PurchaseOrder;
+use App\Models\Invoice;
 use App\Models\InvoiceDetails;
-use App\Models\WarehouseStock;
-use Illuminate\Support\Carbon;
 use App\Models\NotFoundTempOrder;
-use App\Models\SalesOrderProduct;
-use App\Models\WarehouseStockLog;
-use Illuminate\Support\Facades\DB;
+use App\Models\Product;
+use App\Models\PurchaseOrder;
 use App\Models\PurchaseOrderProduct;
+use App\Models\SalesOrder;
+use App\Models\SalesOrderProduct;
+use App\Models\SkuMapping;
+use App\Models\TempOrder;
+use App\Models\Vendor;
+use App\Models\Warehouse;
+use App\Models\WarehouseStock;
+use App\Models\WarehouseStockLog;
+use App\Services\NotificationService;
+use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 use Spatie\SimpleExcel\SimpleExcelReader;
 use Spatie\SimpleExcel\SimpleExcelWriter;
-use App\Services\NotificationService;
 
 class SalesOrderController extends Controller
 {
@@ -35,6 +35,7 @@ class SalesOrderController extends Controller
     public function index()
     {
         $orders = SalesOrder::with('customerGroup')->get();
+
         return view('salesOrder.index', compact('orders'));
     }
 
@@ -42,17 +43,18 @@ class SalesOrderController extends Controller
     {
         $customerGroup = CustomerGroup::all();
         $warehouses = Warehouse::all();
+
         return view('salesOrder.create', ['customerGroup' => $customerGroup, 'warehouses' => $warehouses]);
     }
 
     public function store(Request $request)
     {
-        // get warehouse id, group id and po file 
+        // get warehouse id, group id and po file
         $warehouse_id = $request->warehouse_id;
         $customer_group_id = $request->customer_group_id;
         $file = $request->file('csv_file');
 
-        if (!$file) {
+        if (! $file) {
             return redirect()->back()->withErrors(['csv_file' => 'Please upload a CSV file.']);
         }
 
@@ -62,7 +64,6 @@ class SalesOrderController extends Controller
             $file_extension = $request->file('csv_file')->getClientOriginalExtension();
 
             $reader = SimpleExcelReader::create($file, $file_extension);
-
 
             $rows = $reader->getRows()->toArray(); // convert to array so we can check duplicates easily
 
@@ -74,18 +75,18 @@ class SalesOrderController extends Controller
                     continue;
                 }
 
-                $key = strtolower(trim($record['Facility Name'])) . '|' . strtolower(trim($record['SKU Code']));
+                $key = strtolower(trim($record['Facility Name'])).'|'.strtolower(trim($record['SKU Code']));
 
                 if (isset($seen[$key])) {
                     DB::rollBack();
+
                     return redirect()->back()->with([
-                        'error' => 'Please check excel file: duplicate SKU (' . $record['SKU Code'] . ') found for same customer (' . $record['Facility Name'] . ').'
+                        'error' => 'Please check excel file: duplicate SKU ('.$record['SKU Code'].') found for same customer ('.$record['Facility Name'].').',
                     ]);
                 }
 
                 $seen[$key] = true;
             }
-
 
             $productStockCache = []; // Cache stock by SKU
             $insertedRows = [];
@@ -96,7 +97,7 @@ class SalesOrderController extends Controller
             $vendorsNotFound = [];
 
             // Creating a new Sales order for customer
-            $salesOrder = new SalesOrder();
+            $salesOrder = new SalesOrder;
             $salesOrder->warehouse_id = $warehouse_id;
             $salesOrder->customer_group_id = $customer_group_id;
             $salesOrder->save();
@@ -105,8 +106,8 @@ class SalesOrderController extends Controller
             // Iterate Excel file
             foreach ($reader->getRows() as $key => $record) {
                 $sku = trim($record['SKU Code']);
-                $poQty = (int)$record['PO Quantity'];
-                $purchaseQty = (int)$record['Purchase Order Quantity'];
+                $poQty = (int) $record['PO Quantity'];
+                $purchaseQty = (int) $record['Purchase Order Quantity'];
                 $warehouseId = $request->warehouse_id;
                 $vendorCode = $record['Vendor Code'];
 
@@ -118,7 +119,7 @@ class SalesOrderController extends Controller
                 $customerStatus = '';
                 $vendorStatus = '';
 
-                // SKU Mapping 
+                // SKU Mapping
                 $skuMapping = SkuMapping::where('customer_sku', $sku)->first();
 
                 if ($skuMapping) {
@@ -132,7 +133,7 @@ class SalesOrderController extends Controller
                 // ------------ checking product/customer/vendor -----------------
                 // after checking sku mapping check if product actual present or not in db
                 // if no stock entry present in table
-                if (!isset($product)) {
+                if (! isset($product)) {
                     $productStatus = 'Not Found';
                 }
 
@@ -141,7 +142,7 @@ class SalesOrderController extends Controller
                 $customerInfo = Customer::where('facility_name', $record['Facility Name'])->first();
                 // customer availibility check done
 
-                if (!$customerInfo) {
+                if (! $customerInfo) {
                     $customerStatus = 'Not Found';
                 }
 
@@ -150,7 +151,7 @@ class SalesOrderController extends Controller
                     ->first();
                 // vendor availibility check done
 
-                if (!$vendorInfo) {
+                if (! $vendorInfo) {
                     $vendorsNotFound[] = $record['Vendor Code'];
                     $vendorStatus = 'Not Found';
                 }
@@ -197,17 +198,16 @@ class SalesOrderController extends Controller
                         'vendor_status' => $vendorStatus ?? '',
                         'product_status' => $productStatus ?? '',
                     ]);
+
                     continue;
                 }
                 // ------------ checking product/customer/vendor -----------------
 
-
-
-                // 
-                // check if product sku present in cache or not 
-                if (!isset($productStockCache[$sku])) {
+                //
+                // check if product sku present in cache or not
+                if (! isset($productStockCache[$sku])) {
                     // Fetch stock if not already cached
-                    // if stock entry present but quantity 0 
+                    // if stock entry present but quantity 0
                     if (empty($product->available_quantity)) {
                         $productStockCache[$sku] = [
                             'available' => 0,
@@ -227,8 +227,7 @@ class SalesOrderController extends Controller
                         }
                     }
                 }
-                // checked if product sku present in cache or not 
-
+                // checked if product sku present in cache or not
 
                 // Use cached values
                 $availableQty = $productStockCache[$sku]['available'];
@@ -248,7 +247,7 @@ class SalesOrderController extends Controller
                 }
 
                 if ($product) {
-                    $casePackQty = (int)$product->product->pcs_set * (int)$product->product->sets_ctn;
+                    $casePackQty = (int) $product->product->pcs_set * (int) $product->product->sets_ctn;
                 }
 
                 $tempSalesOrder = TempOrder::create([
@@ -299,14 +298,13 @@ class SalesOrderController extends Controller
                         $blockQuantity = $product->block_quantity + $record['Block'];
                     }
 
-                    // Block Quantity from WarehouseStock Table and Update WarehouseStockLog Table 
+                    // Block Quantity from WarehouseStock Table and Update WarehouseStockLog Table
                     $product->available_quantity = intval($productStockCache[$sku]['available']) ?? 0;
                     $product->block_quantity = $blockQuantity;
                     $product->save();
                 }
 
-
-                $saveOrderProduct = new SalesOrderProduct();
+                $saveOrderProduct = new SalesOrderProduct;
                 $saveOrderProduct->sales_order_id = $salesOrder->id;
                 $saveOrderProduct->temp_order_id = $tempSalesOrder->id;
                 $saveOrderProduct->customer_id = $customerInfo->id ?? null;
@@ -317,11 +315,10 @@ class SalesOrderController extends Controller
                 $saveOrderProduct->warehouse_stock_id = $product->id ?? null;
                 $saveOrderProduct->sku = $sku;
                 $saveOrderProduct->price = $record['Basic Rate'] ?? null;
-                // what is exactly subtotal ?? 
+                // what is exactly subtotal ??
                 // basic rate * po quantity(customers quantity) or basic rate * purchase order quantity(vendors quantity)
                 $saveOrderProduct->subtotal = ($record['Basic Rate'] ?? 0) * ($record['PO Quantity'] ?? 0);
                 $saveOrderProduct->save();
-
 
                 // Make a purchase order if one or more than one products have less quantity in warehouse
                 if ($shortQty > 0) {
@@ -329,15 +326,15 @@ class SalesOrderController extends Controller
                     $salesOrderStatus = SalesOrder::find($salesOrder->id);
                     $salesOrderStatus->status = 'blocked';
                     $salesOrderStatus->save();
-                    // sales order status changed to blocked 
+                    // sales order status changed to blocked
 
-                    if (!isset($productStockCache[$vendorCode])) {
+                    if (! isset($productStockCache[$vendorCode])) {
                         $productStockCache[$vendorCode] = [
                             'vendor_code' => $vendorCode,
                         ];
 
                         // Create a new purchase order for the vendor if not already created
-                        $purchaseOrder = new PurchaseOrder();
+                        $purchaseOrder = new PurchaseOrder;
                         $purchaseOrder->sales_order_id = $salesOrder->id;
                         $purchaseOrder->warehouse_id = $warehouse_id;
                         $purchaseOrder->customer_group_id = $customer_group_id;
@@ -366,7 +363,7 @@ class SalesOrderController extends Controller
                         }
                     } else {
                         // Create a new record
-                        $purchaseOrderProduct = new PurchaseOrderProduct();
+                        $purchaseOrderProduct = new PurchaseOrderProduct;
                         $purchaseOrderProduct->temp_order_id = $tempSalesOrder->id;
                         $purchaseOrderProduct->purchase_order_id = $purchaseOrder->id;
                         $purchaseOrderProduct->sales_order_id = $salesOrder->id;
@@ -386,11 +383,11 @@ class SalesOrderController extends Controller
                 $insertCount++;
             }
 
-
             if ($insertCount === 0) {
                 DB::rollBack();
                 $uniqueString = implode(', ', array_unique($vendorsNotFound));
-                return redirect()->back()->with(['error' => 'No valid data found in the CSV file. Please check Vendor Codes: ' . $uniqueString]);
+
+                return redirect()->back()->with(['error' => 'No valid data found in the CSV file. Please check Vendor Codes: '.$uniqueString]);
             }
 
             DB::commit();
@@ -398,10 +395,11 @@ class SalesOrderController extends Controller
             // Create notification
             NotificationService::orderCreated('sales', $salesOrder->id);
 
-            return redirect()->route('sales.order.index')->with('success', 'Sales Order created successfully! Order ID: ' . $salesOrder->id);
+            return redirect()->route('sales.order.index')->with('success', 'Sales Order created successfully! Order ID: '.$salesOrder->id);
         } catch (\Exception $e) {
             DB::rollBack();
-            return redirect()->back()->with(['error' => 'Something went wrong: ' . $e->getMessage()]);
+
+            return redirect()->back()->with(['error' => 'Something went wrong: '.$e->getMessage()]);
         }
     }
 
@@ -413,10 +411,9 @@ class SalesOrderController extends Controller
                 ->where('sku', $orderedProduct->sku)
                 ->first();
         }
+
         return view('salesOrder.edit', compact('salesOrder'));
     }
-
-
 
     public function update(Request $request)
     {
@@ -442,12 +439,13 @@ class SalesOrderController extends Controller
                     continue;
                 }
 
-                $key = strtolower(trim($record['Facility Name'])) . '|' . strtolower(trim($record['SKU Code']));
+                $key = strtolower(trim($record['Facility Name'])).'|'.strtolower(trim($record['SKU Code']));
 
                 if (isset($seen[$key])) {
                     DB::rollBack();
+
                     return redirect()->back()->with([
-                        'error' => 'Please check excel file: duplicate SKU (' . $record['SKU Code'] . ') found for same customer (' . $record['Facility Name'] . ').'
+                        'error' => 'Please check excel file: duplicate SKU ('.$record['SKU Code'].') found for same customer ('.$record['Facility Name'].').',
                     ]);
                 }
 
@@ -456,7 +454,6 @@ class SalesOrderController extends Controller
 
             $products = [];
             $insertCount = 0;
-
 
             // 🔹 Step 2: Process records if no duplicates
             foreach ($rows as $record) {
@@ -467,7 +464,7 @@ class SalesOrderController extends Controller
                 // Find customer
                 $customerInfo = Customer::where('facility_name', $record['Facility Name'])->first();
 
-                if (!$customerInfo) {
+                if (! $customerInfo) {
                     continue;
                 }
 
@@ -478,10 +475,9 @@ class SalesOrderController extends Controller
                     ->where('customer_id', $customerInfo->id)
                     ->first();
 
-                if (!$salesOrderProductUpdate) {
+                if (! $salesOrderProductUpdate) {
                     continue;
                 }
-
 
                 // 3. Build products array for TempOrder::upsert()
                 $products[] = [
@@ -513,7 +509,7 @@ class SalesOrderController extends Controller
                                 // Prevent negative values
                                 $warehouseStockUpdate->block_quantity = max(0, $warehouseStockUpdate->block_quantity - $extraBlockQuantity);
 
-                                // update tempOrder  
+                                // update tempOrder
                                 $salesOrderProductUpdate->tempOrder->po_qty = $record['PO Quantity'];
                                 $salesOrderProductUpdate->tempOrder->purchase_order_quantity = $record['Purchase Order Quantity'];
 
@@ -521,7 +517,7 @@ class SalesOrderController extends Controller
                                 $salesOrderProductUpdate->tempOrder->available_quantity = max(0, $salesOrderProductUpdate->tempOrder->block - $extraBlockQuantity);
                                 $salesOrderProductUpdate->tempOrder->unavailable_quantity = max(0, ($salesOrderProductUpdate->tempOrder->block - $extraBlockQuantity) - $record['Purchase Order Quantity']);
                                 $salesOrderProductUpdate->tempOrder->purchaseOrderProduct->ordered_quantity = max(0, ($salesOrderProductUpdate->tempOrder->block - $extraBlockQuantity) - $record['Purchase Order Quantity']);
-                            } else if ($salesOrderProductUpdate->tempOrder->block < $record['Purchase Order Quantity']) {
+                            } elseif ($salesOrderProductUpdate->tempOrder->block < $record['Purchase Order Quantity']) {
                                 $salesOrderProductUpdate->tempOrder->unavailable_quantity = $record['Purchase Order Quantity'];
                                 $salesOrderProductUpdate->tempOrder->purchaseOrderProduct->ordered_quantity = $record['Purchase Order Quantity'];
 
@@ -536,7 +532,7 @@ class SalesOrderController extends Controller
                             if ($salesOrderProductUpdate->tempOrder->block < $record['Purchase Order Quantity']) {
                                 $extraBlockQuantity = $record['Purchase Order Quantity'] - $salesOrderProductUpdate->tempOrder->purchase_order_quantity;
 
-                                // check if warehouse has available quantity so we will block for this product 
+                                // check if warehouse has available quantity so we will block for this product
                                 if ($warehouseStockUpdate->available_quantity >= $extraBlockQuantity) {
                                     $warehouseStockUpdate->available_quantity -= $extraBlockQuantity;
                                     $warehouseStockUpdate->block_quantity += $extraBlockQuantity;
@@ -569,7 +565,7 @@ class SalesOrderController extends Controller
             }
 
             // Upsert TempOrder
-            if (!empty($products)) {
+            if (! empty($products)) {
                 TempOrder::upsert(
                     $products,
                     ['id'],
@@ -579,14 +575,17 @@ class SalesOrderController extends Controller
 
             if ($insertCount === 0) {
                 DB::rollBack();
+
                 return redirect()->back()->withErrors(['products_excel' => 'No valid data found in the file.']);
             }
 
             DB::commit();
+
             return redirect()->route('sales.order.index')->with('success', 'CSV file imported successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return redirect()->back()->with(['error' => 'Something went wrong: ' . $e->getMessage()]);
+
+            return redirect()->back()->with(['error' => 'Something went wrong: '.$e->getMessage()]);
         }
     }
 
@@ -628,7 +627,7 @@ class SalesOrderController extends Controller
 
         $remainingQuantity = $orderedQuantity - ($blockQuantity);
 
-        // fetch unique brand names from orderedProducts 
+        // fetch unique brand names from orderedProducts
         $uniqueBrands = $salesOrder->orderedProducts->pluck('product.brand')->unique();
         $uniqueBrands = $uniqueBrands->filter()->unique()->values();
         // dd($remainingQuantity, $blockQuantity, $vendorPiFulfillmentTotal, $vendorPiReceivedTotal, $availableQuantity, $unavailableQuantity, $orderedQuantity);
@@ -661,6 +660,7 @@ class SalesOrderController extends Controller
             }
 
             $order->delete();
+
             return redirect()->route('sales.order.index')->with('success', 'Order deleted successfully.');
         } catch (\Exception $e) {
             return redirect()->back()->with(['error' => 'Something went wrong: Please Try Again.']);
@@ -676,7 +676,7 @@ class SalesOrderController extends Controller
 
                 $salesOrderProduct = SalesOrderProduct::with('tempOrder')->find($salesOrderProductId);
 
-                if (!$salesOrderProduct) {
+                if (! $salesOrderProduct) {
                     continue; // Skip if not found
                 }
 
@@ -697,7 +697,7 @@ class SalesOrderController extends Controller
                                 ->with('tempOrder')
                                 ->first();
 
-                            if (!$checkProduct || !$checkProduct->tempOrder) {
+                            if (! $checkProduct || ! $checkProduct->tempOrder) {
                                 break; // No more matching products
                             }
 
@@ -734,12 +734,11 @@ class SalesOrderController extends Controller
 
             return redirect()->back()->with('success', 'Selected products deleted successfully.');
         } catch (\Exception $e) {
-            return redirect()->back()->with(['error' => 'Something went wrong: ' . $e->getMessage()]);
+            return redirect()->back()->with(['error' => 'Something went wrong: '.$e->getMessage()]);
         }
     }
 
-
-    public function  changeStatus(Request $request)
+    public function changeStatus(Request $request)
     {
         try {
 
@@ -808,13 +807,13 @@ class SalesOrderController extends Controller
                         $order->tempOrder->vendor_pi_fulfillment_quantity = $order->tempOrder->vendor_pi_received_quantity;
                     }
                     if ($order->ordered_quantity <= ($order->tempOrder?->available_quantity ?? 0) + ($order->tempOrder?->vendor_pi_fulfillment_quantity ?? 0)) {
-                        if (!empty($order->final_dispatched_quantity)) {
+                        if (! empty($order->final_dispatched_quantity)) {
                             $order->final_dispatched_quantity = $order->final_dispatched_quantity;
                         } else {
                             $order->final_dispatched_quantity = $order->ordered_quantity;
                         }
                     } else {
-                        if (!empty($order->final_dispatched_quantity)) {
+                        if (! empty($order->final_dispatched_quantity)) {
                             $order->final_dispatched_quantity = $order->final_dispatched_quantity;
                         } else {
                             $order->final_dispatched_quantity = ($order->tempOrder?->available_quantity ?? 0) + ($order->tempOrder?->vendor_pi_fulfillment_quantity ?? 0);
@@ -825,7 +824,7 @@ class SalesOrderController extends Controller
                 }
 
                 $salesOrder->status = $request->status;
-            } else if ($request->status == 'ready_to_package') {
+            } elseif ($request->status == 'ready_to_package') {
                 $salesOrderUpdate = SalesOrder::with([
                     'customerGroup',
                     'warehouse',
@@ -851,14 +850,14 @@ class SalesOrderController extends Controller
                 $salesOrderUpdate->save();
 
                 $salesOrder->status = $request->status;
-            } else if ($request->status == 'delivered') {
+            } elseif ($request->status == 'delivered') {
                 $customerFacilityName = SalesOrderProduct::with('customer')
                     ->where('sales_order_id', $salesOrder->id)
                     ->get()
                     ->pluck('customer')
                     ->filter()
                     ->unique('client_name')
-                    ->pluck('client_name', 'id',);
+                    ->pluck('client_name', 'id');
 
                 foreach ($customerFacilityName as $customer_id => $facility_name) {
                     foreach ($salesOrderDetails as $detail) {
@@ -869,14 +868,14 @@ class SalesOrderController extends Controller
                     }
                 }
                 $salesOrder->status = $request->status;
-            } else if ($request->status == 'completed') {
+            } elseif ($request->status == 'completed') {
                 $salesOrder->status = $request->status;
             }
 
             $oldStatus = $salesOrder->getOriginal('status');
             $salesOrder->save();
 
-            if (!$salesOrder) {
+            if (! $salesOrder) {
                 return redirect()->back()->with('error', 'Status Not Changed. Please Try Again.');
             }
 
@@ -884,21 +883,20 @@ class SalesOrderController extends Controller
             NotificationService::statusChanged('sales', $salesOrder->id, $oldStatus, $salesOrder->status);
 
             if ($salesOrder->status == 'ready_to_package') {
-                return redirect()->route('packing.products.view', $request->order_id)->with('success', 'Order status changed to "Ready to Package" successfully! Order ID: ' . $salesOrder->id);
-            } else if ($salesOrder->status == 'ready_to_ship') {
-                return redirect()->route('readyToShip.view', $request->order_id)->with('success', 'Order status changed to "Ready to Ship" successfully! Order ID: ' . $salesOrder->id);
-            } else if ($salesOrder->status == 'completed') {
-                return redirect()->route('sales.order.index')->with('success', 'Order marked as "Completed" successfully! Order ID: ' . $salesOrder->id);
-            } else if ($salesOrder->status == 'delivered') {
-                return redirect()->route('sales.order.index')->with('success', 'Order marked as "Delivered" successfully! Order ID: ' . $salesOrder->id);
+                return redirect()->route('packing.products.view', $request->order_id)->with('success', 'Order status changed to "Ready to Package" successfully! Order ID: '.$salesOrder->id);
+            } elseif ($salesOrder->status == 'ready_to_ship') {
+                return redirect()->route('readyToShip.view', $request->order_id)->with('success', 'Order status changed to "Ready to Ship" successfully! Order ID: '.$salesOrder->id);
+            } elseif ($salesOrder->status == 'completed') {
+                return redirect()->route('sales.order.index')->with('success', 'Order marked as "Completed" successfully! Order ID: '.$salesOrder->id);
+            } elseif ($salesOrder->status == 'delivered') {
+                return redirect()->route('sales.order.index')->with('success', 'Order marked as "Delivered" successfully! Order ID: '.$salesOrder->id);
             } else {
                 return redirect()->back()->with('error', 'Status Not Changed. Please Try Again.');
             }
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Status Not Changed. Please Try Again.' . $e->getMessage());
+            return redirect()->back()->with('error', 'Status Not Changed. Please Try Again.'.$e->getMessage());
         }
     }
-
 
     public function generateInvoice(Request $request)
     {
@@ -907,7 +905,7 @@ class SalesOrderController extends Controller
             $salesOrderDetails = SalesOrderProduct::with('tempOrder', 'customer', 'product')
                 ->where('sales_order_id', $salesOrder->id);
 
-            if (is_array($request->ids) && !empty($request->ids)) {
+            if (is_array($request->ids) && ! empty($request->ids)) {
                 $salesOrderDetails->whereIn('id', $request->ids);
             }
 
@@ -925,19 +923,19 @@ class SalesOrderController extends Controller
 
             foreach ($salesOrderDetails as $detail) {
                 $facilityName = $detail->customer->facility_name ?? '';
-                $poNumber        = $detail->tempOrder->po_number ?? '';
+                $poNumber = $detail->tempOrder->po_number ?? '';
 
                 // Optional filters
-                $brand        = $request->has('brand') ? ($detail->product->brand ?? '') : '';
+                $brand = $request->has('brand') ? ($detail->product->brand ?? '') : '';
                 $clientName = $request->has('client_name') ? ($detail->customer->client_name ?? '') : '';
 
                 // Build grouping key dynamically
-                $groupKey = $facilityName . '|' . $poNumber;
+                $groupKey = $facilityName.'|'.$poNumber;
                 if ($brand !== '') {
-                    $groupKey .= '|' . $brand;
+                    $groupKey .= '|'.$brand;
                 }
                 if ($clientName !== '') {
-                    $groupKey .= '|' . $clientName;
+                    $groupKey .= '|'.$clientName;
                 }
 
                 // Push detail into its group
@@ -951,9 +949,9 @@ class SalesOrderController extends Controller
             $no = 0;
             foreach ($invoicesGroup as $key => $invoiceData) {
                 $customerId = $invoiceData[0]->customer_id;
-                $invoice = new Invoice();
+                $invoice = new Invoice;
                 $invoice->warehouse_id = $salesOrder->warehouse_id;
-                $invoice->invoice_number = 'INV-' . time() . '-' . $customerId . '-' . $no;
+                $invoice->invoice_number = 'INV-'.time().'-'.$customerId.'-'.$no;
                 $invoice->customer_id = $customerId;
                 $invoice->sales_order_id = $salesOrder->id;
                 $invoice->invoice_date = now();
@@ -965,25 +963,26 @@ class SalesOrderController extends Controller
                 foreach ($invoiceData as $detail) {
                     $totalAmount += (int) $detail->ordered_quantity * (float) $detail->product->mrp;
 
-                    $invoiceDetails = new InvoiceDetails();
+                    $invoiceDetails = new InvoiceDetails;
                     $invoiceDetails->invoice_id = $invoice->id;
                     $invoiceDetails->product_id = $detail->product_id;
                     $invoiceDetails->temp_order_id = $detail->temp_order_id;
                     $invoiceDetails->quantity = $detail->ordered_quantity;
                     $invoiceDetails->unit_price = $detail->product->mrp;
-                    $invoiceDetails->discount = 0; // Assuming no discount for simplicity 
+                    $invoiceDetails->discount = 0; // Assuming no discount for simplicity
                     $invoiceDetails->amount = $detail->ordered_quantity * $detail->product->mrp;
-                    $invoiceDetails->tax = $detail->product->gst ?? 0; // Assuming tax is a field in Product model 
-                    $invoiceDetails->total_price = ($detail->ordered_quantity * $detail->product->mrp) - 0; // Total price after discount 
-                    $invoiceDetails->description = isset($detail->tempOrder) ? $detail->tempOrder->description : null; // Assuming description is in TempOrder 
-                    $invoiceDetails->po_number = $detail->tempOrder->po_number ?? null; // Assuming po_number is in TempOrder 
+                    $invoiceDetails->tax = $detail->product->gst ?? 0; // Assuming tax is a field in Product model
+                    $invoiceDetails->total_price = ($detail->ordered_quantity * $detail->product->mrp) - 0; // Total price after discount
+                    $invoiceDetails->description = isset($detail->tempOrder) ? $detail->tempOrder->description : null; // Assuming description is in TempOrder
+                    $invoiceDetails->po_number = $detail->tempOrder->po_number ?? null; // Assuming po_number is in TempOrder
                     $detail->status = 'dispatched';
                     $invoiceDetails->save();
                 }
                 $no++;
 
-                if (!$invoiceDetails) {
+                if (! $invoiceDetails) {
                     DB::rollBack();
+
                     return redirect()->back()->with('error', 'Invoice Not Generated. Please Try Again.');
                 }
             }
@@ -992,10 +991,11 @@ class SalesOrderController extends Controller
             // Create invoice notification
             NotificationService::invoiceGenerated($invoice->id, $salesOrder->id);
 
-            return redirect()->back()->with('success', 'Invoice generated successfully! Invoice ID: ' . $invoice->id . ' for Order ID: ' . $salesOrder->id);
+            return redirect()->back()->with('success', 'Invoice generated successfully! Invoice ID: '.$invoice->id.' for Order ID: '.$salesOrder->id);
         } catch (\Exception $e) {
             DB::rollBack();
-            return redirect()->back()->with('error', 'Status Not Changed. Please Try Again.' . $e->getMessage());
+
+            return redirect()->back()->with('error', 'Status Not Changed. Please Try Again.'.$e->getMessage());
         }
     }
 
@@ -1003,7 +1003,7 @@ class SalesOrderController extends Controller
     {
 
         $file = $request->file('csv_file');
-        if (!$file) {
+        if (! $file) {
             return redirect()->back()->withErrors(['csv_file' => 'Please upload a CSV file.']);
         }
 
@@ -1025,12 +1025,13 @@ class SalesOrderController extends Controller
                 continue;
             }
 
-            $key = strtolower(trim($record['Facility Name'])) . '|' . strtolower(trim($record['SKU Code']));
+            $key = strtolower(trim($record['Facility Name'])).'|'.strtolower(trim($record['SKU Code']));
 
             if (isset($seen[$key])) {
                 DB::rollBack();
+
                 return redirect()->back()->with([
-                    'error' => 'Please check excel file: duplicate SKU (' . $record['SKU Code'] . ') found for same customer (' . $record['Facility Name'] . ').'
+                    'error' => 'Please check excel file: duplicate SKU ('.$record['SKU Code'].') found for same customer ('.$record['Facility Name'].').',
                 ]);
             }
 
@@ -1041,7 +1042,7 @@ class SalesOrderController extends Controller
 
             foreach ($reader->getRows() as $record) {
                 $sku = trim($record['SKU Code']);  // customer sku
-                $poQty = (int)$record['PO Quantity'];
+                $poQty = (int) $record['PO Quantity'];
                 $warehouseId = $request->warehouse_id;
 
                 // Default fallback
@@ -1061,15 +1062,15 @@ class SalesOrderController extends Controller
                 }
 
                 // check if product is present
-                if (!$product) {
+                if (! $product) {
                     $reason = 'SKU Not Found';
                 }
 
                 $customer = Customer::where('facility_name', $record['Facility Name'])->first();
 
                 // Check if customer is present
-                if (!$customer) {
-                    if (!empty($reason)) {
+                if (! $customer) {
+                    if (! empty($reason)) {
                         $reason .= ' | ';
                     }
                     $reason .= 'Customer Not Found';
@@ -1104,26 +1105,27 @@ class SalesOrderController extends Controller
                         'Net Landing Rate Confirmation' => 'Incorrect',
 
                         'MRP' => $record['MRP'] ?? 0,
-                        'Product MRP' =>  0,
+                        'Product MRP' => 0,
                         'MRP Confirmation' => 'Incorrect',
 
                         'Case Pack Quantity' => 0,
                         'PO Quantity' => $poQty,
                         'Available Quantity' => 0,
                         'Unavailable Quantity' => 0,
-                        'Reason' => $reason
+                        'Reason' => $reason,
                     ];
+
                     continue;
                 }
 
                 // Fetch stock if not already cached
-                if (!isset($productStockCache[$sku])) {
+                if (! isset($productStockCache[$sku])) {
                     $stockEntry = WarehouseStock::with('product')
                         ->where('sku', $sku)
                         ->where('warehouse_id', $warehouseId)
                         ->first();
 
-                    if (!isset($stockEntry)) {
+                    if (! isset($stockEntry)) {
                         $productStockCache[$sku] = [
                             'available' => 0,
                         ];
@@ -1150,8 +1152,7 @@ class SalesOrderController extends Controller
                 }
 
                 if ($stockEntry) {
-                    $casePackQty = (int)$stockEntry->product->pcs_set * (int)$stockEntry->product->sets_ctn;
-
+                    $casePackQty = (int) $stockEntry->product->pcs_set * (int) $stockEntry->product->sets_ctn;
 
                     $gst = ($record['GST'] < 1 && $record['GST'] > 0)
                         ? intval(round($record['GST'] * 100))  // convert decimals (0.18 -> 18)
@@ -1198,7 +1199,7 @@ class SalesOrderController extends Controller
                     'PO Quantity' => $poQty,
                     'Available Quantity' => $availableQty,
                     'Unavailable Quantity' => $shortQty,
-                    'Reason' => ''
+                    'Reason' => '',
                 ];
             }
 
@@ -1208,10 +1209,11 @@ class SalesOrderController extends Controller
 
             $filteredRows = collect($insertedRows)->map(function ($row) {
                 unset($row['created_at']);
+
                 return $row;
             });
 
-            $fileName = 'processed_order_' . time() . '.csv';
+            $fileName = 'processed_order_'.time().'.csv';
             $csvPath = public_path("uploads/{$fileName}");
 
             SimpleExcelWriter::create($csvPath)->addRows($filteredRows->toArray());
@@ -1219,23 +1221,23 @@ class SalesOrderController extends Controller
 
             $customerGroup = CustomerGroup::all();
             $warehouses = Warehouse::all();
+
             return view('salesOrder.process-order', ['customerGroup' => $customerGroup, 'warehouses' => $warehouses, 'fileData' => $insertedRows]);
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'An error occurred while processing the CSV file. Please Check the file format and try again.');
         }
     }
 
-
     public function downloadBlockedCSV()
     {
         $originalPath = public_path(session('processed_csv_path'));
 
-        if (!file_exists($originalPath)) {
+        if (! file_exists($originalPath)) {
             abort(404, 'CSV file not found.');
         }
 
         // Create temporary .xlsx file
-        $tempXlsxPath = storage_path('app/blocked_' . Str::random(8) . '.xlsx');
+        $tempXlsxPath = storage_path('app/blocked_'.Str::random(8).'.xlsx');
 
         // Create writer
         $writer = SimpleExcelWriter::create($tempXlsxPath);
@@ -1299,11 +1301,10 @@ class SalesOrderController extends Controller
         }
 
         // Create temporary .xlsx file path
-        $tempXlsxPath = storage_path('app/order_po_update_' . Str::random(8) . '.xlsx');
+        $tempXlsxPath = storage_path('app/order_po_update_'.Str::random(8).'.xlsx');
 
         // Create writer
         $writer = SimpleExcelWriter::create($tempXlsxPath);
-
 
         $salesOrder = SalesOrder::with([
             'customerGroup',
@@ -1330,12 +1331,12 @@ class SalesOrderController extends Controller
                 'Facility Location' => $order->tempOrder->facility_location,
                 'HSN' => $order->tempOrder->hsn,
                 'GST' => $order->tempOrder->gst,
-                'Item Code' =>  $order->tempOrder->item_code,
+                'Item Code' => $order->tempOrder->item_code,
                 'SKU Code' => $order->tempOrder->sku,
                 'Title' => $order->tempOrder->description,
                 'Basic Rate' => $order->tempOrder->basic_rate,
                 'Net Landing Rate' => $order->tempOrder->net_landing_rate,
-                'MRP' =>  $order->tempOrder->mrp,
+                'MRP' => $order->tempOrder->mrp,
                 'Product MRP' => $order->tempOrder->product_mrp,
                 'Rate Confirmation' => $order->tempOrder->rate_confirmation ?? 'Incorrect',
                 'PO Quantity' => $order->ordered_quantity,
@@ -1352,15 +1353,14 @@ class SalesOrderController extends Controller
         ])->deleteFileAfterSend(true);
     }
 
-
     public function downloadNotFoundSku($id)
     {
-        if (!$id) {
+        if (! $id) {
             return back()->with('error', 'Please Try Again.');
         }
 
         // Create temporary .xlsx file path
-        $tempXlsxPath = storage_path('app/not_found_sku_' . Str::random(8) . '.xlsx');
+        $tempXlsxPath = storage_path('app/not_found_sku_'.Str::random(8).'.xlsx');
 
         // Create writer
         $writer = SimpleExcelWriter::create($tempXlsxPath);
@@ -1401,12 +1401,12 @@ class SalesOrderController extends Controller
 
     public function downloadNotFoundCustomer($id)
     {
-        if (!$id) {
+        if (! $id) {
             return back()->with('error', 'Please Try Again.');
         }
 
         // Create temporary .xlsx file path
-        $tempXlsxPath = storage_path('app/not_found_customer_' . Str::random(8) . '.xlsx');
+        $tempXlsxPath = storage_path('app/not_found_customer_'.Str::random(8).'.xlsx');
 
         // Create writer
         $writer = SimpleExcelWriter::create($tempXlsxPath);
@@ -1447,12 +1447,12 @@ class SalesOrderController extends Controller
 
     public function downloadNotFoundVendor($id)
     {
-        if (!$id) {
+        if (! $id) {
             return back()->with('error', 'Please Try Again.');
         }
 
         // Create temporary .xlsx file path
-        $tempXlsxPath = storage_path('app/not_found_vendor_' . Str::random(8) . '.xlsx');
+        $tempXlsxPath = storage_path('app/not_found_vendor_'.Str::random(8).'.xlsx');
 
         // Create writer
         $writer = SimpleExcelWriter::create($tempXlsxPath);

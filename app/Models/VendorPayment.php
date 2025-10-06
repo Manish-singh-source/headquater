@@ -13,6 +13,4 @@ class VendorPayment extends Model
     {
         return $this->belongsTo(VendorPI::class, 'vendor_pi_id', 'id');
     }
-
-       
 }

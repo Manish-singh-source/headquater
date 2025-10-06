@@ -2,19 +2,18 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
-use App\Models\Vendor;
+use App\Models\Customer;
 use App\Models\Invoice;
 use App\Models\Product;
-use App\Models\Customer;
-use App\Models\Warehouse;
-use App\Models\SalesOrder;
-use Illuminate\Http\Request;
 use App\Models\PurchaseOrder;
-use App\Models\SalesOrderProduct;
 use App\Models\PurchaseOrderProduct;
+use App\Models\SalesOrder;
+use App\Models\SalesOrderProduct;
+use App\Models\User;
+use App\Models\Vendor;
+use App\Models\Warehouse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Validator;
 
 class RegisterController extends Controller
 {
@@ -59,11 +58,13 @@ class RegisterController extends Controller
         ]);
 
         if (Auth::attempt($credentials)) {
-            if( Auth::user()->status !== '1') {
+            if (Auth::user()->status !== '1') {
                 Auth::logout();
+
                 return back()->withErrors(['email' => 'Your account is not active.']);
             }
             $request->session()->regenerate();
+
             return redirect()->intended('/')->with('success', 'Login successful.');
         }
 
@@ -81,7 +82,6 @@ class RegisterController extends Controller
         return redirect()->route('login');
     }
 
-
     public function index()
     {
         $customersCount = Customer::count();
@@ -93,7 +93,7 @@ class RegisterController extends Controller
         $readyToShipOrdersCount = SalesOrder::where('status', 'ready_to_ship')->count();
         $readyToPackageOrdersCount = SalesOrder::where('status', 'ready_to_package')->count();
 
-        // Recent Purchase Orders (Vendor) 
+        // Recent Purchase Orders (Vendor)
         $purchaseOrders = PurchaseOrder::with('purchaseOrderProducts')->limit(4)->latest()->get();
         $vendorCodes = $purchaseOrders->flatMap(function ($po) {
             return $po->purchaseOrderProducts->pluck('vendor_code');

@@ -10,15 +10,17 @@ use Spatie\SimpleExcel\SimpleExcelReader;
 class SKUMappingController extends Controller
 {
     //
-    public function index() {
+    public function index()
+    {
         $skuMapping = SkuMapping::get();
+
         return view('skuMapping.index', compact('skuMapping'));
     }
 
     public function store(Request $request)
     {
         $file = $request->file('sku_mapping');
-        if (!$file) {
+        if (! $file) {
             return redirect()->back()->withErrors(['sku_mapping' => 'Please upload a CSV file.']);
         }
 
@@ -45,24 +47,30 @@ class SKUMappingController extends Controller
 
             if ($insertCount === 0) {
                 DB::rollBack();
+
                 return redirect()->back()->withErrors(['sku_mapping' => 'No valid data found in the CSV file.']);
             }
 
             DB::commit();
+
             return redirect()->route('sku.mapping')->with('success', 'CSV file imported successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return redirect()->back()->withErrors(['error' => 'Something went wrong: ' . $e->getMessage()]);
+
+            return redirect()->back()->withErrors(['error' => 'Something went wrong: '.$e->getMessage()]);
         }
     }
 
-    public function edit($id) {
-        $skuMapping  = SkuMapping::findOrFail($id);
+    public function edit($id)
+    {
+        $skuMapping = SkuMapping::findOrFail($id);
+
         return view('skuMapping.edit', compact('skuMapping'));
     }
-    
-    public function update(Request $request) {
-        $skuMapping  = SkuMapping::findOrFail($request->sku_id);
+
+    public function update(Request $request)
+    {
+        $skuMapping = SkuMapping::findOrFail($request->sku_id);
         $skuMapping->product_sku = $request->product_sku ?? '';
         $skuMapping->customer_sku = $request->customer_sku ?? '';
         $skuMapping->vendor_sku = $request->vendor_sku ?? '';
@@ -71,11 +79,11 @@ class SKUMappingController extends Controller
         return redirect()->route('sku.mapping')->with('success', 'SKU Mapping Updated Successfully.');
     }
 
-    public function delete($id) {
+    public function delete($id)
+    {
         $skuMapping = SkuMapping::findOrFail($id);
         $skuMapping->delete();
 
         return redirect()->route('sku.mapping')->with('success', 'SKU Mapping deleted successfully.');
     }
-
 }

@@ -19,7 +19,7 @@ class NotificationService
             'icon' => $data['icon'] ?? null,
             'data' => $data['data'] ?? null,
             'user_id' => $data['user_id'] ?? Auth::id(),
-            'action_url' => $data['action_url'] ?? null
+            'action_url' => $data['action_url'] ?? null,
         ]);
     }
 
@@ -34,7 +34,7 @@ class NotificationService
             'message' => $message,
             'data' => $data,
             'action_url' => $actionUrl,
-            'user_id' => $userId
+            'user_id' => $userId,
         ]);
     }
 
@@ -49,7 +49,7 @@ class NotificationService
             'message' => $message,
             'data' => $data,
             'action_url' => $actionUrl,
-            'user_id' => $userId
+            'user_id' => $userId,
         ]);
     }
 
@@ -64,7 +64,7 @@ class NotificationService
             'message' => $message,
             'data' => $data,
             'action_url' => $actionUrl,
-            'user_id' => $userId
+            'user_id' => $userId,
         ]);
     }
 
@@ -79,7 +79,7 @@ class NotificationService
             'message' => $message,
             'data' => $data,
             'action_url' => $actionUrl,
-            'user_id' => $userId
+            'user_id' => $userId,
         ]);
     }
 
@@ -88,16 +88,16 @@ class NotificationService
      */
     public static function orderCreated($orderType, $orderId, $userId = null)
     {
-        $title = ucfirst($orderType) . ' Order Created';
+        $title = ucfirst($orderType).' Order Created';
         $message = "New {$orderType} order #{$orderId} has been created successfully.";
-        
+
         return self::create([
             'type' => 'order',
             'title' => $title,
             'message' => $message,
             'data' => ['order_id' => $orderId, 'order_type' => $orderType],
             'action_url' => $orderType === 'sales' ? route('sales.order.view', $orderId) : route('purchase.order.view', $orderId),
-            'user_id' => $userId
+            'user_id' => $userId,
         ]);
     }
 
@@ -112,7 +112,7 @@ class NotificationService
             'message' => "Invoice #{$invoiceId} has been generated for order #{$orderId}.",
             'data' => ['invoice_id' => $invoiceId, 'order_id' => $orderId],
             'action_url' => route('invoices'),
-            'user_id' => $userId
+            'user_id' => $userId,
         ]);
     }
 
@@ -121,16 +121,16 @@ class NotificationService
      */
     public static function statusChanged($orderType, $orderId, $oldStatus, $newStatus, $userId = null)
     {
-        $title = ucfirst($orderType) . ' Order Status Updated';
-        $message = "Order #{$orderId} status changed from " . ucfirst(str_replace('_', ' ', $oldStatus)) . " to " . ucfirst(str_replace('_', ' ', $newStatus));
-        
+        $title = ucfirst($orderType).' Order Status Updated';
+        $message = "Order #{$orderId} status changed from ".ucfirst(str_replace('_', ' ', $oldStatus)).' to '.ucfirst(str_replace('_', ' ', $newStatus));
+
         return self::create([
             'type' => 'status',
             'title' => $title,
             'message' => $message,
             'data' => ['order_id' => $orderId, 'order_type' => $orderType, 'old_status' => $oldStatus, 'new_status' => $newStatus],
             'action_url' => $orderType === 'sales' ? route('sales.order.view', $orderId) : route('purchase.order.view', $orderId),
-            'user_id' => $userId
+            'user_id' => $userId,
         ]);
     }
 
@@ -149,10 +149,10 @@ class NotificationService
             'data' => [
                 'product_name' => $productName,
                 'quantity' => $quantity,
-                'warehouse_id' => $warehouseId
+                'warehouse_id' => $warehouseId,
             ],
             'action_url' => route('warehouse.index'),
-            'user_id' => $userId
+            'user_id' => $userId,
         ]);
     }
 
@@ -162,7 +162,7 @@ class NotificationService
     public static function productsReceived($orderType, $orderId, $productCount, $userId = null)
     {
         $title = 'Products Received';
-        $message = "Received {$productCount} products for " . ucfirst($orderType) . " Order #{$orderId}.";
+        $message = "Received {$productCount} products for ".ucfirst($orderType)." Order #{$orderId}.";
 
         return self::create([
             'type' => 'success',
@@ -171,10 +171,10 @@ class NotificationService
             'data' => [
                 'order_id' => $orderId,
                 'order_type' => $orderType,
-                'product_count' => $productCount
+                'product_count' => $productCount,
             ],
             'action_url' => route('received-products.index'),
-            'user_id' => $userId
+            'user_id' => $userId,
         ]);
     }
 
@@ -184,7 +184,7 @@ class NotificationService
     public static function getForUser($userId = null, $limit = 10)
     {
         $userId = $userId ?? Auth::id();
-        
+
         return Notification::forUser($userId)
             ->unread()
             ->recent($limit)
@@ -197,7 +197,7 @@ class NotificationService
     public static function getUnreadCount($userId = null)
     {
         $userId = $userId ?? Auth::id();
-        
+
         return Notification::forUser($userId)
             ->unread()
             ->count();
@@ -212,6 +212,7 @@ class NotificationService
         if ($notification) {
             $notification->markAsRead();
         }
+
         return $notification;
     }
 
@@ -223,8 +224,10 @@ class NotificationService
         $notification = Notification::find($notificationId);
         if ($notification) {
             $notification->delete();
+
             return true;
         }
+
         return false;
     }
 
@@ -234,12 +237,12 @@ class NotificationService
     public static function markAllAsRead($userId = null)
     {
         $userId = $userId ?? Auth::id();
-        
+
         return Notification::forUser($userId)
             ->unread()
             ->update([
                 'is_read' => true,
-                'read_at' => now()
+                'read_at' => now(),
             ]);
     }
 }

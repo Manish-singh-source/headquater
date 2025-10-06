@@ -12,11 +12,13 @@ class TrackOrderController extends Controller
     {
         if (isset($request->order_id)) {
             $salesOrder = SalesOrder::with('customerGroup', 'warehouse', 'orderedProducts.product', 'orderedProducts.tempOrder')->find($request->order_id);
-            if(!isset($salesOrder)) {
+            if (! isset($salesOrder)) {
                 return view('trackOrder.index')->with('error', 'Order Not Found.');
             }
+
             return view('trackOrder.index', compact('salesOrder'));
         }
+
         return view('trackOrder.index');
     }
 }

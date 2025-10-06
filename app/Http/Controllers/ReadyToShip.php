@@ -2,16 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Invoice;
 use App\Models\Customer;
-use App\Models\SalesOrder;
-use Illuminate\Http\Request;
-use App\Models\WarehouseStock;
-use App\Models\VendorPIProduct;
-use App\Models\SalesOrderProduct;
-use App\Models\VendorReturnProduct;
-use App\Http\Controllers\Controller;
+use App\Models\Invoice;
 use App\Models\ProductIssue;
+use App\Models\SalesOrder;
+use App\Models\SalesOrderProduct;
+use App\Models\VendorPIProduct;
+use App\Models\VendorReturnProduct;
+use App\Models\WarehouseStock;
 use App\Services\NotificationService;
 
 class ReadyToShip extends Controller
@@ -20,6 +18,7 @@ class ReadyToShip extends Controller
     public function index()
     {
         $orders = SalesOrder::where('status', 'ready_to_ship')->with('customerGroup')->get();
+
         return view('readyToShip.index', compact('orders'));
     }
 
@@ -56,6 +55,7 @@ class ReadyToShip extends Controller
 
         $customerInfo = Customer::find($c_id);
         $invoice = Invoice::where('customer_id', $c_id)->where('sales_order_id', $id)->first();
+
         // dd(json_encode($salesOrder, JSON_PRETTY_PRINT));
         return view('readyToShip.view-detail', compact('salesOrder', 'customerInfo', 'invoice'));
     }
@@ -63,6 +63,7 @@ class ReadyToShip extends Controller
     public function issuesProducts()
     {
         $vendorOrders = ProductIssue::with(['order', 'product', 'purchaseOrder', 'tempOrder'])->get();
+
         // dd($vendorOrders);
         return view('exceed-shortage', compact('vendorOrders'));
     }
@@ -70,6 +71,7 @@ class ReadyToShip extends Controller
     public function returnAccept()
     {
         $vendorOrders = VendorReturnProduct::with('vendorPIProduct')->where('return_status', 'pending')->get();
+
         // $vendorOrders = VendorPIProduct::with(['order', 'product'])->where('issue_reason', 'Exceed')->where('issue_status', 'pending')->get();
         return view('return-or-accept', compact('vendorOrders'));
     }
@@ -101,5 +103,4 @@ class ReadyToShip extends Controller
 
         return back()->with('success', 'Products are returned');
     }
-
 }

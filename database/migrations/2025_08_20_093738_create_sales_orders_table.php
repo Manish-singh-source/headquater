@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('warehouse_id')->constrained();
             $table->foreignId('customer_group_id')->constrained();
-            $table->enum('status', ['pending', 'blocked', 'completed', 'ready_to_ship', 'ready_to_package', 'shipped','delivered','cancelled'])->default('pending');
+            $table->enum('status', ['pending', 'blocked', 'completed', 'ready_to_ship', 'ready_to_package', 'shipped', 'delivered', 'cancelled'])->default('pending');
             $table->timestamps();
         });
     }

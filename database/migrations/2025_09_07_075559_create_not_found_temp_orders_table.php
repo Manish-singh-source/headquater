@@ -25,7 +25,7 @@ return new class extends Migration
             $table->string('gst')->nullable();
             $table->string('item_code')->nullable();
             $table->string('description')->nullable();
-            
+
             $table->string('basic_rate')->nullable()->default(0);
             $table->string('product_basic_rate')->nullable()->default(0);
             $table->string('rate_confirmation')->nullable();

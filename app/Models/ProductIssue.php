@@ -19,7 +19,6 @@ class ProductIssue extends Model
         return $this->hasOne(Product::class, 'sku', 'vendor_sku_code');
     }
 
-
     public function purchaseOrder()
     {
         return $this->hasOne(PurchaseOrder::class, 'id', 'purchase_order_id');

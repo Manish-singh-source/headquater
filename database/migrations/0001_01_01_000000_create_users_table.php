@@ -28,7 +28,7 @@ return new class extends Migration
             $table->string('state')->nullable();
             $table->string('country')->nullable();
             $table->string('pincode')->nullable();
-             $table->string('profile_image')->nullable();
+            $table->string('profile_image')->nullable();
             $table->enum('status', ['0', '1'])->default('1')->comment('Active : 1, Inactive : 0');
             $table->timestamp('email_verified_at')->nullable();
             $table->rememberToken();

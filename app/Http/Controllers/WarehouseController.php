@@ -2,34 +2,34 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\WarehouseFormRequest;
 use App\Models\City;
-use App\Models\State;
 use App\Models\Country;
+use App\Models\State;
 use App\Models\Warehouse;
 use Illuminate\Http\Request;
-use App\Http\Requests\WarehouseFormRequest;
 
 class WarehouseController extends Controller
 {
-
     public function index()
     {
         $warehouses = Warehouse::with('country')->with('state')->with('cities')->get();
+
         return view('warehouse.index', compact('warehouses'));
     }
-
 
     public function create()
     {
         $countries = Country::all();
         $states = State::all();
         $cities = City::all();
+
         return view('warehouse.create', compact('countries', 'states', 'cities'));
     }
 
     public function store(WarehouseFormRequest $request)
     {
-        $warehouse = new Warehouse();
+        $warehouse = new Warehouse;
         $warehouse->name = $request->name;
         $warehouse->type = $request->type;
         $warehouse->contact_person_name = $request->contact_person_name;
@@ -50,17 +50,17 @@ class WarehouseController extends Controller
         $warehouse->status = $request->status;
         $warehouse->save();
 
-        if (!$warehouse) {
+        if (! $warehouse) {
             return redirect()->back()->with('error', 'Something Went Wrong. Warehouse Not Created');
         }
 
         return redirect()->route('warehouse.index')->with('success', 'Warehouse Created Successfully');
     }
 
-
     public function edit($id)
     {
         $warehouse = Warehouse::findOrFail($id);
+
         return view('warehouse.edit', ['warehouse' => $warehouse]);
     }
 
@@ -87,7 +87,7 @@ class WarehouseController extends Controller
         $warehouse->status = $request->status;
         $warehouse->save();
 
-        if (!$warehouse) {
+        if (! $warehouse) {
             return redirect()->back()->with('error', 'Something Went Wrong. Warehouse Not Created');
         }
 
@@ -100,9 +100,10 @@ class WarehouseController extends Controller
             $warehouse = Warehouse::findOrFail($id);
             $warehouse->delete();
 
-            if (!$warehouse) {
+            if (! $warehouse) {
                 return redirect()->back()->with('error', 'Something Went Wrong. Warehouse Not Deleted');
             }
+
             return redirect()->route('warehouse.index')->with('success', 'Warehouse deleted successfully.');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Something Went Wrong. Warehouse Not Deleted. Please Delete related Products first.');
@@ -112,9 +113,9 @@ class WarehouseController extends Controller
     public function view($id)
     {
         $warehouse = Warehouse::with('warehouseStock.product')->findOrFail($id);
+
         return view('warehouse.view', ['warehouse' => $warehouse]);
     }
-
 
     public function toggleStatus(Request $request)
     {
@@ -130,6 +131,7 @@ class WarehouseController extends Controller
         try {
             $ids = is_array($request->ids) ? $request->ids : explode(',', $request->ids);
             Warehouse::destroy($ids);
+
             return redirect()->back()->with('success', 'Selected warehouses deleted successfully.');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Something Went Wrong. Warehouses Not Deleted. Please Delete related Products first.');

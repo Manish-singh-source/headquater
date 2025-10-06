@@ -3,10 +3,8 @@
 namespace Database\Seeders;
 
 use App\Models\City;
-use App\Models\State;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\File;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class CitySeeder extends Seeder
 {
@@ -22,7 +20,7 @@ class CitySeeder extends Seeder
         foreach ($cities as $city) {
             if ($city->country_id == 101) {
                 City::create([
-                    'name'     => $city->name,
+                    'name' => $city->name,
                     'state_id' => $city->state_id,
                 ]);
             }

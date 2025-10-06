@@ -3,15 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\Customer;
-use App\Models\VendorPI;
-use App\Models\SalesOrder;
-use Illuminate\Support\Arr;
-use Illuminate\Support\Str;
 use App\Models\ProductIssue;
-use Illuminate\Http\Request;
+use App\Models\SalesOrder;
 use App\Models\SalesOrderProduct;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 use Spatie\SimpleExcel\SimpleExcelReader;
 use Spatie\SimpleExcel\SimpleExcelWriter;
 
@@ -21,6 +18,7 @@ class PackagingController extends Controller
     public function index()
     {
         $orders = SalesOrder::with('customerGroup')->where('status', 'ready_to_package')->get();
+
         return view('packagingList.index', compact('orders'));
     }
 
@@ -48,14 +46,14 @@ class PackagingController extends Controller
 
     public function downloadPackagingProducts(Request $request)
     {
-        if (!$request->id) {
+        if (! $request->id) {
             return back()->with('error', 'Please Try Again.');
         }
 
         $id = $request->id;
 
         // Create temporary .xlsx file path
-        $tempXlsxPath = storage_path('app/received_' . Str::random(8) . '.xlsx');
+        $tempXlsxPath = storage_path('app/received_'.Str::random(8).'.xlsx');
 
         // Create writer
         $writer = SimpleExcelWriter::create($tempXlsxPath);
@@ -116,7 +114,7 @@ class PackagingController extends Controller
                 'Total Dispatch Qty' => $totalDispatchQty ?? 0,
                 'Final Dispatch Qty' => '',
                 'Issue Units' => '',
-                'Issue Reason' => ''
+                'Issue Reason' => '',
             ]);
         }
 
@@ -134,7 +132,7 @@ class PackagingController extends Controller
             'pi_excel' => 'required|file|mimes:xlsx,csv,xls',
         ]);
 
-        if (!$request->salesOrderId) {
+        if (! $request->salesOrderId) {
             return back()->with('error', 'Please Try Again.');
         }
 
@@ -153,22 +151,22 @@ class PackagingController extends Controller
                 if (empty($record['SKU Code'])) {
                     continue;
                 }
-                
+
                 $customer = Customer::where('facility_name', $record['Facility Name'])->first();
-                if (!$customer) {
+                if (! $customer) {
                     continue;
                 }
-                
+
                 // if final dispatch qty is empty or 0 then set it to dispatched quantity
-                // if user wants to set dispatch quantity to 0 then set it to 0 but how?? 
-                if (!empty($record['Final Dispatch Qty']) || $record['Final Dispatch Qty'] == 0) {
+                // if user wants to set dispatch quantity to 0 then set it to 0 but how??
+                if (! empty($record['Final Dispatch Qty']) || $record['Final Dispatch Qty'] == 0) {
                     $order = SalesOrderProduct::with('tempOrder')->where('customer_id', $customer->id)->where('sales_order_id', $request->salesOrderId)->where('sku', $record['SKU Code'])->first();
-                    if (!$order) {
+                    if (! $order) {
                         continue;
                     }
-                    
+
                     $tempOrder = $order->tempOrder;
-                    
+
                     if ($order->dispatched_quantity > $record['Final Dispatch Qty']) {
                         $order->final_dispatched_quantity = $record['Final Dispatch Qty'];
                         $order->issue_item = $record['Issue Units'];
@@ -176,9 +174,9 @@ class PackagingController extends Controller
                         $order->issue_description = $record['Issue Reason'];
                         $order->status = 'packaged';
                         $order->save();
-                        
+
                         $lessQuantity = $order->dispatched_quantity - $record['Final Dispatch Qty'];
-                        
+
                         // create entry in products issues table
                         // create entry in vendor return products issues table
                         ProductIssue::create([
@@ -195,7 +193,7 @@ class PackagingController extends Controller
                             'issue_from' => 'warehouse',
                             'issue_status' => 'pending',
                         ]);
-                        
+
                     } elseif ($order->dispatched_quantity < $record['Final Dispatch Qty']) {
                         $order->final_dispatched_quantity = $order->dispatched_quantity;
                         $order->issue_item = 'Exceed';
@@ -209,7 +207,7 @@ class PackagingController extends Controller
                     }
                 } else {
                     $order = SalesOrderProduct::where('customer_id', $customer->id)->where('sales_order_id', $request->salesOrderId)->where('sku', $record['SKU Code'])->first();
-                    if (!$order) {
+                    if (! $order) {
                         continue;
                     }
                     if ($order->dispatched_quantity > $record['Final Dispatch Qty']) {
@@ -237,14 +235,17 @@ class PackagingController extends Controller
 
             if ($insertCount === 0) {
                 DB::rollBack();
+
                 return redirect()->back()->with(['pi_excel' => 'No valid data found in the file.']);
             }
 
             DB::commit();
+
             return redirect()->route('packaging.list.index')->with('success', 'CSV file imported successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return redirect()->back()->with(['error' => 'Something went wrong: ' . $e->getMessage()]);
+
+            return redirect()->back()->with(['error' => 'Something went wrong: '.$e->getMessage()]);
         }
     }
 }

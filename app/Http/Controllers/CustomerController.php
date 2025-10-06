@@ -3,15 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\City;
-use App\Models\State;
 use App\Models\Country;
 use App\Models\Customer;
-use Illuminate\Http\Request;
-use App\Models\CustomerGroup;
-use Illuminate\Support\Facades\DB;
 use App\Models\CustomerGroupMember;
+use App\Models\State;
 use App\Models\User;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Spatie\SimpleExcel\SimpleExcelReader;
 
@@ -24,6 +23,7 @@ class CustomerController extends Controller
         $countries = Country::get();
         $states = State::get();
         $cities = City::get();
+
         return view('customer.create', ['group_id' => $g_id, 'countries' => $countries, 'states' => $states, 'cities' => $cities]);
     }
 
@@ -38,7 +38,7 @@ class CustomerController extends Controller
         }
 
         $file = $request->file('csv_file');
-        if (!$file) {
+        if (! $file) {
             return redirect()->back()->with('error', 'Please upload a CSV file.');
         }
 
@@ -64,10 +64,10 @@ class CustomerController extends Controller
                 //     }
                 // });
 
-                if (!isset($record['Facility Name']) || empty($record['Facility Name'])) {
+                if (! isset($record['Facility Name']) || empty($record['Facility Name'])) {
                     throw new \Exception('Facility Name is required');
                 }
-                
+
                 // $existingCustomer = $query->first();
                 $existingCustomer = Customer::where('facility_name', $record['Facility Name'])->first();
 
@@ -80,24 +80,24 @@ class CustomerController extends Controller
                 } else {
                     // 2. Insert individual customer
                     $customer = Customer::create([
-                        'facility_name'       => $record['Facility Name'] ?? '',
-                        'client_name'       => $record['Client Name'] ?? '',
-                        'contact_name'       => $record['Contact Name'] ?? '',
-                        'email'      => $record['Email'] ?? '',
-                        'contact_no'      => $record['Contact No'] ?? '',
-                        'gstin'      => $record['GSTIN'] ?? '',
-                        'pan'      => $record['PAN'] ?? '',
-                        'company_name'      => $record['Company Name'] ?? '',
-                        'billing_address'      => $record['Billing Address'] ?? '',
-                        'billing_country'      => $record['Billing Country'] ?? '',
-                        'billing_state'      => $record['Billing State'] ?? '',
-                        'billing_city'      => $record['Billing City'] ?? '',
-                        'billing_zip'      => $record['Billing Zip'] ?? '',
-                        'shipping_address'      => $record['Shipping Address'] ?? '',
-                        'shipping_country'      => $record['Shipping Country'] ?? '',
-                        'shipping_state'      => $record['Shipping State'] ?? '',
-                        'shipping_city'      => $record['Shipping City'] ?? '',
-                        'shipping_zip'      => $record['Shipping Zip'] ?? '',
+                        'facility_name' => $record['Facility Name'] ?? '',
+                        'client_name' => $record['Client Name'] ?? '',
+                        'contact_name' => $record['Contact Name'] ?? '',
+                        'email' => $record['Email'] ?? '',
+                        'contact_no' => $record['Contact No'] ?? '',
+                        'gstin' => $record['GSTIN'] ?? '',
+                        'pan' => $record['PAN'] ?? '',
+                        'company_name' => $record['Company Name'] ?? '',
+                        'billing_address' => $record['Billing Address'] ?? '',
+                        'billing_country' => $record['Billing Country'] ?? '',
+                        'billing_state' => $record['Billing State'] ?? '',
+                        'billing_city' => $record['Billing City'] ?? '',
+                        'billing_zip' => $record['Billing Zip'] ?? '',
+                        'shipping_address' => $record['Shipping Address'] ?? '',
+                        'shipping_country' => $record['Shipping Country'] ?? '',
+                        'shipping_state' => $record['Shipping State'] ?? '',
+                        'shipping_city' => $record['Shipping City'] ?? '',
+                        'shipping_zip' => $record['Shipping Zip'] ?? '',
                     ]);
 
                     // 3. Insert into customer_group_members
@@ -112,15 +112,18 @@ class CustomerController extends Controller
 
             if ($insertCount === 0) {
                 DB::rollBack();
+
                 return redirect()->back()->withErrors(['csv_file' => 'No valid data found in the CSV file.']);
             }
 
             DB::commit();
-            activity()->log('Customer Group Created' . $g_id . ' with ' . $insertCount . ' customers.' . ' by ' . Auth::user()->name);
+            activity()->log('Customer Group Created'.$g_id.' with '.$insertCount.' customers.'.' by '.Auth::user()->name);
+
             return redirect()->route('customer.groups.index')->with('success', 'CSV file imported successfully. Group and customers created.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return redirect()->back()->with(['error' => 'Something went wrong: ' . $e->getMessage()]);
+
+            return redirect()->back()->with(['error' => 'Something went wrong: '.$e->getMessage()]);
         }
     }
 
@@ -140,7 +143,7 @@ class CustomerController extends Controller
             return back()->withErrors($validator)->withInput();
         }
 
-        $customer = new Customer();
+        $customer = new Customer;
         $customer->facility_name = $request->facility_name;
         $customer->client_name = $request->client_name;
         $customer->contact_name = $request->contact_name;
@@ -162,20 +165,22 @@ class CustomerController extends Controller
         $customer->billing_zip = $request->billingPinCode;
         $customer->save();
 
-        $customerGrpMember = new CustomerGroupMember();
+        $customerGrpMember = new CustomerGroupMember;
         $customerGrpMember->customer_group_id = $request->group_id;
-        $customerGrpMember->customer_id  = $customer->id;
+        $customerGrpMember->customer_id = $customer->id;
         $customerGrpMember->save();
 
         if ($customer && $customerGrpMember) {
             return redirect()->route('customer.groups.view', $request->group_id)->with('success', 'Customer added successfully.');
         }
+
         return back()->with('error', 'Something Went Wrong.');
     }
 
     public function edit($id, $group_id)
     {
         $customer = Customer::findOrFail($id);
+
         return view('customer.edit', compact('customer', 'group_id'));
     }
 
@@ -186,7 +191,7 @@ class CustomerController extends Controller
             'facility_name' => 'required',
             'client_name' => 'required|min:3',
             'contact_name' => 'required|min:3',
-            'email' => 'required|email|unique:customers,email,' . $id,
+            'email' => 'required|email|unique:customers,email,'.$id,
             'contact_no' => 'required|digits:10',
             'gstin' => 'required',
             'pan' => 'required',
@@ -218,10 +223,9 @@ class CustomerController extends Controller
         $customer->billing_zip = $request->billingPinCode;
         $customer->save();
 
-        // Update customer group membership 
+        // Update customer group membership
         return redirect()->route('customer.groups.view', $request->group_id)->with('success', 'Customer updated successfully.');
     }
-
 
     public function delete($id)
     {
@@ -234,12 +238,14 @@ class CustomerController extends Controller
     public function detail($id)
     {
         $customerDetails = Customer::with('groupInfo.customerGroup', 'orders.product', 'orders.tempOrder')->where('id', $id)->first();
+
         return view('customer.detail-view', compact('customerDetails'));
     }
 
     public function profile()
     {
         $user = Auth::user();
+
         return view('user-profile', compact('user'));
     }
 
@@ -248,7 +254,7 @@ class CustomerController extends Controller
         $validator = Validator::make($request->all(), [
             'fname' => 'required|min:3',
             'lname' => 'required|min:3',
-            'email' => 'required|email|unique:staff,email,' . $id,
+            'email' => 'required|email|unique:staff,email,'.$id,
             'phone' => 'required|digits:10',
         ]);
 
@@ -271,15 +277,14 @@ class CustomerController extends Controller
         if ($request->hasFile('profile_image')) {
             // Save the profile image logic here
             $image = $request->file('profile_image');
-            $imageName = time() . '.' . $image->getClientOriginalExtension();
+            $imageName = time().'.'.$image->getClientOriginalExtension();
             $image->move(public_path('/uploads/images/profile'), $imageName);
-            $user->profile_image = '/uploads/images/profile/' . $imageName; // Save the 
+            $user->profile_image = '/uploads/images/profile/'.$imageName; // Save the
         }
         $user->save();
 
         return redirect()->route('user-profile')->with('success', 'Profile updated successfully.');
     }
-
 
     public function deleteSelected(Request $request)
     {
@@ -289,6 +294,7 @@ class CustomerController extends Controller
         if ($customerGroupMember) {
             return redirect()->back()->with('success', 'Selected customers deleted successfully.');
         }
+
         return redirect()->back()->with('error', 'Failed to delete selected customers.');
     }
 }

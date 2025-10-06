@@ -10,11 +10,9 @@ class CustomerGroupMember extends Model
 {
     //
     use LogsActivity;
-    
+
     /**
      * The function logs the activity of the user.
-     *
-     * @return LogOptions
      */
     public function getActivitylogOptions(): LogOptions
     {
@@ -33,7 +31,7 @@ class CustomerGroupMember extends Model
     {
         return $this->belongsTo(Customer::class);
     }
-    
+
     public function customerGroup()
     {
         return $this->hasOne(CustomerGroup::class, 'id', 'customer_group_id');

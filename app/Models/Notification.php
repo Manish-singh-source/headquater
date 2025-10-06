@@ -16,7 +16,7 @@ class Notification extends Model
         'user_id',
         'is_read',
         'read_at',
-        'action_url'
+        'action_url',
     ];
 
     protected $casts = [
@@ -24,7 +24,7 @@ class Notification extends Model
         'is_read' => 'boolean',
         'read_at' => 'datetime',
         'created_at' => 'datetime',
-        'updated_at' => 'datetime'
+        'updated_at' => 'datetime',
     ];
 
     // Relationships
@@ -54,7 +54,7 @@ class Notification extends Model
     {
         $this->update([
             'is_read' => true,
-            'read_at' => now()
+            'read_at' => now(),
         ]);
     }
 
@@ -72,7 +72,7 @@ class Notification extends Model
             'info' => 'bi bi-info-circle text-info',
             'order' => 'bi bi-cart-plus text-primary',
             'invoice' => 'bi bi-receipt text-info',
-            'status' => 'bi bi-arrow-repeat text-warning'
+            'status' => 'bi bi-arrow-repeat text-warning',
         ];
 
         return $icons[$this->type] ?? 'bi bi-bell text-secondary';

@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use App\Models\User;
-use App\Models\Vendor;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -30,7 +29,7 @@ class DatabaseSeeder extends Seeder
             StateSeeder::class,
             CitySeeder::class,
             WarehouseSeeder::class,
-            VendorsSeeder::class
+            VendorsSeeder::class,
         ]);
     }
 }

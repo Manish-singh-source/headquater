@@ -10,8 +10,9 @@ class PermissionController extends Controller
     //
     public function index()
     {
-        // Logic to list permissions    
+        // Logic to list permissions
         $permissions = Permission::latest()->get(); // Assuming you have a Permission model
+
         return view('permissions.index', compact('permissions'));
     }
 
@@ -40,6 +41,7 @@ class PermissionController extends Controller
     {
         // Logic to show edit permission form
         $permission = Permission::findOrFail($id);
+
         return view('permissions.edit', compact('permission'));
     }
 
@@ -47,15 +49,16 @@ class PermissionController extends Controller
     {
         // Logic to update a permission
         $request->validate([
-            'name' => 'required|unique:permissions,name,' . $id,
+            'name' => 'required|unique:permissions,name,'.$id,
         ]);
 
         $permission = Permission::findOrFail($id);
         $permission->update($request->all());
 
-        if($permission) {
+        if ($permission) {
             return redirect()->route('permission.index')->with('success', 'Permission updated successfully.');
         }
+
         return redirect()->back()->with('error', 'Failed to update permission.');
     }
 
@@ -68,6 +71,7 @@ class PermissionController extends Controller
         if ($permission) {
             return redirect()->route('permission.index')->with('success', 'Permission deleted successfully.');
         }
+
         return redirect()->back()->with('error', 'Failed to delete permission.');
     }
 }

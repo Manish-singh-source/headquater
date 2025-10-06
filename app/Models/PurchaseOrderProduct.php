@@ -15,11 +15,13 @@ class PurchaseOrderProduct extends Model
         return $this->belongsTo(PurchaseOrder::class, 'purchase_order_id', 'id');
     }
 
-    public function product() : HasOne {
+    public function product(): HasOne
+    {
         return $this->hasOne(Product::class, 'sku', 'sku');
     }
 
-    public function tempOrder() : HasOne {
+    public function tempOrder(): HasOne
+    {
         return $this->hasOne(TempOrder::class, 'sku', 'sku');
     }
 

@@ -1,28 +1,27 @@
 <?php
 
-use App\Http\Controllers\ReadyToShip;
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\RoleController;
-use App\Http\Controllers\StaffController;
-use App\Http\Controllers\ReportController;
-use App\Http\Controllers\VendorController;
-use App\Http\Controllers\InvoiceController;
-use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ActivityController;
 use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\CustomerGroupController;
+use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\LocationController;
-use App\Http\Controllers\RegisterController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PackagingController;
-use App\Http\Controllers\WarehouseController;
 use App\Http\Controllers\PermissionController;
+use App\Http\Controllers\ProductController;
+use App\Http\Controllers\PurchaseOrderController;
+use App\Http\Controllers\ReadyToShip;
+use App\Http\Controllers\ReceivedProductsController;
+use App\Http\Controllers\RegisterController;
+use App\Http\Controllers\ReportController;
+use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SalesOrderController;
 use App\Http\Controllers\SKUMappingController;
+use App\Http\Controllers\StaffController;
 use App\Http\Controllers\TrackOrderController;
-use App\Http\Controllers\CustomerGroupController;
-use App\Http\Controllers\PurchaseOrderController;
-use App\Http\Controllers\ReceivedProductsController;
-use App\Http\Controllers\NotificationController;
-
+use App\Http\Controllers\VendorController;
+use App\Http\Controllers\WarehouseController;
+use Illuminate\Support\Facades\Route;
 
 Route::controller(LocationController::class)->group(function () {
     Route::get('/countries', 'getCountries');
@@ -45,10 +44,9 @@ Route::middleware(['auth'])->group(function () {
     // Dashboard
     Route::get('/', [RegisterController::class, 'index'])->name('index');
 
-
-    //Access Control
+    // Access Control
     Route::controller(StaffController::class)->group(function () {
-        // Staff 
+        // Staff
         Route::get('/staff', 'index')->name('staff.index');
         Route::get('/create-staff', 'create')->name('staff.create');
         Route::post('/store-staff', 'store')->name('staff.store');
@@ -83,7 +81,6 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/delete-permission/{id}', 'destroy')->name('permission.destroy');
     });
 
-
     Route::controller(CustomerGroupController::class)->group(function () {
         Route::get('/customer-groups', 'index')->name('customer.groups.index');
         Route::get('/create-customer-groups', 'create')->name('customer.groups.create');
@@ -111,7 +108,6 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/user-profile/update/{id}', 'updateuser')->name('user.update');
         Route::delete('/customers/delete-selected', 'deleteSelected')->name('delete.selected.customers');
     });
-
 
     // Vendors
     Route::controller(VendorController::class)->group(function () {
@@ -206,15 +202,14 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/change-purchase-order-status', 'changeStatus')->name('change.purchase.order.status');
 
         Route::post('/vendor-invoice-payment-update', 'vendorInvoicePaymentStore')->name('vendor.invoice.payment.store');
-        // Return or accept packaging products 
+        // Return or accept packaging products
         Route::get('/vendor-product-return/{id}', 'vendorProductReturn')->name('vendor.product.return');
         Route::get('/vendor-product-accept/{id}', 'vendorProductAccept')->name('vendor.product.accept');
     });
 
-
     // Check code from here
 
-    // received products From Vendors PI Order  
+    // received products From Vendors PI Order
     Route::controller(ReceivedProductsController::class)->group(function () {
         Route::get('/received-products', 'index')->name('received-products.index');
         Route::get('/received-products/{id}/{vendorCode}', 'view')->name('received-products.view');
@@ -232,7 +227,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/update-packaging-products', 'updatePackagingProducts')->name('update.packing.products');
     });
 
-    // 
+    //
     Route::controller(ReadyToShip::class)->group(function () {
         Route::get('/ready-to-ship', 'index')->name('readyToShip.index');
         Route::get('/ready-to-ship-detail/{id}', 'view')->name('readyToShip.view');
@@ -243,9 +238,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/return-vendor-products/{id}', 'returnVendorProducts')->name('return.vendor.products');
     });
 
-
-
-    // Track order 
+    // Track order
     Route::controller(TrackOrderController::class)->group(function () {
         Route::get('/track-order', 'index')->name('trackOrder.index');
         Route::post('/track-order', 'index')->name('trackOrder.index');
@@ -276,12 +269,11 @@ Route::middleware(['auth'])->group(function () {
         })->name('create-invoice');
         Route::get('/invoices-details/{id}', 'invoiceDetails')->name('invoices-details');
 
-        // updating invoice details appointment, grn, dn, and payment 
+        // updating invoice details appointment, grn, dn, and payment
         Route::post('/invoice-appointment-update/{id}', 'invoiceAppointmentUpdate')->name('invoices.appointment.update');
         Route::post('/invoice-dn-update/{id}', 'invoiceDnUpdate')->name('invoice.dn.update');
         Route::post('/invoice-payment-update/{id}', 'invoicePaymentUpdate')->name('invoice.payment.update');
     });
-
 
     Route::view('/excel-file-formats', 'excel-file-formats')->name('excel-file-formats');
 
@@ -299,11 +291,10 @@ Route::middleware(['auth'])->group(function () {
     });
 });
 
-
 Route::view('/404', 'errors.404');
 
 // Test notification routes
-Route::get('/test-notifications', function() {
+Route::get('/test-notifications', function () {
     // Create some test notifications
     \App\Services\NotificationService::orderCreated('sales', 12345);
     \App\Services\NotificationService::orderCreated('purchase', 67890);
@@ -316,21 +307,21 @@ Route::get('/test-notifications', function() {
 })->name('test.notifications');
 
 // Test notification deletion
-Route::get('/test-notification-delete', function() {
+Route::get('/test-notification-delete', function () {
     $notifications = \App\Models\Notification::where('user_id', auth()->id())->get();
     $count = $notifications->count();
 
     return response()->json([
         'total_notifications' => $count,
-        'notifications' => $notifications->map(function($n) {
+        'notifications' => $notifications->map(function ($n) {
             return [
                 'id' => $n->id,
                 'title' => $n->title,
                 'message' => $n->message,
                 'is_read' => $n->is_read,
-                'created_at' => $n->created_at
+                'created_at' => $n->created_at,
             ];
-        })
+        }),
     ]);
 })->name('test.notification.delete');
 

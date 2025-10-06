@@ -44,7 +44,6 @@ class SalesOrder extends Model
         return $this->hasMany(NotFoundTempOrder::class, 'sales_order_id', 'id')->where('vendor_status', 'Not Found');
     }
 
-
     public function vendorPIs()
     {
         return $this->hasManyThrough(VendorPI::class, PurchaseOrder::class, 'sales_order_id', 'purchase_order_id');
