@@ -63,6 +63,30 @@ class SalesOrderController extends Controller
 
             $reader = SimpleExcelReader::create($file, $file_extension);
 
+
+            $rows = $reader->getRows()->toArray(); // convert to array so we can check duplicates easily
+
+            // 🔹 Step 1: Check for duplicates (Customer + SKU)
+            $seen = [];
+
+            foreach ($rows as $record) {
+                if (empty($record['SKU Code']) || empty($record['Facility Name'])) {
+                    continue;
+                }
+
+                $key = strtolower(trim($record['Facility Name'])) . '|' . strtolower(trim($record['SKU Code']));
+
+                if (isset($seen[$key])) {
+                    DB::rollBack();
+                    return redirect()->back()->with([
+                        'error' => 'Please check excel file: duplicate SKU (' . $record['SKU Code'] . ') found for same customer (' . $record['Facility Name'] . ').'
+                    ]);
+                }
+
+                $seen[$key] = true;
+            }
+
+            
             $productStockCache = []; // Cache stock by SKU
             $insertedRows = [];
             $skuNotFoundRows = [];
@@ -333,10 +357,10 @@ class SalesOrderController extends Controller
 
                     if ($existingProduct) {
                         // Combine quantities if match found
-                        if($shortQty != $record['Purchase Order Quantity']){
+                        if ($shortQty != $record['Purchase Order Quantity']) {
                             $existingProduct->ordered_quantity += $record['Purchase Order Quantity'];
                             $existingProduct->save();
-                        }else {
+                        } else {
                             $existingProduct->ordered_quantity += $shortQty;
                             $existingProduct->save();
                         }
@@ -350,9 +374,9 @@ class SalesOrderController extends Controller
                         $purchaseOrderProduct->product_id = $product->product->id ?? null;
                         $purchaseOrderProduct->sku = $sku;
                         $purchaseOrderProduct->vendor_code = $vendorCode;
-                        if($shortQty != $record['Purchase Order Quantity']){
+                        if ($shortQty != $record['Purchase Order Quantity']) {
                             $purchaseOrderProduct->ordered_quantity = $record['Purchase Order Quantity'];
-                        }else {
+                        } else {
                             $purchaseOrderProduct->ordered_quantity = $shortQty;
                         }
                         $purchaseOrderProduct->save();
@@ -399,40 +423,40 @@ class SalesOrderController extends Controller
         $request->validate([
             'products_excel' => 'required|file|mimes:xlsx,csv,xls',
         ]);
-        
+
         $file = $request->file('products_excel');
         $filepath = $file->getPathname();
         $extension = $file->getClientOriginalExtension();
-        
+
         DB::beginTransaction();
-        
+
         try {
             $reader = SimpleExcelReader::create($filepath, $extension);
             $rows = $reader->getRows()->toArray(); // convert to array so we can check duplicates easily
-            
+
             // 🔹 Step 1: Check for duplicates (Customer + SKU)
             $seen = [];
-            
+
             foreach ($rows as $record) {
                 if (empty($record['SKU Code']) || empty($record['Facility Name'])) {
                     continue;
                 }
-                
+
                 $key = strtolower(trim($record['Facility Name'])) . '|' . strtolower(trim($record['SKU Code']));
-                
+
                 if (isset($seen[$key])) {
                     DB::rollBack();
                     return redirect()->back()->with([
                         'error' => 'Please check excel file: duplicate SKU (' . $record['SKU Code'] . ') found for same customer (' . $record['Facility Name'] . ').'
                     ]);
                 }
-                
+
                 $seen[$key] = true;
             }
-            
+
             $products = [];
             $insertCount = 0;
-            
+
 
             // 🔹 Step 2: Process records if no duplicates
             foreach ($rows as $record) {
@@ -565,7 +589,7 @@ class SalesOrderController extends Controller
             return redirect()->back()->with(['error' => 'Something went wrong: ' . $e->getMessage()]);
         }
     }
-    
+
     public function view($id)
     {
         $salesOrder = SalesOrder::with([
@@ -732,41 +756,41 @@ class SalesOrderController extends Controller
                 //     ->pluck('client_name', 'id',);
 
                 // foreach ($customerFacilityName as $customer_id => $facility_name) {
-                    // $invoice = new Invoice();
-                    // $invoice->warehouse_id = $salesOrder->warehouse_id;
-                    // $invoice->invoice_number = 'INV-' . time() . '-' . $customer_id;
-                    // $invoice->customer_id = $customer_id;
-                    // $invoice->sales_order_id = $salesOrder->id;
-                    // $invoice->invoice_date = now();
-                    // $invoice->round_off = 0;
+                // $invoice = new Invoice();
+                // $invoice->warehouse_id = $salesOrder->warehouse_id;
+                // $invoice->invoice_number = 'INV-' . time() . '-' . $customer_id;
+                // $invoice->customer_id = $customer_id;
+                // $invoice->sales_order_id = $salesOrder->id;
+                // $invoice->invoice_date = now();
+                // $invoice->round_off = 0;
 
-                    // $invoice->total_amount = $salesOrder->orderedProducts->sum(function ($product) {
-                    //     return $product->ordered_quantity * $product->product->mrp; // Assuming 'price' is the field in Product model
-                    // });
-                    // $invoice->save();
+                // $invoice->total_amount = $salesOrder->orderedProducts->sum(function ($product) {
+                //     return $product->ordered_quantity * $product->product->mrp; // Assuming 'price' is the field in Product model
+                // });
+                // $invoice->save();
 
-                    // $invoiceDetails = [];
-                    // foreach ($salesOrderDetails as $detail) {
-                    //     if ($detail->customer_id == $customer_id) {
-                    //         $product = Product::where('sku', $detail->sku)->first();
-                    //         $invoiceDetails[] = [
-                    //             'invoice_id' => $invoice->id,
-                    //             'product_id' => $product->id,
-                    //             'temp_order_id' => $detail->temp_order_id,
-                    //             'quantity' => $detail->ordered_quantity,
-                    //             'unit_price' => $product->mrp,
-                    //             'discount' => 0, // Assuming no discount for simplicity
-                    //             'amount' => $detail->ordered_quantity * $product->mrp,
-                    //             'tax' => $product->gst ?? 0, // Assuming tax is a field in Product model
-                    //             'total_price' => ($detail->ordered_quantity * $product->mrp) - 0, // Total price after discount
-                    //             'description' => isset($detail->tempOrder) ? $detail->tempOrder->description : null, // Assuming description is in TempOrder
-                    //         ];
+                // $invoiceDetails = [];
+                // foreach ($salesOrderDetails as $detail) {
+                //     if ($detail->customer_id == $customer_id) {
+                //         $product = Product::where('sku', $detail->sku)->first();
+                //         $invoiceDetails[] = [
+                //             'invoice_id' => $invoice->id,
+                //             'product_id' => $product->id,
+                //             'temp_order_id' => $detail->temp_order_id,
+                //             'quantity' => $detail->ordered_quantity,
+                //             'unit_price' => $product->mrp,
+                //             'discount' => 0, // Assuming no discount for simplicity
+                //             'amount' => $detail->ordered_quantity * $product->mrp,
+                //             'tax' => $product->gst ?? 0, // Assuming tax is a field in Product model
+                //             'total_price' => ($detail->ordered_quantity * $product->mrp) - 0, // Total price after discount
+                //             'description' => isset($detail->tempOrder) ? $detail->tempOrder->description : null, // Assuming description is in TempOrder
+                //         ];
 
-                    //         $detail->status = 'dispatched';
-                    //         $detail->save();
-                    //     }
-                    // }
-                    // InvoiceDetails::insert($invoiceDetails);
+                //         $detail->status = 'dispatched';
+                //         $detail->save();
+                //     }
+                // }
+                // InvoiceDetails::insert($invoiceDetails);
                 // }
 
                 $salesOrderUpdate = SalesOrder::with([
@@ -938,17 +962,17 @@ class SalesOrderController extends Controller
                 $invoice->po_number = $invoiceData[0]->tempOrder->po_number ?? '';
                 $invoice->save();
 
-                foreach ($invoiceData as $detail) { 
+                foreach ($invoiceData as $detail) {
                     $totalAmount += (int) $detail->ordered_quantity * (float) $detail->product->mrp;
 
                     $invoiceDetails = new InvoiceDetails();
                     $invoiceDetails->invoice_id = $invoice->id;
                     $invoiceDetails->product_id = $detail->product_id;
-                    $invoiceDetails->temp_order_id = $detail->temp_order_id; 
-                    $invoiceDetails->quantity = $detail->ordered_quantity; 
-                    $invoiceDetails->unit_price = $detail->product->mrp;  
+                    $invoiceDetails->temp_order_id = $detail->temp_order_id;
+                    $invoiceDetails->quantity = $detail->ordered_quantity;
+                    $invoiceDetails->unit_price = $detail->product->mrp;
                     $invoiceDetails->discount = 0; // Assuming no discount for simplicity 
-                    $invoiceDetails->amount = $detail->ordered_quantity * $detail->product->mrp;  
+                    $invoiceDetails->amount = $detail->ordered_quantity * $detail->product->mrp;
                     $invoiceDetails->tax = $detail->product->gst ?? 0; // Assuming tax is a field in Product model 
                     $invoiceDetails->total_price = ($detail->ordered_quantity * $detail->product->mrp) - 0; // Total price after discount 
                     $invoiceDetails->description = isset($detail->tempOrder) ? $detail->tempOrder->description : null; // Assuming description is in TempOrder 
@@ -957,8 +981,8 @@ class SalesOrderController extends Controller
                     $invoiceDetails->save();
                 }
                 $no++;
-                
-                if(!$invoiceDetails) {
+
+                if (!$invoiceDetails) {
                     DB::rollBack();
                     return redirect()->back()->with('error', 'Invoice Not Generated. Please Try Again.');
                 }
