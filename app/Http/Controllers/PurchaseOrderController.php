@@ -402,14 +402,14 @@ class PurchaseOrderController extends Controller
                 foreach ($tempOrderProducts as $tempOrderproduct) {
                     if ($tempOrderproduct->unavailable_quantity <= $receivedQuantity) {
                         $tempOrderproduct->available_quantity += $tempOrderproduct->unavailable_quantity;
-                        $tempOrderproduct->block += $tempOrderproduct->unavailable_quantity;
-                        $tempOrderproduct->vendor_pi_received_quantity = $tempOrderproduct->unavailable_quantity;
+                        $tempOrderproduct->block += $tempOrderproduct->unavailable_quantity; 
+                        $tempOrderproduct->vendor_pi_received_quantity += $tempOrderproduct->unavailable_quantity;
                         $receivedQuantity -= $tempOrderproduct->unavailable_quantity;
                         $tempOrderproduct->unavailable_quantity = 0;
                     } else {
                         $tempOrderproduct->available_quantity += $receivedQuantity;
                         $tempOrderproduct->block += $receivedQuantity;
-                        $tempOrderproduct->vendor_pi_received_quantity = $receivedQuantity;
+                        $tempOrderproduct->vendor_pi_received_quantity += $receivedQuantity;
                         $tempOrderproduct->unavailable_quantity -= $receivedQuantity;
                         $receivedQuantity = 0;
                     }

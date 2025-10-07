@@ -282,12 +282,6 @@
                                             <td>{{ $order->tempOrder?->purchase_order_quantity }}</td>
                                             <td>{{ $order->tempOrder?->block }}</td>
 
-                                            @php
-                                                if ($order->tempOrder?->vendor_pi_received_quantity > 0) {
-                                                    $order->tempOrder->vendor_pi_fulfillment_quantity =
-                                                        $order->tempOrder->vendor_pi_received_quantity;
-                                                }
-                                            @endphp
 
                                             {{-- @if ($order->tempOrder?->vendor_pi_fulfillment_quantity > 0) 
                                                 @if ($order->tempOrder->po_qty <= $order->tempOrder?->block + $order->tempOrder->vendor_pi_fulfillment_quantity) 
@@ -302,12 +296,12 @@
                                                 @if ($order->tempOrder?->vendor_pi_received_quantity > 0)
                                                     @if (
                                                         $order->tempOrder->po_qty <=
-                                                            ($order->tempOrder?->block ?? 0) + ($order->tempOrder?->vendor_pi_received_quantity ?? 0))
+                                                            ($order->tempOrder?->block ?? 0))
                                                         <span
                                                             class="badge text-success bg-success-subtle">{{ $order->tempOrder->po_qty }}</span>
                                                     @else
                                                         <span
-                                                            class="badge text-danger bg-danger-subtle">{{ ($order->tempOrder?->block ?? 0)  + ($order->tempOrder?->vendor_pi_received_quantity ?? 0) }}</span>
+                                                            class="badge text-danger bg-danger-subtle">{{ ($order->tempOrder?->block ?? 0)  }}</span>
                                                     @endif
                                                 @elseif($order->tempOrder?->vendor_pi_fulfillment_quantity > 0)
                                                     @if (
