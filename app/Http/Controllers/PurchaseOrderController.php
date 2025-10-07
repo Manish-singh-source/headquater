@@ -164,8 +164,10 @@ class PurchaseOrderController extends Controller
                     ->get();
 
                 foreach ($salesOrderProduct as $item) {
-                    $tempProduct = TempOrder::where('id', $item->temp_order_id)->first();
-
+                    $tempProduct = TempOrder::where('id', $item->temp_order_id)->where('vendor_code', $request->vendor_code)->first();
+                    if (! $tempProduct) {
+                        continue;
+                    }
                     if ($tempProduct->po_qty >= $salesOrderFulfillment[$newSku]['quantity']) {
                         if ($tempProduct->po_qty > $tempProduct->available_quantity) {
                             $tempProduct->vendor_pi_fulfillment_quantity = $salesOrderFulfillment[$newSku]['quantity'];
@@ -213,6 +215,7 @@ class PurchaseOrderController extends Controller
 
             return redirect()->back()->with('success', 'Purchase Order products imported successfully! Vendor PI ID: '.$vendorPi->id);
         } catch (\Exception $e) {
+            dd($e);
             DB::rollBack();
 
             return redirect()->back()->with(['error' => 'Something went wrong: '.$e->getMessage()]);
@@ -378,6 +381,7 @@ class PurchaseOrderController extends Controller
             foreach ($vendorPIProducts->products as $product) {
                 $total_amount += $product->mrp * $product->quantity_received;
                 $updateStock = WarehouseStock::where('sku', $product->vendor_sku_code)->first();
+
                 if (isset($updateStock)) {
                     // logic for updating warehouse stock and block quantity
                     $updateStock->block_quantity = $updateStock->block_quantity + $product->quantity_received;
@@ -398,9 +402,9 @@ class PurchaseOrderController extends Controller
                 // update temp order vendor_pi_received_quantity
                 $receivedQuantity = $product->quantity_received ?? 0;
 
-                $tempOrderProducts = TempOrder::where('vendor_pi_id', $product->vendor_pi_id)->where('sku', $product->vendor_sku_code)->get();
+                $tempOrderProducts = TempOrder::where('vendor_pi_id', $product->vendor_pi_id)->where('vendor_code', $request->vendor_code)->where('sku', $product->vendor_sku_code)->get();
                 foreach ($tempOrderProducts as $tempOrderproduct) {
-                    if ($tempOrderproduct->unavailable_quantity <= $receivedQuantity) {
+                    if ($tempOrderproduct->unavailable_quantity <= $receivedQuantity && $tempOrderproduct->unavailable_quantity > 0) {
                         $tempOrderproduct->available_quantity += $tempOrderproduct->unavailable_quantity;
                         $tempOrderproduct->block += $tempOrderproduct->unavailable_quantity; 
                         $tempOrderproduct->vendor_pi_received_quantity += $tempOrderproduct->unavailable_quantity;
