@@ -16,13 +16,13 @@
                             @csrf
                             @method('PUT')
                             <input type="hidden" name="order_id" value="{{ $salesOrder->id }}">
+                            <input type="hidden" name="customer_id" value="{{ $customerInfo->id }}">
                             <select class="form-select border-2 border-primary" id="changeStatus"
                                 aria-label="Default select example" name="status">
                                 <option value="" selected disabled>Change Status</option>
-                                {{-- <option value="dispatched" @if ($salesOrder->status == 'dispatched') selected @endif>
-                                    Dispatched</option> --}}
-                                <option value="delivered" @if ($salesOrder->status == 'delivered') selected @endif>
-                                    delivered</option>
+
+                                <option value="shipped" @if ($salesOrder->status == 'shipped') selected @endif>
+                                    Shipped</option>
                             </select>
                         </form>
                     </div>
@@ -67,16 +67,6 @@
                                 <span><b> Shipping Address</b></span>
                                 <span> {{ $customerInfo->shipping_address ?? 'NA' }}</span>
                             </li>
-                            <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
-                                <span><b>Invoices PDF</b></span>
-                                <span>
-                                    {{-- <a aria-label="anchor" href="{{ route('invoice.downloadPdf', $invoice->id) }}"
-                                        class="btn btn-icon btn-sm bg-primary-subtle me-1" data-bs-toggle="tooltip"
-                                        data-bs-original-title="View">
-                                        Download
-                                    </a> --}}
-                                </span>
-                            </li>
                         </ul>
                     </div>
                 </div>
@@ -97,7 +87,7 @@
                                         <thead class="table-light">
                                             <tr>
                                                 <th>Customer&nbsp;Name</th>
-                                                <th>PO&nbsp;Number</th>
+                                                {{-- <th>PO&nbsp;Number</th> --}}
                                                 <th>SKU&nbsp;Code</th>
                                                 <th>Facility&nbsp;Name</th>
                                                 <th>Facility&nbsp;Location</th>
@@ -122,7 +112,7 @@
                                             @forelse($salesOrder->orderedProducts as $order)
                                                 <tr>
                                                     <td>{{ $order->customer->contact_name }}</td>
-                                                    <td>{{ $order->tempOrder->po_number }}</td>
+                                                    {{-- <td>{{ $order->tempOrder->po_number }}</td> --}}
                                                     <td>{{ $order->tempOrder->sku }}</td>
                                                     <td>{{ $order->tempOrder->facility_name }}</td>
                                                     <td>{{ $order->tempOrder->facility_location }}</td>

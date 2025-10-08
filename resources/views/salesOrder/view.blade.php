@@ -4,7 +4,7 @@
         $statuses = [
             'pending' => 'Pending',
             'blocked' => 'Blocked',
-            'delivered' => 'Delivered',
+            'shipped' => 'Shipped',
             'completed' => 'Completed',
             'ready_to_ship' => 'Ready To Ship',
             'ready_to_package' => 'Ready To Package',
@@ -172,15 +172,15 @@
                                         aria-label="Default select example" name="status">
                                         <option value="" selected disabled>Change Status</option>
                                         <option value="pending" @if ($salesOrder->status == 'pending') selected @endif
-                                            @if (in_array($salesOrder->status, ['blocked', 'ready_to_package', 'ready_to_ship', 'delivered', 'completed'])) disabled @endif>Pending</option>
+                                            @if (in_array($salesOrder->status, ['blocked', 'ready_to_package', 'ready_to_ship', 'shipped', 'completed'])) disabled @endif>Pending</option>
                                         <option value="blocked" @if ($salesOrder->status == 'blocked') selected @endif
-                                            @if (in_array($salesOrder->status, ['ready_to_package', 'ready_to_ship', 'delivered', 'completed'])) disabled @endif>Blocked</option>
+                                            @if (in_array($salesOrder->status, ['ready_to_package', 'ready_to_ship', 'shipped', 'completed'])) disabled @endif>Blocked</option>
                                         <option value="ready_to_package" @if ($salesOrder->status == 'ready_to_package') selected @endif
-                                            @if (in_array($salesOrder->status, ['ready_to_ship', 'delivered', 'completed'])) disabled @endif>Ready To Package</option>
+                                            @if (in_array($salesOrder->status, ['ready_to_ship', 'shipped', 'completed'])) disabled @endif>Ready To Package</option>
                                         <option value="ready_to_ship" @if ($salesOrder->status == 'ready_to_ship') selected @endif
-                                            @if (in_array($salesOrder->status, ['delivered', 'completed'])) disabled @endif>Ready To Ship</option>
-                                        <option value="delivered" @if ($salesOrder->status == 'delivered') selected @endif
-                                            @if (in_array($salesOrder->status, ['completed'])) disabled @endif>Delivered</option>
+                                            @if (in_array($salesOrder->status, ['shipped', 'completed'])) disabled @endif>Ready To Ship</option>
+                                        <option value="shipped" @if ($salesOrder->status == 'shipped') selected @endif
+                                            @if (in_array($salesOrder->status, ['completed'])) disabled @endif>Shipped</option>
                                         <option value="completed" @if ($salesOrder->status == 'completed') selected @endif>
                                             Completed</option>
                                     </select>
@@ -281,17 +281,6 @@
                                             <td>{{ $order->ordered_quantity }}</td>
                                             <td>{{ $order->tempOrder?->purchase_order_quantity }}</td>
                                             <td>{{ $order->tempOrder?->block }}</td>
-
-
-                                            {{-- @if ($order->tempOrder?->vendor_pi_fulfillment_quantity > 0) 
-                                                @if ($order->tempOrder->po_qty <= $order->tempOrder?->block + $order->tempOrder->vendor_pi_fulfillment_quantity) 
-                                                    <td><span
-                                                        class="badge text-danger bg-danger-subtle">{{ $order->tempOrder?->block + $order->tempOrder->vendor_pi_fulfillment_quantity }}</span></td>
-                                                @else 
-                                                    <td><span
-                                                        class="badge text-success bg-success-subtle">{{ $order->tempOrder->po_qty }}</span></td>
-                                                @endif
-                                            @endif --}}
                                             <td>
                                                 @if ($order->tempOrder?->vendor_pi_received_quantity > 0)
                                                     @if (
@@ -324,15 +313,6 @@
                                                             class="badge text-danger bg-danger-subtle">{{ ($order->tempOrder?->block ?? 0) }}</span>
                                                     @endif
                                                 @endif 
-
-
-                                                {{-- @if ($order->tempOrder->po_qty <= ($order->tempOrder?->available_quantity ?? 0) + ($order->tempOrder?->vendor_pi_fulfillment_quantity ?? 0))
-                                                    <span
-                                                        class="badge text-success bg-success-subtle">{{ $order->tempOrder->po_qty }}</span>
-                                                @else
-                                                    <span
-                                                        class="badge text-danger bg-danger-subtle">{{ ($order->tempOrder?->available_quantity ?? 0) + ($order->tempOrder?->vendor_pi_fulfillment_quantity ?? 0) }}</span>
-                                                @endif --}}
                                             </td>
                                         </tr>
                                     @empty

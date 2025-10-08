@@ -48,9 +48,9 @@
                                                     </td>
                                                     <td>{{ $order->product->brand_title ?? 'NA' }}</td>
                                                     <td>{{ $order->vendor_sku_code }}</td>
-                                                    <td>{{ $order->product->mrp }}</td>
-                                                    <td>{{ $order->product->gst }}</td>
-                                                    <td>{{ $order->product->hsn }}</td>
+                                                    <td>{{ $order->product?->mrp }}</td>
+                                                    <td>{{ $order->product?->gst }}</td>
+                                                    <td>{{ $order->product?->hsn }}</td>
                                                     <td>{{ $order->quantity_requirement }}</td>
                                                     <td>{{ $order->available_quantity }}</td>
                                                     <td>{{ $order->purchase_rate }}</td>

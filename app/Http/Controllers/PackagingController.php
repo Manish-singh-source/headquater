@@ -53,7 +53,7 @@ class PackagingController extends Controller
         $id = $request->id;
 
         // Create temporary .xlsx file path
-        $tempXlsxPath = storage_path('app/received_'.Str::random(8).'.xlsx');
+        $tempXlsxPath = storage_path('app/received_' . Str::random(8) . '.xlsx');
 
         // Create writer
         $writer = SimpleExcelWriter::create($tempXlsxPath);
@@ -132,7 +132,7 @@ class PackagingController extends Controller
             'pi_excel' => 'required|file|mimes:xlsx,csv,xls',
         ]);
 
-        if (! $request->salesOrderId) {
+        if (!$request->salesOrderId) {
             return back()->with('error', 'Please Try Again.');
         }
 
@@ -159,7 +159,7 @@ class PackagingController extends Controller
 
                 // if final dispatch qty is empty or 0 then set it to dispatched quantity
                 // if user wants to set dispatch quantity to 0 then set it to 0 but how??
-                if (! empty($record['Final Dispatch Qty']) || $record['Final Dispatch Qty'] == 0) {
+                if (!empty($record['Final Dispatch Qty']) || $record['Final Dispatch Qty'] == 0) {
                     $order = SalesOrderProduct::with('tempOrder')->where('customer_id', $customer->id)->where('sales_order_id', $request->salesOrderId)->where('sku', $record['SKU Code'])->first();
                     if (! $order) {
                         continue;
@@ -193,7 +193,6 @@ class PackagingController extends Controller
                             'issue_from' => 'warehouse',
                             'issue_status' => 'pending',
                         ]);
-
                     } elseif ($order->dispatched_quantity < $record['Final Dispatch Qty']) {
                         $order->final_dispatched_quantity = $order->dispatched_quantity;
                         $order->issue_item = 'Exceed';
@@ -245,7 +244,7 @@ class PackagingController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
 
-            return redirect()->back()->with(['error' => 'Something went wrong: '.$e->getMessage()]);
+            return redirect()->back()->with(['error' => 'Something went wrong: ' . $e->getMessage()]);
         }
     }
 }
