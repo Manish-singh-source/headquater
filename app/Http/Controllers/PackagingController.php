@@ -133,7 +133,7 @@ class PackagingController extends Controller
         ]);
 
         if (!$request->salesOrderId) {
-            return back()->with('error', 'Please Try Again.');
+            return back()->with('error', 'Please Try Again. Sales Order ID is missing.');
         }
 
         $file = $request->file('pi_excel');
@@ -195,7 +195,8 @@ class PackagingController extends Controller
                         ]);
                     } elseif ($order->dispatched_quantity < $record['Final Dispatch Qty']) {
                         $order->final_dispatched_quantity = $order->dispatched_quantity;
-                        $order->issue_item = 'Exceed';
+                        $order->issue_item = $record['Issue Units'];
+                        $order->issue_reason = 'Exceed';
                         $order->issue_description = $record['Issue Reason'];
                         $order->status = 'packaged';
                         $order->save();
@@ -218,7 +219,8 @@ class PackagingController extends Controller
                         $order->save();
                     } elseif ($order->dispatched_quantity < $record['Final Dispatch Qty']) {
                         $order->final_dispatched_quantity = $order->dispatched_quantity;
-                        $order->issue_item = 'Exceed';
+                        $order->issue_item = $record['Final Dispatch Qty'] - $order->dispatched_quantity;
+                        $order->issue_reason = 'Exceed';
                         $order->issue_description = $record['Issue Reason'];
                         $order->status = 'packaged';
                         $order->save();
