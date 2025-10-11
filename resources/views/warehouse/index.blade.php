@@ -36,9 +36,24 @@
 
             <div class="card mt-4">
                 <div class="card-body">
-                    <div class="customer-table">
+                    <!-- Tabs -->
+                    <ul class="nav nav-tabs" id="warehouseTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="all-warehouses" type="button"
+                                data-status="all">All</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" type="button" id="active-warehouses" data-status="1">Active</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" type="button" id="inactive-warehouses"
+                                data-status="0">Inactive</button>
+                        </li>
+                    </ul>
+
+                    <div class="customer-table mt-3">
                         <div class="table-responsive white-space-nowrap">
-                            <table id="example" class="table table-striped">
+                            <table id="warehouseTable" class="table table-striped">
                                 <thead class="table-light">
                                     <tr>
                                         <th>
@@ -216,6 +231,54 @@
                     form.submit();
                 }
             });
+        });
+    </script>
+    <script>
+        $(document).ready(function() {
+            var warehouseTable = $('#warehouseTable').DataTable({
+                "columnDefs": [{
+                        "orderable": false,
+                        "targets": -1
+                    } // last column not orderable
+                ],
+                lengthChange: true,
+                buttons: [{
+                        extend: 'excelHtml5',
+                        className: 'd-none'
+                    } // hide default button
+                ]
+            });
+
+            // Function to filter table based on status
+            function filterWarehouse(status) {
+                warehouseTable.rows().every(function() {
+                    var $checkbox = $(this.node()).find('.status-switch2');
+                    // var isChecked = $checkbox.prop('checked') ? 1 : 0;
+                    var isChecked = $checkbox.is(':checked') ? '1' : '0'; // Convert to string for comparison
+                    console.log('Filtering warehouse:', status, isChecked);
+
+                    if (status === 'all') {
+                        $(this.node()).show();
+                    } else if (isChecked == status) {
+                        $(this.node()).show();
+                    } else {
+                        $(this.node()).hide();
+                    }
+                });
+            }
+
+            // Tab click event
+            $('#warehouseTabs button').on('click', function() {
+                $('#warehouseTabs button').removeClass('active');
+                $(this).addClass('active'); 
+
+                console.log('Tab clicked:', $(this).data('status')); // Debugging line
+                var status = $(this).data('status'); // all / 1 / 0
+                filterWarehouse(status);
+            });
+
+            // Initial load: show all
+            filterWarehouse('all');
         });
     </script>
 @endsection

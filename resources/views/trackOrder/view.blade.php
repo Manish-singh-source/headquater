@@ -106,10 +106,12 @@
 
                         <!-- Tabs Navigation -->
                         <div class="div d-flex justify-content-end my-3 gap-2">
+                            {{-- 
                             <button class="btn border-2 border-primary" data-bs-toggle="modal"
                                 data-bs-target="#staticBackdrop1" class="btn border-2 border-primary">
                                 Update PO
-                            </button>
+                            </button> 
+                            --}}
 
                             <!-- Modal -->
                             <div class="modal fade" id="staticBackdrop1" data-bs-backdrop="static" data-bs-keyboard="false"
@@ -147,14 +149,16 @@
                                 </div>
                             </div>
 
+                            {{-- 
                             <button class="btn btn-icon btn-sm border-2 border-primary me-1" id="exportData">
                                 <i class="fa fa-file-excel-o"></i> Export to Excel
                             </button>
 
                             <button class="btn btn-icon btn-sm border-2 border-primary me-1" id="generateInvoice">
                                 <i class="fa fa-file-excel-o"></i> Generate Invoice
-                            </button>
-                            <div>
+                            </button> 
+                            --}}
+                            {{-- <div>
                                 <select class="form-select border-2 border-primary" id="selectBrand"
                                     aria-label="Default select example" name="status">
                                     <option value="" selected>Select Brand</option>
@@ -162,16 +166,8 @@
                                         <option value="{{ $brand }}">{{ $brand }}</option>
                                     @endforeach
                                 </select>
-                            </div>
-                            <div>
-                                <select class="form-select border-2 border-primary" id="selectPONumber"
-                                    aria-label="Default select example" name="status">
-                                    <option value="" selected>Select PO Number</option>
-                                    @foreach ($uniquePONumbers as $poNumber)
-                                        <option value="{{ $poNumber }}">{{ $poNumber }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
+                            </div> --}}
+                            {{-- 
                             <ul class="nav nav-tabs" id="vendorTabs" role="tablist">
                                 <form id="statusForm" action="{{ route('change.sales.order.status') }}" method="POST">
                                     @csrf
@@ -194,8 +190,8 @@
                                             Completed</option>
                                     </select>
                                 </form>
-                            </ul>
-                            <div class="ms-auto">
+                            </ul> --}}
+                            {{-- <div class="ms-auto">
                                 <div class="btn-group">
                                     <button type="button" class="btn border-2 border-primary">Action</button>
                                     <button type="button"
@@ -206,9 +202,7 @@
                                         <a class="dropdown-item cursor-pointer" id="delete-selected">Delete All</a>
                                     </div>
                                 </div>
-                                {{-- <a href="{{ route('add-customer') }}" class="btn btn-primary px-4"><i
-                                class="bi bi-plus-lg me-2"></i>Add Customers</a> --}}
-                            </div>
+                            </div> --}}
                         </div>
                     </div>
                     <div class="product-table" id="poTable">
@@ -292,12 +286,14 @@
                                             <td>{{ $order->tempOrder?->block }}</td>
                                             <td>
                                                 @if ($order->tempOrder?->vendor_pi_received_quantity > 0)
-                                                    @if ($order->tempOrder->po_qty <= ($order->tempOrder?->block ?? 0))
+                                                    @if (
+                                                        $order->tempOrder->po_qty <=
+                                                            ($order->tempOrder?->block ?? 0))
                                                         <span
                                                             class="badge text-success bg-success-subtle">{{ $order->tempOrder->po_qty }}</span>
                                                     @else
                                                         <span
-                                                            class="badge text-danger bg-danger-subtle">{{ $order->tempOrder?->block ?? 0 }}</span>
+                                                            class="badge text-danger bg-danger-subtle">{{ ($order->tempOrder?->block ?? 0)  }}</span>
                                                     @endif
                                                 @elseif($order->tempOrder?->vendor_pi_fulfillment_quantity > 0)
                                                     @if (
@@ -309,15 +305,17 @@
                                                         <span
                                                             class="badge text-danger bg-danger-subtle">{{ ($order->tempOrder?->block ?? 0) + ($order->tempOrder?->vendor_pi_fulfillment_quantity ?? 0) }}</span>
                                                     @endif
-                                                @else
-                                                    @if ($order->tempOrder->po_qty <= ($order->tempOrder?->block ?? 0))
+                                                @else 
+                                                    @if (
+                                                        $order->tempOrder->po_qty <=
+                                                            ($order->tempOrder?->block ?? 0))
                                                         <span
                                                             class="badge text-success bg-success-subtle">{{ $order->tempOrder->po_qty }}</span>
                                                     @else
                                                         <span
-                                                            class="badge text-danger bg-danger-subtle">{{ $order->tempOrder?->block ?? 0 }}</span>
+                                                            class="badge text-danger bg-danger-subtle">{{ ($order->tempOrder?->block ?? 0) }}</span>
                                                     @endif
-                                                @endif
+                                                @endif 
                                             </td>
                                         </tr>
                                     @empty
@@ -393,7 +391,6 @@
                 });
 
                 let brand = document.getElementById('selectBrand').value;
-                let poNumber = document.getElementById('selectPONumber').value;
 
                 if (selected.length === 0) {
                     // return;
@@ -403,8 +400,6 @@
                         selected.push(cb.value);
                     });
                 }
-                console.log(selected.join(',')); 
-                
 
                 if (confirm('Are you sure you want to Create Invoice for selected/all records?')) {
                     // Create a form and submit
@@ -416,7 +411,6 @@
                         <input type="hidden" name="_method" value="POST">
                         <input type="hidden" name="order_id" value="{{ $salesOrder->id }}">
                         <input type="hidden" name="brand" value="${brand}">
-                        <input type="hidden" name="po_number" value="${poNumber}">
                         <input type="hidden" name="ids" value="${selected.join(',')}">
                     `;
                     document.body.appendChild(form);
@@ -457,13 +451,6 @@
 
                 // Use regex for exact match
                 brandSelection.column(8).search(selected ? '^' + selected + '$' : '', true, false).draw();
-            });
-
-            $('#selectPONumber').on('change', function() {
-                var selected = $(this).val().trim();
-
-                // Use regex for exact match
-                brandSelection.column(-5).search(selected ? '^' + selected + '$' : '', true, false).draw();
             });
 
         });

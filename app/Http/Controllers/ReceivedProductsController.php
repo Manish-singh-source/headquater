@@ -164,9 +164,9 @@ class ReceivedProductsController extends Controller
                 $productData = VendorPIProduct::with('tempOrder')->where('vendor_sku_code', Arr::get($record, 'Vendor SKU Code'))->where('vendor_pi_id', $vendorPIid->id)->first();
 
                 if (Arr::get($record, 'Quantity Received')) {
-                    if ($productData->quantity_requirement < Arr::get($record, 'Quantity Received')) {
-                        $extraQuantity = Arr::get($record, 'Quantity Received') - $productData->quantity_requirement;
-                        $productData->quantity_received = $productData->quantity_requirement;
+                    if ($productData->available_quantity < Arr::get($record, 'Quantity Received')) {
+                        $extraQuantity = Arr::get($record, 'Quantity Received') - $productData->available_quantity;
+                        $productData->quantity_received = $productData->available_quantity;
 
                         // create entry in vendor return products table
                         // the products that are extra will be returned to vendor
@@ -178,8 +178,8 @@ class ReceivedProductsController extends Controller
                             'return_description' => 'Extra products returned to vendor',
                         ]);
 
-                    } elseif ($productData->quantity_requirement > Arr::get($record, 'Quantity Received')) {
-                        $lessQuantity = $productData->quantity_requirement - Arr::get($record, 'Quantity Received');
+                    } elseif ($productData->available_quantity > Arr::get($record, 'Quantity Received')) {
+                        $lessQuantity = $productData->available_quantity - Arr::get($record, 'Quantity Received');
                         $productData->quantity_received = Arr::get($record, 'Quantity Received');
 
                         // create entry in vendor return products issues table
@@ -229,7 +229,7 @@ class ReceivedProductsController extends Controller
 
             return redirect()->back()->with('success', 'CSV file imported successfully.');
         } catch (\Exception $e) {
-            dd($e);
+            // dd($e);
             DB::rollBack();
 
             return redirect()->back()->withErrors(['error' => 'Something went wrong: '.$e->getMessage()]);

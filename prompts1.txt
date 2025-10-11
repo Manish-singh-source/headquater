@@ -1,4 +1,6 @@
-You are working on an existing Laravel project. The database schema already exists and migrations/models/controllers/routes/views are partially implemented. Your job is to **improve and complete** the existing module as per the following requirements — do NOT rewrite the entire structure, only enhance current code where needed.
+You are working on an existing Laravel project. 
+The database schema already exists and migrations/models/controllers/routes/views are partially implemented. 
+Your job is to **improve and complete** the existing module as per the following requirements — do NOT rewrite the entire structure, only enhance current code where needed.
 Properly display all data in table with perfect queries. 
 Make sure controller logic and business logics are perfect. 
 
@@ -7,18 +9,20 @@ Module 1: Warehouse
 
     -- database columns: 
         'warehouses' table: 
-            id, name, type, contact_person_name, phone, alt_phone, email, gst_number, pan_number, address_line_1, address_line_2, licence_doc, max_storage_capacity, country_id, state_id, city_id, pincode, operations, status
+            id, name, type, contact_person_name, phone, alt_phone, email, gst_number, pan_number, address_line_1, address_line_2, licence_doc, max_storage_capacity, country_id, state_id, city_id, pincode, operations, status(0, 1 - 0 for inactive and 1 for active)
 
     Task 1: list of warehouses (http://127.0.0.1:8000/warehouses) 
         -- display list of warehouses in card format, active warehouses, inactive warehouses, etc. 
         -- display list of warehouses in table format with columns: sr. no., Warehouse Id, warehouse name, type, contact person name, phone, email, location(city,state), max storage capacity, current stock, Default Warehouse, status, action(view, edit, delete)
+        -- there should be tabs for active warehouses, inactive warehouses, all warehouses, trashed warehouses  
+        -- after changing tab by clicking on that tab button display proper data 
+
         -- there should be a button for creating new warehouse (http://127.0.0.1:8000/create-warehouses) with this link 
         -- there should be option for multi select delete and multi select status changing 
         -- add links for view (http://127.0.0.1:8000/warehouses/view/{id}), edit(http://127.0.0.1:8000/warehouses/{id}), delete(http://127.0.0.1:8000/warehouses/{id})
-        -- there should be tabs for active warehouses, inactive warehouses, all warehouses, trashed warehouses  
 
         -- there should be a search option for searching warehouses by name, type, contact person name, phone, email, location(city,state), 
-        -- there should be filter option for type, status
+        -- there should be filter option for type, status 
 
 
         Sub Task 2: create warehouse (http://127.0.0.1:8000/create-warehouses) 

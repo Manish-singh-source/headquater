@@ -19,7 +19,25 @@
                                     <h6 class="mb-3">Products Table</h6>
                                 </div>
                             </div>
-                            <div class="product-table" id="poTable">
+
+                            <!-- Tabs -->
+                            <ul class="nav nav-tabs" id="issuesTabs" role="tablist">
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link active" id="all-issues" type="button"
+                                        data-status="all">All</button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" type="button" id="vendor-issues" data-status="Vendor">Vendor
+                                        Issues</button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" type="button" id="warehouse-issues"
+                                        data-status="Warehouse">Warehouse Issues</button>
+                                </li>
+                            </ul>
+
+
+                            <div class="product-table mt-3" id="poTable">
                                 <div class="table-responsive white-space-nowrap">
                                     <table id="shortage-exceed-table" class="table align-middle">
                                         <thead class="table-light">
@@ -55,11 +73,13 @@
                                                     <td>{{ $order->available_quantity }}</td>
                                                     <td>{{ $order->purchase_rate }}</td>
                                                     <td>{{ $order->quantity_received }}</td>
-                                                    <td>{{ ucfirst($order->issue_from) }}</td>
+                                                    <td>
+                                                        <div data-status="issue-reason">{{ ucfirst($order->issue_from) }}</div>
+                                                    </td>
                                                     <td>{{ ucfirst($order->issue_reason) }}</td>
                                                     <td>{{ $order->issue_item }}</td>
                                                     <td>{{ $order->issue_description }}</td>
-                                                    
+
                                                 </tr>
                                             @empty
                                                 <tr>
@@ -84,13 +104,12 @@
         $(document).ready(function() {
             var table3 = $('#shortage-exceed-table').DataTable({
                 "columnDefs": [{
-                        "orderable": false,
-                    } 
-                ],
+                    "orderable": false,
+                }],
                 lengthChange: true,
                 buttons: [{
                     extend: 'excelHtml5',
-                    className: 'd-none', 
+                    className: 'd-none',
                 }]
             });
 
@@ -99,6 +118,44 @@
                 table3.column(-4).search(selected ? '^' + selected + '$' : '', true, false).draw();
             });
 
+
+            // Function to filter table based on status
+            function filterWarehouse(status) {
+                table3.rows().every(function() {
+
+                    if(status === 'all') {
+                        table3.column(-4).search('').draw();
+                        return;
+                    }
+                    table3.column(-4).search(status ? '^' + status + '$' : '', true, false).draw();
+
+                    // var checkbox = $(this.node()).find('.issue-reason');
+                    // console.log(checkbox)
+                    // var isChecked = $checkbox.data('status'); // Get the data-status attribute value
+                    // console.log('Filtering warehouse:', status, isChecked);
+
+                    // if (status === 'all') {
+                    //     $(this.node()).show();
+                    // } else if (isChecked == status) {
+                    //     $(this.node()).show();
+                    // } else {
+                    //     $(this.node()).hide();
+                    // }
+                });
+            }
+
+            // Tab click event
+            $('#issuesTabs button').on('click', function() {
+                $('#issuesTabs button').removeClass('active');
+                $(this).addClass('active');
+
+                var status = $(this).data('status'); // all / 1 / 0 
+                filterWarehouse(status);
+            });
+
+            // Initial load: show all
+            filterWarehouse('all');
         });
     </script>
+
 @endsection

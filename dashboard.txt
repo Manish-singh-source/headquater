@@ -1,0 +1,154 @@
+## **1. Sales Order**
+
+**Objective:** Track orders received and visualize trends.
+
+**KPIs / Metrics:**
+
+* Total sales orders till date
+* Total order value till date
+
+**Charts / Visuals:**
+
+* **Line/Bar chart:** Last 4 months’ sales order trend (monthly order count or value)
+* **Comparison:** This month vs last month (optional small KPI cards)
+
+**Additional Info:** 
+
+* Optionally display top 5 customers by order volume 
+* Filter by product category if needed 
+
+---
+
+## **2. Purchase Order**
+
+**Objective:** Track purchase orders from suppliers.
+
+**KPIs / Metrics:**
+
+* Total purchase orders till date
+* Total purchase value till date
+
+**Charts / Visuals:**
+
+* **Line/Bar chart:** Last 4 months’ purchase orders trend (monthly order count or value)
+* Comparison with sales orders to see balance of supply vs demand
+
+**Additional Info:**
+
+* Optionally show pending PO vs completed PO count
+
+---
+
+## **3. Dispatched Orders (Customers)**
+
+**Objective:** Track the status of customer shipments.
+
+**KPIs / Metrics:**
+
+* Total orders dispatched
+* Pending orders
+* Completed orders
+
+**Charts / Visuals:**
+
+* **Donut/Pie chart:** Pending vs completed orders
+* **Table view:** Recent 10 dispatched orders with status, date, and customer
+
+---
+
+## **4. Delivered Orders**
+
+**Objective:** Track delivery completion stages and pending actions.
+
+**KPIs / Metrics:**
+
+* LR (Lorry Receipt) Pending
+* Appointment Pending
+* Reced Pending (Goods Received by Customer)
+* GRN Pending
+
+**Charts / Visuals:**
+
+* **Stacked bar chart** showing different pending stages
+* **Table view:** Orders with pending LR/Appointment/Reced/GRN
+
+**Additional Info:**
+
+* Can add a color-coded status indicator (Red = pending, Green = completed)
+
+---
+
+## **5. GRN (Goods Receipt Note)**
+
+**Objective:** Track the receipt of goods from suppliers.
+
+**KPIs / Metrics:**
+
+* GRN Completed
+* GRN Pending
+
+**Charts / Visuals:**
+
+* **Progress bar / KPI card:** Show % of GRN completed vs pending
+* Optionally, a **bar chart** by supplier
+
+---
+
+## **6. Payments**
+
+**Objective:** Track financial inflow and dues.
+
+**KPIs / Metrics:**
+
+* Total payment outstanding
+* Monthly payment received
+* Payment due outstanding
+
+**Charts / Visuals:**
+
+* **Line chart:** Monthly payments received vs pending
+* **KPI cards:** Total outstanding, due this month, total received
+
+**Additional Info:**
+
+* Can add filters by customer or payment mode
+* Optional: Aging report (0-30, 31-60, 61+ days overdue)
+
+---
+
+## **7. Warehouses Stocks**
+
+**Objective:** Monitor inventory levels and value.
+
+**KPIs / Metrics:**
+
+* Inventory units
+* Inventory value
+
+**Charts / Visuals:**
+
+* **Bar chart:** Stock per warehouse or product category
+* **KPI card:** Total units, total value
+* Optional **low stock alert** indicator for critical items
+
+---
+
+## **Dashboard Layout Suggestion**
+
+* **Top Row (KPI cards):** Quick numbers for sales, purchase, payments, stocks
+* **Middle Row (Graphs/Charts):** 4-month trends for sales and purchase orders
+* **Lower Row (Tables / Pending Actions):** Dispatched orders, delivered orders pending stages, GRN pending
+* **Side Panel (Optional):** Filters (date, warehouse, customer, supplier)
+
+---
+
+### **Additional Tips:**
+
+* Use **colors wisely**:
+
+  * Green for completed
+  * Red/Orange for pending
+  * Blue/Neutral for info
+* Make KPI cards clickable to navigate to **detailed reports**
+* Responsive design: Dashboard should be usable on tablets and desktops
+

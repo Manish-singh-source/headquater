@@ -62,7 +62,7 @@ class ReadyToShip extends Controller
 
     public function issuesProducts()
     {
-        $vendorOrders = ProductIssue::with(['order', 'product', 'purchaseOrder', 'tempOrder'])->get();
+        $vendorOrders = ProductIssue::where('issue_status', 'accept')->with(['order', 'product', 'purchaseOrder', 'tempOrder'])->get();
 
         // dd($vendorOrders);
         return view('exceed-shortage', compact('vendorOrders'));

@@ -183,7 +183,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/generate-invoice', 'generateInvoice')->name('generate.invoice');
     });
 
-    // Place Order
+    // Place Order 
     Route::controller(PurchaseOrderController::class)->group(function () {
         Route::get('/purchase-order', 'index')->name('purchase.order.index');
         Route::post('/purchase-order-store', 'store')->name('purchase.order.store');
@@ -242,6 +242,7 @@ Route::middleware(['auth'])->group(function () {
     Route::controller(TrackOrderController::class)->group(function () {
         Route::get('/track-order', 'index')->name('trackOrder.index');
         Route::post('/track-order', 'index')->name('trackOrder.index');
+        Route::get('/track-order/{id}', 'view')->name('trackOrder.view');
     });
 
     // Report Details List

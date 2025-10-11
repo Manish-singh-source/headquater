@@ -40,9 +40,22 @@
 
             <div class="card mt-4">
                 <div class="card-body">
-                    <div class="customer-table">
+                    <!-- Tabs -->
+                    <ul class="nav nav-tabs" id="vendorTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="all-vendors" type="button" data-status="all">All</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" type="button" id="active-vendors" data-status="1">Active</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" type="button" id="inactive-vendors" data-status="0">Inactive</button>
+                        </li>
+                    </ul>
+
+                    <div class="customer-table mt-3">
                         <div class="table-responsive white-space-nowrap">
-                            <table id="example" class="table table-striped">
+                            <table id="vendorTable" class="table table-striped">
                                 <thead class="table-light">
                                     <tr>
                                         <th>
@@ -229,6 +242,55 @@
                     form.submit();
                 }
             });
+        });
+    </script>
+
+
+    <script>
+        $(document).ready(function() {
+            var vendorTable = $('#vendorTable').DataTable({
+                "columnDefs": [{
+                        "orderable": false,
+                        "targets": -1
+                    } // last column not orderable
+                ],
+                lengthChange: true,
+                buttons: [{
+                        extend: 'excelHtml5',
+                        className: 'd-none'
+                    } // hide default button
+                ]
+            });
+
+            // Function to filter table based on status
+            function filterWarehouse(status) {
+                vendorTable.rows().every(function() {
+                    var $checkbox = $(this.node()).find('.status-switch2');
+                    // var isChecked = $checkbox.prop('checked') ? 1 : 0;
+                    var isChecked = $checkbox.is(':checked') ? '1' : '0';
+
+                    if (status === 'all') {
+                        $(this.node()).show();
+                    } else if (isChecked == status) {
+                        $(this.node()).show();
+                    } else {
+                        $(this.node()).hide();
+                    }
+                });
+            }
+
+            // Tab click event
+            $('#vendorTabs button').on('click', function() {
+                $('#vendorTabs button').removeClass('active');
+                $(this).addClass('active');
+
+                var status = $(this).data('status'); // all / 1 / 0
+                console.log("Filtering for status:", status);
+                filterWarehouse(status);
+            });
+
+            // Initial load: show all
+            filterWarehouse('all');
         });
     </script>
 @endsection

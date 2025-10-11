@@ -2,17 +2,18 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Customer;
-use App\Models\Invoice;
-use App\Models\Product;
-use App\Models\PurchaseOrder;
-use App\Models\PurchaseOrderProduct;
-use App\Models\SalesOrder;
-use App\Models\SalesOrderProduct;
 use App\Models\User;
 use App\Models\Vendor;
+use App\Models\Invoice;
+use App\Models\Product;
+use App\Models\Customer;
 use App\Models\Warehouse;
+use App\Models\SalesOrder;
 use Illuminate\Http\Request;
+use App\Models\PurchaseOrder;
+use App\Models\WarehouseStock;
+use App\Models\SalesOrderProduct;
+use App\Models\PurchaseOrderProduct;
 use Illuminate\Support\Facades\Auth;
 
 class RegisterController extends Controller
@@ -100,7 +101,45 @@ class RegisterController extends Controller
         })->unique()->values();
 
         // Recent Sales Orders (Cutomer)
-        $orders = SalesOrder::with('customerGroup')->limit(4)->latest()->get();
+        $orders = SalesOrder::with('customerGroup', 'orderedProducts.product')->limit(4)->latest()->get();
+
+        // Fetch recent 4 orders with related products and customer groups
+        $orders = SalesOrder::with('customerGroup', 'orderedProducts.product')
+            ->latest()
+            ->limit(4)
+            ->get();
+
+        // Process brand summary
+        $salesOrdersByBrand = $orders->flatMap(function ($order) {
+            // Flatten each product in every order
+            return $order->orderedProducts->map(function ($item) use ($order) {
+                $brand = optional($item->product)->brand;
+
+                return [
+                    'brand' => $brand,
+                    'order_id' => $order->id,
+                    'order_status' => $order->status ?? 'pending', // assuming 'status' field exists
+                ];
+            });
+        })
+            ->filter(function ($item) {
+                return !empty($item['brand']); // only valid brands
+            })
+            ->groupBy('brand')
+            ->map(function ($items, $brand) {
+                return [
+                    'brand' => $brand,
+                    'total_orders' => $items->pluck('order_id')->unique()->count(),
+                    'pending_orders' => $items->where('order_status', 'pending')->pluck('order_id')->unique()->count(),
+                    'completed_orders' => $items->where('order_status', 'completed')->pluck('order_id')->unique()->count(),
+                ];
+            })
+            ->values();
+
+        //  in products table i have list of products from where i want to select unique brands where  
+        // the brand is not null and then count the total number of orders, from this orders i want to show pending orders and completed orders for that brand 
+
+
 
         // Recent Packaging List
         $packagingOrders = SalesOrder::where('status', 'ready_to_package')->with('customerGroup')->limit(4)->latest()->get();
@@ -111,6 +150,97 @@ class RegisterController extends Controller
         // Invoices Lists
         $invoices = Invoice::with(['warehouse', 'customer', 'salesOrder'])->limit(4)->latest()->get();
 
-        return view('index', compact('purchaseOrders', 'vendorCodes', 'orders', 'packagingOrders', 'readyToShipOrders', 'invoices', 'customersCount', 'vendorsCount', 'salesOrdersCount', 'purchaseOrdersCount', 'productsCount', 'warehouseCount', 'readyToShipOrdersCount', 'readyToPackageOrdersCount'));
+
+        // Warehouse Inventory Stocks
+        $warehouseStocks = WarehouseStock::with('product')
+            ->latest()
+            ->get();
+
+        // Group and summarize by brand
+        $brandWiseStocks = $warehouseStocks
+            ->map(function ($stock) {
+                $brand = optional($stock->product)->brand;
+                $price = optional($stock->product)->price ?? 0; // assume product has 'price' field
+
+                return [
+                    'brand' => $brand,
+                    'quantity' => $stock->quantity ?? 0,
+                    'price' => $price,
+                    'total_value' => ($stock->quantity ?? 0) * $price,
+                ];
+            })
+            ->filter(function ($item) {
+                return !empty($item['brand']); // skip null brands
+            })
+            ->groupBy('brand')
+            ->map(function ($items, $brand) {
+                return [
+                    'brand' => $brand,
+                    'total_quantity' => $items->sum('quantity'),
+                    'total_value' => $items->sum('total_value'),
+                ];
+            })
+            ->values();
+
+
+        $brandSummary = $purchaseOrders->flatMap(function ($order) {
+            return $order->purchaseOrderProducts->map(function ($item) use ($order) {
+                $brand = optional($item->product)->brand;
+
+                return [
+                    'brand' => $brand,
+                    'order_id' => $order->id,
+                    'quantity' => $item->quantity ?? 0,
+                    'price' => $item->price ?? 0,
+                    'total' => ($item->quantity ?? 0) * ($item->price ?? 0),
+                ];
+            });
+        })
+            ->filter(function ($item) {
+                return !empty($item['brand']); // remove null brands
+            })
+            ->groupBy('brand')
+            ->map(function ($items, $brand) {
+                return [
+                    'brand' => $brand,
+                    'total_orders' => $items->pluck('order_id')->unique()->count(),
+                    'total_sales' => $items->sum('quantity'),
+                    'total_revenue' => $items->sum('total'),
+                ];
+            })
+            ->values();
+
+
+        // want to count ready_to_ship and shipped orders group by brand so that i can show brands total orders, pending orders and completed orders
+        $shipmentOrders = SalesOrder::with('orderedProducts.product')
+            ->whereIn('status', ['ready_to_ship', 'shipped']) // fetch only relevant orders
+            ->latest()
+            ->get();
+
+        $shipmentOrders = $shipmentOrders->flatMap(function ($order) {
+            return $order->orderedProducts->map(function ($item) use ($order) {
+                $brand = optional($item->product)->brand;
+
+                return [
+                    'brand' => $brand,
+                    'order_id' => $order->id,
+                    'order_status' => $order->status,
+                ];
+            });
+        })
+            ->filter(fn($item) => !empty($item['brand'])) // remove null brands
+            ->groupBy('brand')
+            ->map(function ($items, $brand) {
+                return [
+                    'brand' => $brand,
+                    'total_orders' => $items->pluck('order_id')->unique()->count(),
+                    'pending_orders' => $items->where('order_status', 'ready_to_ship')->pluck('order_id')->unique()->count(),
+                    'completed_orders' => $items->where('order_status', 'shipped')->pluck('order_id')->unique()->count(),
+                ];
+            })
+            ->values();
+
+
+        return view('index', compact('purchaseOrders', 'shipmentOrders', 'brandWiseStocks', 'brandSummary', 'salesOrdersByBrand', 'vendorCodes', 'orders', 'packagingOrders', 'readyToShipOrders', 'invoices', 'customersCount', 'vendorsCount', 'salesOrdersCount', 'purchaseOrdersCount', 'productsCount', 'warehouseCount', 'readyToShipOrdersCount', 'readyToPackageOrdersCount'));
     }
 }

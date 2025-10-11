@@ -78,19 +78,21 @@ class PackagingController extends Controller
         // Add rows
         foreach ($salesOrder->orderedProducts as $order) {
 
-            $totalDispatchQty = 0;
-            if ($order->tempOrder?->vendor_pi_received_quantity) {
-                $order->tempOrder->vendor_pi_fulfillment_quantity = $order->tempOrder->vendor_pi_received_quantity;
-            }
+            // $totalDispatchQty = 0;
+            // if ($order->tempOrder?->vendor_pi_received_quantity) {
+            //     $order->tempOrder->vendor_pi_fulfillment_quantity = $order->tempOrder->vendor_pi_received_quantity;
+            // }
 
-            if ($order->ordered_quantity <= ($order->tempOrder?->available_quantity ?? 0) + ($order->tempOrder?->vendor_pi_fulfillment_quantity ?? 0)) {
-                $totalDispatchQty = $order->ordered_quantity;
-            } else {
-                $totalDispatchQty = ($order->tempOrder?->available_quantity ?? 0) + ($order->tempOrder?->vendor_pi_fulfillment_quantity ?? 0);
-            }
+            // if ($order->ordered_quantity <= ($order->tempOrder?->available_quantity ?? 0) + ($order->tempOrder?->vendor_pi_fulfillment_quantity ?? 0)) {
+            //     $totalDispatchQty = $order->ordered_quantity;
+            // } else {
+            //     $totalDispatchQty = ($order->tempOrder?->available_quantity ?? 0) + ($order->tempOrder?->vendor_pi_fulfillment_quantity ?? 0);
+            // }
+
             if (isset($request->facility_name) && $order->tempOrder->facility_name != $request->facility_name) {
                 continue;
             }
+            
             $writer->addRow([
                 'Customer Name' => $order->customer->contact_name ?? '',
                 // 'PO Number' => $order->tempOrder->po_number ?? '',
@@ -108,10 +110,10 @@ class PackagingController extends Controller
                 'MRP' => $order->tempOrder->mrp ?? '',
                 'PO Quantity' => $order->tempOrder->po_qty ?? '',
                 'Purchase Order Quantity' => $order->tempOrder->purchase_order_quantity ?? '',
-                'Warehouse Stock' => $order->warehouseStock->original_quantity ?? '',
+                // 'Warehouse Stock' => $order->warehouseStock->original_quantity ?? '',
                 // 'PI Quantity' => $order->tempOrder?->vendor_pi_fulfillment_quantity,
                 'Purchase Order No' => $order->tempOrder->po_number ?? '',
-                'Total Dispatch Qty' => $totalDispatchQty ?? 0,
+                'Total Dispatch Qty' => $order->dispatched_quantity ?? 0,
                 'Final Dispatch Qty' => '',
                 'Issue Units' => '',
                 'Issue Reason' => '',
@@ -183,7 +185,7 @@ class PackagingController extends Controller
                             'purchase_order_id' => $tempOrder->purchase_order_id,
                             'vendor_pi_id' => $tempOrder->vendor_pi_id,
                             'vendor_pi_product_id' => $tempOrder->vendorPIProduct->id,
-                            'vendor_sku_code' => $tempOrder->vendor_sku_code,
+                            'vendor_sku_code' => $tempOrder->sku,
                             'quantity_requirement' => $tempOrder->vendorPIProduct->quantity_requirement,
                             'available_quantity' => $tempOrder->available_quantity,
                             'quantity_received' => $tempOrder->vendorPIProduct->quantity_received,
@@ -191,7 +193,7 @@ class PackagingController extends Controller
                             'issue_reason' => 'Shortage',
                             'issue_description' => 'Shortage products',
                             'issue_from' => 'warehouse',
-                            'issue_status' => 'pending',
+                            'issue_status' => 'accept',
                         ]);
                     } elseif ($order->dispatched_quantity < $record['Final Dispatch Qty']) {
                         $order->final_dispatched_quantity = $order->dispatched_quantity;

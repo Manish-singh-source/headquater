@@ -3,23 +3,24 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
-use App\Models\PurchaseGrn;
-use App\Models\PurchaseInvoice;
-use App\Models\PurchaseOrder;
-use App\Models\PurchaseOrderProduct;
-use App\Models\SalesOrderProduct;
-use App\Models\SkuMapping;
-use App\Models\TempOrder;
-use App\Models\VendorPayment;
 use App\Models\VendorPI;
-use App\Models\VendorPIProduct;
-use App\Models\WarehouseStock;
-use App\Services\NotificationService;
-use Illuminate\Http\Request;
+use App\Models\TempOrder;
+use App\Models\SkuMapping;
+use App\Models\PurchaseGrn;
 use Illuminate\Support\Arr;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
+use App\Models\ProductIssue;
+use Illuminate\Http\Request;
+use App\Models\PurchaseOrder;
+use App\Models\VendorPayment;
+use App\Models\WarehouseStock;
+use App\Models\PurchaseInvoice;
+use App\Models\VendorPIProduct;
+use App\Models\SalesOrderProduct;
+use Illuminate\Support\Facades\DB;
+use App\Models\PurchaseOrderProduct;
+use App\Services\NotificationService;
+use Illuminate\Support\Facades\Validator;
 use Spatie\SimpleExcel\SimpleExcelReader;
 use Spatie\SimpleExcel\SimpleExcelWriter;
 
@@ -379,6 +380,13 @@ class PurchaseOrderController extends Controller
             $vendorPIProducts = VendorPI::with('products')->where('purchase_order_id', $request->purchase_order_id)->where('vendor_code', $request->vendor_code)->first();
 
             foreach ($vendorPIProducts->products as $product) {
+
+                $productIssueUpdate = ProductIssue::where('vendor_pi_product_id', $product->id)->first(); 
+                if($productIssueUpdate){
+                    $productIssueUpdate->issue_status = 'accept';
+                    $productIssueUpdate->save();
+                }
+
                 $total_amount += $product->mrp * $product->quantity_received;
                 $updateStock = WarehouseStock::where('sku', $product->vendor_sku_code)->first();
 
@@ -564,7 +572,7 @@ class PurchaseOrderController extends Controller
         $writer = SimpleExcelWriter::create($tempXlsxPath);
 
         // Fetch data with relationships
-        $purchaseOrderProducts = PurchaseOrderProduct::where('purchase_order_id', $request->purchaseOrderId)
+        $purchaseOrderProducts = PurchaseOrderProduct::with('product')->where('purchase_order_id', $request->purchaseOrderId)
             ->where('vendor_code', $request->vendorCode)
             ->with('tempOrderThrough')->get();
 
@@ -584,7 +592,7 @@ class PurchaseOrderController extends Controller
                     'HSN' => $order->tempOrderThrough->hsn ?? '',
                     'PO Quantity' => $order->ordered_quantity ?? '',
                     'PI Quantity' => '',
-                    'Purchase Rate Basic' => '',
+                    'Purchase Rate Basic' =>  $order->product->vendor_purchase_rate ?? '',
                 ]);
             }
         }

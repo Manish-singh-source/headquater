@@ -626,15 +626,23 @@ class SalesOrderController extends Controller
         }
 
         $remainingQuantity = $orderedQuantity - ($blockQuantity);
+        // Unique brand names (non-null)
+        $uniqueBrands = $salesOrder->orderedProducts
+            ->pluck('product.brand')
+            ->filter()
+            ->unique()
+            ->values();
 
-        // fetch unique brand names from orderedProducts
-        $uniqueBrands = $salesOrder->orderedProducts->pluck('product.brand')->unique();
-        $uniqueBrands = $uniqueBrands->filter()->unique()->values();
-        // dd($remainingQuantity, $blockQuantity, $vendorPiFulfillmentTotal, $vendorPiReceivedTotal, $availableQuantity, $unavailableQuantity, $orderedQuantity);
+        // Unique PO numbers (non-null, nested relationship)
+        $uniquePONumbers = $salesOrder->orderedProducts
+            ->map(function ($orderedProduct) {
+                return optional($orderedProduct->tempOrder)->po_number;
+            })
+            ->filter()
+            ->unique()
+            ->values();
 
-        // dd($salesOrder, $vendorPiFulfillmentTotal, $vendorPiReceivedTotal);
-
-        return view('salesOrder.view', compact('uniqueBrands', 'remainingQuantity', 'blockQuantity', 'salesOrder', 'vendorPiFulfillmentTotal', 'availableQuantity', 'orderedQuantity', 'unavailableQuantity', 'vendorPiReceivedTotal'));
+        return view('salesOrder.view', compact('uniqueBrands', 'uniquePONumbers', 'remainingQuantity', 'blockQuantity', 'salesOrder', 'vendorPiFulfillmentTotal', 'availableQuantity', 'orderedQuantity', 'unavailableQuantity', 'vendorPiReceivedTotal'));
     }
 
     public function destroy($id)
@@ -951,12 +959,18 @@ class SalesOrderController extends Controller
     public function generateInvoice(Request $request)
     {
         try {
+            if ($request->filled('ids')) {
+                $ids = is_array($request->ids) ? $request->ids : explode(',', $request->ids);
+            }else {
+                $ids = [];
+            }
+
             $salesOrder = SalesOrder::findOrFail($request->order_id);
             $salesOrderDetails = SalesOrderProduct::with('tempOrder', 'customer', 'product')
                 ->where('sales_order_id', $salesOrder->id);
 
-            if (is_array($request->ids) && ! empty($request->ids)) {
-                $salesOrderDetails->whereIn('id', $request->ids);
+            if (is_array($ids) && !empty($ids)) {
+                $salesOrderDetails->whereIn('id', $ids);
             }
 
             if ($request->filled('brand')) {
@@ -965,8 +979,15 @@ class SalesOrderController extends Controller
                 });
             }
 
+            if ($request->filled('po_number')) {
+                $salesOrderDetails->whereHas('tempOrder', function ($query) use ($request) {
+                    $query->where('po_number', $request->po_number);
+                });
+            }
+
             // Execute the query and get the collection
             $salesOrderDetails = $salesOrderDetails->get();
+
 
             // Base compulsory grouping: customer address + PO number
             $invoicesGroup = [];
@@ -999,6 +1020,7 @@ class SalesOrderController extends Controller
             $no = 0;
             foreach ($invoicesGroup as $key => $invoiceData) {
                 $customerId = $invoiceData[0]->customer_id;
+
                 $invoice = new Invoice;
                 $invoice->warehouse_id = $salesOrder->warehouse_id;
                 $invoice->invoice_number = 'INV-' . time() . '-' . $customerId . '-' . $no;
@@ -1030,11 +1052,16 @@ class SalesOrderController extends Controller
                 }
                 $no++;
 
+                $invoiceDetails = InvoiceDetails::where('invoice_id', $invoice->id)->get();
+                $invoice->total_amount = $totalAmount;
+                $invoice->save();
+
                 if (! $invoiceDetails) {
                     DB::rollBack();
-
                     return redirect()->back()->with('error', 'Invoice Not Generated. Please Try Again.');
                 }
+
+                $totalAmount = 0;
             }
             DB::commit();
 
@@ -1044,7 +1071,6 @@ class SalesOrderController extends Controller
             return redirect()->back()->with('success', 'Invoice generated successfully! Invoice ID: ' . $invoice->id . ' for Order ID: ' . $salesOrder->id);
         } catch (\Exception $e) {
             DB::rollBack();
-
             return redirect()->back()->with('error', 'Status Not Changed. Please Try Again.' . $e->getMessage());
         }
     }

@@ -79,31 +79,48 @@
             <td>{{ $invoice->invoice_date }}</td>
         </tr>
         <tr>
-            <td>Reverse&nbsp;Charge&nbsp;(Y/N):</td>
-            <td>N</td>
-            <td>State: {{ $invoice->customer->shipping_state }}</td>
+            {{-- <td>Reverse&nbsp;Charge&nbsp;(Y/N):</td> --}}
+            {{-- <td>N</td> --}}
+            {{-- <td>State: {{ $invoice->customer->shipping_state }}</td> --}}
             {{-- <td>Code: {{ $invoice->customer->shipping_zip }}</td> --}}
             <td>PO No: {{ $invoice->po_number }}</td>
+            <td>PO Date: {{ $invoice->po_date  }}</td>
+            <td></td>
+            <td></td>
         </tr>
     </table>
 
     <table>
         <tr>
-            <td colspan="4" class="section-title">Bill&nbsp;to&nbsp;Party</td>
+            <td colspan="3" class="section-title">Bill&nbsp;To</td>
+            <td colspan="3" class="section-title">Ship&nbsp;To</td>
         </tr>
         <tr>
             <td>Name:</td>
-            <td colspan="3">{{ $invoice->customer->client_name }}</td>
+            <td colspan="2">{{ $invoice->customer->client_name }}</td>
+            <td>Name:</td>
+            <td colspan="2">{{ $invoice->customer->client_name }}</td>
         </tr>
         <tr>
             <td>Address:</td>
-            <td colspan="3">{{ $invoice->customer->billing_address }}</td>
+            <td colspan="2">{{ $invoice->customer->billing_address }}</td>
+            <td>Address:</td>
+            <td colspan="2">{{ $invoice->customer->billing_address }}</td>
         </tr>
         <tr>
-            <td>GSTIN:</td>
-            <td>{{ $invoice->customer->gstin }}</td>
-            <td>State:</td>
-            <td>{{ $invoice->customer->shipping_state }}</td>
+            <td>State:</td> 
+            <td colspan="2">{{ $invoice->customer->shipping_state }}</td>
+            {{-- <td>GSTIN: {{ $invoice->customer->gstin }}</td> --}}
+            
+            <td>State:</td> 
+            <td colspan="2">{{ $invoice->customer->shipping_state }}</td>
+            {{-- <td colspan="2">GSTIN: {{ $invoice->customer->gstin }}</td> --}}
+        </tr>
+        <tr>
+            <td>GSTIN: </td><td>{{ $invoice->customer->gstin }}</td>
+            <td>PAN: {{ $invoice->customer->pan }}</td>
+            <td>GSTIN: </td><td>{{ $invoice->customer->gstin }}</td>
+            <td>PAN: {{ $invoice->customer->pan }}</td>
         </tr>
     </table>
 
