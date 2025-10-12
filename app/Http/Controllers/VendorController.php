@@ -11,19 +11,19 @@ class VendorController extends Controller
     //
     public function index(Request $request)
     {
-       
+
         $status = $request->query('status');
-        
+
         $vendors = Vendor::query();
 
-        if (!is_null($status)) {
+        if (! is_null($status)) {
             if ($status == 1) {
                 $vendors->active();
             } elseif ($status == 0) {
                 $vendors->inActive();
             }
         }
-        
+
         $vendors = $vendors->get();
 
         return view('vendor.index', compact('vendors', 'status'));
@@ -87,7 +87,7 @@ class VendorController extends Controller
             'client_name' => 'required|min:3',
             'contact_name' => 'required|min:3',
             'phone_number' => 'required|min:10',
-            'email' => 'required|email|unique:vendors,email,' . $id,
+            'email' => 'required|email|unique:vendors,email,'.$id,
         ]);
 
         if ($validator->fails()) {

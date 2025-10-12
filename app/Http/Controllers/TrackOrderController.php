@@ -15,6 +15,7 @@ class TrackOrderController extends Controller
             if (! isset($salesOrder)) {
                 return view('trackOrder.index')->with('error', 'Order Not Found.');
             }
+
             return redirect()->route('trackOrder.view', $salesOrder->id);
         }
 

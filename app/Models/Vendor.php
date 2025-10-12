@@ -23,6 +23,4 @@ class Vendor extends Model
     {
         return $query->where('status', '0');
     }
-
-
 }

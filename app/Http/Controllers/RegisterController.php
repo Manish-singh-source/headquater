@@ -2,18 +2,18 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
-use App\Models\Vendor;
+use App\Models\Customer;
 use App\Models\Invoice;
 use App\Models\Product;
-use App\Models\Customer;
-use App\Models\Warehouse;
-use App\Models\SalesOrder;
-use Illuminate\Http\Request;
 use App\Models\PurchaseOrder;
-use App\Models\WarehouseStock;
-use App\Models\SalesOrderProduct;
 use App\Models\PurchaseOrderProduct;
+use App\Models\SalesOrder;
+use App\Models\SalesOrderProduct;
+use App\Models\User;
+use App\Models\Vendor;
+use App\Models\Warehouse;
+use App\Models\WarehouseStock;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class RegisterController extends Controller
@@ -123,7 +123,7 @@ class RegisterController extends Controller
             });
         })
             ->filter(function ($item) {
-                return !empty($item['brand']); // only valid brands
+                return ! empty($item['brand']); // only valid brands
             })
             ->groupBy('brand')
             ->map(function ($items, $brand) {
@@ -136,10 +136,8 @@ class RegisterController extends Controller
             })
             ->values();
 
-        //  in products table i have list of products from where i want to select unique brands where  
-        // the brand is not null and then count the total number of orders, from this orders i want to show pending orders and completed orders for that brand 
-
-
+        //  in products table i have list of products from where i want to select unique brands where
+        // the brand is not null and then count the total number of orders, from this orders i want to show pending orders and completed orders for that brand
 
         // Recent Packaging List
         $packagingOrders = SalesOrder::where('status', 'ready_to_package')->with('customerGroup')->limit(4)->latest()->get();
@@ -149,7 +147,6 @@ class RegisterController extends Controller
 
         // Invoices Lists
         $invoices = Invoice::with(['warehouse', 'customer', 'salesOrder'])->limit(4)->latest()->get();
-
 
         // Warehouse Inventory Stocks
         $warehouseStocks = WarehouseStock::with('product')
@@ -170,7 +167,7 @@ class RegisterController extends Controller
                 ];
             })
             ->filter(function ($item) {
-                return !empty($item['brand']); // skip null brands
+                return ! empty($item['brand']); // skip null brands
             })
             ->groupBy('brand')
             ->map(function ($items, $brand) {
@@ -181,7 +178,6 @@ class RegisterController extends Controller
                 ];
             })
             ->values();
-
 
         $brandSummary = $purchaseOrders->flatMap(function ($order) {
             return $order->purchaseOrderProducts->map(function ($item) use ($order) {
@@ -197,7 +193,7 @@ class RegisterController extends Controller
             });
         })
             ->filter(function ($item) {
-                return !empty($item['brand']); // remove null brands
+                return ! empty($item['brand']); // remove null brands
             })
             ->groupBy('brand')
             ->map(function ($items, $brand) {
@@ -209,7 +205,6 @@ class RegisterController extends Controller
                 ];
             })
             ->values();
-
 
         // want to count ready_to_ship and shipped orders group by brand so that i can show brands total orders, pending orders and completed orders
         $shipmentOrders = SalesOrder::with('orderedProducts.product')
@@ -228,7 +223,7 @@ class RegisterController extends Controller
                 ];
             });
         })
-            ->filter(fn($item) => !empty($item['brand'])) // remove null brands
+            ->filter(fn ($item) => ! empty($item['brand'])) // remove null brands
             ->groupBy('brand')
             ->map(function ($items, $brand) {
                 return [
@@ -239,7 +234,6 @@ class RegisterController extends Controller
                 ];
             })
             ->values();
-
 
         return view('index', compact('purchaseOrders', 'shipmentOrders', 'brandWiseStocks', 'brandSummary', 'salesOrdersByBrand', 'vendorCodes', 'orders', 'packagingOrders', 'readyToShipOrders', 'invoices', 'customersCount', 'vendorsCount', 'salesOrdersCount', 'purchaseOrdersCount', 'productsCount', 'warehouseCount', 'readyToShipOrdersCount', 'readyToPackageOrdersCount'));
     }

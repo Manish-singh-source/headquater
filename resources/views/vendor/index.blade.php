@@ -40,18 +40,28 @@
 
             <div class="card mt-4">
                 <div class="card-body">
-                    <!-- Tabs -->
                     <ul class="nav nav-tabs" id="vendorTabs" role="tablist">
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link active" id="all-vendors" type="button" data-status="all">All</button>
+                            <a href="{{ route('vendor.index') }}" class="nav-link {{ is_null($status) ? 'active' : '' }}">
+                                All
+                            </a>
                         </li>
+
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link" type="button" id="active-vendors" data-status="1">Active</button>
+                            <a href="{{ route('vendor.index', ['status' => 1]) }}"
+                                class="nav-link {{ $status === '1' ? 'active' : '' }}">
+                                Active
+                            </a>
                         </li>
+
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link" type="button" id="inactive-vendors" data-status="0">Inactive</button>
+                            <a href="{{ route('vendor.index', ['status' => 0]) }}"
+                                class="nav-link {{ $status === '0' ? 'active' : '' }}">
+                                Inactive
+                            </a>
                         </li>
                     </ul>
+
 
                     <div class="customer-table mt-3">
                         <div class="table-responsive white-space-nowrap">

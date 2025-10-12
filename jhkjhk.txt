@@ -17,4 +17,4 @@
         -- map sku with customer: if (customer_sku) in table then assign customer_po (sku) == product sku 
         -- warehouse_stock (sku) == customer_po (sku) or product_sku (from mapping)        -- product is available/not 
         -- if product available 
-        -- 
+        --        

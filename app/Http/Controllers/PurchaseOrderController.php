@@ -3,24 +3,24 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
-use App\Models\VendorPI;
-use App\Models\TempOrder;
-use App\Models\SkuMapping;
-use App\Models\PurchaseGrn;
-use Illuminate\Support\Arr;
-use Illuminate\Support\Str;
 use App\Models\ProductIssue;
-use Illuminate\Http\Request;
-use App\Models\PurchaseOrder;
-use App\Models\VendorPayment;
-use App\Models\WarehouseStock;
+use App\Models\PurchaseGrn;
 use App\Models\PurchaseInvoice;
-use App\Models\VendorPIProduct;
-use App\Models\SalesOrderProduct;
-use Illuminate\Support\Facades\DB;
+use App\Models\PurchaseOrder;
 use App\Models\PurchaseOrderProduct;
+use App\Models\SalesOrderProduct;
+use App\Models\SkuMapping;
+use App\Models\TempOrder;
+use App\Models\VendorPayment;
+use App\Models\VendorPI;
+use App\Models\VendorPIProduct;
+use App\Models\WarehouseStock;
 use App\Services\NotificationService;
+use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 use Spatie\SimpleExcel\SimpleExcelReader;
 use Spatie\SimpleExcel\SimpleExcelWriter;
 
@@ -381,8 +381,8 @@ class PurchaseOrderController extends Controller
 
             foreach ($vendorPIProducts->products as $product) {
 
-                $productIssueUpdate = ProductIssue::where('vendor_pi_product_id', $product->id)->first(); 
-                if($productIssueUpdate){
+                $productIssueUpdate = ProductIssue::where('vendor_pi_product_id', $product->id)->first();
+                if ($productIssueUpdate) {
                     $productIssueUpdate->issue_status = 'accept';
                     $productIssueUpdate->save();
                 }
@@ -414,7 +414,7 @@ class PurchaseOrderController extends Controller
                 foreach ($tempOrderProducts as $tempOrderproduct) {
                     if ($tempOrderproduct->unavailable_quantity <= $receivedQuantity && $tempOrderproduct->unavailable_quantity > 0) {
                         $tempOrderproduct->available_quantity += $tempOrderproduct->unavailable_quantity;
-                        $tempOrderproduct->block += $tempOrderproduct->unavailable_quantity; 
+                        $tempOrderproduct->block += $tempOrderproduct->unavailable_quantity;
                         $tempOrderproduct->vendor_pi_received_quantity += $tempOrderproduct->unavailable_quantity;
                         $receivedQuantity -= $tempOrderproduct->unavailable_quantity;
                         $tempOrderproduct->unavailable_quantity = 0;
@@ -592,7 +592,7 @@ class PurchaseOrderController extends Controller
                     'HSN' => $order->tempOrderThrough->hsn ?? '',
                     'PO Quantity' => $order->ordered_quantity ?? '',
                     'PI Quantity' => '',
-                    'Purchase Rate Basic' =>  $order->product->vendor_purchase_rate ?? '',
+                    'Purchase Rate Basic' => $order->product->vendor_purchase_rate ?? '',
                 ]);
             }
         }

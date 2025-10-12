@@ -75,13 +75,13 @@ class SalesOrderController extends Controller
                     continue;
                 }
 
-                $key = strtolower(trim($record['Facility Name'])) . '|' . strtolower(trim($record['SKU Code']));
+                $key = strtolower(trim($record['Facility Name'])).'|'.strtolower(trim($record['SKU Code']));
 
                 if (isset($seen[$key])) {
                     DB::rollBack();
 
                     return redirect()->back()->with([
-                        'error' => 'Please check excel file: duplicate SKU (' . $record['SKU Code'] . ') found for same customer (' . $record['Facility Name'] . ').',
+                        'error' => 'Please check excel file: duplicate SKU ('.$record['SKU Code'].') found for same customer ('.$record['Facility Name'].').',
                     ]);
                 }
 
@@ -120,7 +120,7 @@ class SalesOrderController extends Controller
                 $vendorStatus = '';
 
                 // SKU Mapping
-                $skuMapping = SkuMapping::where('customer_sku', $sku)->first();
+                $skuMapping = mapSku($sku);
 
                 if ($skuMapping) {
                     $product = WarehouseStock::with('product')->where('sku', $skuMapping->product_sku)->where('warehouse_id', $warehouseId)->first();
@@ -387,7 +387,7 @@ class SalesOrderController extends Controller
                 DB::rollBack();
                 $uniqueString = implode(', ', array_unique($vendorsNotFound));
 
-                return redirect()->back()->with(['error' => 'No valid data found in the CSV file. Please check Vendor Codes: ' . $uniqueString]);
+                return redirect()->back()->with(['error' => 'No valid data found in the CSV file. Please check Vendor Codes: '.$uniqueString]);
             }
 
             DB::commit();
@@ -395,14 +395,20 @@ class SalesOrderController extends Controller
             // Create notification
             NotificationService::orderCreated('sales', $salesOrder->id);
 
-            return redirect()->route('sales.order.index')->with('success', 'Sales Order created successfully! Order ID: ' . $salesOrder->id);
+            return redirect()->route('sales.order.index')->with('success', 'Sales Order created successfully! Order ID: '.$salesOrder->id);
         } catch (\Exception $e) {
             DB::rollBack();
 
-            return redirect()->back()->with(['error' => 'Something went wrong: ' . $e->getMessage()]);
+            return redirect()->back()->with(['error' => 'Something went wrong: '.$e->getMessage()]);
         }
     }
 
+    public function mapSku($customerSku) {
+        $productSku = SkuMapping::where('customer_sku', $customerSku)->first();
+        return $productSku['product_sku'];
+    }
+
+    
     public function edit($id)
     {
         $salesOrder = SalesOrder::with('customerGroup', 'warehouse', 'orderedProducts.product', 'orderedProducts.tempOrder', 'orderedProducts.vendorPIProduct.order', 'vendorPIs.products')->findOrFail($id);
@@ -439,13 +445,13 @@ class SalesOrderController extends Controller
                     continue;
                 }
 
-                $key = strtolower(trim($record['Facility Name'])) . '|' . strtolower(trim($record['SKU Code']));
+                $key = strtolower(trim($record['Facility Name'])).'|'.strtolower(trim($record['SKU Code']));
 
                 if (isset($seen[$key])) {
                     DB::rollBack();
 
                     return redirect()->back()->with([
-                        'error' => 'Please check excel file: duplicate SKU (' . $record['SKU Code'] . ') found for same customer (' . $record['Facility Name'] . ').',
+                        'error' => 'Please check excel file: duplicate SKU ('.$record['SKU Code'].') found for same customer ('.$record['Facility Name'].').',
                     ]);
                 }
 
@@ -585,7 +591,7 @@ class SalesOrderController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
 
-            return redirect()->back()->with(['error' => 'Something went wrong: ' . $e->getMessage()]);
+            return redirect()->back()->with(['error' => 'Something went wrong: '.$e->getMessage()]);
         }
     }
 
@@ -742,7 +748,7 @@ class SalesOrderController extends Controller
 
             return redirect()->back()->with('success', 'Selected products deleted successfully.');
         } catch (\Exception $e) {
-            return redirect()->back()->with(['error' => 'Something went wrong: ' . $e->getMessage()]);
+            return redirect()->back()->with(['error' => 'Something went wrong: '.$e->getMessage()]);
         }
     }
 
@@ -828,7 +834,6 @@ class SalesOrderController extends Controller
                         $order->final_dispatched_quantity = ($order->tempOrder?->available_quantity ?? 0) + ($order->tempOrder?->vendor_pi_fulfillment_quantity ?? 0);
                     }
 
-
                     // if ($order->tempOrder?->vendor_pi_received_quantity > 0) {
                     //     if ($order->tempOrder?->po_qty <= ($order->tempOrder?->block ?? 0)) {
                     //         $order->final_dispatched_quantity = $order->tempOrder->po_qty;
@@ -872,7 +877,7 @@ class SalesOrderController extends Controller
                         } else {
                             $order->dispatched_quantity = $order->tempOrder->block ?? 0;
                         }
-                    } else if ($order->tempOrder?->vendor_pi_fulfillment_quantity > 0) {
+                    } elseif ($order->tempOrder?->vendor_pi_fulfillment_quantity > 0) {
                         if ($order->tempOrder?->po_qty <= ($order->tempOrder?->block ?? 0) + ($order->tempOrder?->vendor_pi_fulfillment_quantity ?? 0)) {
                             $order->dispatched_quantity = $order->tempOrder->po_qty;
                         } else {
@@ -933,7 +938,7 @@ class SalesOrderController extends Controller
             $oldStatus = $salesOrder->getOriginal('status');
             $salesOrder->save();
 
-            if (!$salesOrder) {
+            if (! $salesOrder) {
                 return redirect()->back()->with('error', 'Status Not Changed. Please Try Again.');
             }
 
@@ -941,18 +946,18 @@ class SalesOrderController extends Controller
             NotificationService::statusChanged('sales', $salesOrder->id, $oldStatus, $salesOrder->status);
 
             if ($salesOrder->status == 'ready_to_package') {
-                return redirect()->route('packing.products.view', $request->order_id)->with('success', 'Order status changed to "Ready to Package" successfully! Order ID: ' . $salesOrder->id);
+                return redirect()->route('packing.products.view', $request->order_id)->with('success', 'Order status changed to "Ready to Package" successfully! Order ID: '.$salesOrder->id);
             } elseif ($salesOrder->status == 'ready_to_ship') {
-                return redirect()->route('readyToShip.view', $request->order_id)->with('success', 'Order status changed to "Ready to Ship" successfully! Order ID: ' . $salesOrder->id);
+                return redirect()->route('readyToShip.view', $request->order_id)->with('success', 'Order status changed to "Ready to Ship" successfully! Order ID: '.$salesOrder->id);
             } elseif ($salesOrder->status == 'completed') {
-                return redirect()->route('sales.order.index')->with('success', 'Order marked as "Completed" successfully! Order ID: ' . $salesOrder->id);
+                return redirect()->route('sales.order.index')->with('success', 'Order marked as "Completed" successfully! Order ID: '.$salesOrder->id);
             } elseif ($salesOrder->status == 'shipped') {
-                return redirect()->route('sales.order.index')->with('success', 'Order marked as "Shipped" successfully! Order ID: ' . $salesOrder->id);
+                return redirect()->route('sales.order.index')->with('success', 'Order marked as "Shipped" successfully! Order ID: '.$salesOrder->id);
             } else {
                 return redirect()->back()->with('error', 'Status Not Changed. Please Try Again.');
             }
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Status Not Changed. Please Try Again.' . $e->getMessage());
+            return redirect()->back()->with('error', 'Status Not Changed. Please Try Again.'.$e->getMessage());
         }
     }
 
@@ -961,7 +966,7 @@ class SalesOrderController extends Controller
         try {
             if ($request->filled('ids')) {
                 $ids = is_array($request->ids) ? $request->ids : explode(',', $request->ids);
-            }else {
+            } else {
                 $ids = [];
             }
 
@@ -969,7 +974,7 @@ class SalesOrderController extends Controller
             $salesOrderDetails = SalesOrderProduct::with('tempOrder', 'customer', 'product')
                 ->where('sales_order_id', $salesOrder->id);
 
-            if (is_array($ids) && !empty($ids)) {
+            if (is_array($ids) && ! empty($ids)) {
                 $salesOrderDetails->whereIn('id', $ids);
             }
 
@@ -988,7 +993,6 @@ class SalesOrderController extends Controller
             // Execute the query and get the collection
             $salesOrderDetails = $salesOrderDetails->get();
 
-
             // Base compulsory grouping: customer address + PO number
             $invoicesGroup = [];
 
@@ -1001,12 +1005,12 @@ class SalesOrderController extends Controller
                 $clientName = $request->has('client_name') ? ($detail->customer->client_name ?? '') : '';
 
                 // Build grouping key dynamically
-                $groupKey = $facilityName . '|' . $poNumber;
+                $groupKey = $facilityName.'|'.$poNumber;
                 if ($brand !== '') {
-                    $groupKey .= '|' . $brand;
+                    $groupKey .= '|'.$brand;
                 }
                 if ($clientName !== '') {
-                    $groupKey .= '|' . $clientName;
+                    $groupKey .= '|'.$clientName;
                 }
 
                 // Push detail into its group
@@ -1023,7 +1027,7 @@ class SalesOrderController extends Controller
 
                 $invoice = new Invoice;
                 $invoice->warehouse_id = $salesOrder->warehouse_id;
-                $invoice->invoice_number = 'INV-' . time() . '-' . $customerId . '-' . $no;
+                $invoice->invoice_number = 'INV-'.time().'-'.$customerId.'-'.$no;
                 $invoice->customer_id = $customerId;
                 $invoice->sales_order_id = $salesOrder->id;
                 $invoice->invoice_date = now();
@@ -1058,6 +1062,7 @@ class SalesOrderController extends Controller
 
                 if (! $invoiceDetails) {
                     DB::rollBack();
+
                     return redirect()->back()->with('error', 'Invoice Not Generated. Please Try Again.');
                 }
 
@@ -1068,10 +1073,11 @@ class SalesOrderController extends Controller
             // Create invoice notification
             NotificationService::invoiceGenerated($invoice->id, $salesOrder->id);
 
-            return redirect()->back()->with('success', 'Invoice generated successfully! Invoice ID: ' . $invoice->id . ' for Order ID: ' . $salesOrder->id);
+            return redirect()->back()->with('success', 'Invoice generated successfully! Invoice ID: '.$invoice->id.' for Order ID: '.$salesOrder->id);
         } catch (\Exception $e) {
             DB::rollBack();
-            return redirect()->back()->with('error', 'Status Not Changed. Please Try Again.' . $e->getMessage());
+
+            return redirect()->back()->with('error', 'Status Not Changed. Please Try Again.'.$e->getMessage());
         }
     }
 
@@ -1101,13 +1107,13 @@ class SalesOrderController extends Controller
                 continue;
             }
 
-            $key = strtolower(trim($record['Facility Name'])) . '|' . strtolower(trim($record['SKU Code']));
+            $key = strtolower(trim($record['Facility Name'])).'|'.strtolower(trim($record['SKU Code']));
 
             if (isset($seen[$key])) {
                 DB::rollBack();
 
                 return redirect()->back()->with([
-                    'error' => 'Please check excel file: duplicate SKU (' . $record['SKU Code'] . ') found for same customer (' . $record['Facility Name'] . ').',
+                    'error' => 'Please check excel file: duplicate SKU ('.$record['SKU Code'].') found for same customer ('.$record['Facility Name'].').',
                 ]);
             }
 
@@ -1289,7 +1295,7 @@ class SalesOrderController extends Controller
                 return $row;
             });
 
-            $fileName = 'processed_order_' . time() . '.csv';
+            $fileName = 'processed_order_'.time().'.csv';
             $csvPath = public_path("uploads/{$fileName}");
 
             SimpleExcelWriter::create($csvPath)->addRows($filteredRows->toArray());
@@ -1313,7 +1319,7 @@ class SalesOrderController extends Controller
         }
 
         // Create temporary .xlsx file
-        $tempXlsxPath = storage_path('app/blocked_' . Str::random(8) . '.xlsx');
+        $tempXlsxPath = storage_path('app/blocked_'.Str::random(8).'.xlsx');
 
         // Create writer
         $writer = SimpleExcelWriter::create($tempXlsxPath);
@@ -1377,7 +1383,7 @@ class SalesOrderController extends Controller
         }
 
         // Create temporary .xlsx file path
-        $tempXlsxPath = storage_path('app/order_po_update_' . Str::random(8) . '.xlsx');
+        $tempXlsxPath = storage_path('app/order_po_update_'.Str::random(8).'.xlsx');
 
         // Create writer
         $writer = SimpleExcelWriter::create($tempXlsxPath);
@@ -1436,7 +1442,7 @@ class SalesOrderController extends Controller
         }
 
         // Create temporary .xlsx file path
-        $tempXlsxPath = storage_path('app/not_found_sku_' . Str::random(8) . '.xlsx');
+        $tempXlsxPath = storage_path('app/not_found_sku_'.Str::random(8).'.xlsx');
 
         // Create writer
         $writer = SimpleExcelWriter::create($tempXlsxPath);
@@ -1482,7 +1488,7 @@ class SalesOrderController extends Controller
         }
 
         // Create temporary .xlsx file path
-        $tempXlsxPath = storage_path('app/not_found_customer_' . Str::random(8) . '.xlsx');
+        $tempXlsxPath = storage_path('app/not_found_customer_'.Str::random(8).'.xlsx');
 
         // Create writer
         $writer = SimpleExcelWriter::create($tempXlsxPath);
@@ -1528,7 +1534,7 @@ class SalesOrderController extends Controller
         }
 
         // Create temporary .xlsx file path
-        $tempXlsxPath = storage_path('app/not_found_vendor_' . Str::random(8) . '.xlsx');
+        $tempXlsxPath = storage_path('app/not_found_vendor_'.Str::random(8).'.xlsx');
 
         // Create writer
         $writer = SimpleExcelWriter::create($tempXlsxPath);
