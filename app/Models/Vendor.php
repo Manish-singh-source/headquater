@@ -13,4 +13,16 @@ class Vendor extends Model
     {
         return $this->hasMany(PurchaseOrder::class, 'vendor_id', 'id');
     }
+
+    public function scopeActive($query)
+    {
+        return $query->where('status', '1');
+    }
+
+    public function scopeInActive($query)
+    {
+        return $query->where('status', '0');
+    }
+
+
 }

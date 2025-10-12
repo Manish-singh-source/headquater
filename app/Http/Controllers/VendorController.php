@@ -9,11 +9,24 @@ use Illuminate\Support\Facades\Validator;
 class VendorController extends Controller
 {
     //
-    public function index()
+    public function index(Request $request)
     {
-        $vendors = Vendor::get();
+       
+        $status = $request->query('status');
+        
+        $vendors = Vendor::query();
 
-        return view('vendor.index', compact('vendors'));
+        if (!is_null($status)) {
+            if ($status == 1) {
+                $vendors->active();
+            } elseif ($status == 0) {
+                $vendors->inActive();
+            }
+        }
+        
+        $vendors = $vendors->get();
+
+        return view('vendor.index', compact('vendors', 'status'));
     }
 
     public function create()
@@ -74,7 +87,7 @@ class VendorController extends Controller
             'client_name' => 'required|min:3',
             'contact_name' => 'required|min:3',
             'phone_number' => 'required|min:10',
-            'email' => 'required|email|unique:vendors,email,'.$id,
+            'email' => 'required|email|unique:vendors,email,' . $id,
         ]);
 
         if ($validator->fails()) {

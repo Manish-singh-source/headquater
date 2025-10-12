@@ -1,0 +1,20 @@
+1. customer po check 
+    -- checking if product is available in stock or not 
+
+        - 1: customer checking (if not reject order)
+            - case 1: customer not available 
+
+        - 2: product checking (if not reject order) 
+            - case 1: customer available but product not available - reject order 
+            - case 2: customer available and product available - accept order 
+
+        - 3. vendor checking (if not get order but don't create purchase order) 
+            - case 1: customer available and product available and vendor available - accept order 
+            - case 2: customer available and product available and vendor not available - accept order but don't create purchase order 
+
+        
+
+        -- map sku with customer: if (customer_sku) in table then assign customer_po (sku) == product sku 
+        -- warehouse_stock (sku) == customer_po (sku) or product_sku (from mapping)        -- product is available/not 
+        -- if product available 
+        -- 
