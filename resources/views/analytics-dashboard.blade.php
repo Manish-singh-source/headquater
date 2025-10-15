@@ -405,9 +405,9 @@
                                 <div class="col-6">
                                     <div class="card bg-warning text-dark">
                                         <div class="card-body text-center p-3">
-                                            <h6 class="mb-1">Overdue</h6>
+                                            <h6 class="mb-1">Due</h6>
                                             <h5 class="mb-0">
-                                                ₹{{ number_format($paymentData['payment_due_outstanding'], 2) }}</h5>
+                                                ₹{{ number_format($paymentData['total_outstanding'] - $paymentData['monthly_received'], 2) }}</h5>
                                         </div>
                                     </div>
                                 </div>
@@ -444,7 +444,7 @@
                                         <div class="card-body text-center">
                                             <h6 class="text-muted">Total Inventory Value</h6>
                                             <h3 class="text-success">
-                                                ₹{{ number_format($warehouseData['total_value'], 2) }}</h3>
+                                                ₹{{ number_format($warehouseData['total_cost'], 2) }}</h3>
                                         </div>
                                     </div>
                                 </div>

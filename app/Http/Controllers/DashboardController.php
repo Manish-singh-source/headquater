@@ -41,9 +41,10 @@ class DashboardController extends Controller
         // 2. PURCHASE SECTION
         $purchaseData = $this->getPurchaseData($startDate, $endDate, $selectedBrands);
 
+        // dd($purchaseData);
         // 3. ORDER STATUS SECTION
         $orderStatusData = $this->getOrderStatusData($startDate, $endDate, $selectedBrands);
-
+        
         // 4. DISPATCH SECTION
         $dispatchData = $this->getDispatchData($startDate, $endDate, $selectedBrands);
 
@@ -59,6 +60,7 @@ class DashboardController extends Controller
         // 8. WAREHOUSE SECTION
         $warehouseData = $this->getWarehouseData($selectedBrands);
 
+        // dd($warehouseData);
         return view('analytics-dashboard', compact(
             'allBrands',
             'selectedBrands',
@@ -137,6 +139,8 @@ class DashboardController extends Controller
         $yearStart = Carbon::now()->startOfYear();
 
         $totalPurchasesQuery = PurchaseOrder::join('purchase_order_products', 'purchase_orders.id', '=', 'purchase_order_products.purchase_order_id')
+            ->join('vendor_p_i_s', 'purchase_orders.id', '=', 'vendor_p_i_s.purchase_order_id')
+            ->join('vendor_p_i_products', 'purchase_orders.id', '=', 'vendor_p_i_products.purchase_order_id')
             ->join('products', 'purchase_order_products.product_id', '=', 'products.id')
             ->where('purchase_orders.created_at', '>=', $yearStart)
             ->whereNotNull('products.brand')
@@ -147,7 +151,12 @@ class DashboardController extends Controller
         }
 
         $totalPurchasesByBrand = $totalPurchasesQuery
-            ->select('products.brand', DB::raw('SUM(purchase_orders.total_amount) as total_purchases'))
+            ->select(
+                'products.brand',
+                DB::raw('SUM(vendor_p_i_products.quantity_received * vendor_p_i_products.mrp) as total_purchases'),
+                DB::raw('SUM(vendor_p_i_s.total_paid_amount) as total_paid'),
+                DB::raw('SUM(vendor_p_i_s.total_due_amount) as total_due')
+            )
             ->groupBy('products.brand')
             ->get();
 
@@ -158,6 +167,8 @@ class DashboardController extends Controller
             $monthEnd = Carbon::now()->subMonths($i)->endOfMonth();
 
             $monthlyPurchasesQuery = PurchaseOrder::join('purchase_order_products', 'purchase_orders.id', '=', 'purchase_order_products.purchase_order_id')
+                ->join('vendor_p_i_s', 'purchase_orders.id', '=', 'vendor_p_i_s.purchase_order_id')
+                ->join('vendor_p_i_products', 'purchase_orders.id', '=', 'vendor_p_i_products.purchase_order_id')
                 ->join('products', 'purchase_order_products.product_id', '=', 'products.id')
                 ->whereBetween('purchase_orders.created_at', [$monthStart, $monthEnd])
                 ->whereNotNull('products.brand')
@@ -168,7 +179,12 @@ class DashboardController extends Controller
             }
 
             $monthlyPurchases = $monthlyPurchasesQuery
-                ->select('products.brand', DB::raw('SUM(purchase_orders.total_amount) as total_purchases'))
+                ->select(
+                    'products.brand',
+                    DB::raw('SUM(vendor_p_i_products.quantity_received * vendor_p_i_products.mrp) as total_purchases'),
+                    DB::raw('SUM(vendor_p_i_s.total_paid_amount) as total_paid'),
+                    DB::raw('SUM(vendor_p_i_s.total_due_amount) as total_due')
+                )
                 ->groupBy('products.brand')
                 ->get();
 
@@ -181,7 +197,9 @@ class DashboardController extends Controller
         return [
             'total_purchases_by_brand' => $totalPurchasesByBrand,
             'monthly_trend' => $monthlyTrend,
-            'total_purchases_overall' => $totalPurchasesByBrand->sum('total_purchases')
+            'total_purchases_overall' => $totalPurchasesByBrand->sum('total_purchases'),
+            'total_paid_overall' => $totalPurchasesByBrand->sum('total_paid'),
+            'total_due_overall' => $totalPurchasesByBrand->sum('total_due')
         ];
     }
 
@@ -202,8 +220,8 @@ class DashboardController extends Controller
             ->select(
                 'products.brand',
                 DB::raw('COUNT(DISTINCT sales_orders.id) as total_orders'),
-                DB::raw('COUNT(DISTINCT CASE WHEN sales_orders.status = "pending" THEN sales_orders.id END) as open_orders'),
-                DB::raw('COUNT(DISTINCT CASE WHEN sales_orders.status IN ("completed", "delivered") THEN sales_orders.id END) as processed_orders')
+                DB::raw('COUNT(DISTINCT CASE WHEN sales_orders.status IN ("pending", "blocked", "ready_to_package", "ready_to_ship", "shipped", "delivered") THEN sales_orders.id END) as open_orders'),
+                DB::raw('COUNT(DISTINCT CASE WHEN sales_orders.status IN ("completed") THEN sales_orders.id END) as processed_orders')
             )
             ->groupBy('products.brand')
             ->get();
@@ -348,7 +366,8 @@ class DashboardController extends Controller
             ->select(
                 'products.brand',
                 DB::raw('SUM(warehouse_stocks.available_quantity) as total_units'),
-                DB::raw('SUM(warehouse_stocks.available_quantity * products.mrp) as total_value')
+                DB::raw('SUM(warehouse_stocks.available_quantity * products.mrp) as total_value'), 
+                DB::raw('SUM(warehouse_stocks.available_quantity * products.mrp * warehouse_stocks.available_quantity) as total_cost')
             )
             ->groupBy('products.brand')
             ->get();
@@ -356,7 +375,8 @@ class DashboardController extends Controller
         return [
             'inventory_by_brand' => $inventoryByBrand,
             'total_units' => $inventoryByBrand->sum('total_units'),
-            'total_value' => $inventoryByBrand->sum('total_value')
+            'total_value' => $inventoryByBrand->sum('total_value'),
+            'total_cost' => $inventoryByBrand->sum('total_cost')
         ];
     }
 }

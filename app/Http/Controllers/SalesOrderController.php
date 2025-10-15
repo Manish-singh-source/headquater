@@ -353,7 +353,7 @@ class SalesOrderController extends Controller
                     if (intval($record['Block']) > intval($product->available_quantity)) {
                         $blockQuantity = $product->block_quantity + $product->available_quantity;
                     } else {
-                        $blockQuantity = $product->block_quantity + $record['Block'];
+                        $blockQuantity = $product->block_quantity + intval($record['Block']);
                     }
 
                     // Block Quantity from WarehouseStock Table and Update WarehouseStockLog Table
@@ -367,8 +367,8 @@ class SalesOrderController extends Controller
                 $saveOrderProduct->temp_order_id = $tempSalesOrder->id;
                 $saveOrderProduct->customer_id = $customerInfo->id ?? null;
                 $saveOrderProduct->vendor_code = $vendorInfo->id ?? null;
-                $saveOrderProduct->ordered_quantity = $record['PO Quantity'];
-                $saveOrderProduct->purchase_ordered_quantity = $record['Purchase Order Quantity'];
+                $saveOrderProduct->ordered_quantity = $record['PO Quantity'] ?? 0;
+                $saveOrderProduct->purchase_ordered_quantity = $record['Purchase Order Quantity'] ?? 0;
                 $saveOrderProduct->product_id = $product->product->id ?? null;
                 $saveOrderProduct->warehouse_stock_id = $product->id ?? null;
                 $saveOrderProduct->sku = $sku;
@@ -435,7 +435,7 @@ class SalesOrderController extends Controller
                         $purchaseOrderProduct->sku = $sku;
                         $purchaseOrderProduct->vendor_code = $vendorCode;
                         if ($shortQty != $record['Purchase Order Quantity']) {
-                            $purchaseOrderProduct->ordered_quantity = $record['Purchase Order Quantity'];
+                            $purchaseOrderProduct->ordered_quantity = $record['Purchase Order Quantity'] ?? 0;
                         } else {
                             $purchaseOrderProduct->ordered_quantity = $shortQty;
                         }
@@ -1389,11 +1389,11 @@ class SalesOrderController extends Controller
                 'Description' => $row['Description'] ?? '',
 
                 'Basic Rate' => $row['Basic Rate'] ?? 0,
-                'Product Basic Rate' => $row['Product Basic Rate'] ?? 0,
+                'Product Basic Rate' => ($row['Product Basic Rate'] != '' && $row['Product Basic Rate'] != null) ? intval($row['Product Basic Rate']) : 0,
                 'Basic Rate Confirmation' => $row['Basic Rate Confirmation'] ?? 'Incorrect',
 
                 'Net Landing Rate' => $row['Net Landing Rate'] ?? 0,
-                'Product Net Landing Rate' => $row['Product Net Landing Rate'] ?? 0,
+                'Product Net Landing Rate' => intval($row['Product Net Landing Rate']) ?? 0,
                 'Net Landing Rate Confirmation' => $row['Net Landing Rate Confirmation'] ?? 'Incorrect',
 
                 'MRP' => $row['MRP'] ?? 0,
@@ -1405,7 +1405,7 @@ class SalesOrderController extends Controller
                 'Unavailable Quantity' => $row['Unavailable Quantity'] ?? '',
                 'Case Pack Quantity' => $row['Case Pack Quantity'] ?? '',
                 'Purchase Order Quantity' => $row['Unavailable Quantity'] ?? '',
-                'Block' => '',
+                'Block' => '0',
                 'Vendor Code' => $product->vendor_code ?? '',
                 'Reason' => $row['Reason'] ?? '',
             ]);
