@@ -1,6 +1,5 @@
 @extends('layouts.master')
 @section('main-content')
-
     @php
         $statuses = [
             'pending' => 'Pending',
@@ -51,9 +50,31 @@
             </div>
             <div class="card mt-4">
                 <div class="card-body">
+                    <ul class="nav nav-tabs mb-3" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active status-filter-tab" id="all-tab" data-bs-toggle="tab"
+                                data-order="all" data-bs-target="#all" type="button" role="tab" aria-controls="all"
+                                aria-selected="true">All</button>
+                        </li>
+
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link status-filter-tab" id="active-tab" data-bs-toggle="tab"
+                                data-order="Completed" data-bs-target="#active" type="button" role="tab"
+                                aria-controls="active" aria-selected="false">Completed</button>
+                        </li>
+
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link status-filter-tab" id="inactive-tab" data-bs-toggle="tab"
+                                data-order="Pending" data-bs-target="#inactive" type="button" role="tab"
+                                aria-controls="inactive" aria-selected="false">Pending</button>
+                        </li>
+                    </ul>
+
+
+
                     <div class="customer-table">
                         <div class="table-responsive white-space-nowrap">
-                            <table id="example" class="table table-striped">
+                            <table id="purchase_order" class="table table-striped">
                                 <thead class="table-light">
                                     <tr>
                                         <th>
@@ -171,8 +192,31 @@
     <!--end main wrapper-->
 @endsection
 @section('script')
-    
     <script>
+        $(document).ready(function() {
+            var brandSelection = $('#purchase_order').DataTable({
+                "columnDefs": [{
+                    "orderable": false,
+                }],
+                lengthChange: true,
+                buttons: [{
+                    extend: 'excelHtml5',
+                    className: 'd-none', // hide the default button
+                }]
+            });
+
+            $('.status-filter-tab').on('click', function() {
+                var selected = $(this).data('order').trim();
+                console.log(selected);
+
+                if (selected === 'all') {
+                    selected = '';
+                }
+                // Use regex for exact match
+                brandSelection.column(4).search(selected ? '^' + selected + '$' : '', true, false).draw();
+            });
+        });
+
         document.addEventListener('DOMContentLoaded', function() {
             // Select All functionality
             const selectAll = document.getElementById('select-all');

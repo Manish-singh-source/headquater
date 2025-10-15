@@ -188,8 +188,8 @@
 
                   <li class="nav-item dropdown">
                       <a class="nav-link dropdown-toggle dropdown-toggle-nocaret position-relative"
-                          data-bs-auto-close="outside" data-bs-toggle="dropdown" href="javascript:;" id="notificationDropdown"><i
-                              class="material-icons-outlined">notifications</i>
+                          data-bs-auto-close="outside" data-bs-toggle="dropdown" href="javascript:;"
+                          id="notificationDropdown"><i class="material-icons-outlined">notifications</i>
                           <span class="badge-notify" id="notificationBadge" style="display: none;">0</span>
                       </a>
                       <div class="dropdown-menu dropdown-notify dropdown-menu-end shadow" id="notificationDropdownMenu">
@@ -222,7 +222,8 @@
                   </li>
 
                   <li class="nav-item dropdown">
-                      <a href="javascrpt:;" class="dropdown-toggle dropdown-toggle-nocaret" data-bs-toggle="dropdown">
+                      <a href="javascrpt:;" class="dropdown-toggle dropdown-toggle-nocaret"
+                          data-bs-toggle="dropdown">
                           <img src="{{ Auth::user()->profile_image ?? Avatar::create(Auth::user()->fname)->toBase64() }}"
                               class="rounded-circle p-1 border" width="45" height="45" alt="">
                       </a>
@@ -278,6 +279,13 @@
                           <div class="parent-icon"><i class="material-icons-outlined">home</i>
                           </div>
                           <div class="menu-title">Dashboard</div>
+                      </a>
+                  </li>
+                  <li>
+                      <a href="{{ route('analytics.dashboard') }}">
+                          <div class="parent-icon"><i class="material-icons-outlined">analytics</i>
+                          </div>
+                          <div class="menu-title">Analytics Dashboard</div>
                       </a>
                   </li>
                   <li>
@@ -784,7 +792,7 @@
           // Load notifications via AJAX
           function loadNotifications() {
               $.ajax({
-                  url: '{{ route("notifications.get") }}',
+                  url: '{{ route('notifications.get') }}',
                   type: 'GET',
                   success: function(response) {
                       $('#notificationList').html(response.html);
@@ -799,7 +807,8 @@
                   },
                   error: function() {
                       $('#notificationLoader').hide();
-                      $('#notificationList').html('<div class="text-center py-3 text-danger">Failed to load notifications</div>');
+                      $('#notificationList').html(
+                          '<div class="text-center py-3 text-danger">Failed to load notifications</div>');
                   }
               });
           }
@@ -875,7 +884,7 @@
           // Mark all notifications as read
           function markAllAsRead() {
               $.ajax({
-                  url: '{{ route("notifications.mark-all-read") }}',
+                  url: '{{ route('notifications.mark-all-read') }}',
                   type: 'POST',
                   data: {
                       _token: '{{ csrf_token() }}'

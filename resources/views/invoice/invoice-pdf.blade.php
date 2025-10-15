@@ -105,11 +105,11 @@
             <td>Address:</td>
             <td colspan="2">{{ $invoice->customer->billing_address }}</td>
             <td>Address:</td>
-            <td colspan="2">{{ $invoice->customer->billing_address }}</td>
+            <td colspan="2">{{ $invoice->customer->shipping_address }}</td>
         </tr>
         <tr>
             <td>State:</td> 
-            <td colspan="2">{{ $invoice->customer->shipping_state }}</td>
+            <td colspan="2">{{ $invoice->customer->billing_state }}</td>
             {{-- <td>GSTIN: {{ $invoice->customer->gstin }}</td> --}}
             
             <td>State:</td> 

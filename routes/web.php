@@ -3,6 +3,7 @@
 use App\Http\Controllers\ActivityController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\CustomerGroupController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\LocationController;
 use App\Http\Controllers\NotificationController;
@@ -43,6 +44,7 @@ Route::controller(RegisterController::class)->group(function () {
 Route::middleware(['auth'])->group(function () {
     // Dashboard
     Route::get('/', [RegisterController::class, 'index'])->name('index');
+    Route::get('/analytics-dashboard', [DashboardController::class, 'index'])->name('analytics.dashboard');
 
     // Access Control
     Route::controller(StaffController::class)->group(function () {

@@ -89,12 +89,12 @@ class PurchaseOrderController extends Controller
             // Create notification
             NotificationService::orderCreated('purchase', $purchaseOrder->id);
 
-            return redirect()->route('purchase.order.index')->with('success', 'Purchase Order created successfully! Order ID: '.$purchaseOrder->id);
+            return redirect()->route('purchase.order.index')->with('success', 'Purchase Order created successfully! Order ID: ' . $purchaseOrder->id);
         } catch (\Exception $e) {
             // dd($e->getMessage());
             DB::rollBack();
 
-            return redirect()->back()->withErrors(['error' => 'Something went wrong: '.$e->getMessage()]);
+            return redirect()->back()->withErrors(['error' => 'Something went wrong: ' . $e->getMessage()]);
         }
     }
 
@@ -214,12 +214,12 @@ class PurchaseOrderController extends Controller
             VendorPIProduct::insert($vendorProducts);
             DB::commit();
 
-            return redirect()->back()->with('success', 'Purchase Order products imported successfully! Vendor PI ID: '.$vendorPi->id);
+            return redirect()->back()->with('success', 'Purchase Order products imported successfully! Vendor PI ID: ' . $vendorPi->id);
         } catch (\Exception $e) {
             dd($e);
             DB::rollBack();
 
-            return redirect()->back()->with(['error' => 'Something went wrong: '.$e->getMessage()]);
+            return redirect()->back()->with(['error' => 'Something went wrong: ' . $e->getMessage()]);
         }
     }
 
@@ -320,7 +320,7 @@ class PurchaseOrderController extends Controller
             // dd($e->getMessage());
             DB::rollBack();
 
-            return redirect()->back()->withErrors(['error' => 'Something went wrong: '.$e->getMessage()]);
+            return redirect()->back()->withErrors(['error' => 'Something went wrong: ' . $e->getMessage()]);
         }
     }
 
@@ -340,7 +340,7 @@ class PurchaseOrderController extends Controller
 
             return redirect()->back()->with('success', 'Purchase Orders deleted successfully.');
         } catch (\Exception $e) {
-            return redirect()->back()->with(['error' => 'Something went wrong: '.$e->getMessage()]);
+            return redirect()->back()->with(['error' => 'Something went wrong: ' . $e->getMessage()]);
         }
     }
 
@@ -443,7 +443,7 @@ class PurchaseOrderController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
 
-            return redirect()->back()->withErrors(['error' => 'Something went wrong: '.$e->getMessage()]);
+            return redirect()->back()->withErrors(['error' => 'Something went wrong: ' . $e->getMessage()]);
         }
     }
 
@@ -483,7 +483,7 @@ class PurchaseOrderController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
 
-            return redirect()->back()->withErrors(['error' => 'Something went wrong: '.$e->getMessage()]);
+            return redirect()->back()->withErrors(['error' => 'Something went wrong: ' . $e->getMessage()]);
         }
     }
 
@@ -513,7 +513,7 @@ class PurchaseOrderController extends Controller
 
         $invoice_file = $request->file('invoice_file');
         $ext = $invoice_file->getClientOriginalExtension();
-        $invoiceFileName = strtotime('now').'-'.$request->purchase_order_id.'.'.$ext;
+        $invoiceFileName = strtotime('now') . '-' . $request->purchase_order_id . '.' . $ext;
         $invoice_file->move(public_path('uploads/invoices'), $invoiceFileName);
 
         $purchaseInvoice = new PurchaseInvoice;
@@ -543,7 +543,7 @@ class PurchaseOrderController extends Controller
 
         $grn_file = $request->file('grn_file');
         $ext = $grn_file->getClientOriginalExtension();
-        $grnFileName = strtotime('now').'-'.$request->purchase_order_id.'.'.$ext;
+        $grnFileName = strtotime('now') . '-' . $request->purchase_order_id . '.' . $ext;
         $grn_file->move(public_path('uploads/invoices'), $grnFileName);
 
         $purchaseGRN = new PurchaseGrn;
@@ -566,7 +566,7 @@ class PurchaseOrderController extends Controller
         }
 
         // Create temporary .xlsx file path
-        $tempXlsxPath = storage_path('app/blocked_'.Str::random(8).'.xlsx');
+        $tempXlsxPath = storage_path('app/blocked_' . Str::random(8) . '.xlsx');
 
         // Create writer
         $writer = SimpleExcelWriter::create($tempXlsxPath);
@@ -600,7 +600,7 @@ class PurchaseOrderController extends Controller
         // Close the writer
         $writer->close();
 
-        return response()->download($tempXlsxPath, $request->vendorCode.'_Vendor_PO.xlsx', [
+        return response()->download($tempXlsxPath, $request->vendorCode . '_PO.xlsx', [
             'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         ])->deleteFileAfterSend(true);
     }
@@ -655,7 +655,7 @@ class PurchaseOrderController extends Controller
             // Create status change notification
             NotificationService::statusChanged('purchase', $purchaseOrder->id, $oldStatus, $purchaseOrder->status);
 
-            return redirect()->back()->with('success', 'Purchase Order status changed to "'.ucfirst(str_replace('_', ' ', $request->status)).'" successfully! Order ID: '.$purchaseOrder->id);
+            return redirect()->back()->with('success', 'Purchase Order status changed to "' . ucfirst(str_replace('_', ' ', $request->status)) . '" successfully! Order ID: ' . $purchaseOrder->id);
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Status Not Changed. Please Try Again.');
         }
@@ -723,7 +723,7 @@ class PurchaseOrderController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
 
-            return back()->with('error', 'Failed to add payment: '.$e->getMessage());
+            return back()->with('error', 'Failed to add payment: ' . $e->getMessage());
         }
 
         return back()->with('success', 'Payment added successfully.');

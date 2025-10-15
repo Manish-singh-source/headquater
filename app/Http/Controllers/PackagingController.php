@@ -6,6 +6,7 @@ use App\Models\Customer;
 use App\Models\ProductIssue;
 use App\Models\SalesOrder;
 use App\Models\SalesOrderProduct;
+use App\Models\WarehouseProductIssue;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -181,19 +182,16 @@ class PackagingController extends Controller
 
                         // create entry in products issues table
                         // create entry in vendor return products issues table
-                        ProductIssue::create([
-                            'purchase_order_id' => $tempOrder->purchase_order_id,
-                            'vendor_pi_id' => $tempOrder->vendor_pi_id,
-                            'vendor_pi_product_id' => $tempOrder->vendorPIProduct->id,
-                            'vendor_sku_code' => $tempOrder->sku,
-                            'quantity_requirement' => $tempOrder->vendorPIProduct->quantity_requirement,
-                            'available_quantity' => $tempOrder->available_quantity,
-                            'quantity_received' => $tempOrder->vendorPIProduct->quantity_received,
+                        WarehouseProductIssue::create([
+                            'customer_id' => $customer->id,
+                            'sales_order_id' => $request->salesOrderId,
+                            'sales_order_product_id' => $order->id,
+                            'sku' => $tempOrder->sku,
                             'issue_item' => $lessQuantity,
                             'issue_reason' => 'Shortage',
                             'issue_description' => 'Shortage products',
                             'issue_from' => 'warehouse',
-                            'issue_status' => 'accept',
+                            'issue_status' => 'pending',
                         ]);
                     } elseif ($order->dispatched_quantity < $record['Final Dispatch Qty']) {
                         $order->final_dispatched_quantity = $order->dispatched_quantity;
@@ -247,7 +245,7 @@ class PackagingController extends Controller
             return redirect()->route('packaging.list.index')->with('success', 'CSV file imported successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
-
+            dd($e);
             return redirect()->back()->with(['error' => 'Something went wrong: '.$e->getMessage()]);
         }
     }

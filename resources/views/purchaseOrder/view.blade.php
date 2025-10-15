@@ -38,10 +38,12 @@
                                 <select class="border-2 btn btn-sm border-primary text-start" id="changeStatus"
                                     aria-label="Default select example" name="status">
                                     <option value="" selected disabled>Change Status</option>
-                                    {{-- <option value="pending" @if ($purchaseOrder->status == 'pending') selected @endif
-                                @if (in_array($purchaseOrder->status, ['received', 'completed'])) disabled @endif>Pending</option>
-                            <option value="ready_to_package" @if ($purchaseOrder->status == 'received') selected @endif
-                                @if (in_array($purchaseOrder->status, ['completed'])) disabled @endif>Received</option> --}}
+                                    {{-- 
+                                    <option value="pending" @if ($purchaseOrder->status == 'pending') selected @endif
+                                        @if (in_array($purchaseOrder->status, ['received', 'completed'])) disabled @endif>Pending</option>
+                                    <option value="ready_to_package" @if ($purchaseOrder->status == 'received') selected @endif
+                                        @if (in_array($purchaseOrder->status, ['completed'])) disabled @endif>Received</option> 
+                                    --}}
                                     <option value="completed" @if ($purchaseOrder->status == 'completed') selected @endif>
                                         Completed</option>
                                 </select>

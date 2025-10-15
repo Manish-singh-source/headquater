@@ -15,6 +15,52 @@
     <main class="main-wrapper">
         <div class="main-content">
 
+            <div class="page-breadcrumb d-none d-sm-flex align-items-center justify-content-between mb-3">
+                <div>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb mb-0 p-0">
+                            <li class="breadcrumb-item"><a href="javascript:;"><i class="bx bx-home-alt"></i></a>
+                            </li>
+                            <li class="breadcrumb-item active" aria-current="page">Customer PO List</li>
+                        </ol>
+                    </nav>
+                </div>
+                <div class="justify-end">
+                    <div class="row g-3 justify-content-end">
+                        <div class="col-12 col-md-auto">
+                            <div class="d-flex align-items-center gap-2 justify-content-lg-end">
+
+                                <ul class="nav nav-tabs" id="vendorTabs" role="tablist">
+                                    <form id="statusForm" action="{{ route('change.sales.order.status') }}" method="POST">
+                                        @csrf
+                                        @method('PUT')
+                                        <input type="hidden" name="order_id" value="{{ $salesOrder->id }}">
+                                        <select class="form-select border-2 border-primary" id="changeStatus"
+                                            aria-label="Default select example" name="status">
+                                            <option value="" selected disabled>Change Status</option>
+                                            <option value="pending" @if ($salesOrder->status == 'pending') selected @endif
+                                                @if (in_array($salesOrder->status, ['blocked', 'ready_to_package', 'ready_to_ship', 'shipped', 'completed'])) disabled @endif>Pending</option>
+                                            <option value="blocked" @if ($salesOrder->status == 'blocked') selected @endif
+                                                @if (in_array($salesOrder->status, ['ready_to_package', 'ready_to_ship', 'shipped', 'completed'])) disabled @endif>Blocked</option>
+                                            <option value="ready_to_package"
+                                                @if ($salesOrder->status == 'ready_to_package') selected @endif
+                                                @if (in_array($salesOrder->status, ['ready_to_ship', 'shipped', 'completed'])) disabled @endif>Ready To Package</option>
+                                            <option value="ready_to_ship" @if ($salesOrder->status == 'ready_to_ship') selected @endif
+                                                @if (in_array($salesOrder->status, ['shipped', 'completed'])) disabled @endif>Ready To Ship</option>
+                                            <option value="shipped" @if ($salesOrder->status == 'shipped') selected @endif
+                                                @if (in_array($salesOrder->status, ['completed'])) disabled @endif>Shipped</option>
+                                            <option value="completed" @if ($salesOrder->status == 'completed') selected @endif>
+                                                Completed</option>
+                                        </select>
+                                    </form>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
             <div class="div my-2">
                 <div class="row">
                     <div class="col-12">
@@ -106,54 +152,8 @@
 
                         <!-- Tabs Navigation -->
                         <div class="div d-flex justify-content-end my-3 gap-2">
-                            <button class="btn border-2 border-primary" data-bs-toggle="modal"
-                                data-bs-target="#staticBackdrop1" class="btn border-2 border-primary">
-                                Update PO
-                            </button>
 
-                            <!-- Modal -->
-                            <div class="modal fade" id="staticBackdrop1" data-bs-backdrop="static" data-bs-keyboard="false"
-                                tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-                                <div class="modal-dialog">
-                                    <div class="modal-content">
-                                        <form action="{{ route('sales.order.update') }}" method="POST"
-                                            enctype="multipart/form-data">
-                                            @csrf
-                                            @method('PUT')
-                                            <div class="modal-header">
-                                                <h1 class="modal-title fs-5" id="staticBackdropLabel">Update Order</h1>
-                                                <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                                    aria-label="Close"></button>
-                                            </div>
 
-                                            <div class="modal-body">
-                                                <div class="col-12 mb-3">
-                                                    <input type="hidden" name="sales_order_id"
-                                                        value="{{ $salesOrder->id }}">
-                                                    <label for="products_excel" class="form-label">Products List (CSV/ELSX)
-                                                        <span class="text-danger">*</span></label>
-                                                    <input type="file" name="products_excel" id="products_excel"
-                                                        class="form-control" value="" required="">
-                                                </div>
-                                            </div>
-                                            <div class="modal-footer">
-                                                <button type="button" class="btn btn-secondary"
-                                                    data-bs-dismiss="modal">Close</button>
-                                                <button type="submit" id="holdOrder"
-                                                    class="btn btn-primary">Submit</button>
-                                            </div>
-                                        </form>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <button class="btn btn-icon btn-sm border-2 border-primary me-1" id="exportData">
-                                <i class="fa fa-file-excel-o"></i> Export to Excel
-                            </button>
-
-                            <button class="btn btn-icon btn-sm border-2 border-primary me-1" id="generateInvoice">
-                                <i class="fa fa-file-excel-o"></i> Generate Invoice
-                            </button>
                             <div>
                                 <select class="form-select border-2 border-primary" id="selectBrand"
                                     aria-label="Default select example" name="status">
@@ -172,46 +172,52 @@
                                     @endforeach
                                 </select>
                             </div>
-                            <ul class="nav nav-tabs" id="vendorTabs" role="tablist">
-                                <form id="statusForm" action="{{ route('change.sales.order.status') }}" method="POST">
-                                    @csrf
-                                    @method('PUT')
-                                    <input type="hidden" name="order_id" value="{{ $salesOrder->id }}">
-                                    <select class="form-select border-2 border-primary" id="changeStatus"
-                                        aria-label="Default select example" name="status">
-                                        <option value="" selected disabled>Change Status</option>
-                                        <option value="pending" @if ($salesOrder->status == 'pending') selected @endif
-                                            @if (in_array($salesOrder->status, ['blocked', 'ready_to_package', 'ready_to_ship', 'shipped', 'completed'])) disabled @endif>Pending</option>
-                                        <option value="blocked" @if ($salesOrder->status == 'blocked') selected @endif
-                                            @if (in_array($salesOrder->status, ['ready_to_package', 'ready_to_ship', 'shipped', 'completed'])) disabled @endif>Blocked</option>
-                                        <option value="ready_to_package" @if ($salesOrder->status == 'ready_to_package') selected @endif
-                                            @if (in_array($salesOrder->status, ['ready_to_ship', 'shipped', 'completed'])) disabled @endif>Ready To Package</option>
-                                        <option value="ready_to_ship" @if ($salesOrder->status == 'ready_to_ship') selected @endif
-                                            @if (in_array($salesOrder->status, ['shipped', 'completed'])) disabled @endif>Ready To Ship</option>
-                                        <option value="shipped" @if ($salesOrder->status == 'shipped') selected @endif
-                                            @if (in_array($salesOrder->status, ['completed'])) disabled @endif>Shipped</option>
-                                        <option value="completed" @if ($salesOrder->status == 'completed') selected @endif>
-                                            Completed</option>
-                                    </select>
-                                </form>
-                            </ul>
+
                             <div class="ms-auto">
                                 <div class="btn-group">
-                                    <button type="button" class="btn border-2 border-primary">Action</button>
-                                    <button type="button"
-                                        class="btn border-2 border-primary split-bg-primary dropdown-toggle dropdown-toggle-split"
-                                        data-bs-toggle="dropdown"> <span class="visually-hidden">Toggle Dropdown</span>
-                                    </button>
+                                    <button class="btn border-2 border-primary  split-bg-primary dropdown-toggle"
+                                        data-bs-toggle="dropdown" type="button">Action</button>
+
                                     <div class="dropdown-menu dropdown-menu-right dropdown-menu-lg-end">
-                                        <a class="dropdown-item cursor-pointer" id="delete-selected">Delete All</a>
+                                        <button type="button" class="dropdown-item cursor-pointer">Delete All</button>
+                                        <button type="button" class="dropdown-item cursor-pointer" id="generateInvoice">
+                                            <i class="fa fa-file-excel-o"></i> Generate Invoice
+                                        </button>
+                                        <button type="button" class="dropdown-item cursor-pointer" id="exportData">
+                                            <i class="fa fa-file-excel-o"></i> Export(Excel)
+                                        </button>
+                                        <button class="dropdown-item cursor-pointer" data-bs-toggle="modal"
+                                            data-bs-target="#staticBackdrop1">
+                                            Update PO
+                                        </button>
                                     </div>
                                 </div>
-                                {{-- <a href="{{ route('add-customer') }}" class="btn btn-primary px-4"><i
-                                class="bi bi-plus-lg me-2"></i>Add Customers</a> --}}
                             </div>
                         </div>
                     </div>
                     <div class="product-table" id="poTable">
+
+                        <ul class="nav nav-tabs mb-3" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active status-filter-tab" id="all-tab" data-bs-toggle="tab"
+                                    data-order="all" data-bs-target="#all" type="button" role="tab"
+                                    aria-controls="all" aria-selected="true">All</button>
+                            </li>
+
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link status-filter-tab" id="active-tab" data-bs-toggle="tab"
+                                    data-order="Completed" data-bs-target="#active" type="button" role="tab"
+                                    aria-controls="active" aria-selected="false">Completed</button>
+                            </li>
+
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link status-filter-tab" id="inactive-tab" data-bs-toggle="tab"
+                                    data-order="Pending" data-bs-target="#inactive" type="button" role="tab"
+                                    aria-controls="inactive" aria-selected="false">Pending</button>
+                            </li>
+                        </ul>
+
+
                         <div class="table-responsive white-space-nowrap">
                             <table id="po_table" class="table align-middle">
                                 <thead class="table-light">
@@ -242,6 +248,8 @@
                                         <th>Purchase&nbsp;Order&nbsp;Quantity</th>
                                         <th>Block&nbsp;Quantity</th>
                                         <th>Qty&nbsp;Fullfilled</th>
+                                        <th class="d-none">Status</th>
+                                        <th>Invoice&nbsp;Status</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -319,6 +327,8 @@
                                                     @endif
                                                 @endif
                                             </td>
+                                            <td class="d-none">{{ ucfirst($order->status) }}</td>
+                                            <td>{{ ucfirst($order->invoice_status) }}</td>
                                         </tr>
                                     @empty
                                         <tr>
@@ -333,6 +343,41 @@
             </div>
         </div>
     </main>
+
+
+
+
+
+    <!-- Modal -->
+    <div class="modal fade" id="staticBackdrop1" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+        aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form action="{{ route('sales.order.update') }}" method="POST" enctype="multipart/form-data">
+                    @csrf
+                    @method('PUT')
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="staticBackdropLabel">Update Order</h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+
+                    <div class="modal-body">
+                        <div class="col-12 mb-3">
+                            <input type="hidden" name="sales_order_id" value="{{ $salesOrder->id }}">
+                            <label for="products_excel" class="form-label">Products List (CSV/ELSX)
+                                <span class="text-danger">*</span></label>
+                            <input type="file" name="products_excel" id="products_excel" class="form-control"
+                                value="" required="">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" id="holdOrder" class="btn btn-primary">Submit</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 @endsection
 
 
@@ -385,49 +430,64 @@
                 }
             });
 
-            // Generate Invoice functionality
-            document.getElementById('generateInvoice').addEventListener('click', function() {
-                let selected = [];
-                document.querySelectorAll('.row-checkbox:checked').forEach(cb => {
-                    selected.push(cb.value);
-                });
-
-                let brand = document.getElementById('selectBrand').value;
-                let poNumber = document.getElementById('selectPONumber').value;
-
-                if (selected.length === 0) {
-                    // return;
-                    checkboxes.forEach(cb => cb.checked = selectAll.checked);
-                    // alert('Please select at least one record.');
-                    document.querySelectorAll('.row-checkbox:checked').forEach(cb => {
-                        selected.push(cb.value);
-                    });
-                }
-                console.log(selected.join(',')); 
-                
-
-                if (confirm('Are you sure you want to Create Invoice for selected/all records?')) {
-                    // Create a form and submit
-                    let form = document.createElement('form');
-                    form.method = 'POST';
-                    form.action = '{{ route('generate.invoice') }}';
-                    form.innerHTML = `
-                        @csrf
-                        <input type="hidden" name="_method" value="POST">
-                        <input type="hidden" name="order_id" value="{{ $salesOrder->id }}">
-                        <input type="hidden" name="brand" value="${brand}">
-                        <input type="hidden" name="po_number" value="${poNumber}">
-                        <input type="hidden" name="ids" value="${selected.join(',')}">
-                    `;
-                    document.body.appendChild(form);
-                    form.submit();
-                }
-            });
         });
     </script>
 
 
     <script>
+        // Generate Invoice functionality using jQuery and AJAX
+        $(document).ready(function() {
+
+            $(document).on('click', '#generateInvoice', function(e) {
+                e.preventDefault();
+
+                let selected = [];
+                $('.row-checkbox:checked').each(function() {
+                    selected.push($(this).val());
+                });
+
+                let brand = $('#selectBrand').val();
+                let poNumber = $('#selectPONumber').val();
+
+                // If no checkboxes selected, select all
+                if (selected.length === 0) {
+                    $('.row-checkbox').prop('checked', true);
+                    $('.row-checkbox:checked').each(function() {
+                        selected.push($(this).val());
+                    });
+                }
+
+                console.log(selected.join(','));
+
+                if (confirm('Are you sure you want to Create Invoice for selected/all records?')) {
+                    $.ajax({
+                        url: '{{ route('generate.invoice') }}', // Your Laravel route
+                        method: 'POST',
+                        data: {
+                            _token: '{{ csrf_token() }}',
+                            _method: 'POST',
+                            order_id: '{{ $salesOrder->id }}',
+                            brand: brand,
+                            po_number: poNumber,
+                            ids: selected.join(',')
+                        },
+                        success: function(response) {
+                            // Handle success (e.g., show a message or update UI)
+                            alert('Invoice generated successfully!');
+                            console.log(response);
+                            location.reload();
+                        },
+                        error: function(xhr, status, error) {
+                            // Handle error
+                            alert('An error occurred while generating the invoice.');
+                            console.error(error);
+                            location.reload();
+                        }
+                    });
+                }
+            });
+        });
+
         $(document).on('click', '#exportData', function() {
             var purchaseOrderId = $("#orderId").text().trim();
 
@@ -463,7 +523,18 @@
                 var selected = $(this).val().trim();
 
                 // Use regex for exact match
-                brandSelection.column(-5).search(selected ? '^' + selected + '$' : '', true, false).draw();
+                brandSelection.column(-7).search(selected ? '^' + selected + '$' : '', true, false).draw();
+            });
+
+            $('.status-filter-tab').on('click', function() {
+                var selected = $(this).data('order').trim();
+                console.log(selected);
+
+                if (selected === 'all') {
+                    selected = '';
+                }
+                // Use regex for exact match
+                brandSelection.column(-1).search(selected ? '^' + selected + '$' : '', true, false).draw();
             });
 
         });
