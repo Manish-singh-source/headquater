@@ -29,6 +29,7 @@
             <div class="card mt-4">
                 <div class="card-body">
 
+                    {{-- 
                     <ul class="nav nav-tabs mb-3" role="tablist">
                         <li class="nav-item" role="presentation">
                             <button class="nav-link active status-filter-tab" id="all-tab" data-bs-toggle="tab"
@@ -47,7 +48,8 @@
                                 data-order="Pending" data-bs-target="#inactive" type="button" role="tab"
                                 aria-controls="inactive" aria-selected="false">Pending</button>
                         </li>
-                    </ul>
+                    </ul> 
+                    --}}
 
                     <div class="customer-table">
                         <div class="table-responsive white-space-nowrap">

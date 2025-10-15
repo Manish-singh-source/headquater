@@ -1,4 +1,6 @@
-"I want you to act as an expert dashboard designer and developer. Your task is to create a detailed and functional dashboard based on the following requirements. Please do the tasks step-by-step and deliver outputs accordingly:
+"I want you to act as an expert laravel developer. 
+Please do the tasks step-by-step and deliver outputs accordingly:
+Your task is to create a detailed and functional dashboard based on the following requirements. 
 
 1. **Dashboard Page:** check dashboard page and it's dummy content 
 2. **Load Dashboard Data:** load dashboard data from the database and display it on the dashboard page  

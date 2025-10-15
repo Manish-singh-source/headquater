@@ -76,7 +76,7 @@ class ReceivedProductsController extends Controller
         }
 
         // Create temporary .xlsx file path
-        $tempXlsxPath = storage_path('app/received_'.Str::random(8).'.xlsx');
+        $tempXlsxPath = storage_path('app/received_' . Str::random(8) . '.xlsx');
 
         // Create writer
         $writer = SimpleExcelWriter::create($tempXlsxPath);
@@ -107,7 +107,7 @@ class ReceivedProductsController extends Controller
         // Close the writer
         $writer->close();
 
-        return response()->download($tempXlsxPath, 'Received-Products-'.$request->vendorCode.'.xlsx', [
+        return response()->download($tempXlsxPath, 'Received-Products-' . $request->vendorCode . '.xlsx', [
             'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         ])->deleteFileAfterSend(true);
     }
@@ -138,10 +138,15 @@ class ReceivedProductsController extends Controller
 
     public function updateRecievedProduct(Request $request)
     {
-        $request->validate([
+        $validated = Validator::make($request->all(), [
             'pi_excel' => 'required|file|mimes:xlsx,csv,xls',
             'vendor_pi_id' => 'required',
         ]);
+
+        if ($validated->fails()) {
+            return redirect()->back()->with('error', $validated->errors()->first());
+        }
+
 
         $file = $request->file('pi_excel');
         $filepath = $file->getPathname();
@@ -177,7 +182,6 @@ class ReceivedProductsController extends Controller
                             'return_reason' => 'Extra',
                             'return_description' => 'Extra products returned to vendor',
                         ]);
-
                     } elseif ($productData->available_quantity > Arr::get($record, 'Quantity Received')) {
                         $lessQuantity = $productData->available_quantity - Arr::get($record, 'Quantity Received');
                         $productData->quantity_received = Arr::get($record, 'Quantity Received');
@@ -197,7 +201,6 @@ class ReceivedProductsController extends Controller
                             'issue_from' => 'vendor',
                             'issue_status' => 'pending',
                         ]);
-
                     } else {
                         $productData->quantity_received = Arr::get($record, 'Quantity Received');
                     }
@@ -232,7 +235,7 @@ class ReceivedProductsController extends Controller
             // dd($e);
             DB::rollBack();
 
-            return redirect()->back()->withErrors(['error' => 'Something went wrong: '.$e->getMessage()]);
+            return redirect()->back()->withErrors(['error' => 'Something went wrong: ' . $e->getMessage()]);
         }
     }
 }

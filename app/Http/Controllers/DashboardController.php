@@ -44,10 +44,11 @@ class DashboardController extends Controller
         // dd($purchaseData);
         // 3. ORDER STATUS SECTION
         $orderStatusData = $this->getOrderStatusData($startDate, $endDate, $selectedBrands);
-        
+
         // 4. DISPATCH SECTION
         $dispatchData = $this->getDispatchData($startDate, $endDate, $selectedBrands);
 
+        // dd($dispatchData);
         // 5. DELIVERY CONFIRMATION SECTION
         $deliveryData = $this->getDeliveryData($startDate, $endDate, $selectedBrands);
 
@@ -132,7 +133,7 @@ class DashboardController extends Controller
         ];
     }
 
-    // 
+    // done
     private function getPurchaseData($startDate, $endDate, $selectedBrands)
     {
         // Total Purchases Till Date (current year)
@@ -153,11 +154,13 @@ class DashboardController extends Controller
         $totalPurchasesByBrand = $totalPurchasesQuery
             ->select(
                 'products.brand',
-                DB::raw('SUM(vendor_p_i_products.quantity_received * vendor_p_i_products.mrp) as total_purchases'),
-                DB::raw('SUM(vendor_p_i_s.total_paid_amount) as total_paid'),
-                DB::raw('SUM(vendor_p_i_s.total_due_amount) as total_due')
+                'vendor_p_i_products.quantity_received',
+                'vendor_p_i_products.mrp',
+                // DB::raw('SUM(vendor_p_i_products.quantity_received * vendor_p_i_products.mrp) as total_cost'),
+                // DB::raw('SUM(vendor_p_i_products.quantity_received) as total_purchases'),
+                // DB::raw('SUM(vendor_p_i_products.mrp) as total_amount')
             )
-            ->groupBy('products.brand')
+            // ->groupBy('products.brand')
             ->get();
 
         // Monthly Purchase Trend (last 3 months + current month)
@@ -181,9 +184,8 @@ class DashboardController extends Controller
             $monthlyPurchases = $monthlyPurchasesQuery
                 ->select(
                     'products.brand',
-                    DB::raw('SUM(vendor_p_i_products.quantity_received * vendor_p_i_products.mrp) as total_purchases'),
-                    DB::raw('SUM(vendor_p_i_s.total_paid_amount) as total_paid'),
-                    DB::raw('SUM(vendor_p_i_s.total_due_amount) as total_due')
+                    DB::raw('SUM(vendor_p_i_products.quantity_received) as total_purchases'),
+                    DB::raw('SUM(vendor_p_i_products.mrp) as total_amount')
                 )
                 ->groupBy('products.brand')
                 ->get();
@@ -198,12 +200,11 @@ class DashboardController extends Controller
             'total_purchases_by_brand' => $totalPurchasesByBrand,
             'monthly_trend' => $monthlyTrend,
             'total_purchases_overall' => $totalPurchasesByBrand->sum('total_purchases'),
-            'total_paid_overall' => $totalPurchasesByBrand->sum('total_paid'),
-            'total_due_overall' => $totalPurchasesByBrand->sum('total_due')
+            'total_amount_overall' => $totalPurchasesByBrand->sum('total_amount')
         ];
     }
 
-    // 
+    // done
     private function getOrderStatusData($startDate, $endDate, $selectedBrands)
     {
         $ordersQuery = SalesOrder::join('sales_order_products', 'sales_orders.id', '=', 'sales_order_products.sales_order_id')
@@ -234,67 +235,67 @@ class DashboardController extends Controller
         ];
     }
 
+    // done
     private function getDispatchData($startDate, $endDate, $selectedBrands)
     {
-        // LR Pending, Appointments Received but GRN Pending, Appointments Pending
-        $invoicesQuery = Invoice::whereBetween('invoice_date', [$startDate, $endDate]);
-
-        $totalInvoices = $invoicesQuery->count();
-
-        // Appointments Received but GRN Pending
-        $appointmentsReceivedGrnPending = Appointment::whereNotNull('appointment_date')
-            ->whereNull('grn')
-            ->count();
-
-        // Appointments Pending (no appointment date set)
-        $appointmentsPending = Invoice::whereBetween('invoice_date', [$startDate, $endDate])
-            ->whereDoesntHave('appointment')
-            ->count();
-
-        // LR Pending - assuming invoices without appointments are LR pending
-        $lrPending = $appointmentsPending;
-
-        // Completed Dispatches
-        $completedDispatches = Appointment::whereNotNull('appointment_date')
-            ->whereNotNull('grn')
+        // LR Pending, Appointments Received but GRN Pending, Appointments Pending 
+        // Total Sales Orders 
+        $totalDispatchedOrders = SalesOrder::whereBetween('created_at', [$startDate, $endDate])->where('status', '==', 'shipped')->orWhere('status', '==', 'delivered')->count();
+        $totalPendingDispatched = DB::table('invoices')
+            ->join('sales_orders', 'invoices.sales_order_id', '=', 'sales_orders.id')
+            ->where('sales_orders.status', '==', 'shipped')
+            ->whereBetween('sales_orders.created_at', [$startDate, $endDate])
             ->count();
 
         return [
-            'lr_pending' => $lrPending,
-            'appointments_received_grn_pending' => $appointmentsReceivedGrnPending,
-            'appointments_pending' => $appointmentsPending,
-            'completed_dispatches' => $completedDispatches,
-            'total_dispatches' => $totalInvoices
+            'total_dispatched_orders' => $totalDispatchedOrders,
+            'total_pending_dispatched' => $totalPendingDispatched
         ];
     }
 
+    // done
     private function getDeliveryData($startDate, $endDate, $selectedBrands)
     {
-        $appointmentsQuery = Appointment::join('invoices', 'appointments.invoice_id', '=', 'invoices.id')
-            ->whereBetween('invoices.invoice_date', [$startDate, $endDate]);
+ 
+        $totalPODReceived = SalesOrder::with('invoices', function($invoices) {
+            $invoices->whereHas('appointments', function ($query) {
+                $query->whereNotNull('pod');
+            });
+        })->where('status', 'delivered')->whereBetween('created_at', [$startDate, $endDate])->count(); 
 
-        $podReceived = (clone $appointmentsQuery)->whereNotNull('appointments.pod')->count();
-        $podNotReceived = (clone $appointmentsQuery)->whereNull('appointments.pod')->count();
+        $totalPODNotReceived = SalesOrder::with('invoices', function($invoices) {
+            $invoices->whereHas('appointments', function ($query) {
+                $query->whereNull('pod');
+            });
+        })->where('status', 'delivered')->whereBetween('created_at', [$startDate, $endDate])->count(); 
 
         return [
-            'pod_received' => $podReceived,
-            'pod_not_received' => $podNotReceived,
-            'total' => $podReceived + $podNotReceived
+            'pod_received' => $totalPODReceived,
+            'pod_not_received' => $totalPODNotReceived,
+            'total' => $totalPODReceived + $totalPODNotReceived
         ];
     }
 
+    // done
     private function getGRNData($startDate, $endDate, $selectedBrands)
     {
-        $appointmentsQuery = Appointment::join('invoices', 'appointments.invoice_id', '=', 'invoices.id')
-            ->whereBetween('invoices.invoice_date', [$startDate, $endDate]);
 
-        $grnDone = (clone $appointmentsQuery)->whereNotNull('appointments.grn')->count();
-        $grnNotDone = (clone $appointmentsQuery)->whereNull('appointments.grn')->count();
+        $totalGRNReceived = SalesOrder::with('invoices', function($invoices) {
+            $invoices->whereHas('appointments', function ($query) {
+                $query->whereNotNull('grn');
+            });
+        })->where('status', 'delivered')->whereBetween('created_at', [$startDate, $endDate])->count(); 
+
+        $totalGRNNotDone = SalesOrder::with('invoices', function($invoices) {
+            $invoices->whereHas('appointments', function ($query) {
+                $query->whereNull('grn');
+            });
+        })->where('status', 'delivered')->whereBetween('created_at', [$startDate, $endDate])->count(); 
 
         return [
-            'grn_done' => $grnDone,
-            'grn_not_done' => $grnNotDone,
-            'total' => $grnDone + $grnNotDone
+            'grn_done' => $totalGRNReceived,
+            'grn_not_done' => $totalGRNNotDone,
+            'total' => $totalGRNReceived + $totalGRNNotDone
         ];
     }
 
@@ -366,7 +367,7 @@ class DashboardController extends Controller
             ->select(
                 'products.brand',
                 DB::raw('SUM(warehouse_stocks.available_quantity) as total_units'),
-                DB::raw('SUM(warehouse_stocks.available_quantity * products.mrp) as total_value'), 
+                DB::raw('SUM(warehouse_stocks.available_quantity * products.mrp) as total_value'),
                 DB::raw('SUM(warehouse_stocks.available_quantity * products.mrp * warehouse_stocks.available_quantity) as total_cost')
             )
             ->groupBy('products.brand')

@@ -274,22 +274,35 @@
                         <div class="card-body">
                             <div class="row mb-3">
                                 <div class="col-6">
-                                    <div class="card bg-danger text-white">
+                                    <div class="card bg-info text-white">
                                         <div class="card-body text-center p-3">
-                                            <h6 class="mb-1">LR Pending</h6>
-                                            <h4 class="mb-0">{{ $dispatchData['lr_pending'] }}</h4>
+                                            <h6 class="mb-1">Total Dispatched Orders</h6>
+                                            <h4 class="mb-0">{{ $dispatchData['total_dispatched_orders'] }}</h4>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="col-6">
                                     <div class="card bg-warning text-dark">
                                         <div class="card-body text-center p-3">
-                                            <h6 class="mb-1">Appt. Pending</h6>
-                                            <h4 class="mb-0">{{ $dispatchData['appointments_pending'] }}</h4>
+                                            <h6 class="mb-1">Total Completed</h6>
+                                            <h4 class="mb-0">
+                                                {{ $dispatchData['total_dispatched_orders'] - $dispatchData['total_pending_dispatched'] }}
+                                            </h4>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="card bg-danger text-white">
+                                        <div class="card-body text-center p-3">
+                                            <h6 class="mb-1">Total Pending</h6>
+                                            <h4 class="mb-0">
+                                                {{ $dispatchData['total_pending_dispatched'] }}
+                                            </h4>
                                         </div>
                                     </div>
                                 </div>
                             </div>
+                            {{-- 
                             <div class="row">
                                 <div class="col-12">
                                     <div class="card bg-info text-white">
@@ -300,7 +313,8 @@
                                         </div>
                                     </div>
                                 </div>
-                            </div>
+                            </div> 
+                            --}}
                             <div class="mt-3">
                                 <canvas id="dispatchChart" height="200"></canvas>
                             </div>
@@ -317,6 +331,14 @@
                         </div>
                         <div class="card-body">
                             <div class="row mb-3">
+                                <div class="col-6">
+                                    <div class="card bg-info text-white">
+                                        <div class="card-body text-center p-3">
+                                            <h6 class="mb-1">Total Delivered</h6>
+                                            <h4 class="mb-0">{{ $dispatchData['total_dispatched_orders'] }}</h4>
+                                        </div>
+                                    </div>
+                                </div>
                                 <div class="col-6">
                                     <div class="card bg-success text-white">
                                         <div class="card-body text-center p-3">
@@ -352,6 +374,14 @@
                         </div>
                         <div class="card-body">
                             <div class="row mb-3">
+                                <div class="col-6">
+                                    <div class="card bg-info text-white">
+                                        <div class="card-body text-center p-3">
+                                            <h6 class="mb-1">Total GRN</h6>
+                                            <h4 class="mb-0">{{ $grnData['total'] }}</h4>
+                                        </div>
+                                    </div>
+                                </div>
                                 <div class="col-6">
                                     <div class="card bg-success text-white">
                                         <div class="card-body text-center p-3">
@@ -407,7 +437,8 @@
                                         <div class="card-body text-center p-3">
                                             <h6 class="mb-1">Due</h6>
                                             <h5 class="mb-0">
-                                                ₹{{ number_format($paymentData['total_outstanding'] - $paymentData['monthly_received'], 2) }}</h5>
+                                                ₹{{ number_format($paymentData['total_outstanding'] - $paymentData['monthly_received'], 2) }}
+                                            </h5>
                                         </div>
                                     </div>
                                 </div>
@@ -613,15 +644,13 @@
         new Chart(dispatchCtx, {
             type: 'pie',
             data: {
-                labels: ['LR Pending', 'Appointments Pending', 'Appt. Received (GRN Pending)', 'Completed'],
+                labels: ['Total Dispatched Orders', 'Pending Dispatches'],
                 datasets: [{
                     data: [
-                        dispatchData.lr_pending,
-                        dispatchData.appointments_pending,
-                        dispatchData.appointments_received_grn_pending,
-                        dispatchData.completed_dispatches
+                        dispatchData.total_dispatched_orders,
+                        dispatchData.total_dispatched_orders - dispatchData.total_pending_dispatched,
                     ],
-                    backgroundColor: ['#dc3545', '#ffc107', '#17a2b8', '#28a745'],
+                    backgroundColor: ['#ffc107', '#17a2b8'],
                     borderWidth: 2
                 }]
             },

@@ -75,4 +75,9 @@ class SalesOrder extends Model
             'sales_order_id'                   // PK on ordered_products
         );
     }
+
+    public function invoices()
+    {
+        return $this->hasMany(Invoice::class, 'sales_order_id', 'id');
+    }
 }

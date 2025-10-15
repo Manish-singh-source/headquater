@@ -38,9 +38,13 @@ class PurchaseOrderController extends Controller
 
     public function customPurchaseStore(Request $request)
     {
-        $request->validate([
+        $validated = Validator::make($request->all(), [
             'purchase_excel' => 'required|mimes:xlsx,csv,xls',
         ]);
+
+        if ($validated->fails()) {
+            return redirect()->back()->with('error', $validated->errors()->first());
+        }
 
         $file = $request->file('purchase_excel');
         $filepath = $file->getPathname();
@@ -110,12 +114,16 @@ class PurchaseOrderController extends Controller
     // Storing Vendor PI Products from CSV
     public function store(Request $request)
     {
-        $request->validate([
+        $validated = Validator::make($request->all(), [
             'pi_excel' => 'required|file|mimes:xlsx,csv,xls',
             'purchase_order_id' => 'required|exists:purchase_orders,id',
             'sales_order_id' => 'required|exists:sales_orders,id',
             'vendor_code' => 'required|string|max:255',
         ]);
+
+        if ($validated->fails()) {
+            return redirect()->back()->with('error', $validated->errors()->first());
+        }
 
         $file = $request->file('pi_excel');
         $filepath = $file->getPathname();
@@ -249,11 +257,15 @@ class PurchaseOrderController extends Controller
 
     public function update(Request $request)
     {
-        $request->validate([
+        $validated = Validator::make($request->all(), [
             'pi_excel' => 'required|file|mimes:xlsx,csv,xls',
             'purchase_order_id' => 'required',
             'vendor_code' => 'required',
         ]);
+
+        if ($validated->fails()) {
+            return redirect()->back()->with('error', $validated->errors()->first());
+        }
 
         $file = $request->file('pi_excel');
         $filepath = $file->getPathname();
@@ -490,14 +502,16 @@ class PurchaseOrderController extends Controller
     public function invoiceStore(Request $request)
     {
         $validated = Validator::make($request->all(), [
+            'invoice_file' => 'required|mimes:pdf',
             'purchase_order_id' => 'required',
             'vendor_code' => 'required',
-            'invoice_file' => 'required|mimes:pdf',
         ]);
 
         if ($validated->fails()) {
-            return redirect()->back()->withInput()->withErrors($validated)->with('error', $validated->failed());
+            // Redirect back with the first validation error as a flash message
+            return redirect()->back()->with('error', $validated->errors()->first());
         }
+
 
         // if($purchaseOrderInvoice?->invoice_file != null) {
         //     if(File::exists(public_path('uploads/invoices/' . $purchaseOrderInvoice->invoice_file))) {
@@ -532,13 +546,14 @@ class PurchaseOrderController extends Controller
     public function grnStore(Request $request)
     {
         $validated = Validator::make($request->all(), [
+            'grn_file' => 'required|mimes:pdf',
             'purchase_order_id' => 'required',
             'vendor_code' => 'required',
-            'grn_file' => 'required|mimes:pdf',
         ]);
 
         if ($validated->fails()) {
-            return redirect()->back()->withInput()->withErrors($validated);
+            // Redirect back with the first validation error as a flash message
+            return redirect()->back()->with('error', $validated->errors()->first());
         }
 
         $grn_file = $request->file('grn_file');
