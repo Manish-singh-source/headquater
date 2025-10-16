@@ -281,13 +281,15 @@
                           <div class="menu-title">Dashboard</div>
                       </a>
                   </li>
+                  {{-- 
                   <li>
                       <a href="{{ route('analytics.dashboard') }}">
                           <div class="parent-icon"><i class="material-icons-outlined">analytics</i>
                           </div>
                           <div class="menu-title">Analytics Dashboard</div>
                       </a>
-                  </li>
+                  </li> 
+                  --}}
                   <li>
                       <a href="javascript:;" class="has-arrow">
                           <div class="parent-icon"><i class="material-icons-outlined">key</i>

@@ -65,3 +65,18 @@ Excel File Data:
 1. vendor_code, sku, ordered_quantity 
 
 
+
+
+analytics-dashboard
+
+
+all the code is in the shopify and in liquid:
+i want to display FAQ section: 
+
+1. in the left side i want to display FAQ title's list where i will click on any title it will show the list of FAQ's on the right side. 
+2. list of FAQ's title will be a categories just like, Products, Orders, My Account, Terms & Conditions, etc.  
+3. on the right side i want to display the list of FAQ's for the selected category. 
+4. on the right side FAQ's will be collapsible. and first one will be open by default. 
+
+
+

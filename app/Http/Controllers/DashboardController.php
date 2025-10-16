@@ -11,6 +11,7 @@ use App\Models\PurchaseOrder;
 use App\Models\PurchaseOrderProduct;
 use App\Models\SalesOrder;
 use App\Models\SalesOrderProduct;
+use App\Models\VendorPIProduct;
 use App\Models\WarehouseStock;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -62,7 +63,7 @@ class DashboardController extends Controller
         $warehouseData = $this->getWarehouseData($selectedBrands);
 
         // dd($warehouseData);
-        return view('analytics-dashboard', compact(
+        return view('index', compact(
             'allBrands',
             'selectedBrands',
             'startDate',
@@ -139,29 +140,24 @@ class DashboardController extends Controller
         // Total Purchases Till Date (current year)
         $yearStart = Carbon::now()->startOfYear();
 
-        $totalPurchasesQuery = PurchaseOrder::join('purchase_order_products', 'purchase_orders.id', '=', 'purchase_order_products.purchase_order_id')
-            ->join('vendor_p_i_s', 'purchase_orders.id', '=', 'vendor_p_i_s.purchase_order_id')
-            ->join('vendor_p_i_products', 'purchase_orders.id', '=', 'vendor_p_i_products.purchase_order_id')
-            ->join('products', 'purchase_order_products.product_id', '=', 'products.id')
-            ->where('purchase_orders.created_at', '>=', $yearStart)
-            ->whereNotNull('products.brand')
-            ->where('products.brand', '!=', '');
+        $totalPurchasesQuery = VendorPIProduct::join('products', 'vendor_p_i_products.vendor_sku_code', '=', 'products.sku')
+            ->where('vendor_p_i_products.quantity_received', '>', 0)
+            ->where('vendor_p_i_products.created_at', '>=', $yearStart);
 
         if (!empty($selectedBrands)) {
-            $totalPurchasesQuery->where('products.brand', $selectedBrands);
+            $totalPurchasesQuery->whereIn('products.brand', $selectedBrands); // use whereIn for multiple brands
         }
 
-        $totalPurchasesByBrand = $totalPurchasesQuery
-            ->select(
-                'products.brand',
-                'vendor_p_i_products.quantity_received',
-                'vendor_p_i_products.mrp',
-                // DB::raw('SUM(vendor_p_i_products.quantity_received * vendor_p_i_products.mrp) as total_cost'),
-                // DB::raw('SUM(vendor_p_i_products.quantity_received) as total_purchases'),
-                // DB::raw('SUM(vendor_p_i_products.mrp) as total_amount')
-            )
-            // ->groupBy('products.brand')
-            ->get();
+        $totalPurchasesQuery->select(
+            'products.brand',
+            \DB::raw('SUM(vendor_p_i_products.quantity_received) as total_quantity'),
+            \DB::raw('SUM(vendor_p_i_products.mrp) as total_mrp'),
+            \DB::raw('SUM(vendor_p_i_products.quantity_received * vendor_p_i_products.mrp) as total_cost')
+        )
+            ->groupBy('products.brand');
+
+        $totalPurchasesByBrand = $totalPurchasesQuery->get();
+
 
         // Monthly Purchase Trend (last 3 months + current month)
         $monthlyTrend = [];
@@ -169,26 +165,23 @@ class DashboardController extends Controller
             $monthStart = Carbon::now()->subMonths($i)->startOfMonth();
             $monthEnd = Carbon::now()->subMonths($i)->endOfMonth();
 
-            $monthlyPurchasesQuery = PurchaseOrder::join('purchase_order_products', 'purchase_orders.id', '=', 'purchase_order_products.purchase_order_id')
-                ->join('vendor_p_i_s', 'purchase_orders.id', '=', 'vendor_p_i_s.purchase_order_id')
-                ->join('vendor_p_i_products', 'purchase_orders.id', '=', 'vendor_p_i_products.purchase_order_id')
-                ->join('products', 'purchase_order_products.product_id', '=', 'products.id')
-                ->whereBetween('purchase_orders.created_at', [$monthStart, $monthEnd])
-                ->whereNotNull('products.brand')
-                ->where('products.brand', '!=', '');
+            $monthlyPurchasesQuery = VendorPIProduct::join('products', 'vendor_p_i_products.vendor_sku_code', '=', 'products.sku')
+                ->where('vendor_p_i_products.quantity_received', '>', 0)
+                ->whereBetween('vendor_p_i_products.created_at', [$monthStart, $monthEnd]);
 
             if (!empty($selectedBrands)) {
-                $monthlyPurchasesQuery->where('products.brand', $selectedBrands);
+                $monthlyPurchasesQuery->whereIn('products.brand', $selectedBrands); // use whereIn for multiple brands
             }
 
-            $monthlyPurchases = $monthlyPurchasesQuery
-                ->select(
-                    'products.brand',
-                    DB::raw('SUM(vendor_p_i_products.quantity_received) as total_purchases'),
-                    DB::raw('SUM(vendor_p_i_products.mrp) as total_amount')
-                )
-                ->groupBy('products.brand')
-                ->get();
+            $monthlyPurchasesQuery->select(
+                'products.brand',
+                \DB::raw('SUM(vendor_p_i_products.quantity_received) as total_quantity'),
+                \DB::raw('SUM(vendor_p_i_products.mrp) as total_mrp'),
+                \DB::raw('SUM(vendor_p_i_products.quantity_received * vendor_p_i_products.mrp) as total_cost')
+            )
+                ->groupBy('products.brand');
+
+            $monthlyPurchases = $monthlyPurchasesQuery->get();
 
             $monthlyTrend[] = [
                 'month' => $monthStart->format('M Y'),
@@ -199,9 +192,10 @@ class DashboardController extends Controller
         return [
             'total_purchases_by_brand' => $totalPurchasesByBrand,
             'monthly_trend' => $monthlyTrend,
-            'total_purchases_overall' => $totalPurchasesByBrand->sum('total_purchases'),
-            'total_amount_overall' => $totalPurchasesByBrand->sum('total_amount')
+            'total_amount_overall' => $totalPurchasesByBrand->sum('total_cost')
         ];
+        
+        
     }
 
     // done
@@ -256,18 +250,18 @@ class DashboardController extends Controller
     // done
     private function getDeliveryData($startDate, $endDate, $selectedBrands)
     {
- 
-        $totalPODReceived = SalesOrder::with('invoices', function($invoices) {
+
+        $totalPODReceived = SalesOrder::with('invoices', function ($invoices) {
             $invoices->whereHas('appointments', function ($query) {
                 $query->whereNotNull('pod');
             });
-        })->where('status', 'delivered')->whereBetween('created_at', [$startDate, $endDate])->count(); 
+        })->where('status', 'delivered')->whereBetween('created_at', [$startDate, $endDate])->count();
 
-        $totalPODNotReceived = SalesOrder::with('invoices', function($invoices) {
+        $totalPODNotReceived = SalesOrder::with('invoices', function ($invoices) {
             $invoices->whereHas('appointments', function ($query) {
                 $query->whereNull('pod');
             });
-        })->where('status', 'delivered')->whereBetween('created_at', [$startDate, $endDate])->count(); 
+        })->where('status', 'delivered')->whereBetween('created_at', [$startDate, $endDate])->count();
 
         return [
             'pod_received' => $totalPODReceived,
@@ -280,17 +274,17 @@ class DashboardController extends Controller
     private function getGRNData($startDate, $endDate, $selectedBrands)
     {
 
-        $totalGRNReceived = SalesOrder::with('invoices', function($invoices) {
+        $totalGRNReceived = SalesOrder::with('invoices', function ($invoices) {
             $invoices->whereHas('appointments', function ($query) {
                 $query->whereNotNull('grn');
             });
-        })->where('status', 'delivered')->whereBetween('created_at', [$startDate, $endDate])->count(); 
+        })->where('status', 'delivered')->whereBetween('created_at', [$startDate, $endDate])->count();
 
-        $totalGRNNotDone = SalesOrder::with('invoices', function($invoices) {
+        $totalGRNNotDone = SalesOrder::with('invoices', function ($invoices) {
             $invoices->whereHas('appointments', function ($query) {
                 $query->whereNull('grn');
             });
-        })->where('status', 'delivered')->whereBetween('created_at', [$startDate, $endDate])->count(); 
+        })->where('status', 'delivered')->whereBetween('created_at', [$startDate, $endDate])->count();
 
         return [
             'grn_done' => $totalGRNReceived,

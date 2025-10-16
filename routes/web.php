@@ -43,8 +43,8 @@ Route::controller(RegisterController::class)->group(function () {
 
 Route::middleware(['auth'])->group(function () {
     // Dashboard
-    Route::get('/', [RegisterController::class, 'index'])->name('index');
-    Route::get('/analytics-dashboard', [DashboardController::class, 'index'])->name('analytics.dashboard');
+    // Route::get('/', [RegisterController::class, 'index'])->name('index');
+    Route::get('/', [DashboardController::class, 'index'])->name('index');
 
     // Access Control
     Route::controller(StaffController::class)->group(function () {

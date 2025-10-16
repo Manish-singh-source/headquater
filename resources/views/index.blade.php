@@ -2,911 +2,519 @@
 
 @section('main-content')
     <!--start main wrapper-->
-
     <main class="main-wrapper">
         <div class="main-content">
             <!--breadcrumb-->
             <div class="page-breadcrumb d-none d-sm-flex align-items-center mb-3">
-                <div class="breadcrumb-title pe-3">Dashboard</div>
+                <div class="breadcrumb-title pe-3">Analytics Dashboard</div>
                 <div class="ps-3">
                     <nav aria-label="breadcrumb">
                         <ol class="breadcrumb mb-0 p-0">
-                            <li class="breadcrumb-item"><a href="javascript:;"><i class="bx bx-home-alt"></i></a>
-                            </li>
-                            <li class="breadcrumb-item active" aria-current="page">Analysis</li>
+                            <li class="breadcrumb-item"><a href="{{ route('index') }}"><i class="bx bx-home-alt"></i></a></li>
+                            <li class="breadcrumb-item active" aria-current="page">Multi-Brand Analytics</li>
                         </ol>
                     </nav>
                 </div>
             </div>
             <!--end breadcrumb-->
 
-            <div class="row">
-                <div class="col-xxl-12 d-flex align-items-stretch">
-                    <div class="card w-100 overflow-hidden rounded-4">
-                        <div class="card-body position-relative p-4">
-                            <div class="row">
-                                <div class="col-12 col-sm-7">
-                                    <div class="d-flex align-items-center gap-3 mb-5">
-                                        <img src="{{ Auth::user()->profile_image ?? Avatar::create(Auth::user()->fname)->toBase64() }}"
-                                            class="rounded-circle bg-grd-info p-1" width="60" height="60"
-                                            alt="user">
-                                        <div class="">
-                                            <p class="mb-0 fw-semibold">Welcome back</p>
-                                            <h4 class="fw-semibold mb-0 fs-4">
-                                                {{ ucfirst(Auth::user()->fname) }}
-                                                {{ ucfirst(Auth::user()->lname) }}
-                                            </h4>
-                                        </div>
-                                    </div>
-
-                                    <div class="d-flex align-items-center gap-5">
-                                        <div class="">
-                                            <h4 class="mb-1 fw-semibold d-flex align-content-center">₹65.4K<i
-                                                    class="ti ti-arrow-up-right fs-5 lh-base text-success"></i>
-                                            </h4>
-                                            <p class="mb-3">Todays Sales</p>
-                                            <div class="progress mb-0" style="height:5px;">
-                                                <div class="progress-bar bg-grd-success" role="progressbar"
-                                                    style="width: 60%" aria-valuenow="25" aria-valuemin="0"
-                                                    aria-valuemax="100"></div>
-                                            </div>
-                                        </div>
-                                        <div class="vr"></div>
-                                        <div class="">
-                                            <h4 class="mb-1 fw-semibold d-flex align-content-center">78.4%<i
-                                                    class="ti ti-arrow-up-right fs-5 lh-base text-success"></i>
-                                            </h4>
-                                            <p class="mb-3">Growth Rate</p>
-                                            <div class="progress mb-0" style="height:5px;">
-                                                <div class="progress-bar bg-grd-danger" role="progressbar"
-                                                    style="width: 60%" aria-valuenow="25" aria-valuemin="0"
-                                                    aria-valuemax="100"></div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="col-12 col-sm-5">
-                                    <div class="welcome-back-img pt-4">
-                                        <img src="assets/images/gallery/welcome-back-3.png" height="180" alt="">
-                                    </div>
-                                </div>
-                            </div><!--end row-->
-                        </div>
-                    </div>
-                </div>
-
-
-                <div class="col-xxl-12">
-                    <div class="row">
-                        <div class="col-xl-3 col-sm-6 col-12 d-flex">
-                            <div class="card bg-white sale-widget flex-fill">
-                                <div class="card-body d-flex align-items-center">
-                                    <div class="ms-2">
-                                        <p class="text-dark mb-1">Total Customers</p>
-                                        <div class="d-inline-flex align-items-center flex-wrap gap-2">
-                                            <h4 class="text-dark">{{ $customersCount ?? '0' }}</h4>
-                                            <!-- <span class="badge badge-soft-primary text-dark"><i class="ti ti-arrow-up me-1"></i>+22%</span> -->
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="col-xl-3 col-sm-6 col-12 d-flex">
-                            <div class="card bg-white sale-widget flex-fill">
-                                <div class="card-body d-flex align-items-center">
-                                    <div class="ms-2">
-                                        <p class="text-dark mb-1">Total Customer Orders</p>
-                                        <div class="d-inline-flex align-items-center flex-wrap gap-2">
-                                            <h4 class="text-dark">{{ $salesOrdersCount ?? '0' }}</h4>
-                                            <!-- <span class="badge badge-soft-primary text-dark"><i class="ti ti-arrow-up me-1"></i>+22%</span> -->
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="col-xl-3 col-sm-6 col-12 d-flex">
-                            <div class="card bg-white sale-widget flex-fill">
-                                <div class="card-body d-flex align-items-center">
-                                    <div class="ms-2">
-                                        <p class="text-dark mb-1">Total Vendors</p>
-                                        <div class="d-inline-flex align-items-center flex-wrap gap-2">
-                                            <h4 class="text-dark">{{ $vendorsCount ?? '0' }}</h4>
-                                            <!-- <span class="badge badge-soft-primary text-dark"><i class="ti ti-arrow-up me-1"></i>+22%</span> -->
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="col-xl-3 col-sm-6 col-12 d-flex">
-                            <div class="card bg-white sale-widget flex-fill">
-                                <div class="card-body d-flex align-items-center">
-                                    <div class="ms-2">
-                                        <p class="text-dark mb-1">Total Vendor Orders</p>
-                                        <div class="d-inline-flex align-items-center flex-wrap gap-2">
-                                            <h4 class="text-dark">{{ $purchaseOrdersCount ?? '0' }}</h4>
-                                            <!-- <span class="badge badge-soft-primary text-dark"><i class="ti ti-arrow-up me-1"></i>+22%</span> -->
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
-
-                <div class="col-xxl-12">
-                    <div class="row">
-                        <div class="col-xl-3 col-sm-6 col-12 d-flex">
-                            <div class="card bg-white sale-widget flex-fill">
-                                <div class="card-body d-flex align-items-center">
-                                    <div class="ms-2">
-                                        <p class="text-dark mb-1">Total Products</p>
-                                        <div class="d-inline-flex align-items-center flex-wrap gap-2">
-                                            <h4 class="text-dark">{{ $productsCount ?? '0' }}</h4>
-                                            <!-- <span class="badge badge-soft-primary text-dark"><i class="ti ti-arrow-up me-1"></i>+22%</span> -->
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-xl-3 col-sm-6 col-12 d-flex">
-                            <div class="card bg-white sale-widget flex-fill">
-                                <div class="card-body d-flex align-items-center">
-                                    <div class="ms-2">
-                                        <p class="text-dark mb-1">Total Warehouses</p>
-                                        <div class="d-inline-flex align-items-center flex-wrap gap-2">
-                                            <h4 class="text-dark">{{ $warehouseCount ?? '0' }}</h4>
-                                            <!-- <span class="badge badge-soft-primary text-dark"><i class="ti ti-arrow-up me-1"></i>+22%</span> -->
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-xl-3 col-sm-6 col-12 d-flex">
-                            <div class="card bg-white sale-widget flex-fill">
-                                <div class="card-body d-flex align-items-center">
-                                    <div class="ms-2">
-                                        <p class="text-dark mb-1">Total Invoices</p>
-                                        <div class="d-inline-flex align-items-center flex-wrap gap-2">
-                                            <h4 class="text-dark">0</h4>
-                                            <!-- <span class="badge badge-soft-primary text-dark"><i class="ti ti-arrow-up me-1"></i>+22%</span> -->
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-xl-3 col-sm-6 col-12 d-flex">
-                            <div class="card bg-white sale-widget flex-fill">
-                                <div class="card-body d-flex align-items-center">
-                                    <div class="ms-2">
-                                        <p class="text-dark mb-1">Packaging List</p>
-                                        <div class="d-inline-flex align-items-center flex-wrap gap-2">
-                                            <h4 class="text-dark">{{ $readyToPackageOrdersCount ?? '0' }}</h4>
-                                            <!-- <span class="badge badge-soft-primary text-dark"><i class="ti ti-arrow-up me-1"></i>+22%</span> -->
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-xl-3 col-sm-6 col-12 d-flex">
-                            <div class="card bg-white sale-widget flex-fill">
-                                <div class="card-body d-flex align-items-center">
-                                    <div class="ms-2">
-                                        <p class="text-dark mb-1">Ready To Ship</p>
-                                        <div class="d-inline-flex align-items-center flex-wrap gap-2">
-                                            <h4 class="text-dark">{{ $readyToShipOrdersCount ?? '0' }}</h4>
-                                            <!-- <span class="badge badge-soft-primary text-dark"><i class="ti ti-arrow-up me-1"></i>+22%</span> -->
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-xl-3 col-sm-6 col-12 d-flex">
-                            <div class="card bg-white sale-widget flex-fill">
-                                <div class="card-body d-flex align-items-center">
-                                    <div class="ms-2">
-                                        <p class="text-dark mb-1">Ready To Package</p>
-                                        <div class="d-inline-flex align-items-center flex-wrap gap-2">
-                                            <h4 class="text-dark">{{ $readyToShipOrdersCount ?? '0' }}</h4>
-                                            <!-- <span class="badge badge-soft-primary text-dark"><i class="ti ti-arrow-up me-1"></i>+22%</span> -->
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-xl-3 col-sm-6 col-12 d-flex">
-                            <div class="card bg-white sale-widget flex-fill">
-                                <div class="card-body d-flex align-items-center">
-                                    <div class="ms-2">
-                                        <p class="text-dark mb-1">GRNs</p>
-                                        <div class="d-inline-flex align-items-center flex-wrap gap-2">
-                                            <h4 class="text-dark">{{ $readyToShipOrdersCount ?? '0' }}</h4>
-                                            <!-- <span class="badge badge-soft-primary text-dark"><i class="ti ti-arrow-up me-1"></i>+22%</span> -->
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-xl-3 col-sm-6 col-12 d-flex">
-                            <div class="card bg-white sale-widget flex-fill">
-                                <div class="card-body d-flex align-items-center">
-                                    <div class="ms-2">
-                                        <p class="text-dark mb-1">Payments</p>
-                                        <div class="d-inline-flex align-items-center flex-wrap gap-2">
-                                            <h4 class="text-dark">{{ $readyToShipOrdersCount ?? '0' }}</h4>
-                                            <!-- <span class="badge badge-soft-primary text-dark"><i class="ti ti-arrow-up me-1"></i>+22%</span> -->
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
-
-
-                <div class="col-xl-6 col-xxl-6 d-flex align-items-stretch">
-                    <div class="card w-100 rounded-4">
+            <!-- Filters Section -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card">
                         <div class="card-body">
-                            <div class="text-center">
-                                <h6 class="mb-0">Monthly Revenue</h6>
-                            </div>
-                            <div class="mt-4" id="chart5"></div>
-                            <p>Average monthly sale</p>
-                            <div class="d-flex align-items-center gap-3 mt-4">
-                                <div class="">
-                                    <h1 class="mb-0 text-primary">68.9%</h1>
+                            <form method="GET" action="{{ route('index') }}" class="row g-3">
+                                <div class="col-md-3">
+                                    <label for="start_date" class="form-label">Start Date</label>
+                                    <input type="date" class="form-control" id="start_date" name="start_date"
+                                        value="{{ $startDate }}">
                                 </div>
-                                <div class="d-flex align-items-center align-self-end">
-                                    <p class="mb-0 text-success">34.5%</p>
-                                    <span class="material-icons-outlined text-success">expand_less</span>
+                                <div class="col-md-3">
+                                    <label for="end_date" class="form-label">End Date</label>
+                                    <input type="date" class="form-control" id="end_date" name="end_date"
+                                        value="{{ $endDate }}">
                                 </div>
-                            </div>
+                                <div class="col-md-4">
+                                    <label for="brands" class="form-label">Select Brands</label>
+                                    <select class="form-select" id="brands" name="brands">
+                                        <option value="">All Brands</option>
+                                        @foreach ($allBrands as $brand)
+                                            <option value="{{ $brand }}"
+                                                {{ $brand == $selectedBrands ? 'selected' : '' }}>
+                                                {{ $brand }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div class="col-md-2 d-flex align-items-end gap-2">
+                                    <button type="submit" class="btn btn-primary">Apply</button>
+                                    <a href="{{ route('index') }}" class="btn btn-secondary">Reset</a>
+                                </div>
+                            </form>
                         </div>
                     </div>
                 </div>
-
-                <div class="col-xl-6 col-xxl-4 d-flex align-items-stretch">
-                    <div class="card w-100 rounded-4">
-                        <div class="card-header py-3">
-                            <div class="d-flex align-items-center justify-content-between">
-                                <h5 class="mb-0">Radial Chart</h5>
-                                <div class="dropdown">
-                                    <a href="javascript:;" class="dropdown-toggle-nocaret options dropdown-toggle"
-                                        data-bs-toggle="dropdown">
-                                        <span class="material-icons-outlined fs-5">more_vert</span>
-                                    </a>
-                                    <ul class="dropdown-menu">
-                                        <li><a class="dropdown-item" href="javascript:;">Action</a></li>
-                                        <li><a class="dropdown-item" href="javascript:;">Another action</a></li>
-                                        <li><a class="dropdown-item" href="javascript:;">Something else here</a></li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="card-body">
-                            <div id="chart6"></div>
-                        </div>
-                    </div>
-                </div>
-
-                {{-- Purchase Orders By Brands --}}
-                <div class="col-lg-12 col-xxl-6 d-flex align-items-stretch">
-                    <div class="card w-100 rounded-4">
-                        <div class="card-body">
-                            <div class="d-flex align-items-start justify-content-between mb-3">
-                                <div class="">
-                                    <h5 class="mb-0">Purchase Orders By Brands</h5>
-                                </div>
-                                <div class="dropdown">
-                                    <a href="javascript:;" class="dropdown-toggle-nocaret options dropdown-toggle"
-                                        data-bs-toggle="dropdown">
-                                        <span class="material-icons-outlined fs-5">more_vert</span>
-                                    </a>
-                                    <ul class="dropdown-menu">
-                                        <li><a class="dropdown-item" href="javascript:;">Action</a></li>
-                                        <li><a class="dropdown-item" href="javascript:;">Another action</a></li>
-                                        <li><a class="dropdown-item" href="javascript:;">Something else here</a></li>
-                                    </ul>
-                                </div>
-                            </div>
-                            <div class="table-responsive">
-                                <table id="example" class="table table-striped">
-                                    <thead class="table-light">
-                                        <tr>
-                                            <th>
-                                                <input class="form-check-input" type="checkbox">
-                                            </th>
-                                            <th>Brand</th>
-                                            <th>Total Orders</th>
-                                            <th>Total Sales</th>
-                                            <th>Total Revenue</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @forelse($brandSummary as $brandData)
-                                            <tr>
-                                                <td>
-                                                    <input class="form-check-input" type="checkbox">
-                                                </td>
-                                                <td>{{ $brandData['brand'] }}</td>
-                                                <td>{{ $brandData['total_orders'] }}</td>
-                                                <td>{{ $brandData['total_sales'] }}</td>
-                                                <td>{{ $brandData['total_revenue'] }}</td>
-                                            </tr>
-                                        @empty
-                                            <tr>
-                                                <td colspan="5">No Records Found</td>
-                                            </tr>
-                                        @endforelse
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {{-- Sales Orders By Brands --}}
-                <div class="col-lg-12 col-xxl-6 d-flex align-items-stretch">
-                    <div class="card w-100 rounded-4">
-                        <div class="card-body">
-                            <div class="d-flex align-items-start justify-content-between mb-3">
-                                <div class="">
-                                    <h5 class="mb-0">Sales Orders By Brands</h5>
-                                </div>
-                                <div class="dropdown">
-                                    <a href="javascript:;" class="dropdown-toggle-nocaret options dropdown-toggle"
-                                        data-bs-toggle="dropdown">
-                                        <span class="material-icons-outlined fs-5">more_vert</span>
-                                    </a>
-                                    <ul class="dropdown-menu">
-                                        <li><a class="dropdown-item" href="javascript:;">Action</a></li>
-                                        <li><a class="dropdown-item" href="javascript:;">Another action</a></li>
-                                        <li><a class="dropdown-item" href="javascript:;">Something else here</a></li>
-                                    </ul>
-                                </div>
-                            </div>
-                            <div class="table-responsive">
-                                <table id="example" class="table table-striped">
-                                    <thead class="table-light">
-                                        <tr>
-                                            <th>
-                                                <input class="form-check-input" type="checkbox">
-                                            </th>
-                                            <th>Brand</th>
-                                            <th>Total Orders</th>
-                                            <th>Open Orders(Customer)</th>
-                                            <th>Processed Orders</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @forelse($salesOrdersByBrand as $orderData)
-                                            <tr>
-                                                <td>
-                                                    <input class="form-check-input" type="checkbox">
-                                                </td>
-                                                <td>{{ $orderData['brand'] }}</td>
-                                                <td>{{ $orderData['total_orders'] }}</td>
-                                                <td>{{ $orderData['pending_orders'] }}</td>
-                                                <td>{{ $orderData['completed_orders'] }}</td>
-                                            </tr>
-                                        @empty
-                                            <tr>
-                                                <td colspan="5">No Records Found</td>
-                                            </tr>
-                                        @endforelse
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-
-                {{-- Brand Wise Warehouse Stock --}}
-                <div class="col-lg-12 col-xxl-6 d-flex align-items-stretch">
-                    <div class="card w-100 rounded-4">
-                        <div class="card-body">
-                            <div class="d-flex align-items-start justify-content-between mb-3">
-                                <div class="">
-                                    <h5 class="mb-0">Brand Wise Warehouse Stock</h5>
-                                </div>
-                                <div class="dropdown">
-                                    <a href="javascript:;" class="dropdown-toggle-nocaret options dropdown-toggle"
-                                        data-bs-toggle="dropdown">
-                                        <span class="material-icons-outlined fs-5">more_vert</span>
-                                    </a>
-                                    <ul class="dropdown-menu">
-                                        <li><a class="dropdown-item" href="javascript:;">Action</a></li>
-                                        <li><a class="dropdown-item" href="javascript:;">Another action</a></li>
-                                        <li><a class="dropdown-item" href="javascript:;">Something else here</a></li>
-                                    </ul>
-                                </div>
-                            </div>
-                            <div class="table-responsive">
-                                <table id="example" class="table table-striped">
-                                    <thead class="table-light">
-                                        <tr>
-                                            <th>
-                                                <input class="form-check-input" type="checkbox">
-                                            </th>
-                                            <th>Brand</th>
-                                            <th>Inventory Units</th>
-                                            <th>Inventory Value</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @forelse($brandWiseStocks as $orderData)
-                                            <tr>
-                                                <td>
-                                                    <input class="form-check-input" type="checkbox">
-                                                </td>
-                                                <td>{{ $orderData['brand'] }}</td>
-                                                <td>{{ $orderData['total_quantity'] }}</td>
-                                                <td>{{ $orderData['total_value'] }}</td>
-                                            </tr>
-                                        @empty
-                                            <tr>
-                                                <td colspan="5">No Records Found</td>
-                                            </tr>
-                                        @endforelse
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                {{-- Ready To Ship Orders --}}
-                <div class="col-lg-12 col-xxl-6 d-flex align-items-stretch">
-                    <div class="card w-100 rounded-4">
-                        <div class="card-body">
-                            <div class="d-flex align-items-start justify-content-between mb-3">
-                                <div class="">
-                                    <h5 class="mb-0">Dispatched Orders</h5>
-                                </div>
-                                <div class="dropdown">
-                                    <a href="javascript:;" class="dropdown-toggle-nocaret options dropdown-toggle"
-                                        data-bs-toggle="dropdown">
-                                        <span class="material-icons-outlined fs-5">more_vert</span>
-                                    </a>
-                                    <ul class="dropdown-menu">
-                                        <li><a class="dropdown-item" href="javascript:;">Action</a></li>
-                                        <li><a class="dropdown-item" href="javascript:;">Another action</a></li>
-                                        <li><a class="dropdown-item" href="javascript:;">Something else here</a></li>
-                                    </ul>
-                                </div>
-                            </div>
-                            <div class="table-responsive">
-                                <table id="example" class="table table-striped">
-                                    <thead class="table-light">
-                                        <tr>
-                                            <th>
-                                                <input class="form-check-input" type="checkbox">
-                                            </th>
-                                            <th>Brand</th>
-                                            <th>Total Orders</th>
-                                            <th>Pending Orders</th>
-                                            <th>Completed Orders</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @forelse($shipmentOrders as $orderData)
-                                            <tr>
-                                                <td>
-                                                    <input class="form-check-input" type="checkbox">
-                                                </td>
-                                                <td>{{ $orderData['brand'] }}</td>
-                                                <td>{{ $orderData['total_orders'] }}</td>
-                                                <td>{{ $orderData['pending_orders'] }}</td>
-                                                <td>{{ $orderData['completed_orders'] }}</td>
-                                            </tr>
-                                        @empty
-                                            <tr>
-                                                <td colspan="5">No Records Found</td>
-                                            </tr>
-                                        @endforelse
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-
-                <div class="col-lg-12 col-xxl-6 d-flex align-items-stretch">
-                    <div class="card w-100 rounded-4">
-                        <div class="card-body">
-                            <div class="d-flex align-items-start justify-content-between mb-3">
-                                <div class="">
-                                    <h5 class="mb-0">Recent Customer Orders</h5>
-
-                                </div>
-                                <div class="dropdown">
-                                    <a href="javascript:;" class="dropdown-toggle-nocaret options dropdown-toggle"
-                                        data-bs-toggle="dropdown">
-                                        <span class="material-icons-outlined fs-5">more_vert</span>
-                                    </a>
-                                    <ul class="dropdown-menu">
-                                        <li><a class="dropdown-item" href="javascript:;">Action</a></li>
-                                        <li><a class="dropdown-item" href="javascript:;">Another action</a></li>
-                                        <li><a class="dropdown-item" href="javascript:;">Something else here</a></li>
-                                    </ul>
-                                </div>
-                            </div>
-                            <div class="table-responsive">
-                                <table id="example" class="table table-striped">
-                                    <thead class="table-light">
-                                        <tr>
-                                            <th>
-                                                <input class="form-check-input" type="checkbox">
-                                            </th>
-                                            <th>Order Id</th>
-                                            <th>Customer Group Name</th>
-                                            <th>Order Status</th>
-                                            <th>Ordered Date</th>
-                                            {{-- <th>Warehouse</th> --}}
-                                            <th>Action</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @php
-                                            $statuses = [
-                                                'pending' => 'Pending',
-                                                'blocked' => 'Blocked',
-                                                'completed' => 'Completed',
-                                                'ready_to_ship' => 'Ready To Ship',
-                                                'ready_to_package' => 'Ready To Package',
-                                            ];
-                                        @endphp
-                                        @forelse ($orders as $order)
-                                            <tr>
-                                                <td>
-                                                    <input class="form-check-input" type="checkbox">
-                                                </td>
-                                                <td>{{ $order->id }}</td>
-                                                <td>
-                                                    <p class="mb-0 customer-name fw-bold">
-                                                        {{ $order->customerGroup->name }}
-                                                    </p>
-                                                </td>
-                                                <td>
-                                                    {{ $statuses[$order->status] ?? 'On Hold' }}
-                                                </td>
-                                                <td>{{ $order->created_at->format('d-M-Y') }}</td>
-                                                <td>
-                                                    <div class="d-flex">
-                                                        <a aria-label="anchor"
-                                                            href="{{ route('sales.order.view', $order->id) }}"
-                                                            class="btn btn-icon btn-sm bg-primary-subtle me-1"
-                                                            data-bs-toggle="tooltip" data-bs-original-title="View">
-                                                            <svg xmlns="http://www.w3.org/2000/svg" width="13"
-                                                                height="13" viewBox="0 0 24 24" fill="none"
-                                                                stroke="currentColor" stroke-width="2"
-                                                                stroke-linecap="round" stroke-linejoin="round"
-                                                                class="feather feather-eye text-primary">
-                                                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z">
-                                                                </path>
-                                                                <circle cx="12" cy="12" r="3"></circle>
-                                                            </svg>
-                                                        </a>
-
-                                                        <a aria-label="anchor" href="#"
-                                                            class="btn btn-icon btn-sm bg-warning-subtle me-1"
-                                                            data-bs-toggle="tooltip" data-bs-original-title="Edit">
-                                                            <svg xmlns="http://www.w3.org/2000/svg" width="13"
-                                                                height="13" viewBox="0 0 24 24" fill="none"
-                                                                stroke="currentColor" stroke-width="2"
-                                                                stroke-linecap="round" stroke-linejoin="round"
-                                                                class="feather feather-edit text-warning">
-                                                                <path
-                                                                    d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7">
-                                                                </path>
-                                                                <path
-                                                                    d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z">
-                                                                </path>
-                                                            </svg>
-                                                        </a>
-
-                                                        <form action="{{ route('sales.order.delete', $order->id) }}"
-                                                            method="POST" onsubmit="return confirm('Are you sure?')">
-                                                            @csrf
-                                                            @method('DELETE')
-                                                            <button type="submit"
-                                                                class="btn btn-icon btn-sm bg-danger-subtle delete-row">
-                                                                <svg xmlns="http://www.w3.org/2000/svg" width="13"
-                                                                    height="13" viewBox="0 0 24 24" fill="none"
-                                                                    stroke="currentColor" stroke-width="2"
-                                                                    stroke-linecap="round" stroke-linejoin="round"
-                                                                    class="feather feather-trash-2 text-danger">
-                                                                    <polyline points="3 6 5 6 21 6"></polyline>
-                                                                    <path
-                                                                        d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
-                                                                    </path>
-                                                                    <line x1="10" y1="11" x2="10"
-                                                                        y2="17"></line>
-                                                                    <line x1="14" y1="11" x2="14"
-                                                                        y2="17"></line>
-                                                                </svg>
-                                                            </button>
-                                                        </form>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        @empty
-                                            <tr>
-                                                <td colspan="6" class="text-center">
-                                                    No Records Found
-                                                </td>
-                                            </tr>
-                                        @endforelse
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-lg-12 col-xxl-6 d-flex align-items-stretch">
-                    <div class="card w-100 rounded-4">
-                        <div class="card-body">
-                            <div class="d-flex align-items-start justify-content-between mb-3">
-                                <div class="">
-                                    <h5 class="mb-0">Packaging List</h5>
-                                </div>
-                                <div class="dropdown">
-                                    <a href="javascript:;" class="dropdown-toggle-nocaret options dropdown-toggle"
-                                        data-bs-toggle="dropdown">
-                                        <span class="material-icons-outlined fs-5">more_vert</span>
-                                    </a>
-                                    <ul class="dropdown-menu">
-                                        <li><a class="dropdown-item" href="javascript:;">Action</a></li>
-                                        <li><a class="dropdown-item" href="javascript:;">Another action</a></li>
-                                        <li><a class="dropdown-item" href="javascript:;">Something else here</a></li>
-                                    </ul>
-                                </div>
-                            </div>
-                            <div class="table-responsive">
-                                <table id="example" class="table table-striped">
-                                    <thead class="table-light">
-                                        <tr>
-                                            <th>
-                                                <input class="form-check-input" type="checkbox">
-                                            </th>
-                                            <th>Order Id</th>
-                                            <th>Group Name</th>
-                                            <th>Ordered Date</th>
-                                            <th>Status</th>
-                                            <th>Action</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @php
-                                            $statuses = [
-                                                'pending' => 'Pending',
-                                                'blocked' => 'Blocked',
-                                                'completed' => 'Completed',
-                                                'ready_to_ship' => 'Ready To Ship',
-                                                'ready_to_package' => 'Ready To Package',
-                                            ];
-                                        @endphp
-                                        @forelse ($packagingOrders as $order)
-                                            <tr>
-                                                <td>
-                                                    <input class="form-check-input" type="checkbox">
-                                                </td>
-                                                <td>{{ $order->id }}</td>
-                                                <td>
-                                                    <p class="mb-0 customer-name fw-bold">
-                                                        {{ $order->customerGroup->name }}
-                                                    </p>
-                                                </td>
-                                                <td>{{ $order->created_at->format('d-M-Y') }}</td>
-                                                <td>
-                                                    {{ $statuses[$order->status] ?? 'On Hold' }}
-                                                </td>
-                                                <td>
-                                                    <a aria-label="anchor"
-                                                        href="{{ route('packing.products.view', $order->id) }}"
-                                                        class="btn btn-icon btn-sm bg-primary-subtle me-1"
-                                                        data-bs-toggle="tooltip" data-bs-original-title="View">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="13"
-                                                            height="13" viewBox="0 0 24 24" fill="none"
-                                                            stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                                            stroke-linejoin="round"
-                                                            class="feather feather-eye text-primary">
-                                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                                            <circle cx="12" cy="12" r="3"></circle>
-                                                        </svg>
-                                                    </a>
-                                                </td>
-                                            </tr>
-                                        @empty
-                                            <tr>
-                                                <td colspan="6" class="text-center">No Orders Found</td>
-                                            </tr>
-                                        @endforelse
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-lg-12 col-xxl-6 d-flex align-items-stretch">
-                    <div class="card w-100 rounded-4">
-                        <div class="card-body">
-                            <div class="d-flex align-items-start justify-content-between mb-3">
-                                <div class="">
-                                    <h5 class="mb-0">Ready To Ship</h5>
-
-                                </div>
-                                <div class="dropdown">
-                                    <a href="javascript:;" class="dropdown-toggle-nocaret options dropdown-toggle"
-                                        data-bs-toggle="dropdown">
-                                        <span class="material-icons-outlined fs-5">more_vert</span>
-                                    </a>
-                                    <ul class="dropdown-menu">
-                                        <li><a class="dropdown-item" href="javascript:;">Action</a></li>
-                                        <li><a class="dropdown-item" href="javascript:;">Another action</a></li>
-                                        <li><a class="dropdown-item" href="javascript:;">Something else here</a></li>
-                                    </ul>
-                                </div>
-                            </div>
-                            <div class="table-responsive">
-                                <table id="example" class="table table-striped">
-                                    <thead class="table-light">
-                                        <tr>
-                                            <th>
-                                                <input class="form-check-input" type="checkbox">
-                                            </th>
-                                            <th>Order Id</th>
-                                            <th>Customer Group Name</th>
-                                            <th>Ordered Date</th>
-                                            <th>Delivery Date</th>
-                                            <th>Status</th>
-                                            <th>Action</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @php
-                                            $statuses = [
-                                                'pending' => 'Pending',
-                                                'blocked' => 'Blocked',
-                                                'completed' => 'Completed',
-                                                'ready_to_ship' => 'Ready To Ship',
-                                                'ready_to_package' => 'Ready To Package',
-                                            ];
-                                        @endphp
-                                        @forelse ($orders as $order)
-                                            <tr>
-                                                <td>
-                                                    <input class="form-check-input" type="checkbox">
-                                                </td>
-                                                <td>{{ $order->id }}</td>
-                                                <td>
-                                                    <p class="mb-0 customer-name fw-bold">
-                                                        {{ $order->customerGroup->name }}
-                                                    </p>
-                                                </td>
-                                                <td>{{ $order->created_at->format('d-M-Y') }}</td>
-                                                <td>NA</td>
-                                                <td>
-                                                    {{ $statuses[$order->status] ?? 'On Hold' }}
-                                                </td>
-                                                <td>
-                                                    <a aria-label="anchor"
-                                                        href="{{ route('readyToShip.view', $order->id) }}"
-                                                        class="btn btn-icon btn-sm bg-primary-subtle me-1"
-                                                        data-bs-toggle="tooltip" data-bs-original-title="View">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="13"
-                                                            height="13" viewBox="0 0 24 24" fill="none"
-                                                            stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                                            stroke-linejoin="round"
-                                                            class="feather feather-eye text-primary">
-                                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                                            <circle cx="12" cy="12" r="3"></circle>
-                                                        </svg>
-                                                    </a>
-                                                </td>
-                                            </tr>
-                                        @empty
-                                            <tr>
-                                                <td colspan="7" class="text-center">No Records Found</td>
-                                            </tr>
-                                        @endforelse
-
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-lg-12 col-xxl-6 d-flex align-items-stretch">
-                    <div class="card w-100 rounded-4">
-                        <div class="card-body">
-                            <div class="d-flex align-items-start justify-content-between mb-3">
-                                <div class="">
-                                    <h5 class="mb-0">Invoices</h5>
-
-                                </div>
-                                <div class="dropdown">
-                                    <a href="javascript:;" class="dropdown-toggle-nocaret options dropdown-toggle"
-                                        data-bs-toggle="dropdown">
-                                        <span class="material-icons-outlined fs-5">more_vert</span>
-                                    </a>
-                                    <ul class="dropdown-menu">
-                                        <li><a class="dropdown-item" href="javascript:;">Action</a></li>
-                                        <li><a class="dropdown-item" href="javascript:;">Another action</a></li>
-                                        <li><a class="dropdown-item" href="javascript:;">Something else here</a></li>
-                                    </ul>
-                                </div>
-                            </div>
-                            <div class="table-responsive">
-                                <table id="example" class="table table-striped">
-                                    <thead class="table-light">
-                                        <tr>
-                                            <th>
-                                                <input class="form-check-input" type="checkbox">
-                                            </th>
-                                            <th>Order&nbsp;Id</th>
-                                            <th>Invoice&nbsp;No</th>
-                                            <th>Customer&nbsp;Name</th>
-                                            <th>Due&nbsp;Date</th>
-                                            <th>Amount</th>
-                                            <th>Action</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @forelse ($invoices as $invoice)
-                                            <tr>
-                                                <td>
-                                                    <input class="form-check-input" type="checkbox">
-                                                </td>
-                                                <td>#{{ $invoice->sales_order_id }}</td>
-                                                <td>{{ $invoice->invoice_number }}</td>
-                                                <td>{{ $invoice->customer->client_name }}</td>
-                                                <td>
-                                                    {{ $invoice->invoice_date }}
-                                                </td>
-                                                <td>{{ number_format($invoice->total_amount, 2) }}</td>
-                                                <td>
-                                                    <a aria-label="anchor"
-                                                        href="{{ route('invoice.downloadPdf', $invoice->id) }}"
-                                                        class="btn btn-icon btn-sm bg-primary-subtle me-1"
-                                                        data-bs-toggle="tooltip" data-bs-original-title="View">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="13"
-                                                            height="13" viewBox="0 0 24 24" fill="none"
-                                                            stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                                            stroke-linejoin="round"
-                                                            class="feather feather-eye text-primary">
-                                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                                            <circle cx="12" cy="12" r="3"></circle>
-                                                        </svg>
-                                                    </a>
-                                                </td>
-                                            </tr>
-                                        @empty
-                                            <tr>
-                                                <td colspan="7" class="text-center">
-                                                    No Records Found
-                                                </td>
-                                            </tr>
-                                        @endforelse
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
             </div>
 
+            <!-- Sales Section -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0"><i class="material-icons-outlined">trending_up</i> Sales Analytics</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="card bg-light">
+                                        <div class="card-body text-center">
+                                            <h6 class="text-muted">Total Sales Till Date</h6>
+                                            <h3 class="text-success">
+                                                ₹{{ number_format($salesData['total_sales_overall'], 2) }}</h3>
+                                            <small class="text-muted">Current Year</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-8">
+                                    <h6 class="mb-3">Sales Trend (Last 4 Months)</h6>
+                                    <canvas id="salesTrendChart" height="100"></canvas>
+                                </div>
+                            </div>
+
+                            <!-- Brand-wise breakdown -->
+                            <div class="row mt-4">
+                                <div class="col-12">
+                                    <h6 class="mb-3">Sales by Brand</h6>
+                                    <div class="table-responsive">
+                                        <table class="table table-striped">
+                                            <thead>
+                                                <tr>
+                                                    <th>Brand</th>
+                                                    <th>Total Sales</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @forelse($salesData['total_sales_by_brand'] as $brandSale)
+                                                    <tr>
+                                                        <td>{{ $brandSale->brand }}</td>
+                                                        <td>₹{{ number_format($brandSale->total_sales, 2) }}</td>
+                                                    </tr>
+                                                @empty
+                                                    <tr>
+                                                        <td colspan="2" class="text-center">No data available</td>
+                                                    </tr>
+                                                @endforelse
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Purchase Section -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header bg-info text-white">
+                            <h5 class="mb-0"><i class="material-icons-outlined">shopping_cart</i> Purchase Analytics</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="card bg-light">
+                                        <div class="card-body text-center">
+                                            <h6 class="text-muted">Total Purchases Till Date</h6>
+                                            <h3 class="text-info">
+                                                ₹{{ number_format($purchaseData['total_amount_overall'], 2) }}</h3>
+                                            <small class="text-muted">Current Year</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-8">
+                                    <h6 class="mb-3">Purchase Trend (Last 4 Months)</h6>
+                                    <canvas id="purchaseTrendChart" height="100"></canvas>
+                                </div>
+                            </div>
+
+                            <!-- Brand-wise breakdown -->
+                            <div class="row mt-4">
+                                <div class="col-12">
+                                    <h6 class="mb-3">Purchases by Brand</h6>
+                                    <div class="table-responsive">
+                                        <table class="table table-striped">
+                                            <thead>
+                                                <tr>
+                                                    <th>Brand</th>
+                                                    <th>Total Purchases</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @forelse($purchaseData['total_purchases_by_brand'] as $brandPurchase)
+                                                    <tr>
+                                                        <td>{{ $brandPurchase->brand }}</td>
+                                                        <td>₹{{ number_format($brandPurchase->total_cost, 2) }}</td>
+                                                    </tr>
+                                                @empty
+                                                    <tr>
+                                                        <td colspan="2" class="text-center">No data available</td>
+                                                    </tr>
+                                                @endforelse
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Order Status Section -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header bg-warning text-dark">
+                            <h5 class="mb-0"><i class="material-icons-outlined">assignment</i> Order Status</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row mb-4">
+                                <div class="col-md-4">
+                                    <div class="card bg-light">
+                                        <div class="card-body text-center">
+                                            <h6 class="text-muted">Total Orders</h6>
+                                            <h3 class="text-primary">{{ $orderStatusData['total_orders'] }}</h3>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="card bg-light">
+                                        <div class="card-body text-center">
+                                            <h6 class="text-muted">Open Orders</h6>
+                                            <h3 class="text-warning">{{ $orderStatusData['total_open'] }}</h3>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="card bg-light">
+                                        <div class="card-body text-center">
+                                            <h6 class="text-muted">Processed Orders</h6>
+                                            <h3 class="text-success">{{ $orderStatusData['total_processed'] }}</h3>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Brand-wise breakdown -->
+                            <div class="row">
+                                <div class="col-12">
+                                    <h6 class="mb-3">Orders by Brand</h6>
+                                    <div class="table-responsive">
+                                        <table class="table table-striped">
+                                            <thead>
+                                                <tr>
+                                                    <th>Brand</th>
+                                                    <th>Total Orders</th>
+                                                    <th>Open Orders</th>
+                                                    <th>Processed Orders</th>
+                                                    <th>% Processed</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @forelse($orderStatusData['orders_by_brand'] as $brandOrder)
+                                                    <tr>
+                                                        <td>{{ $brandOrder->brand }}</td>
+                                                        <td>{{ $brandOrder->total_orders }}</td>
+                                                        <td><span
+                                                                class="badge bg-warning">{{ $brandOrder->open_orders }}</span>
+                                                        </td>
+                                                        <td><span
+                                                                class="badge bg-success">{{ $brandOrder->processed_orders }}</span>
+                                                        </td>
+                                                        <td>
+                                                            @php
+                                                                $percentage =
+                                                                    $brandOrder->total_orders > 0
+                                                                        ? round(
+                                                                            ($brandOrder->processed_orders /
+                                                                                $brandOrder->total_orders) *
+                                                                                100,
+                                                                            2,
+                                                                        )
+                                                                        : 0;
+                                                            @endphp
+                                                            {{ $percentage }}%
+                                                        </td>
+                                                    </tr>
+                                                @empty
+                                                    <tr>
+                                                        <td colspan="5" class="text-center">No data available</td>
+                                                    </tr>
+                                                @endforelse
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dispatch, Delivery, GRN, Payment Row -->
+            <div class="row mb-4">
+                <!-- Dispatch Section -->
+                <div class="col-lg-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-header bg-secondary text-white">
+                            <h5 class="mb-0"><i class="material-icons-outlined">local_shipping</i> Dispatch Status</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row mb-3">
+                                <div class="col-6">
+                                    <div class="card bg-info text-white">
+                                        <div class="card-body text-center p-3">
+                                            <h6 class="mb-1">Total Dispatched Orders</h6>
+                                            <h4 class="mb-0">{{ $dispatchData['total_dispatched_orders'] }}</h4>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="card bg-warning text-dark">
+                                        <div class="card-body text-center p-3">
+                                            <h6 class="mb-1">Total Completed</h6>
+                                            <h4 class="mb-0">
+                                                {{ $dispatchData['total_dispatched_orders'] - $dispatchData['total_pending_dispatched'] }}
+                                            </h4>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="card bg-danger text-white">
+                                        <div class="card-body text-center p-3">
+                                            <h6 class="mb-1">Total Pending</h6>
+                                            <h4 class="mb-0">
+                                                {{ $dispatchData['total_pending_dispatched'] }}
+                                            </h4>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {{-- 
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="card bg-info text-white">
+                                        <div class="card-body text-center p-3">
+                                            <h6 class="mb-1">Appt. Received (GRN Pending)</h6>
+                                            <h4 class="mb-0">{{ $dispatchData['appointments_received_grn_pending'] }}
+                                            </h4>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div> 
+                            --}}
+                            <div class="mt-3">
+                                <canvas id="dispatchChart" height="200"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Delivery Confirmation Section -->
+                <div class="col-lg-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="mb-0"><i class="material-icons-outlined">check_circle</i> Delivery Confirmation
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row mb-3">
+                                <div class="col-6">
+                                    <div class="card bg-info text-white">
+                                        <div class="card-body text-center p-3">
+                                            <h6 class="mb-1">Total Delivered</h6>
+                                            <h4 class="mb-0">{{ $dispatchData['total_dispatched_orders'] }}</h4>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="card bg-success text-white">
+                                        <div class="card-body text-center p-3">
+                                            <h6 class="mb-1">POD Received</h6>
+                                            <h4 class="mb-0">{{ $deliveryData['pod_received'] }}</h4>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="card bg-danger text-white">
+                                        <div class="card-body text-center p-3">
+                                            <h6 class="mb-1">POD Not Received</h6>
+                                            <h4 class="mb-0">{{ $deliveryData['pod_not_received'] }}</h4>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mt-3">
+                                <canvas id="deliveryChart" height="200"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- GRN and Payment Row -->
+            <div class="row mb-4">
+                <!-- GRN Section -->
+                <div class="col-lg-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-header bg-dark text-white">
+                            <h5 class="mb-0"><i class="material-icons-outlined">receipt</i> GRN Status</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row mb-3">
+                                <div class="col-6">
+                                    <div class="card bg-info text-white">
+                                        <div class="card-body text-center p-3">
+                                            <h6 class="mb-1">Total GRN</h6>
+                                            <h4 class="mb-0">{{ $grnData['total'] }}</h4>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="card bg-success text-white">
+                                        <div class="card-body text-center p-3">
+                                            <h6 class="mb-1">GRN Done</h6>
+                                            <h4 class="mb-0">{{ $grnData['grn_done'] }}</h4>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="card bg-danger text-white">
+                                        <div class="card-body text-center p-3">
+                                            <h6 class="mb-1">GRN Not Done</h6>
+                                            <h4 class="mb-0">{{ $grnData['grn_not_done'] }}</h4>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mt-3">
+                                <canvas id="grnChart" height="200"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Payment Section -->
+                <div class="col-lg-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0"><i class="material-icons-outlined">payments</i> Payment Status</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row mb-3">
+                                <div class="col-12 mb-2">
+                                    <div class="card bg-danger text-white">
+                                        <div class="card-body text-center p-3">
+                                            <h6 class="mb-1">Total Outstanding</h6>
+                                            <h4 class="mb-0">₹{{ number_format($paymentData['total_outstanding'], 2) }}
+                                            </h4>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="card bg-success text-white">
+                                        <div class="card-body text-center p-3">
+                                            <h6 class="mb-1">Monthly Received</h6>
+                                            <h5 class="mb-0">₹{{ number_format($paymentData['monthly_received'], 2) }}
+                                            </h5>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="card bg-warning text-dark">
+                                        <div class="card-body text-center p-3">
+                                            <h6 class="mb-1">Due</h6>
+                                            <h5 class="mb-0">
+                                                ₹{{ number_format($paymentData['total_outstanding'] - $paymentData['monthly_received'], 2) }}
+                                            </h5>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mt-3">
+                                <h6 class="mb-2">Payment Trend (Last 4 Months)</h6>
+                                <canvas id="paymentTrendChart" height="150"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Warehouse Section -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header bg-info text-white">
+                            <h5 class="mb-0"><i class="material-icons-outlined">warehouse</i> Warehouse Inventory</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row mb-4">
+                                <div class="col-md-6">
+                                    <div class="card bg-light">
+                                        <div class="card-body text-center">
+                                            <h6 class="text-muted">Total Inventory Units</h6>
+                                            <h3 class="text-primary">{{ number_format($warehouseData['total_units']) }}
+                                            </h3>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="card bg-light">
+                                        <div class="card-body text-center">
+                                            <h6 class="text-muted">Total Inventory Value</h6>
+                                            <h3 class="text-success">
+                                                ₹{{ number_format($warehouseData['total_cost'], 2) }}</h3>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Brand-wise breakdown -->
+                            <div class="row">
+                                <div class="col-12">
+                                    <h6 class="mb-3">Inventory by Brand</h6>
+                                    <div class="table-responsive">
+                                        <table class="table table-striped">
+                                            <thead>
+                                                <tr>
+                                                    <th>Brand</th>
+                                                    <th>Inventory Units</th>
+                                                    <th>Inventory Value</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @forelse($warehouseData['inventory_by_brand'] as $brandInventory)
+                                                    <tr>
+                                                        <td>{{ $brandInventory->brand }}</td>
+                                                        <td>{{ number_format($brandInventory->total_units) }}</td>
+                                                        <td>₹{{ number_format($brandInventory->total_value, 2) }}</td>
+                                                    </tr>
+                                                @empty
+                                                    <tr>
+                                                        <td colspan="3" class="text-center">No data available</td>
+                                                    </tr>
+                                                @endforelse
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
         </div>
     </main>
@@ -914,20 +522,274 @@
 @endsection
 
 @section('script')
-    <!--plugins-->
-    <script src="{{ asset('assets/js/jquery.min.js') }}"></script>
-    <!--plugins-->
-    <script src="{{ asset('assets/plugins/perfect-scrollbar/js/perfect-scrollbar.js') }}"></script>
-    <script src="{{ asset('assets/plugins/metismenu/metisMenu.min.js') }}"></script>
-    <script src="{{ asset('assets/plugins/apexchart/apexcharts.min.js') }}"></script>
-    <script src="{{ asset('assets/plugins/simplebar/js/simplebar.min.js') }}"></script>
-    <script src="{{ asset('assets/plugins/peity/jquery.peity.min.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script>
-        $(".data-attributes span").peity("donut")
-    </script>
-    <script src="{{ asset('assets/js/main.js') }}"></script>
-    <script src="{{ asset('assets/js/dashboard1.js') }}"></script>
-    <script>
-        new PerfectScrollbar(".user-list")
+        // Sales Trend Chart
+        const salesTrendCtx = document.getElementById('salesTrendChart').getContext('2d');
+        const salesTrendData = @json($salesData['monthly_trend']);
+
+        // Prepare data for sales trend chart
+        const salesMonths = salesTrendData.map(item => item.month);
+        const salesBrands = [...new Set(salesTrendData.flatMap(item => item.data.map(d => d.brand)))];
+
+        const salesDatasets = salesBrands.map((brand, index) => {
+            const colors = ['#28a745', '#007bff', '#ffc107', '#dc3545', '#17a2b8', '#6f42c1'];
+            return {
+                label: brand,
+                data: salesTrendData.map(month => {
+                    const brandData = month.data.find(d => d.brand === brand);
+                    return brandData ? brandData.total_sales : 0;
+                }),
+                borderColor: colors[index % colors.length],
+                backgroundColor: colors[index % colors.length] + '20',
+                tension: 0.4,
+                fill: true
+            };
+        });
+
+        new Chart(salesTrendCtx, {
+            type: 'line',
+            data: {
+                labels: salesMonths,
+                datasets: salesDatasets
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.dataset.label + ': ₹' + context.parsed.y.toLocaleString();
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return '₹' + value.toLocaleString();
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Purchase Trend Chart
+        const purchaseTrendCtx = document.getElementById('purchaseTrendChart').getContext('2d');
+        const purchaseTrendData = @json($purchaseData['monthly_trend']);
+
+        const purchaseMonths = purchaseTrendData.map(item => item.month);
+        const purchaseBrands = [...new Set(purchaseTrendData.flatMap(item => item.data.map(d => d.brand)))];
+
+        const purchaseDatasets = purchaseBrands.map((brand, index) => {
+            const colors = ['#17a2b8', '#28a745', '#ffc107', '#dc3545', '#007bff', '#6f42c1'];
+            return {
+                label: brand,
+                data: purchaseTrendData.map(month => {
+                    const brandData = month.data.find(d => d.brand === brand);
+                    return brandData ? brandData.total_cost : 0;
+                }),
+                borderColor: colors[index % colors.length],
+                backgroundColor: colors[index % colors.length] + '20',
+                tension: 0.4,
+                fill: true
+            };
+        });
+
+        new Chart(purchaseTrendCtx, {
+            type: 'line',
+            data: {
+                labels: purchaseMonths,
+                datasets: purchaseDatasets
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.dataset.label + ': ₹' + context.parsed.y.toLocaleString();
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return '₹' + value.toLocaleString();
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Dispatch Chart (Pie)
+        const dispatchCtx = document.getElementById('dispatchChart').getContext('2d');
+        const dispatchData = @json($dispatchData);
+
+        new Chart(dispatchCtx, {
+            type: 'pie',
+            data: {
+                labels: ['Total Dispatched Orders', 'Pending Dispatches'],
+                datasets: [{
+                    data: [
+                        dispatchData.total_dispatched_orders,
+                        dispatchData.total_dispatched_orders - dispatchData.total_pending_dispatched,
+                    ],
+                    backgroundColor: ['#ffc107', '#17a2b8'],
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = ((context.parsed / total) * 100).toFixed(2);
+                                return context.label + ': ' + context.parsed + ' (' + percentage + '%)';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Delivery Chart (Donut)
+        const deliveryCtx = document.getElementById('deliveryChart').getContext('2d');
+        const deliveryData = @json($deliveryData);
+
+        new Chart(deliveryCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['POD Received', 'POD Not Received'],
+                datasets: [{
+                    data: [deliveryData.pod_received, deliveryData.pod_not_received],
+                    backgroundColor: ['#28a745', '#dc3545'],
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = ((context.parsed / total) * 100).toFixed(2);
+                                return context.label + ': ' + context.parsed + ' (' + percentage + '%)';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // GRN Chart (Bar)
+        const grnCtx = document.getElementById('grnChart').getContext('2d');
+        const grnData = @json($grnData);
+
+        new Chart(grnCtx, {
+            type: 'bar',
+            data: {
+                labels: ['GRN Done', 'GRN Not Done'],
+                datasets: [{
+                    label: 'Count',
+                    data: [grnData.grn_done, grnData.grn_not_done],
+                    backgroundColor: ['#28a745', '#dc3545'],
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                indexAxis: 'y',
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.label + ': ' + context.parsed.x;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        // Payment Trend Chart
+        const paymentTrendCtx = document.getElementById('paymentTrendChart').getContext('2d');
+        const paymentTrendData = @json($paymentData['monthly_trend']);
+
+        new Chart(paymentTrendCtx, {
+            type: 'line',
+            data: {
+                labels: paymentTrendData.map(item => item.month),
+                datasets: [{
+                    label: 'Payment Received',
+                    data: paymentTrendData.map(item => item.amount),
+                    borderColor: '#28a745',
+                    backgroundColor: '#28a74520',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return 'Payment: ₹' + context.parsed.y.toLocaleString();
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return '₹' + value.toLocaleString();
+                            }
+                        }
+                    }
+                }
+            }
+        });
     </script>
 @endsection
