@@ -1,6 +1,21 @@
 @extends('layouts.master')
 
 @section('main-content')
+
+    <style>
+        .bg-success {
+            background-color: rgb(139 255 212) !important;
+        }
+
+        .bg-danger {
+            background-color: rgb(255 132 168) !important;
+        }
+
+        .bg-primary {
+            background-color: rgb(187 214 255) !important;
+        }
+    </style>
+
     <!--start main wrapper-->
     <main class="main-wrapper">
         <div class="main-content">
@@ -60,7 +75,8 @@
             <div class="row mb-4">
                 <div class="col-12">
                     <div class="card">
-                        <div class="card-header bg-primary text-white">
+                        <div class="card-header bg-primary text-white"
+                            style="background-color: rgb(187 214 255) !important;">
                             <h5 class="mb-0"><i class="material-icons-outlined">trending_up</i> Sales Analytics</h5>
                         </div>
                         <div class="card-body">
@@ -118,7 +134,7 @@
             <div class="row mb-4">
                 <div class="col-12">
                     <div class="card">
-                        <div class="card-header bg-info text-white">
+                        <div class="card-header bg-info text-white" style="background-color: rgb(187 214 255) !important;">
                             <h5 class="mb-0"><i class="material-icons-outlined">shopping_cart</i> Purchase Analytics</h5>
                         </div>
                         <div class="card-body">
@@ -176,7 +192,8 @@
             <div class="row mb-4">
                 <div class="col-12">
                     <div class="card">
-                        <div class="card-header bg-warning text-dark">
+                        <div class="card-header bg-warning text-dark"
+                            style="background-color: rgb(187 214 255) !important;">
                             <h5 class="mb-0"><i class="material-icons-outlined">assignment</i> Order Status</h5>
                         </div>
                         <div class="card-body">
@@ -193,7 +210,7 @@
                                     <div class="card bg-light">
                                         <div class="card-body text-center">
                                             <h6 class="text-muted">Open Orders</h6>
-                                            <h3 class="text-warning">{{ $orderStatusData['total_open'] }}</h3>
+                                            <h3 class="text-primary">{{ $orderStatusData['total_open'] }}</h3>
                                         </div>
                                     </div>
                                 </div>
@@ -228,7 +245,7 @@
                                                         <td>{{ $brandOrder->brand }}</td>
                                                         <td>{{ $brandOrder->total_orders }}</td>
                                                         <td><span
-                                                                class="badge bg-warning">{{ $brandOrder->open_orders }}</span>
+                                                                class="badge bg-primary">{{ $brandOrder->open_orders }}</span>
                                                         </td>
                                                         <td><span
                                                                 class="badge bg-success">{{ $brandOrder->processed_orders }}</span>
@@ -268,13 +285,15 @@
                 <!-- Dispatch Section -->
                 <div class="col-lg-6 mb-4">
                     <div class="card h-100">
-                        <div class="card-header bg-secondary text-white">
+                        <div class="card-header bg-secondary text-white"
+                            style="background-color: rgb(187 214 255) !important;">
                             <h5 class="mb-0"><i class="material-icons-outlined">local_shipping</i> Dispatch Status</h5>
                         </div>
                         <div class="card-body">
                             <div class="row mb-3">
                                 <div class="col-6">
-                                    <div class="card bg-info text-white">
+                                    <div class="card bg-info text-white"
+                                        style="background-color: rgb(187 214 255) !important;">
                                         <div class="card-body text-center p-3">
                                             <h6 class="mb-1">Total Dispatched Orders</h6>
                                             <h4 class="mb-0">{{ $dispatchData['total_dispatched_orders'] }}</h4>
@@ -282,7 +301,7 @@
                                     </div>
                                 </div>
                                 <div class="col-6">
-                                    <div class="card bg-warning text-dark">
+                                    <div class="card bg-success text-dark">
                                         <div class="card-body text-center p-3">
                                             <h6 class="mb-1">Total Completed</h6>
                                             <h4 class="mb-0">
@@ -325,14 +344,16 @@
                 <!-- Delivery Confirmation Section -->
                 <div class="col-lg-6 mb-4">
                     <div class="card h-100">
-                        <div class="card-header bg-success text-white">
+                        <div class="card-header bg-success text-white"
+                            style="background-color: rgb(187 214 255) !important;">
                             <h5 class="mb-0"><i class="material-icons-outlined">check_circle</i> Delivery Confirmation
                             </h5>
                         </div>
                         <div class="card-body">
                             <div class="row mb-3">
                                 <div class="col-6">
-                                    <div class="card bg-info text-white">
+                                    <div class="card bg-info text-white"
+                                        style="background-color: rgb(187 214 255) !important;">
                                         <div class="card-body text-center p-3">
                                             <h6 class="mb-1">Total Delivered</h6>
                                             <h4 class="mb-0">{{ $dispatchData['total_dispatched_orders'] }}</h4>
@@ -369,13 +390,15 @@
                 <!-- GRN Section -->
                 <div class="col-lg-6 mb-4">
                     <div class="card h-100">
-                        <div class="card-header bg-dark text-white">
+                        <div class="card-header bg-dark text-white"
+                            style="background-color: rgb(187 214 255) !important;">
                             <h5 class="mb-0"><i class="material-icons-outlined">receipt</i> GRN Status</h5>
                         </div>
                         <div class="card-body">
                             <div class="row mb-3">
                                 <div class="col-6">
-                                    <div class="card bg-info text-white">
+                                    <div class="card bg-info text-white"
+                                        style="background-color: rgb(187 214 255) !important;">
                                         <div class="card-body text-center p-3">
                                             <h6 class="mb-1">Total GRN</h6>
                                             <h4 class="mb-0">{{ $grnData['total'] }}</h4>
@@ -409,13 +432,15 @@
                 <!-- Payment Section -->
                 <div class="col-lg-6 mb-4">
                     <div class="card h-100">
-                        <div class="card-header bg-primary text-white">
+                        <div class="card-header bg-primary text-white"
+                            style="background-color: rgb(187 214 255) !important;">
                             <h5 class="mb-0"><i class="material-icons-outlined">payments</i> Payment Status</h5>
                         </div>
                         <div class="card-body">
                             <div class="row mb-3">
                                 <div class="col-12 mb-2">
-                                    <div class="card bg-danger text-white">
+                                    <div class="card bg-danger text-white"
+                                        style="background-color: rgb(187 214 255) !important;">
                                         <div class="card-body text-center p-3">
                                             <h6 class="mb-1">Total Outstanding</h6>
                                             <h4 class="mb-0">₹{{ number_format($paymentData['total_outstanding'], 2) }}
@@ -433,7 +458,7 @@
                                     </div>
                                 </div>
                                 <div class="col-6">
-                                    <div class="card bg-warning text-dark">
+                                    <div class="card bg-danger text-dark">
                                         <div class="card-body text-center p-3">
                                             <h6 class="mb-1">Due</h6>
                                             <h5 class="mb-0">
@@ -456,7 +481,8 @@
             <div class="row mb-4">
                 <div class="col-12">
                     <div class="card">
-                        <div class="card-header bg-info text-white">
+                        <div class="card-header bg-info text-white"
+                            style="background-color: rgb(187 214 255) !important;">
                             <h5 class="mb-0"><i class="material-icons-outlined">warehouse</i> Warehouse Inventory</h5>
                         </div>
                         <div class="card-body">
@@ -533,7 +559,7 @@
         const salesBrands = [...new Set(salesTrendData.flatMap(item => item.data.map(d => d.brand)))];
 
         const salesDatasets = salesBrands.map((brand, index) => {
-            const colors = ['#28a745', '#007bff', '#ffc107', '#dc3545', '#17a2b8', '#6f42c1'];
+            const colors = ['#91f0ff', '#6bff8d', '#ffc107', '#ffdf7f', '#7dbcff', '#ae82ff'];
             return {
                 label: brand,
                 data: salesTrendData.map(month => {
@@ -589,7 +615,7 @@
         const purchaseBrands = [...new Set(purchaseTrendData.flatMap(item => item.data.map(d => d.brand)))];
 
         const purchaseDatasets = purchaseBrands.map((brand, index) => {
-            const colors = ['#17a2b8', '#28a745', '#ffc107', '#dc3545', '#007bff', '#6f42c1'];
+            const colors = ['#91f0ff', '#6bff8d', '#ffc107', '#ffdf7f', '#7dbcff', '#ae82ff'];
             return {
                 label: brand,
                 data: purchaseTrendData.map(month => {
@@ -644,13 +670,13 @@
         new Chart(dispatchCtx, {
             type: 'pie',
             data: {
-                labels: ['Total Dispatched Orders', 'Pending Dispatches'],
+                labels: ['Completed Dispatches', 'Pending Dispatches'],
                 datasets: [{
                     data: [
                         dispatchData.total_dispatched_orders,
                         dispatchData.total_dispatched_orders - dispatchData.total_pending_dispatched,
                     ],
-                    backgroundColor: ['#ffc107', '#17a2b8'],
+                    backgroundColor: ['#8bffd4', '#ff84a8'],
                     borderWidth: 2
                 }]
             },
@@ -684,7 +710,7 @@
                 labels: ['POD Received', 'POD Not Received'],
                 datasets: [{
                     data: [deliveryData.pod_received, deliveryData.pod_not_received],
-                    backgroundColor: ['#28a745', '#dc3545'],
+                    backgroundColor: ['#8bffd4', '#ff84a8'],
                     borderWidth: 2
                 }]
             },
@@ -719,7 +745,7 @@
                 datasets: [{
                     label: 'Count',
                     data: [grnData.grn_done, grnData.grn_not_done],
-                    backgroundColor: ['#28a745', '#dc3545'],
+                    backgroundColor: ['#8bffd4', '#ff84a8'],
                     borderWidth: 2
                 }]
             },
@@ -758,8 +784,8 @@
                 datasets: [{
                     label: 'Payment Received',
                     data: paymentTrendData.map(item => item.amount),
-                    borderColor: '#28a745',
-                    backgroundColor: '#28a74520',
+                    borderColor: '#8bffd4',
+                    backgroundColor: '#8bffd4',
                     tension: 0.4,
                     fill: true
                 }]
