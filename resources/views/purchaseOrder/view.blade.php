@@ -5,6 +5,7 @@
         $statuses = [
             'pending' => 'Pending',
             'received' => 'Products Received',
+            'rejected' => 'Rejected',
             'completed' => 'Completed',
         ];
 
@@ -167,6 +168,24 @@
                                         </b>
                                     </span>
                                 </li>
+
+                                @if (isset($purchaseOrder->vendorPI[0]->status) && $purchaseOrder->vendorPI[0]->status == 'reject') 
+
+                                    <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
+                                        <span><b>Vendor PI Status</b></span>
+                                        <span>
+                                            <b>{{ ucfirst($purchaseOrder->vendorPI[0]->status) }}</b>
+                                        </span>
+                                    </li>
+
+                                    <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
+                                        <span><b>Reject Reason</b></span>
+                                        <span>
+                                            <b>{{ $purchaseOrder->vendorPI[0]->approve_or_reject_reason ?? 'NA' }}</b>
+                                        </span>
+                                    </li>
+                                @endif
+
                                 @foreach ($purchaseOrder->vendorPI as $vendorPI)
                                     @if ($vendorPI->status == 'approve')
                                         <li

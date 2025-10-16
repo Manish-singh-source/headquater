@@ -1,0 +1,106 @@
+
+
+
+
+1. View Dashboard 
+    -- View Sales Analytics
+    -- View Purchase Analytics
+    -- View Order Status
+    -- View Dispatch Status
+    -- View Delivery Confirmation
+    -- View GRN Status
+    -- View Payment Status
+    -- View Warehouse Inventory 
+
+2. Manage Staffs 
+    -- View Staffs
+    -- Add Staffs
+    -- Edit Staffs
+    -- Delete Staffs
+    -- Change User Status 
+    -- Multi Select Delete Staffs
+    -- Multi Select Change User Status
+
+3. Manage Roles 
+    -- View Roles
+    -- Add Roles
+    -- Edit Roles
+    -- Delete Roles
+
+4. Manage Customer Groups 
+    -- View Customer Groups 
+    -- Add Customer Groups 
+    -- Edit Customer Groups 
+    -- Delete Customer Groups 
+    -- Change Customer Group Status 
+    -- Multi Select Delete Customer Groups 
+    -- Multi Select Change Customer Group Status 
+
+5. Manage Customers 
+    -- View Customers 
+    -- Add Customers 
+    -- Edit Customers
+    -- Delete Customers
+    -- Multi Select Delete Customers
+    -- Multi Select Change Customer Status
+
+6. Manage Vendors 
+    -- View Vendors 
+    -- Add Vendors 
+    -- Edit Vendors
+    -- Delete Vendors
+    -- Multi Select Delete Vendors
+    -- Multi Select Change Vendor Status 
+
+
+7. Manage Products 
+    -- View Products
+    -- Add Products
+    -- Edit Products
+    -- Delete Products
+    -- Multi Select Delete Products
+    -- Multi Select Change Product Status 
+    -- Download Products Excel Format
+    -- Upload Products Excel Format 
+
+8. Manage SKU Mapping 
+    -- View SKU Mapping
+    -- Add SKU Mapping
+    -- Edit SKU Mapping
+    -- Delete SKU Mapping
+    -- Multi Select Delete SKU Mapping
+    -- Download SKU Mapping Excel Format
+    -- Upload SKU Mapping Excel Format 
+
+9. Manage Warehouses 
+    -- View Warehouses
+    -- Add Warehouses
+    -- Edit Warehouses
+    -- Delete Warehouses
+    -- Multi Select Delete Warehouses
+    -- Multi Select Change Warehouse Status 
+    -- Download Warehouse Excel Format
+    -- Upload Warehouse Excel Format  
+
+10. Manage Purchase Orders 
+    -- View Purchase Orders
+    -- Add Purchase Orders               --- x
+    -- Edit Purchase Orders               --- x
+    -- Delete Purchase Orders
+    -- Multi Select Delete Purchase Orders
+    -- Multi Select Change Purchase Order Status                --- x
+
+11. Manage Purchase Order Products 
+    -- View Purchase Order Products
+    -- Add Purchase Order Products       --- x
+    -- Edit Purchase Order Products      --- x
+    -- Delete Purchase Order Products
+    -- Multi Select Delete Purchase Order Products 
+    -- Download Purchase Order Products Excel Format 
+    -- Upload Purchase Order Products Excel Format             --- x
+    -- Upload Vendor GRN 
+    -- Upload Vendor Invoice 
+    -- Upload Vendor Payment 
+
+11. Manage Sales Orders 
+

@@ -465,9 +465,11 @@ class PurchaseOrderController extends Controller
 
         try {
 
-            $vendorPI = VendorPI::with('products')->where('purchase_order_id', $request->purchase_order_id)->where('vendor_code', $request->vendor_code)->first();
-            $vendorPI->status = 'rejected';
-            $vendorPI->approve_or_reject_reason = $request->approve_or_reject_reason ?? null;
+            $vendorPI = VendorPI::with('products', 'purchaseOrder')->where('purchase_order_id', $request->purchase_order_id)->where('vendor_code', $request->vendor_code)->first();
+            $vendorPI->status = 'reject';
+            $vendorPI->approve_or_reject_reason = $request->approve_or_reject_reason ?? null; 
+            $vendorPI->purchaseOrder->status = 'rejected';
+            $vendorPI->purchaseOrder->save();
             $vendorPI->save();
 
             // update warehouse stock
@@ -495,7 +497,7 @@ class PurchaseOrderController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
 
-            return redirect()->back()->withErrors(['error' => 'Something went wrong: ' . $e->getMessage()]);
+            return redirect()->back()->with(['error' => 'Something went wrong: ' . $e->getMessage()]);
         }
     }
 

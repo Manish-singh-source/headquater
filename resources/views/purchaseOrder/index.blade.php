@@ -5,6 +5,7 @@
             'pending' => 'Pending',
             'blocked' => 'Blocked',
             'received' => 'Products Received',
+            'rejected' => 'Rejected',
             'completed' => 'Completed',
             'ready_to_ship' => 'Ready To Ship',
             'ready_to_package' => 'Ready To Package',
@@ -67,6 +68,12 @@
                             <button class="nav-link status-filter-tab" id="inactive-tab" data-bs-toggle="tab"
                                 data-order="Pending" data-bs-target="#inactive" type="button" role="tab"
                                 aria-controls="inactive" aria-selected="false">Pending</button>
+                        </li>
+                        
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link status-filter-tab" id="rejected-tab" data-bs-toggle="tab"
+                                data-order="Rejected" data-bs-target="#rejected" type="button" role="tab"
+                                aria-controls="rejected" aria-selected="false">Rejected</button>
                         </li>
                     </ul>
 
