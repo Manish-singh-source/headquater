@@ -366,3 +366,117 @@
 **Version**: 1.0.0  
 **Status**: ☐ Passed ☐ Failed ☐ Needs Review
 
+
+**purchase order**:
+
+	sales_order_id(optional)	
+    customer_group_id(optional)	
+    warehouse_id	
+    vendor_id	
+    vendor_code	
+    total_amount (calculated)	
+    total_paid_amount (calculated)
+    total_due_amount (calculated)
+    status(pending - default)	
+    
+
+**purchase order products**:
+    temp_order_id - from temp order	
+    purchase_order_id - from purchase order
+    sales_order_id - from sales order (optional)
+    sales_order_product_id - from sales order product (optional)
+    sku - from excel file
+    product_id - from product
+    vendor_code - from excel file
+    ordered_quantity - from excel file
+
+
+**temp order**	
+    customer_name - (from customers table - optional)
+    po_number - from excel file (optional)
+    sku	- from excel file 
+    facility_name - (from excel file - optional)
+    facility_location - (from excel file - optional)
+    po_date	- (from excel file - optional)
+    po_expiry_date	- (from excel file - optional)
+    hsn	- (from excel file - optional)
+    gst	- (from excel file - optional)
+    item_code	- (from excel file - optional)
+    description	- (from excel file - optional)
+    basic_rate	- (from excel file - optional)
+    product_basic_rate	- from products table - optional
+    rate_confirmation - calculated optional 
+    net_landing_rate - - (from excel file - optional)
+    product_net_landing_rate - from products table - optional
+    net_landing_rate_confirmation - calculated optional
+    mrp	- from excel file - optional
+    product_mrp	- from products table - optional
+    mrp_confirmation - calculated optional
+    po_qty - from excel file - optional
+    available_quantity - calculated - optional
+    unavailable_quantity - calculated - optional
+    block - calculated - optional
+    case_pack_quantity - from products table and calculated - optional
+    purchase_order_quantity - from excel file - vendors ordered quantity
+    vendor_code	- from excel file
+    vendor_pi_id - get from vendor_pi table
+    vendor_pi_fulfillment_quantity - get from vendor_pi_products table
+    vendor_pi_received_quantity - calculated 
+    
+
+
+**vendor_pi**
+purchase_order_id - from purchase order
+vendor_code	- from excel file 
+sales_order_id - from request (optional)
+total_amount - calculated
+total_paid_amount - calculated
+total_due_amount - calculated
+payment_status - pending, partial_paid, paid - default pending
+status - pending - default 
+approve_or_reject_reason - optional
+
+
+
+
+**vendor_pi_products**
+purchase_order_id - from purchase order
+vendor_pi_id - from vendor_pi
+vendor_sku_code - from excel file
+title - from excel file
+mrp - from excel file
+quantity_requirement - from excel file	
+available_quantity - from excel file
+quantity_received - from excel file
+purchase_rate - from excel file
+gst - from excel file
+hsn - from excel file
+issue_item - calculated
+issue_reason - from excel file 
+issue_description - from excel file
+issue_status - pending, return, accept, completed - default pending
+    
+
+
+
+
+
+**purchase order**:
+
+    warehouse_id
+    vendor_code - from excel file
+    temp_order_id - from temp order	
+    purchase_order_id - from purchase order
+    sku - from excel file
+    hsn	
+    gst	
+    item_code	
+    description	
+    basic_rate	
+    net_landing_rate	
+    mrp	
+    purchase_order_quantity	
+    vendor_pi_id	
+    vendor_pi_fulfillment_quantity	
+    vendor_pi_received_quantity	
+    

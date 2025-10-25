@@ -199,7 +199,8 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/purchase-order-invoice-store', 'invoiceStore')->name('purchase.order.invoice.store');
         Route::post('/purchase-order-grn-store', 'grnStore')->name('purchase.order.grn.store');
         Route::get('/download-vendor-po-excel', 'downloadVendorPO')->name('download.vendor.po.excel');
-        Route::get('/purchase-order-create/{purchaseId?}', 'customPurchaseCreate')->name('purches.create');
+
+        Route::get('/purchase-order-create/{purchaseId?}', 'customPurchaseCreate')->name('purchase.order.create');
         Route::post('/purchase-custom-order-store', 'customPurchaseStore')->name('store.purchase.order');
         Route::put('/change-purchase-order-status', 'changeStatus')->name('change.purchase.order.status');
 

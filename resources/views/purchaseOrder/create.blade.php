@@ -22,7 +22,8 @@
                     <div class="card">
                         <div class="card-body p-4">
                             <h5 class="mb-4">Create Purchase Order</h5>
-                            <form class="row g-3" action="{{ route('store.purchase.order') }}" method="POST" enctype="multipart/form-data">
+                            <form class="row g-3" action="{{ route('store.purchase.order') }}" method="POST"
+                                enctype="multipart/form-data">
                                 @csrf
                                 @method('POST')
                                 @isset($purchaseId)
@@ -38,10 +39,38 @@
                                         @enderror
                                     </div>
                                 @endisset
+
+                                <div class="col-12 col-lg-3">
+                                    <label for="warehouseName" class="form-label">Warehouse Name
+                                        <span class="text-danger">*</span></label>
+                                    <select class="form-control" name="warehouse_id" id="warehouseName">
+                                        <option selected="" disabled="" value="">-- Select --
+                                        </option>
+                                        @foreach ($warehouses as $warehouse)
+                                            <option value="{{ $warehouse->id }}">{{ $warehouse->name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+
+                                <div class="col-12 col-lg-3">
+                                    <label for="vendorName" class="form-label">Vendor Name
+                                        <span class="text-danger">*</span></label>
+                                    <select class="form-control" name="vendor_id" id="vendorName">
+                                        <option selected="" disabled="" value="">-- Select --
+                                        </option>
+                                        @foreach ($vendors as $vendor)
+                                            <option value="{{ $vendor->id }}">{{ $vendor->vendor_code }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+
                                 <div class="col-md-4">
                                     <label for="input9" class="form-label">Purchase Order</label>
                                     <input type="file" name="purchase_excel" class="form-control">
                                 </div>
+
                                 <div class="col-md-4">
                                     <div class="d-md-flex d-grid align-items-center gap-3 mt-4">
                                         <button type="submit" class="btn btn-primary px-4">Submit</button>
