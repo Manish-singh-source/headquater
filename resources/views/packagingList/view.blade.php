@@ -113,6 +113,8 @@
                                         <th>Purchase&nbsp;Order&nbsp;No</th>
                                         <th>Total&nbsp;Dispatch&nbsp;Qty</th>
                                         <th>Final&nbsp;Dispatch&nbsp;Qty</th>
+                                        <th>Box&nbsp;Count</th>
+                                        <th>Weight</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -144,10 +146,12 @@
                                             <td>
                                                 {{ $order->final_dispatched_quantity ?? 0 }}
                                             </td>
+                                            <td>{{ $order->box_count ?? 0 }}</td>
+                                            <td>{{ $order->weight ?? 0 }}</td>
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="19" class="text-center">No records found. Please update or upload
+                                            <td colspan="21" class="text-center">No records found. Please update or upload
                                                 a PO to see data.</td>
                                         </tr>
                                     @endforelse

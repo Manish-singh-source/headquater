@@ -162,7 +162,7 @@
                 <td>{{ $detail->product->brand_title }}</td>
                 <td>{{ $detail->tempOrder?->hsn }}</td>
                 <td>{{ $detail->quantity }}</td>
-                <td>{{ $detail->box }}</td>
+                <td>{{ $detail->salesOrderProduct->box_count }}</td>
                 <td>{{ $detail->unit_price }}</td>
                 <td>{{ $detail->amount }}</td>
                 <td>{{ floor($detail->tax) }}%</td>
@@ -173,7 +173,7 @@
         <tr>
             <td colspan="5" class="section-title">Total</td>
             <td>{{ $invoiceDetails->sum('quantity') }}</td>
-            <td>{{ $invoiceDetails->sum('box') }}</td>
+            <td>{{ $TotalBoxCount }}</td>
             <td>{{ $invoiceDetails->sum('unit_price') }}</td>
             <td>{{ $invoiceDetails->sum('amount') }}</td>
             <td>{{ $invoiceDetails->sum('igst_rate') }}</td>
@@ -211,8 +211,8 @@
         <tr>
             <td colspan="2">
                 TOTAL&nbsp;SETS&nbsp;-&nbsp;QTY {{ $invoiceDetails->sum('quantity') }}<br>
-                TOTAL&nbsp;BOX&nbsp;COUNT&nbsp;- {{ $invoiceDetails->sum('box') }}<br>
-                WEIGHT&nbsp;-&nbsp;KG {{ $invoiceDetails->sum('weight') }}
+                TOTAL&nbsp;BOX&nbsp;COUNT&nbsp;- {{ $TotalBoxCount }}<br>
+                WEIGHT&nbsp;-&nbsp;KG {{ $TotalWeight }}
             </td>
         </tr>
     </table>

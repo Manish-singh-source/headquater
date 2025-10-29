@@ -45,10 +45,12 @@ class InvoiceController extends Controller
         $data = [
             'title' => 'Invoice',
             'invoice' => $invoice,
-            'invoiceDetails' => InvoiceDetails::with('product', 'tempOrder')->where('invoice_id', $id)->get(),
+            'invoiceDetails' => InvoiceDetails::with('product', 'tempOrder', 'salesOrderProduct')->where('invoice_id', $id)->get(),
             'salesOrderProducts' => $salesOrderProducts,
+            'TotalWeight' => $salesOrderProducts->sum('weight'),
+            'TotalBoxCount' => $salesOrderProducts->sum('box_count'),
         ];
-        // dd($data);
+
         $pdf = \PDF::loadView('invoice/invoice-pdf', $data);
         $pdf->setPaper('a4', 'landscape');
 
