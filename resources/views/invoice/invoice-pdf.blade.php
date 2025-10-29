@@ -84,7 +84,7 @@
             {{-- <td>State: {{ $invoice->customer->shipping_state }}</td> --}}
             {{-- <td>Code: {{ $invoice->customer->shipping_zip }}</td> --}}
             <td>PO No: {{ $invoice->po_number }}</td>
-            <td>PO Date: {{ $invoice->po_date  }}</td>
+            <td>PO Date: {{ $invoiceDetails[0]->tempOrder->po_date ?? ''  }}</td>
             <td></td>
             <td></td>
         </tr>
@@ -121,6 +121,12 @@
             <td>PAN: {{ $invoice->customer->pan }}</td>
             <td>GSTIN: </td><td>{{ $invoice->customer->gstin }}</td>
             <td>PAN: {{ $invoice->customer->pan }}</td>
+        </tr>
+        <tr>
+            <td>Contact Name: </td>
+            <td colspan="2">{{ $invoice->customer->contact_name }}</td>
+            <td>Contact No.: </td>
+            <td colspan="2">{{ $invoice->customer->contact_no }}</td>
         </tr>
     </table>
 
@@ -190,11 +196,11 @@
         </tr>
         <tr>
             <td>Bank&nbsp;A/C:</td>
-            <td></td>
+            <td>Sign:</td>
         </tr>
         <tr>
             <td>Bank&nbsp;IFSC:</td>
-            <td></td>
+            <td>Stamp:</td>
         </tr>
     </table>
 

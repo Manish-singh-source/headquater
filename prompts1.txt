@@ -55,3 +55,31 @@ Module 1: Warehouse
             -- there should be a button for changing the status of the selected warehouses to active/inactive 
             -- after performing the action, redirect to the same page with success message 
             -- if there is any error, display the error message on the same page 
+
+
+
+
+
+
+
+
+
+You are working on an existing Laravel project. 
+The database schema already exists and migrations/models/controllers/routes/views are partially implemented. 
+Your job is to **improve and complete** the existing module as per the following requirements — 
+do NOT rewrite the entire structure, only enhance current code where needed.
+Properly display all data in table with perfect queries. 
+Make sure controller logic and business logics are perfect. 
+
+
+Module 1: Low Stock Reports (url: /warehouse/low-stock-alert) in warehouse.php file
+
+    -- Database Improvements: 
+        -- add "minimum_stock_level" column in "products" table
+        -- add "suggested_reorder_qty" column in "products" table 
+
+    Task 1: list of low stock reports (http://127.0.0.1:8000/warehouse/low-stock-alert) 
+        - fetch data from "products" table and display in table format with columns: sr. no., item name, current stock, min. threshold, suggested reorder qty, last purchase date, actions(add purchase, create request)
+        - 
+
+        
