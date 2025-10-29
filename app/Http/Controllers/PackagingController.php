@@ -116,6 +116,8 @@ class PackagingController extends Controller
                 'Purchase Order No' => $order->tempOrder->po_number ?? '',
                 'Total Dispatch Qty' => $order->dispatched_quantity ?? 0,
                 'Final Dispatch Qty' => $order->final_dispatched_quantity ?? 0,
+                'Box Count' => $order->box_count ?? 0,
+                'Weight' => $order->weight ?? 0,
                 'Issue Units' => '',
                 'Issue Reason' => '',
             ]);
@@ -176,6 +178,8 @@ class PackagingController extends Controller
                         $order->issue_reason = 'Shortage';
                         $order->issue_description = $record['Issue Reason'];
                         $order->status = 'packaged';
+                        $order->box_count = intval($record['Box Count']);
+                        $order->weight = intval($record['Weight']);
                         $order->save();
 
                         $lessQuantity = $order->dispatched_quantity - $record['Final Dispatch Qty'];
@@ -199,10 +203,14 @@ class PackagingController extends Controller
                         $order->issue_reason = 'Exceed';
                         $order->issue_description = $record['Issue Reason'];
                         $order->status = 'packaged';
+                        $order->box_count = intval($record['Box Count']);
+                        $order->weight = intval($record['Weight']);
                         $order->save();
                     } else {
                         $order->final_dispatched_quantity = $order->dispatched_quantity;
                         $order->status = 'packaged';
+                        $order->box_count = intval($record['Box Count']);
+                        $order->weight = intval($record['Weight']);
                         $order->save();
                     }
                 } else {
@@ -216,6 +224,8 @@ class PackagingController extends Controller
                         $order->issue_reason = 'Shortage';
                         $order->issue_description = $record['Issue Reason'];
                         $order->status = 'packaged';
+                        $order->box_count = intval($record['Box Count']);
+                        $order->weight = intval($record['Weight']);
                         $order->save();
                     } elseif ($order->dispatched_quantity < $record['Final Dispatch Qty']) {
                         $order->final_dispatched_quantity = $order->dispatched_quantity;
@@ -223,10 +233,14 @@ class PackagingController extends Controller
                         $order->issue_reason = 'Exceed';
                         $order->issue_description = $record['Issue Reason'];
                         $order->status = 'packaged';
+                        $order->box_count = intval($record['Box Count']);
+                        $order->weight = intval($record['Weight']);
                         $order->save();
                     } else {
                         $order->final_dispatched_quantity = $order->dispatched_quantity;
                         $order->status = 'packaged';
+                        $order->box_count = intval($record['Box Count']);
+                        $order->weight = intval($record['Weight']);
                         $order->save();
                     }
                 }

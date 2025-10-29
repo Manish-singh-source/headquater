@@ -1098,6 +1098,7 @@ class SalesOrderController extends Controller
                     $totalAmount += (int) $detail->ordered_quantity * (float) $detail->product->mrp;
 
                     $invoiceDetails = new InvoiceDetails;
+                    $invoiceDetails->sales_order_product_id = $detail->id;
                     $invoiceDetails->invoice_id = $invoice->id;
                     $invoiceDetails->product_id = $detail->product_id;
                     $invoiceDetails->temp_order_id = $detail->temp_order_id;
