@@ -115,7 +115,7 @@ class PackagingController extends Controller
                 // 'PI Quantity' => $order->tempOrder?->vendor_pi_fulfillment_quantity,
                 'Purchase Order No' => $order->tempOrder->po_number ?? '',
                 'Total Dispatch Qty' => $order->dispatched_quantity ?? 0,
-                'Final Dispatch Qty' => '',
+                'Final Dispatch Qty' => $order->final_dispatched_quantity ?? 0,
                 'Issue Units' => '',
                 'Issue Reason' => '',
             ]);

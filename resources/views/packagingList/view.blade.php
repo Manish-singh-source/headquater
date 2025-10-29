@@ -212,7 +212,7 @@
                 var customerFacilityName = $("#customerPOTable").val().trim();
                 var salesOrderId = $("#salesOrderId").text().trim();
 
-                if (customerFacilityName != "" && salesOrderId != "") {
+                // if (customerFacilityName != "" && salesOrderId != "") {
                     $.ajax({
                         url: '/download-packing-products-excel',
                         method: 'GET',
@@ -242,9 +242,9 @@
                             alert("Error");
                         }
                     });
-                } else {
-                    alert("Please Select Client Name.");
-                }
+                // } else {
+                //     alert("Please Select Client Name.");
+                // }
             });
 
         });
