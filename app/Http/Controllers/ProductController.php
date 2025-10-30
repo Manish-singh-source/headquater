@@ -88,11 +88,11 @@ class ProductController extends Controller
                         'category' => $record['Category'] ?? '',
                         'pcs_set' => $record['PCS/Set'] ?? '',
                         'sets_ctn' => $record['Sets/CTN'] ?? '',
-                        'gst' => $record['GST'] ?? '',
+                        'gst' => intval($record['GST']) ?? '',
 
-                        'basic_rate' => $record['Basic Rate'] ?? '',
+                        'basic_rate' => intval($record['Basic Rate']) ?? '',
                         'net_landing_rate' => isset($record['Basic Rate'], $record['GST'])
-                            ? number_format($record['Basic Rate'] + ($record['Basic Rate'] * $record['GST'] / 100), 2, '.', '')
+                            ? number_format(intval($record['Basic Rate']) + (intval($record['Basic Rate']) * intval($record['GST']) / 100), 2, '.', '')
                             : null,
                         'case_pack_quantity' => ($record['PCS/Set'] ?? 0) * ($record['Sets/CTN'] ?? 0),
 
@@ -119,9 +119,9 @@ class ProductController extends Controller
                         'pcs_set' => $record['PCS/Set'] ?? '',
                         'sets_ctn' => $record['Sets/CTN'] ?? '',
                         'gst' => $record['GST'] ?? '',
-                        'basic_rate' => $record['Basic Rate'] ?? '',
+                        'basic_rate' => intval($record['Basic Rate']) ?? '',
                         'net_landing_rate' => isset($record['Basic Rate'], $record['GST'])
-                            ? number_format($record['Basic Rate'] + ($record['Basic Rate'] * $record['GST'] / 100), 2, '.', '')
+                            ? number_format(intval($record['Basic Rate']) + (intval($record['Basic Rate']) * intval($record['GST']) / 100), 2, '.', '')
                             : null,
                         'case_pack_quantity' => ($record['PCS/Set'] ?? 0) * ($record['Sets/CTN'] ?? 0),
                         'vendor_code' => $record['Vendor Code'] ?? '',
