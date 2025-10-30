@@ -1,4 +1,4 @@
-﻿# Laravel-Coding-Standards
+﻿# Project Setup Steps
 
 ## Prerequisites
 Make sure you have the following installed:
