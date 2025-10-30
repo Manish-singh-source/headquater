@@ -186,6 +186,21 @@
                                     </li>
                                 @endif
 
+                                {{-- Vendor Payments Details --}}
+                                @if($purchaseInvoice[0]->vendor_code) 
+                                    @foreach ($purchaseInvoice as $invoiceDetail)
+                                        <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
+                                            <span><b>Invoice Number</b></span>
+                                            <span>{{ $invoiceDetail->invoice_no }}</span>
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
+                                            <span><b>Invoice Amount</b></span>
+                                            <span>{{ $invoiceDetail->invoice_amount }}</span>
+                                        </li>
+                                    @endforeach
+                                @endif
+
+
                                 @foreach ($purchaseOrder->vendorPI as $vendorPI)
                                     @if ($vendorPI->status == 'approve')
                                         <li
@@ -732,6 +747,18 @@
                                 <div class="col-12 mb-3">
                                     <input type="hidden" name="purchase_order_id" value="{{ $purchaseOrder->id }}">
                                     <input type="hidden" name="vendor_code" value="{{ $purchaseOrder->vendor_code }}">
+                                </div>
+
+                                <div class="col-12 mb-3">
+                                    <label for="invoice_no" class="form-label">Invoice Number<span class="text-danger">*</span></label>
+                                    <input type="text" name="invoice_no" id="invoice_no" class="form-control"
+                                        value="" required="" placeholder="Invoice Number">
+                                </div>
+
+                                <div class="col-12 mb-3">
+                                    <label for="invoice_amount" class="form-label">Invoice Amount<span class="text-danger">*</span></label>
+                                    <input type="text" name="invoice_amount" id="invoice_amount" class="form-control"
+                                        value="" required="" placeholder="Invoice Amount">
                                 </div>
 
                                 <div class="col-12 mb-3">

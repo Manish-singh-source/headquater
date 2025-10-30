@@ -610,6 +610,8 @@ class PurchaseOrderController extends Controller
             'invoice_file' => 'required|mimes:pdf',
             'purchase_order_id' => 'required',
             'vendor_code' => 'required',
+            'invoice_no' => 'required',
+            'invoice_amount' => 'required',
         ]);
 
         if ($validated->fails()) {
@@ -639,6 +641,8 @@ class PurchaseOrderController extends Controller
         $purchaseInvoice->purchase_order_id = $request->purchase_order_id;
         $purchaseInvoice->vendor_code = $request->vendor_code;
         $purchaseInvoice->invoice_file = $invoiceFileName;
+        $purchaseInvoice->invoice_no = $request->invoice_no;
+        $purchaseInvoice->invoice_amount = $request->invoice_amount;
         $purchaseInvoice->save();
 
         if (! $purchaseInvoice) {
