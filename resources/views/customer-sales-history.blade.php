@@ -137,12 +137,19 @@
                                         </th>
                                         <th>Reference</th>
                                         {{-- <th>Customer Id</th> --}}
-                                        <th>Customer Name</th>
-                                        <th>Ordered Date</th>
+                                        <th>Customer&nbsp;Name</th>
+                                        <th>Ordered&nbsp;Date</th>
                                         {{-- <th>Delivery Date</th> --}}
-                                        <th>Total Amount</th>
+                                        <th>Total&nbsp;Amount</th>
                                         <th>Paid</th>
                                         <th>Due</th>
+                                        <th>Appointment&nbsp;Date</th>
+                                        <th>POD</th>
+                                        <th>LR</th>
+                                        <th>DN</th>
+                                        <th>GRN</th>
+                                        <th>Invoice</th>
+                                        <th>Payment&nbsp;Status</th>
                                         {{-- <th>Status</th> --}}
                                         <th>Action</th>
                                     </tr>
@@ -163,6 +170,13 @@
                                             <td>{{ number_format($invoice->payments?->sum('amount'), 2) }}</td>
                                             <td>{{ number_format($invoice->total_amount - $invoice->payments?->sum('amount'), 2) }}
                                             </td>
+                                            <td>Yes</td>
+                                            <td>Yes</td>
+                                            <td>Yes</td>
+                                            <td>Yes</td>
+                                            <td>Yes</td>
+                                            <td>Yes</td>
+                                            <td>Yes</td>
                                             <td>
                                                 <a aria-label="anchor"
                                                     href="{{ route('invoice.downloadPdf', $invoice->id) }}"
