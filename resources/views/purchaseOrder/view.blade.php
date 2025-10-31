@@ -187,7 +187,7 @@
                                 @endif
 
                                 {{-- Vendor Payments Details --}}
-                                @if($purchaseInvoice[0]->vendor_code) 
+                                @isset($purchaseInvoice[0]->vendor_code) 
                                     @foreach ($purchaseInvoice as $invoiceDetail)
                                         <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                                             <span><b>Invoice Number</b></span>
@@ -198,7 +198,7 @@
                                             <span>{{ $invoiceDetail->invoice_amount }}</span>
                                         </li>
                                     @endforeach
-                                @endif
+                                @endisset
 
 
                                 @foreach ($purchaseOrder->vendorPI as $vendorPI)
@@ -430,7 +430,7 @@
                                                 @csrf
                                                 @method('POST')
                                                 <div class="modal-header">
-                                                    <h1 class="modal-title fs-5" id="approveBackdropLabel">Add Vendor PI
+                                                    <h1 class="modal-title fs-5" id="approveBackdropLabel">Add Vekndor PI
                                                     </h1>
                                                     <button type="button" class="btn-close" data-bs-dismiss="modal"
                                                         aria-label="Close"></button>

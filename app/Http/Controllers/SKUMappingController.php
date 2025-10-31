@@ -21,7 +21,7 @@ class SKUMappingController extends Controller
     {
         $file = $request->file('sku_mapping');
         if (! $file) {
-            return redirect()->back()->withErrors(['sku_mapping' => 'Please upload a CSV file.']);
+            return redirect()->back()->with(['sku_mapping' => 'Please upload a CSV file.']);
         }
 
         DB::beginTransaction();
@@ -48,7 +48,7 @@ class SKUMappingController extends Controller
             if ($insertCount === 0) {
                 DB::rollBack();
 
-                return redirect()->back()->withErrors(['sku_mapping' => 'No valid data found in the CSV file.']);
+                return redirect()->back()->with(['sku_mapping' => 'No valid data found in the CSV file.']);
             }
 
             DB::commit();
@@ -57,7 +57,7 @@ class SKUMappingController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
 
-            return redirect()->back()->withErrors(['error' => 'Something went wrong: '.$e->getMessage()]);
+            return redirect()->back()->with(['error' => 'Something went wrong: ' . $e->getMessage()]);
         }
     }
 

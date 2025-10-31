@@ -222,7 +222,7 @@ class ReceivedProductsController extends Controller
             if ($insertCount === 0) {
                 DB::rollBack();
 
-                return redirect()->back()->withErrors(['pi_excel' => 'No valid data found in the CSV file.']);
+                return redirect()->back()->with(['pi_excel' => 'No valid data found in the CSV file.']);
             }
 
             DB::commit();
@@ -235,7 +235,7 @@ class ReceivedProductsController extends Controller
             // dd($e);
             DB::rollBack();
 
-            return redirect()->back()->withErrors(['error' => 'Something went wrong: ' . $e->getMessage()]);
+            return redirect()->back()->with(['error' => 'Something went wrong: ' . $e->getMessage()]);
         }
     }
 }

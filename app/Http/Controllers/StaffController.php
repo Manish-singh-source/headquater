@@ -49,7 +49,7 @@ class StaffController extends Controller
         ]);
 
         if ($validated->fails()) {
-            return back()->withErrors($validated)->withInput();
+            return back()->with($validated)->withInput();
         }
 
         $staff = User::create([
@@ -106,7 +106,7 @@ class StaffController extends Controller
         ]);
 
         if ($validated->fails()) {
-            return back()->withErrors($validated)->withInput();
+            return back()->with($validated)->withInput();
         }
 
         $staff->update([

@@ -417,7 +417,15 @@
                       <a href="{{ route('return.accept') }}">
                           <div class="parent-icon"><i class="material-icons-outlined">local_shipping</i>
                           </div>
-                          <div class="menu-title">Product Return</div>
+                          <div class="menu-title">Vendor Return</div>
+                      </a>
+                  </li>
+                  
+                  <li>
+                      <a href="{{ route('customer.returns') }}">
+                          <div class="parent-icon"><i class="material-icons-outlined">local_shipping</i>
+                          </div>
+                          <div class="menu-title">Customer Return</div>
                       </a>
                   </li>
 

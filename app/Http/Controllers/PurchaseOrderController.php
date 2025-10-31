@@ -132,7 +132,7 @@ class PurchaseOrderController extends Controller
                     ];
                     continue;
                 }
-                
+
 
                 $tempSalesOrder = TempOrder::create([
                     'po_number' => $record['PO Number'] ?? '',
@@ -184,7 +184,7 @@ class PurchaseOrderController extends Controller
             if ($insertCount === 0) {
                 DB::rollBack();
 
-                return redirect()->back()->withErrors(['purchase_excel' => 'No valid data found in the CSV file.']);
+                return redirect()->back()->with(['purchase_excel' => 'No valid data found in the CSV file.']);
             }
 
             DB::commit();
@@ -319,7 +319,7 @@ class PurchaseOrderController extends Controller
             if ($insertCount === 0) {
                 DB::rollBack();
 
-                return redirect()->back()->withErrors(['pi_excel' => 'No valid data found in the CSV file.']);
+                return redirect()->back()->with(['pi_excel' => 'No valid data found in the CSV file.']);
             }
 
             VendorPIProduct::insert($vendorProducts);
@@ -327,9 +327,7 @@ class PurchaseOrderController extends Controller
 
             return redirect()->back()->with('success', 'Purchase Order products imported successfully! Vendor PI ID: ' . $vendorPi->id);
         } catch (\Exception $e) {
-            dd($e);
             DB::rollBack();
-
             return redirect()->back()->with(['error' => 'Something went wrong: ' . $e->getMessage()]);
         }
     }
@@ -423,7 +421,7 @@ class PurchaseOrderController extends Controller
             if ($insertCount === 0) {
                 DB::rollBack();
 
-                return redirect()->back()->withErrors(['pi_excel' => 'No valid data found in the CSV file.']);
+                return redirect()->back()->with(['pi_excel' => 'No valid data found in the CSV file.']);
             }
 
             // VendorPIProduct::upsert($products, ['vendor_sku_code', 'vendor_pi_id']);
@@ -435,7 +433,7 @@ class PurchaseOrderController extends Controller
             // dd($e->getMessage());
             DB::rollBack();
 
-            return redirect()->back()->withErrors(['error' => 'Something went wrong: ' . $e->getMessage()]);
+            return redirect()->back()->with(['error' => 'Something went wrong: ' . $e->getMessage()]);
         }
     }
 
@@ -558,7 +556,7 @@ class PurchaseOrderController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
 
-            return redirect()->back()->withErrors(['error' => 'Something went wrong: ' . $e->getMessage()]);
+            return redirect()->back()->with(['error' => 'Something went wrong: ' . $e->getMessage()]);
         }
     }
 
@@ -798,7 +796,7 @@ class PurchaseOrderController extends Controller
 
         if ($validated->fails()) {
             // If validation fails, redirect back with errors
-            return back()->withErrors($validated)->withInput();
+            return back()->with($validated)->withInput();
         }
 
         if ($request->input('pay_amount') == 0) {

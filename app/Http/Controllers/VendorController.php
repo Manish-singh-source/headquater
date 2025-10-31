@@ -45,7 +45,7 @@ class VendorController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return back()->withErrors($validator)->withInput();
+            return back()->with($validator)->withInput();
         }
 
         $vendor = new Vendor;
@@ -87,11 +87,11 @@ class VendorController extends Controller
             'client_name' => 'required|min:3',
             'contact_name' => 'required|min:3',
             'phone_number' => 'required|min:10',
-            'email' => 'required|email|unique:vendors,email,'.$id,
+            'email' => 'required|email|unique:vendors,email,' . $id,
         ]);
 
         if ($validator->fails()) {
-            return back()->withErrors($validator)->withInput();
+            return back()->with($validator)->withInput();
         }
 
         $vendor = Vendor::findOrFail($id);

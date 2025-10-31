@@ -62,14 +62,14 @@ class RegisterController extends Controller
             if (Auth::user()->status !== '1') {
                 Auth::logout();
 
-                return back()->withErrors(['email' => 'Your account is not active.']);
+                return back()->with(['email' => 'Your account is not active.']);
             }
             $request->session()->regenerate();
 
             return redirect()->intended('/')->with('success', 'Login successful.');
         }
 
-        return back()->withErrors([
+        return back()->with([
             'email' => 'The provided credentials do not match.',
         ]);
     }
@@ -223,7 +223,7 @@ class RegisterController extends Controller
                 ];
             });
         })
-            ->filter(fn ($item) => ! empty($item['brand'])) // remove null brands
+            ->filter(fn($item) => ! empty($item['brand'])) // remove null brands
             ->groupBy('brand')
             ->map(function ($items, $brand) {
                 return [

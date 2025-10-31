@@ -499,3 +499,18 @@ view sales order - add refresh button that can
 
 ======================================================================
 ======================================================================
+
+
+
+
+
+
+
+
+
+1. create sales order 
+2. update sales order 
+3. sales order fulfill/partial fulfill - proceed 
+4. packaging list 
+5. if issues - short quantity (always accept from warehouse) - display in product issues 
+6. 

@@ -35,12 +35,12 @@ class CustomerGroupController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return back()->withErrors($validator)->withInput();
+            return back()->with($validator)->withInput();
         }
 
         $file = $request->file('csv_file');
         if (! $file) {
-            return redirect()->back()->withErrors(['csv_file' => 'Please upload a CSV file.']);
+            return redirect()->back()->with(['csv_file' => 'Please upload a CSV file.']);
         }
 
         DB::beginTransaction();
@@ -138,7 +138,7 @@ class CustomerGroupController extends Controller
             if ($insertCount === 0) {
                 DB::rollBack();
 
-                return redirect()->back()->withErrors(['csv_file' => 'No valid data found in the CSV file.']);
+                return redirect()->back()->with(['csv_file' => 'No valid data found in the CSV file.']);
             }
 
             DB::commit();
@@ -154,7 +154,7 @@ class CustomerGroupController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
 
-            return redirect()->back()->with(['error' => 'Something went wrong: Please Make Sure File has Facility Name Column Filled.'.$e->getMessage()]);
+            return redirect()->back()->with(['error' => 'Something went wrong: Please Make Sure File has Facility Name Column Filled.' . $e->getMessage()]);
         }
     }
 
@@ -179,7 +179,7 @@ class CustomerGroupController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return back()->withErrors($validator)->withInput();
+            return back()->with($validator)->withInput();
         }
 
         $customerGroup = CustomerGroup::find($id);
