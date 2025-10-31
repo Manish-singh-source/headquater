@@ -211,12 +211,13 @@ class DashboardController extends Controller
             $ordersQuery->where('products.brand', $selectedBrands);
         }
 
+
         $ordersByBrand = $ordersQuery
             ->select(
                 'products.brand',
-                DB::raw('COUNT(DISTINCT sales_orders.id) as total_orders'),
-                DB::raw('COUNT(DISTINCT CASE WHEN sales_orders.status IN ("pending", "blocked", "ready_to_package", "ready_to_ship", "shipped", "delivered") THEN sales_orders.id END) as open_orders'),
-                DB::raw('COUNT(DISTINCT CASE WHEN sales_orders.status IN ("completed") THEN sales_orders.id END) as processed_orders')
+                DB::raw('COUNT(sales_order_products.id) as total_orders'),
+                DB::raw('COUNT(CASE WHEN sales_orders.status IN ("pending", "blocked", "ready_to_package", "ready_to_ship", "shipped", "delivered") THEN sales_order_products.id END) as open_orders'),
+                DB::raw('COUNT(CASE WHEN sales_orders.status IN ("completed") THEN sales_order_products.id END) as processed_orders')
             )
             ->groupBy('products.brand')
             ->get();
@@ -232,64 +233,100 @@ class DashboardController extends Controller
     // done
     private function getDispatchData($startDate, $endDate, $selectedBrands)
     {
-        // LR Pending, Appointments Received but GRN Pending, Appointments Pending 
-        // Total Sales Orders 
-        $totalDispatchedOrders = SalesOrder::whereBetween('created_at', [$startDate, $endDate])->where('status', '==', 'shipped')->orWhere('status', '==', 'delivered')->count();
-        $totalPendingDispatched = DB::table('invoices')
-            ->join('sales_orders', 'invoices.sales_order_id', '=', 'sales_orders.id')
-            ->where('sales_orders.status', '==', 'shipped')
-            ->whereBetween('sales_orders.created_at', [$startDate, $endDate])
-            ->count();
+        // Only consider sales orders with status 'ready_to_ship'
+        $orders = SalesOrder::with(['invoices.appointment'])
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->where('status', 'ready_to_ship')
+            ->get();
 
+        $lrPending = 0;
+        $apptReceivedGrnPending = 0;
+        $apptPending = 0;
+
+        foreach ($orders as $order) {
+            // Get all related invoices with appointments
+            $invoices = $order->invoices;
+            $hasAppointment = false;
+            $hasGrn = false;
+            $hasLR = false;
+            foreach ($invoices as $invoice) {
+                $appt = $invoice->appointment;
+                if ($appt) {
+                    if (!empty($appt->appointment_date)) {
+                        $hasAppointment = true;
+                        if (!empty($appt->grn)) {
+                            $hasGrn = true;
+                        }
+                    }
+                }
+                // For LR Pending logic,
+                // If you have an LR doc/number column (update this logic as needed):
+                if (property_exists($invoice, 'lr_number')) {
+                    if (!empty($invoice->lr_number)) {
+                        $hasLR = true;
+                    }
+                }
+                // If LR is stored in appointment or invoice with file, update here as well
+            }
+            if (!$hasAppointment) {
+                $apptPending++;
+            } else if ($hasAppointment && !$hasGrn) {
+                $apptReceivedGrnPending++;
+            }
+            // LR Pending: if none of the invoices for this order have LR
+            if (!$hasLR) {
+                $lrPending++;
+            }
+        }
         return [
-            'total_dispatched_orders' => $totalDispatchedOrders,
-            'total_pending_dispatched' => $totalPendingDispatched
+            'lr_pending' => $lrPending,
+            'appt_received_grn_pending' => $apptReceivedGrnPending,
+            'appt_pending' => $apptPending
         ];
     }
 
     // done
     private function getDeliveryData($startDate, $endDate, $selectedBrands)
     {
+        // Count POD received from appointments
+        $podReceived = Invoice::whereHas('appointment', function($query) {
+            $query->whereNotNull('pod');
+        })->whereBetween('created_at', [$startDate, $endDate])->count();
 
-        $totalPODReceived = SalesOrder::with('invoices', function ($invoices) {
-            $invoices->whereHas('appointments', function ($query) {
-                $query->whereNotNull('pod');
-            });
-        })->where('status', 'delivered')->whereBetween('created_at', [$startDate, $endDate])->count();
-
-        $totalPODNotReceived = SalesOrder::with('invoices', function ($invoices) {
-            $invoices->whereHas('appointments', function ($query) {
-                $query->whereNull('pod');
-            });
-        })->where('status', 'delivered')->whereBetween('created_at', [$startDate, $endDate])->count();
+        // Count POD not received for ready to ship orders
+        $podNotReceived = SalesOrder::where('status', 'ready_to_ship')
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->count();
 
         return [
-            'pod_received' => $totalPODReceived,
-            'pod_not_received' => $totalPODNotReceived,
-            'total' => $totalPODReceived + $totalPODNotReceived
+            'pod_received' => $podReceived,
+            'pod_not_received' => $podNotReceived
         ];
     }
 
     // done
     private function getGRNData($startDate, $endDate, $selectedBrands)
     {
+        // Total = Sales Orders with status complete
+        $total = SalesOrder::where('status', 'completed')
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->count();
 
-        $totalGRNReceived = SalesOrder::with('invoices', function ($invoices) {
-            $invoices->whereHas('appointments', function ($query) {
+        // GRN Complete = GRN uploaded in Appointment via Invoice
+        $grnDone = SalesOrder::where('status', 'completed')
+            ->whereHas('invoices.appointment', function ($query) {
                 $query->whereNotNull('grn');
-            });
-        })->where('status', 'delivered')->whereBetween('created_at', [$startDate, $endDate])->count();
+            })
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->count();
 
-        $totalGRNNotDone = SalesOrder::with('invoices', function ($invoices) {
-            $invoices->whereHas('appointments', function ($query) {
-                $query->whereNull('grn');
-            });
-        })->where('status', 'delivered')->whereBetween('created_at', [$startDate, $endDate])->count();
+        // GRN Pending = Total - GRN Complete
+        $grnPending = $total - $grnDone;
 
         return [
-            'grn_done' => $totalGRNReceived,
-            'grn_not_done' => $totalGRNNotDone,
-            'total' => $totalGRNReceived + $totalGRNNotDone
+            'total' => $total,
+            'grn_done' => $grnDone,
+            'grn_not_done' => $grnPending
         ];
     }
 

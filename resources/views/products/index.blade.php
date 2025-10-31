@@ -387,4 +387,39 @@
             window.location.href = downloadUrl;
         });
     </script>
+    <script>
+        // If page opened with ?brand=..., filter the products table client-side
+        (function() {
+            function getQueryParam(name) {
+                const params = new URLSearchParams(window.location.search);
+                return params.get(name);
+            }
+
+            const brandParam = getQueryParam('brand');
+            if (!brandParam) return;
+
+            // Normalize for comparison
+            const wanted = brandParam.trim().toLowerCase();
+
+            // Iterate rows and hide those whose .product-title text does not match
+            document.querySelectorAll('#example tbody tr').forEach(function(row) {
+                const brandAnchor = row.querySelector('.product-title');
+                const text = brandAnchor ? brandAnchor.textContent.trim().toLowerCase() : '';
+                if (text !== wanted) {
+                    row.style.display = 'none';
+                } else {
+                    row.style.display = ''; // keep visible
+                }
+            });
+
+            // Optional: show a small note to user about active filter
+            const breadcrumb = document.querySelector('.page-breadcrumb');
+            if (breadcrumb) {
+                const info = document.createElement('div');
+                info.className = 'alert alert-info mt-2';
+                info.textContent = 'Filtered by brand: ' + brandParam;
+                breadcrumb.parentNode.insertBefore(info, breadcrumb.nextSibling);
+            }
+        })();
+    </script>
 @endsection

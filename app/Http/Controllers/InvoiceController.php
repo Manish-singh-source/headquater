@@ -58,54 +58,45 @@ class InvoiceController extends Controller
     }
 
     public function invoiceAppointmentUpdate(Request $request, $id)
-    {
-        // Logic to update invoice appointment details
-        $validated = Validator::make($request->all(), [
-            'appointment_date' => 'required|date',
-            'pod' => 'required|file|mimes:jpg,jpeg,png,pdf',
-            'grn' => 'required|file|mimes:jpg,jpeg,png,pdf',
-        ]);
+{
+    $validated = Validator::make($request->all(), [
+        'appointment_date' => 'nullable|date',
+        'pod' => 'nullable|file|mimes:jpg,jpeg,png,pdf',
+        'grn' => 'nullable|file|mimes:jpg,jpeg,png,pdf',
+    ]);
 
-        if ($validated->fails()) {
-            // If validation fails, redirect back with errors
-            return redirect()->back()->withErrors($validated)->withInput();
-        }
-
-        // Handle file uploads and other logic here
-
-        try {
-
-            $appointment = new Appointment;
-            $appointment->invoice_id = $id;
-            $appointment->appointment_date = $request->input('appointment_date');
-
-            if ($request->hasFile('pod')) {
-                $pod = $request->file('pod');
-                $ext = $pod->getClientOriginalExtension();
-                $podName = time().'.'.$ext;
-
-                // Store original image
-                $pod->move(public_path('uploads/pod'), $podName);
-                $appointment->pod = $podName;
-            }
-
-            if ($request->hasFile('grn')) {
-                $grn = $request->file('grn');
-                $ext = $grn->getClientOriginalExtension();
-                $grnName = time().'.'.$ext;
-
-                // Store original image
-                $grn->move(public_path('uploads/grn'), $grnName);
-                $appointment->grn = $grnName;
-            }
-
-            $appointment->save();
-        } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Failed to update invoice: '.$e->getMessage());
-        }
-
-        return redirect()->back()->with('success', 'Invoice updated successfully.');
+    if ($validated->fails()) {
+        return redirect()->back()->withErrors($validated)->withInput();
     }
+
+    try {
+        $appointment = Appointment::firstOrNew(['invoice_id' => $id]);
+
+        if ($request->filled('appointment_date')) {
+            $appointment->appointment_date = $request->input('appointment_date');
+        }
+
+        if ($request->hasFile('pod')) {
+            $pod = $request->file('pod');
+            $podName = time() . '.' . $pod->getClientOriginalExtension();
+            $pod->move(public_path('uploads/pod'), $podName);
+            $appointment->pod = $podName;
+        }
+
+        if ($request->hasFile('grn')) {
+            $grn = $request->file('grn');
+            $grnName = time() . '.' . $grn->getClientOriginalExtension();
+            $grn->move(public_path('uploads/grn'), $grnName);
+            $appointment->grn = $grnName;
+        }
+
+        $appointment->save();
+    } catch (\Exception $e) {
+        return redirect()->back()->with('error', 'Failed to update invoice: ' . $e->getMessage());
+    }
+
+    return redirect()->back()->with('success', 'Invoice updated successfully.');
+}
 
     public function invoiceDnUpdate(Request $request, $id)
     {

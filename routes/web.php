@@ -293,6 +293,18 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/notifications/{id}/remove', 'removeNotification')->name('notifications.remove');
         Route::post('/notifications/mark-all-read', 'markAllAsRead')->name('notifications.mark-all-read');
     });
+
+    Route::get('/report/lr-pending', function() {
+        return redirect()->route('packaging.list.index');
+    })->name('report.lr-pending');
+
+    Route::get('/report/appt-grn-pending', function() {
+        return redirect()->route('invoices');
+    })->name('report.appt-grn-pending');
+
+    Route::get('/report/appt-pending', function() {
+        return redirect()->route('invoices');
+    })->name('report.appt-pending');
 });
 
 Route::view('/404', 'errors.404');

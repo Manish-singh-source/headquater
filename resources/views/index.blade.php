@@ -295,17 +295,23 @@
                                     <div class="card bg-info text-white"
                                         style="background-color: rgb(187 214 255) !important;">
                                         <div class="card-body text-center p-3">
-                                            <h6 class="mb-1">Total Dispatched Orders</h6>
-                                            <h4 class="mb-0">{{ $dispatchData['total_dispatched_orders'] }}</h4>
+                                            <h6 class="mb-1">LR Pending</h6>
+                                            <h4 class="mb-0">
+                                              <a href="{{ route('report.lr-pending') }}" style="color: white; text-decoration: underline;">
+                                                {{ $dispatchData['lr_pending'] }}
+                                              </a>
+                                            </h4>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="col-6">
-                                    <div class="card bg-success text-dark">
+                                    <div class="card bg-warning text-dark">
                                         <div class="card-body text-center p-3">
-                                            <h6 class="mb-1">Total Completed</h6>
+                                            <h6 class="mb-1">Appointment Received &amp; GRN Pending</h6>
                                             <h4 class="mb-0">
-                                                {{ $dispatchData['total_dispatched_orders'] - $dispatchData['total_pending_dispatched'] }}
+                                              <a href="{{ route('report.appt-grn-pending') }}" style="color: #212529; text-decoration: underline;">
+                                                {{ $dispatchData['appt_received_grn_pending'] }}
+                                              </a>
                                             </h4>
                                         </div>
                                     </div>
@@ -313,27 +319,16 @@
                                 <div class="col-6">
                                     <div class="card bg-danger text-white">
                                         <div class="card-body text-center p-3">
-                                            <h6 class="mb-1">Total Pending</h6>
+                                            <h6 class="mb-1">Appointment Pending</h6>
                                             <h4 class="mb-0">
-                                                {{ $dispatchData['total_pending_dispatched'] }}
+                                              <a href="{{ route('report.appt-pending') }}" style="color:white; text-decoration: underline;">
+                                                {{ $dispatchData['appt_pending'] }}
+                                              </a>
                                             </h4>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                            {{-- 
-                            <div class="row">
-                                <div class="col-12">
-                                    <div class="card bg-info text-white">
-                                        <div class="card-body text-center p-3">
-                                            <h6 class="mb-1">Appt. Received (GRN Pending)</h6>
-                                            <h4 class="mb-0">{{ $dispatchData['appointments_received_grn_pending'] }}
-                                            </h4>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div> 
-                            --}}
                             <div class="mt-3">
                                 <canvas id="dispatchChart" height="200"></canvas>
                             </div>
@@ -341,25 +336,16 @@
                     </div>
                 </div>
 
-                <!-- Delivery Confirmation Section -->
+                <!-- Delivery Confirmation Section cleanup: use only $deliveryData not dispatchData -->
                 <div class="col-lg-6 mb-4">
                     <div class="card h-100">
                         <div class="card-header bg-success text-white"
                             style="background-color: rgb(187 214 255) !important;">
-                            <h5 class="mb-0"><i class="material-icons-outlined">check_circle</i> Delivery Confirmation
-                            </h5>
+                            <h5 class="mb-0"><i class="material-icons-outlined">check_circle</i> Delivery Confirmation</h5>
                         </div>
                         <div class="card-body">
                             <div class="row mb-3">
-                                <div class="col-6">
-                                    <div class="card bg-info text-white"
-                                        style="background-color: rgb(187 214 255) !important;">
-                                        <div class="card-body text-center p-3">
-                                            <h6 class="mb-1">Total Delivered</h6>
-                                            <h4 class="mb-0">{{ $dispatchData['total_dispatched_orders'] }}</h4>
-                                        </div>
-                                    </div>
-                                </div>
+                                <!-- Total Delivered section removed as per requirement -->
                                 <div class="col-6">
                                     <div class="card bg-success text-white">
                                         <div class="card-body text-center p-3">
@@ -396,15 +382,7 @@
                         </div>
                         <div class="card-body">
                             <div class="row mb-3">
-                                <div class="col-6">
-                                    <div class="card bg-info text-white"
-                                        style="background-color: rgb(187 214 255) !important;">
-                                        <div class="card-body text-center p-3">
-                                            <h6 class="mb-1">Total GRN</h6>
-                                            <h4 class="mb-0">{{ $grnData['total'] }}</h4>
-                                        </div>
-                                    </div>
-                                </div>
+                                <!-- Total GRN section removed as per new requirements -->
                                 <div class="col-6">
                                     <div class="card bg-success text-white">
                                         <div class="card-body text-center p-3">
@@ -487,11 +465,14 @@
                         </div>
                         <div class="card-body">
                             <div class="row mb-4">
-                                <div class="col-md-6">
+                                <div class="col-md-4">
                                     <div class="card bg-light">
                                         <div class="card-body text-center">
                                             <h6 class="text-muted">Total Inventory Units</h6>
-                                            <h3 class="text-primary">{{ number_format($warehouseData['total_units']) }}
+                                            <h3 class="text-primary">
+                                                <a href="{{ route('products.index') }}" style="color: inherit; text-decoration: none">
+                                                    {{ number_format($warehouseData['total_units']) }}
+                                                </a>
                                             </h3>
                                         </div>
                                     </div>
@@ -501,7 +482,10 @@
                                         <div class="card-body text-center">
                                             <h6 class="text-muted">Total Inventory Value</h6>
                                             <h3 class="text-success">
-                                                ₹{{ number_format($warehouseData['total_cost'], 2) }}</h3>
+                                                <a href="{{ route('products.index') }}" style="color: inherit; text-decoration: none">
+                                                    ₹{{ number_format($warehouseData['total_cost'], 2) }}
+                                                </a>
+                                            </h3>
                                         </div>
                                     </div>
                                 </div>
@@ -524,7 +508,12 @@
                                                 @forelse($warehouseData['inventory_by_brand'] as $brandInventory)
                                                     <tr>
                                                         <td>{{ $brandInventory->brand }}</td>
-                                                        <td>{{ number_format($brandInventory->total_units) }}</td>
+                                                        <td>
+                                                            <a href="{{ route('products.index') }}?brand={{ urlencode($brandInventory->brand) }}"
+                                                               class="filter-brand-link">
+                                                                {{ number_format($brandInventory->total_units) }}
+                                                            </a>
+                                                        </td>
                                                         <td>₹{{ number_format($brandInventory->total_value, 2) }}</td>
                                                     </tr>
                                                 @empty
@@ -670,13 +659,14 @@
         new Chart(dispatchCtx, {
             type: 'pie',
             data: {
-                labels: ['Completed Dispatches', 'Pending Dispatches'],
+                labels: ['LR Pending', 'Appointment Rec. & GRN Pending', 'Appointment Pending'],
                 datasets: [{
                     data: [
-                        dispatchData.total_dispatched_orders,
-                        dispatchData.total_dispatched_orders - dispatchData.total_pending_dispatched,
+                        dispatchData.lr_pending,
+                        dispatchData.appt_received_grn_pending,
+                        dispatchData.appt_pending
                     ],
-                    backgroundColor: ['#8bffd4', '#ff84a8'],
+                    backgroundColor: ['#17a2b8', '#ffc107', '#dc3545'],
                     borderWidth: 2
                 }]
             },
@@ -819,3 +809,4 @@
         });
     </script>
 @endsection
+
