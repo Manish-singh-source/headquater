@@ -176,7 +176,14 @@
                                         <th>Paid</th>
                                         <th>Due</th>
                                         {{-- <th>Status</th> --}}
-                                        <th>Ordered Date</th>
+                                        <th>Ordered&nbsp;Date</th>
+                                        <th>Appointment&nbsp;Date</th>
+                                        <th>POD</th>
+                                        <th>LR</th>
+                                        <th>DN</th>
+                                        <th>GRN</th>
+                                        <th>Invoice</th>
+                                        <th>Payment&nbsp;Status</th>
                                         {{-- <th>Action</th> --}}
                                     </tr>
                                 </thead>
@@ -195,6 +202,13 @@
                                             <td>{{ $purchaseOrder->products->sum('paid_amount') ?? '0' }}</td>
                                             <td>{{ $purchaseOrder->products->sum('due_amount') ?? '0' }}</td>
                                             <td>{{ $purchaseOrder->created_at?->format('d-m-Y') ?? 'NA' }}</td>
+                                            <td>Yes</td>
+                                            <td>Yes</td>
+                                            <td>Yes</td>
+                                            <td>Yes</td>
+                                            <td>Yes</td>
+                                            <td>Yes</td>
+                                            <td>Yes</td>
                                         </tr>
                                     @empty
                                         <tr>
