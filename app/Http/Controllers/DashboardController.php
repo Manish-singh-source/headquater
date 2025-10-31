@@ -274,7 +274,7 @@ class DashboardController extends Controller
                 $apptReceivedGrnPending++;
             }
             // LR Pending: if none of the invoices for this order have LR
-            if (!$hasLR) {
+            if (!$hasLR) {  
                 $lrPending++;
             }
         }

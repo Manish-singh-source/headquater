@@ -106,9 +106,20 @@
                                                 <th>Purchase&nbsp;Order&nbsp;No</th>
                                                 <th>Total&nbsp;Dispatch&nbsp;Qty</th>
                                                 <th>Final&nbsp;Dispatch&nbsp;Qty</th>
+                                                <th>Status</th>
                                             </tr>
                                         </thead>
                                         <tbody>
+                                            @php
+                                                $statuses = [
+                                                    'pending' => 'Pending',
+                                                    'blocked' => 'Blocked',
+                                                    'completed' => 'Completed',
+                                                    'ready_to_ship' => 'Ready To Ship',
+                                                    'ready_to_package' => 'Ready To Package',
+                                                    'shipped' => 'Shipped'
+                                                ];
+                                            @endphp
                                             @forelse($salesOrder->orderedProducts as $order)
                                                 <tr>
                                                     <td>{{ $order->customer->contact_name }}</td>
@@ -133,10 +144,11 @@
                                                     <td>{{ $order->tempOrder->po_number }}</td>
                                                     <td>{{ $order->dispatched_quantity ?? 0 }}</td>
                                                     <td>{{ $order->final_dispatched_quantity ?? 0 }}</td>
+                                                    <td>{{ $statuses[$salesOrder->status] ?? 'On Hold' }}</td>
                                                 </tr>
                                             @empty
                                                 <tr>
-                                                    <td colspan="6">No Records Found</td>
+                                                    <td colspan="7">No Records Found</td>
                                                 </tr>
                                             @endforelse
                                         </tbody>
@@ -156,7 +168,29 @@
     <script>
         document.getElementById('changeStatus').addEventListener('change', function() {
             if (confirm('Are you sure you want to change status for order?')) {
-                document.getElementById('statusForm').submit();
+                const form = document.getElementById('statusForm');
+                form.addEventListener('submit', function() {
+                    // Get the current URL and extract the order ID
+                    const urlParts = window.location.pathname.split('/');
+                    const orderId = urlParts[urlParts.length - 2]; // Second to last segment
+                    
+                    // After successful submission, redirect to the ready-to-ship-detail page
+                    form.addEventListener('submit', function(e) {
+                        e.preventDefault();
+                        const formData = new FormData(form);
+                        fetch(form.action, {
+                            method: 'POST',
+                            body: formData
+                        })
+                        .then(response => {
+                            if (response.ok) {
+                                // Redirect to the ready-to-ship-detail page
+                                window.location.href = `/ready-to-ship-detail/${orderId}`;
+                            }
+                        });
+                    });
+                });
+                form.submit();
             }
         });
     </script>

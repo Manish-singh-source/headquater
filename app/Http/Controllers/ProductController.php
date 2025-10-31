@@ -63,7 +63,7 @@ class ProductController extends Controller
                     DB::rollBack();
 
                     return redirect()->back()->with([
-                        'error' => 'Please check excel file: duplicate SKU (' . $record['SKU Code'] . ') found in the file.',
+                        'error' => 'Please check excel file: duplicate SKU ('.$record['SKU Code'].') found in the file.',
                     ]);
                 }
 
@@ -90,8 +90,8 @@ class ProductController extends Controller
                         'sets_ctn' => $record['Sets/CTN'] ?? '',
                         'gst' => intval($record['GST']) ?? '',
 
-                        'basic_rate' => intval($record['Basic Rate']) ?? '',
-                        'net_landing_rate' => isset($record['Basic Rate'], $record['GST'])
+                        'basic_rate' => isset($record['Basic Rate']) ? intval($record['Basic Rate']) : '',
+                        'net_landing_rate' => (isset($record['Basic Rate']) && isset($record['GST']))
                             ? number_format(intval($record['Basic Rate']) + (intval($record['Basic Rate']) * intval($record['GST']) / 100), 2, '.', '')
                             : null,
                         'case_pack_quantity' => ($record['PCS/Set'] ?? 0) * ($record['Sets/CTN'] ?? 0),
@@ -119,8 +119,8 @@ class ProductController extends Controller
                         'pcs_set' => $record['PCS/Set'] ?? '',
                         'sets_ctn' => $record['Sets/CTN'] ?? '',
                         'gst' => $record['GST'] ?? '',
-                        'basic_rate' => intval($record['Basic Rate']) ?? '',
-                        'net_landing_rate' => isset($record['Basic Rate'], $record['GST'])
+                        'basic_rate' => isset($record['Basic Rate']) ? intval($record['Basic Rate']) : '',
+                        'net_landing_rate' => (isset($record['Basic Rate']) && isset($record['GST']))
                             ? number_format(intval($record['Basic Rate']) + (intval($record['Basic Rate']) * intval($record['GST']) / 100), 2, '.', '')
                             : null,
                         'case_pack_quantity' => ($record['PCS/Set'] ?? 0) * ($record['Sets/CTN'] ?? 0),
@@ -158,7 +158,7 @@ class ProductController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
 
-            return redirect()->back()->with(['error' => 'Something went wrong: ' . $e->getMessage()]);
+            return redirect()->back()->with(['error' => 'Something went wrong: '.$e->getMessage()]);
         }
     }
 
@@ -197,8 +197,8 @@ class ProductController extends Controller
                     'sets_ctn' => Arr::get($record, 'Sets/CTN') ?? '',
                     'gst' => Arr::get($record, 'GST') ?? '',
 
-                    'basic_rate' => $record['Basic Rate'] ?? '',
-                    'net_landing_rate' => isset($record['Basic Rate'], $record['GST'])
+                    'basic_rate' => isset($record['Basic Rate']) ? $record['Basic Rate'] : '',
+                    'net_landing_rate' => (isset($record['Basic Rate']) && isset($record['GST']))
                         ? number_format($record['Basic Rate'] + ($record['Basic Rate'] * $record['GST'] / 100), 2, '.', '')
                         : null,
                     'case_pack_quantity' => ($record['PCS/Set'] ?? 0) * ($record['Sets/CTN'] ?? 0),
@@ -240,7 +240,7 @@ class ProductController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
 
-            return redirect()->back()->with(['error' => 'Something went wrong: ' . $e->getMessage()]);
+            return redirect()->back()->with(['error' => 'Something went wrong: '.$e->getMessage()]);
         }
     }
 
@@ -326,7 +326,7 @@ class ProductController extends Controller
     public function downloadProductSheet(Request $request, $id = null)
     {
         // Create temporary .xlsx file path
-        $tempXlsxPath = storage_path('app/product_sheet_' . Str::random(8) . '.xlsx');
+        $tempXlsxPath = storage_path('app/product_sheet_'.Str::random(8).'.xlsx');
 
         // Create writer
         $writer = SimpleExcelWriter::create($tempXlsxPath);

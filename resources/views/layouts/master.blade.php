@@ -7,6 +7,26 @@
       <title>HEADQUATERS | Admin Dashboard</title>
       <!--favicon-->
       <link rel="icon" href="{{ asset('assets/images/favicon-32x32.png') }}" type="image/png">
+      <style>
+        .badge-pill {
+            padding-right: 0.6em;
+            padding-left: 0.6em;
+            border-radius: 10rem;
+            font-size: 12px;
+            margin-left: 5px;
+        }
+        .badge-danger {
+            color: #fff;
+            background-color: #dc3545;
+        }
+        .menu-title .badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 20px;
+            height: 20px;
+        }
+      </style>
       <!-- loader-->
 
       <link href="{{ asset('assets/css/pace.min.css') }}" rel="stylesheet">
@@ -403,14 +423,33 @@
                       <a href="{{ route('readyToShip.index') }}">
                           <div class="parent-icon"><i class="material-icons-outlined">local_shipping</i>
                           </div>
-                          <div class="menu-title">Ready To Ship</div>
+                          <div class="menu-title">Ready To Ship
+                              @if(isset($readyToShipCount) && $readyToShipCount > 0)
+                                  <span class="badge badge-pill badge-danger">{{ $readyToShipCount }}</span>
+                              @endif
+                          </div>
                       </a>
                   </li>
                   <li>
-                      <a href="{{ route('exceed.shortage.products') }}">
-                          <div class="parent-icon"><i class="material-icons-outlined">local_shipping</i>
+                      <a href="{{ route('received-products.index') }}">
+                          <div class="parent-icon"><i class="material-icons-outlined">inventory_2</i>
                           </div>
-                          <div class="menu-title">Product Issues</div>
+                          <div class="menu-title">Received Products
+                              @if(isset($receivedProductsCount) && $receivedProductsCount > 0)
+                                  <span class="badge badge-pill badge-danger">{{ $receivedProductsCount }}</span>
+                              @endif
+                          </div>
+                      </a>
+                  </li>
+                  <li>
+                      <a href="{{ route('packaging.list.index') }}">
+                          <div class="parent-icon"><i class="material-icons-outlined">all_inbox</i>
+                          </div>
+                          <div class="menu-title">Packaging List
+                              @if(isset($packagingListCount) && $packagingListCount > 0)
+                                  <span class="badge badge-pill badge-danger">{{ $packagingListCount }}</span>
+                              @endif
+                          </div>
                       </a>
                   </li>
                   <li>
