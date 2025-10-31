@@ -34,7 +34,7 @@ class CustomerController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return back()->withErrors($validator)->withInput();
+            return back()->with($validator)->withInput();
         }
 
         $file = $request->file('csv_file');
@@ -113,17 +113,17 @@ class CustomerController extends Controller
             if ($insertCount === 0) {
                 DB::rollBack();
 
-                return redirect()->back()->withErrors(['csv_file' => 'No valid data found in the CSV file.']);
+                return redirect()->back()->with(['csv_file' => 'No valid data found in the CSV file.']);
             }
 
             DB::commit();
-            activity()->log('Customer Group Created'.$g_id.' with '.$insertCount.' customers.'.' by '.Auth::user()->name);
+            activity()->log('Customer Group Created' . $g_id . ' with ' . $insertCount . ' customers.' . ' by ' . Auth::user()->name);
 
             return redirect()->route('customer.groups.index')->with('success', 'CSV file imported successfully. Group and customers created.');
         } catch (\Exception $e) {
             DB::rollBack();
 
-            return redirect()->back()->with(['error' => 'Something went wrong: '.$e->getMessage()]);
+            return redirect()->back()->with(['error' => 'Something went wrong: ' . $e->getMessage()]);
         }
     }
 
@@ -140,7 +140,7 @@ class CustomerController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return back()->withErrors($validator)->withInput();
+            return back()->with($validator)->withInput();
         }
 
         $customer = new Customer;
@@ -191,14 +191,14 @@ class CustomerController extends Controller
             'facility_name' => 'required',
             'client_name' => 'required|min:3',
             'contact_name' => 'required|min:3',
-            'email' => 'required|email|unique:customers,email,'.$id,
+            'email' => 'required|email|unique:customers,email,' . $id,
             'contact_no' => 'required|digits:10',
             'gstin' => 'required',
             'pan' => 'required',
         ]);
 
         if ($validator->fails()) {
-            return back()->withErrors($validator)->withInput();
+            return back()->with($validator)->withInput();
         }
 
         $customer = Customer::findOrFail($id);
@@ -254,12 +254,12 @@ class CustomerController extends Controller
         $validator = Validator::make($request->all(), [
             'fname' => 'required|min:3',
             'lname' => 'required|min:3',
-            'email' => 'required|email|unique:staff,email,'.$id,
+            'email' => 'required|email|unique:staff,email,' . $id,
             'phone' => 'required|digits:10',
         ]);
 
         if ($validator->fails()) {
-            return back()->withErrors($validator)->withInput();
+            return back()->with($validator)->withInput();
         }
 
         $user = User::findOrFail($id);
@@ -277,9 +277,9 @@ class CustomerController extends Controller
         if ($request->hasFile('profile_image')) {
             // Save the profile image logic here
             $image = $request->file('profile_image');
-            $imageName = time().'.'.$image->getClientOriginalExtension();
+            $imageName = time() . '.' . $image->getClientOriginalExtension();
             $image->move(public_path('/uploads/images/profile'), $imageName);
-            $user->profile_image = '/uploads/images/profile/'.$imageName; // Save the
+            $user->profile_image = '/uploads/images/profile/' . $imageName; // Save the
         }
         $user->save();
 
