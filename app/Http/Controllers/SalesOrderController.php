@@ -127,7 +127,7 @@ class SalesOrderController extends Controller
         $file = $request->file('csv_file');
 
         if (! $file) {
-            return redirect()->back()->withErrors(['csv_file' => 'Please upload a CSV file.']);
+            return redirect()->back()->with(['csv_file' => 'Please upload a CSV file.']);
         }
 
         DB::beginTransaction();
@@ -639,7 +639,7 @@ class SalesOrderController extends Controller
             if ($insertCount === 0) {
                 DB::rollBack();
 
-                return redirect()->back()->withErrors(['products_excel' => 'No valid data found in the file.']);
+                return redirect()->back()->with(['products_excel' => 'No valid data found in the file.']);
             }
 
             DB::commit();
@@ -1147,7 +1147,7 @@ class SalesOrderController extends Controller
 
         $file = $request->file('csv_file');
         if (! $file) {
-            return redirect()->back()->withErrors(['csv_file' => 'Please upload a CSV file.']);
+            return redirect()->back()->with(['csv_file' => 'Please upload a CSV file.']);
         }
 
         $file = $request->file('csv_file')->getPathname();
@@ -1332,7 +1332,7 @@ class SalesOrderController extends Controller
             }
 
             if (empty($insertedRows)) {
-                return redirect()->back()->withErrors(['csv_file' => 'No valid data found in the CSV file.']);
+                return redirect()->back()->with(['csv_file' => 'No valid data found in the CSV file.']);
             }
 
             $filteredRows = collect($insertedRows)->map(function ($row) {

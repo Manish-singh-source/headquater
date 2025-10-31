@@ -36,7 +36,7 @@ class ProductController extends Controller
     {
         $file = $request->file('products_excel');
         if (! $file) {
-            return redirect()->back()->withErrors(['products_excel' => 'Please upload a CSV file.']);
+            return redirect()->back()->with(['products_excel' => 'Please upload a CSV file.']);
         }
 
         DB::beginTransaction();
@@ -63,7 +63,7 @@ class ProductController extends Controller
                     DB::rollBack();
 
                     return redirect()->back()->with([
-                        'error' => 'Please check excel file: duplicate SKU ('.$record['SKU Code'].') found in the file.',
+                        'error' => 'Please check excel file: duplicate SKU (' . $record['SKU Code'] . ') found in the file.',
                     ]);
                 }
 
@@ -158,7 +158,7 @@ class ProductController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
 
-            return redirect()->back()->with(['error' => 'Something went wrong: '.$e->getMessage()]);
+            return redirect()->back()->with(['error' => 'Something went wrong: ' . $e->getMessage()]);
         }
     }
 
@@ -226,7 +226,7 @@ class ProductController extends Controller
             if ($insertCount === 0) {
                 DB::rollBack();
 
-                return redirect()->back()->withErrors(['products_excel' => 'No valid data found in the file.']);
+                return redirect()->back()->with(['products_excel' => 'No valid data found in the file.']);
             }
 
             Product::upsert($products, ['sku']);
@@ -240,7 +240,7 @@ class ProductController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
 
-            return redirect()->back()->withErrors(['error' => 'Something went wrong: '.$e->getMessage()]);
+            return redirect()->back()->with(['error' => 'Something went wrong: ' . $e->getMessage()]);
         }
     }
 
@@ -249,7 +249,7 @@ class ProductController extends Controller
         $product = Product::with('warehouseStock')->findOrFail($id);
 
         if (! $product) {
-            return redirect()->back()->withErrors(['error' => 'Product not found.']);
+            return redirect()->back()->with(['error' => 'Product not found.']);
         }
 
         return response()->json($product); // send data to AJAX
@@ -326,7 +326,7 @@ class ProductController extends Controller
     public function downloadProductSheet(Request $request, $id = null)
     {
         // Create temporary .xlsx file path
-        $tempXlsxPath = storage_path('app/product_sheet_'.Str::random(8).'.xlsx');
+        $tempXlsxPath = storage_path('app/product_sheet_' . Str::random(8) . '.xlsx');
 
         // Create writer
         $writer = SimpleExcelWriter::create($tempXlsxPath);
