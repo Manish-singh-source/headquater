@@ -73,17 +73,17 @@ class InvoiceController extends Controller
 
         // Handle file uploads and other logic here
 
-    try {
-        $appointment = Appointment::firstOrNew(['invoice_id' => $id]);
+        try {
+            $appointment = Appointment::firstOrNew(['invoice_id' => $id]);
 
-        if ($request->filled('appointment_date')) {
-            $appointment->appointment_date = $request->input('appointment_date');
-        }
+            if ($request->filled('appointment_date')) {
+                $appointment->appointment_date = $request->input('appointment_date');
+            }
 
             if ($request->hasFile('pod')) {
                 $pod = $request->file('pod');
                 $ext = $pod->getClientOriginalExtension();
-                $podName = time() . '.' . $ext;
+                $podName = time() . '_pod.' . $ext;
 
                 // Store original image
                 $pod->move(public_path('uploads/pod'), $podName);
@@ -93,7 +93,7 @@ class InvoiceController extends Controller
             if ($request->hasFile('grn')) {
                 $grn = $request->file('grn');
                 $ext = $grn->getClientOriginalExtension();
-                $grnName = time() . '.' . $ext;
+                $grnName = time() . '_grn.' . $ext;
 
                 // Store original image
                 $grn->move(public_path('uploads/grn'), $grnName);
@@ -104,11 +104,6 @@ class InvoiceController extends Controller
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Failed to update invoice: ' . $e->getMessage());
         }
-
-        $appointment->save();
-    } catch (\Exception $e) {
-        return redirect()->back()->with('error', 'Failed to update invoice: ' . $e->getMessage());
-    }
 
     return redirect()->back()->with('success', 'Invoice updated successfully.');
 }
