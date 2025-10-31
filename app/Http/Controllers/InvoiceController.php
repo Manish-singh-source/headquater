@@ -73,11 +73,12 @@ class InvoiceController extends Controller
 
         // Handle file uploads and other logic here
 
-        try {
+    try {
+        $appointment = Appointment::firstOrNew(['invoice_id' => $id]);
 
-            $appointment = new Appointment;
-            $appointment->invoice_id = $id;
+        if ($request->filled('appointment_date')) {
             $appointment->appointment_date = $request->input('appointment_date');
+        }
 
             if ($request->hasFile('pod')) {
                 $pod = $request->file('pod');
@@ -104,8 +105,13 @@ class InvoiceController extends Controller
             return redirect()->back()->with('error', 'Failed to update invoice: ' . $e->getMessage());
         }
 
-        return redirect()->back()->with('success', 'Invoice updated successfully.');
+        $appointment->save();
+    } catch (\Exception $e) {
+        return redirect()->back()->with('error', 'Failed to update invoice: ' . $e->getMessage());
     }
+
+    return redirect()->back()->with('success', 'Invoice updated successfully.');
+}
 
     public function invoiceDnUpdate(Request $request, $id)
     {
