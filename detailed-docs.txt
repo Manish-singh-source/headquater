@@ -352,7 +352,55 @@ Module 8: Purchase Order
 
 
 
+Module: Sales Order 
 
+Note: table columns remain same for all modules 
+
+1.  sales order list 
+    a. display list of sales orders in card format such as total no of sales orders, total no of pending sales orders, total no of completed sales orders, total no of blocked sales orders, total no of ready to ship sales orders, total no of ready to package sales orders 
+    b. display list of sales orders in table format such as sales order id, customer group name, ordered date, delivery date, status, action 
+    c. after clicking view it should show all info of that sales order (http://127.0.0.1:8000/sales-order-view/{id})
+    d. after clicking delete it should delete that sales order from the list and also from the database  
+    e. there should be option to delete multiple sales orders at once from the list and also from the database  and if show confirm popup before delete such as for if that sales order has unfulfilled quantity then show message that it will delete all related records such as purchase order, vendor pi, etc. 
+    f. there should be button to create new sales order (http://127.0.0.1:8000/sales-order-create) 
+
+2. check availability (in sales order create page)
+    a. there should be button to check availability of products in warehouse 
+    b. after clicking that button it should open a popup form where user can select customer group (active only) and warehouse (active only) and upload excel file to check availability 
+    c. after uploading perform following calculations/logics 
+        i. check if customer available and is active or not, if not then show error message and don't create sales order for that customer 
+        ii. check if product available and is active or not, if not then show error message and don't create sales order for that product before checking availability check for sku mapping 
+        iii. make a excel file with all errors and show download button to download that file 
+        iv. show success message if no error found 
+        v. if no error found display table with all products and their availability in the warehouse 
+        vi. there should be button to download that file 
+
+3. Create sales order 
+    a. display form to create new sales order 
+    b. there should be select box to select customer groups (active only)
+    c. there should be select box to select warehouse (active only)
+    b. user should be able to upload customer po (excel/csv) file and after uploading perform following calculations/logics 
+        i. check if customer available and is active or not, if not then show error message and don't create sales order for that customer 
+        ii. check if product available and is active or not, if not then show error message and don't create sales order for that product before checking availability check for sku mapping 
+        iii. check if vendor available and is active or not, if not then show error message and don't create sales order for that vendor 
+        iv. make a excel file with all errors and show download button to download that file 
+        v. for all successful records create sales order and show success message 
+        vi. after creating sales order redirect to sales order list page 
+        vi. if quantity for all products is available in warehouse then change sales order status to 'ready to ship' else change status to 'blocked' 
+        vii. if any one of product quantity is short then change sales order status to 'blocked' 
+        viii. if any one or more products quantity is short then create a purchase order for that sales order using it's vendor 
+        ix. block quantity in warehouse stock table for all products in that sales order so it will not be available for other sales orders 
+        x. check current sales order details page and make sure to add all necessary info there 
+        xi. add refresh button in sales order details page that will check for available quantity in warehouse stock and update ordered po quantity accordingly 
+        xii. there should be a button to create purchase order if any product quantity is short 
+        xiii. there should be a button to generate invoice for that sales order based on po number, brand (optional) and selected products(optional)
+        xiv. there should be a button to redirect to invoice module for that sales order 
+        xv. there should be tabs for table view such as all products, invoice created products, not created invoice products by using invoice status 
+        xvi. there should be a button to change status of sales order 
+        xvii. there should be a button to delete selected sales order products from sales order
+    e. there should be a button to delete selected sales orders from list and also from the database 
+    f. there should be a button to export sales order product list in excel/csv format 
+    g. user can update sales order products by uploading excel file (same file format which is downloaded after creating sales order) 
 
 
 
@@ -508,9 +556,390 @@ view sales order - add refresh button that can
 
 
 
-1. create sales order 
-2. update sales order 
-3. sales order fulfill/partial fulfill - proceed 
-4. packaging list 
-5. if issues - short quantity (always accept from warehouse) - display in product issues 
-6. 
+1. staffs 
+2. roles 
+3. permissions 
+4. customer groups - customers 
+    **Pages**  
+    1. customer groups list 
+        a. display list of customer groups in card format 
+        b. display total no of customers in that group, active customers, inactive customers, etc.
+        c. the list should be categorized based on status like active, inactive, all 
+        d. display list of customer groups in table format 
+        e. with action column where logged in user can take action such as view, edit, delete, change status 
+        f. after changing status of customer group, it should reflect in the list and also in the database 
+        g. after clicking view it should show all info of that customer group 
+        h. after clicking edit it should open a form where user can edit that customer group's name and after saving it should reflect in the list and also in the database 
+        i. after clicking delete it should delete that customer group from the list and also from the database  
+        j. there should be option to delete multiple customer groups at once from the list and also from the database  
+        k. there should be option to change status of multiple customer groups at once from the list and also in the database  
+
+    2. customer groups create 
+        a. one input field for customer group name 
+        b. and one file input to upload customer list in excel format 
+        c. after submit redirect to customer group list page 
+        d. and show success message 
+        e. and show error message if any error occurs 
+        f. if customer is already exist in database then it should not add that customer again and show message that customer already exist 
+        g. if customer is not exist in database then it should add that customer in database and also in customer group members table 
+        h. if customer is not exist in database and customer group members table then it should add that customer in database and also in customer group members table 
+        i. if customer is exist in database but not in customer group members table then it should add that customer in customer group members table only 
+        
+    3. customer groups view 
+        a. display total customers in that group, active customers, inactive customers, etc.
+        b. display list of customers in that group in table format 
+        c. with action column where logged in user can take action such as view, edit, delete, change status 
+        d. after changing status of customer, it should reflect in the list and also in the database 
+        e. after clicking view it should show all info of that customer 
+        f. after clicking edit it should open a form where user can edit that customer's info and after saving it should reflect in the list and also in the database 
+        g. after clicking delete it should delete that customer from the list and also from the database  
+        h. there should be option to delete multiple customers at once from the list and also from the database  
+        i. there should be option to change status of multiple customers at once from the list and also in the database   
+        
+
+    4. customer groups edit  
+        a. after clicking edit it should open a form where user can edit that customer group's name and after saving it should reflect in the list and also in the database 
+        b. there should be back button to go back to customer group list page 
+
+
+5. vendors 
+    1. vendor list 
+        a. display total no of vendors in card format 
+        b. display total no of active, inactive, blocked, etc. vendors in card format 
+        c. display list of vendors in table format 
+        d. with action column where logged in user can take action such as view, edit, delete, change status 
+        e. after changing status of vendor, it should reflect in the list and also in the database 
+        f. after clicking view it should show all info of that vendor 
+        g. after clicking edit it should open a form where user can edit that vendor's info and after saving it should reflect in the list and also in the database 
+        h. after clicking delete it should delete that vendor from the list and also from the database  
+        i. there should be option to delete multiple vendors at once from the list and also from the database  
+        j. there should be option to change status of multiple vendors at once from the list and also in the database  
+
+6. products 
+7. sku mapping 
+8. warehouses 
+9. create sales order
+10. create purchase order 
+11. received order 
+12. packaging products 
+13. ready to ship 
+14. product issues 
+15. vendor return products 
+16. customer return 
+17. track order 
+18. vendor purchase 
+19. customer sales 
+20. inventory stocks 
+
+21. Dashboard 
+22. excel file formats list 
+
+
+
+# 🚀 ULTIMATE VS CODE COPILOT PROMPT - COPY & PASTE DIRECTLY
+
+You are a professional Laravel 10+ developer. FOLLOW EVERY REQUIREMENT EXACTLY - this is your only instruction set.
+
+## ⚙️ SYSTEM REQUIREMENTS (NON-NEGOTIABLE)
+
+**Every method MUST have:**
+- Try-catch block
+- DB::beginTransaction() & commit()/rollBack() 
+- Validator::make() for input validation
+- activity()->performedOn()->causedBy(Auth::user())->log()
+- redirect()->with('success'|'error', 'msg')
+- Log::error() on exceptions
+
+**Every Blade template MUST have:**
+- extend('layouts.master')
+- @csrf in forms
+- @error directives
+- Breadcrumb navigation
+- Bootstrap 5 (ONLY)
+- Error alert at top
+- Empty states in tables
+
+**Every database operation:**
+- Tables: plural snake_case (customer_groups)
+- ->paginate(15)
+- ->with() for eager loading
+- $casts = ['status' => 'boolean']
+- scopeActive() & scopeInactive()
+
+**Naming (MANDATORY):**
+- Controllers: Plural+Controller (CustomerGroupController)
+- Models: Singular PascalCase (Customer)
+- Views: Plural folder (customers/)
+- Routes: dot notation (customer.groups.index)
+
+## 📝 VALIDATION PATTERNS
+
+```
+Text: required|string|max:255
+Email: required|email|max:255|unique:table,column
+Phone: required|regex:/^[0-9]{10}$/
+File: required|file|mimes:xlsx,xls,csv|max:5120
+Date: required|date|before:today
+Status: nullable|in:0,1
+```
+
+## 💻 CONTROLLER TEMPLATE
+
+```php
+public function action(Request $request, $id = null) {
+    $validator = Validator::make($request->all(), ['field' => 'required|string|max:255']);
+    if ($validator->fails()) return redirect()->back()->withErrors($validator)->withInput();
+    
+    DB::beginTransaction();
+    try {
+        $model = Model::findOrFail($id);
+        $model->update(['field' => $request->field]);
+        DB::commit();
+        activity()->performedOn($model)->causedBy(Auth::user())->log('Action');
+        return redirect()->route('items.index')->with('success', 'Done');
+    } catch (\Exception $e) {
+        DB::rollBack();
+        Log::error($e->getMessage());
+        return redirect()->back()->with('error', 'Error: ' . $e->getMessage())->withInput();
+    }
+}
+```
+
+## 📄 BLADE FORM TEMPLATE
+
+```blade
+@extends('layouts.master')
+@section('main-content')
+<main class="main-wrapper">
+    <div class="main-content">
+        <div class="page-breadcrumb mb-3">
+            <nav><ol class="breadcrumb"><li class="breadcrumb-item"><a href="{{ route('dashboard') }}"><i class="bx bx-home-alt"></i></a></li><li class="breadcrumb-item active">Page</li></ol></nav>
+        </div>
+        
+        @if($errors->any())
+            <div class="alert alert-danger"><ul class="mb-0">@foreach($errors->all() as $e)<li>{{ $e }}</li>@endforeach</ul></div>
+        @endif
+        
+        <div class="card">
+            <div class="card-body">
+                <form action="{{ route('items.store') }}" method="POST">
+                    @csrf
+                    <div class="mb-3">
+                        <label class="form-label">Field <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control @error('field') is-invalid @enderror" name="field" value="{{ old('field') }}" required>
+                        @error('field')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    </div>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</main>
+@endsection
+```
+
+## 📊 BLADE TABLE TEMPLATE
+
+```blade
+<table class="table table-striped table-hover">
+    <thead class="table-light">
+        <tr><th style="width:40px;"><input type="checkbox" id="selectAll"></th><th>Name</th><th>Status</th><th style="width:120px;">Actions</th></tr>
+    </thead>
+    <tbody>
+        @forelse($items as $item)
+            <tr>
+                <td><input type="checkbox" class="item-checkbox" name="ids[]" value="{{ $item->id }}"></td>
+                <td>{{ $item->name }}</td>
+                <td><span class="badge {{ $item->status ? 'bg-success' : 'bg-secondary' }}">{{ $item->status ? 'Active' : 'Inactive' }}</span></td>
+                <td><a href="{{ route('items.edit', $item->id) }}" class="btn btn-sm btn-info"><i class="bx bx-pencil"></i></a></td>
+            </tr>
+        @empty
+            <tr><td colspan="4" class="text-center text-muted py-4">No records found</td></tr>
+        @endforelse
+    </tbody>
+</table>
+```
+
+## 🔄 AJAX STATUS TOGGLE
+
+```php
+public function toggleStatus(Request $request) {
+    $validator = Validator::make($request->all(), ['id' => 'required|exists:table,id', 'status' => 'required|in:0,1']);
+    if ($validator->fails()) return response()->json(['success' => false], 422);
+    
+    DB::beginTransaction();
+    try {
+        $item = Model::findOrFail($request->id);
+        $item->status = $request->status;
+        $item->save();
+        DB::commit();
+        activity()->performedOn($item)->causedBy(Auth::user())->log('Status changed');
+        return response()->json(['success' => true]);
+    } catch (\Exception $e) {
+        DB::rollBack();
+        return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+    }
+}
+```
+
+## ✅ IMPORTS
+
+```php
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\{Auth, DB, Log, Validator};
+use Spatie\SimpleExcel\SimpleExcelReader;
+```
+
+## ✓ DO | ✗ DON'T
+
+✓ Bootstrap 5 | ✗ Custom CSS
+✓ @csrf token | ✗ Skip it
+✓ Error handling | ✗ Forget it
+✓ Validation | ✗ Skip it
+✓ Transactions | ✗ No rollback
+✓ Activity log | ✗ Skip it
+✓ Breadcrumbs | ✗ Missing
+✓ Eager load | ✗ N+1 queries
+✓ withInput() | ✗ Lose data
+✓ @error directives | ✗ No feedback
+
+
+
+
+Sales Order Module Requirements
+Note: All modules share the same table columns for consistency across the application .
+
+1. Sales Order Overview
+Card Summary Dashboard:
+Display sales order statistics in a card format, including:
+
+Total number of sales orders
+
+Total pending sales orders
+
+Total completed sales orders
+
+Total blocked sales orders
+
+Total "Ready to Ship" sales orders
+
+Total "Ready to Package" sales orders
+
+Tabular Sales Order List:
+Display sales orders in a table showing:
+
+Sales Order ID
+
+Customer Group Name
+
+Ordered Date
+
+Delivery Date
+
+Status
+
+Actions (View, Delete, Bulk Delete)
+
+Actions:
+
+View: On click, show complete sales order details (/sales-order-view/{id}).
+
+Delete: Permanently delete sales order from both the list and database.
+
+Bulk Delete: Allow selection and deletion of multiple sales orders with confirmation popup. If records have unfulfilled quantity, show an alert that all connected records (e.g., purchase orders, vendor invoices) will also be deleted .
+
+Create New: Provide a dedicated button to create a new sales order (/sales-order-create).
+
+2. Product Availability Checking (On Sales Order Creation Page)
+Availability Button:
+Users can check product availability in selected warehouses .
+
+Availability Popup Form:
+
+Select active customer group.
+
+Select active warehouse.
+
+Upload Excel file for product list.
+
+Validation Logic:
+
+Verify customer existence and active status; show error and skip if inactive.
+
+Verify product existence, active status, and SKU mapping; show error and skip if validation fails.
+
+Generate downloadable Excel report for errors found.
+
+If no errors, show success message and display a table of products with their warehouse availability.
+
+Provide download option for the validated product list.
+
+3. Sales Order Creation
+Sales Order Form:
+
+Select active customer group.
+
+Select active warehouse .
+
+Upload customer purchase order (Excel/CSV).
+
+Validation & Logic:
+
+Confirm customer, product, and vendor active status. Show errors for missing/inactive records.
+
+Create downloadable error report for invalid entries.
+
+On successful validation:
+
+Create sales orders for valid records.
+
+Show success confirmation and redirect to sales order list.
+
+Set sales order status:
+
+"Ready to Ship" if all product quantities in warehouse are sufficient.
+
+"Blocked" if any product quantity is insufficient.
+
+For product quantity shortfalls, auto-create purchase order for the required vendor.
+
+Reserve warehouse stock (block quantity) for products in the sales order.
+
+Ensure detailed sales order information is visible in the sales order details page .
+
+Sales Order Details Actions:
+
+Refresh button to update and validate warehouse stock quantities.
+
+Option to manually create a purchase order for shortages.
+
+Generate invoice from sales order using PO number, brand (optional), and selected products (optional).
+
+Redirect button to invoice module for further processing.
+
+Tab view for filtering product/invoice status:
+
+All products
+
+Invoice-created products
+
+Products without invoicing (by invoice status)
+
+Change status button for sales order.
+
+Option to delete selected products within the sales order.
+
+Bulk delete for sales orders from the list/database.
+
+Export sales order product list in Excel/CSV format.
+
+Update sales order products via Excel upload (using downloadable format from creation process) .
+
+4. User Experience Enhancements
+Use confirmation prompts and error messages for critical actions (deletion, bulk operations, invalid entries).
+
+Employ progress/success notifications after uploads and status changes.
+
+Maintain table pagination, filter, and search features to improve usability on large data sets.
+
+Ensure robust security checks and validation for all user actions and uploads .

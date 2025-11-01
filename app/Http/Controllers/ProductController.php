@@ -8,22 +8,37 @@ use App\Models\WarehouseStock;
 use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Spatie\SimpleExcel\SimpleExcelReader;
 use Spatie\SimpleExcel\SimpleExcelWriter;
 
 class ProductController extends Controller
 {
-    //
+    /**
+     * Display a listing of products with warehouse stock
+     *
+     * @return \Illuminate\View\View
+     */
     public function index()
     {
-        $products = WarehouseStock::with('product', 'warehouse')->get();
+        try {
+            $products = WarehouseStock::with('product', 'warehouse')
+                ->paginate(15);
 
-        return view('products.index', compact('products'));
+            return view('products.index', compact('products'));
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Error retrieving products: ' . $e->getMessage());
+        }
     }
 
-    // done
+    /**
+     * Show the form for creating a new product
+     *
+     * @return \Illuminate\View\View
+     */
     public function create()
     {
         $warehouses = Warehouse::all();
@@ -31,29 +46,41 @@ class ProductController extends Controller
         return view('products.create', ['warehouses' => $warehouses]);
     }
 
-    // done
+    /**
+     * Store products from uploaded Excel file
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function store(Request $request)
     {
+        $validator = Validator::make($request->all(), [
+            'products_excel' => 'required|file|mimes:xlsx,csv,xls',
+            'warehouse_id' => 'required|integer|exists:warehouses,id',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator)->withInput();
+        }
+
         $file = $request->file('products_excel');
-        if (! $file) {
-            return redirect()->back()->with(['products_excel' => 'Please upload a CSV file.']);
+        if (!$file) {
+            return redirect()->back()->withErrors(['products_excel' => 'Please upload a valid file.']);
         }
 
         DB::beginTransaction();
 
         try {
-            $file = $request->file('products_excel')->getPathname();
-            $file_extension = $request->file('products_excel')->getClientOriginalExtension();
+            $filePath = $file->getPathname();
+            $fileExtension = $file->getClientOriginalExtension();
 
-            $reader = SimpleExcelReader::create($file, $file_extension);
-            $insertCount = 0;
+            $reader = SimpleExcelReader::create($filePath, $fileExtension);
+            $rows = $reader->getRows()->toArray();
 
-            $rows = $reader->getRows()->toArray(); // convert to array so we can check duplicates easily
-            // 🔹 Step 1: Check for duplicates (Customer + SKU)
+            // Check for duplicates
             $seen = [];
-
             foreach ($rows as $record) {
-                if (empty($record['SKU Code'])) {
+                if (empty($record['SKU Code'] ?? null)) {
                     continue;
                 }
 
@@ -62,82 +89,91 @@ class ProductController extends Controller
                 if (isset($seen[$key])) {
                     DB::rollBack();
 
-                    return redirect()->back()->with([
-                        'error' => 'Please check excel file: duplicate SKU (' . $record['SKU Code'] . ') found in the file.',
+                    return redirect()->back()->withErrors([
+                        'error' => 'Duplicate SKU found in file: ' . $record['SKU Code'],
                     ]);
                 }
 
                 $seen[$key] = true;
             }
 
-            foreach ($reader->getRows() as $record) {
+            // Process records
+            $insertCount = 0;
 
-                if (empty($record['SKU Code'])) {
+            foreach ($reader->getRows() as $record) {
+                if (empty($record['SKU Code'] ?? null)) {
                     continue;
                 }
 
-                $existingProduct = Product::where('sku', $record['SKU Code'])->first();
+                $sku = trim($record['SKU Code']);
+                $basicRate = (int)($record['Basic Rate'] ?? 0);
+                $gst = (int)($record['GST'] ?? 0);
+                $netLandingRate = $this->calculateNetLandingRate($basicRate, $gst);
+                $casePackQuantity = ((int)($record['PCS/Set'] ?? 0)) * ((int)($record['Sets/CTN'] ?? 0));
+
+                $existingProduct = Product::where('sku', $sku)->first();
 
                 if ($existingProduct) {
-                    $product = Product::upsert([
-                        'sku' => $record['SKU Code'] ?? '',
+                    // Update existing product
+                    $existingProduct->update([
                         'ean_code' => $record['EAN Code'] ?? '',
                         'brand' => $record['Brand'] ?? '',
                         'brand_title' => $record['Brand Title'] ?? '',
                         'mrp' => $record['MRP'] ?? '',
                         'category' => $record['Category'] ?? '',
-                        'pcs_set' => $record['PCS/Set'] ?? '',
-                        'sets_ctn' => $record['Sets/CTN'] ?? '',
-                        'gst' => intval($record['GST']) ?? '',
-
-                        'basic_rate' => intval($record['Basic Rate']) ?? '',
-                        'net_landing_rate' => isset($record['Basic Rate'], $record['GST'])
-                            ? number_format(intval($record['Basic Rate']) + (intval($record['Basic Rate']) * intval($record['GST']) / 100), 2, '.', '')
-                            : null,
-                        'case_pack_quantity' => ($record['PCS/Set'] ?? 0) * ($record['Sets/CTN'] ?? 0),
-
+                        'pcs_set' => (int)($record['PCS/Set'] ?? 0),
+                        'sets_ctn' => (int)($record['Sets/CTN'] ?? 0),
+                        'gst' => $gst,
+                        'basic_rate' => $basicRate,
+                        'net_landing_rate' => $netLandingRate,
+                        'case_pack_quantity' => $casePackQuantity,
                         'vendor_code' => $record['Vendor Code'] ?? '',
                         'vendor_name' => $record['Vendor Name'] ?? '',
                         'vendor_purchase_rate' => $record['Vendor Purchase Rate'] ?? '',
                         'vendor_net_landing' => $record['Vendor Net Landing'] ?? '',
-                        'created_at' => now(),
-                        'updated_at' => now(),
-                    ], ['sku']);
-
-                    $warehouseStock = WarehouseStock::where('sku', $record['SKU Code'])->where('warehouse_id', $request->warehouse_id)->first();
-                    isset($record['Stock']) ? $warehouseStock->original_quantity = $record['Stock'] : $warehouseStock->original_quantity = 0;
-                    isset($record['Stock']) ? $warehouseStock->available_quantity = $record['Stock'] : $warehouseStock->available_quantity = 0;
-                    $warehouseStock->save();
-                } else {
-                    $product = Product::create([
-                        'sku' => $record['SKU Code'] ?? '',
-                        'ean_code' => $record['EAN Code'] ?? '',
-                        'brand' => $record['Brand'] ?? '',
-                        'brand_title' => $record['Brand Title'] ?? '',
-                        'mrp' => $record['MRP'] ?? '',
-                        'category' => $record['Category'] ?? '',
-                        'pcs_set' => $record['PCS/Set'] ?? '',
-                        'sets_ctn' => $record['Sets/CTN'] ?? '',
-                        'gst' => $record['GST'] ?? '',
-                        'basic_rate' => intval($record['Basic Rate']) ?? '',
-                        'net_landing_rate' => isset($record['Basic Rate'], $record['GST'])
-                            ? number_format(intval($record['Basic Rate']) + (intval($record['Basic Rate']) * intval($record['GST']) / 100), 2, '.', '')
-                            : null,
-                        'case_pack_quantity' => ($record['PCS/Set'] ?? 0) * ($record['Sets/CTN'] ?? 0),
-                        'vendor_code' => $record['Vendor Code'] ?? '',
-                        'vendor_name' => $record['Vendor Name'] ?? '',
-                        'vendor_purchase_rate' => $record['Vendor Purchase Rate'] ?? '',
-                        'vendor_net_landing' => $record['Vendor Net Landing'] ?? '',
-                        'created_at' => now(),
-                        'updated_at' => now(),
                     ]);
 
-                    $warehouseStock = new WarehouseStock;
-                    $warehouseStock->warehouse_id = $request->warehouse_id;
-                    $warehouseStock->sku = $record['SKU Code'];
-                    isset($record['Stock']) ? $warehouseStock->original_quantity = $record['Stock'] : $warehouseStock->original_quantity = 0;
-                    isset($record['Stock']) ? $warehouseStock->available_quantity = $record['Stock'] : $warehouseStock->available_quantity = 0;
-                    $warehouseStock->save();
+                    // Update warehouse stock
+                    $warehouseStock = WarehouseStock::where('sku', $sku)
+                        ->where('warehouse_id', $request->warehouse_id)
+                        ->first();
+
+                    if ($warehouseStock) {
+                        $stock = (int)($record['Stock'] ?? 0);
+                        $warehouseStock->update([
+                            'original_quantity' => $stock,
+                            'available_quantity' => $stock,
+                        ]);
+                    }
+                } else {
+                    // Create new product
+                    $product = Product::create([
+                        'sku' => $sku,
+                        'ean_code' => $record['EAN Code'] ?? '',
+                        'brand' => $record['Brand'] ?? '',
+                        'brand_title' => $record['Brand Title'] ?? '',
+                        'mrp' => $record['MRP'] ?? '',
+                        'category' => $record['Category'] ?? '',
+                        'pcs_set' => (int)($record['PCS/Set'] ?? 0),
+                        'sets_ctn' => (int)($record['Sets/CTN'] ?? 0),
+                        'gst' => $gst,
+                        'basic_rate' => $basicRate,
+                        'net_landing_rate' => $netLandingRate,
+                        'case_pack_quantity' => $casePackQuantity,
+                        'vendor_code' => $record['Vendor Code'] ?? '',
+                        'vendor_name' => $record['Vendor Name'] ?? '',
+                        'vendor_purchase_rate' => $record['Vendor Purchase Rate'] ?? '',
+                        'vendor_net_landing' => $record['Vendor Net Landing'] ?? '',
+                    ]);
+
+                    // Create warehouse stock entry
+                    $stock = (int)($record['Stock'] ?? 0);
+                    WarehouseStock::create([
+                        'warehouse_id' => $request->warehouse_id,
+                        'sku' => $sku,
+                        'original_quantity' => $stock,
+                        'available_quantity' => $stock,
+                    ]);
                 }
 
                 $insertCount++;
@@ -146,27 +182,47 @@ class ProductController extends Controller
             if ($insertCount === 0) {
                 DB::rollBack();
 
-                return redirect()->back()->with(['csv_file' => 'No valid data found in the CSV file.']);
+                return redirect()->back()->withErrors(['products_excel' => 'No valid data found in the file.']);
             }
 
             DB::commit();
 
-            // Create notification for warehouse products added
+            // Log activity
+            activity()
+                ->causedBy(Auth::user())
+                ->withProperties(['count' => $insertCount])
+                ->event('bulk_import')
+                ->log('Products imported: ' . $insertCount . ' records');
+
+            // Create notification
             NotificationService::warehouseProductAdded('Multiple products', $insertCount);
 
-            return redirect()->route('products.index')->with('success', 'CSV file imported successfully.');
+            return redirect()->route('products.index')
+                ->with('success', 'Successfully imported ' . $insertCount . ' products.');
         } catch (\Exception $e) {
             DB::rollBack();
 
-            return redirect()->back()->with(['error' => 'Something went wrong: ' . $e->getMessage()]);
+            return redirect()->back()
+                ->with('error', 'Error importing products: ' . $e->getMessage())
+                ->withInput();
         }
     }
 
+    /**
+     * Update products from uploaded Excel file
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function update(Request $request)
     {
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             'products_excel' => 'required|file|mimes:xlsx,csv,xls',
         ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator)->withInput();
+        }
 
         $file = $request->file('products_excel');
         $filepath = $file->getPathname();
@@ -178,47 +234,52 @@ class ProductController extends Controller
             $reader = SimpleExcelReader::create($filepath, $extension);
             $rows = $reader->getRows();
             $products = [];
-            $warehouseStockUpdate = [];
             $insertCount = 0;
 
             foreach ($rows as $record) {
-                if (empty($record['SKU Code'])) {
+                if (empty($record['SKU Code'] ?? null)) {
                     continue;
                 }
 
+                $sku = trim($record['SKU Code']);
+                $basicRate = (int)($record['Basic Rate'] ?? 0);
+                $gst = (int)($record['GST'] ?? 0);
+                $netLandingRate = $this->calculateNetLandingRate($basicRate, $gst);
+                $casePackQuantity = ((int)($record['PCS/Set'] ?? 0)) * ((int)($record['Sets/CTN'] ?? 0));
+
                 $products[] = [
-                    'sku' => Arr::get($record, 'SKU Code') ?? '',
-                    'ean_code' => Arr::get($record, 'EAN Code') ?? '',
-                    'brand' => Arr::get($record, 'Brand') ?? '',
-                    'brand_title' => Arr::get($record, 'Brand Title') ?? '',
-                    'mrp' => Arr::get($record, 'MRP') ?? '',
-                    'category' => Arr::get($record, 'Category') ?? '',
-                    'pcs_set' => Arr::get($record, 'PCS/Set') ?? '',
-                    'sets_ctn' => Arr::get($record, 'Sets/CTN') ?? '',
-                    'gst' => Arr::get($record, 'GST') ?? '',
-
-                    'basic_rate' => $record['Basic Rate'] ?? '',
-                    'net_landing_rate' => isset($record['Basic Rate'], $record['GST'])
-                        ? number_format($record['Basic Rate'] + ($record['Basic Rate'] * $record['GST'] / 100), 2, '.', '')
-                        : null,
-                    'case_pack_quantity' => ($record['PCS/Set'] ?? 0) * ($record['Sets/CTN'] ?? 0),
-
-                    'vendor_name' => Arr::get($record, 'Vendor Name') ?? '',
-                    'vendor_purchase_rate' => Arr::get($record, 'Vendor Purchase Rate') ?? '',
-                    'vendor_net_landing' => Arr::get($record, 'Vendor Net Landing') ?? '',
-                    'created_at' => now(),
+                    'sku' => $sku,
+                    'ean_code' => $record['EAN Code'] ?? '',
+                    'brand' => $record['Brand'] ?? '',
+                    'brand_title' => $record['Brand Title'] ?? '',
+                    'mrp' => $record['MRP'] ?? '',
+                    'category' => $record['Category'] ?? '',
+                    'pcs_set' => (int)($record['PCS/Set'] ?? 0),
+                    'sets_ctn' => (int)($record['Sets/CTN'] ?? 0),
+                    'gst' => $gst,
+                    'basic_rate' => $basicRate,
+                    'net_landing_rate' => $netLandingRate,
+                    'case_pack_quantity' => $casePackQuantity,
+                    'vendor_name' => $record['Vendor Name'] ?? '',
+                    'vendor_purchase_rate' => $record['Vendor Purchase Rate'] ?? '',
+                    'vendor_net_landing' => $record['Vendor Net Landing'] ?? '',
                     'updated_at' => now(),
                 ];
 
-                $warehouseStockUpdate = WarehouseStock::where('sku', $record['SKU Code'])->first();
-                if ($record['Stock'] < $warehouseStockUpdate->available_quantity) {
-                    $warehouseStockUpdate->original_quantity -= $record['Stock'];
-                    $warehouseStockUpdate->available_quantity = $record['Stock'];
-                } else {
-                    $warehouseStockUpdate->original_quantity += $record['Stock'];
-                    $warehouseStockUpdate->available_quantity = $record['Stock'];
+                // Update warehouse stock
+                $warehouseStock = WarehouseStock::where('sku', $sku)->first();
+                if ($warehouseStock) {
+                    $stock = (int)($record['Stock'] ?? 0);
+
+                    if ($stock < $warehouseStock->available_quantity) {
+                        $warehouseStock->original_quantity -= ($warehouseStock->available_quantity - $stock);
+                    } else {
+                        $warehouseStock->original_quantity += ($stock - $warehouseStock->available_quantity);
+                    }
+
+                    $warehouseStock->available_quantity = $stock;
+                    $warehouseStock->save();
                 }
-                $warehouseStockUpdate->save();
 
                 $insertCount++;
             }
@@ -226,143 +287,302 @@ class ProductController extends Controller
             if ($insertCount === 0) {
                 DB::rollBack();
 
-                return redirect()->back()->with(['products_excel' => 'No valid data found in the file.']);
+                return redirect()->back()->withErrors(['products_excel' => 'No valid data found in the file.']);
             }
 
             Product::upsert($products, ['sku']);
 
             DB::commit();
 
-            // Create notification for warehouse products updated
+            // Log activity
+            activity()
+                ->causedBy(Auth::user())
+                ->withProperties(['count' => $insertCount])
+                ->event('bulk_update')
+                ->log('Products updated: ' . $insertCount . ' records');
+
+            // Create notification
             NotificationService::warehouseProductAdded('Product stock updated', $insertCount);
 
-            return redirect()->route('products.index')->with('success', 'CSV file imported successfully.');
+            return redirect()->route('products.index')
+                ->with('success', 'Successfully updated ' . $insertCount . ' products.');
         } catch (\Exception $e) {
             DB::rollBack();
 
-            return redirect()->back()->with(['error' => 'Something went wrong: ' . $e->getMessage()]);
+            return redirect()->back()
+                ->with('error', 'Error updating products: ' . $e->getMessage())
+                ->withInput();
         }
     }
 
+    /**
+     * Get product details for editing via AJAX
+     *
+     * @param int $id
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function editProduct($id)
     {
-        $product = Product::with('warehouseStock')->findOrFail($id);
+        try {
+            $product = Product::with('warehouseStock')
+                ->findOrFail($id);
 
-        if (! $product) {
-            return redirect()->back()->with(['error' => 'Product not found.']);
+            return response()->json([
+                'success' => true,
+                'data' => $product,
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Product not found',
+            ], 404);
         }
-
-        return response()->json($product); // send data to AJAX
     }
 
+    /**
+     * Update a single product
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function updateProduct(Request $request)
     {
-        $product = Product::findOrFail($request->id);
-        $product->ean_code = $request->ean_code;
-        $product->brand = $request->brand;
-        $product->brand_title = $request->brand_title;
-        $product->mrp = $request->mrp;
-        $product->category = $request->category;
-        $product->pcs_set = $request->pcs_set;
-        $product->sets_ctn = $request->sets_ctn;
-        $product->basic_rate = $request->basic_rate;
-        // $product->net_landing_rate = $request->net_landing_rate;
-        // $product->case_pack_quantity = $request->case_pack_quantity;
-        $net_landing_rate = $request->basic_rate + ($request->basic_rate * $product->gst / 100) ?? 0;
-        $product->net_landing_rate = number_format($net_landing_rate, 2, '.', '');
-        $product->save();
-
-        // Update warehouse stock
-        $warehouseStock = WarehouseStock::where('sku', $product->sku)->first();
-        if ($warehouseStock) {
-            if ($request->original_quantity !== null) {
-                $warehouseStock->available_quantity = $request->original_quantity - $warehouseStock->block_quantity;
-                $warehouseStock->original_quantity = $request->original_quantity;
-            }
-            $warehouseStock->save();
-        }
-
-        return response()->json(['success' => true]);
-    }
-
-    // done
-    public function destroy($id)
-    {
-        // Find the product by ID
-        $product = Product::findOrFail($id);
-
-        if ($product) {
-            $warehouseStock = WarehouseStock::where('sku', $product->sku)->first();
-            $warehouseStock->delete();
-            $product->delete();
-        }
-
-        return redirect()->back()->with('success', 'Product deleted successfully.');
-    }
-
-    // done
-    public function deleteSelected(Request $request)
-    {
-        $request->validate([
-            'ids' => 'required',
+        $validator = Validator::make($request->all(), [
+            'id' => 'required|integer|exists:products,id',
+            'ean_code' => 'nullable|string|max:50',
+            'brand' => 'nullable|string|max:255',
+            'brand_title' => 'nullable|string|max:255',
+            'mrp' => 'nullable|numeric',
+            'category' => 'nullable|string|max:255',
+            'pcs_set' => 'nullable|integer|min:0',
+            'sets_ctn' => 'nullable|integer|min:0',
+            'basic_rate' => 'required|numeric|min:0',
+            'original_quantity' => 'nullable|integer|min:0',
         ]);
 
-        $ids = is_array($request->ids) ? $request->ids : explode(',', $request->ids);
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
 
-        DB::transaction(function () use ($ids) {
-            // Get product SKUs before deleting
+        DB::beginTransaction();
+
+        try {
+            $product = Product::findOrFail($request->id);
+
+            $basicRate = (float)$request->basic_rate;
+            $netLandingRate = $this->calculateNetLandingRate((int)$basicRate, (int)($product->gst ?? 0));
+
+            $product->update([
+                'ean_code' => $request->ean_code,
+                'brand' => $request->brand,
+                'brand_title' => $request->brand_title,
+                'mrp' => $request->mrp,
+                'category' => $request->category,
+                'pcs_set' => (int)($request->pcs_set ?? 0),
+                'sets_ctn' => (int)($request->sets_ctn ?? 0),
+                'basic_rate' => $basicRate,
+                'net_landing_rate' => $netLandingRate,
+            ]);
+
+            // Update warehouse stock if provided
+            if ($request->has('original_quantity')) {
+                $warehouseStock = WarehouseStock::where('sku', $product->sku)->first();
+
+                if ($warehouseStock) {
+                    $originalQty = (int)$request->original_quantity;
+                    $blockQty = (int)($warehouseStock->block_quantity ?? 0);
+                    $availableQty = max(0, $originalQty - $blockQty);
+
+                    $warehouseStock->update([
+                        'original_quantity' => $originalQty,
+                        'available_quantity' => $availableQty,
+                    ]);
+                }
+            }
+
+            DB::commit();
+
+            // Log activity
+            activity()
+                ->performedOn($product)
+                ->causedBy(Auth::user())
+                ->withProperties([
+                    'old' => $product->getOriginal(),
+                    'new' => $product->getChanges(),
+                ])
+                ->event('updated')
+                ->log('Product updated');
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Product updated successfully',
+            ], 200);
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Error updating product: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Delete a single product
+     *
+     * @param int $id
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function destroy($id)
+    {
+        try {
+            $product = Product::findOrFail($id);
+
+            DB::beginTransaction();
+
+            // Delete warehouse stock
+            WarehouseStock::where('sku', $product->sku)->delete();
+
+            // Log activity
+            activity()
+                ->performedOn($product)
+                ->causedBy(Auth::user())
+                ->withProperties(['sku' => $product->sku])
+                ->event('deleted')
+                ->log('Product deleted');
+
+            // Delete product
+            $product->delete();
+
+            DB::commit();
+
+            return redirect()->back()->with('success', 'Product deleted successfully.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return redirect()->back()->with('error', 'Error deleting product: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Delete multiple selected products
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function deleteSelected(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'ids' => 'required|array|min:1',
+            'ids.*' => 'integer|exists:products,id',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()->with('error', 'Invalid product IDs selected.');
+        }
+
+        DB::beginTransaction();
+
+        try {
+            $ids = $request->ids;
             $skus = Product::whereIn('id', $ids)->pluck('sku');
 
             // Delete related warehouse stocks
             WarehouseStock::whereIn('sku', $skus)->delete();
 
             // Delete products
-            Product::destroy($ids);
-        });
+            $deleted = Product::destroy($ids);
 
-        return redirect()->back()->with('success', 'Selected products deleted successfully.');
+            DB::commit();
+
+            // Log activity
+            activity()
+                ->causedBy(Auth::user())
+                ->withProperties(['count' => $deleted, 'ids' => $ids])
+                ->event('bulk_delete')
+                ->log('Products deleted: ' . $deleted . ' records');
+
+            return redirect()->back()->with('success', 'Successfully deleted ' . $deleted . ' product(s).');
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return redirect()->back()->with('error', 'Error deleting products: ' . $e->getMessage());
+        }
     }
 
+    /**
+     * Download product sheet as Excel file
+     *
+     * @param Request $request
+     * @param int|null $id
+     * @return \Illuminate\Http\Response
+     */
     public function downloadProductSheet(Request $request, $id = null)
     {
-        // Create temporary .xlsx file path
-        $tempXlsxPath = storage_path('app/product_sheet_' . Str::random(8) . '.xlsx');
+        try {
+            $tempXlsxPath = storage_path('app/product_sheet_' . Str::random(8) . '.xlsx');
+            $writer = SimpleExcelWriter::create($tempXlsxPath);
 
-        // Create writer
-        $writer = SimpleExcelWriter::create($tempXlsxPath);
+            $products = WarehouseStock::with('product', 'warehouse')
+                ->when($id, function ($query) use ($id) {
+                    $query->where('warehouse_id', (int)$id);
+                })
+                ->get();
 
-        // Fetch data with relationships
-        $products = WarehouseStock::with('product', 'warehouse')->when($id, function ($query) use ($id) {
-            $query->where('warehouse_id', $id);
-        })->get();
+            if ($products->isEmpty()) {
+                return redirect()->back()->with('info', 'No products found to download.');
+            }
 
-        // Add rows
-        foreach ($products as $product) {
-            $writer->addRow([
-                'SKU Code' => $product->product->sku,
-                'EAN Code' => $product->product->ean_code,
-                'Brand' => $product->product->brand,
-                'Brand Title' => $product->product->brand_title,
-                'MRP' => $product->product->mrp,
-                'Category' => $product->product->category,
-                'PCS/Set' => $product->product->pcs_set,
-                'Sets/CTN' => $product->product->sets_ctn,
-                'Basic Rate' => $product->product->basic_rate,
-                'Net Landing Rate' => $product->product->net_landing_rate,
-                // 'Case Pack Quantity' => $product->product->case_pack_quantity,
-                'Vendor Name' => $product->product->vendor_name,
-                'Vendor Purchase Rate' => $product->product->vendor_purchase_rate,
-                'GST' => $product->product->gst,
-                'Vendor Net Landing' => $product->product->vendor_net_landing,
-                'Stock' => $product->quantity ?? '',
-            ]);
+            // Add data rows
+            foreach ($products as $stock) {
+                $writer->addRow([
+                    'SKU Code' => $stock->product?->sku ?? '',
+                    'EAN Code' => $stock->product?->ean_code ?? '',
+                    'Brand' => $stock->product?->brand ?? '',
+                    'Brand Title' => $stock->product?->brand_title ?? '',
+                    'MRP' => $stock->product?->mrp ?? '',
+                    'Category' => $stock->product?->category ?? '',
+                    'PCS/Set' => $stock->product?->pcs_set ?? '',
+                    'Sets/CTN' => $stock->product?->sets_ctn ?? '',
+                    'Basic Rate' => $stock->product?->basic_rate ?? '',
+                    'Net Landing Rate' => $stock->product?->net_landing_rate ?? '',
+                    'Vendor Name' => $stock->product?->vendor_name ?? '',
+                    'Vendor Purchase Rate' => $stock->product?->vendor_purchase_rate ?? '',
+                    'GST' => $stock->product?->gst ?? '',
+                    'Vendor Net Landing' => $stock->product?->vendor_net_landing ?? '',
+                    'Stock' => $stock->available_quantity ?? 0,
+                ]);
+            }
+
+            $writer->close();
+
+            return response()->download($tempXlsxPath, 'products_sheet.xlsx', [
+                'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            ])->deleteFileAfterSend(true);
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Error downloading products: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Calculate net landing rate
+     *
+     * @param int $basicRate
+     * @param int $gst
+     * @return string
+     */
+    private function calculateNetLandingRate($basicRate, $gst)
+    {
+        if ($basicRate <= 0) {
+            return '0.00';
         }
 
-        // Close the writer
-        $writer->close();
+        $netRate = $basicRate + ($basicRate * $gst / 100);
 
-        return response()->download($tempXlsxPath, 'products_sheet.xlsx', [
-            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        ])->deleteFileAfterSend(true);
+        return number_format($netRate, 2, '.', '');
     }
 }

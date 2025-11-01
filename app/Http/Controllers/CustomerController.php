@@ -11,6 +11,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Spatie\SimpleExcel\SimpleExcelReader;
 
@@ -24,21 +25,27 @@ class CustomerController extends Controller
      */
     public function create($g_id)
     {
+        // $countries = Country::all();
+        // $states = State::all();
+        // $cities = City::all();
+        $group_id = $g_id;
         $countries = Country::all();
-        $states = State::all();
-        $cities = City::all();
+        $states = State::where('country_id', old('shippingCountry'))->get();
+        $cities = City::where('state_id', old('shippingState'))->get();
+        return view('customer.create', compact(/*other data*/'group_id', 'countries', 'states', 'cities'));
 
-        return view('customer.create', [
-            'group_id' => $g_id,
-            'countries' => $countries,
-            'states' => $states,
-            'cities' => $cities
-        ]);
+
+        // return view('customer.create', [
+        //     'group_id' => $g_id,
+        //     'countries' => $countries,
+        //     'states' => $states,
+        //     'cities' => $cities
+        // ]);
     }
 
     /**
      * Bulk import customers from CSV file
-     * 
+     *
      * @param Request $request
      * @param int $g_id - Customer group ID
      * @return \Illuminate\Http\RedirectResponse
@@ -46,7 +53,7 @@ class CustomerController extends Controller
     public function storeBulk(Request $request, $g_id)
     {
         $validator = Validator::make($request->all(), [
-            'csv_file' => 'required|file|mimes:csv,txt|max:5120', // 5MB max
+            'csv_file' => 'required|file|mimes:xlsx,xls|max:5120', // 5MB max
         ]);
 
         if ($validator->fails()) {
@@ -65,7 +72,7 @@ class CustomerController extends Controller
             $fileExtension = $file->getClientOriginalExtension();
 
             $reader = SimpleExcelReader::create($filePath, $fileExtension);
-            
+
             $insertCount = 0;
             $skipCount = 0;
             $errors = [];
@@ -73,7 +80,7 @@ class CustomerController extends Controller
 
             foreach ($reader->getRows() as $record) {
                 $rowNumber++;
-                
+
                 try {
                     // Validate required field: Facility Name
                     if (!isset($record['Facility Name']) || empty(trim($record['Facility Name']))) {
@@ -148,14 +155,14 @@ class CustomerController extends Controller
             // Check if any records were processed
             if ($insertCount === 0 && $skipCount > 0) {
                 DB::rollBack();
-                $errorMessage = !empty($errors) 
-                    ? implode('; ', array_slice($errors, 0, 5)) 
+                $errorMessage = !empty($errors)
+                    ? implode('; ', array_slice($errors, 0, 5))
                     : 'No valid data found in the CSV file.';
                 return redirect()->back()->with('error', $errorMessage);
             }
 
             DB::commit();
-            
+
             // Build success message
             $message = "CSV imported successfully! Added {$insertCount} customer(s)";
             if ($skipCount > 0) {
@@ -169,7 +176,6 @@ class CustomerController extends Controller
             activity()->log("Customer Group {$g_id} updated with {$insertCount} customers by " . Auth::user()->name);
 
             return redirect()->route('customer.groups.index')->with('success', $message);
-
         } catch (\Exception $e) {
             DB::rollBack();
             \Log::error('CSV Import Error: ' . $e->getMessage(), [
@@ -188,6 +194,7 @@ class CustomerController extends Controller
      */
     public function store(Request $request)
     {
+        dd($request->all());
         $validator = Validator::make($request->all(), [
             'facility_name' => 'required|min:3|max:100',
             'client_name' => 'required|min:3|max:100',
@@ -208,10 +215,11 @@ class CustomerController extends Controller
             'billing_state' => 'nullable|min:2|max:100',
             'billing_city' => 'nullable|min:2|max:100',
             'billing_zip' => 'nullable|min:4|max:10',
-            'status' => 'nullable|in:active,inactive',
+            'status' => 'nullable|in:1,0',
         ]);
 
         if ($validator->fails()) {
+            dd($validator->errors());
             return back()->withErrors($validator)->withInput();
         }
 
@@ -228,7 +236,7 @@ class CustomerController extends Controller
                 'company_name' => trim($request->company_name ?? ''),
                 'gstin' => strtoupper(trim($request->gstin)),
                 'pan' => strtoupper(trim($request->pan)),
-                'status' => $request->status ?? 'active',
+                'status' => $request->status ?? '1',
                 'shipping_address' => trim($request->shipping_address ?? ''),
                 'shipping_country' => trim($request->shipping_country ?? ''),
                 'shipping_state' => trim($request->shipping_state ?? ''),
@@ -253,7 +261,6 @@ class CustomerController extends Controller
 
             return redirect()->route('customer.groups.view', $request->group_id)
                 ->with('success', 'Customer added successfully.');
-
         } catch (\Exception $e) {
             DB::rollBack();
             \Log::error('Customer Creation Error: ' . $e->getMessage());
@@ -318,9 +325,9 @@ class CustomerController extends Controller
             DB::beginTransaction();
 
             $customer = Customer::findOrFail($id);
-            
+
             $oldData = $customer->toArray();
-            
+
             // Update customer
             $customer->update([
                 'facility_name' => trim($request->facility_name),
@@ -350,7 +357,6 @@ class CustomerController extends Controller
 
             return redirect()->route('customer.groups.view', $request->group_id)
                 ->with('success', 'Customer updated successfully.');
-
         } catch (\Exception $e) {
             DB::rollBack();
             \Log::error('Customer Update Error: ' . $e->getMessage());
@@ -383,7 +389,6 @@ class CustomerController extends Controller
             activity()->log("Customer {$id} ({$facilityName}) deleted by " . Auth::user()->name);
 
             return redirect()->back()->with('success', 'Customer deleted successfully.');
-
         } catch (\Exception $e) {
             DB::rollBack();
             \Log::error('Customer Delete Error: ' . $e->getMessage());
@@ -407,7 +412,6 @@ class CustomerController extends Controller
             ])->findOrFail($id);
 
             return view('customer.detail-view', compact('customerDetails'));
-
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Customer not found.');
         }
@@ -470,21 +474,21 @@ class CustomerController extends Controller
             // Handle profile image upload
             if ($request->hasFile('profile_image')) {
                 $image = $request->file('profile_image');
-                
+
                 // Generate unique filename with timestamp and unique ID
                 $imageName = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
-                
+
                 // Create directory if it doesn't exist
                 $uploadPath = public_path('uploads/images/profile');
                 if (!file_exists($uploadPath)) {
                     mkdir($uploadPath, 0755, true);
                 }
-                
+
                 // Delete old image if exists
                 if ($user->profile_image && file_exists(public_path($user->profile_image))) {
                     unlink(public_path($user->profile_image));
                 }
-                
+
                 // Move uploaded image
                 $image->move($uploadPath, $imageName);
                 $data['profile_image'] = 'uploads/images/profile/' . $imageName;
@@ -497,7 +501,6 @@ class CustomerController extends Controller
             activity()->log("User {$user->id} ({$user->email}) profile updated by " . Auth::user()->name);
 
             return redirect()->route('user-profile')->with('success', 'Profile updated successfully.');
-
         } catch (\Exception $e) {
             DB::rollBack();
             \Log::error('Profile Update Error: ' . $e->getMessage());
@@ -507,25 +510,27 @@ class CustomerController extends Controller
 
     /**
      * Delete selected customers from a group
-     * 
+     *
      * @param Request $request
      * @return \Illuminate\Http\RedirectResponse
      */
     public function deleteSelected(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'ids' => 'required|array|min:1',
+            'ids' => 'required',
             'groupId' => 'required|exists:customer_groups,id',
         ]);
 
         if ($validator->fails()) {
-            return back()->withErrors($validator);
+            return redirect()->back()->with('error', 'Invalid data provided.');
         }
+
+        DB::beginTransaction();
 
         try {
             // Parse IDs (handle both array and comma-separated string)
             $ids = is_array($request->ids) ? $request->ids : explode(',', $request->ids);
-            
+
             // Filter out empty values
             $ids = array_filter($ids, function ($id) {
                 return !empty($id) && is_numeric($id);
@@ -535,8 +540,6 @@ class CustomerController extends Controller
                 return redirect()->back()->with('error', 'No valid customers selected.');
             }
 
-            DB::beginTransaction();
-
             // Delete selected customer group members
             $deletedCount = CustomerGroupMember::where('customer_group_id', $request->groupId)
                 ->whereIn('id', $ids)
@@ -544,17 +547,106 @@ class CustomerController extends Controller
 
             DB::commit();
 
+            activity()
+                ->causedBy(Auth::user())
+                ->log("Deleted {$deletedCount} customer(s) from group {$request->groupId}");
+
             if ($deletedCount > 0) {
-                activity()->log("Deleted {$deletedCount} customer(s) from group {$request->groupId} by " . Auth::user()->name);
-                return redirect()->back()->with('success', "Deleted {$deletedCount} customer(s) successfully.");
+                return redirect()->back()->with('success', "Successfully deleted {$deletedCount} customer(s).");
             }
 
             return redirect()->back()->with('warning', 'No customers found to delete.');
-
         } catch (\Exception $e) {
             DB::rollBack();
-            \Log::error('Delete Selected Error: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Failed to delete customers: ' . $e->getMessage());
+            Log::error('Error deleting customers: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Error: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Toggle customer status
+     */
+    public function toggleStatus(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'id' => 'required|exists:customers,id',
+            'status' => 'required|in:0,1',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'message' => 'Invalid data'], 422);
+        }
+
+        DB::beginTransaction();
+
+        try {
+            $customer = Customer::findOrFail($request->id);
+            $customer->status = $request->status;
+            $customer->save();
+
+            DB::commit();
+
+            activity()
+                ->performedOn($customer)
+                ->causedBy(Auth::user())
+                ->log('Customer status changed to ' . ($request->status == '1' ? 'Active' : 'Inactive'));
+
+            return response()->json(['success' => true]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error toggling customer status: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Change status of multiple customers
+     */
+    public function bulkStatusChange(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'ids' => 'required|string',
+            'status' => 'required|in:0,1',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()->with('error', 'Invalid data provided.');
+        }
+
+        DB::beginTransaction();
+
+        try {
+            $ids = is_array($request->ids) ? $request->ids : explode(',', $request->ids);
+
+            // Filter out empty values and get customer IDs from group member IDs
+            $ids = array_filter($ids, function ($id) {
+                return !empty($id) && is_numeric($id);
+            });
+
+            if (empty($ids)) {
+                return redirect()->back()->with('error', 'No customers selected.');
+            }
+
+            // Get customer IDs from customer_group_members table
+            $customerIds = CustomerGroupMember::whereIn('id', $ids)->pluck('customer_id')->toArray();
+
+            if (empty($customerIds)) {
+                return redirect()->back()->with('error', 'No valid customers found.');
+            }
+
+            $updated = Customer::whereIn('id', $customerIds)->update(['status' => $request->status]);
+
+            DB::commit();
+
+            activity()
+                ->causedBy(Auth::user())
+                ->log('Changed status of ' . $updated . ' customers to ' . ($request->status == '1' ? 'Active' : 'Inactive'));
+
+            return redirect()->back()->with('success', "Successfully updated status of {$updated} customer(s).");
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error changing customer status: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Error: ' . $e->getMessage());
         }
     }
 }

@@ -1,107 +1,97 @@
 @extends('layouts.master')
 @section('main-content')
-    <style>
-        .loader {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            background-color: #333;
-            transform: translateX(-50%);
-            transform: translateY(-50%);
-            font-weight: bold;
-            color: #fff;
-            text-align: center;
-            padding: 10px;
-            z-index: 222;
-        }
-    </style>
-
-    <!-- Loader Element -->
-    {{-- <div class="loader">Loading...</div> --}}
-
-    <!--start main wrapper-->
     <main class="main-wrapper">
         <div class="main-content">
+            <!-- Breadcrumb -->
+            <div class="page-breadcrumb d-none d-sm-flex align-items-center justify-content-between mb-3">
+                <div>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb mb-0 p-0">
+                            <li class="breadcrumb-item"><a href="{{ route('index') }}"><i class="bx bx-home-alt"></i></a></li>
+                            <li class="breadcrumb-item"><a href="{{ route('customer.groups.index') }}">Customer Groups</a>
+                            </li>
+                            <li class="breadcrumb-item active" aria-current="page">Edit Customer Group</li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+
+            <!-- Error/Success Messages -->
+            @if ($errors->any())
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <ul class="mb-0">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            @endif
+
+            @if (session('success'))
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    {{ session('success') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            @endif
+
+            @if (session('error'))
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    {{ session('error') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            @endif
+
+            <!-- Edit Form -->
             <div class="row">
-                <form action="{{ route('customer.groups.update', $customerGroup->id) }}" method="POST" enctype="multipart/form-data">
-                    @csrf
-                    @method('PUT')
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header border-bottom">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <h5 class="card-title mb-0">Edit Customer Group</h5>
+                                <a href="{{ route('customer.groups.index') }}" class="btn btn-secondary">
+                                    <i class="bi bi-arrow-left me-2"></i>Back
+                                </a>
+                            </div>
+                        </div>
 
-                    <div class="col-12">
-                        <div class="row">
-                            <div class="col">
-                                <div class="card customer-inputs">
-                                    <div class="card-header border-bottom-dashed">
-                                        <div class="d-flex g-4 flex-row align-items-center justify-content-between">
-                                            <div>
-                                                <h5 class="card-title mb-0">
-                                                    Update Customers Group
-                                                </h5>
-                                            </div>
-                                            <div>
-                                                <a href="{{ url()->previous() }}"
-                                                    class="btn btn-primary float-end mt-n1">Back</a>
-                                            </div>
-                                        </div>
-                                    </div>
+                        <div class="card-body">
+                            <form action="{{ route('customer.groups.update', $customerGroup->id) }}" method="POST">
+                                @csrf
+                                @method('PUT')
 
-                                    <div class="card-body">
-                                        <div class="row g-3 align-items-end">
-                                            <div class="col-12">
-                                                <span><b>Group:</b></span>
-                                            </div>
-
-                                            {{-- <div class="col-12 col-lg-3">
-                                                <label for="marital" class="form-label">Customer Group Name
-                                                    <span class="text-danger">*</span></label>
-                                                <input type="text" name="customer_id" class="form-control"
-                                                    placeholder="Enter Group Name" id="groupName">
-                                            </div> --}}
-                                            <div class="col-12 col-lg-3">
-                                                <label for="name" class="form-label">Customer Group Name
-                                                    <span class="text-danger">*</span></label>
-                                                <input type="text"
-                                                    class="form-control @error('name') is-invalid @enderror" name="name"
-                                                    id="name" placeholder="Enter Group Name" value="{{ old('name', $customerGroup->name) }}"
-                                                    aria-describedby="nameFeedback" required>
-
-                                                @error('name')
-                                                    <div id="nameFeedback" class="invalid-feedback">
-                                                        {{ $message }}
-                                                    </div>
-                                                @enderror
-                                            </div>
-                                            <div class="col-12 col-lg-1">
-                                                <input type="submit" class="btn border-2 border-primary" id="upload-excel"
-                                                    value="Update">
-                                            </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="name" class="form-label">Customer Group Name <span
+                                                    class="text-danger">*</span></label>
+                                            <input type="text" class="form-control @error('name') is-invalid @enderror"
+                                                name="name" id="name" placeholder="Enter Group Name"
+                                                value="{{ old('name', $customerGroup->name) }}" required>
+                                            @error('name')
+                                                <div class="invalid-feedback">
+                                                    {{ $message }}
+                                                </div>
+                                            @enderror
                                         </div>
                                     </div>
                                 </div>
 
-                            </div>
+                                <div class="row">
+                                    <div class="col-12">
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="bi bi-check-circle me-2"></i>Update Group
+                                        </button>
+                                        <a href="{{ route('customer.groups.index') }}" class="btn btn-secondary">
+                                            <i class="bi bi-x-circle me-2"></i>Cancel
+                                        </a>
+                                    </div>
+                                </div>
+                            </form>
                         </div>
                     </div>
-                </form>
+                </div>
             </div>
         </div>
     </main>
-    <!--end main wrapper-->
-
-
-    <!--bootstrap js-->
-    <script src="assets/js/bootstrap.bundle.min.js"></script>
-
-    <!--plugins-->
-    <script src="assets/js/jquery.min.js"></script>
-    <!--plugins-->
-    <script src="assets/plugins/perfect-scrollbar/js/perfect-scrollbar.js"></script>
-    <script src="assets/plugins/metismenu/metisMenu.min.js"></script>
-    <script src="assets/plugins/simplebar/js/simplebar.min.js"></script>
-    <script src="assets/js/main.js"></script>
-    <script>
-        new PerfectScrollbar(".customer-notes")
-    </script>
-    <!-- <script src="https://code.jquery.com/jquery-3.7.1.min.js"
-        integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script> -->
 @endsection

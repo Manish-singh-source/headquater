@@ -8,16 +8,43 @@ use App\Models\CustomerGroupMember;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Spatie\SimpleExcel\SimpleExcelReader;
 
 class CustomerGroupController extends Controller
 {
-    public function index()
+    /**
+     * Display customer groups list with statistics
+     */
+    public function index(Request $request)
     {
-        $customerGroups = CustomerGroup::with('customerGroupMembers')->get();
+        try {
+            $status = $request->get('status', 'all');
 
-        return view('customerGroups.index', compact('customerGroups'));
+            $query = CustomerGroup::with(['customerGroupMembers.customer']);
+
+            if ($status === 'active') {
+                $query->active();
+            } elseif ($status === 'inactive') {
+                $query->inactive();
+            }
+
+            $customerGroups = $query->get();
+
+            // Calculate statistics for each group
+            $customerGroups->each(function ($group) {
+                $customers = $group->customerGroupMembers->pluck('customer');
+                $group->total_customers = $customers->count();
+                $group->active_customers = $customers->where('status', '1')->count();
+                $group->inactive_customers = $customers->where('status', '0')->count();
+            });
+
+            return view('customerGroups.index', compact('customerGroups', 'status'));
+        } catch (\Exception $e) {
+            Log::error('Error loading customer groups: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Error loading customer groups: ' . $e->getMessage());
+        }
     }
 
     public function create()
@@ -25,30 +52,33 @@ class CustomerGroupController extends Controller
         return view('customerGroups.create');
     }
 
-    // Storing Group and its customers
+    /**
+     * Store customer group with customers from Excel file
+     */
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'name' => 'required',
-            'csv_file' => 'required|file|mimes:csv,txt',
+            'name' => 'required|string|max:255',
+            'csv_file' => 'required|file|mimes:xlsx,xls,csv|max:5120',
         ]);
 
         if ($validator->fails()) {
-            return back()->withErrors($validator)->withInput();
+            return redirect()->back()->withErrors($validator)->withInput();
         }
 
         $file = $request->file('csv_file');
         if (!$file) {
-            return redirect()->back()->withErrors(['csv_file' => 'Please upload a CSV file.']);
+            return redirect()->back()->with('error', 'Please upload a file.')->withInput();
         }
 
         DB::beginTransaction();
 
         try {
-            // 1. Create the customer group
-            $customerGroup = new CustomerGroup();
-            $customerGroup->name = $request['name'];
-            $customerGroup->save();
+            // Create the customer group
+            $customerGroup = CustomerGroup::create([
+                'name' => $request->name,
+                'status' => '1',
+            ]);
 
             $filePath = $file->getPathname();
             $fileExtension = $file->getClientOriginalExtension();
@@ -56,16 +86,17 @@ class CustomerGroupController extends Controller
             $reader = SimpleExcelReader::create($filePath, $fileExtension);
 
             $insertCount = 0;
+            $existingCount = 0;
 
             foreach ($reader->getRows() as $record) {
                 if (!isset($record['Facility Name']) || empty($record['Facility Name'])) {
-                    throw new \Exception('Facility Name is required');
+                    continue; // Skip rows without facility name
                 }
 
                 $customer = Customer::where('facility_name', $record['Facility Name'])->first();
 
                 if (!$customer) {
-                    // 2. Insert individual customer
+                    // Create new customer
                     $customer = Customer::create([
                         'facility_name'    => $record['Facility Name'] ?? '',
                         'client_name'      => $record['Client Name'] ?? '',
@@ -87,44 +118,29 @@ class CustomerGroupController extends Controller
                         'shipping_state'   => $record['Shipping State'] ?? '',
                         'shipping_city'    => $record['Shipping City'] ?? '',
                         'shipping_zip'     => $record['Shipping Zip'] ?? '',
+                        'status'           => '1',
                     ]);
                 } else {
-                    $customer->update([
-                        'facility_name'    => $record['Facility Name'] ?? $customer->facility_name,
-                        'client_name'      => $record['Client Name'] ?? $customer->client_name,
-                        'contact_name'     => $record['Contact Name'] ?? $customer->contact_name,
-                        'email'            => $record['Email'] ?? $customer->email,
-                        'contact_no'       => $record['Contact No'] ?? $customer->contact_no,
-                        'company_name'     => $record['Company Name'] ?? $customer->company_name,
-                        'gstin'            => $record['GSTIN'] ?? $customer->gstin,
-                        'pan'              => $record['PAN'] ?? $customer->pan,
-                        'gst_treatment'    => $record['GST Treatment'] ?? $customer->gst_treatment,
-                        'private_details'  => $record['Private Details'] ?? $customer->private_details,
-                        'billing_address'  => $record['Billing Address'] ?? $customer->billing_address,
-                        'billing_country'  => $record['Billing Country'] ?? $customer->billing_country,
-                        'billing_state'    => $record['Billing State'] ?? $customer->billing_state,
-                        'billing_city'     => $record['Billing City'] ?? $customer->billing_city,
-                        'billing_zip'      => $record['Billing Zip'] ?? $customer->billing_zip,
-                        'shipping_address' => $record['Shipping Address'] ?? $customer->shipping_address,
-                        'shipping_country' => $record['Shipping Country'] ?? $customer->shipping_country,
-                        'shipping_state'   => $record['Shipping State'] ?? $customer->shipping_state,
-                        'shipping_city'    => $record['Shipping City'] ?? $customer->shipping_city,
-                        'shipping_zip'     => $record['Shipping Zip'] ?? $customer->shipping_zip,
-                    ]);
+                    $existingCount++;
                 }
 
-                // 3. Insert into customer_group_members
-                CustomerGroupMember::create([
-                    'customer_id' => $customer->id,
-                    'customer_group_id' => $customerGroup->id,
-                ]);
+                // Check if customer is already in this group
+                $existingMember = CustomerGroupMember::where('customer_id', $customer->id)
+                    ->where('customer_group_id', $customerGroup->id)
+                    ->first();
 
-                $insertCount++;
+                if (!$existingMember) {
+                    CustomerGroupMember::create([
+                        'customer_id' => $customer->id,
+                        'customer_group_id' => $customerGroup->id,
+                    ]);
+                    $insertCount++;
+                }
             }
 
-            if ($insertCount === 0) {
+            if ($insertCount === 0 && $existingCount === 0) {
                 DB::rollBack();
-                return redirect()->back()->withErrors(['csv_file' => 'No valid data found in the CSV file.']);
+                return redirect()->back()->with('error', 'No valid data found in the file.')->withInput();
             }
 
             DB::commit();
@@ -133,117 +149,240 @@ class CustomerGroupController extends Controller
             activity()
                 ->performedOn($customerGroup)
                 ->causedBy(Auth::user())
-                ->withProperties(['attributes' => $customerGroup->toArray()])
-                ->event('created')
-                ->log('Customer Group created');
+                ->log('Customer Group created with ' . $insertCount . ' customers');
 
-            return redirect()->route('customer.groups.index')->with('success', 'CSV file imported successfully. Group and customers created.');
+            $message = "Customer group created successfully. Added {$insertCount} customers.";
+            if ($existingCount > 0) {
+                $message .= " {$existingCount} customers already existed.";
+            }
+
+            return redirect()->route('customer.groups.index')->with('success', $message);
         } catch (\Exception $e) {
             DB::rollBack();
-            return redirect()->back()->withErrors(['error' => 'Something went wrong: Please make sure the file has Facility Name column filled. ' . $e->getMessage()]);
+            Log::error('Error creating customer group: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Error: ' . $e->getMessage())->withInput();
         }
     }
 
+    /**
+     * View customer group with statistics
+     */
     public function view($id)
     {
-        $customerGroup = CustomerGroup::with('customerGroupMembers.customer')->findOrFail($id);
+        try {
+            $customerGroup = CustomerGroup::with('customerGroupMembers.customer')->findOrFail($id);
 
-        return view('customerGroups.view', compact('customerGroup'));
+            // Calculate statistics
+            $customers = $customerGroup->customerGroupMembers->pluck('customer');
+            $customerGroup->total_customers = $customers->count();
+            $customerGroup->active_customers = $customers->where('status', '1')->count();
+            $customerGroup->inactive_customers = $customers->where('status', '0')->count();
+
+            return view('customerGroups.view', compact('customerGroup'));
+        } catch (\Exception $e) {
+            Log::error('Error viewing customer group: ' . $e->getMessage());
+            return redirect()->route('customer.groups.index')->with('error', 'Error: ' . $e->getMessage());
+        }
     }
 
+    /**
+     * Show edit form
+     */
     public function edit($id)
     {
-        $customerGroup = CustomerGroup::findOrFail($id);
-
-        return view('customerGroups.edit', compact('customerGroup'));
+        try {
+            $customerGroup = CustomerGroup::findOrFail($id);
+            return view('customerGroups.edit', compact('customerGroup'));
+        } catch (\Exception $e) {
+            Log::error('Error loading customer group: ' . $e->getMessage());
+            return redirect()->route('customer.groups.index')->with('error', 'Error: ' . $e->getMessage());
+        }
     }
 
+    /**
+     * Update customer group
+     */
     public function update(Request $request, $id)
     {
         $validator = Validator::make($request->all(), [
-            'name' => 'required',
+            'name' => 'required|string|max:255',
         ]);
 
         if ($validator->fails()) {
-            return back()->withErrors($validator)->withInput();
+            return redirect()->back()->withErrors($validator)->withInput();
         }
 
-        $customerGroup = CustomerGroup::find($id);
+        DB::beginTransaction();
 
-        if ($customerGroup) {
-            $oldAttributes = $customerGroup->getOriginal();
+        try {
+            $customerGroup = CustomerGroup::findOrFail($id);
 
             $customerGroup->name = $request->name;
             $customerGroup->save();
 
+            DB::commit();
+
             activity()
                 ->performedOn($customerGroup)
                 ->causedBy(Auth::user())
-                ->withProperties([
-                    'old' => $oldAttributes,
-                    'new' => $customerGroup->getChanges(),
-                ])
-                ->event('updated')
                 ->log('Customer Group updated');
 
-            return redirect()->route('customer.groups.index')->with('success', 'Group Name Updated Successfully.');
+            return redirect()->route('customer.groups.index')->with('success', 'Customer group updated successfully.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error updating customer group: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Error: ' . $e->getMessage())->withInput();
         }
-
-        return redirect()->route('customer.groups.index')->with('info', 'No changes made to Group Name.');
     }
 
-    // Deleting Group of customers and its related customers
+    /**
+     * Delete customer group
+     */
     public function destroy($id)
     {
-        if (!$id) {
-            return redirect()->route('customer.groups.index')->with('error', 'Invalid Group ID.');
+        $validator = Validator::make(['id' => $id], [
+            'id' => 'required|exists:customer_groups,id',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->route('customer.groups.index')->with('error', 'Invalid customer group.');
         }
+
+        DB::beginTransaction();
+
         try {
             $customerGroup = CustomerGroup::findOrFail($id);
             $customerGroup->delete();
 
+            DB::commit();
+
             activity()
                 ->performedOn($customerGroup)
                 ->causedBy(Auth::user())
-                ->event('deleted')
                 ->log('Customer Group deleted');
 
-            return redirect()->route('customer.groups.index')->with('success', 'Successfully Deleted Group');
+            return redirect()->route('customer.groups.index')->with('success', 'Customer group deleted successfully.');
         } catch (\Exception $e) {
-            return redirect()->route('customer.groups.index')->with('error', 'You cannot delete this group. You have to delete sales orders first.');
+            DB::rollBack();
+            Log::error('Error deleting customer group: ' . $e->getMessage());
+            return redirect()->route('customer.groups.index')->with('error', 'Error: ' . $e->getMessage());
         }
     }
 
+    /**
+     * Toggle customer group status
+     */
     public function toggleStatus(Request $request)
     {
-        $group = CustomerGroup::findOrFail($request->id);
-        $group->status = $request->status;
-        $group->save();
+        $validator = Validator::make($request->all(), [
+            'id' => 'required|exists:customer_groups,id',
+            'status' => 'required|in:0,1',
+        ]);
 
-        if ($group) {
-            return response()->json(['success' => true]);
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'message' => 'Invalid data'], 422);
         }
 
-        return response()->json(['success' => false]);
+        DB::beginTransaction();
+
+        try {
+            $group = CustomerGroup::findOrFail($request->id);
+            $group->status = $request->status;
+            $group->save();
+
+            DB::commit();
+
+            activity()
+                ->performedOn($group)
+                ->causedBy(Auth::user())
+                ->log('Customer Group status changed to ' . ($request->status == '1' ? 'Active' : 'Inactive'));
+
+            return response()->json(['success' => true]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error toggling customer group status: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
     }
 
+    /**
+     * Delete multiple customer groups
+     */
     public function deleteSelected(Request $request)
     {
-        if (!$request->ids) {
-            return redirect()->back()->with('error', 'No customer groups selected for deletion.');
+        $validator = Validator::make($request->all(), [
+            'ids' => 'required|string',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()->with('error', 'No customer groups selected.');
         }
+
+        DB::beginTransaction();
 
         try {
             $ids = is_array($request->ids) ? $request->ids : explode(',', $request->ids);
+
+            if (empty($ids)) {
+                return redirect()->back()->with('error', 'No customer groups selected.');
+            }
+
             $deleted = CustomerGroup::destroy($ids);
 
-            if ($deleted) {
-                return redirect()->back()->with('success', 'Selected customer groups deleted successfully.');
+            DB::commit();
+
+            activity()
+                ->causedBy(Auth::user())
+                ->log('Deleted ' . $deleted . ' customer groups');
+
+            if ($deleted > 0) {
+                return redirect()->back()->with('success', "Successfully deleted {$deleted} customer group(s).");
             } else {
                 return redirect()->back()->with('error', 'No groups deleted.');
             }
         } catch (\Exception $e) {
-            return redirect()->route('customer.groups.index')->with('error', 'You cannot delete this group. You have to delete sales orders first.');
+            DB::rollBack();
+            Log::error('Error deleting customer groups: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Error: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Change status of multiple customer groups
+     */
+    public function bulkStatusChange(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'ids' => 'required|string',
+            'status' => 'required|in:0,1',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()->with('error', 'Invalid data provided.');
+        }
+
+        DB::beginTransaction();
+
+        try {
+            $ids = is_array($request->ids) ? $request->ids : explode(',', $request->ids);
+
+            if (empty($ids)) {
+                return redirect()->back()->with('error', 'No customer groups selected.');
+            }
+
+            $updated = CustomerGroup::whereIn('id', $ids)->update(['status' => $request->status]);
+
+            DB::commit();
+
+            activity()
+                ->causedBy(Auth::user())
+                ->log('Changed status of ' . $updated . ' customer groups to ' . ($request->status == '1' ? 'Active' : 'Inactive'));
+
+            return redirect()->back()->with('success', "Successfully updated status of {$updated} customer group(s).");
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error changing customer group status: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Error: ' . $e->getMessage());
         }
     }
 }
