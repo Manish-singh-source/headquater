@@ -1021,17 +1021,22 @@ class SalesOrderController extends Controller
     public function generateInvoice(Request $request)
     {
         try {
+            // Parse IDs
             if ($request->filled('ids')) {
                 $ids = is_array($request->ids) ? $request->ids : explode(',', $request->ids);
             } else {
                 $ids = [];
             }
 
+            // Validate sales order exists
             $salesOrder = SalesOrder::findOrFail($request->order_id);
-            $salesOrderDetails = SalesOrderProduct::with('tempOrder', 'customer', 'product')
+
+            // Build query with eager loading
+            $salesOrderDetails = SalesOrderProduct::with(['tempOrder', 'customer', 'product'])
                 ->where('sales_order_id', $salesOrder->id);
 
-            if (is_array($ids) && ! empty($ids)) {
+            // Apply filters
+            if (!empty($ids)) {
                 $salesOrderDetails->whereIn('id', $ids);
             }
 
@@ -1047,100 +1052,136 @@ class SalesOrderController extends Controller
                 });
             }
 
-            // Execute the query and get the collection
+            // Execute query
             $salesOrderDetails = $salesOrderDetails->get();
 
-            // Base compulsory grouping: customer address + PO number
+            // Validate we have records to process
+            if ($salesOrderDetails->isEmpty()) {
+                return redirect()->back()->with('error', 'No sales order details found matching the criteria.');
+            }
+
+            // Group by: facility_name + po_number + optional(brand) + optional(client_name)
             $invoicesGroup = [];
 
             foreach ($salesOrderDetails as $detail) {
+                // Validate required relationships
+                if (!$detail->customer || !$detail->tempOrder || !$detail->product) {
+                    continue; // Skip invalid records
+                }
+
                 $facilityName = $detail->customer->facility_name ?? '';
                 $poNumber = $detail->tempOrder->po_number ?? '';
 
-                // Optional filters
-                $brand = $request->has('brand') ? ($detail->product->brand ?? '') : '';
-                $clientName = $request->has('client_name') ? ($detail->customer->client_name ?? '') : '';
-
-                // Build grouping key dynamically
+                // Build dynamic grouping key
                 $groupKey = $facilityName . '|' . $poNumber;
-                if ($brand !== '') {
+
+                if ($request->filled('brand')) {
+                    $brand = $detail->product->brand ?? '';
                     $groupKey .= '|' . $brand;
                 }
-                if ($clientName !== '') {
+
+                if ($request->filled('client_name')) {
+                    $clientName = $detail->customer->client_name ?? '';
                     $groupKey .= '|' . $clientName;
                 }
 
-                // Push detail into its group
                 $invoicesGroup[$groupKey][] = $detail;
             }
 
-            $totalAmount = 0;
+            // Validate we have groups to process
+            if (empty($invoicesGroup)) {
+                return redirect()->back()->with('error', 'No valid records found to generate invoices.');
+            }
 
             DB::beginTransaction();
 
-            $no = 0;
-            foreach ($invoicesGroup as $key => $invoiceData) {
+            $timestamp = time();
+            $invoiceCounter = 0;
+            $generatedInvoices = [];
+
+            foreach ($invoicesGroup as $groupKey => $invoiceData) {
+                // Reset total for this invoice
+                $invoiceTotal = 0;
+
                 $customerId = $invoiceData[0]->customer_id;
 
-                $invoice = new Invoice;
+                // Create invoice with unique number
+                $invoice = new Invoice();
                 $invoice->warehouse_id = $salesOrder->warehouse_id;
-                // $invoice->invoice_number = 'INV-' . time() . '-' . $customerId . '-' . $no;
-                $invoice->invoice_number = 'INV-' . time() . '-' . $no;
+                $invoice->invoice_number = 'INV-' . $timestamp . '-' . str_pad($invoiceCounter, 4, '0', STR_PAD_LEFT);
                 $invoice->customer_id = $customerId;
                 $invoice->sales_order_id = $salesOrder->id;
                 $invoice->invoice_date = now();
                 $invoice->round_off = 0;
-                $invoice->total_amount = 0;
+                $invoice->total_amount = 0; // Will update after calculating
                 $invoice->po_number = $invoiceData[0]->tempOrder->po_number ?? '';
                 $invoice->save();
 
+                // Process invoice details
                 foreach ($invoiceData as $detail) {
-                    $totalAmount += (int) $detail->ordered_quantity * (float) $detail->product->mrp;
+                    $quantity = (int) $detail->ordered_quantity;
+                    $unitPrice = (float) $detail->product->mrp;
+                    $lineTotal = $quantity * $unitPrice;
 
-                    $invoiceDetails = new InvoiceDetails;
-                    $invoiceDetails->sales_order_product_id = $detail->id;
-                    $invoiceDetails->invoice_id = $invoice->id;
-                    $invoiceDetails->product_id = $detail->product_id;
-                    $invoiceDetails->temp_order_id = $detail->temp_order_id;
-                    $invoiceDetails->quantity = $detail->ordered_quantity;
-                    $invoiceDetails->unit_price = $detail->product->mrp;
-                    $invoiceDetails->discount = 0; // Assuming no discount for simplicity
-                    $invoiceDetails->amount = $detail->ordered_quantity * $detail->product->mrp;
-                    $invoiceDetails->tax = $detail->product->gst ?? 0; // Assuming tax is a field in Product model
-                    $invoiceDetails->total_price = ($detail->ordered_quantity * $detail->product->mrp) - 0; // Total price after discount
-                    $invoiceDetails->description = isset($detail->tempOrder) ? $detail->tempOrder->description : null; // Assuming description is in TempOrder
-                    $invoiceDetails->po_number = $detail->tempOrder->po_number ?? null; // Assuming po_number is in TempOrder
+                    $invoiceTotal += $lineTotal;
+
+                    $invoiceDetail = new InvoiceDetails();
+                    $invoiceDetail->sales_order_product_id = $detail->id;
+                    $invoiceDetail->invoice_id = $invoice->id;
+                    $invoiceDetail->product_id = $detail->product_id;
+                    $invoiceDetail->temp_order_id = $detail->temp_order_id;
+                    $invoiceDetail->quantity = $quantity;
+                    $invoiceDetail->unit_price = $unitPrice;
+                    $invoiceDetail->discount = 0;
+                    $invoiceDetail->amount = $lineTotal;
+                    $invoiceDetail->tax = $detail->product->gst ?? 0;
+                    $invoiceDetail->total_price = $lineTotal; // After discount (currently 0)
+                    $invoiceDetail->description = $detail->tempOrder->description ?? null;
+                    $invoiceDetail->po_number = $detail->tempOrder->po_number ?? null;
+                    $invoiceDetail->save();
+
+                    // Update sales order product status
                     $detail->status = 'dispatched';
                     $detail->invoice_status = 'completed';
-                    $invoiceDetails->save();
                     $detail->save();
                 }
-                $no++;
 
-                $invoiceDetails = InvoiceDetails::where('invoice_id', $invoice->id)->get();
-                $invoice->total_amount = $totalAmount;
+                // Update invoice with calculated total
+                $invoice->total_amount = $invoiceTotal;
                 $invoice->save();
 
-                if (! $invoiceDetails) {
-                    DB::rollBack();
-
-                    return redirect()->back()->with('error', 'Invoice Not Generated. Please Try Again.');
-                }
-
-                $totalAmount = 0;
+                $generatedInvoices[] = $invoice->id;
+                $invoiceCounter++;
             }
+
             DB::commit();
 
-            // Create invoice notification
-            NotificationService::invoiceGenerated($invoice->id, $salesOrder->id);
+            // Create notifications for all generated invoices
+            foreach ($generatedInvoices as $invoiceId) {
+                NotificationService::invoiceGenerated($invoiceId, $salesOrder->id);
+            }
 
-            return redirect()->back()->with('success', 'Invoice generated successfully! Invoice ID: ' . $invoice->id . ' for Order ID: ' . $salesOrder->id);
+            $invoiceCount = count($generatedInvoices);
+            $invoiceIds = implode(', ', $generatedInvoices);
+
+            return redirect()->back()->with(
+                'success',
+                "Successfully generated {$invoiceCount} invoice(s) for Order ID: {$salesOrder->id}. Invoice IDs: {$invoiceIds}"
+            );
         } catch (\Exception $e) {
             DB::rollBack();
+            \Log::error('Invoice Generation Failed: ' . $e->getMessage(), [
+                'order_id' => $request->order_id,
+                'trace' => $e->getTraceAsString()
+            ]);
 
-            return redirect()->back()->with('error', 'Status Not Changed. Please Try Again.' . $e->getMessage());
+            return redirect()->back()->with(
+                'error',
+                'Invoice generation failed: ' . $e->getMessage()
+            );
         }
     }
+
 
     public function checkProductsStock(Request $request)
     {

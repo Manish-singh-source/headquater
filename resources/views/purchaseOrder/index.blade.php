@@ -91,6 +91,7 @@
                                         <th>Purchase&nbsp;Order&nbsp;Id</th>
                                         <th>Vendor&nbsp;Code</th>
                                         <th>Order&nbsp;Status</th>
+                                        <th>Recieved&nbsp;PI</th>
                                         <th>Total&nbsp;Product</th>
                                         <th>Total&nbsp;Amount</th>
                                         <th>Total&nbsp;Paid&nbsp;Amount</th>
@@ -115,6 +116,13 @@
                                             </td>
                                             <td>
                                                 {{ $statuses[$order->status] ?? 'On Hold' }}
+                                            </td>
+                                            <td>
+                                                @if(isset($order->vendorPI) && count($order->vendorPI) > 0)
+                                                    <span class="badge text-success bg-success-subtle">Received</span>
+                                                @else
+                                                    <span class="badge text-danger bg-danger-subtle">Not Received</span>
+                                                @endif
                                             </td>
                                             <td>{{ $order->purchase_order_products_count ?? 0 }}</td>
                                             <td>{{ $order->vendorPI[0]->total_amount ?? 0 }}</td>
@@ -183,7 +191,7 @@
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="11" class="text-center">No Records Found</td>
+                                            <td colspan="12" class="text-center">No Records Found</td>
                                         </tr>
                                     @endforelse
                                 </tbody>

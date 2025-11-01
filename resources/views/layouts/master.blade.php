@@ -7,6 +7,28 @@
       <title>HEADQUATERS | Admin Dashboard</title>
       <!--favicon-->
       <link rel="icon" href="{{ asset('assets/images/favicon-32x32.png') }}" type="image/png">
+      <style>
+          .badge-pill {
+              padding-right: 0.6em;
+              padding-left: 0.6em;
+              border-radius: 10rem;
+              font-size: 12px;
+              margin-left: 5px;
+          }
+
+          .badge-danger {
+              color: #fff;
+              background-color: #dc3545;
+          }
+
+          .menu-title .badge {
+              display: inline-flex;
+              align-items: center;
+              justify-content: center;
+              min-width: 20px;
+              height: 20px;
+          }
+      </style>
       <!-- loader-->
 
       <link href="{{ asset('assets/css/pace.min.css') }}" rel="stylesheet">
@@ -379,19 +401,34 @@
                   <li class="menu-label">Warehouse</li>
                   <li>
                       <a href="{{ route('received-products.index') }}">
+                          <div class="parent-icon"><i class="material-icons-outlined">inventory_2</i>
+                          </div>
+                          <div class="menu-title">Received Products
+                              @if (isset($receivedProductsCount) && $receivedProductsCount > 0)
+                                  <span class="badge badge-pill badge-danger">{{ $receivedProductsCount }}</span>
+                              @endif
+                          </div>
+                      </a>
+                  </li>
+                  {{-- <li>
+                      <a href="{{ route('received-products.index') }}">
                           <div class="parent-icon"><i class="material-icons-outlined">move_to_inbox</i>
                           </div>
                           <div class="menu-title">Received Products</div>
                       </a>
-                  </li>
-
+                  </li> --}}
                   <li>
                       <a href="{{ route('packaging.list.index') }}">
                           <div class="parent-icon"><i class="material-icons-outlined">all_inbox</i>
                           </div>
-                          <div class="menu-title">Packaging List</div>
+                          <div class="menu-title">Packaging List
+                              @if (isset($packagingListCount) && $packagingListCount > 0)
+                                  <span class="badge badge-pill badge-danger">{{ $packagingListCount }}</span>
+                              @endif
+                          </div>
                       </a>
                   </li>
+                  {{-- Packaging List moved below with count badge -- removed duplicate entry --}}
                   {{-- <li>
                       <a href="{{ route('raise-a-ticket') }}">
                           <div class="parent-icon"><i class="material-icons-outlined">confirmation_number</i>
@@ -403,16 +440,15 @@
                       <a href="{{ route('readyToShip.index') }}">
                           <div class="parent-icon"><i class="material-icons-outlined">local_shipping</i>
                           </div>
-                          <div class="menu-title">Ready To Ship</div>
-                      </a>
-                  </li>
-                  <li>
-                      <a href="{{ route('exceed.shortage.products') }}">
-                          <div class="parent-icon"><i class="material-icons-outlined">local_shipping</i>
+                          <div class="menu-title">Ready To Ship
+                              @if (isset($readyToShipCount) && $readyToShipCount > 0)
+                                  <span class="badge badge-pill badge-danger">{{ $readyToShipCount }}</span>
+                              @endif
                           </div>
-                          <div class="menu-title">Product Issues</div>
                       </a>
                   </li>
+                  
+
                   <li>
                       <a href="{{ route('return.accept') }}">
                           <div class="parent-icon"><i class="material-icons-outlined">local_shipping</i>
@@ -420,7 +456,7 @@
                           <div class="menu-title">Vendor Return</div>
                       </a>
                   </li>
-                  
+
                   <li>
                       <a href="{{ route('customer.returns') }}">
                           <div class="parent-icon"><i class="material-icons-outlined">local_shipping</i>

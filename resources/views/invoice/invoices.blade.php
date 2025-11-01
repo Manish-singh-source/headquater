@@ -73,15 +73,20 @@
                                                         <circle cx="12" cy="12" r="3"></circle>
                                                     </svg>
                                                 </a>
-                                                @if (!$invoice->appointment)
-                                                    <a type="button" class="btn btn-icon btn-sm bg-success-subtle me-1"
-                                                        data-bs-toggle="modal"
-                                                        data-bs-target="#appointmentView-{{ $invoice->id }}">
-                                                        <img width="15" height="15"
-                                                            src="https://img.icons8.com/ios/50/document--v1.png"
-                                                            alt="bank-card-back-side--v1" />
-                                                    </a>
-                                                @endif
+                                                @if (
+    !$invoice->appointment ||
+    !$invoice->appointment->appointment_date ||
+    !$invoice->appointment->pod ||
+    !$invoice->appointment->grn
+)
+    <a type="button" class="btn btn-icon btn-sm bg-success-subtle me-1"
+        data-bs-toggle="modal"
+        data-bs-target="#appointmentView-{{ $invoice->id }}">
+        <img width="15" height="15"
+            src="https://img.icons8.com/ios/50/calendar--v1.png"
+            alt="bank-card-back-side--v1" />
+    </a>
+@endif
                                                 @if (!$invoice->dns)
                                                     <a type="button" class="btn btn-icon btn-sm bg-success-subtle me-1"
                                                         data-bs-toggle="modal" data-bs-target="#dnView-{{ $invoice->id }}">
@@ -100,58 +105,60 @@
                                                     </a>
                                                 {{-- @endif --}}
                                                 <div class="modal fade" id="appointmentView-{{ $invoice->id }}"
-                                                    data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
-                                                    aria-labelledby="staticBackdropLabel" aria-hidden="true">
-                                                    <div class="modal-dialog">
-                                                        <div class="modal-content">
-                                                            <div class="modal-header">
-                                                                <h1 class="modal-title fs-5" id="staticBackdropLabel">Update
-                                                                    Inovice Details</h1>
-                                                                <button type="button" class="btn-close"
-                                                                    data-bs-dismiss="modal" aria-label="Close"></button>
-                                                            </div>
-                                                            <form method="POST"
-                                                                action="{{ route('invoices.appointment.update', $invoice->id) }}"
-                                                                enctype="multipart/form-data">
-                                                                @csrf
-                                                                @method('POST')
-                                                                <div class="modal-body">
-                                                                    <div class="col-12 mb-3">
-                                                                        <label for="appointment_date"
-                                                                            class="form-label">Appointment Date <span
-                                                                                class="text-danger">*</span></label>
-                                                                        <input type="date" name="appointment_date"
-                                                                            id="appointment_date" class="form-control"
-                                                                            value="" required=""
-                                                                            placeholder="Upload ID Document">
-                                                                    </div>
-                                                                    <div class="col-12 mb-3">
-                                                                        <label for="pod" class="form-label">Upload
-                                                                            POD <span class="text-danger">*</span></label>
-                                                                        <input type="file" name="pod"
-                                                                            id="pod" class="form-control"
-                                                                            value="" required=""
-                                                                            placeholder="Upload ID Document">
-                                                                    </div>
-                                                                    <div class="col-12 mb-3">
-                                                                        <label for="grn" class="form-label">Upload
-                                                                            GRN <span class="text-danger">*</span></label>
-                                                                        <input type="file" name="grn"
-                                                                            id="grn" class="form-control"
-                                                                            value="" required=""
-                                                                            placeholder="Upload ID Document">
-                                                                    </div>
-                                                                </div>
-                                                                <div class="modal-footer">
-                                                                    <button type="button" class="btn btn-secondary"
-                                                                        data-bs-dismiss="modal">Close</button>
-                                                                    <input type="submit" class="btn btn-primary"
-                                                                        value="Submit" />
-                                                                </div>
-                                                            </form>
-                                                        </div>
-                                                    </div>
-                                                </div>
+    data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+    aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="staticBackdropLabel">Update
+                    Inovice Details</h1>
+                <button type="button" class="btn-close"
+                    data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST"
+                action="{{ route('invoices.appointment.update', $invoice->id) }}"
+                enctype="multipart/form-data">
+                @csrf
+                @method('POST')
+                <div class="modal-body">
+                    <div class="col-12 mb-3">
+                        <label for="appointment_date"
+                            class="form-label">Appointment Date</label>
+                        <input type="date" name="appointment_date"
+                            id="appointment_date" class="form-control"
+                            value="{{ $invoice->appointment->appointment_date ?? '' }}">
+                    </div>
+                    <div class="col-12 mb-3">
+                        <label for="pod" class="form-label">Upload
+                            POD</label>
+                        <input type="file" name="pod"
+                            id="pod" class="form-control">
+                        @if ($invoice->appointment && $invoice->appointment->pod)
+                            <a href="{{ asset('uploads/pod/'. $invoice->appointment->pod) }}"
+                                target="_blank">View POD</a>
+                        @endif
+                    </div>
+                    <div class="col-12 mb-3">
+                        <label for="grn" class="form-label">Upload
+                            GRN</label>
+                        <input type="file" name="grn"
+                            id="grn" class="form-control">
+                        @if ($invoice->appointment && $invoice->appointment->grn)
+                            <a href="{{ asset('uploads/grn/' . $invoice->appointment->grn) }}"
+                                target="_blank">View GRN</a>
+                        @endif
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary"
+                        data-bs-dismiss="modal">Close</button>
+                    <input type="submit" class="btn btn-primary"
+                        value="Submit" />
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
                                                 <div class="modal fade" id="dnView-{{ $invoice->id }}"
                                                     data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
                                                     aria-labelledby="staticBackdropLabel" aria-hidden="true">
@@ -160,7 +167,7 @@
                                                             <div class="modal-header">
                                                                 <h1 class="modal-title fs-5" id="staticBackdropLabel">
                                                                     Update
-                                                                    Inovice Details</h1>
+                                                                    DN Details</h1>
                                                                 <button type="button" class="btn-close"
                                                                     data-bs-dismiss="modal" aria-label="Close"></button>
                                                             </div>

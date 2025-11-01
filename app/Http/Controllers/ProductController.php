@@ -89,8 +89,8 @@ class ProductController extends Controller
                 if (isset($seen[$key])) {
                     DB::rollBack();
 
-                    return redirect()->back()->withErrors([
-                        'error' => 'Duplicate SKU found in file: ' . $record['SKU Code'],
+                    return redirect()->back()->with([
+                        'error' => 'Please check excel file: duplicate SKU ('.$record['SKU Code'].') found in the file.',
                     ]);
                 }
 
@@ -121,30 +121,31 @@ class ProductController extends Controller
                         'brand_title' => $record['Brand Title'] ?? '',
                         'mrp' => $record['MRP'] ?? '',
                         'category' => $record['Category'] ?? '',
-                        'pcs_set' => (int)($record['PCS/Set'] ?? 0),
-                        'sets_ctn' => (int)($record['Sets/CTN'] ?? 0),
-                        'gst' => $gst,
-                        'basic_rate' => $basicRate,
-                        'net_landing_rate' => $netLandingRate,
-                        'case_pack_quantity' => $casePackQuantity,
+                        'pcs_set' => $record['PCS/Set'] ?? '',
+                        'sets_ctn' => $record['Sets/CTN'] ?? '',
+                        'gst' => intval($record['GST']) ?? '',
+
+                        'basic_rate' => isset($record['Basic Rate']) ? intval($record['Basic Rate']) : '',
+                        'net_landing_rate' => (isset($record['Basic Rate']) && isset($record['GST']))
+                            ? number_format(intval($record['Basic Rate']) + (intval($record['Basic Rate']) * intval($record['GST']) / 100), 2, '.', '')
+                            : null,
+                        'case_pack_quantity' => ($record['PCS/Set'] ?? 0) * ($record['Sets/CTN'] ?? 0),
+
                         'vendor_code' => $record['Vendor Code'] ?? '',
                         'vendor_name' => $record['Vendor Name'] ?? '',
                         'vendor_purchase_rate' => $record['Vendor Purchase Rate'] ?? '',
                         'vendor_net_landing' => $record['Vendor Net Landing'] ?? '',
                     ]);
 
-                    // Update warehouse stock
-                    $warehouseStock = WarehouseStock::where('sku', $sku)
-                        ->where('warehouse_id', $request->warehouse_id)
-                        ->first();
-
-                    if ($warehouseStock) {
-                        $stock = (int)($record['Stock'] ?? 0);
-                        $warehouseStock->update([
-                            'original_quantity' => $stock,
-                            'available_quantity' => $stock,
-                        ]);
+                    $warehouseStock = WarehouseStock::where('sku', $record['SKU Code'])->where('warehouse_id', $request->warehouse_id)->first();
+                    if (! $warehouseStock) {
+                        $warehouseStock = new WarehouseStock;
+                        $warehouseStock->sku = $record['SKU Code'];
+                        $warehouseStock->warehouse_id = $request->warehouse_id;
                     }
+                    $warehouseStock->original_quantity = isset($record['Stock']) ? $record['Stock'] : 0;
+                    $warehouseStock->available_quantity = isset($record['Stock']) ? $record['Stock'] : 0;
+                    $warehouseStock->save();
                 } else {
                     // Create new product
                     $product = Product::create([
@@ -154,12 +155,14 @@ class ProductController extends Controller
                         'brand_title' => $record['Brand Title'] ?? '',
                         'mrp' => $record['MRP'] ?? '',
                         'category' => $record['Category'] ?? '',
-                        'pcs_set' => (int)($record['PCS/Set'] ?? 0),
-                        'sets_ctn' => (int)($record['Sets/CTN'] ?? 0),
-                        'gst' => $gst,
-                        'basic_rate' => $basicRate,
-                        'net_landing_rate' => $netLandingRate,
-                        'case_pack_quantity' => $casePackQuantity,
+                        'pcs_set' => $record['PCS/Set'] ?? '',
+                        'sets_ctn' => $record['Sets/CTN'] ?? '',
+                        'gst' => $record['GST'] ?? '',
+                        'basic_rate' => isset($record['Basic Rate']) ? intval($record['Basic Rate']) : '',
+                        'net_landing_rate' => (isset($record['Basic Rate']) && isset($record['GST']))
+                            ? number_format(intval($record['Basic Rate']) + (intval($record['Basic Rate']) * intval($record['GST']) / 100), 2, '.', '')
+                            : null,
+                        'case_pack_quantity' => ($record['PCS/Set'] ?? 0) * ($record['Sets/CTN'] ?? 0),
                         'vendor_code' => $record['Vendor Code'] ?? '',
                         'vendor_name' => $record['Vendor Name'] ?? '',
                         'vendor_purchase_rate' => $record['Vendor Purchase Rate'] ?? '',
@@ -202,9 +205,7 @@ class ProductController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
 
-            return redirect()->back()
-                ->with('error', 'Error importing products: ' . $e->getMessage())
-                ->withInput();
+            return redirect()->back()->with(['error' => 'Something went wrong: '.$e->getMessage()]);
         }
     }
 
@@ -248,21 +249,26 @@ class ProductController extends Controller
                 $casePackQuantity = ((int)($record['PCS/Set'] ?? 0)) * ((int)($record['Sets/CTN'] ?? 0));
 
                 $products[] = [
-                    'sku' => $sku,
-                    'ean_code' => $record['EAN Code'] ?? '',
-                    'brand' => $record['Brand'] ?? '',
-                    'brand_title' => $record['Brand Title'] ?? '',
-                    'mrp' => $record['MRP'] ?? '',
-                    'category' => $record['Category'] ?? '',
-                    'pcs_set' => (int)($record['PCS/Set'] ?? 0),
-                    'sets_ctn' => (int)($record['Sets/CTN'] ?? 0),
-                    'gst' => $gst,
-                    'basic_rate' => $basicRate,
-                    'net_landing_rate' => $netLandingRate,
-                    'case_pack_quantity' => $casePackQuantity,
-                    'vendor_name' => $record['Vendor Name'] ?? '',
-                    'vendor_purchase_rate' => $record['Vendor Purchase Rate'] ?? '',
-                    'vendor_net_landing' => $record['Vendor Net Landing'] ?? '',
+                    'sku' => Arr::get($record, 'SKU Code') ?? '',
+                    'ean_code' => Arr::get($record, 'EAN Code') ?? '',
+                    'brand' => Arr::get($record, 'Brand') ?? '',
+                    'brand_title' => Arr::get($record, 'Brand Title') ?? '',
+                    'mrp' => Arr::get($record, 'MRP') ?? '',
+                    'category' => Arr::get($record, 'Category') ?? '',
+                    'pcs_set' => Arr::get($record, 'PCS/Set') ?? '',
+                    'sets_ctn' => Arr::get($record, 'Sets/CTN') ?? '',
+                    'gst' => Arr::get($record, 'GST') ?? '',
+
+                    'basic_rate' => isset($record['Basic Rate']) ? $record['Basic Rate'] : '',
+                    'net_landing_rate' => (isset($record['Basic Rate']) && isset($record['GST']))
+                        ? number_format($record['Basic Rate'] + ($record['Basic Rate'] * $record['GST'] / 100), 2, '.', '')
+                        : null,
+                    'case_pack_quantity' => ($record['PCS/Set'] ?? 0) * ($record['Sets/CTN'] ?? 0),
+
+                    'vendor_name' => Arr::get($record, 'Vendor Name') ?? '',
+                    'vendor_purchase_rate' => Arr::get($record, 'Vendor Purchase Rate') ?? '',
+                    'vendor_net_landing' => Arr::get($record, 'Vendor Net Landing') ?? '',
+                    'created_at' => now(),
                     'updated_at' => now(),
                 ];
 
@@ -309,9 +315,7 @@ class ProductController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
 
-            return redirect()->back()
-                ->with('error', 'Error updating products: ' . $e->getMessage())
-                ->withInput();
+            return redirect()->back()->with(['error' => 'Something went wrong: '.$e->getMessage()]);
         }
     }
 
