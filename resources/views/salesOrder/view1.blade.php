@@ -4,7 +4,7 @@
         $statuses = [
             'pending' => 'Pending',
             'blocked' => 'Blocked',
-            'completed' => 'Completed',
+            'completed' => 'Complete',
             'ready_to_ship' => 'Ready To Ship',
             'ready_to_package' => 'Ready To Package',
         ];
@@ -166,7 +166,7 @@
                                         <option value="ready_to_ship" @if ($salesOrder->status == 'ready_to_ship') selected @endif>
                                             Ready To Ship</option>
                                         <option value="completed" @if ($salesOrder->status == 'completed') selected @endif>
-                                            Completed</option>
+                                            Complete</option>
                                     </select>
                                 </form>
                             </ul>
@@ -216,7 +216,7 @@
                                         $statuses = [
                                             'pending' => 'Pending',
                                             'blocked' => 'Blocked',
-                                            'completed' => 'Completed',
+                                            'completed' => 'Complete',
                                             'ready_to_ship' => 'Ready To Ship',
                                         ];
                                     @endphp

@@ -2,27 +2,27 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Vendor;
 use App\Models\Product;
-use App\Models\VendorPI;
-use App\Models\TempOrder;
-use App\Models\Warehouse;
-use App\Models\SkuMapping;
-use App\Models\PurchaseGrn;
-use Illuminate\Support\Arr;
-use Illuminate\Support\Str;
 use App\Models\ProductIssue;
-use Illuminate\Http\Request;
-use App\Models\PurchaseOrder;
-use App\Models\VendorPayment;
-use App\Models\WarehouseStock;
+use App\Models\PurchaseGrn;
 use App\Models\PurchaseInvoice;
-use App\Models\VendorPIProduct;
-use App\Models\SalesOrderProduct;
-use Illuminate\Support\Facades\DB;
+use App\Models\PurchaseOrder;
 use App\Models\PurchaseOrderProduct;
+use App\Models\SalesOrderProduct;
+use App\Models\SkuMapping;
+use App\Models\TempOrder;
+use App\Models\Vendor;
+use App\Models\VendorPayment;
+use App\Models\VendorPI;
+use App\Models\VendorPIProduct;
+use App\Models\Warehouse;
+use App\Models\WarehouseStock;
 use App\Services\NotificationService;
+use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 use Spatie\SimpleExcel\SimpleExcelReader;
 use Spatie\SimpleExcel\SimpleExcelWriter;
 
@@ -38,10 +38,10 @@ class PurchaseOrderController extends Controller
                 continue;
             }
 
-            $key = strtolower(trim($record['Vendor Code'])) . '|' . strtolower(trim($record['SKU Code']));
+            $key = strtolower(trim($record['Vendor Code'])).'|'.strtolower(trim($record['SKU Code']));
 
             if (isset($seen[$key])) {
-                return 'Please check excel file: duplicate SKU (' . $record['SKU Code'] . ') found for same customer (' . $record['Vendor Code'] . ').';
+                return 'Please check excel file: duplicate SKU ('.$record['SKU Code'].') found for same customer ('.$record['Vendor Code'].').';
             }
 
             $seen[$key] = true;
@@ -49,7 +49,6 @@ class PurchaseOrderController extends Controller
 
         return null;
     }
-
 
     public function customPurchaseCreate($purchaseId = null)
     {
@@ -86,8 +85,7 @@ class PurchaseOrderController extends Controller
             $vendorProducts = [];
             $insertCount = 0;
 
-
-            // check for duplicate sku 
+            // check for duplicate sku
             $rows = $reader->getRows()->toArray(); // convert to array so we can check duplicates easily
 
             // 🔹 Step 1: Check for duplicates (Customer + SKU)
@@ -96,13 +94,11 @@ class PurchaseOrderController extends Controller
                 return redirect()->back()->with(['error' => $duplicateCheck]);
             }
 
-            // check for existing vendor 
+            // check for existing vendor
             $vendor = Vendor::where('id', $request->vendor_id)->first();
             if (! $vendor) {
                 return redirect()->back()->with(['error' => 'Vendor not found']);
             }
-
-
 
             if (! isset($request->purchaseId)) {
                 $purchaseOrder = new PurchaseOrder;
@@ -130,9 +126,9 @@ class PurchaseOrderController extends Controller
                         'created_at' => now(),
                         'updated_at' => now(),
                     ];
+
                     continue;
                 }
-
 
                 $tempSalesOrder = TempOrder::create([
                     'po_number' => $record['PO Number'] ?? '',
@@ -163,8 +159,6 @@ class PurchaseOrderController extends Controller
                     'product_status' => 'Found',
                 ]);
 
-
-
                 $purchaseOrderProduct = new PurchaseOrderProduct;
                 $purchaseOrderProduct->temp_order_id = $tempSalesOrder->id;
                 if (isset($purchaseOrder->id)) {
@@ -189,25 +183,25 @@ class PurchaseOrderController extends Controller
 
             DB::commit();
 
-            if (!empty($vendorProducts)) {
+            if (! empty($vendorProducts)) {
                 dd($vendorProducts);
             }
 
             // Create notification
             NotificationService::orderCreated('purchase', $purchaseOrder->id);
 
-            return redirect()->route('purchase.order.index')->with('success', 'Purchase Order created successfully! Order ID: ' . $purchaseOrder->id);
+            return redirect()->route('purchase.order.index')->with('success', 'Purchase Order created successfully! Order ID: '.$purchaseOrder->id);
         } catch (\Exception $e) {
             dd($e->getMessage());
             DB::rollBack();
 
-            return redirect()->back()->with(['error' => 'Something went wrong: ' . $e->getMessage()]);
+            return redirect()->back()->with(['error' => 'Something went wrong: '.$e->getMessage()]);
         }
     }
 
     public function index()
     {
-        $purchaseOrders = PurchaseOrder::with('purchaseOrderProducts')
+        $purchaseOrders = PurchaseOrder::with('purchaseOrderProducts', 'vendorPI')
             ->withSum('purchaseOrderProducts', 'ordered_quantity')
             ->withCount('purchaseOrderProducts')->get();
 
@@ -325,10 +319,11 @@ class PurchaseOrderController extends Controller
             VendorPIProduct::insert($vendorProducts);
             DB::commit();
 
-            return redirect()->back()->with('success', 'Purchase Order products imported successfully! Vendor PI ID: ' . $vendorPi->id);
+            return redirect()->back()->with('success', 'Purchase Order products imported successfully! Vendor PI ID: '.$vendorPi->id);
         } catch (\Exception $e) {
             DB::rollBack();
-            return redirect()->back()->with(['error' => 'Something went wrong: ' . $e->getMessage()]);
+
+            return redirect()->back()->with(['error' => 'Something went wrong: '.$e->getMessage()]);
         }
     }
 
@@ -433,7 +428,7 @@ class PurchaseOrderController extends Controller
             // dd($e->getMessage());
             DB::rollBack();
 
-            return redirect()->back()->with(['error' => 'Something went wrong: ' . $e->getMessage()]);
+            return redirect()->back()->with(['error' => 'Something went wrong: '.$e->getMessage()]);
         }
     }
 
@@ -453,7 +448,7 @@ class PurchaseOrderController extends Controller
 
             return redirect()->back()->with('success', 'Purchase Orders deleted successfully.');
         } catch (\Exception $e) {
-            return redirect()->back()->with(['error' => 'Something went wrong: ' . $e->getMessage()]);
+            return redirect()->back()->with(['error' => 'Something went wrong: '.$e->getMessage()]);
         }
     }
 
@@ -503,47 +498,71 @@ class PurchaseOrderController extends Controller
                 $total_amount += $product->mrp * $product->quantity_received;
                 $updateStock = WarehouseStock::where('sku', $product->vendor_sku_code)->first();
 
+                // Calculate actual sales order requirement from temp_orders
+                $tempOrderProducts = TempOrder::where('vendor_pi_id', $product->vendor_pi_id)
+                    ->where('vendor_code', $request->vendor_code)
+                    ->where('sku', $product->vendor_sku_code)
+                    ->get();
+
+                // Calculate total unavailable quantity (what was actually needed from sales orders)
+                $totalUnavailableQty = $tempOrderProducts->sum('unavailable_quantity');
+
+                // Get received quantity
+                $receivedQuantity = $product->quantity_received ?? 0;
+
+                // Calculate extra quantity (if vendor sent more than what was needed)
+                // Extra = received - what was actually needed for sales orders
+                $extraQuantity = max(0, $receivedQuantity - $totalUnavailableQty);
+                $blockQuantity = min($receivedQuantity, $totalUnavailableQty);
+
                 if (isset($updateStock)) {
-                    // logic for updating warehouse stock and block quantity
-                    $updateStock->block_quantity = $updateStock->block_quantity + $product->quantity_received;
-                    $updateStock->original_quantity = $updateStock->original_quantity + $product->quantity_received;
+                    // Update stock - block only what was needed, make extra quantity available
+                    $updateStock->block_quantity = $updateStock->block_quantity + $blockQuantity;
+                    $updateStock->original_quantity = $updateStock->original_quantity + $receivedQuantity;
+                    $updateStock->available_quantity = $updateStock->available_quantity + $extraQuantity;
                     $updateStock->save();
                 } else {
+                    // If stock doesn't exist, create new entry
                     $storeStock = WarehouseStock::create([
                         'warehouse_id' => '0',
                         'product_id' => '0',
                         'sku' => $product->vendor_sku_code,
-                        'original_quantity' => '0',
-                        'available_quantity' => '0',
-                        'block_quantity' => '0',
+                        'original_quantity' => $receivedQuantity,
+                        'available_quantity' => $extraQuantity,
+                        'block_quantity' => $blockQuantity,
                     ]);
                 }
 
-                // need of foreach ?.....
-                // update temp order vendor_pi_received_quantity
-                $receivedQuantity = $product->quantity_received ?? 0;
+                // Update temp order vendor_pi_received_quantity
+                // Only allocate what was needed (unavailable_quantity), not extra quantity
+                // We already fetched tempOrderProducts above, so reuse it
+                $quantityToAllocate = $receivedQuantity; // Start with total received
 
-                $tempOrderProducts = TempOrder::where('vendor_pi_id', $product->vendor_pi_id)->where('vendor_code', $request->vendor_code)->where('sku', $product->vendor_sku_code)->get();
                 foreach ($tempOrderProducts as $tempOrderproduct) {
-                    if ($tempOrderproduct->unavailable_quantity <= $receivedQuantity && $tempOrderproduct->unavailable_quantity > 0) {
+                    if ($tempOrderproduct->unavailable_quantity <= $quantityToAllocate && $tempOrderproduct->unavailable_quantity > 0) {
+                        // This temp order needs less than or equal to what we have
                         $tempOrderproduct->available_quantity += $tempOrderproduct->unavailable_quantity;
                         $tempOrderproduct->block += $tempOrderproduct->unavailable_quantity;
                         $tempOrderproduct->vendor_pi_received_quantity += $tempOrderproduct->unavailable_quantity;
-                        $receivedQuantity -= $tempOrderproduct->unavailable_quantity;
+                        $quantityToAllocate -= $tempOrderproduct->unavailable_quantity;
                         $tempOrderproduct->unavailable_quantity = 0;
                     } else {
-                        $tempOrderproduct->available_quantity += $receivedQuantity;
-                        $tempOrderproduct->block += $receivedQuantity;
-                        $tempOrderproduct->vendor_pi_received_quantity += $receivedQuantity;
-                        $tempOrderproduct->unavailable_quantity -= $receivedQuantity;
-                        $receivedQuantity = 0;
+                        // This temp order needs more than what we have left
+                        $tempOrderproduct->available_quantity += $quantityToAllocate;
+                        $tempOrderproduct->block += $quantityToAllocate;
+                        $tempOrderproduct->vendor_pi_received_quantity += $quantityToAllocate;
+                        $tempOrderproduct->unavailable_quantity -= $quantityToAllocate;
+                        $quantityToAllocate = 0;
                     }
                     $tempOrderproduct->save();
 
-                    if ($receivedQuantity <= 0) {
-                        break; // Stop if we've allocated all received quantity
+                    if ($quantityToAllocate <= 0) {
+                        break; // Stop if we've allocated all received quantity to sales orders
                     }
                 }
+
+                // Any extra quantity (receivedQuantity - totalUnavailableQty) remains in warehouse as available_quantity
+                // This was already handled in the warehouse stock update above
             }
 
             $vendorPI->total_amount = $total_amount;
@@ -556,7 +575,7 @@ class PurchaseOrderController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
 
-            return redirect()->back()->with(['error' => 'Something went wrong: ' . $e->getMessage()]);
+            return redirect()->back()->with(['error' => 'Something went wrong: '.$e->getMessage()]);
         }
     }
 
@@ -598,7 +617,7 @@ class PurchaseOrderController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
 
-            return redirect()->back()->with(['error' => 'Something went wrong: ' . $e->getMessage()]);
+            return redirect()->back()->with(['error' => 'Something went wrong: '.$e->getMessage()]);
         }
     }
 
@@ -617,7 +636,6 @@ class PurchaseOrderController extends Controller
             return redirect()->back()->with('error', $validated->errors()->first());
         }
 
-
         // if($purchaseOrderInvoice?->invoice_file != null) {
         //     if(File::exists(public_path('uploads/invoices/' . $purchaseOrderInvoice->invoice_file))) {
         //         File::delete(public_path('uploads/invoices/' . $purchaseOrderInvoice->invoice_file));
@@ -632,7 +650,7 @@ class PurchaseOrderController extends Controller
 
         $invoice_file = $request->file('invoice_file');
         $ext = $invoice_file->getClientOriginalExtension();
-        $invoiceFileName = strtotime('now') . '-' . $request->purchase_order_id . '.' . $ext;
+        $invoiceFileName = strtotime('now').'-'.$request->purchase_order_id.'.'.$ext;
         $invoice_file->move(public_path('uploads/invoices'), $invoiceFileName);
 
         $purchaseInvoice = new PurchaseInvoice;
@@ -665,7 +683,7 @@ class PurchaseOrderController extends Controller
 
         $grn_file = $request->file('grn_file');
         $ext = $grn_file->getClientOriginalExtension();
-        $grnFileName = strtotime('now') . '-' . $request->purchase_order_id . '.' . $ext;
+        $grnFileName = strtotime('now').'-'.$request->purchase_order_id.'.'.$ext;
         $grn_file->move(public_path('uploads/invoices'), $grnFileName);
 
         $purchaseGRN = new PurchaseGrn;
@@ -688,7 +706,7 @@ class PurchaseOrderController extends Controller
         }
 
         // Create temporary .xlsx file path
-        $tempXlsxPath = storage_path('app/blocked_' . Str::random(8) . '.xlsx');
+        $tempXlsxPath = storage_path('app/blocked_'.Str::random(8).'.xlsx');
 
         // Create writer
         $writer = SimpleExcelWriter::create($tempXlsxPath);
@@ -723,7 +741,7 @@ class PurchaseOrderController extends Controller
         // Close the writer
         $writer->close();
 
-        return response()->download($tempXlsxPath, $request->vendorCode . '_PO.xlsx', [
+        return response()->download($tempXlsxPath, $request->vendorCode.'_PO.xlsx', [
             'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         ])->deleteFileAfterSend(true);
     }
@@ -778,7 +796,7 @@ class PurchaseOrderController extends Controller
             // Create status change notification
             NotificationService::statusChanged('purchase', $purchaseOrder->id, $oldStatus, $purchaseOrder->status);
 
-            return redirect()->back()->with('success', 'Purchase Order status changed to "' . ucfirst(str_replace('_', ' ', $request->status)) . '" successfully! Order ID: ' . $purchaseOrder->id);
+            return redirect()->back()->with('success', 'Purchase Order status changed to "'.ucfirst(str_replace('_', ' ', $request->status)).'" successfully! Order ID: '.$purchaseOrder->id);
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Status Not Changed. Please Try Again.');
         }
@@ -846,7 +864,7 @@ class PurchaseOrderController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
 
-            return back()->with('error', 'Failed to add payment: ' . $e->getMessage());
+            return back()->with('error', 'Failed to add payment: '.$e->getMessage());
         }
 
         return back()->with('success', 'Payment added successfully.');

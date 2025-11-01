@@ -5,7 +5,7 @@
             'pending' => 'Pending',
             'blocked' => 'Blocked',
             'shipped' => 'Shipped',
-            'completed' => 'Completed',
+            'completed' => 'Complete',
             'ready_to_ship' => 'Ready To Ship',
             'ready_to_package' => 'Ready To Package',
         ];
@@ -50,7 +50,7 @@
                                             <option value="shipped" @if ($salesOrder->status == 'shipped') selected @endif
                                                 @if (in_array($salesOrder->status, ['completed'])) disabled @endif>Shipped</option>
                                             <option value="completed" @if ($salesOrder->status == 'completed') selected @endif>
-                                                Completed</option>
+                                                Delivered</option>
                                         </select>
                                     </form>
                                 </ul>
@@ -206,8 +206,8 @@
 
                             <li class="nav-item" role="presentation">
                                 <button class="nav-link status-filter-tab" id="active-tab" data-bs-toggle="tab"
-                                    data-order="Completed" data-bs-target="#active" type="button" role="tab"
-                                    aria-controls="active" aria-selected="false">Completed</button>
+                                    data-order="Delivered" data-bs-target="#active" type="button" role="tab"
+                                    aria-controls="active" aria-selected="false">Delivered</button>
                             </li>
 
                             <li class="nav-item" role="presentation">
@@ -257,7 +257,7 @@
                                         $statuses = [
                                             'pending' => 'Pending',
                                             'blocked' => 'Blocked',
-                                            'completed' => 'Completed',
+                                            'completed' => 'Delivered',
                                             'ready_to_ship' => 'Ready To Ship',
                                         ];
                                     @endphp

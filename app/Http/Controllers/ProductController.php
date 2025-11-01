@@ -105,8 +105,13 @@ class ProductController extends Controller
                     ], ['sku']);
 
                     $warehouseStock = WarehouseStock::where('sku', $record['SKU Code'])->where('warehouse_id', $request->warehouse_id)->first();
-                    isset($record['Stock']) ? $warehouseStock->original_quantity = $record['Stock'] : $warehouseStock->original_quantity = 0;
-                    isset($record['Stock']) ? $warehouseStock->available_quantity = $record['Stock'] : $warehouseStock->available_quantity = 0;
+                    if (! $warehouseStock) {
+                        $warehouseStock = new WarehouseStock;
+                        $warehouseStock->sku = $record['SKU Code'];
+                        $warehouseStock->warehouse_id = $request->warehouse_id;
+                    }
+                    $warehouseStock->original_quantity = isset($record['Stock']) ? $record['Stock'] : 0;
+                    $warehouseStock->available_quantity = isset($record['Stock']) ? $record['Stock'] : 0;
                     $warehouseStock->save();
                 } else {
                     $product = Product::create([
