@@ -11,34 +11,57 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Spatie\SimpleExcel\SimpleExcelReader;
 
 class CustomerController extends Controller
 {
-    //
-
+    /**
+     * Show create customer form
+     * 
+     * @param int $g_id - Customer group ID
+     * @return \Illuminate\View\View
+     */
     public function create($g_id)
     {
-        $countries = Country::get();
-        $states = State::get();
-        $cities = City::get();
+        // $countries = Country::all();
+        // $states = State::all();
+        // $cities = City::all();
+        $group_id = $g_id;
+        $countries = Country::all();
+        $states = State::where('country_id', old('shippingCountry'))->get();
+        $cities = City::where('state_id', old('shippingState'))->get();
+        return view('customer.create', compact(/*other data*/'group_id', 'countries', 'states', 'cities'));
 
-        return view('customer.create', ['group_id' => $g_id, 'countries' => $countries, 'states' => $states, 'cities' => $cities]);
+
+        // return view('customer.create', [
+        //     'group_id' => $g_id,
+        //     'countries' => $countries,
+        //     'states' => $states,
+        //     'cities' => $cities
+        // ]);
     }
 
+    /**
+     * Bulk import customers from CSV file
+     *
+     * @param Request $request
+     * @param int $g_id - Customer group ID
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function storeBulk(Request $request, $g_id)
     {
         $validator = Validator::make($request->all(), [
-            'csv_file' => 'required',
+            'csv_file' => 'required|file|mimes:xlsx,xls|max:5120', // 5MB max
         ]);
 
         if ($validator->fails()) {
-            return back()->with($validator)->withInput();
+            return back()->withErrors($validator)->withInput();
         }
 
         $file = $request->file('csv_file');
-        if (! $file) {
+        if (!$file) {
             return redirect()->back()->with('error', 'Please upload a CSV file.');
         }
 
@@ -51,250 +74,579 @@ class CustomerController extends Controller
             $reader = SimpleExcelReader::create($filePath, $fileExtension);
 
             $insertCount = 0;
+            $skipCount = 0;
+            $errors = [];
+            $rowNumber = 0;
 
             foreach ($reader->getRows() as $record) {
-                // 1. Check if customer already exists
-                // $existingCustomer = Customer::where('email', $record['Email'] ?? '')->first();
-                // $keywords = preg_split('/[\s\-]+/', $record['Shipping Address'], -1, PREG_SPLIT_NO_EMPTY);
-                // $query = DB::table('customers'); // your table
+                $rowNumber++;
 
-                // $query->where(function ($q) use ($keywords) {
-                //     foreach ($keywords as $word) {
-                //         $q->orWhere('shipping_address', 'like', "%{$word}%");
-                //     }
-                // });
+                try {
+                    // Validate required field: Facility Name
+                    if (!isset($record['Facility Name']) || empty(trim($record['Facility Name']))) {
+                        $errors[] = "Row {$rowNumber}: Facility Name is required";
+                        $skipCount++;
+                        continue;
+                    }
 
-                if (! isset($record['Facility Name']) || empty($record['Facility Name'])) {
-                    throw new \Exception('Facility Name is required');
+                    $facilityName = trim($record['Facility Name']);
+                    $email = strtolower(trim($record['Email'] ?? ''));
+                    $gstin = strtoupper(trim($record['GSTIN'] ?? ''));
+                    $pan = strtoupper(trim($record['PAN'] ?? ''));
+
+                    // Check if customer already exists by facility name
+                    $existingCustomer = Customer::where('facility_name', $facilityName)->first();
+
+                    if ($existingCustomer) {
+                        // Check if already added to this group
+                        $existingMember = CustomerGroupMember::where([
+                            'customer_id' => $existingCustomer->id,
+                            'customer_group_id' => $g_id,
+                        ])->first();
+
+                        if (!$existingMember) {
+                            CustomerGroupMember::create([
+                                'customer_id' => $existingCustomer->id,
+                                'customer_group_id' => $g_id,
+                            ]);
+                            $insertCount++;
+                        } else {
+                            $skipCount++;
+                        }
+                    } else {
+                        // Create new customer
+                        $customer = Customer::create([
+                            'facility_name' => $facilityName,
+                            'client_name' => trim($record['Client Name'] ?? ''),
+                            'contact_name' => trim($record['Contact Name'] ?? ''),
+                            'email' => $email,
+                            'contact_no' => trim($record['Contact No'] ?? ''),
+                            'gstin' => $gstin,
+                            'pan' => $pan,
+                            'company_name' => trim($record['Company Name'] ?? ''),
+                            'billing_address' => trim($record['Billing Address'] ?? ''),
+                            'billing_country' => trim($record['Billing Country'] ?? ''),
+                            'billing_state' => trim($record['Billing State'] ?? ''),
+                            'billing_city' => trim($record['Billing City'] ?? ''),
+                            'billing_zip' => trim($record['Billing Zip'] ?? ''),
+                            'shipping_address' => trim($record['Shipping Address'] ?? ''),
+                            'shipping_country' => trim($record['Shipping Country'] ?? ''),
+                            'shipping_state' => trim($record['Shipping State'] ?? ''),
+                            'shipping_city' => trim($record['Shipping City'] ?? ''),
+                            'shipping_zip' => trim($record['Shipping Zip'] ?? ''),
+                            'status' => 'active',
+                        ]);
+
+                        // Add customer to group
+                        CustomerGroupMember::create([
+                            'customer_id' => $customer->id,
+                            'customer_group_id' => $g_id,
+                        ]);
+
+                        $insertCount++;
+                    }
+                } catch (\Exception $e) {
+                    $errors[] = "Row {$rowNumber}: " . $e->getMessage();
+                    $skipCount++;
+                    continue;
                 }
-
-                // $existingCustomer = $query->first();
-                $existingCustomer = Customer::where('facility_name', $record['Facility Name'])->first();
-
-                if ($existingCustomer) {
-                    // Customer exists, you can choose to update or skip
-                    CustomerGroupMember::create([
-                        'customer_id' => $existingCustomer->id,
-                        'customer_group_id' => $g_id,
-                    ]);
-                } else {
-                    // 2. Insert individual customer
-                    $customer = Customer::create([
-                        'facility_name' => $record['Facility Name'] ?? '',
-                        'client_name' => $record['Client Name'] ?? '',
-                        'contact_name' => $record['Contact Name'] ?? '',
-                        'email' => $record['Email'] ?? '',
-                        'contact_no' => $record['Contact No'] ?? '',
-                        'gstin' => $record['GSTIN'] ?? '',
-                        'pan' => $record['PAN'] ?? '',
-                        'company_name' => $record['Company Name'] ?? '',
-                        'billing_address' => $record['Billing Address'] ?? '',
-                        'billing_country' => $record['Billing Country'] ?? '',
-                        'billing_state' => $record['Billing State'] ?? '',
-                        'billing_city' => $record['Billing City'] ?? '',
-                        'billing_zip' => $record['Billing Zip'] ?? '',
-                        'shipping_address' => $record['Shipping Address'] ?? '',
-                        'shipping_country' => $record['Shipping Country'] ?? '',
-                        'shipping_state' => $record['Shipping State'] ?? '',
-                        'shipping_city' => $record['Shipping City'] ?? '',
-                        'shipping_zip' => $record['Shipping Zip'] ?? '',
-                    ]);
-
-                    // 3. Insert into customer_group_members
-                    CustomerGroupMember::create([
-                        'customer_id' => $customer->id,
-                        'customer_group_id' => $g_id,
-                    ]);
-                }
-
-                $insertCount++;
             }
 
-            if ($insertCount === 0) {
+            // Check if any records were processed
+            if ($insertCount === 0 && $skipCount > 0) {
                 DB::rollBack();
-
-                return redirect()->back()->with(['csv_file' => 'No valid data found in the CSV file.']);
+                $errorMessage = !empty($errors)
+                    ? implode('; ', array_slice($errors, 0, 5))
+                    : 'No valid data found in the CSV file.';
+                return redirect()->back()->with('error', $errorMessage);
             }
 
             DB::commit();
-            activity()->log('Customer Group Created' . $g_id . ' with ' . $insertCount . ' customers.' . ' by ' . Auth::user()->name);
 
-            return redirect()->route('customer.groups.index')->with('success', 'CSV file imported successfully. Group and customers created.');
+            // Build success message
+            $message = "CSV imported successfully! Added {$insertCount} customer(s)";
+            if ($skipCount > 0) {
+                $message .= ", Skipped {$skipCount} record(s)";
+            }
+            if (!empty($errors)) {
+                $errorSummary = implode('; ', array_slice($errors, 0, 3));
+                $message .= ". First errors: {$errorSummary}";
+            }
+
+            activity()->log("Customer Group {$g_id} updated with {$insertCount} customers by " . Auth::user()->name);
+
+            return redirect()->route('customer.groups.index')->with('success', $message);
         } catch (\Exception $e) {
             DB::rollBack();
-
-            return redirect()->back()->with(['error' => 'Something went wrong: ' . $e->getMessage()]);
+            \Log::error('CSV Import Error: ' . $e->getMessage(), [
+                'group_id' => $g_id,
+                'trace' => $e->getTraceAsString()
+            ]);
+            return redirect()->back()->with('error', 'CSV import failed: ' . $e->getMessage());
         }
     }
 
+    /**
+     * Store single customer from form
+     * 
+     * @param Request $request
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function store(Request $request)
     {
+        dd($request->all());
         $validator = Validator::make($request->all(), [
-            'facility_name' => 'required|min:3',
-            'client_name' => 'required|min:3',
-            'contact_name' => 'required|min:3',
+            'facility_name' => 'required|min:3|max:100',
+            'client_name' => 'required|min:3|max:100',
+            'contact_name' => 'required|min:3|max:100',
             'email' => 'required|email|unique:customers,email',
             'contact_no' => 'required|digits:10',
-            'gstin' => 'required',
-            'pan' => 'required',
+            'gstin' => 'required|min:15',
+            'pan' => 'required|min:10',
+            'group_id' => 'required|exists:customer_groups,id',
+            'company_name' => 'nullable|min:3|max:100',
+            'shipping_address' => 'nullable|min:5|max:255',
+            'shipping_country' => 'nullable|min:2|max:100',
+            'shipping_state' => 'nullable|min:2|max:100',
+            'shipping_city' => 'nullable|min:2|max:100',
+            'shipping_zip' => 'nullable|min:4|max:10',
+            'billing_address' => 'nullable|min:5|max:255',
+            'billing_country' => 'nullable|min:2|max:100',
+            'billing_state' => 'nullable|min:2|max:100',
+            'billing_city' => 'nullable|min:2|max:100',
+            'billing_zip' => 'nullable|min:4|max:10',
+            'status' => 'nullable|in:1,0',
         ]);
 
         if ($validator->fails()) {
-            return back()->with($validator)->withInput();
+            dd($validator->errors());
+            return back()->withErrors($validator)->withInput();
         }
 
-        $customer = new Customer;
-        $customer->facility_name = $request->facility_name;
-        $customer->client_name = $request->client_name;
-        $customer->contact_name = $request->contact_name;
-        $customer->email = $request->email;
-        $customer->contact_no = $request->contact_no;
-        $customer->company_name = $request->companyName;
-        $customer->gstin = $request->gstin;
-        $customer->pan = $request->pan;
-        $customer->status = $request->status;
-        $customer->shipping_address = $request->shippingAddress;
-        $customer->shipping_country = $request->shippingCountry;
-        $customer->shipping_state = $request->shippingState;
-        $customer->shipping_city = $request->shippingCity;
-        $customer->shipping_zip = $request->shippingPinCode;
-        $customer->billing_address = $request->billingAddress;
-        $customer->billing_country = $request->billingCountry;
-        $customer->billing_state = $request->billingState;
-        $customer->billing_city = $request->billingCity;
-        $customer->billing_zip = $request->billingPinCode;
-        $customer->save();
+        try {
+            DB::beginTransaction();
 
-        $customerGrpMember = new CustomerGroupMember;
-        $customerGrpMember->customer_group_id = $request->group_id;
-        $customerGrpMember->customer_id = $customer->id;
-        $customerGrpMember->save();
+            // Create customer
+            $customer = Customer::create([
+                'facility_name' => trim($request->facility_name),
+                'client_name' => trim($request->client_name),
+                'contact_name' => trim($request->contact_name),
+                'email' => strtolower(trim($request->email)),
+                'contact_no' => trim($request->contact_no),
+                'company_name' => trim($request->company_name ?? ''),
+                'gstin' => strtoupper(trim($request->gstin)),
+                'pan' => strtoupper(trim($request->pan)),
+                'status' => $request->status ?? '1',
+                'shipping_address' => trim($request->shipping_address ?? ''),
+                'shipping_country' => trim($request->shipping_country ?? ''),
+                'shipping_state' => trim($request->shipping_state ?? ''),
+                'shipping_city' => trim($request->shipping_city ?? ''),
+                'shipping_zip' => trim($request->shipping_zip ?? ''),
+                'billing_address' => trim($request->billing_address ?? ''),
+                'billing_country' => trim($request->billing_country ?? ''),
+                'billing_state' => trim($request->billing_state ?? ''),
+                'billing_city' => trim($request->billing_city ?? ''),
+                'billing_zip' => trim($request->billing_zip ?? ''),
+            ]);
 
-        if ($customer && $customerGrpMember) {
-            return redirect()->route('customer.groups.view', $request->group_id)->with('success', 'Customer added successfully.');
+            // Add to customer group
+            CustomerGroupMember::create([
+                'customer_group_id' => $request->group_id,
+                'customer_id' => $customer->id,
+            ]);
+
+            DB::commit();
+
+            activity()->log("Customer {$customer->id} ({$customer->facility_name}) created by " . Auth::user()->name);
+
+            return redirect()->route('customer.groups.view', $request->group_id)
+                ->with('success', 'Customer added successfully.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error('Customer Creation Error: ' . $e->getMessage());
+            return back()->with('error', 'Failed to add customer: ' . $e->getMessage())->withInput();
         }
-
-        return back()->with('error', 'Something Went Wrong.');
     }
 
+    /**
+     * Show edit customer form
+     * 
+     * @param int $id - Customer ID
+     * @param int $group_id - Customer group ID
+     * @return \Illuminate\View\View
+     */
     public function edit($id, $group_id)
     {
         $customer = Customer::findOrFail($id);
+        $countries = Country::all();
+        $states = State::all();
+        $cities = City::all();
 
-        return view('customer.edit', compact('customer', 'group_id'));
+        return view('customer.edit', compact('customer', 'group_id', 'countries', 'states', 'cities'));
     }
 
+    /**
+     * Update customer details
+     * 
+     * @param Request $request
+     * @param int $id - Customer ID
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function update(Request $request, $id)
     {
         $validator = Validator::make($request->all(), [
-            'group_id' => 'required',
-            'facility_name' => 'required',
-            'client_name' => 'required|min:3',
-            'contact_name' => 'required|min:3',
+            'group_id' => 'required|exists:customer_groups,id',
+            'facility_name' => 'required|min:3|max:100',
+            'client_name' => 'required|min:3|max:100',
+            'contact_name' => 'required|min:3|max:100',
             'email' => 'required|email|unique:customers,email,' . $id,
             'contact_no' => 'required|digits:10',
-            'gstin' => 'required',
-            'pan' => 'required',
+            'gstin' => 'required|min:15',
+            'pan' => 'required|min:10',
+            'company_name' => 'nullable|min:3|max:100',
+            'shipping_address' => 'nullable|min:5|max:255',
+            'shipping_country' => 'nullable|min:2|max:100',
+            'shipping_state' => 'nullable|min:2|max:100',
+            'shipping_city' => 'nullable|min:2|max:100',
+            'shipping_zip' => 'nullable|min:4|max:10',
+            'billing_address' => 'nullable|min:5|max:255',
+            'billing_country' => 'nullable|min:2|max:100',
+            'billing_state' => 'nullable|min:2|max:100',
+            'billing_city' => 'nullable|min:2|max:100',
+            'billing_zip' => 'nullable|min:4|max:10',
+            'status' => 'nullable|in:active,inactive',
         ]);
 
         if ($validator->fails()) {
-            return back()->with($validator)->withInput();
+            return back()->withErrors($validator)->withInput();
         }
 
-        $customer = Customer::findOrFail($id);
-        $customer->facility_name = $request->facility_name;
-        $customer->client_name = $request->client_name;
-        $customer->contact_name = $request->contact_name;
-        $customer->email = $request->email;
-        $customer->contact_no = $request->contact_no;
-        $customer->company_name = $request->companyName;
-        $customer->gstin = $request->gstin;
-        $customer->pan = $request->pan;
-        $customer->status = $request->status;
-        $customer->shipping_address = $request->shippingAddress;
-        $customer->shipping_country = $request->shippingCountry;
-        $customer->shipping_state = $request->shippingState;
-        $customer->shipping_city = $request->shippingCity;
-        $customer->shipping_zip = $request->shippingPinCode;
-        $customer->billing_address = $request->billingAddress;
-        $customer->billing_country = $request->billingCountry;
-        $customer->billing_state = $request->billingState;
-        $customer->billing_city = $request->billingCity;
-        $customer->billing_zip = $request->billingPinCode;
-        $customer->save();
+        try {
+            DB::beginTransaction();
 
-        // Update customer group membership
-        return redirect()->route('customer.groups.view', $request->group_id)->with('success', 'Customer updated successfully.');
+            $customer = Customer::findOrFail($id);
+
+            $oldData = $customer->toArray();
+
+            // Update customer
+            $customer->update([
+                'facility_name' => trim($request->facility_name),
+                'client_name' => trim($request->client_name),
+                'contact_name' => trim($request->contact_name),
+                'email' => strtolower(trim($request->email)),
+                'contact_no' => trim($request->contact_no),
+                'company_name' => trim($request->company_name ?? ''),
+                'gstin' => strtoupper(trim($request->gstin)),
+                'pan' => strtoupper(trim($request->pan)),
+                'status' => $request->status ?? 'active',
+                'shipping_address' => trim($request->shipping_address ?? ''),
+                'shipping_country' => trim($request->shipping_country ?? ''),
+                'shipping_state' => trim($request->shipping_state ?? ''),
+                'shipping_city' => trim($request->shipping_city ?? ''),
+                'shipping_zip' => trim($request->shipping_zip ?? ''),
+                'billing_address' => trim($request->billing_address ?? ''),
+                'billing_country' => trim($request->billing_country ?? ''),
+                'billing_state' => trim($request->billing_state ?? ''),
+                'billing_city' => trim($request->billing_city ?? ''),
+                'billing_zip' => trim($request->billing_zip ?? ''),
+            ]);
+
+            DB::commit();
+
+            activity()->log("Customer {$customer->id} ({$customer->facility_name}) updated by " . Auth::user()->name);
+
+            return redirect()->route('customer.groups.view', $request->group_id)
+                ->with('success', 'Customer updated successfully.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error('Customer Update Error: ' . $e->getMessage());
+            return back()->with('error', 'Failed to update customer: ' . $e->getMessage())->withInput();
+        }
     }
 
+    /**
+     * Delete single customer
+     * 
+     * @param int $id - Customer ID
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function delete($id)
     {
-        $customer = Customer::findOrFail($id);
-        $customer->delete();
+        try {
+            $customer = Customer::findOrFail($id);
+            $facilityName = $customer->facility_name;
 
-        return redirect()->back()->with('success', 'Customer deleted successfully.');
+            DB::beginTransaction();
+
+            // Delete customer group memberships first (foreign key constraint)
+            CustomerGroupMember::where('customer_id', $id)->delete();
+
+            // Delete customer
+            $customer->delete();
+
+            DB::commit();
+
+            activity()->log("Customer {$id} ({$facilityName}) deleted by " . Auth::user()->name);
+
+            return redirect()->back()->with('success', 'Customer deleted successfully.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error('Customer Delete Error: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Failed to delete customer: ' . $e->getMessage());
+        }
     }
 
+    /**
+     * Show customer details with related data
+     * 
+     * @param int $id - Customer ID
+     * @return \Illuminate\View\View
+     */
     public function detail($id)
     {
-        $customerDetails = Customer::with('groupInfo.customerGroup', 'orders.product', 'orders.tempOrder')->where('id', $id)->first();
+        try {
+            $customerDetails = Customer::with([
+                'groupInfo.customerGroup',
+                'orders.product',
+                'orders.tempOrder'
+            ])->findOrFail($id);
 
-        return view('customer.detail-view', compact('customerDetails'));
+            return view('customer.detail-view', compact('customerDetails'));
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Customer not found.');
+        }
     }
 
+    /**
+     * Show user profile
+     * 
+     * @return \Illuminate\View\View
+     */
     public function profile()
     {
         $user = Auth::user();
-
         return view('user-profile', compact('user'));
     }
 
+    /**
+     * Update user profile information
+     * 
+     * @param Request $request
+     * @param int $id - User ID
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function updateuser(Request $request, $id)
     {
         $validator = Validator::make($request->all(), [
-            'fname' => 'required|min:3',
-            'lname' => 'required|min:3',
-            'email' => 'required|email|unique:staff,email,' . $id,
+            'fname' => 'required|min:3|max:50',
+            'lname' => 'required|min:3|max:50',
+            'email' => 'required|email|unique:users,email,' . $id,
             'phone' => 'required|digits:10',
+            'country' => 'nullable|min:2|max:50',
+            'state' => 'nullable|min:2|max:50',
+            'city' => 'nullable|min:2|max:50',
+            'pincode' => 'nullable|digits:6',
+            'current_address' => 'nullable|min:5|max:255',
+            'profile_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
         if ($validator->fails()) {
-            return back()->with($validator)->withInput();
+            return back()->withErrors($validator)->withInput();
         }
 
-        $user = User::findOrFail($id);
-        $user->fname = $request->fname;
-        $user->lname = $request->lname;
-        $user->email = $request->email;
-        $user->phone = $request->phone;
-        $user->country = $request->country;
-        $user->state = $request->state;
-        $user->city = $request->city;
-        $user->pincode = $request->zip;
+        try {
+            DB::beginTransaction();
 
-        $user->current_address = $request->current_address;
-        // Handle profile image upload if needed
-        if ($request->hasFile('profile_image')) {
-            // Save the profile image logic here
-            $image = $request->file('profile_image');
-            $imageName = time() . '.' . $image->getClientOriginalExtension();
-            $image->move(public_path('/uploads/images/profile'), $imageName);
-            $user->profile_image = '/uploads/images/profile/' . $imageName; // Save the
+            $user = User::findOrFail($id);
+
+            $data = [
+                'fname' => trim($request->fname),
+                'lname' => trim($request->lname),
+                'email' => strtolower(trim($request->email)),
+                'phone' => trim($request->phone),
+                'country' => trim($request->country ?? ''),
+                'state' => trim($request->state ?? ''),
+                'city' => trim($request->city ?? ''),
+                'pincode' => trim($request->pincode ?? ''),
+                'current_address' => trim($request->current_address ?? ''),
+            ];
+
+            // Handle profile image upload
+            if ($request->hasFile('profile_image')) {
+                $image = $request->file('profile_image');
+
+                // Generate unique filename with timestamp and unique ID
+                $imageName = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
+
+                // Create directory if it doesn't exist
+                $uploadPath = public_path('uploads/images/profile');
+                if (!file_exists($uploadPath)) {
+                    mkdir($uploadPath, 0755, true);
+                }
+
+                // Delete old image if exists
+                if ($user->profile_image && file_exists(public_path($user->profile_image))) {
+                    unlink(public_path($user->profile_image));
+                }
+
+                // Move uploaded image
+                $image->move($uploadPath, $imageName);
+                $data['profile_image'] = 'uploads/images/profile/' . $imageName;
+            }
+
+            $user->update($data);
+
+            DB::commit();
+
+            activity()->log("User {$user->id} ({$user->email}) profile updated by " . Auth::user()->name);
+
+            return redirect()->route('user-profile')->with('success', 'Profile updated successfully.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error('Profile Update Error: ' . $e->getMessage());
+            return back()->with('error', 'Failed to update profile: ' . $e->getMessage())->withInput();
         }
-        $user->save();
-
-        return redirect()->route('user-profile')->with('success', 'Profile updated successfully.');
     }
 
+    /**
+     * Delete selected customers from a group
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function deleteSelected(Request $request)
     {
-        $ids = is_array($request->ids) ? $request->ids : explode(',', $request->ids);
-        $customerGroupMember = CustomerGroupMember::where('customer_group_id', $request->groupId)->whereIn('id', $ids)->delete();
+        $validator = Validator::make($request->all(), [
+            'ids' => 'required',
+            'groupId' => 'required|exists:customer_groups,id',
+        ]);
 
-        if ($customerGroupMember) {
-            return redirect()->back()->with('success', 'Selected customers deleted successfully.');
+        if ($validator->fails()) {
+            return redirect()->back()->with('error', 'Invalid data provided.');
         }
 
-        return redirect()->back()->with('error', 'Failed to delete selected customers.');
+        DB::beginTransaction();
+
+        try {
+            // Parse IDs (handle both array and comma-separated string)
+            $ids = is_array($request->ids) ? $request->ids : explode(',', $request->ids);
+
+            // Filter out empty values
+            $ids = array_filter($ids, function ($id) {
+                return !empty($id) && is_numeric($id);
+            });
+
+            if (empty($ids)) {
+                return redirect()->back()->with('error', 'No valid customers selected.');
+            }
+
+            // Delete selected customer group members
+            $deletedCount = CustomerGroupMember::where('customer_group_id', $request->groupId)
+                ->whereIn('id', $ids)
+                ->delete();
+
+            DB::commit();
+
+            activity()
+                ->causedBy(Auth::user())
+                ->log("Deleted {$deletedCount} customer(s) from group {$request->groupId}");
+
+            if ($deletedCount > 0) {
+                return redirect()->back()->with('success', "Successfully deleted {$deletedCount} customer(s).");
+            }
+
+            return redirect()->back()->with('warning', 'No customers found to delete.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error deleting customers: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Error: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Toggle customer status
+     */
+    public function toggleStatus(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'id' => 'required|exists:customers,id',
+            'status' => 'required|in:0,1',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'message' => 'Invalid data'], 422);
+        }
+
+        DB::beginTransaction();
+
+        try {
+            $customer = Customer::findOrFail($request->id);
+            $customer->status = $request->status;
+            $customer->save();
+
+            DB::commit();
+
+            activity()
+                ->performedOn($customer)
+                ->causedBy(Auth::user())
+                ->log('Customer status changed to ' . ($request->status == '1' ? 'Active' : 'Inactive'));
+
+            return response()->json(['success' => true]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error toggling customer status: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Change status of multiple customers
+     */
+    public function bulkStatusChange(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'ids' => 'required|string',
+            'status' => 'required|in:0,1',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()->with('error', 'Invalid data provided.');
+        }
+
+        DB::beginTransaction();
+
+        try {
+            $ids = is_array($request->ids) ? $request->ids : explode(',', $request->ids);
+
+            // Filter out empty values and get customer IDs from group member IDs
+            $ids = array_filter($ids, function ($id) {
+                return !empty($id) && is_numeric($id);
+            });
+
+            if (empty($ids)) {
+                return redirect()->back()->with('error', 'No customers selected.');
+            }
+
+            // Get customer IDs from customer_group_members table
+            $customerIds = CustomerGroupMember::whereIn('id', $ids)->pluck('customer_id')->toArray();
+
+            if (empty($customerIds)) {
+                return redirect()->back()->with('error', 'No valid customers found.');
+            }
+
+            $updated = Customer::whereIn('id', $customerIds)->update(['status' => $request->status]);
+
+            DB::commit();
+
+            activity()
+                ->causedBy(Auth::user())
+                ->log('Changed status of ' . $updated . ' customers to ' . ($request->status == '1' ? 'Active' : 'Inactive'));
+
+            return redirect()->back()->with('success', "Successfully updated status of {$updated} customer(s).");
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error changing customer status: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Error: ' . $e->getMessage());
+        }
     }
 }

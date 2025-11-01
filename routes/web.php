@@ -94,6 +94,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/view-customer-groups/{id}', 'view')->name('customer.groups.view');
         Route::post('/customer-groups/toggle-status', 'toggleStatus')->name('customer.groups.toggleStatus');
         Route::delete('/customers-group/delete-selected', 'deleteSelected')->name('delete.selected.customers.group');
+        Route::post('/customer-groups/bulk-status-change', 'bulkStatusChange')->name('customer.groups.bulkStatusChange');
     });
 
     // Customer
@@ -110,6 +111,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/user-profile', 'profile')->name('user-profile');
         Route::put('/user-profile/update/{id}', 'updateuser')->name('user.update');
         Route::delete('/customers/delete-selected', 'deleteSelected')->name('delete.selected.customers');
+        Route::post('/customers/toggle-status', 'toggleStatus')->name('customer.toggleStatus');
+        Route::post('/customers/bulk-status-change', 'bulkStatusChange')->name('customer.bulkStatusChange');
     });
 
     // Vendors
@@ -240,7 +243,6 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/return-accept', 'returnAccept')->name('return.accept');
         Route::get('/accept-vendor-products/{id}', 'acceptVendorProducts')->name('accept.vendor.products');
         Route::get('/return-vendor-products/{id}', 'returnVendorProducts')->name('return.vendor.products');
-
     });
 
     Route::controller(ProductReturnController::class)->group(function () {
@@ -250,7 +252,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/customer-returns-view/{id}', 'viewCustomerReturn')->name('customer.returns.view');
         Route::get('/customer-returns-edit/{id}', 'editCustomerReturn')->name('customer.returns.edit');
         Route::put('/customer-returns-update', 'updateCustomerReturn')->name('customer.returns.update');
-        Route::delete('/customer-returns-delete/{id}', 'deleteCustomerReturn')->name('customer.returns.delete'); 
+        Route::delete('/customer-returns-delete/{id}', 'deleteCustomerReturn')->name('customer.returns.delete');
     });
 
     // Track order

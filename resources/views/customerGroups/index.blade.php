@@ -6,7 +6,7 @@
                 <div>
                     <nav aria-label="breadcrumb">
                         <ol class="breadcrumb mb-0 p-0">
-                            <li class="breadcrumb-item"><a href="javascript:;"><i class="bx bx-home-alt"></i></a>
+                            <li class="breadcrumb-item"><a href="{{ route('index') }}"><i class="bx bx-home-alt"></i></a>
                             </li>
                             <li class="breadcrumb-item active" aria-current="page">Customer Groups List</li>
                         </ol>
@@ -26,7 +26,11 @@
                                             data-bs-toggle="dropdown"> <span class="visually-hidden">Toggle Dropdown</span>
                                         </button>
                                         <div class="dropdown-menu dropdown-menu-right dropdown-menu-lg-end">
-                                            <a class="dropdown-item cursor-pointer" id="delete-selected">Delete All</a>
+                                            <a class="dropdown-item cursor-pointer" id="activate-selected">Activate
+                                                Selected</a>
+                                            <a class="dropdown-item cursor-pointer" id="deactivate-selected">Deactivate
+                                                Selected</a>
+                                            <a class="dropdown-item cursor-pointer" id="delete-selected">Delete Selected</a>
                                         </div>
                                     </div>
                                 </div>
@@ -36,30 +40,136 @@
                 </div>
             </div>
 
+            @if ($errors->any())
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <ul class="mb-0">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            @endif
 
+            @if (session('success'))
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    {{ session('success') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            @endif
+
+            @if (session('error'))
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    {{ session('error') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            @endif
+
+            <!-- Status Filter Tabs -->
+            <div class="card">
+                <div class="card-body">
+                    <ul class="nav nav-pills mb-3" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <a class="nav-link {{ $status === 'all' ? 'active' : '' }}"
+                                href="{{ route('customer.groups.index', ['status' => 'all']) }}">
+                                All Groups
+                            </a>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <a class="nav-link {{ $status === 'active' ? 'active' : '' }}"
+                                href="{{ route('customer.groups.index', ['status' => 'active']) }}">
+                                Active
+                            </a>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <a class="nav-link {{ $status === 'inactive' ? 'active' : '' }}"
+                                href="{{ route('customer.groups.index', ['status' => 'inactive']) }}">
+                                Inactive
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Customer Groups Cards -->
+            {{-- 
+            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 row-cols-xl-4 g-3 mb-4">
+                @forelse ($customerGroups as $group)
+                    <div class="col">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center justify-content-between mb-3">
+                                    <h6 class="mb-0 fw-bold">{{ $group->name }}</h6>
+                                    <span class="badge {{ $group->status == '1' ? 'bg-success' : 'bg-secondary' }}">
+                                        {{ $group->status == '1' ? 'Active' : 'Inactive' }}
+                                    </span>
+                                </div>
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span class="text-muted">Total Customers:</span>
+                                        <span class="fw-bold">{{ $group->total_customers ?? 0 }}</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span class="text-muted">Active:</span>
+                                        <span class="text-success fw-bold">{{ $group->active_customers ?? 0 }}</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between">
+                                        <span class="text-muted">Inactive:</span>
+                                        <span class="text-secondary fw-bold">{{ $group->inactive_customers ?? 0 }}</span>
+                                    </div>
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <a href="{{ route('customer.groups.view', $group->id) }}"
+                                        class="btn btn-sm btn-primary flex-fill">
+                                        <i class="bx bx-show me-1"></i>View
+                                    </a>
+                                    <a href="{{ route('customer.groups.edit', $group->id) }}"
+                                        class="btn btn-sm btn-warning flex-fill">
+                                        <i class="bx bx-edit me-1"></i>Edit
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                @empty
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-body text-center py-5">
+                                <p class="text-muted mb-0">No customer groups found</p>
+                            </div>
+                        </div>
+                    </div>
+                @endforelse
+            </div> 
+            --}}
+
+            <!-- Customer Groups Table -->
             <div class="card mt-4">
                 <div class="card-body">
                     <div class="customer-table">
                         <div class="table-responsive white-space-nowrap">
-                            <table id="example" class="table table-striped cell-border">
+                            <table id="example" class="table table-striped table-hover">
                                 <thead class="table-light">
                                     <tr>
-                                        <th>
+                                        <th style="width:40px;">
                                             <input class="form-check-input" type="checkbox" id="select-all">
                                         </th>
                                         <th>Sr.No</th>
                                         <th>Group Name</th>
+                                        <th>Total Customers</th>
+                                        <th>Active</th>
+                                        <th>Inactive</th>
                                         <th>Created Date</th>
                                         <th>Status</th>
-                                        <th>Action</th>
+                                        <th style="width:120px;">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @forelse ($customerGroups as $key=> $group)
+                                    @forelse ($customerGroups as $key => $group)
                                         <tr>
                                             <td>
-                                                <input class="form-check-input row-checkbox" type="checkbox" name="ids[]"
-                                                    value="{{ $group->id }}">
+                                                <input class="form-check-input row-checkbox" type="checkbox"
+                                                    name="ids[]" value="{{ $group->id }}">
                                             </td>
                                             <td>{{ $key + 1 }}</td>
                                             <td>
@@ -68,6 +178,12 @@
                                                         {{ $group->name }}
                                                     </p>
                                                 </a>
+                                            </td>
+                                            <td>{{ $group->total_customers ?? 0 }}</td>
+                                            <td><span class="badge bg-success">{{ $group->active_customers ?? 0 }}</span>
+                                            </td>
+                                            <td><span
+                                                    class="badge bg-secondary">{{ $group->inactive_customers ?? 0 }}</span>
                                             </td>
                                             <td>
                                                 {{ $group->created_at->format('d-M-Y') }}
@@ -190,13 +306,15 @@
                 },
                 success: function(response) {
                     if (response.success) {
-                        alert('Status updated successfully!');
+                        location.reload();
                     } else {
                         alert('Failed to update status.');
+                        location.reload();
                     }
                 },
                 error: function() {
                     alert('Status update failed!');
+                    location.reload();
                 }
             });
         });
@@ -210,6 +328,54 @@
                 checkboxes.forEach(cb => cb.checked = selectAll.checked);
             });
 
+            // Activate Selected functionality
+            document.getElementById('activate-selected').addEventListener('click', function() {
+                let selected = [];
+                document.querySelectorAll('.row-checkbox:checked').forEach(cb => {
+                    selected.push(cb.value);
+                });
+                if (selected.length === 0) {
+                    alert('Please select at least one customer group.');
+                    return;
+                }
+                if (confirm('Are you sure you want to activate selected customer groups?')) {
+                    let form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = '{{ route('customer.groups.bulkStatusChange') }}';
+                    form.innerHTML = `
+                        @csrf
+                        <input type="hidden" name="ids" value="${selected.join(',')}">
+                        <input type="hidden" name="status" value="1">
+                    `;
+                    document.body.appendChild(form);
+                    form.submit();
+                }
+            });
+
+            // Deactivate Selected functionality
+            document.getElementById('deactivate-selected').addEventListener('click', function() {
+                let selected = [];
+                document.querySelectorAll('.row-checkbox:checked').forEach(cb => {
+                    selected.push(cb.value);
+                });
+                if (selected.length === 0) {
+                    alert('Please select at least one customer group.');
+                    return;
+                }
+                if (confirm('Are you sure you want to deactivate selected customer groups?')) {
+                    let form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = '{{ route('customer.groups.bulkStatusChange') }}';
+                    form.innerHTML = `
+                        @csrf
+                        <input type="hidden" name="ids" value="${selected.join(',')}">
+                        <input type="hidden" name="status" value="0">
+                    `;
+                    document.body.appendChild(form);
+                    form.submit();
+                }
+            });
+
             // Delete Selected functionality
             document.getElementById('delete-selected').addEventListener('click', function() {
                 let selected = [];
@@ -217,11 +383,10 @@
                     selected.push(cb.value);
                 });
                 if (selected.length === 0) {
-                    alert('Please select at least one record.');
+                    alert('Please select at least one customer group.');
                     return;
                 }
-                if (confirm('Are you sure you want to delete selected records?')) {
-                    // Create a form and submit
+                if (confirm('Are you sure you want to delete selected customer groups?')) {
                     let form = document.createElement('form');
                     form.method = 'POST';
                     form.action = '{{ route('delete.selected.customers.group') }}';

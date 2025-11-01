@@ -8,11 +8,12 @@
                 <div>
                     <nav aria-label="breadcrumb">
                         <ol class="breadcrumb mb-0 p-0">
-                            <li class="breadcrumb-item"><a href="javascript:;"><i class="bx bx-home-alt"></i></a>
+                            <li class="breadcrumb-item"><a href="{{ route('index') }}"><i class="bx bx-home-alt"></i></a>
+                            </li>
+                            <li class="breadcrumb-item"><a href="{{ route('customer.groups.index') }}">Customer Groups</a>
                             </li>
                             <li class="hidden" style="display:none" id="customerGroupId">{{ $customerGroup->id }}</li>
-                            <li class="breadcrumb-item active" aria-current="page"><b>Customers Group:</b>
-                                {{ $customerGroup->name }}</li>
+                            <li class="breadcrumb-item active" aria-current="page">{{ $customerGroup->name }}</li>
                         </ol>
                     </nav>
                 </div>
@@ -20,6 +21,9 @@
                     <div class="row g-3 justify-content-end">
                         <div class="col-12 col-md-auto">
                             <div class="d-flex align-items-center gap-2 justify-content-lg-end">
+                                <a href="{{ route('customer.groups.index') }}" class="btn btn-secondary">
+                                    <i class="bi bi-arrow-left me-2"></i>Back
+                                </a>
                                 <a type="button" class="btn border-2 border-primary" data-bs-toggle="modal"
                                     data-bs-target="#staticBackdrop1">
                                     Add Customer(Bulk)
@@ -72,8 +76,98 @@
                                             data-bs-toggle="dropdown"> <span class="visually-hidden">Toggle Dropdown</span>
                                         </button>
                                         <div class="dropdown-menu dropdown-menu-right dropdown-menu-lg-end">
-                                            <a class="dropdown-item cursor-pointer" id="delete-selected">Delete All</a>
+                                            <a class="dropdown-item cursor-pointer" id="activate-selected">Activate
+                                                Selected</a>
+                                            <a class="dropdown-item cursor-pointer" id="deactivate-selected">Deactivate
+                                                Selected</a>
+                                            <a class="dropdown-item cursor-pointer" id="delete-selected">Delete Selected</a>
                                         </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            @if ($errors->any())
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <ul class="mb-0">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            @endif
+
+            @if (session('success'))
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    {{ session('success') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            @endif
+
+            @if (session('error'))
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    {{ session('error') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            @endif
+
+            <!-- Statistics Cards -->
+            <div class="row row-cols-1 row-cols-md-3 g-3 mb-4">
+                <div class="col">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-grow-1">
+                                    <p class="text-muted mb-1">Total Customers</p>
+                                    <h4 class="mb-0">{{ $customerGroup->total_customers ?? 0 }}</h4>
+                                </div>
+                                <div class="flex-shrink-0">
+                                    <div class="avatar-sm">
+                                        <span class="avatar-title bg-primary-subtle text-primary rounded-circle fs-3">
+                                            <i class="bx bx-group"></i>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-grow-1">
+                                    <p class="text-muted mb-1">Active Customers</p>
+                                    <h4 class="mb-0 text-success">{{ $customerGroup->active_customers ?? 0 }}</h4>
+                                </div>
+                                <div class="flex-shrink-0">
+                                    <div class="avatar-sm">
+                                        <span class="avatar-title bg-success-subtle text-success rounded-circle fs-3">
+                                            <i class="bx bx-check-circle"></i>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-grow-1">
+                                    <p class="text-muted mb-1">Inactive Customers</p>
+                                    <h4 class="mb-0 text-secondary">{{ $customerGroup->inactive_customers ?? 0 }}</h4>
+                                </div>
+                                <div class="flex-shrink-0">
+                                    <div class="avatar-sm">
+                                        <span class="avatar-title bg-secondary-subtle text-secondary rounded-circle fs-3">
+                                            <i class="bx bx-x-circle"></i>
+                                        </span>
                                     </div>
                                 </div>
                             </div>
@@ -107,8 +201,8 @@
                                     @forelse ($customerGroup->customerGroupMembers as $customer)
                                         <tr>
                                             <td>
-                                                <input class="form-check-input row-checkbox" type="checkbox" name="ids[]"
-                                                    value="{{ $customer->id }}">
+                                                <input class="form-check-input row-checkbox" type="checkbox"
+                                                    name="ids[]" value="{{ $customer->id }}">
                                             </td>
                                             <td>
                                                 <span class="mb-0 customer-name fw-bold">
@@ -122,7 +216,13 @@
                                             <td>{{ $customer->customer->contact_no }}</td>
                                             <td>{{ $customer->customer->gstin }}</td>
                                             <td>{{ $customer->customer->pan }}</td>
-                                            <td>{{ $customer->customer->status === '1' ? 'Active' : 'Inactive' }}</td>
+                                            <td>
+                                                <div class="form-switch form-check-success">
+                                                    <input class="form-check-input customer-status-switch" type="checkbox"
+                                                        role="switch" data-customer-id="{{ $customer->customer->id }}"
+                                                        {{ $customer->customer->status == '1' ? 'checked' : '' }}>
+                                                </div>
+                                            </td>
                                             <td>
                                                 <div class="d-flex">
                                                     <a aria-label="anchor"
@@ -202,6 +302,35 @@
 
 @section('script')
     <script>
+        // Customer status toggle
+        $(document).on('change', '.customer-status-switch', function() {
+            var customerId = $(this).data('customer-id');
+            var status = $(this).is(':checked') ? 1 : 0;
+
+            $.ajax({
+                url: '{{ route('customer.toggleStatus') }}',
+                type: 'POST',
+                data: {
+                    _token: '{{ csrf_token() }}',
+                    id: customerId,
+                    status: status
+                },
+                success: function(response) {
+                    if (response.success) {
+                        location.reload();
+                    } else {
+                        alert('Failed to update status.');
+                        location.reload();
+                    }
+                },
+                error: function() {
+                    alert('Status update failed!');
+                    location.reload();
+                }
+            });
+        });
+    </script>
+    <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Select All functionality
             const selectAll = document.getElementById('select-all');
@@ -211,6 +340,54 @@
                 checkboxes.forEach(cb => cb.checked = selectAll.checked);
             });
 
+            // Activate Selected functionality
+            document.getElementById('activate-selected').addEventListener('click', function() {
+                let selected = [];
+                document.querySelectorAll('.row-checkbox:checked').forEach(cb => {
+                    selected.push(cb.value);
+                });
+                if (selected.length === 0) {
+                    alert('Please select at least one customer.');
+                    return;
+                }
+                if (confirm('Are you sure you want to activate selected customers?')) {
+                    let form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = '{{ route('customer.bulkStatusChange') }}';
+                    form.innerHTML = `
+                        @csrf
+                        <input type="hidden" name="ids" value="${selected.join(',')}">
+                        <input type="hidden" name="status" value="1">
+                    `;
+                    document.body.appendChild(form);
+                    form.submit();
+                }
+            });
+
+            // Deactivate Selected functionality
+            document.getElementById('deactivate-selected').addEventListener('click', function() {
+                let selected = [];
+                document.querySelectorAll('.row-checkbox:checked').forEach(cb => {
+                    selected.push(cb.value);
+                });
+                if (selected.length === 0) {
+                    alert('Please select at least one customer.');
+                    return;
+                }
+                if (confirm('Are you sure you want to deactivate selected customers?')) {
+                    let form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = '{{ route('customer.bulkStatusChange') }}';
+                    form.innerHTML = `
+                        @csrf
+                        <input type="hidden" name="ids" value="${selected.join(',')}">
+                        <input type="hidden" name="status" value="0">
+                    `;
+                    document.body.appendChild(form);
+                    form.submit();
+                }
+            });
+
             // Delete Selected functionality
             document.getElementById('delete-selected').addEventListener('click', function() {
                 let selected = [];
@@ -218,11 +395,10 @@
                     selected.push(cb.value);
                 });
                 if (selected.length === 0) {
-                    alert('Please select at least one record.');
+                    alert('Please select at least one customer.');
                     return;
                 }
-                if (confirm('Are you sure you want to delete selected records?')) {
-                    // Create a form and submit
+                if (confirm('Are you sure you want to delete selected customers?')) {
                     let form = document.createElement('form');
                     form.method = 'POST';
                     form.action = '{{ route('delete.selected.customers') }}';
