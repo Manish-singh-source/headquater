@@ -60,21 +60,33 @@ class InvoiceController extends Controller
     public function invoiceAppointmentUpdate(Request $request, $id)
     {
         // Logic to update invoice appointment details
+
         $validated = Validator::make($request->all(), [
-            'appointment_date' => 'required|date',
-            'pod' => 'required|file|mimes:jpg,jpeg,png,pdf',
-            'grn' => 'required|file|mimes:jpg,jpeg,png,pdf',
+            'appointment_date' => 'nullable|date',
+            'pod' => 'nullable|file|mimes:jpg,jpeg,png,pdf',
+            'grn' => 'nullable|file|mimes:jpg,jpeg,png,pdf',
         ]);
 
+        if (
+            ! $request->filled('appointment_date') &&
+            ! $request->hasFile('pod') &&
+            ! $request->hasFile('grn')
+        ) {
+            return redirect()->back()->with('error', 'Please provide at least one field to update.')->withInput();
+        }
+
         if ($validated->fails()) {
-            // If validation fails, redirect back with errors
-            return redirect()->back()->with($validated)->withInput();
+            return redirect()->back()->with('error', $validated->errors()->first())->withInput();
         }
 
         // Handle file uploads and other logic here
 
         try {
-            $appointment = Appointment::firstOrNew(['invoice_id' => $id]);
+            // Ensure $id is scalar to avoid Illegal offset type error
+            if (! is_scalar($id)) {
+                return redirect()->back()->with('error', 'Invalid invoice ID.');
+            }
+            $appointment = Appointment::firstOrNew(['invoice_id' => (int) $id]);
 
             if ($request->filled('appointment_date')) {
                 $appointment->appointment_date = $request->input('appointment_date');
@@ -83,7 +95,7 @@ class InvoiceController extends Controller
             if ($request->hasFile('pod')) {
                 $pod = $request->file('pod');
                 $ext = $pod->getClientOriginalExtension();
-                $podName = time() . '_pod.' . $ext;
+                $podName = time().'_pod.'.$ext;
 
                 // Store original image
                 $pod->move(public_path('uploads/pod'), $podName);
@@ -93,7 +105,7 @@ class InvoiceController extends Controller
             if ($request->hasFile('grn')) {
                 $grn = $request->file('grn');
                 $ext = $grn->getClientOriginalExtension();
-                $grnName = time() . '_grn.' . $ext;
+                $grnName = time().'_grn.'.$ext;
 
                 // Store original image
                 $grn->move(public_path('uploads/grn'), $grnName);
@@ -102,11 +114,11 @@ class InvoiceController extends Controller
 
             $appointment->save();
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Failed to update invoice: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Failed to update invoice: '.$e->getMessage());
         }
 
-    return redirect()->back()->with('success', 'Invoice updated successfully.');
-}
+        return redirect()->back()->with('success', 'Invoice updated successfully.');
+    }
 
     public function invoiceDnUpdate(Request $request, $id)
     {
@@ -119,7 +131,7 @@ class InvoiceController extends Controller
 
         if ($validated->fails()) {
             // If validation fails, redirect back with errors
-            return redirect()->back()->with($validated)->withInput();
+            return redirect()->back()->with('error', $validated->errors()->first())->withInput();
         }
 
         // Handle file uploads and other logic here
@@ -134,7 +146,7 @@ class InvoiceController extends Controller
             if ($request->hasFile('dn_receipt')) {
                 $dnReceipt = $request->file('dn_receipt');
                 $ext = $dnReceipt->getClientOriginalExtension();
-                $dnReceiptName = time() . '.' . $ext;
+                $dnReceiptName = time().'.'.$ext;
 
                 // Store original image
                 $dnReceipt->move(public_path('uploads/dn_receipts'), $dnReceiptName);
@@ -143,7 +155,7 @@ class InvoiceController extends Controller
 
             $dn->save();
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Failed to update invoice: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Failed to update invoice: '.$e->getMessage());
         }
 
         return redirect()->back()->with('success', 'Invoice updated successfully.');
@@ -173,7 +185,7 @@ class InvoiceController extends Controller
             $payment->payment_status = $request->input('payment_status');
             $payment->save();
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Failed to update invoice: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Failed to update invoice: '.$e->getMessage());
         }
 
         return redirect()->back()->with('success', 'Invoice updated successfully.');
