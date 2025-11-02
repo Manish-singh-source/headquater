@@ -187,6 +187,7 @@
                                         <th>
                                             <input class="form-check-input" type="checkbox" id="select-all">
                                         </th>
+                                        <th>Facility&nbsp;Name</th>
                                         <th>Client&nbsp;Name</th>
                                         <th>Contact&nbsp;Name</th>
                                         <th>Email</th>
@@ -203,6 +204,11 @@
                                             <td>
                                                 <input class="form-check-input row-checkbox" type="checkbox"
                                                     name="ids[]" value="{{ $customer->id }}">
+                                            </td>
+                                            <td>
+                                                <span class="mb-0 customer-name fw-bold">
+                                                {{ $customer->customer->facility_name }}
+                                                </span>
                                             </td>
                                             <td>
                                                 <span class="mb-0 customer-name fw-bold">
