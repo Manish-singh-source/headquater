@@ -206,8 +206,8 @@
 
                             <li class="nav-item" role="presentation">
                                 <button class="nav-link status-filter-tab" id="active-tab" data-bs-toggle="tab"
-                                    data-order="Delivered" data-bs-target="#active" type="button" role="tab"
-                                    aria-controls="active" aria-selected="false">Delivered</button>
+                                    data-order="Completed" data-bs-target="#active" type="button" role="tab"
+                                    aria-controls="active" aria-selected="false">Completed</button>
                             </li>
 
                             <li class="nav-item" role="presentation">

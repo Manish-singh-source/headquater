@@ -134,7 +134,7 @@ class CustomerController extends Controller
                             'shipping_state' => trim($record['Shipping State'] ?? ''),
                             'shipping_city' => trim($record['Shipping City'] ?? ''),
                             'shipping_zip' => trim($record['Shipping Zip'] ?? ''),
-                            'status' => 'active',
+                            'status' => '1',
                         ]);
 
                         // Add customer to group
@@ -319,14 +319,13 @@ class CustomerController extends Controller
         ]);
 
         if ($validator->fails()) {
-            dd($validator->errors());
             return back()->with('errors', $validator->errors())->withInput();
         }
 
         try {
             DB::beginTransaction();
 
-            $customer = Customer::findOrFail($id);
+            $customer = Customer::where('id', $id)->where('email', strtolower(trim($request->email)))->first();
 
             $oldData = $customer->toArray();
 
@@ -335,7 +334,6 @@ class CustomerController extends Controller
                 'facility_name' => trim($request->facility_name),
                 'client_name' => trim($request->client_name),
                 'contact_name' => trim($request->contact_name),
-                'email' => strtolower(trim($request->email)),
                 'contact_no' => trim($request->contact_no),
                 'company_name' => trim($request->company_name ?? ''),
                 'gstin' => strtoupper(trim($request->gstin)),

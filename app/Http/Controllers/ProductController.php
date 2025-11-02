@@ -41,8 +41,7 @@ class ProductController extends Controller
      */
     public function create()
     {
-        $warehouses = Warehouse::all();
-
+        $warehouses = Warehouse::where('status', '1')->get();
         return view('products.create', ['warehouses' => $warehouses]);
     }
 

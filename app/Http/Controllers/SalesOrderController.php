@@ -109,7 +109,7 @@ class SalesOrderController extends Controller
     public function create()
     {
         $customerGroup = CustomerGroup::all();
-        $warehouses = Warehouse::all();
+        $warehouses = Warehouse::where('status', '1')->get();
 
         return view('salesOrder.create', ['customerGroup' => $customerGroup, 'warehouses' => $warehouses]);
     }
@@ -731,8 +731,11 @@ class SalesOrderController extends Controller
             }
 
             $order->delete();
+            if ($order) {
+                return redirect()->route('sales.order.index')->with('success', 'Order deleted successfully.');
+            }
+            return redirect()->back()->with(['error' => 'Order Not Found.']);
 
-            return redirect()->route('sales.order.index')->with('success', 'Order deleted successfully.');
         } catch (\Exception $e) {
             return redirect()->back()->with(['error' => 'Something went wrong: Please Try Again.']);
         }
