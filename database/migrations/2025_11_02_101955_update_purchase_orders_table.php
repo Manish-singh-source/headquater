@@ -14,7 +14,7 @@ return new class extends Migration
     {
         Schema::table('purchase_orders', function (Blueprint $table) {
             //
-            $table->date('order_date')->nullable()->default(DB::raw('CURRENT_DATE'));
+            $table->date('order_date')->nullable()->default(now());
         });
     }
 
