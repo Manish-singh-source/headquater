@@ -12,9 +12,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('purchase_orders', function (Blueprint $table) {
+        Schema::table('invoices', function (Blueprint $table) {
             //
-            $table->date('order_date')->nullable()->default(DB::raw('CURRENT_DATE'));
+            $table->date('invoice_date')->nullable()->default(DB::raw('CURRENT_DATE'))->change();
+
         });
     }
 
@@ -23,9 +24,9 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('purchase_orders', function (Blueprint $table) {
+        Schema::table('invoices', function (Blueprint $table) {
             //
-            $table->dropColumn('order_date');
+            $table->date('invoice_date')->nullable()->change();
         });
     }
 };
