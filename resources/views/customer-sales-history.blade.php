@@ -92,10 +92,22 @@
                             <div class="row">
                                 <div class="col-md-3">
                                     <div class="mb-3">
-                                        <label class="form-label">Choose Date</label>
+                                        <label class="form-label">Choose From Date</label>
                                         <div class="input-icon-start position-relative">
                                             <input type="date" class="form-control date-range bookingrange"
-                                                id="date-select" placeholder="dd/mm/yyyy">
+                                                id="date-from" placeholder="dd/mm/yyyy">
+                                            <span class="input-icon-left">
+                                                <i class="ti ti-calendar"></i>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="mb-3">
+                                        <label class="form-label">Choose To Date</label>
+                                        <div class="input-icon-start position-relative">
+                                            <input type="date" class="form-control date-range bookingrange"
+                                                id="date-to" placeholder="dd/mm/yyyy">
                                             <span class="input-icon-left">
                                                 <i class="ti ti-calendar"></i>
                                             </span>
@@ -116,6 +128,9 @@
                             </div>
                         </div>
                         <div class="col-lg-2">
+                            <div class="mb-3">
+                                <button id="filterData" class="btn btn-primary w-100">Filter</button>
+                            </div>
                             <div class="mb-3">
                                 <button id="exportData" class="btn btn-danger w-100">Generate Report</button>
                             </div>
@@ -210,20 +225,46 @@
     <script>
         $(document).ready(function() {
             $(document).on('click', '#exportData', function() {
-                var selectedDate = $("#date-select").val().trim();
-                if (selectedDate) {
-                    var parts = selectedDate.split('-');
-                    var formatted = parts[2] + '-' + parts[1] + '-' + parts[0];
+                var selectedDateFrom = $('#date-from').val();
+                var selectedDateTo = $('#date-to').val();
+                                var params = [];
+                if (selectedDateFrom) {
+                    params.push('from=' + encodeURIComponent(selectedDateFrom));
+                }
+                if (selectedDateTo) {
+                    params.push('to=' + encodeURIComponent(selectedDateTo));
                 }
                 var customerId = $("#customer-select").val();
+                if (customerId && customerId !== '-- Select --') {
+                    params.push('customerId=' + encodeURIComponent(customerId));
+                }
+                var queryString = params.length ? '?' + params.join('&') : '';
 
                 // Construct download URL with parameters
-                var downloadUrl = '{{ route('customer.sales.history.excel') }}' +
-                    '?selectedDate=' + encodeURIComponent(selectedDate) +
-                    '&customerId=' + encodeURIComponent(customerId);
+                var downloadUrl = '{{ route('customer.sales.history.excel') }}' + queryString;
 
                 // Trigger browser download
                 window.location.href = downloadUrl;
+            });
+
+            $(document).on('click', '#filterData', function() {
+                var selectedDateFrom = $('#date-from').val();
+                var selectedDateTo = $('#date-to').val();
+
+                // Format date range for filtering
+                var formattedDateRange = '';
+                if (selectedDateFrom && selectedDateTo) {
+                    formattedDateRange = selectedDateFrom + ' to ' + selectedDateTo;
+                } else if (selectedDateFrom) {
+                    formattedDateRange = selectedDateFrom;
+                } else if (selectedDateTo) {
+                    formattedDateRange = selectedDateTo;
+                }
+
+                // Apply date range filter to the DataTable
+                customerSalesHistoryTable.column(3).search(formattedDateRange ? '^' + formattedDateRange + '$' : '', true,
+                        false)
+                    .draw();
             });
 
             var customerSalesHistoryTable = $('#customer-sales-history-table').DataTable({

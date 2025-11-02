@@ -58,7 +58,7 @@ class CustomerGroupController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
+            'name' => 'required|string|max:255|unique:customer_groups,name',
             'csv_file' => 'required|file|mimes:xlsx,xls,csv|max:5120',
         ]);
 
@@ -205,7 +205,7 @@ class CustomerGroupController extends Controller
     public function update(Request $request, $id)
     {
         $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
+            'name' => 'required|string|max:255|unique:customer_groups,name,' . $id,
         ]);
 
         if ($validator->fails()) {

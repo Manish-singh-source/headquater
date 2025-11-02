@@ -53,26 +53,26 @@ class CustomerController extends Controller
     public function storeBulk(Request $request, $g_id)
     {
         $validator = Validator::make($request->all(), [
-            'csv_file' => 'required|file|mimes:xlsx,xls|max:5120', // 5MB max
+            'csv_file' => 'required|file|mimes:xlsx,xls', // 5MB max
         ]);
 
         if ($validator->fails()) {
             return back()->withErrors($validator)->withInput();
         }
-
+        
         $file = $request->file('csv_file');
         if (!$file) {
             return redirect()->back()->with('error', 'Please upload a CSV file.');
         }
-
+        
         DB::beginTransaction();
-
+        
         try {
             $filePath = $file->getPathname();
             $fileExtension = $file->getClientOriginalExtension();
 
             $reader = SimpleExcelReader::create($filePath, $fileExtension);
-
+            
             $insertCount = 0;
             $skipCount = 0;
             $errors = [];
@@ -80,7 +80,7 @@ class CustomerController extends Controller
 
             foreach ($reader->getRows() as $record) {
                 $rowNumber++;
-
+                
                 try {
                     // Validate required field: Facility Name
                     if (!isset($record['Facility Name']) || empty(trim($record['Facility Name']))) {
@@ -88,7 +88,7 @@ class CustomerController extends Controller
                         $skipCount++;
                         continue;
                     }
-
+                    
                     $facilityName = trim($record['Facility Name']);
                     $email = strtolower(trim($record['Email'] ?? ''));
                     $gstin = strtoupper(trim($record['GSTIN'] ?? ''));
@@ -197,7 +197,7 @@ class CustomerController extends Controller
     {
         // dd($request->all());
         $validator = Validator::make($request->all(), [
-            'facility_name' => 'required|min:3|max:100',
+            'facility_name' => 'required|min:3|max:100|unique:customers,facility_name',
             'client_name' => 'required|min:3|max:100',
             'contact_name' => 'required|min:3|max:100',
             'email' => 'required|email|unique:customers,email',
@@ -315,11 +315,12 @@ class CustomerController extends Controller
             'billing_state' => 'nullable|min:2|max:100',
             'billing_city' => 'nullable|min:2|max:100',
             'billing_zip' => 'nullable|min:4|max:10',
-            'status' => 'nullable|in:active,inactive',
+            'status' => 'nullable|in:1,0',
         ]);
 
         if ($validator->fails()) {
-            return back()->withErrors($validator)->withInput();
+            dd($validator->errors());
+            return back()->with('errors', $validator->errors())->withInput();
         }
 
         try {
