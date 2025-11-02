@@ -21,12 +21,18 @@ class StaffController extends Controller
     public function index()
     {
         try {
+            // Calculate staff counts
+            $totalStaff = User::where('id', '!=', Auth::id())->count();
+            $activeStaff = User::where('id', '!=', Auth::id())->where('status', '1')->count();
+            $inactiveStaff = User::where('id', '!=', Auth::id())->where('status', '0')->count();
+            $blockedStaff = User::where('id', '!=', Auth::id())->where('status', '2')->count();
+
             $staffMembers = User::with('roles')
                 ->where('id', '!=', Auth::id()) // Exclude current user from listing
                 ->latest()
                 ->paginate(15);
 
-            return view('staffs.index', compact('staffMembers'));
+            return view('staffs.index', compact('staffMembers', 'totalStaff', 'activeStaff', 'inactiveStaff', 'blockedStaff'));
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Error retrieving staff members: ' . $e->getMessage());
         }
