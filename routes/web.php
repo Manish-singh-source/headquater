@@ -70,7 +70,7 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/update-role/{id}', 'update')->name('role.update');
         Route::delete('/delete-role/{id}', 'destroy')->name('role.destroy');
         // Route::get('/view-staff/{id}', 'view')->name('role.view');
-        // Route::delete('/role/delete-selected', 'deleteSelected')->name('delete.selected.role');
+        Route::delete('/role/delete-selected', 'deleteSelected')->name('delete.selected.role');
         // Route::post('/role/toggle-status', 'toggleStatus')->name('role.toggleStatus');
     });
 
@@ -82,6 +82,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/edit-permission/{id}', 'edit')->name('permission.edit');
         Route::put('/update-permission/{id}', 'update')->name('permission.update');
         Route::delete('/delete-permission/{id}', 'destroy')->name('permission.destroy');
+        Route::delete('/permission/delete-selected', 'deleteSelected')->name('delete.selected.permission');
     });
 
     Route::controller(CustomerGroupController::class)->group(function () {

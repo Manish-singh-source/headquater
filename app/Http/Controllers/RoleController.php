@@ -39,10 +39,7 @@ class RoleController extends Controller
     {
         try {
             $permissions = Permission::orderBy('name')
-                ->get()
-                ->groupBy(function ($permission) {
-                    return explode('.', $permission->name)[0] ?? 'Other';
-                });
+                ->get();
 
             return view('roles.create', compact('permissions'));
         } catch (\Exception $e) {
