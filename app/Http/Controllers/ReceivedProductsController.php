@@ -303,7 +303,8 @@ class ReceivedProductsController extends Controller
      * @param Request $request
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function updateReceivedProduct(Request $request)
+                    
+    public function updateRecievedProduct(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'pi_excel' => 'required|file|mimes:xlsx,csv,xls',

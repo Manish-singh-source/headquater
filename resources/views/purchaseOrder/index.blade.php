@@ -30,8 +30,8 @@
                     <div class="row g-3 justify-content-end">
                         <div class="col-12 col-md-auto">
                             <div class="d-flex align-items-center gap-2 justify-content-lg-end">
-                                {{-- <a href="{{ route('purchase.order.create') }}" class="btn btn-primary px-4"><i
-                                        class="bi bi-plus-lg me-2"></i>Create Order</a> --}}
+                                <a href="{{ route('purchase.order.create') }}" class="btn btn-primary px-4"><i
+                                        class="bi bi-plus-lg me-2"></i>Create Order</a>
                                 <div>
                                     <div class="btn-group">
                                         <button type="button" class="btn border-2 border-primary">Action</button>

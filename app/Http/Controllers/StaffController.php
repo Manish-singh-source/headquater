@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Spatie\Permission\Models\Role;
 use Illuminate\Support\Facades\Auth;
 use Spatie\Permission\Models\Permission;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 
 class StaffController extends Controller
@@ -55,7 +56,7 @@ class StaffController extends Controller
             'user_name' => $request->user_name,
             'fname' => $request->fname,
             'lname' => $request->lname,
-            'password' => $request->password,
+            'password' => Hash::make($request->password),
             'phone' => $request->phone,
             'dob' => $request->dob,
             'marital' => $request->marital,
