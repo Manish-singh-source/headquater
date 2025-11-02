@@ -106,8 +106,6 @@ class ReceivedProductsController extends Controller
 
             $oldStatus = $vendorPI->status;
             $vendorPI->status = 'approve';
-            $vendorPI->approved_by = Auth::id();
-            $vendorPI->approved_at = now();
             $vendorPI->save();
 
             DB::commit();
