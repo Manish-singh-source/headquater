@@ -28,6 +28,8 @@
                                             data-bs-toggle="dropdown"> <span class="visually-hidden">Toggle Dropdown</span>
                                         </button>
                                         <div class="dropdown-menu dropdown-menu-right dropdown-menu-lg-end">
+                                            <button class="dropdown-item cursor-pointer" type="button"
+                                                id="openBulkStatusModal">Change Status</button>
                                             <a class="dropdown-item cursor-pointer" id="delete-selected">Delete All</a>
                                         </div>
                                     </div>
@@ -104,10 +106,10 @@
                                                 <a href="javascript:;" class="font-text1">{{ $vendor->email }}</a>
                                             </td>
                                             <td>{{ $vendor->phone_number }}</td>
-                                            <td>142</td>
-                                            <td>Mumbai</td>
+                                            <td>{{ $vendor->orders->count() }}</td>
+                                            <td>{{ $vendor->shippingCity->name ?? '' }}</td>
 
-                                            <td>Nov 12, 10:45 PM</td>
+                                            <td>{{ $vendor->created_at->format('d-M-Y') }}</td>
                                             <td>
                                                 <div class="form-switch form-check-success">
                                                     <input class="form-check-input status-switch1" type="checkbox"
@@ -252,8 +254,54 @@
                     form.submit();
                 }
             });
+
+            // Open Bulk Status Modal
+            document.getElementById('openBulkStatusModal').addEventListener('click', function() {
+                let selected = [];
+                document.querySelectorAll('.row-checkbox:checked').forEach(cb => selected.push(cb.value));
+                if (selected.length === 0) {
+                    alert('Please select at least one vendor to change status.');
+                    return;
+                }
+
+                // set hidden input value and show modal
+                document.getElementById('bulk_status_ids').value = selected.join(',');
+                var modalEl = document.getElementById('bulkStatusModal');
+                var modal = new bootstrap.Modal(modalEl);
+                modal.show();
+            });
         });
     </script>
+
+    <!-- Bulk Status Modal -->
+    <div class="modal fade" id="bulkStatusModal" tabindex="-1" aria-labelledby="bulkStatusModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form id="bulkStatusForm" action="{{ route('vendor.changeSelectedStatus') }}" method="POST">
+                    @csrf
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="bulkStatusModalLabel">Change Status for Selected Vendors</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="bulk_status" class="form-label">Select Status</label>
+                            <select name="status" id="bulk_status" class="form-select" required>
+                                <option value="1">Active</option>
+                                <option value="0">Inactive</option>
+                            </select>
+                        </div>
+                        <input type="hidden" name="ids" id="bulk_status_ids" value="">
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Change Status</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 
 
     <script>

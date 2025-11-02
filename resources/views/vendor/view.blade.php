@@ -69,15 +69,15 @@
                                 </li>
                                 <li class="list-group-item d-flex justify-content-between align-items-center  mb-2 pe-3">
                                     <span><b>Shipping Country</b></span>
-                                    <span>{{ $vendor->country->name ?? 'NA' }}</span>
+                                    <span>{{ $vendor->shippingCountry->name ?? 'NA' }}</span>
                                 </li>
                                 <li class="list-group-item d-flex justify-content-between align-items-center  mb-2 pe-3">
                                     <span><b>Shipping State</b></span>
-                                    <span>{{ $vendor->state->name ?? 'NA' }}</span>
+                                    <span>{{ $vendor->shippingState->name ?? 'NA' }}</span>
                                 </li>
                                 <li class="list-group-item d-flex justify-content-between align-items-center  mb-2 pe-3">
                                     <span><b>Shipping City</b></span>
-                                    <span>{{ $vendor->city->name ?? 'NA' }}</span>
+                                    <span>{{ $vendor->shippingCity->name ?? 'NA' }}</span>
                                 </li>
                                 <li class="list-group-item d-flex justify-content-between align-items-center  mb-2 pe-3">
                                     <span><b>Shipping Zip</b></span>

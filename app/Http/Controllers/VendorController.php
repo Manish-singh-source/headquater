@@ -35,6 +35,7 @@ class VendorController extends Controller
 
             $vendors = $vendors->latest()
                 ->withCount('orders')
+                ->with('shippingState', 'shippingCity', 'billingCountry', 'billingState', 'billingCity')
                 ->paginate(15);
 
             return view('vendor.index', compact('vendors', 'status'));
@@ -278,6 +279,7 @@ class VendorController extends Controller
 
             $vendor = Vendor::with('orders.purchaseOrderProducts')
                 ->withCount('orders')
+                ->with('shippingState', 'shippingCity', 'billingCountry', 'billingState', 'billingCity')
                 ->findOrFail($id);
 
             return view('vendor.view', compact('vendor'));
@@ -392,7 +394,21 @@ class VendorController extends Controller
      */
     public function deleteSelected(Request $request)
     {
-        $validator = Validator::make($request->all(), [
+        // Normalize ids: accept either array (ids[]=1&ids[]=2) or comma-separated string (ids=1,2,3)
+        $rawIds = $request->input('ids');
+
+        if (is_string($rawIds)) {
+            $ids = array_filter(array_map('trim', explode(',', $rawIds)), function ($v) {
+                return $v !== '';
+            });
+        } elseif (is_array($rawIds)) {
+            $ids = $rawIds;
+        } else {
+            $ids = [];
+        }
+
+        // Re-validate normalized ids
+        $validator = Validator::make(['ids' => $ids], [
             'ids' => 'required|array|min:1',
             'ids.*' => 'integer|exists:vendors,id',
         ]);
@@ -404,7 +420,6 @@ class VendorController extends Controller
         DB::beginTransaction();
 
         try {
-            $ids = $request->ids;
             $vendors = Vendor::whereIn('id', $ids)->get();
 
             $deletedCount = 0;
@@ -442,6 +457,74 @@ class VendorController extends Controller
 
             return redirect()->back()
                 ->with('error', 'Error deleting vendors: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Change status for multiple selected vendors
+     *
+     * Accepts `ids` as array or comma-separated string and `status` as 0 or 1
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function changeSelectedStatus(Request $request)
+    {
+        // Normalize ids similar to deleteSelected
+        $rawIds = $request->input('ids');
+
+        if (is_string($rawIds)) {
+            $ids = array_filter(array_map('trim', explode(',', $rawIds)), function ($v) {
+                return $v !== '';
+            });
+        } elseif (is_array($rawIds)) {
+            $ids = $rawIds;
+        } else {
+            $ids = [];
+        }
+
+        $validator = Validator::make(array_merge(['ids' => $ids], $request->only('status')), [
+            'ids' => 'required|array|min:1',
+            'ids.*' => 'integer|exists:vendors,id',
+            'status' => 'required|in:0,1',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()->with('error', 'Invalid request for changing status.');
+        }
+
+        DB::beginTransaction();
+
+        try {
+            $status = $request->input('status');
+            $vendors = Vendor::whereIn('id', $ids)->get();
+
+            $changed = 0;
+
+            foreach ($vendors as $vendor) {
+                $old = $vendor->status;
+                if ((string)$old === (string)$status) {
+                    continue;
+                }
+                $vendor->status = $status;
+                $vendor->save();
+
+                activity()
+                    ->performedOn($vendor)
+                    ->causedBy(Auth::user())
+                    ->withProperties(['old_status' => $old, 'new_status' => $status, 'vendor_code' => $vendor->vendor_code])
+                    ->event('status_changed')
+                    ->log('Vendor status changed (bulk): ' . $vendor->client_name);
+
+                $changed++;
+            }
+
+            DB::commit();
+
+            return redirect()->back()->with('success', 'Status updated for ' . $changed . ' vendor(s).');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'Error updating status: ' . $e->getMessage());
         }
     }
 

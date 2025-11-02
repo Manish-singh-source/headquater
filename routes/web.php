@@ -129,6 +129,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/single-vendor-order-view/{purchaseOrderId}/{vendorCode}', 'singleVendorOrderView')->name('single-vendor-order-view');
         Route::post('/vendor/toggle-status', 'toggleStatus')->name('vendor.toggleStatus');
         Route::delete('/vendor/delete-selected', 'deleteSelected')->name('delete.selected.vendor');
+        Route::post('/vendor/change-selected-status', 'changeSelectedStatus')->name('vendor.changeSelectedStatus');
     });
 
     // Warehouse List
@@ -309,15 +310,15 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/notifications/mark-all-read', 'markAllAsRead')->name('notifications.mark-all-read');
     });
 
-    Route::get('/report/lr-pending', function() {
+    Route::get('/report/lr-pending', function () {
         return redirect()->route('packaging.list.index');
     })->name('report.lr-pending');
 
-    Route::get('/report/appt-grn-pending', function() {
+    Route::get('/report/appt-grn-pending', function () {
         return redirect()->route('invoices');
     })->name('report.appt-grn-pending');
 
-    Route::get('/report/appt-pending', function() {
+    Route::get('/report/appt-pending', function () {
         return redirect()->route('invoices');
     })->name('report.appt-pending');
 });
