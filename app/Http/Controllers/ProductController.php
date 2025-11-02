@@ -557,6 +557,7 @@ class ProductController extends Controller
                     'Vendor Purchase Rate' => $stock->product?->vendor_purchase_rate ?? '',
                     'GST' => $stock->product?->gst ?? '',
                     'Vendor Net Landing' => $stock->product?->vendor_net_landing ?? '',
+                    'Original Quantity' => $stock->original_quantity ?? 0,
                     'Stock' => $stock->available_quantity ?? 0,
                 ]);
             }

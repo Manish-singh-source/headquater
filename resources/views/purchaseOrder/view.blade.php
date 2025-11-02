@@ -351,6 +351,7 @@
                                         <th> {{ $invoiceDetail->vendor_code }}</th>
                                         <th>
                                             <a href="{{ asset('uploads/invoices/' . $invoiceDetail->invoice_file) }}"
+                                                target="_blank"
                                                 class="btn btn-sm border-2 border-success w-sm waves ripple-light">
                                                 Preview
                                             </a>
@@ -389,6 +390,7 @@
                                         <th> {{ $grnDetail->vendor_code }}</th>
                                         <th>
                                             <a href="{{ asset('uploads/invoices/' . $grnDetail->grn_file) }}"
+                                                target="_blank"
                                                 class="btn btn-sm border-2 border-success w-sm waves ripple-light">
                                                 Preview
                                             </a>

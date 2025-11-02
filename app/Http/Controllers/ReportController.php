@@ -55,7 +55,8 @@ class ReportController extends Controller
     public function vendorPurchaseHistoryExcel(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'selectedDate' => 'required|date_format:Y-m-d',
+            'selectedDateFrom' => 'required|date_format:Y-m-d',
+            'selectedDateTo' => 'required|date_format:Y-m-d|after_or_equal:selectedDateFrom',
             'vendorCode' => 'required|string|max:255',
         ]);
 
@@ -73,8 +74,11 @@ class ReportController extends Controller
                 ->when($request->vendorCode, function ($query) use ($request) {
                     $query->where('vendor_code', trim($request->vendorCode));
                 })
-                ->when($request->selectedDate, function ($query) use ($request) {
-                    $query->whereDate('created_at', $request->selectedDate);
+                ->when($request->selectedDateFrom && $request->selectedDateTo, function ($query) use ($request) {
+                    $query->whereBetween('created_at', [
+                        $request->selectedDateFrom . ' 00:00:00',
+                        $request->selectedDateTo . ' 23:59:59',
+                    ]);
                 })
                 ->latest()
                 ->get();
@@ -176,7 +180,8 @@ class ReportController extends Controller
     public function inventoryStockHistoryExcel(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'selectedDate' => 'required|date_format:Y-m-d',
+            'selectedDateFrom' => 'required|date_format:Y-m-d',
+            'selectedDateTo' => 'required|date_format:Y-m-d|after_or_equal:selectedDateFrom',
         ]);
 
         if ($validator->fails()) {
@@ -188,8 +193,11 @@ class ReportController extends Controller
             $writer = SimpleExcelWriter::create($tempXlsxPath);
 
             $products = WarehouseStock::with('product', 'warehouse')
-                ->when($request->selectedDate, function ($query) use ($request) {
-                    $query->whereDate('created_at', $request->selectedDate);
+                ->when($request->selectedDateFrom && $request->selectedDateTo, function ($query) use ($request) {
+                    $query->whereBetween('created_at', [
+                        $request->selectedDateFrom . ' 00:00:00',
+                        $request->selectedDateTo . ' 23:59:59',
+                    ]);
                 })
                 ->latest()
                 ->get();
@@ -261,7 +269,7 @@ class ReportController extends Controller
      *
      * @return \Illuminate\View\View
      */
-    public function customerSalesHistory()
+    public function customerSalesHistory($request = null)
     {
         try {
             $invoices = Invoice::with(['warehouse', 'customer', 'salesOrder', 'payments'])
@@ -310,10 +318,10 @@ class ReportController extends Controller
     public function customerSalesHistoryExcel(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'selectedDate' => 'required|date_format:Y-m-d',
+            'selectedDateFrom' => 'required|date_format:Y-m-d',
+            'selectedDateTo' => 'required|date_format:Y-m-d|after_or_equal:selectedDateFrom',
             'customerId' => 'required|integer|exists:customers,id',
         ]);
-
         if ($validator->fails()) {
             return redirect()->back()->withErrors($validator)->withInput();
         }
@@ -323,8 +331,11 @@ class ReportController extends Controller
             $writer = SimpleExcelWriter::create($tempXlsxPath);
 
             $invoices = Invoice::with(['warehouse', 'customer', 'salesOrder', 'payments'])
-                ->when($request->selectedDate, function ($query) use ($request) {
-                    $query->whereDate('invoice_date', $request->selectedDate);
+                ->when($request->selectedDateFrom && $request->selectedDateTo, function ($query) use ($request) {
+                    $query->whereBetween('invoice_date', [
+                        $request->selectedDateFrom . ' 00:00:00',
+                        $request->selectedDateTo . ' 23:59:59',
+                    ]);
                 })
                 ->when($request->customerId, function ($query) use ($request) {
                     $query->where('customer_id', (int)$request->customerId);

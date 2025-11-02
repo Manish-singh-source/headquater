@@ -14,7 +14,7 @@ return new class extends Migration
     {
         Schema::table('invoices', function (Blueprint $table) {
             //
-            $table->date('invoice_date')->nullable()->default(DB::raw('CURRENT_DATE'))->change();
+            $table->date('invoice_date')->nullable()->default(now())->change();
 
         });
     }

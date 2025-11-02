@@ -26,7 +26,7 @@
                             <li
                                 class="list-group-item d-flex justify-content-between align-items-center border-bottom mb-2 pe-3">
                                 <span><b>Warehouse Id</b></span>
-                                <span>#001</span>
+                                <span>{{ $warehouse->id }}</span>
                             </li>
                             <li
                                 class="list-group-item d-flex justify-content-between align-items-center border-bottom mb-2 pe-3">
@@ -100,6 +100,8 @@
                                             <th>Vendor&nbsp;Net&nbsp;Landing</th>
                                             <th>MRP</th>
                                             <th>Status</th>
+                                            <th>Original&nbsp;Quantity</th>
+                                            <th>Available&nbsp;Quantity</th>
                                             <th>Hold&nbsp;Qty</th>
                                             <th>Date</th>
                                         </tr>
@@ -130,6 +132,8 @@
                                                 <td>{{ $stock->product->vendor_net_landing }}</td>
                                                 <td>{{ $stock->product->mrp }}</td>
                                                 <td>{{ $stock->product->status === '1' ? 'Active' : 'Inactive' }}</td>
+                                                <td>{{ $stock->original_quantity }}</td>    
+                                                <td>{{ $stock->available_quantity }}</td>
                                                 <td>
                                                     @if ($stock->block_quantity)
                                                         <span class="badge text-danger bg-danger-subtle">

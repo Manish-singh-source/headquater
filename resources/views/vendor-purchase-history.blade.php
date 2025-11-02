@@ -92,10 +92,22 @@
                             <div class="row">
                                 <div class="col-md-3">
                                     <div class="mb-3">
-                                        <label class="form-label">Choose Date</label>
+                                        <label class="form-label">Choose From Date</label>
                                         <div class="input-icon-start position-relative">
                                             <input type="date" class="form-control date-range bookingrange"
-                                                id="date-select" placeholder="dd/mm/yyyy">
+                                                id="date-from" placeholder="dd/mm/yyyy">
+                                            <span class="input-icon-left">
+                                                <i class="ti ti-calendar"></i>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="mb-3">
+                                        <label class="form-label">Choose To Date</label>
+                                        <div class="input-icon-start position-relative">
+                                            <input type="date" class="form-control date-range bookingrange"
+                                                id="date-to" placeholder="dd/mm/yyyy">
                                             <span class="input-icon-left">
                                                 <i class="ti ti-calendar"></i>
                                             </span>
@@ -139,6 +151,9 @@
                             </div>
                         </div>
                         <div class="col-lg-2">
+                            <div class="mb-3">
+                                <button id="filterData" class="btn btn-primary w-100">Filter</button>
+                            </div>
                             <div class="mb-3">
                                 <button id="exportData" class="btn btn-danger w-100">Generate Report</button>
                             </div>
@@ -234,20 +249,77 @@
         $(document).ready(function() {
 
             $(document).on('click', '#exportData', function() {
-                var selectedDate = $("#date-select").val().trim();
-                if (selectedDate) {
-                    var parts = selectedDate.split('-');
-                    var formatted = parts[2] + '-' + parts[1] + '-' + parts[0];
+                var selectedDateFrom = $("#date-from").val().trim();
+                var selectedDateTo = $("#date-to").val().trim();
+
+                // Format dates from yyyy-mm-dd to dd-mm-yyyy if backend expects that format
+                var formattedFrom = '';
+                var formattedTo = '';
+                if (selectedDateFrom) {
+                    var partsFrom = selectedDateFrom.split('-');
+                    if (partsFrom.length === 3) {
+                        formattedFrom = partsFrom[2] + '-' + partsFrom[1] + '-' + partsFrom[0];
+                    } else {
+                        formattedFrom = selectedDateFrom;
+                    }
                 }
+                if (selectedDateTo) {
+                    var partsTo = selectedDateTo.split('-');
+                    if (partsTo.length === 3) {
+                        formattedTo = partsTo[2] + '-' + partsTo[1] + '-' + partsTo[0];
+                    } else {
+                        formattedTo = selectedDateTo;
+                    }
+                }
+
                 var vendorCode = $("#vendor-code").val();
 
                 // Construct download URL with parameters
                 var downloadUrl = '{{ route('vendor.purchase.history.excel') }}' +
-                    '?selectedDate=' + encodeURIComponent(selectedDate) +
+                    '?date_from=' + encodeURIComponent(formattedFrom) +
+                    '&date_to=' + encodeURIComponent(formattedTo) +
                     '&vendorCode=' + encodeURIComponent(vendorCode);
 
                 // Trigger browser download
                 window.location.href = downloadUrl;
+            });
+
+            $(document).on('click', '#filterData', function() {
+                var selectedDateFrom = $('#date-from').val();
+                var selectedDateTo = $('#date-to').val();
+
+                // Format date range for filtering (convert yyyy-mm-dd to dd-mm-yyyy)
+                var formattedDateRange = '';
+                var formattedFrom = '';
+                var formattedTo = '';
+                if (selectedDateFrom) {
+                    var partsFrom = selectedDateFrom.split('-');
+                    if (partsFrom.length === 3) {
+                        formattedFrom = partsFrom[2] + '-' + partsFrom[1] + '-' + partsFrom[0];
+                    } else {
+                        formattedFrom = selectedDateFrom;
+                    }
+                }
+                if (selectedDateTo) {
+                    var partsTo = selectedDateTo.split('-');
+                    if (partsTo.length === 3) {
+                        formattedTo = partsTo[2] + '-' + partsTo[1] + '-' + partsTo[0];
+                    } else {
+                        formattedTo = selectedDateTo;
+                    }
+                }
+
+                if (formattedFrom && formattedTo) {
+                    formattedDateRange = formattedFrom + ' to ' + formattedTo;
+                } else if (formattedFrom) {
+                    formattedDateRange = formattedFrom;
+                } else if (formattedTo) {
+                    formattedDateRange = formattedTo;
+                }
+
+                // Apply date range filter to the DataTable (use the initialized vendorHistoryTable and the "Ordered Date" column index)
+                vendorHistoryTable.column(9).search(formattedDateRange ? '^' + formattedDateRange + '$' : '', true, false)
+                    .draw();
             });
 
 
