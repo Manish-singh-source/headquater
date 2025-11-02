@@ -155,6 +155,7 @@ class CustomerController extends Controller
             // Check if any records were processed
             if ($insertCount === 0 && $skipCount > 0) {
                 DB::rollBack();
+                
                 $errorMessage = !empty($errors)
                     ? implode('; ', array_slice($errors, 0, 5))
                     : 'No valid data found in the CSV file.';
@@ -194,7 +195,7 @@ class CustomerController extends Controller
      */
     public function store(Request $request)
     {
-        dd($request->all());
+        // dd($request->all());
         $validator = Validator::make($request->all(), [
             'facility_name' => 'required|min:3|max:100',
             'client_name' => 'required|min:3|max:100',
@@ -219,7 +220,7 @@ class CustomerController extends Controller
         ]);
 
         if ($validator->fails()) {
-            dd($validator->errors());
+            // dd($validator->errors());
             return back()->withErrors($validator)->withInput();
         }
 
