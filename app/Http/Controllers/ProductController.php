@@ -248,6 +248,7 @@ class ProductController extends Controller
                 $casePackQuantity = ((int)($record['PCS/Set'] ?? 0)) * ((int)($record['Sets/CTN'] ?? 0));
 
                 $products[] = [
+                    'warehouse_id' => Arr::get($record, 'Warehouse Id') ?? '',
                     'sku' => Arr::get($record, 'SKU Code') ?? '',
                     'ean_code' => Arr::get($record, 'EAN Code') ?? '',
                     'brand' => Arr::get($record, 'Brand') ?? '',
@@ -271,8 +272,8 @@ class ProductController extends Controller
                     'updated_at' => now(),
                 ];
 
-                // Update warehouse stock
-                $warehouseStock = WarehouseStock::where('sku', $sku)->first();
+;                // Update warehouse stock
+                $warehouseStock = WarehouseStock::where('sku', $sku)->where('warehouse_id', $record['Warehouse Id'])->first();
                 if ($warehouseStock) {
                     $stock = (int)($record['Stock'] ?? 0);
 
@@ -295,7 +296,7 @@ class ProductController extends Controller
                 return redirect()->back()->withErrors(['products_excel' => 'No valid data found in the file.']);
             }
 
-            Product::upsert($products, ['sku']);
+            Product::upsert($products, ['sku', 'warehouse_id']);
 
             DB::commit();
 
@@ -543,6 +544,8 @@ class ProductController extends Controller
             // Add data rows
             foreach ($products as $stock) {
                 $writer->addRow([
+                    'Warehouse Id' => $stock->warehouse?->id ?? '',
+                    'Warehouse Name' => $stock->warehouse?->name ?? '',
                     'SKU Code' => $stock->product?->sku ?? '',
                     'EAN Code' => $stock->product?->ean_code ?? '',
                     'Brand' => $stock->product?->brand ?? '',
@@ -557,7 +560,6 @@ class ProductController extends Controller
                     'Vendor Purchase Rate' => $stock->product?->vendor_purchase_rate ?? '',
                     'GST' => $stock->product?->gst ?? '',
                     'Vendor Net Landing' => $stock->product?->vendor_net_landing ?? '',
-                    'Original Quantity' => $stock->original_quantity ?? 0,
                     'Stock' => $stock->available_quantity ?? 0,
                 ]);
             }

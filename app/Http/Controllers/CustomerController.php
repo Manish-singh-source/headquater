@@ -72,15 +72,33 @@ class CustomerController extends Controller
             $fileExtension = $file->getClientOriginalExtension();
 
             $reader = SimpleExcelReader::create($filePath, $fileExtension);
-            
+
             $insertCount = 0;
             $skipCount = 0;
             $errors = [];
             $rowNumber = 0;
+            $totalRows = 0;
 
-            foreach ($reader->getRows() as $record) {
+            // Check if file has any data
+            $allRows = $reader->getRows()->toArray();
+            $totalRows = count($allRows);
+
+            if ($totalRows === 0) {
+                DB::rollBack();
+                return redirect()->back()->with('error', 'The uploaded Excel file is empty. Please add customer data and try again.');
+            }
+
+            // Check if first row has the required column
+            $firstRow = $allRows[0] ?? [];
+            if (!isset($firstRow['Facility Name'])) {
+                DB::rollBack();
+                $availableColumns = implode(', ', array_keys($firstRow));
+                return redirect()->back()->with('error', 'Invalid Excel format. The file must have a "Facility Name" column. Found columns: ' . ($availableColumns ?: 'None'));
+            }
+
+            foreach ($allRows as $record) {
                 $rowNumber++;
-                
+
                 try {
                     // Validate required field: Facility Name
                     if (!isset($record['Facility Name']) || empty(trim($record['Facility Name']))) {
@@ -155,11 +173,21 @@ class CustomerController extends Controller
             // Check if any records were processed
             if ($insertCount === 0 && $skipCount > 0) {
                 DB::rollBack();
-                
+
                 $errorMessage = !empty($errors)
-                    ? implode('; ', array_slice($errors, 0, 5))
-                    : 'No valid data found in the CSV file.';
+                    ? 'Failed to import customers. Errors: ' . implode('; ', array_slice($errors, 0, 5))
+                    : 'No valid data found in the Excel file. Please ensure the file has customer data with at least a "Facility Name" column filled.';
+
+                if ($skipCount > 5) {
+                    $errorMessage .= " (Showing first 5 errors out of {$skipCount} total issues)";
+                }
+
                 return redirect()->back()->with('error', $errorMessage);
+            }
+
+            if ($insertCount === 0 && $skipCount === 0) {
+                DB::rollBack();
+                return redirect()->back()->with('error', 'No data rows found in the Excel file. Please check the file format and ensure it contains customer data.');
             }
 
             DB::commit();
