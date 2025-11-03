@@ -807,14 +807,14 @@ class PurchaseOrderController extends Controller
         // Logic to add invoice payment details
         $validated = Validator::make($request->all(), [
             'vendor_pi_id' => 'required',
-            'utr_no' => 'required',
+            'utr_no' => 'required|unique:vendor_payments,payment_utr_no',
             'pay_amount' => 'required|numeric|min:1',
             'payment_method' => 'required|string',
         ]);
 
         if ($validated->fails()) {
             // If validation fails, redirect back with errors
-            return back()->with($validated)->withInput();
+            return back()->with('error', $validated->errors()->first())->withInput();
         }
 
         if ($request->input('pay_amount') == 0) {
