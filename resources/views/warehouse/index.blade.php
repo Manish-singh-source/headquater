@@ -218,15 +218,23 @@
                     return;
                 }
                 if (confirm('Are you sure you want to delete selected records?')) {
-                    // Create a form and submit
+                    // Create a form with ids[] array inputs
                     let form = document.createElement('form');
                     form.method = 'POST';
                     form.action = '{{ route('delete.selected.warehouse') }}';
-                    form.innerHTML = `
-                @csrf
-                <input type="hidden" name="_method" value="DELETE">
-                <input type="hidden" name="ids" value="${selected.join(',')}">
-            `;
+
+                    // Add CSRF token and method override
+                    form.innerHTML = `@csrf<input type="hidden" name="_method" value="DELETE">`;
+
+                    // Add individual ids[] inputs for each selected id
+                    selected.forEach(function(id) {
+                        const input = document.createElement('input');
+                        input.type = 'hidden';
+                        input.name = 'ids[]';
+                        input.value = id;
+                        form.appendChild(input);
+                    });
+
                     document.body.appendChild(form);
                     form.submit();
                 }
@@ -254,7 +262,8 @@
                 warehouseTable.rows().every(function() {
                     var $checkbox = $(this.node()).find('.status-switch2');
                     // var isChecked = $checkbox.prop('checked') ? 1 : 0;
-                    var isChecked = $checkbox.is(':checked') ? '1' : '0'; // Convert to string for comparison
+                    var isChecked = $checkbox.is(':checked') ? '1' :
+                    '0'; // Convert to string for comparison
                     console.log('Filtering warehouse:', status, isChecked);
 
                     if (status === 'all') {
@@ -270,7 +279,7 @@
             // Tab click event
             $('#warehouseTabs button').on('click', function() {
                 $('#warehouseTabs button').removeClass('active');
-                $(this).addClass('active'); 
+                $(this).addClass('active');
 
                 console.log('Tab clicked:', $(this).data('status')); // Debugging line
                 var status = $(this).data('status'); // all / 1 / 0

@@ -73,8 +73,8 @@
                                     <label for="input3" class="form-label">Alternate Phone Number</label>
                                     <input type="text"
                                         class="form-control @error('contact_person_alt_phone_no') is-invalid @enderror"
-                                        name="contact_person_alt_phone_no"  value="{{ old('contact_person_alt_phone_no') }}" id="input3"
-                                        placeholder="Alternate Phone Number">
+                                        name="contact_person_alt_phone_no" value="{{ old('contact_person_alt_phone_no') }}"
+                                        id="input3" placeholder="Alternate Phone Number">
                                     @error('contact_person_alt_phone_no')
                                         <div class="invalid-feedback">
                                             {{ $message }}
@@ -85,7 +85,8 @@
                                     <label for="input4" class="form-label">Email</label>
                                     <input type="email"
                                         class="form-control @error('contact_person_email') is-invalid @enderror"
-                                        name="contact_person_email" value="{{ old('contact_person_email') }}" id="input4" placeholder="Email Id">
+                                        name="contact_person_email" value="{{ old('contact_person_email') }}" id="input4"
+                                        placeholder="Email Id">
                                     @error('contact_person_email')
                                         <div class="invalid-feedback">
                                             {{ $message }}
@@ -146,7 +147,8 @@
                                     <label for="input8" class="form-label">Max storage capacity</label>
                                     <input type="number"
                                         class="form-control @error('max_storage_capacity') is-invalid @enderror"
-                                        name="max_storage_capacity" id="input8" value="{{ old('max_storage_capacity') }}" placeholder="Max storage capacity">
+                                        name="max_storage_capacity" id="input8"
+                                        value="{{ old('max_storage_capacity') }}" placeholder="Max storage capacity">
                                     @error('max_storage_capacity')
                                         <div class="invalid-feedback">
                                             {{ $message }}
@@ -175,7 +177,8 @@
                                 <div class="col-md-2">
                                     <label for="input8" class="form-label">Pin Code</label>
                                     <input type="text" class="form-control @error('pincode') is-invalid @enderror"
-                                        name="pincode" id="input8" value="{{ old('pincode') }}" placeholder="Pin Code">
+                                        name="pincode" id="input8" value="{{ old('pincode') }}"
+                                        placeholder="Pin Code">
                                     @error('pincode')
                                         <div class="invalid-feedback">
                                             {{ $message }}
@@ -228,35 +231,60 @@
     <script>
         $(document).ready(function() {
 
-            function getLocationData(url, id, tag, data = null) {
+            function getLocationData(url, id, tag, data = null, selectedId = null, onComplete = null) {
                 $.ajax({
                     url: url,
                     method: 'GET',
                     data: data,
-                    success: function(data) {
-                        console.log(data.data);
-                        $(id).empty().append(
-                            `<option value="">Select ${tag}</option>`);
-                        data.data.map(function(country) {
-                            $(id).append(
-                                $('<option>', {
-                                    value: country.id,
-                                    text: country.name
-                                })
-                            );
+                    success: function(res) {
+                        const items = res.data || [];
+                        $(id).empty().append(`<option value="">Select ${tag}</option>`);
+                        items.forEach(function(item) {
+                            $(id).append($('<option>', {
+                                value: item.id,
+                                text: item.name
+                            }));
                         });
+
+                        if (selectedId) {
+                            $(id).val(selectedId);
+                            $(id).trigger('change');
+                        }
+
+                        if (typeof onComplete === 'function') {
+                            try {
+                                onComplete();
+                            } catch (e) {
+                                console.error(e);
+                            }
+                        }
                     },
                     error: function(xhr, status, error) {
-                        console.error('Error:', error);
+                        console.error('Error fetching ' + tag + ':', error);
                     }
                 });
             }
 
-            getLocationData("/countries", '#shippingCountry', "Country");
+            // Populate countries and, if present from old input, select and chain-load states/cities
+            getLocationData('/countries', '#shippingCountry', 'Country', null, '{{ old('country_id') }}',
+            function() {
+                const countryId = $('#shippingCountry').val();
+                if (countryId) {
+                    getLocationData('/states', '#shippingState', 'State', {
+                        countryId: countryId
+                    }, '{{ old('state_id') }}', function() {
+                        const stateId = $('#shippingState').val();
+                        if (stateId) {
+                            getLocationData('/cities', '#shippingCity', 'City', {
+                                stateId: stateId
+                            }, '{{ old('city_id') }}');
+                        }
+                    });
+                }
+            });
 
             $("#shippingCountry").on("change", function() {
                 let countryId = $(this).val();
-                console.log(countryId);
                 getLocationData("/states", "#shippingState", "State", {
                     countryId: countryId
                 });
@@ -264,7 +292,6 @@
 
             $("#shippingState").on("change", function() {
                 let stateId = $(this).val();
-                console.log(stateId);
                 getLocationData("/cities", "#shippingCity", "City", {
                     stateId: stateId
                 });

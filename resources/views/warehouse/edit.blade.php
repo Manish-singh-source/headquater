@@ -15,7 +15,7 @@
                     </nav>
                 </div>
             </div>
-            
+
 
             <div class="row">
                 <div class="col-12">
@@ -167,35 +167,78 @@
     <script>
         $(document).ready(function() {
 
-            function getLocationData(url, id, tag, data = null) {
+            /**
+             * Fetch location data (countries/states/cities), populate a select, optionally select a value
+             * and run an onComplete callback (used to chain loading dependent dropdowns).
+             *
+             * @param {string} url
+             * @param {string} id - jQuery selector for the select element
+             * @param {string} tag - friendly name for placeholder text
+             * @param {object|null} data - query parameters
+             * @param {mixed|null} selectedId - id to select after population
+             * @param {function|null} onComplete - callback to run after population (optional)
+             */
+            function getLocationData(url, id, tag, data = null, selectedId = null, onComplete = null) {
                 $.ajax({
                     url: url,
                     method: 'GET',
                     data: data,
-                    success: function(data) {
-                        console.log(data.data);
-                        $(id).empty().append(
-                            `<option value="">Select ${tag}</option>`);
-                        data.data.map(function(country) {
-                            $(id).append(
-                                $('<option>', {
-                                    value: country.id,
-                                    text: country.name
-                                })
-                            );
+                    success: function(res) {
+                        const items = res.data || [];
+                        $(id).empty().append(`<option value="">Select ${tag}</option>`);
+                        items.forEach(function(item) {
+                            $(id).append($('<option>', {
+                                value: item.id,
+                                text: item.name
+                            }));
                         });
+
+                        if (selectedId) {
+                            $(id).val(selectedId);
+                        }
+
+                        // If a selectedId was applied, trigger change so dependent dropdowns can load
+                        if (selectedId) {
+                            $(id).trigger('change');
+                        }
+
+                        if (typeof onComplete === 'function') {
+                            try {
+                                onComplete();
+                            } catch (e) {
+                                console.error(e);
+                            }
+                        }
                     },
                     error: function(xhr, status, error) {
-                        console.error('Error:', error);
+                        console.error('Error fetching ' + tag + ':', error);
                     }
                 });
             }
 
-            getLocationData("/countries", '#shippingCountry', "Country");
+            // On page load: populate countries and auto-select existing values, chaining states and cities
+            getLocationData("/countries", '#shippingCountry', "Country", null,
+                '{{ $warehouse->country_id ?? '' }}',
+                function() {
+                    // After countries loaded & country selected (if any), load states for selected country
+                    const countryId = $('#shippingCountry').val();
+                    if (countryId) {
+                        getLocationData('/states', '#shippingState', 'State', {
+                            countryId: countryId
+                        }, '{{ $warehouse->state_id ?? '' }}', function() {
+                            const stateId = $('#shippingState').val();
+                            if (stateId) {
+                                getLocationData('/cities', '#shippingCity', 'City', {
+                                    stateId: stateId
+                                }, '{{ $warehouse->city_id ?? '' }}');
+                            }
+                        });
+                    }
+                });
 
+            // Manual change handlers: user interactions should load dependent dropdowns without selecting prefilled IDs
             $("#shippingCountry").on("change", function() {
                 let countryId = $(this).val();
-                console.log(countryId);
                 getLocationData("/states", "#shippingState", "State", {
                     countryId: countryId
                 });
@@ -203,7 +246,6 @@
 
             $("#shippingState").on("change", function() {
                 let stateId = $(this).val();
-                console.log(stateId);
                 getLocationData("/cities", "#shippingCity", "City", {
                     stateId: stateId
                 });

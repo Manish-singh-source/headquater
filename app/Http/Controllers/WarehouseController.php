@@ -143,27 +143,66 @@ class WarehouseController extends Controller
 
     public function deleteSelected(Request $request)
     {
+        // Normalize ids: accept array or comma-separated string
+        $rawIds = $request->input('ids');
+        if (is_string($rawIds)) {
+            $ids = array_filter(array_map('trim', explode(',', $rawIds)), function ($v) {
+                return $v !== '';
+            });
+        } elseif (is_array($rawIds)) {
+            $ids = $rawIds;
+        } else {
+            $ids = [];
+        }
+
+        // Cast to integers and validate
+        $ids = array_map('intval', $ids);
+        $validator = \Illuminate\Support\Facades\Validator::make(['ids' => $ids], [
+            'ids' => 'required|array|min:1',
+            'ids.*' => 'integer|exists:warehouses,id'
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()->with('error', 'Invalid warehouse IDs selected.');
+        }
+
         try {
             DB::beginTransaction();
-            $ids = is_array($request->ids) ? $request->ids : explode(',', $request->ids);
+
+            // Get warehouses to check stock and log names
+            $warehouses = Warehouse::whereIn('id', $ids)->get();
             $deleted = 0;
-            foreach ($ids as $id) {
-                $warehouse = Warehouse::find($id);
-                if (!$warehouse) {
-                    continue;
-                }
+            $skipped = [];
+
+            foreach ($warehouses as $warehouse) {
                 if ($warehouse->warehouseStock()->exists()) {
+                    $skipped[] = $warehouse->name;
                     continue;
                 }
+
+                // Log activity before deletion
+                activity()
+                    ->performedOn($warehouse)
+                    ->causedBy(Auth::user())
+                    ->withProperties(['id' => $warehouse->id, 'name' => $warehouse->name])
+                    ->event('deleted')
+                    ->log('Warehouse deleted in bulk operation: ' . $warehouse->name);
+
                 $warehouse->delete();
                 $deleted++;
             }
+
             DB::commit();
 
-            return redirect()->back()->with('success', 'Successfully deleted ' . $deleted . ' warehouses.');
+            $message = 'Successfully deleted ' . $deleted . ' warehouse(s).';
+            if (!empty($skipped)) {
+                $message .= ' Skipped ' . count($skipped) . ' warehouse(s) with existing stock: ' . implode(', ', $skipped);
+            }
+
+            return redirect()->back()->with('success', $message);
         } catch (\Exception $e) {
             DB::rollBack();
-            return redirect()->back()->with('error', 'Something went wrong. Some warehouses could not be deleted. Please delete related Products/Stock first.');
+            return redirect()->back()->with('error', 'Error deleting warehouses. Please ensure warehouses have no stock and try again.');
         }
     }
 
