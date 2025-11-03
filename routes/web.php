@@ -289,6 +289,12 @@ Route::middleware(['auth'])->group(function () {
         })->name('create-invoice');
         Route::get('/invoices-details/{id}', 'invoiceDetails')->name('invoices-details');
 
+        // Manual Invoice Routes
+        Route::get('/invoices/manual/create', 'createManualInvoice')->name('invoices.manual.create');
+        Route::post('/invoices/manual/store', 'storeManualInvoice')->name('invoices.manual.store');
+        Route::post('/invoices/get-products', 'getProducts')->name('invoices.get-products');
+        Route::post('/invoices/check-stock', 'checkStock')->name('invoices.check-stock');
+
         // updating invoice details appointment, grn, dn, and payment
         Route::post('/invoice-appointment-update/{id}', 'invoiceAppointmentUpdate')->name('invoices.appointment.update');
         Route::post('/invoice-dn-update/{id}', 'invoiceDnUpdate')->name('invoice.dn.update');
