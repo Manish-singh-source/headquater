@@ -167,18 +167,18 @@ class ReceivedProductsController extends Controller
             }
 
             // Add header row
-            $writer->addRow([
-                'Order No' => 'Order No',
-                'Purchase Order No' => 'Purchase Order No',
-                'Vendor SKU Code' => 'Vendor SKU Code',
-                'Title' => 'Title',
-                'MRP' => 'MRP',
-                'PO Quantity' => 'PO Quantity',
-                'PI Quantity' => 'PI Quantity',
-                'Quantity Received' => 'Quantity Received',
-                'Issue Units' => 'Issue Units',
-                'Issue Description' => 'Issue Description',
-            ]);
+            // $writer->addRow([
+            //     'Order No' => 'Order No',
+            //     'Purchase Order No' => 'Purchase Order No',
+            //     'Vendor SKU Code' => 'Vendor SKU Code',
+            //     'Title' => 'Title',
+            //     'MRP' => 'MRP',
+            //     'PO Quantity' => 'PO Quantity',
+            //     'PI Quantity' => 'PI Quantity',
+            //     'Quantity Received' => 'Quantity Received',
+            //     'Issue Units' => 'Issue Units',
+            //     'Issue Description' => 'Issue Description',
+            // ]);
 
             // Add data rows
             foreach ($vendorPI->products as $product) {
@@ -190,7 +190,7 @@ class ReceivedProductsController extends Controller
                     'MRP' => $product->mrp ?? '',
                     'PO Quantity' => $product->quantity_requirement ?? '',
                     'PI Quantity' => $product->available_quantity ?? '',
-                    'Quantity Received' => '',
+                    'Quantity Received' => $product->quantity_received ?? 0,
                     'Issue Units' => '',
                     'Issue Description' => '',
                 ]);

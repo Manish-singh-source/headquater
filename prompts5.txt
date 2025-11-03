@@ -32,3 +32,12 @@ Module 5: Products Management
         Sub Task 1: 
 
 
+
+
+echo "# Aeritx" >> README.md
+git init
+git add README.md
+git commit -m "first commit"
+git branch -M main
+git remote add origin https://github.com/Manish-singh-source/Aeritx.git
+git push -u origin main

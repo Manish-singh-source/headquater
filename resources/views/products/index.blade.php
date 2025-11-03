@@ -138,9 +138,9 @@
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td>{{ $product->product->brand_title ?? 'NA'}}</td>
+                                            <td>{{ $product->product->brand_title ?? 'NA' }}</td>
                                             <td>{{ $product->product->mrp ?? 'NA' }}</td>
-                                            <td>{{ $product->product->category ?? 'NA'}}</td>
+                                            <td>{{ $product->product->category ?? 'NA' }}</td>
                                             <td>{{ $product->product->pcs_set ?? 'NA' }}</td>
                                             <td>{{ $product->product->sets_ctn ?? 'NA' }}</td>
                                             <td>{{ $product->product->basic_rate ?? 'NA' }}</td>
@@ -209,7 +209,7 @@
                                                 </div>
                                             </td>
                                         </tr>
-                                    @empty 
+                                    @empty
                                         <tr>
                                             <td colspan="24" class="text-center">No products found.</td>
                                         </tr>
@@ -225,7 +225,9 @@
     <!--end main wrapper-->
 
     <!-- Single Edit Product Modal -->
-    <div class="modal fade" id="editProductModal" tabindex="-1" aria-labelledby="editProductModalLabel" aria-hidden="true">
+    <!-- Single Edit Product Modal -->
+    <div class="modal fade" id="editProductModal" tabindex="-1" aria-labelledby="editProductModalLabel"
+        aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <form id="editProductForm">
@@ -255,7 +257,8 @@
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label for="mrp" class="form-label">MRP</label>
-                                <input type="number" step="0.01" name="mrp" id="mrp" class="form-control">
+                                <input type="number" step="0.01" name="mrp" id="mrp"
+                                    class="form-control">
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label for="category" class="form-label">Category</label>
@@ -271,7 +274,8 @@
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label for="original_quantity" class="form-label">Original Quantity</label>
-                                <input type="number" name="original_quantity" id="original_quantity" class="form-control">
+                                <input type="number" name="original_quantity" id="original_quantity"
+                                    class="form-control">
                             </div>
                         </div>
                     </div>
@@ -305,15 +309,26 @@
                     return;
                 }
                 if (confirm('Are you sure you want to delete selected records?')) {
-                    // Create a form and submit
+                    // Create a form and submit with ids[] inputs (array)
                     let form = document.createElement('form');
                     form.method = 'POST';
                     form.action = '{{ route('delete.selected.product') }}';
+
+                    // Add CSRF token and method override
                     form.innerHTML = `
                         @csrf
                         <input type="hidden" name="_method" value="DELETE">
-                        <input type="hidden" name="ids" value="${selected.join(',')}">
                     `;
+
+                    // Append individual ids[] inputs for each selected id
+                    selected.forEach(function(id) {
+                        const input = document.createElement('input');
+                        input.type = 'hidden';
+                        input.name = 'ids[]';
+                        input.value = id;
+                        form.appendChild(input);
+                    });
+
                     document.body.appendChild(form);
                     form.submit();
                 }
@@ -327,28 +342,29 @@
             $.ajax({
                 url: '/products/' + productId + '/edit',
                 method: 'GET',
-                        success: function(data) {
-                            console.log(data);
-                            $('#id').val(data.id);
-                            $('#sku').val(data.sku);
-                            $('#ean_code').val(data.ean_code);
-                            $('#brand').val(data.brand);
-                            $('#brand_title').val(data.brand_title);
-                            $('#mrp').val(data.mrp);
-                            $('#category').val(data.category);
-                            $('#pcs_set').val(data.pcs_set);
-                            $('#sets_ctn').val(data.sets_ctn);
-                            // support both snake_case and camelCase warehouse stock
-                            const ws = data.warehouse_stock || data.warehouseStock || null;
-                            if (ws) {
-                                $('#original_quantity').val(ws.original_quantity ?? ws.originalQuantity ?? 0);
-                                $('#available_quantity').val(ws.available_quantity ?? ws.availableQuantity ?? 0);
-                            } else {
-                                $('#original_quantity').val(0);
-                                $('#available_quantity').val(0);
-                            }
-                            $('#editProductModal').modal('show');
-                        }
+                success: function(data) {
+                    console.log(data);
+                    $('#id').val(data.id);
+                    $('#sku').val(data.sku);
+                    $('#ean_code').val(data.ean_code);
+                    $('#brand').val(data.brand);
+                    $('#brand_title').val(data.brand_title);
+                    $('#mrp').val(data.mrp);
+                    $('#category').val(data.category);
+                    $('#pcs_set').val(data.pcs_set);
+                    $('#sets_ctn').val(data.sets_ctn);
+                    // support both snake_case and camelCase warehouse stock
+                    const ws = data.warehouse_stock || data.warehouseStock || null;
+                    if (ws) {
+                        $('#original_quantity').val(ws.original_quantity ?? ws.originalQuantity ?? 0);
+                        $('#available_quantity').val(ws.available_quantity ?? ws.availableQuantity ??
+                            0);
+                    } else {
+                        $('#original_quantity').val(0);
+                        $('#available_quantity').val(0);
+                    }
+                    $('#editProductModal').modal('show');
+                }
             });
         });
 
@@ -370,7 +386,8 @@
                 },
                 error: function(xhr) {
                     var message = 'Update failed';
-                    if (xhr.responseJSON && xhr.responseJSON.message) message = xhr.responseJSON.message;
+                    if (xhr.responseJSON && xhr.responseJSON.message) message = xhr.responseJSON
+                        .message;
                     alert(message);
                 }
             });

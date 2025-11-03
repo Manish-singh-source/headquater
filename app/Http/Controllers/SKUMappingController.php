@@ -187,7 +187,7 @@ class SKUMappingController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'sku_id' => 'required|integer|exists:sku_mappings,id',
-            'product_sku' => 'required|string|max:255',
+            'product_sku' => 'required|string|max:255|unique:sku_mappings,product_sku,' . $request->sku_id,
             'vendor_sku' => 'nullable|string|max:255',
             'customer_sku' => 'nullable|string|max:255',
         ]);

@@ -89,7 +89,7 @@ class ProductController extends Controller
                     DB::rollBack();
 
                     return redirect()->back()->with([
-                        'error' => 'Please check excel file: duplicate SKU ('.$record['SKU Code'].') found in the file.',
+                        'error' => 'Please check excel file: duplicate SKU (' . $record['SKU Code'] . ') found in the file.',
                     ]);
                 }
 
@@ -123,13 +123,9 @@ class ProductController extends Controller
                         'pcs_set' => $record['PCS/Set'] ?? '',
                         'sets_ctn' => $record['Sets/CTN'] ?? '',
                         'gst' => intval($record['GST']) ?? '',
-
                         'basic_rate' => isset($record['Basic Rate']) ? intval($record['Basic Rate']) : '',
-                        'net_landing_rate' => (isset($record['Basic Rate']) && isset($record['GST']))
-                            ? number_format(intval($record['Basic Rate']) + (intval($record['Basic Rate']) * intval($record['GST']) / 100), 2, '.', '')
-                            : null,
-                        'case_pack_quantity' => ($record['PCS/Set'] ?? 0) * ($record['Sets/CTN'] ?? 0),
-
+                        'net_landing_rate' => $netLandingRate,
+                        'case_pack_quantity' => $casePackQuantity,
                         'vendor_code' => $record['Vendor Code'] ?? '',
                         'vendor_name' => $record['Vendor Name'] ?? '',
                         'vendor_purchase_rate' => $record['Vendor Purchase Rate'] ?? '',
@@ -204,7 +200,7 @@ class ProductController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
 
-            return redirect()->back()->with(['error' => 'Something went wrong: '.$e->getMessage()]);
+            return redirect()->back()->with(['error' => 'Something went wrong: ' . $e->getMessage()]);
         }
     }
 
@@ -259,15 +255,13 @@ class ProductController extends Controller
                     'gst' => Arr::get($record, 'GST') ?? '',
 
                     'basic_rate' => isset($record['Basic Rate']) ? $record['Basic Rate'] : '',
-                    'net_landing_rate' => (isset($record['Basic Rate']) && isset($record['GST']))
-                        ? number_format($record['Basic Rate'] + ($record['Basic Rate'] * $record['GST'] / 100), 2, '.', '')
-                        : null,
-                    'case_pack_quantity' => ($record['PCS/Set'] ?? 0) * ($record['Sets/CTN'] ?? 0),
+                    'net_landing_rate' => $netLandingRate,
+                    'case_pack_quantity' => $casePackQuantity,
 
+                    'vendor_code' => $record['Vendor Code'] ?? '',
                     'vendor_name' => Arr::get($record, 'Vendor Name') ?? '',
                     'vendor_purchase_rate' => Arr::get($record, 'Vendor Purchase Rate') ?? '',
                     'vendor_net_landing' => Arr::get($record, 'Vendor Net Landing') ?? '',
-                    'created_at' => now(),
                     'updated_at' => now(),
                 ];
 
@@ -314,7 +308,7 @@ class ProductController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
 
-            return redirect()->back()->with(['error' => 'Something went wrong: '.$e->getMessage()]);
+            return redirect()->back()->with(['error' => 'Something went wrong: ' . $e->getMessage()]);
         }
     }
 
@@ -479,7 +473,23 @@ class ProductController extends Controller
      */
     public function deleteSelected(Request $request)
     {
-        $validator = Validator::make($request->all(), [
+        // Normalize ids: accept array or comma-separated string
+        $rawIds = $request->input('ids');
+
+        if (is_string($rawIds)) {
+            $ids = array_filter(array_map('trim', explode(',', $rawIds)), function ($v) {
+                return $v !== '';
+            });
+        } elseif (is_array($rawIds)) {
+            $ids = $rawIds;
+        } else {
+            $ids = [];
+        }
+
+        // Cast to integers
+        $ids = array_map('intval', $ids);
+
+        $validator = Validator::make(['ids' => $ids], [
             'ids' => 'required|array|min:1',
             'ids.*' => 'integer|exists:products,id',
         ]);
@@ -491,11 +501,12 @@ class ProductController extends Controller
         DB::beginTransaction();
 
         try {
-            $ids = $request->ids;
-            $skus = Product::whereIn('id', $ids)->pluck('sku');
+            $skus = Product::whereIn('id', $ids)->pluck('sku')->toArray();
 
             // Delete related warehouse stocks
-            WarehouseStock::whereIn('sku', $skus)->delete();
+            if (!empty($skus)) {
+                WarehouseStock::whereIn('sku', $skus)->delete();
+            }
 
             // Delete products
             $deleted = Product::destroy($ids);
@@ -553,11 +564,11 @@ class ProductController extends Controller
                     'Sets/CTN' => $stock->product?->sets_ctn ?? '',
                     'Basic Rate' => $stock->product?->basic_rate ?? '',
                     'Net Landing Rate' => $stock->product?->net_landing_rate ?? '',
+                    'Vendor Code' => $stock->product?->vendor_code ?? '',
                     'Vendor Name' => $stock->product?->vendor_name ?? '',
                     'Vendor Purchase Rate' => $stock->product?->vendor_purchase_rate ?? '',
                     'GST' => $stock->product?->gst ?? '',
                     'Vendor Net Landing' => $stock->product?->vendor_net_landing ?? '',
-                    'Original Quantity' => $stock->original_quantity ?? 0,
                     'Stock' => $stock->available_quantity ?? 0,
                 ]);
             }
