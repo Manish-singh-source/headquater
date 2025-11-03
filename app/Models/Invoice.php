@@ -15,6 +15,20 @@ class Invoice extends Model
         'invoice_date',
         'round_off',
         'total_amount',
+        'subtotal',
+        'tax_amount',
+        'discount_amount',
+        'paid_amount',
+        'balance_due',
+        'payment_mode',
+        'payment_status',
+        'invoice_type',
+        'notes',
+        'po_number',
+    ];
+
+    protected $casts = [
+        'invoice_date' => 'date',
     ];
 
     public function warehouse()

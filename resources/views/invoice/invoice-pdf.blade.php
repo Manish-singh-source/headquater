@@ -162,7 +162,7 @@
                 <td>{{ $detail->product->brand_title }}</td>
                 <td>{{ $detail->tempOrder?->hsn }}</td>
                 <td>{{ $detail->quantity }}</td>
-                <td>{{ $detail->salesOrderProduct->box_count }}</td>
+                <td>{{ $detail->salesOrderProduct?->box_count }}</td>
                 <td>{{ $detail->unit_price }}</td>
                 <td>{{ $detail->amount }}</td>
                 <td>{{ floor($detail->tax) }}%</td>
