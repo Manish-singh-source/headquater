@@ -17,6 +17,9 @@ class InvoiceDetails extends Model
         'tax',
         'total_price',
         'description',
+        'temp_order_id',
+        'sales_order_product_id',
+        'po_number',
     ];
 
     public function invoice()

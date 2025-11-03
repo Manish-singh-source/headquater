@@ -168,8 +168,8 @@
                                     @forelse ($customerGroups as $key => $group)
                                         <tr>
                                             <td>
-                                                <input class="form-check-input row-checkbox" type="checkbox"
-                                                    name="ids[]" value="{{ $group->id }}">
+                                                <input class="form-check-input row-checkbox" type="checkbox" name="ids[]"
+                                                    value="{{ $group->id }}">
                                             </td>
                                             <td>{{ $key + 1 }}</td>
                                             <td>

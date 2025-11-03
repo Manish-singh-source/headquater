@@ -17,8 +17,12 @@
                 <div class="row g-3">
                     <div class="col-12 col-md-auto">
                         <div class="d-flex align-items-center gap-2 justify-content-lg-end">
-                            <a href="{{ route('create-invoice') }}"><button class="btn btn-primary px-4"><i
-                                        class="bi bi-plus-lg me-2"></i>Create Invoice</button></a>
+                            <a href="{{ route('invoices.manual.create') }}" class="btn btn-success px-4">
+                                <i class="bi bi-plus-lg me-2"></i>Create Manual Invoice
+                            </a>
+                            <a href="{{ route('create-invoice') }}" class="btn btn-primary px-4">
+                                <i class="bi bi-plus-lg me-2"></i>Create Invoice
+                            </a>
                         </div>
                     </div>
                 </div>

@@ -63,96 +63,88 @@ class PackagingController extends Controller
      */
     public function downloadPackagingProducts(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'id' => 'required|integer|min:1|exists:sales_orders,id',
-        ]);
-
-        if ($validator->fails()) {
-            return redirect()->back()->with('error', 'Invalid Sales Order ID.');
+        if (! $request->id) {
+            return back()->with('error', 'Please Try Again.');
         }
 
-        try {
-            $id = $request->id;
-            $tempXlsxPath = storage_path('app/received_' . Str::random(8) . '.xlsx');
+        $id = $request->id;
 
-            $writer = SimpleExcelWriter::create($tempXlsxPath);
+        // Create temporary .xlsx file path
+        $tempXlsxPath = storage_path('app/received_' . Str::random(8) . '.xlsx');
 
-            $salesOrder = SalesOrder::with([
-                'customerGroup',
-                'warehouse',
-                'orderedProducts.product',
-                'orderedProducts.customer',
-                'orderedProducts.tempOrder',
-                'orderedProducts.warehouseStock',
-            ])->findOrFail($id);
+        // Create writer
+        $writer = SimpleExcelWriter::create($tempXlsxPath);
 
-            // Add header row
-            $writer->addRow([
-                'Customer Name' => 'Customer Name',
-                'SKU Code' => 'SKU Code',
-                'Facility Name' => 'Facility Name',
-                'Facility Location' => 'Facility Location',
-                'PO Date' => 'PO Date',
-                'PO Expiry Date' => 'PO Expiry Date',
-                'HSN' => 'HSN',
-                'Item Code' => 'Item Code',
-                'Description' => 'Description',
-                'GST' => 'GST',
-                'Basic Rate' => 'Basic Rate',
-                'Net Landing Rate' => 'Net Landing Rate',
-                'MRP' => 'MRP',
-                'PO Quantity' => 'PO Quantity',
-                'Purchase Order Quantity' => 'Purchase Order Quantity',
-                'Purchase Order No' => 'Purchase Order No',
-                'Total Dispatch Qty' => 'Total Dispatch Qty',
-                'Final Dispatch Qty' => 'Final Dispatch Qty',
-                'Box Count' => 'Box Count',
-                'Weight' => 'Weight',
-                'Issue Units' => 'Issue Units',
-                'Issue Reason' => 'Issue Reason',
-            ]);
+        // Fetch data with relationships
+        $salesOrder = SalesOrder::with([
+            'customerGroup',
+            'warehouse',
+            'orderedProducts.product',
+            'orderedProducts.customer',
+            'orderedProducts.tempOrder',
+            'orderedProducts.warehouseStock',
+        ])
+            ->findOrFail($id);
 
-            // Add data rows
-            foreach ($salesOrder->orderedProducts as $order) {
-                // Filter by facility name if provided
-                if ($request->has('facility_name') && $order->tempOrder?->facility_name !== $request->facility_name) {
-                    continue;
-                }
+        $facilityNames = collect();
+        foreach ($salesOrder->orderedProducts as $order) {
+            $facilityNames->push($order->customer->contact_name);
+        }
+        $facilityNames = $facilityNames->filter()->unique()->values();
 
-                $writer->addRow([
-                    'Customer Name' => $order->customer?->contact_name ?? '',
-                    'SKU Code' => $order->tempOrder?->sku ?? '',
-                    'Facility Name' => $order->tempOrder?->facility_name ?? '',
-                    'Facility Location' => $order->tempOrder?->facility_location ?? '',
-                    'PO Date' => $order->tempOrder?->po_date ?? '',
-                    'PO Expiry Date' => $order->tempOrder?->po_expiry_date ?? '',
-                    'HSN' => $order->tempOrder?->hsn ?? '',
-                    'Item Code' => $order->tempOrder?->item_code ?? '',
-                    'Description' => $order->tempOrder?->description ?? '',
-                    'GST' => $order->tempOrder?->gst ?? '',
-                    'Basic Rate' => $order->tempOrder?->basic_rate ?? '',
-                    'Net Landing Rate' => $order->tempOrder?->net_landing_rate ?? '',
-                    'MRP' => $order->tempOrder?->mrp ?? '',
-                    'PO Quantity' => $order->tempOrder?->po_qty ?? '',
-                    'Purchase Order Quantity' => $order->tempOrder?->purchase_order_quantity ?? '',
-                    'Purchase Order No' => $order->tempOrder?->po_number ?? '',
-                    'Total Dispatch Qty' => $order->dispatched_quantity ?? 0,
-                    'Final Dispatch Qty' => $order->final_dispatched_quantity ?? 0,
-                    'Box Count' => $order->box_count ?? 0,
-                    'Weight' => $order->weight ?? 0,
-                    'Issue Units' => '',
-                    'Issue Reason' => '',
-                ]);
+        // Add rows
+        foreach ($salesOrder->orderedProducts as $order) {
+
+            // $totalDispatchQty = 0;
+            // if ($order->tempOrder?->vendor_pi_received_quantity) {
+            //     $order->tempOrder->vendor_pi_fulfillment_quantity = $order->tempOrder->vendor_pi_received_quantity;
+            // }
+
+            // if ($order->ordered_quantity <= ($order->tempOrder?->available_quantity ?? 0) + ($order->tempOrder?->vendor_pi_fulfillment_quantity ?? 0)) {
+            //     $totalDispatchQty = $order->ordered_quantity;
+            // } else {
+            //     $totalDispatchQty = ($order->tempOrder?->available_quantity ?? 0) + ($order->tempOrder?->vendor_pi_fulfillment_quantity ?? 0);
+            // }
+
+            if (isset($request->facility_name) && $order->tempOrder->facility_name != $request->facility_name) {
+                continue;
             }
 
-            $writer->close();
-
-            return response()->download($tempXlsxPath, 'Packaging-Products.xlsx', [
-                'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            ])->deleteFileAfterSend(true);
-        } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Error downloading file: ' . $e->getMessage());
+            $writer->addRow([
+                'Customer Name' => $order->customer->contact_name ?? '',
+                // 'PO Number' => $order->tempOrder->po_number ?? '',
+                'SKU Code' => $order->tempOrder->sku ?? '',
+                'Facility Name' => $order->tempOrder->facility_name ?? '',
+                'Facility Location' => $order->tempOrder->facility_location ?? '',
+                'PO Date' => $order->tempOrder->po_date ?? '',
+                'PO Expiry Date' => $order->tempOrder->po_expiry_date ?? '',
+                'HSN' => $order->tempOrder->hsn ?? '',
+                'Item Code' => $order->tempOrder->item_code ?? '',
+                'Description' => $order->tempOrder->description ?? '',
+                'GST' => $order->tempOrder->gst ?? '',
+                'Basic Rate' => $order->tempOrder->basic_rate ?? '',
+                'Net Landing Rate' => $order->tempOrder->net_landing_rate ?? '',
+                'MRP' => $order->tempOrder->mrp ?? '',
+                'PO Quantity' => $order->tempOrder->po_qty ?? '',
+                'Purchase Order Quantity' => $order->tempOrder->purchase_order_quantity ?? '',
+                // 'Warehouse Stock' => $order->warehouseStock->original_quantity ?? '',
+                // 'PI Quantity' => $order->tempOrder?->vendor_pi_fulfillment_quantity,
+                'Purchase Order No' => $order->tempOrder->po_number ?? '',
+                'Total Dispatch Qty' => $order->dispatched_quantity ?? 0,
+                'Final Dispatch Qty' => $order->final_dispatched_quantity ?? 0,
+                'Box Count' => $order->box_count ?? 0,
+                'Weight' => $order->weight ?? 0,
+                'Issue Units' => '',
+                'Issue Reason' => '',
+            ]);
         }
+
+        // Close the writer
+        $writer->close();
+
+        return response()->download($tempXlsxPath, 'Packaging-Products.xlsx', [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ])->deleteFileAfterSend(true);
     }
 
     /**
