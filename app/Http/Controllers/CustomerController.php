@@ -217,9 +217,9 @@ class CustomerController extends Controller
 
     /**
      * Store single customer from form
-     * 
+     *
      * @param Request $request
-     * @return \Illuminate\Http\RedirectResponse
+     * @return \Illuminate\Http\RedirectResponse|\Illuminate\Http\JsonResponse
      */
     public function store(Request $request)
     {
@@ -248,13 +248,19 @@ class CustomerController extends Controller
         ]);
 
         if ($validator->fails()) {
-            // dd($validator->errors());
+            // Check if request expects JSON (AJAX request)
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'errors' => $validator->errors()
+                ], 422);
+            }
             return back()->withErrors($validator)->withInput();
         }
 
-        try {
-            DB::beginTransaction();
+        DB::beginTransaction();
 
+        try {
             // Create customer
             $customer = Customer::create([
                 'facility_name' => trim($request->facility_name),
@@ -286,20 +292,125 @@ class CustomerController extends Controller
 
             DB::commit();
 
-            activity()->log("Customer {$customer->id} ({$customer->facility_name}) created by " . Auth::user()->name);
+            activity()
+                ->performedOn($customer)
+                ->causedBy(Auth::user())
+                ->log('Customer created');
+
+            // Check if request expects JSON (AJAX request)
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Customer created successfully.',
+                    'customer' => $customer
+                ]);
+            }
 
             return redirect()->route('customer.groups.view', $request->group_id)
                 ->with('success', 'Customer added successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
-            \Log::error('Customer Creation Error: ' . $e->getMessage());
+            Log::error('Customer Creation Error: ' . $e->getMessage());
+
+            // Check if request expects JSON (AJAX request)
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Error: ' . $e->getMessage()
+                ], 500);
+            }
+
             return back()->with('error', 'Failed to add customer: ' . $e->getMessage())->withInput();
         }
     }
 
     /**
+     * Store individual customer (without group requirement)
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function storeIndividual(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'facility_name' => 'required|min:3|max:100|unique:customers,facility_name',
+            'client_name' => 'required|min:3|max:100',
+            'contact_name' => 'required|min:3|max:100',
+            'email' => 'required|email|unique:customers,email',
+            'contact_no' => 'required|digits:10',
+            'gstin' => 'required|min:15',
+            'pan' => 'required|min:10',
+            'group_id' => 'nullable|exists:customer_groups,id',
+            'company_name' => 'nullable|min:3|max:100',
+            'shipping_address' => 'nullable|min:5|max:255',
+            'shipping_country' => 'nullable|min:2|max:100',
+            'shipping_state' => 'nullable|min:2|max:100',
+            'shipping_city' => 'nullable|min:2|max:100',
+            'shipping_zip' => 'nullable|min:4|max:10',
+            'status' => 'nullable|in:1,0',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        DB::beginTransaction();
+
+        try {
+            // Create customer
+            $customer = Customer::create([
+                'facility_name' => trim($request->facility_name),
+                'client_name' => trim($request->client_name),
+                'contact_name' => trim($request->contact_name),
+                'email' => strtolower(trim($request->email)),
+                'contact_no' => trim($request->contact_no),
+                'company_name' => trim($request->company_name ?? ''),
+                'gstin' => strtoupper(trim($request->gstin)),
+                'pan' => strtoupper(trim($request->pan)),
+                'status' => $request->status ?? '1',
+                'shipping_address' => trim($request->shipping_address ?? ''),
+                'shipping_country' => trim($request->shipping_country ?? ''),
+                'shipping_state' => trim($request->shipping_state ?? ''),
+                'shipping_city' => trim($request->shipping_city ?? ''),
+                'shipping_zip' => trim($request->shipping_zip ?? ''),
+            ]);
+
+            // Add to customer group if provided
+            if ($request->filled('group_id')) {
+                CustomerGroupMember::create([
+                    'customer_group_id' => $request->group_id,
+                    'customer_id' => $customer->id,
+                ]);
+            }
+
+            DB::commit();
+
+            activity()
+                ->performedOn($customer)
+                ->causedBy(Auth::user())
+                ->log('Individual customer created');
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Customer created successfully.',
+                'customer' => $customer
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Individual Customer Creation Error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Error: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
      * Show edit customer form
-     * 
+     *
      * @param int $id - Customer ID
      * @param int $group_id - Customer group ID
      * @return \Illuminate\View\View

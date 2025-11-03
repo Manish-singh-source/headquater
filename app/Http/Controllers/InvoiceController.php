@@ -218,8 +218,9 @@ class InvoiceController extends Controller
         $customers = Customer::active()->get();
         $warehouses = Warehouse::where('status', '1')->get();
         $products = Product::all();
+        $customerGroups = \App\Models\CustomerGroup::active()->get();
 
-        return view('invoice.create-manual-invoice', compact('customers', 'warehouses', 'products'));
+        return view('invoice.create-manual-invoice', compact('customers', 'warehouses', 'products', 'customerGroups'));
     }
 
     public function getProducts(Request $request)
