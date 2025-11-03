@@ -47,6 +47,16 @@
                                 </li>
 
                                 <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
+                                    <span><b>Customers Bulk Upload</b></span>
+                                    <span>
+                                        <a href="{{ asset('uploads/excel-formats/customers-bulk.xlsx') }}"
+                                            download="customers-bulk.xlsx" class="btn btn-sm border-2 border-primary">
+                                            <i class="fas fa-file-excel me-1"></i> Download
+                                        </a>
+                                    </span>
+                                </li>
+
+                                <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                                     <span><b>Products</b></span>
                                     <span>
                                         <a href="{{ asset('uploads/excel-formats/product-master.xlsx') }}"

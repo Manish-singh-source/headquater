@@ -39,19 +39,27 @@
                                                 @csrf
                                                 @method('POST')
                                                 <div class="modal-header">
-                                                    <h1 class="modal-title fs-5" id="staticBackdropLabel">Check Availibility
-                                                        Of
-                                                        Products</h1>
+                                                    <h1 class="modal-title fs-5" id="staticBackdropLabel">Add Customers</h1>
                                                     <button type="button" class="btn-close" data-bs-dismiss="modal"
                                                         aria-label="Close"></button>
                                                 </div>
 
                                                 <div class="modal-body">
+                                                    <div class="alert alert-info mb-3">
+                                                        <i class="bi bi-info-circle me-2"></i>
+                                                        <strong>Download Template:</strong>
+                                                        <a href="{{ asset('uploads/excel-formats/customers-bulk.xlsx') }}"
+                                                           download="customers-bulk.xlsx"
+                                                           class="alert-link">
+                                                            Click here to download the Excel format template
+                                                        </a>
+                                                    </div>
                                                     <div class="col-12 mb-3">
-                                                        <label for="document_image" class="form-label">Customers
-                                                            List (CSV/XLSX) <span class="text-danger">*</span></label>
+                                                        <label for="csv_file" class="form-label">Customers
+                                                            List (XLSX/XLS) <span class="text-danger">*</span></label>
                                                         <input type="file" name="csv_file" id="csv_file"
-                                                            class="form-control" value="" required="">
+                                                            class="form-control" accept=".xlsx,.xls" required="">
+                                                        <small class="text-muted">Please upload an Excel file (.xlsx or .xls) with customer data. Make sure the first row contains column headers including "Facility Name".</small>
                                                     </div>
                                                 </div>
                                                 <div class="modal-footer">
