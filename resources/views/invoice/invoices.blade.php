@@ -17,8 +17,12 @@
                 <div class="row g-3">
                     <div class="col-12 col-md-auto">
                         <div class="d-flex align-items-center gap-2 justify-content-lg-end">
-                            <a href="{{ route('create-invoice') }}"><button class="btn btn-primary px-4"><i
-                                        class="bi bi-plus-lg me-2"></i>Create Invoice</button></a>
+                            <a href="{{ route('invoices.manual.create') }}" class="btn btn-success px-4">
+                                <i class="bi bi-plus-lg me-2"></i>Create Manual Invoice
+                            </a>
+                            <a href="{{ route('create-invoice') }}" class="btn btn-primary px-4">
+                                <i class="bi bi-plus-lg me-2"></i>Create Invoice
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -60,7 +64,8 @@
                                             </td>
                                             <td>{{ number_format($invoice->total_amount, 2) }}</td>
                                             <td>{{ number_format($invoice->payments->sum('amount'), 2) }}</td>
-                                            <td>{{ number_format($invoice->total_amount - $invoice->payments->sum('amount'), 2) }}</td>
+                                            <td>{{ number_format($invoice->total_amount - $invoice->payments->sum('amount'), 2) }}
+                                            </td>
                                             <td>
                                                 <a aria-label="anchor" href="{{ route('invoices-details', $invoice->id) }}"
                                                     class="btn btn-icon btn-sm bg-primary-subtle me-1"
@@ -74,91 +79,91 @@
                                                     </svg>
                                                 </a>
                                                 @if (
-    !$invoice->appointment ||
-    !$invoice->appointment->appointment_date ||
-    !$invoice->appointment->pod ||
-    !$invoice->appointment->grn
-)
-    <a type="button" class="btn btn-icon btn-sm bg-success-subtle me-1"
-        data-bs-toggle="modal"
-        data-bs-target="#appointmentView-{{ $invoice->id }}">
-        <img width="15" height="15"
-            src="https://img.icons8.com/ios/50/calendar--v1.png"
-            alt="bank-card-back-side--v1" />
-    </a>
-@endif
+                                                    !$invoice->appointment ||
+                                                        !$invoice->appointment->appointment_date ||
+                                                        !$invoice->appointment->pod ||
+                                                        !$invoice->appointment->grn)
+                                                    <a type="button" class="btn btn-icon btn-sm bg-success-subtle me-1"
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#appointmentView-{{ $invoice->id }}">
+                                                        <img width="15" height="15"
+                                                            src="https://img.icons8.com/ios/50/calendar--v1.png"
+                                                            alt="bank-card-back-side--v1" />
+                                                    </a>
+                                                @endif
                                                 @if (!$invoice->dns)
                                                     <a type="button" class="btn btn-icon btn-sm bg-success-subtle me-1"
-                                                        data-bs-toggle="modal" data-bs-target="#dnView-{{ $invoice->id }}">
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#dnView-{{ $invoice->id }}">
                                                         <img width="15" height="15"
                                                             src="https://img.icons8.com/ios/50/document--v1.png"
                                                             alt="bank-card-back-side--v1" />
                                                     </a>
                                                 @endif
-                                                {{-- @if ($invoice->payments->sum('amount') < $invoice->total_amount) --}}
-                                                    <a type="button" class="btn btn-icon btn-sm bg-success-subtle me-1"
-                                                        data-bs-toggle="modal"
-                                                        data-bs-target="#paymentView-{{ $invoice->id }}">
-                                                        <img width="15" height="15"
-                                                            src="https://img.icons8.com/ios/50/bank-card-back-side--v1.png"
-                                                            alt="bank-card-back-side--v1" />
-                                                    </a>
-                                                {{-- @endif --}}
+                                                @if ($invoice->payments->sum('amount') < $invoice->total_amount)
+                                                <a type="button" class="btn btn-icon btn-sm bg-success-subtle me-1"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#paymentView-{{ $invoice->id }}">
+                                                    <img width="15" height="15"
+                                                        src="https://img.icons8.com/ios/50/bank-card-back-side--v1.png"
+                                                        alt="bank-card-back-side--v1" />
+                                                </a>
+                                                @endif
                                                 <div class="modal fade" id="appointmentView-{{ $invoice->id }}"
-    data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
-    aria-labelledby="staticBackdropLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h1 class="modal-title fs-5" id="staticBackdropLabel">Update
-                    Inovice Details</h1>
-                <button type="button" class="btn-close"
-                    data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <form method="POST"
-                action="{{ route('invoices.appointment.update', $invoice->id) }}"
-                enctype="multipart/form-data">
-                @csrf
-                @method('POST')
-                <div class="modal-body">
-                    <div class="col-12 mb-3">
-                        <label for="appointment_date"
-                            class="form-label">Appointment Date</label>
-                        <input type="date" name="appointment_date"
-                            id="appointment_date" class="form-control"
-                            value="{{ $invoice->appointment->appointment_date ?? '' }}">
-                    </div>
-                    <div class="col-12 mb-3">
-                        <label for="pod" class="form-label">Upload
-                            POD</label>
-                        <input type="file" name="pod"
-                            id="pod" class="form-control">
-                        @if ($invoice->appointment && $invoice->appointment->pod)
-                            <a href="{{ asset('uploads/pod/'. $invoice->appointment->pod) }}"
-                                target="_blank">View POD</a>
-                        @endif
-                    </div>
-                    <div class="col-12 mb-3">
-                        <label for="grn" class="form-label">Upload
-                            GRN</label>
-                        <input type="file" name="grn"
-                            id="grn" class="form-control">
-                        @if ($invoice->appointment && $invoice->appointment->grn)
-                            <a href="{{ asset('uploads/grn/' . $invoice->appointment->grn) }}"
-                                target="_blank">View GRN</a>
-                        @endif
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary"
-                        data-bs-dismiss="modal">Close</button>
-                    <input type="submit" class="btn btn-primary"
-                        value="Submit" />
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
+                                                    data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+                                                    aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                                                    <div class="modal-dialog">
+                                                        <div class="modal-content">
+                                                            <div class="modal-header">
+                                                                <h1 class="modal-title fs-5" id="staticBackdropLabel">Update
+                                                                    Inovice Details</h1>
+                                                                <button type="button" class="btn-close"
+                                                                    data-bs-dismiss="modal" aria-label="Close"></button>
+                                                            </div>
+                                                            <form method="POST"
+                                                                action="{{ route('invoices.appointment.update', $invoice->id) }}"
+                                                                enctype="multipart/form-data">
+                                                                @csrf
+                                                                @method('POST')
+                                                                <div class="modal-body">
+                                                                    <div class="col-12 mb-3">
+                                                                        <label for="appointment_date"
+                                                                            class="form-label">Appointment Date</label>
+                                                                        <input type="date" name="appointment_date"
+                                                                            id="appointment_date" class="form-control"
+                                                                            value="{{ $invoice->appointment->appointment_date ?? '' }}">
+                                                                    </div>
+                                                                    <div class="col-12 mb-3">
+                                                                        <label for="pod" class="form-label">Upload
+                                                                            POD</label>
+                                                                        <input type="file" name="pod"
+                                                                            id="pod" class="form-control">
+                                                                        @if ($invoice->appointment && $invoice->appointment->pod)
+                                                                            <a href="{{ asset('uploads/pod/' . $invoice->appointment->pod) }}"
+                                                                                target="_blank">View POD</a>
+                                                                        @endif
+                                                                    </div>
+                                                                    <div class="col-12 mb-3">
+                                                                        <label for="grn" class="form-label">Upload
+                                                                            GRN</label>
+                                                                        <input type="file" name="grn"
+                                                                            id="grn" class="form-control">
+                                                                        @if ($invoice->appointment && $invoice->appointment->grn)
+                                                                            <a href="{{ asset('uploads/grn/' . $invoice->appointment->grn) }}"
+                                                                                target="_blank">View GRN</a>
+                                                                        @endif
+                                                                    </div>
+                                                                </div>
+                                                                <div class="modal-footer">
+                                                                    <button type="button" class="btn btn-secondary"
+                                                                        data-bs-dismiss="modal">Close</button>
+                                                                    <input type="submit" class="btn btn-primary"
+                                                                        value="Submit" />
+                                                                </div>
+                                                            </form>
+                                                        </div>
+                                                    </div>
+                                                </div>
                                                 <div class="modal fade" id="dnView-{{ $invoice->id }}"
                                                     data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
                                                     aria-labelledby="staticBackdropLabel" aria-hidden="true">

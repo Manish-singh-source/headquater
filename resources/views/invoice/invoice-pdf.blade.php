@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Tax Invoice</title>
-    <style>
+    {{-- <style>
         body {
             font-family: Arial, sans-serif;
             font-size: 14px;
@@ -43,6 +43,132 @@
             background-color: #d0e4f5;
             font-weight: bold;
         }
+    </style> --}}
+
+    <style>
+        @page {
+            margin: 5mm;
+            /* Adjust this value - smaller = less margin */
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            margin: 0;
+            padding: 5px;
+            /* Minimal padding for content */
+            box-sizing: border-box;
+        }
+
+        /* body {
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            margin: 0;
+            padding: 0;
+        } */
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        /* .invoice-table {
+            border-collapse: collapse;
+            width: 80%;
+            margin: 0 auto;
+        } */
+
+        td,
+        th {
+            border: 1px solid #000;
+            padding: 3px;
+            /* Reduce padding */
+            vertical-align: top;
+            font-size: 11px;
+            /* Small font for tables */
+            word-break: break-word;
+            /* Wrap content inside cell */
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .no-border td {
+            border: none;
+        }
+
+        .header,
+        .footer {
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .title {
+            background-color: #d0e4f5;
+            font-weight: bold;
+            text-align: center;
+            font-size: 16px;
+        }
+
+        .section-title {
+            background-color: #d0e4f5;
+            font-weight: bold;
+        }
+
+        /* Set widths for each column for best fit */
+        .invoice-table th,
+        .invoice-table td {
+            /* Adjust these widths as needed to prevent overflow */
+        }
+
+        .sno {
+            width: 4%;
+        }
+
+        .item-desc {
+            width: 32%;
+            /* Combined Product Code + ASIN + Description */
+        }
+
+        .hsn {
+            width: 8%;
+        }
+
+        .qty {
+            width: 4%;
+        }
+
+        .box {
+            width: 4%;
+        }
+
+        .rate {
+            width: 7%;
+        }
+
+        .amt {
+            width: 9%;
+        }
+
+        .igstr {
+            width: 6%;
+        }
+
+        .igsta {
+            width: 8%;
+        }
+
+        .total {
+            width: 8%;
+        }
+
+        .right-align {
+            text-align: right;
+        }
+
+        .text-center {
+            text-align: center;
+        }
     </style>
 </head>
 
@@ -50,21 +176,23 @@
 
     <table class="no-border">
         <tr>
-            <td width="20%" rowspan="4" style="text-align:center;">Company Logo</td>
+            <td width="20%" rowspan="4" style="text-align:left;">Company Logo</td>
             <td class="header" colspan="2">INOVIZIDEAS PVT. LTD.</td>
-            <td rowspan="4" style="text-align:center;">Original for Recipient</td>
+            <td rowspan="4" style="text-align:right;">Original for Recipient</td>
         </tr>
         <tr>
             <td colspan="2" style="text-align:center;">
-                BLDG.3 GALA.110 ARIHANT COMPLEX, KOPER BHIWANDI, THANE 421302.,<br>
+                BLDG.3 GALA.110 ARIHANT COMPLEX, KOPER BHIWANDI, THANE 421302.,
                 Mumbai, Maharashtra (MH-27) 421302, IN
             </td>
         </tr>
         <tr>
-            <td colspan="2" style="text-align:center;">Tel: +91 9004858507</td>
+            <td style="text-align:center; ">Tel: +91 9004858507</td>
+            <td style="text-align:center; ">Email: accounts@inovizideas.com</td>
         </tr>
         <tr>
-            <td colspan="2" style="text-align:center;">GSTIN: 27AAGCI3319H1ZM</td>
+            <td style="text-align:center; ">Contact Name: Parag Patel</td>
+            <td style="text-align:center; ">GSTIN: 27AAGCI3319H1ZM</td>
         </tr>
     </table>
 
@@ -84,7 +212,7 @@
             {{-- <td>State: {{ $invoice->customer->shipping_state }}</td> --}}
             {{-- <td>Code: {{ $invoice->customer->shipping_zip }}</td> --}}
             <td>PO No: {{ $invoice->po_number }}</td>
-            <td>PO Date: {{ $invoiceDetails[0]->tempOrder->po_date ?? ''  }}</td>
+            <td>PO Date: {{ $invoiceDetails[0]->tempOrder->po_date ?? '' }}</td>
             <td></td>
             <td></td>
         </tr>
@@ -108,18 +236,20 @@
             <td colspan="2">{{ $invoice->customer->shipping_address }}</td>
         </tr>
         <tr>
-            <td>State:</td> 
+            <td>State:</td>
             <td colspan="2">{{ $invoice->customer->billing_state }}</td>
             {{-- <td>GSTIN: {{ $invoice->customer->gstin }}</td> --}}
-            
-            <td>State:</td> 
+
+            <td>State:</td>
             <td colspan="2">{{ $invoice->customer->shipping_state }}</td>
             {{-- <td colspan="2">GSTIN: {{ $invoice->customer->gstin }}</td> --}}
         </tr>
         <tr>
-            <td>GSTIN: </td><td>{{ $invoice->customer->gstin }}</td>
+            <td>GSTIN: </td>
+            <td>{{ $invoice->customer->gstin }}</td>
             <td>PAN: {{ $invoice->customer->pan }}</td>
-            <td>GSTIN: </td><td>{{ $invoice->customer->gstin }}</td>
+            <td>GSTIN: </td>
+            <td>{{ $invoice->customer->gstin }}</td>
             <td>PAN: {{ $invoice->customer->pan }}</td>
         </tr>
         <tr>
@@ -130,55 +260,58 @@
         </tr>
     </table>
 
-    <table>
+    <table class="invoice-table">
         <tr class="section-title">
-            <th>S.&nbsp;No.</th>
-            <th>ASIN</th>
-            <th>PRODUCT&nbsp;CODE</th>
-            <th>Description</th>
-            <th>HSN&nbsp;Code</th>
-            <th>Qty</th>
-            <th>BOX</th>
-            <th>Rate</th>
-            <th>Amount</th>
-            <th>IGST&nbsp;Rate</th>
-            <th>IGST&nbsp;Amount</th>
-            <th>Total</th>
+            <th class="sno">S No.</th>
+            <th class="item-desc">Item Description</th>
+            <th class="hsn">HSN </br>Code</th>
+            <th class="qty">Qty</th>
+            <th class="box">BOX</th>
+            <th class="rate">Rate</th>
+            <th class="amt">Amount</th>
+            <th class="igstr">IGST </br> Rate</th>
+            <th class="igsta">IGST </br> Amount</th>
+            <th class="total">Total</th>
         </tr>
         @php
             $totalAmountSum = 0;
             $totalIgstSum = 0;
         @endphp
         @foreach ($invoiceDetails as $index => $detail)
-        <tr>
+            <tr>
                 {{ $igstAmount = ($detail->tax / 100) * $detail->amount }}
                 {{ $totalAmount = $igstAmount + $detail->amount }}
                 {{ $totalAmountSum = $totalAmount + $totalAmountSum }}
                 {{ $totalIgstSum = $igstAmount + $totalIgstSum }}
 
-                <td>{{ $index + 1 }}</td>
-                <td>{{ $detail->product->ean_code }}</td>
-                <td>{{ $detail->product->sku }}</td>
-                <td>{{ $detail->product->brand_title }}</td>
-                <td>{{ $detail->tempOrder?->hsn }}</td>
-                <td>{{ $detail->quantity }}</td>
-                <td>{{ $detail->salesOrderProduct->box_count }}</td>
-                <td>{{ $detail->unit_price }}</td>
-                <td>{{ $detail->amount }}</td>
-                <td>{{ floor($detail->tax) }}%</td>
-                <td>{{ $igstAmount }}</td>
-                <td>{{ $totalAmount }}</td>
+                <td class="text-center">{{ $index + 1 }}</td>
+                <td>
+                    <strong style="color: #000000;"> {{ $detail->product->ean_code }} </strong>
+                    <br>
+                    {{ $detail->product->sku }}
+                    <br>
+                    {{ $detail->product->brand_title }}
+                </td>
+
+                <td class="right-align">{{ $detail->tempOrder?->hsn }}</td>
+                <td class="right-align">{{ $detail->quantity }}</td>
+                <td class="right-align">{{ $detail->salesOrderProduct->box_count }}</td>
+                <td class="right-align">{{ $detail->unit_price }}</td>
+                <td class="right-align">{{ $detail->amount }}</td>
+                <td class="right-align">{{ floor($detail->tax) }}%</td>
+                <td class="right-align">{{ $igstAmount }}</td>
+                <td class="right-align">{{ $totalAmount }}</td>
             </tr>
         @endforeach
         <tr>
-            <td colspan="5" class="section-title">Total</td>
-            <td>{{ $invoiceDetails->sum('quantity') }}</td>
-            <td>{{ $TotalBoxCount }}</td>
-            <td>{{ $invoiceDetails->sum('unit_price') }}</td>
-            <td>{{ $invoiceDetails->sum('amount') }}</td>
-            <td>{{ $invoiceDetails->sum('igst_rate') }}</td>
-            <td>{{ $totalIgstSum }}</td>
-            <td>{{ $totalAmountSum }}</td>
+            <td colspan="3" class="section-title">Total</td>
+            <td class="right-align">{{ $invoiceDetails->sum('quantity') }}</td>
+            <td class="right-align">{{ $TotalBoxCount }}</td>
+            <td class="right-align">{{ $invoiceDetails->sum('unit_price') }}</td>
+            <td class="right-align">{{ $invoiceDetails->sum('amount') }}</td>
+            <td class="right-align">{{ $invoiceDetails->sum('igst_rate') }}</td>
+            <td class="right-align">{{ $totalIgstSum }}</td>
+            <td class="right-align">{{ $totalAmountSum }}</td>
         </tr>
     </table>
 
@@ -186,36 +319,37 @@
         <tr>
             <td>Total&nbsp;Invoice&nbsp;amount&nbsp;in&nbsp;words:</td>
             {{-- <td colspan="3">{{ ucfirst(numberToWords(floor($totalAmountSum))) }} Rupees Only</td> --}}
-            <td colspan="3">{{ $totalAmountSum }}</td>
+            <td colspan="3" class="right-align">{{ $totalAmountSum }}</td>
         </tr>
     </table>
 
     <table>
         <tr>
-            <td colspan="2" class="section-title">Bank&nbsp;Details</td>
+            <td width="70%" class="section-title">Bank Details</td>
+            <td width="30%" class="section-title text-center">Sign/Stamp</td>
         </tr>
         <tr>
-            <td>Bank&nbsp;A/C:</td>
-            <td>Sign:</td>
-        </tr>
-        <tr>
-            <td>Bank&nbsp;IFSC:</td>
-            <td>Stamp:</td>
-        </tr>
-    </table>
-
-    <table>
-        <tr>
-            <td colspan="2" class="section-title">Terms&nbsp;&&nbsp;Conditions</td>
-        </tr>
-        <tr>
-            <td colspan="2">
-                TOTAL&nbsp;SETS&nbsp;-&nbsp;QTY {{ $invoiceDetails->sum('quantity') }}<br>
-                TOTAL&nbsp;BOX&nbsp;COUNT&nbsp;- {{ $TotalBoxCount }}<br>
-                WEIGHT&nbsp;-&nbsp;KG {{ $TotalWeight }}
+            <td>Bank A/C:</td>
+            <td rowspan="4" class="text-center" style="height:50px; vertical-align:bottom;">
+                (Authorised Signature)
             </td>
         </tr>
+        <tr>
+            <td>Bank IFSC:</td>
+        </tr>
+        <tr>
+            <td class="section-title">Terms & Conditions:</td>
+        </tr>
+        <tr>
+            <td>
+                TOTAL SETS - QTY {{ $invoiceDetails->sum('quantity') }}<br>
+                TOTAL BOX COUNT - {{ $TotalBoxCount }}<br>
+                WEIGHT - KG {{ $TotalWeight }}
+            </td>
+
+        </tr>
     </table>
+
 
 </body>
 
