@@ -66,7 +66,7 @@ class InvoiceController extends Controller
         ];
 
         $pdf = \PDF::loadView('invoice/invoice-pdf', $data);
-        $pdf->setPaper('a4', 'landscape');
+        $pdf->setPaper('a4');
 
         return $pdf->stream('invoice.pdf');
     }
@@ -179,7 +179,7 @@ class InvoiceController extends Controller
     {
         // Logic to update invoice payment details
         $validated = Validator::make($request->all(), [
-            'utr_no' => 'required',
+            'utr_no' => 'required|unique:payments,payment_utr_no',
             'pay_amount' => 'required|numeric|min:0',
             'payment_method' => 'required|string',
             'payment_status' => 'required|string',
@@ -187,10 +187,19 @@ class InvoiceController extends Controller
 
         if ($validated->fails()) {
             // If validation fails, redirect back with errors
-            return redirect()->back()->with($validated)->withInput();
+            return redirect()->back()->with('error',$validated->errors()->first())->withInput();
         }
 
         try {
+            $invoice = Invoice::findOrFail($id);
+            if ($invoice->total_amount <= $invoice->payments->sum('amount')) {
+                return redirect()->back()->with('error', 'Payment amount is already paid.');
+            }
+            if ($invoice->total_amount < $request->input('pay_amount')) {
+                return redirect()->back()->with('error', 'Payment amount is greater than due amount.');
+            }
+            
+
             $payment = new Payment;
             $payment->invoice_id = $id;
             $payment->payment_utr_no = $request->input('utr_no');
