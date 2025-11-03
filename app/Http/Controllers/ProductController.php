@@ -57,6 +57,7 @@ class ProductController extends Controller
             'products_excel' => 'required|file|mimes:xlsx,csv,xls',
             'warehouse_id' => 'required|integer|exists:warehouses,id,status,1',
         ]);
+
         if ($validator->fails()) {
             return redirect()->back()->withErrors($validator)->withInput();
         }
@@ -75,20 +76,23 @@ class ProductController extends Controller
             $reader = SimpleExcelReader::create($filePath, $fileExtension);
             $rows = $reader->getRows()->toArray();
             
+            // store duplicate check from database 
+            $duplicatesInDb = [];
+
             // Check for duplicates
             $seen = [];
             foreach ($rows as $record) {
-                if (empty($record['SKU Code'] ?? null) || empty($record['Warehouse Id'] ?? null)) {
+                if (empty($record['SKU Code'] ?? null)) {
                     continue;
                 }
 
-                $key = strtolower(trim($record['SKU Code'] ?? '')) . '|' . strtolower(trim($record['Warehouse Id'] ?? ''));
+                $key = strtolower(trim($record['SKU Code'] ?? ''));
 
                 if (isset($seen[$key])) {
                     DB::rollBack();
 
                     return redirect()->back()->with([
-                        'error' => 'Please check excel file: duplicate SKU ('.$record['SKU Code'].') found in the file for warehouse id: '.$record['Warehouse Id'],
+                        'error' => 'Please check excel file: duplicate SKU ('.$record['SKU Code'].') found in the file.',
                     ]);
                 }
 
@@ -99,7 +103,7 @@ class ProductController extends Controller
             $insertCount = 0;
             
             foreach ($reader->getRows() as $record) {
-                if (empty($record['SKU Code'] ?? null) || empty($record['Warehouse Id'] ?? null)) {
+                if (empty($record['SKU Code'] ?? null)) {
                     continue;
                 }
                 
@@ -113,36 +117,10 @@ class ProductController extends Controller
 
                 if ($existingProduct) {
                     // Update existing product
-                    $existingProduct->update([
-                        'ean_code' => $record['EAN Code'] ?? '',
-                        'brand' => $record['Brand'] ?? '',
-                        'brand_title' => $record['Brand Title'] ?? '',
-                        'mrp' => $record['MRP'] ?? '',
-                        'category' => $record['Category'] ?? '',
-                        'pcs_set' => $record['PCS/Set'] ?? '',
-                        'sets_ctn' => $record['Sets/CTN'] ?? '',
-                        'gst' => intval($record['GST']) ?? '',
-                        'basic_rate' => isset($record['Basic Rate']) ? intval($record['Basic Rate']) : '',
-                        'net_landing_rate' => $netLandingRate,
-                        'case_pack_quantity' => $casePackQuantity,
-                        'vendor_code' => $record['Vendor Code'] ?? '',
-                        'vendor_name' => $record['Vendor Name'] ?? '',
-                        'vendor_purchase_rate' => $record['Vendor Purchase Rate'] ?? '',
-                        'vendor_net_landing' => $record['Vendor Net Landing'] ?? '',
-                    ]);
-
-                    $warehouseStock = WarehouseStock::where('sku', $record['SKU Code'])->where('warehouse_id', $request->warehouse_id)->first();
-                    if (! $warehouseStock) {
-                        $warehouseStock = new WarehouseStock;
-                        $warehouseStock->sku = $record['SKU Code'];
-                        $warehouseStock->warehouse_id = $request->warehouse_id;
-                    }
-                    $warehouseStock->original_quantity = isset($record['Stock']) ? $record['Stock'] : 0;
-                    $warehouseStock->available_quantity = isset($record['Stock']) ? $record['Stock'] : 0;
-                    $warehouseStock->save();
+                    $duplicatesInDb[] = $sku;
                 } else {
                     // Create new product
-                    $product = Product::create([
+                    Product::create([
                         'warehouse_id' => $request->warehouse_id,
                         'sku' => $sku,
                         'ean_code' => $record['EAN Code'] ?? '',
@@ -154,10 +132,8 @@ class ProductController extends Controller
                         'sets_ctn' => $record['Sets/CTN'] ?? '',
                         'gst' => $record['GST'] ?? '',
                         'basic_rate' => isset($record['Basic Rate']) ? intval($record['Basic Rate']) : '',
-                        'net_landing_rate' => (isset($record['Basic Rate']) && isset($record['GST']))
-                            ? number_format(intval($record['Basic Rate']) + (intval($record['Basic Rate']) * intval($record['GST']) / 100), 2, '.', '')
-                            : null,
-                        'case_pack_quantity' => ($record['PCS/Set'] ?? 0) * ($record['Sets/CTN'] ?? 0),
+                        'net_landing_rate' => $netLandingRate,
+                        'case_pack_quantity' => $casePackQuantity,
                         'vendor_code' => $record['Vendor Code'] ?? '',
                         'vendor_name' => $record['Vendor Name'] ?? '',
                         'vendor_purchase_rate' => $record['Vendor Purchase Rate'] ?? '',
@@ -166,11 +142,12 @@ class ProductController extends Controller
 
                     // Create warehouse stock entry
                     $stock = (int)($record['Stock'] ?? 0);
+                    
                     WarehouseStock::create([
                         'warehouse_id' => $request->warehouse_id,
                         'sku' => $sku,
                         'original_quantity' => $stock,
-                        'available_quantity' => $stock,
+                        'available_quantity' => $stock ,
                     ]);
                 }
 
@@ -183,8 +160,15 @@ class ProductController extends Controller
                 return redirect()->back()->withErrors(['products_excel' => 'No valid data found in the file.']);
             }
 
-            DB::commit();
+            
+            if (!empty($duplicatesInDb)) {
+                DB::rollBack();
+                return redirect()->back()->with([
+                    'error' => 'Duplicate SKU(s) found in the database: ' . implode(', ', $duplicatesInDb),
+                ]);
+            }
 
+            DB::commit();
             // Log activity
             activity()
                 ->causedBy(Auth::user())
@@ -233,7 +217,7 @@ class ProductController extends Controller
             $insertCount = 0;
 
             foreach ($rows as $record) {
-                if (empty($record['SKU Code'] ?? null)) {
+                if (empty($record['SKU Code'] ?? null) || empty($record['Warehouse Id'] ?? null)) {
                     continue;
                 }
 
@@ -268,6 +252,7 @@ class ProductController extends Controller
 
                 // Update warehouse stock
                 $warehouseStock = WarehouseStock::where('sku', $sku)->where('warehouse_id', $record['Warehouse Id'])->first();
+                
                 if ($warehouseStock) {
                     $stock = (int)($record['Stock'] ?? 0);
 
