@@ -55,7 +55,7 @@ class ProductController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'products_excel' => 'required|file|mimes:xlsx,csv,xls',
-            'warehouse_id' => 'required|integer|exists:warehouses,id',
+            'warehouse_id' => 'required|integer|exists:warehouses,id,status,1',
         ]);
 
         if ($validator->fails()) {
@@ -79,17 +79,17 @@ class ProductController extends Controller
             // Check for duplicates
             $seen = [];
             foreach ($rows as $record) {
-                if (empty($record['SKU Code'] ?? null)) {
+                if (empty($record['SKU Code'] ?? null) || empty($record['Warehouse Id'] ?? null)) {
                     continue;
                 }
 
-                $key = strtolower(trim($record['SKU Code']));
+                $key = strtolower(trim($record['SKU Code'] ?? '')) . '|' . strtolower(trim($record['Warehouse Id'] ?? ''));
 
                 if (isset($seen[$key])) {
                     DB::rollBack();
 
                     return redirect()->back()->with([
-                        'error' => 'Please check excel file: duplicate SKU ('.$record['SKU Code'].') found in the file.',
+                        'error' => 'Please check excel file: duplicate SKU ('.$record['SKU Code'].') found in the file for warehouse id: '.$record['Warehouse Id'],
                     ]);
                 }
 
@@ -100,7 +100,7 @@ class ProductController extends Controller
             $insertCount = 0;
 
             foreach ($reader->getRows() as $record) {
-                if (empty($record['SKU Code'] ?? null)) {
+                if (empty($record['SKU Code'] ?? null) || empty($record['Warehouse Id'] ?? null)) {
                     continue;
                 }
 
@@ -110,7 +110,7 @@ class ProductController extends Controller
                 $netLandingRate = $this->calculateNetLandingRate($basicRate, $gst);
                 $casePackQuantity = ((int)($record['PCS/Set'] ?? 0)) * ((int)($record['Sets/CTN'] ?? 0));
 
-                $existingProduct = Product::where('sku', $sku)->first();
+                $existingProduct = Product::where('sku', $sku)->where('warehouse_id', $request->warehouse_id)->first();
 
                 if ($existingProduct) {
                     // Update existing product
@@ -148,6 +148,7 @@ class ProductController extends Controller
                 } else {
                     // Create new product
                     $product = Product::create([
+                        'warehouse_id' => $request->warehouse_id,
                         'sku' => $sku,
                         'ean_code' => $record['EAN Code'] ?? '',
                         'brand' => $record['Brand'] ?? '',
@@ -272,7 +273,7 @@ class ProductController extends Controller
                     'updated_at' => now(),
                 ];
 
-;                // Update warehouse stock
+                // Update warehouse stock
                 $warehouseStock = WarehouseStock::where('sku', $sku)->where('warehouse_id', $record['Warehouse Id'])->first();
                 if ($warehouseStock) {
                     $stock = (int)($record['Stock'] ?? 0);
@@ -360,7 +361,7 @@ class ProductController extends Controller
             'category' => 'nullable|string|max:255',
             'pcs_set' => 'nullable|integer|min:0',
             'sets_ctn' => 'nullable|integer|min:0',
-            'basic_rate' => 'required|numeric|min:0',
+            'basic_rate' => 'nullable|numeric|min:0',
             'original_quantity' => 'nullable|integer|min:0',
         ]);
 
@@ -377,10 +378,8 @@ class ProductController extends Controller
         try {
             $product = Product::findOrFail($request->id);
 
-            $basicRate = (float)$request->basic_rate;
-            $netLandingRate = $this->calculateNetLandingRate((int)$basicRate, (int)($product->gst ?? 0));
-
-            $product->update([
+            // Only update basic_rate and net_landing_rate if basic_rate is provided
+            $updateData = [
                 'ean_code' => $request->ean_code,
                 'brand' => $request->brand,
                 'brand_title' => $request->brand_title,
@@ -388,9 +387,16 @@ class ProductController extends Controller
                 'category' => $request->category,
                 'pcs_set' => (int)($request->pcs_set ?? 0),
                 'sets_ctn' => (int)($request->sets_ctn ?? 0),
-                'basic_rate' => $basicRate,
-                'net_landing_rate' => $netLandingRate,
-            ]);
+            ];
+
+            if ($request->has('basic_rate') && $request->basic_rate !== null && $request->basic_rate !== '') {
+                $basicRate = (float)$request->basic_rate;
+                $netLandingRate = $this->calculateNetLandingRate((int)$basicRate, (int)($product->gst ?? 0));
+                $updateData['basic_rate'] = $basicRate;
+                $updateData['net_landing_rate'] = $netLandingRate;
+            }
+
+            $product->update($updateData);
 
             // Update warehouse stock if provided
             if ($request->has('original_quantity')) {

@@ -270,6 +270,10 @@
                                 <input type="number" name="sets_ctn" id="sets_ctn" class="form-control">
                             </div>
                             <div class="col-md-6 mb-3">
+                                <label for="basic_rate" class="form-label">Basic Rate</label>
+                                <input type="number" step="0.01" name="basic_rate" id="basic_rate" class="form-control">
+                            </div>
+                            <div class="col-md-6 mb-3">
                                 <label for="original_quantity" class="form-label">Original Quantity</label>
                                 <input type="number" name="original_quantity" id="original_quantity" class="form-control">
                             </div>
@@ -327,28 +331,39 @@
             $.ajax({
                 url: '/products/' + productId + '/edit',
                 method: 'GET',
-                        success: function(data) {
-                            console.log(data);
-                            $('#id').val(data.id);
-                            $('#sku').val(data.sku);
-                            $('#ean_code').val(data.ean_code);
-                            $('#brand').val(data.brand);
-                            $('#brand_title').val(data.brand_title);
-                            $('#mrp').val(data.mrp);
-                            $('#category').val(data.category);
-                            $('#pcs_set').val(data.pcs_set);
-                            $('#sets_ctn').val(data.sets_ctn);
-                            // support both snake_case and camelCase warehouse stock
-                            const ws = data.warehouse_stock || data.warehouseStock || null;
-                            if (ws) {
-                                $('#original_quantity').val(ws.original_quantity ?? ws.originalQuantity ?? 0);
-                                $('#available_quantity').val(ws.available_quantity ?? ws.availableQuantity ?? 0);
-                            } else {
-                                $('#original_quantity').val(0);
-                                $('#available_quantity').val(0);
-                            }
-                            $('#editProductModal').modal('show');
-                        }
+                success: function(response) {
+                    console.log(response);
+
+                    // Extract product data from response
+                    const product = response.data || response;
+
+                    $('#id').val(product.id);
+                    $('#sku').val(product.sku);
+                    $('#ean_code').val(product.ean_code);
+                    $('#brand').val(product.brand);
+                    $('#brand_title').val(product.brand_title);
+                    $('#mrp').val(product.mrp);
+                    $('#category').val(product.category);
+                    $('#pcs_set').val(product.pcs_set);
+                    $('#sets_ctn').val(product.sets_ctn);
+                    $('#basic_rate').val(product.basic_rate);
+
+                    // Handle warehouse stock data
+                    const ws = product.warehouse_stock || product.warehouseStock || null;
+                    if (ws) {
+                        $('#original_quantity').val(ws.original_quantity ?? ws.originalQuantity ?? 0);
+                        $('#available_quantity').val(ws.available_quantity ?? ws.availableQuantity ?? 0);
+                    } else {
+                        $('#original_quantity').val(0);
+                        $('#available_quantity').val(0);
+                    }
+
+                    $('#editProductModal').modal('show');
+                },
+                error: function(xhr) {
+                    console.error('Error loading product data:', xhr);
+                    alert('Failed to load product data. Please try again.');
+                }
             });
         });
 
