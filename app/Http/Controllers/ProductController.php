@@ -57,25 +57,24 @@ class ProductController extends Controller
             'products_excel' => 'required|file|mimes:xlsx,csv,xls',
             'warehouse_id' => 'required|integer|exists:warehouses,id',
         ]);
-
         if ($validator->fails()) {
             return redirect()->back()->withErrors($validator)->withInput();
         }
-
+        
         $file = $request->file('products_excel');
         if (!$file) {
             return redirect()->back()->withErrors(['products_excel' => 'Please upload a valid file.']);
         }
-
+        
         DB::beginTransaction();
-
+        
         try {
             $filePath = $file->getPathname();
             $fileExtension = $file->getClientOriginalExtension();
-
+            
             $reader = SimpleExcelReader::create($filePath, $fileExtension);
             $rows = $reader->getRows()->toArray();
-
+            
             // Check for duplicates
             $seen = [];
             foreach ($rows as $record) {
@@ -95,15 +94,15 @@ class ProductController extends Controller
 
                 $seen[$key] = true;
             }
-
+            
             // Process records
             $insertCount = 0;
-
+            
             foreach ($reader->getRows() as $record) {
                 if (empty($record['SKU Code'] ?? null)) {
                     continue;
                 }
-
+                
                 $sku = trim($record['SKU Code']);
                 $basicRate = (int)($record['Basic Rate'] ?? 0);
                 $gst = (int)($record['GST'] ?? 0);
