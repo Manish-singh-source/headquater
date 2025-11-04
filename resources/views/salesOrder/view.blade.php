@@ -179,7 +179,8 @@
                                         data-bs-toggle="dropdown" type="button">Action</button>
 
                                     <div class="dropdown-menu dropdown-menu-right dropdown-menu-lg-end">
-                                        <button type="button" class="dropdown-item cursor-pointer">Delete All</button>
+                                        <button type="button" id="delete-selected"
+                                            class="dropdown-item cursor-pointer">Delete All</button>
                                         <button type="button" class="dropdown-item cursor-pointer" id="generateInvoice">
                                             <i class="fa fa-file-excel-o"></i> Generate Invoice
                                         </button>
@@ -406,99 +407,37 @@
             });
 
             // Delete Selected functionality
-            document.getElementById('delete-selected').addEventListener('click', function() {
-                let selected = [];
-                document.querySelectorAll('.row-checkbox:checked').forEach(cb => {
-                    selected.push(cb.value);
+            const deleteSelectedBtn = document.getElementById('delete-selected');
+            if (deleteSelectedBtn) {
+                deleteSelectedBtn.addEventListener('click', function() {
+                    let selected = [];
+                    document.querySelectorAll('.row-checkbox:checked').forEach(cb => {
+                        selected.push(cb.value);
+                    });
+                    if (selected.length === 0) {
+                        alert('Please select at least one record.');
+                        return;
+                    }
+                    if (confirm('Are you sure you want to delete selected records?')) {
+                        // Create a form and submit
+                        let form = document.createElement('form');
+                        form.method = 'POST';
+                        form.action = '{{ route('delete.selected.order') }}';
+                        form.innerHTML = `
+                            @csrf
+                            <input type="hidden" name="_method" value="DELETE">
+                            <input type="hidden" name="ids" value="${selected.join(',')}">
+                        `;
+                        document.body.appendChild(form);
+                        form.submit();
+                    }
                 });
-                if (selected.length === 0) {
-                    alert('Please select at least one record.');
-                    return;
-                }
-                if (confirm('Are you sure you want to delete selected records?')) {
-                    // Create a form and submit
-                    let form = document.createElement('form');
-                    form.method = 'POST';
-                    form.action = '{{ route('delete.selected.order') }}';
-                    form.innerHTML = `
-                        @csrf
-                        <input type="hidden" name="_method" value="DELETE">
-                        <input type="hidden" name="ids" value="${selected.join(',')}">
-                    `;
-                    document.body.appendChild(form);
-                    form.submit();
-                }
-            });
+            }
 
         });
     </script>
 
 
-    <script>
-        // Generate Invoice functionality using jQuery and AJAX
-        $(document).ready(function() {
-
-            $(document).on('click', '#generateInvoice', function(e) {
-                e.preventDefault();
-
-                let selected = [];
-                $('.row-checkbox:checked').each(function() {
-                    selected.push($(this).val());
-                });
-
-                let brand = $('#selectBrand').val();
-                let poNumber = $('#selectPONumber').val();
-
-                // If no checkboxes selected, select all
-                if (selected.length === 0) {
-                    $('.row-checkbox').prop('checked', true);
-                    $('.row-checkbox:checked').each(function() {
-                        selected.push($(this).val());
-                    });
-                }
-
-                console.log(selected.join(','));
-
-                if (confirm('Are you sure you want to Create Invoice for selected/all records?')) {
-                    $.ajax({
-                        url: '{{ route('generate.invoice') }}', // Your Laravel route
-                        method: 'POST',
-                        data: {
-                            _token: '{{ csrf_token() }}',
-                            _method: 'POST',
-                            order_id: '{{ $salesOrder->id }}',
-                            brand: brand,
-                            po_number: poNumber,
-                            ids: selected.join(',')
-                        },
-                        success: function(response) {
-                            // Handle success (e.g., show a message or update UI)
-                            alert('Invoice generated successfully!');
-                            console.log(response);
-                            location.reload();
-                        },
-                        error: function(xhr, status, error) {
-                            // Handle error
-                            alert('An error occurred while generating the invoice.');
-                            console.error(error);
-                            // location.reload();
-                        }
-                    });
-                }
-            });
-        });
-
-        $(document).on('click', '#exportData', function() {
-            var purchaseOrderId = $("#orderId").text().trim();
-
-            // Construct download URL with parameters
-            var downloadUrl = '{{ route('products.download.po.excel') }}' +
-                '?salesOrderId=' + encodeURIComponent(purchaseOrderId);
-
-            // Trigger browser download
-            window.location.href = downloadUrl;
-        });
-    </script>
     <script>
         $(document).ready(function() {
             var brandSelection = $('#po_table').DataTable({
@@ -537,6 +476,67 @@
                 brandSelection.column(-1).search(selected ? '^' + selected + '$' : '', true, false).draw();
             });
 
+
+            $(document).on('click', '#exportData', function() {
+                var purchaseOrderId = $("#orderId").text().trim();
+
+                // Construct download URL with parameters
+                var downloadUrl = '{{ route('products.download.po.excel') }}' +
+                    '?salesOrderId=' + encodeURIComponent(purchaseOrderId);
+
+                // Trigger browser download
+                window.location.href = downloadUrl;
+            });
+
+
+            $(document).on('click', '#generateInvoice', function(e) {
+                e.preventDefault();
+
+                let selected = [];
+                $('.row-checkbox:checked').each(function() {
+                    selected.push($(this).val());
+                });
+
+                let brand = $('#selectBrand').val();
+                let poNumber = $('#selectPONumber').val();
+
+                // If no checkboxes selected, select all
+                if (selected.length === 0) {
+                    brandSelection.$('.row-checkbox').prop('checked', true);
+                    brandSelection.$('.row-checkbox:checked').each(function() {
+                        selected.push($(this).val());
+                    });
+                }
+
+                console.log(selected.join(','));
+
+                if (confirm('Are you sure you want to Create Invoice for selected/all records?')) {
+                    $.ajax({
+                        url: '{{ route('generate.invoice') }}', // Your Laravel route
+                        method: 'POST',
+                        data: {
+                            _token: '{{ csrf_token() }}',
+                            _method: 'POST',
+                            order_id: '{{ $salesOrder->id }}',
+                            brand: brand,
+                            po_number: poNumber,
+                            ids: selected.join(',')
+                        },
+                        success: function(response) {
+                            // Handle success (e.g., show a message or update UI)
+                            alert('Invoice generated successfully!');
+                            console.log(response);
+                            location.reload();
+                        },
+                        error: function(xhr, status, error) {
+                            // Handle error
+                            alert('An error occurred while generating the invoice.');
+                            console.error(error);
+                            // location.reload();
+                        }
+                    });
+                }
+            });
         });
     </script>
 @endsection

@@ -1,0 +1,144 @@
+Below is a **complete process flow** for your POS system covering warehouse dispatch, order status stages, and required documents like GRN, POD, DN, Invoice, Appointment date, and Payment details. You can use this for system workflow, UI, or SOP.
+
+---
+
+## ✅ **Warehouse Order Process Flow (Step-by-Step)**
+
+### **1️⃣ Order Created / Started**
+
+* Customer places an order OR warehouse generates sales order
+* Basic order details recorded
+* **Documents / Data Generated:**
+
+  * Sales Order ID
+  * Customer Details
+  * Appointment Date (if required for delivery scheduling)
+
+---
+
+### **2️⃣ Order Approved**
+
+* Order reviewed & confirmed internally
+* Check payment terms & stock availability
+
+---
+
+### **3️⃣ Products Picked / Packaging Started**
+
+* Warehouse staff picks products from inventory
+* Packaging process begins
+* **System Updates:**
+
+  * Reduce inventory as “reserved”
+
+---
+
+### **4️⃣ Products Packed**
+
+* Packaging completed
+* Items verified and sealed
+* **Documents Generated:**
+
+  * **Invoice** (billing document)
+  * **Delivery Note (DN)** / Dispatch Note (item list, quantities)
+
+---
+
+### **5️⃣ Order Ready to Ship**
+
+* Package placed in dispatch area
+* **Generate:**
+
+  * Shipping Label
+  * Gate Pass (optional internal step)
+
+---
+
+### **6️⃣ Shipment Dispatched / On the Way**
+
+* Carrier picks up the order
+* Tracking details entered
+* Status: **Order is Way to Shipped**
+
+---
+
+### **7️⃣ Order Delivered**
+
+* Customer receives products
+* Customer signs/acknowledges
+* **Documents:**
+
+  * **POD (Proof of Delivery)** — signed delivery slip or digital confirmation
+
+---
+
+### **8️⃣ GRN (Goods Receipt Note) Generated**
+
+* Customer warehouse verifies received goods
+* Customer issues **GRN** confirming quantities delivered
+
+---
+
+### **9️⃣ Payment Process / Verification**
+
+* If credit terms: payment received later
+* Payment details recorded
+* **Documents/Data:**
+
+  * Payment receipt entry
+  * Payment reference / UTR / mode details
+
+---
+
+### **🔟 Order Completed / Closed**
+
+* All documents verified
+* Payment settled
+* Order marked **Completed**
+
+---
+
+## 📦 **Final Order Lifecycle Sequence (Clean Flow)**
+
+| Step | Status Name             | Action / Document                      |
+| ---- | ----------------------- | -------------------------------------- |
+| 1    | Order Started           | Sales Order + Appointment Date         |
+| 2    | Order Approved          | Stock & payment terms checked          |
+| 3    | Packaging Started       | Items picked                           |
+| 4    | Products Packed         | Invoice + Delivery Note (DN) Generated |
+| 5    | Ready to Ship           | Shipping label + Gate pass (optional)  |
+| 6    | Order in Transit        | Tracking info                          |
+| 7    | Delivered               | POD received                           |
+| 8    | GRN Received            | Customer confirms goods                |
+| 9    | Payment Details Updated | Payment entry / settlement             |
+| 10   | Order Completed         | All docs & payment done                |
+
+---
+
+## 🎯 **Important Document Summary**
+
+| Document             | Stage                                 |
+| -------------------- | ------------------------------------- |
+| Sales Order          | Order Started                         |
+| Invoice              | After Packing                         |
+| Delivery Note (DN)   | After Packing                         |
+| Gate Pass (optional) | Ready to Ship                         |
+| Tracking Details     | In Transit                            |
+| POD                  | Delivered                             |
+| GRN                  | After customer warehouse checks goods |
+| Payment Details      | Before closing order                  |
+
+---
+
+## 🚚 **Extra Optional Fields**
+
+You may include:
+
+* Vehicle number
+* Transporter name
+* Driver contact
+* Expected delivery date
+
+---
+
+Would you like me to format this into a **database table structure**, **workflow diagram**, or **status dropdown system for your UI**?

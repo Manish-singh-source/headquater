@@ -943,3 +943,36 @@ Employ progress/success notifications after uploads and status changes.
 Maintain table pagination, filter, and search features to improve usability on large data sets.
 
 Ensure robust security checks and validation for all user actions and uploads .
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1. Sales Order Created 
+    - Appointment Date (if required for delivery scheduling) 
+
+2. Ready To Package 
+    - Pack All Products 
+
+3. Documents Generated:
+    a. Invoice (billing document)
+    b. Delivery Note (DN) / Dispatch Note (item list, quantities)
+
+4. Order Delivered
+    - POD (Proof of Delivery)
+
+5. GRN (Goods Receipt Note) Generated 
+
+6. Payment Process / Verification
+
+7. Order Completed / Closed 
