@@ -169,8 +169,7 @@
                                     </span>
                                 </li>
 
-                                @if (isset($purchaseOrder->vendorPI[0]->status) && $purchaseOrder->vendorPI[0]->status == 'reject') 
-
+                                @if (isset($purchaseOrder->vendorPI[0]->status) && $purchaseOrder->vendorPI[0]->status == 'reject')
                                     <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                                         <span><b>Vendor PI Status</b></span>
                                         <span>
@@ -187,7 +186,7 @@
                                 @endif
 
                                 {{-- Vendor Payments Details --}}
-                                @isset($purchaseInvoice[0]->vendor_code) 
+                                @isset($purchaseInvoice[0]->vendor_code)
                                     @foreach ($purchaseInvoice as $invoiceDetail)
                                         <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                                             <span><b>Invoice Number</b></span>
@@ -389,8 +388,7 @@
                                     <tr>
                                         <th> {{ $grnDetail->vendor_code }}</th>
                                         <th>
-                                            <a href="{{ asset('uploads/invoices/' . $grnDetail->grn_file) }}"
-                                                target="_blank"
+                                            <a href="{{ asset('uploads/invoices/' . $grnDetail->grn_file) }}" target="_blank"
                                                 class="btn btn-sm border-2 border-success w-sm waves ripple-light">
                                                 Preview
                                             </a>
@@ -466,19 +464,24 @@
                                     <i class="fa fa-file-excel-o"></i> Export to Excel
                                 </button>
 
-                                <div class="ms-auto">
-                                    <div class="btn-group">
-                                        <button type="button" class="btn border-2 border-primary">Action</button>
-                                        <button type="button"
-                                            class="btn border-2 border-primary split-bg-primary dropdown-toggle dropdown-toggle-split"
-                                            data-bs-toggle="dropdown"> <span class="visually-hidden">Toggle
-                                                Dropdown</span>
-                                        </button>
-                                        <div class="dropdown-menu dropdown-menu-right dropdown-menu-lg-end">
-                                            <a class="dropdown-item cursor-pointer" id="delete-selected">Delete All</a>
+                                @if (
+                                    ($purchaseOrder?->purchaseOrderProducts->count() ?? 0) !=
+                                        (isset($purchaseOrder?->vendorPI[0]) ? $purchaseOrder?->vendorPI[0]?->products->count() : 0))
+                                    <div class="ms-auto">
+                                        <div class="btn-group">
+                                            <button type="button" class="btn border-2 border-primary">Action</button>
+                                            <button type="button"
+                                                class="btn border-2 border-primary split-bg-primary dropdown-toggle dropdown-toggle-split"
+                                                data-bs-toggle="dropdown"> <span class="visually-hidden">Toggle
+                                                    Dropdown</span>
+                                            </button>
+                                            <div class="dropdown-menu dropdown-menu-right dropdown-menu-lg-end">
+                                                <a class="dropdown-item cursor-pointer" id="delete-selected">Delete
+                                                    All</a>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
+                                @endif
                             </div>
                         </div>
 
@@ -752,13 +755,15 @@
                                 </div>
 
                                 <div class="col-12 mb-3">
-                                    <label for="invoice_no" class="form-label">Invoice Number<span class="text-danger">*</span></label>
+                                    <label for="invoice_no" class="form-label">Invoice Number<span
+                                            class="text-danger">*</span></label>
                                     <input type="text" name="invoice_no" id="invoice_no" class="form-control"
                                         value="" required="" placeholder="Invoice Number">
                                 </div>
 
                                 <div class="col-12 mb-3">
-                                    <label for="invoice_amount" class="form-label">Invoice Amount<span class="text-danger">*</span></label>
+                                    <label for="invoice_amount" class="form-label">Invoice Amount<span
+                                            class="text-danger">*</span></label>
                                     <input type="text" name="invoice_amount" id="invoice_amount" class="form-control"
                                         value="" required="" placeholder="Invoice Amount">
                                 </div>

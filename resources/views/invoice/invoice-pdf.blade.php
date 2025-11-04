@@ -204,17 +204,17 @@
             <td>Invoice&nbsp;No:</td>
             <td>{{ $invoice->invoice_number }}</td>
             <td>Invoice&nbsp;date:</td>
-            <td>{{ $invoice->invoice_date }}</td>
+            <td>{{ $invoice->invoice_date->format('d-m-Y') }}</td>
         </tr>
         <tr>
             {{-- <td>Reverse&nbsp;Charge&nbsp;(Y/N):</td> --}}
             {{-- <td>N</td> --}}
             {{-- <td>State: {{ $invoice->customer->shipping_state }}</td> --}}
             {{-- <td>Code: {{ $invoice->customer->shipping_zip }}</td> --}}
-            <td>PO No: {{ $invoice->po_number }}</td>
-            <td>PO Date: {{ $invoiceDetails[0]->tempOrder->po_date ?? '' }}</td>
-            <td></td>
-            <td></td>
+            <td>PO No: </td>
+            <td>{{ $invoice->po_number }}</td>
+            <td>PO Date: </td>
+            <td>{{ $invoiceDetails[0]->tempOrder->po_date ?? '' }}</td>
         </tr>
     </table>
 
@@ -297,9 +297,9 @@
                     {{ $detail->product->brand_title }}
                 </td>
 
-               <td>{{ $detail->hsn ?? $detail->tempOrder?->hsn }}</td>
-                <td>{{ $detail->quantity }}</td>
-                <td>{{ $detail->box_count ?? $detail->salesOrderProduct?->box_count }}</td>
+                <td class="right-align">{{ $detail->tempOrder?->hsn }}</td>
+                <td class="right-align">{{ $detail->quantity }}</td>
+                <td class="right-align">{{ $detail->salesOrderProduct?->box_count }}</td>
                 <td class="right-align">{{ $detail->unit_price }}</td>
                 <td class="right-align">{{ $detail->amount }}</td>
                 <td class="right-align">{{ floor($detail->tax) }}%</td>
