@@ -711,16 +711,16 @@ class SalesOrderController extends Controller
     public function destroy($id)
     {
         try {
-            $order = SalesOrder::findOrFail($id);
+            $order = SalesOrder::with('orderedProducts.tempOrder')->findOrFail($id);
 
-            $orderedProducts = SalesOrderProduct::with('tempOrder')->where('sales_order_id', $id)->get();
-
-            foreach ($orderedProducts as $product) {
+            // $orderedProducts = SalesOrderProduct::with('tempOrder')->where('sales_order_id', $id)->get();
+            
+            foreach ($order->orderedProducts as $product) {
                 $warehouseStock = WarehouseStock::where('id', $product->warehouse_stock_id)->first();
 
                 if (isset($warehouseStock) && $warehouseStock->block_quantity > 0) {
-                    $warehouseStock->block_quantity = $warehouseStock->block_quantity - $orderedProducts->tempOrder->block;
-                    $warehouseStock->available_quantity = $warehouseStock->available_quantity + $orderedProducts->tempOrder->block;
+                    $warehouseStock->block_quantity = $warehouseStock->block_quantity - $product->tempOrder->block;
+                    $warehouseStock->available_quantity = $warehouseStock->available_quantity + $product->tempOrder->block;
                     $warehouseStock->save();
                 }
 
