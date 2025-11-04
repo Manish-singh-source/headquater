@@ -34,7 +34,7 @@
         <form action="{{ route('invoices.manual.store') }}" method="POST" id="manualInvoiceForm">
             @csrf
             <div class="row">
-                <div class="col-lg-8">
+                <div class="col-lg-9">
                     <div class="card">
                         <div class="card-header bg-primary text-white">
                             <h5 class="mb-0">Invoice Details</h5>
@@ -47,7 +47,7 @@
                                         </button>
                             </div>
                             <div class="row mb-3">
-                                <div class="col-md-6">
+                                <div class="col-md-12">
                                     <label class="form-label">Customer <span class="text-danger">*</span></label>
                                     <div class="input-group">
                                         <select name="customer_id" id="customer_id" class="form-select @error('customer_id') is-invalid @enderror" required>
@@ -58,21 +58,9 @@
                                                 </option>
                                             @endforeach
                                         </select>
-                                       
+
                                     </div>
                                     @error('customer_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label">Warehouse <span class="text-danger">*</span></label>
-                                    <select name="warehouse_id" id="warehouse_id" class="form-select @error('warehouse_id') is-invalid @enderror" required>
-                                        <option value="">Select Warehouse</option>
-                                        @foreach($warehouses as $warehouse)
-                                            <option value="{{ $warehouse->id }}" {{ old('warehouse_id') == $warehouse->id ? 'selected' : '' }}>
-                                                {{ $warehouse->name }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                    @error('warehouse_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
                                 </div>
                             </div>
 
@@ -104,13 +92,17 @@
                                 <table class="table table-bordered" id="productsTable">
                                     <thead class="table-light">
                                         <tr>
-                                            <th style="width: 25%;">Product <span class="text-danger">*</span></th>
-                                            <th style="width: 10%;">Stock</th>
-                                            <th style="width: 10%;">Qty <span class="text-danger">*</span></th>
-                                            <th style="width: 12%;">Rate <span class="text-danger">*</span></th>
-                                            <th style="width: 10%;">Discount</th>
-                                            <th style="width: 10%;">Tax</th>
-                                            <th style="width: 13%;">Total</th>
+                                            <th style="width: 12%;">Warehouse <span class="text-danger">*</span></th>
+                                            <th style="width: 15%;">Product <span class="text-danger">*</span></th>
+                                            <th style="width: 7%;">HSN</th>
+                                            <th style="width: 5%;">Stock</th>
+                                            <th style="width: 6%;">Qty <span class="text-danger">*</span></th>
+                                            <th style="width: 6%;">Box Count</th>
+                                            <th style="width: 6%;">Weight</th>
+                                            <th style="width: 9%;">Rate <span class="text-danger">*</span></th>
+                                            <th style="width: 7%;">Discount</th>
+                                            <th style="width: 7%;">Tax</th>
+                                            <th style="width: 10%;">Total</th>
                                             <th style="width: 10%;">Action</th>
                                         </tr>
                                     </thead>
@@ -128,7 +120,7 @@
                     </div>
                 </div>
 
-                <div class="col-lg-4">
+                <div class="col-lg-3">
                     <div class="card">
                         <div class="card-header bg-success text-white">
                             <h5 class="mb-0">Summary</h5>
@@ -328,6 +320,7 @@
 <script>
 let rowIndex = 0;
 const products = @json($products);
+const warehouses = @json($warehouses);
 
 document.addEventListener('DOMContentLoaded', function() {
     // Add first row automatically
@@ -345,8 +338,14 @@ function addProductRow() {
     const tbody = document.getElementById('productRows');
     const row = document.createElement('tr');
     row.id = `row_${rowIndex}`;
-    
+
     row.innerHTML = `
+        <td>
+            <select name="products[${rowIndex}][warehouse_id]" class="form-select form-select-sm warehouse-select" data-row="${rowIndex}" required>
+                <option value="">Select Warehouse</option>
+                ${warehouses.map(w => `<option value="${w.id}">${w.name}</option>`).join('')}
+            </select>
+        </td>
         <td>
             <select name="products[${rowIndex}][product_id]" class="form-select form-select-sm product-select" data-row="${rowIndex}" required>
                 <option value="">Select Product</option>
@@ -354,22 +353,34 @@ function addProductRow() {
             </select>
         </td>
         <td>
+            <input type="text" name="products[${rowIndex}][hsn]" class="form-control form-control-sm hsn-input"
+                   data-row="${rowIndex}" placeholder="HSN">
+        </td>
+        <td>
             <input type="text" class="form-control form-control-sm stock-display" id="stock_${rowIndex}" readonly placeholder="0">
         </td>
         <td>
-            <input type="number" name="products[${rowIndex}][quantity]" class="form-control form-control-sm quantity-input" 
+            <input type="number" name="products[${rowIndex}][quantity]" class="form-control form-control-sm quantity-input"
                    data-row="${rowIndex}" step="0.01" min="0.01" required>
         </td>
         <td>
-            <input type="number" name="products[${rowIndex}][unit_price]" class="form-control form-control-sm price-input" 
+            <input type="number" name="products[${rowIndex}][box_count]" class="form-control form-control-sm box-count-input"
+                   data-row="${rowIndex}" step="1" min="0" placeholder="0">
+        </td>
+        <td>
+            <input type="number" name="products[${rowIndex}][weight]" class="form-control form-control-sm weight-input"
+                   data-row="${rowIndex}" step="0.01" min="0" placeholder="0.00">
+        </td>
+        <td>
+            <input type="number" name="products[${rowIndex}][unit_price]" class="form-control form-control-sm price-input"
                    data-row="${rowIndex}" step="0.01" min="0" required>
         </td>
         <td>
-            <input type="number" name="products[${rowIndex}][discount]" class="form-control form-control-sm discount-input" 
+            <input type="number" name="products[${rowIndex}][discount]" class="form-control form-control-sm discount-input"
                    data-row="${rowIndex}" step="0.01" min="0" value="0">
         </td>
         <td>
-            <input type="number" name="products[${rowIndex}][tax]" class="form-control form-control-sm tax-input" 
+            <input type="number" name="products[${rowIndex}][tax]" class="form-control form-control-sm tax-input"
                    data-row="${rowIndex}" step="0.01" min="0" value="0">
         </td>
         <td>
@@ -381,31 +392,48 @@ function addProductRow() {
             </button>
         </td>
     `;
-    
+
     tbody.appendChild(row);
-    
+
     // Attach event listeners
+    row.querySelector('.warehouse-select').addEventListener('change', function() {
+        onWarehouseChange(this);
+    });
+
     row.querySelector('.product-select').addEventListener('change', function() {
         onProductChange(this);
     });
-    
+
     row.querySelectorAll('.quantity-input, .price-input, .discount-input, .tax-input').forEach(input => {
         input.addEventListener('input', calculateRowTotal);
     });
+}
+
+function onWarehouseChange(selectElement) {
+    const rowId = selectElement.dataset.row;
+    const warehouseId = selectElement.value;
+    const productSelect = document.querySelector(`select[name="products[${rowId}][product_id]"]`);
+
+    // Reset product selection and stock when warehouse changes
+    if (productSelect.value) {
+        productSelect.value = '';
+        document.getElementById(`stock_${rowId}`).value = '0';
+    }
 }
 
 function onProductChange(selectElement) {
     const rowId = selectElement.dataset.row;
     const selectedOption = selectElement.options[selectElement.selectedIndex];
     const productId = selectElement.value;
-    const warehouseId = document.getElementById('warehouse_id').value;
-    
+    const warehouseSelect = document.querySelector(`select[name="products[${rowId}][warehouse_id]"]`);
+    const warehouseId = warehouseSelect ? warehouseSelect.value : '';
+
     if (!warehouseId) {
         alert('Please select a warehouse first');
         selectElement.value = '';
         return;
     }
-    
+
     if (productId) {
         const price = selectedOption.dataset.price;
         document.querySelector(`input[name="products[${rowId}][unit_price]"]`).value = price;
