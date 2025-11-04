@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Customer;
 use App\Models\Invoice;
 use App\Models\VendorPI;
 use App\Models\VendorPIProduct;
@@ -9,6 +10,7 @@ use App\Models\WarehouseStock;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Spatie\SimpleExcel\SimpleExcelWriter;
@@ -265,35 +267,66 @@ class ReportController extends Controller
     }
 
     /**
-     * Display customer sales history
+     * Display customer sales history with optional filtering
      *
+     * Filtering Logic:
+     * - All filters are optional and can be applied independently or in combination
+     * - from_date: Filter invoices from this date onwards (inclusive)
+     * - to_date: Filter invoices up to this date (inclusive)
+     * - customer_id: Filter invoices for a specific customer
+     * - If no filters applied, shows all invoices
+     * - Statistics (total amount, paid, due) are calculated based on filtered results
+     *
+     * @param Request $request
      * @return \Illuminate\View\View
      */
-    public function customerSalesHistory($request = null)
+    public function customerSalesHistory(Request $request)
     {
         try {
-            $invoices = Invoice::with(['warehouse', 'customer', 'salesOrder', 'payments'])
-                ->latest()
-                ->paginate(15);
+            // Build the base query with relationships
+            $query = Invoice::with(['warehouse', 'customer', 'salesOrder', 'payments']);
 
-            $invoicesAmountSum = Invoice::sum('total_amount');
+            // Apply date range filter if from_date is provided
+            if ($request->filled('from_date')) {
+                $query->where('invoice_date', '>=', $request->from_date);
+            }
 
-            $invoicesAmountPaidSum = DB::table('invoices')
-                ->join('payments', 'invoices.id', '=', 'payments.invoice_id')
-                ->sum('payments.amount');
+            // Apply date range filter if to_date is provided
+            if ($request->filled('to_date')) {
+                $query->where('invoice_date', '<=', $request->to_date);
+            }
 
-            $customers = Invoice::with('customer')
+            // Apply customer filter if customer_id is provided
+            if ($request->filled('customer_id')) {
+                $query->where('customer_id', $request->customer_id);
+            }
+
+            // Clone query for statistics calculation before pagination
+            $statsQuery = clone $query;
+
+            // Get paginated invoices (15 per page)
+            $invoices = $query->latest('invoice_date')->paginate(15)->appends($request->all());
+
+            // Calculate statistics based on filtered results
+            $invoicesAmountSum = $statsQuery->sum('total_amount');
+
+            // Calculate total paid amount from filtered invoices
+            $filteredInvoiceIds = $statsQuery->pluck('id');
+            $invoicesAmountPaidSum = DB::table('payments')
+                ->whereIn('invoice_id', $filteredInvoiceIds)
+                ->sum('amount');
+
+            // Get unique customers from all invoices for dropdown
+            $customers = Customer::select('id', 'client_name')
+                ->whereHas('invoices')
+                ->orderBy('client_name')
                 ->get()
-                ->pluck('customer')
-                ->filter()
-                ->unique('id')
                 ->map(function ($customer) {
                     return [
                         'id' => $customer->id,
                         'name' => $customer->client_name ?? 'N/A',
                     ];
-                })
-                ->values();
+                });
 
             $data = [
                 'title' => 'Customer Sales History',
@@ -301,60 +334,98 @@ class ReportController extends Controller
                 'invoicesAmountSum' => $invoicesAmountSum,
                 'invoicesAmountPaidSum' => $invoicesAmountPaidSum,
                 'customers' => $customers,
+                'filters' => [
+                    'from_date' => $request->from_date,
+                    'to_date' => $request->to_date,
+                    'customer_id' => $request->customer_id,
+                ],
             ];
 
             return view('customer-sales-history', $data);
         } catch (\Exception $e) {
+            Log::error('Error retrieving customer sales history: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Error retrieving sales history: ' . $e->getMessage());
         }
     }
 
     /**
-     * Download customer sales history as Excel
+     * Download customer sales history as CSV
+     *
+     * CSV Generation Workflow:
+     * 1. Validate optional filter parameters (from_date, to_date, customer_id)
+     * 2. Build query with same filtering logic as index method
+     * 3. Retrieve all matching invoices (no pagination for export)
+     * 4. Generate CSV file with headers and data rows
+     * 5. Calculate amounts (total, paid, due) for each invoice
+     * 6. Log activity for audit trail
+     * 7. Return CSV file as download and delete temp file after sending
+     *
+     * All filters are optional - if none provided, exports all records
      *
      * @param Request $request
-     * @return \Illuminate\Http\Response|\Illuminate\Http\RedirectResponse
+     * @return \Symfony\Component\HttpFoundation\BinaryFileResponse|\Illuminate\Http\RedirectResponse
      */
     public function customerSalesHistoryExcel(Request $request)
     {
+        // Validate optional filters
         $validator = Validator::make($request->all(), [
-            'selectedDateFrom' => 'required|date_format:Y-m-d',
-            'selectedDateTo' => 'required|date_format:Y-m-d|after_or_equal:selectedDateFrom',
-            'customerId' => 'required|integer|exists:customers,id',
+            'from_date' => 'nullable|date',
+            'to_date' => 'nullable|date|after_or_equal:from_date',
+            'customer_id' => 'nullable|integer|exists:customers,id',
         ]);
+
         if ($validator->fails()) {
             return redirect()->back()->withErrors($validator)->withInput();
         }
 
+        DB::beginTransaction();
         try {
-            $tempXlsxPath = storage_path('app/customer_sales_history_' . Str::random(8) . '.xlsx');
-            $writer = SimpleExcelWriter::create($tempXlsxPath);
+            // Build query with same filtering logic as index method
+            $query = Invoice::with(['warehouse', 'customer', 'salesOrder', 'payments']);
 
-            $invoices = Invoice::with(['warehouse', 'customer', 'salesOrder', 'payments'])
-                ->when($request->selectedDateFrom && $request->selectedDateTo, function ($query) use ($request) {
-                    $query->whereBetween('invoice_date', [
-                        $request->selectedDateFrom . ' 00:00:00',
-                        $request->selectedDateTo . ' 23:59:59',
-                    ]);
-                })
-                ->when($request->customerId, function ($query) use ($request) {
-                    $query->where('customer_id', (int)$request->customerId);
-                })
-                ->latest()
-                ->get();
-
-            if ($invoices->isEmpty()) {
-                return redirect()->back()->with('info', 'No sales records found for the selected criteria.');
+            // Apply date range filter if from_date is provided
+            if ($request->filled('from_date')) {
+                $query->where('invoice_date', '>=', $request->from_date);
             }
 
+            // Apply date range filter if to_date is provided
+            if ($request->filled('to_date')) {
+                $query->where('invoice_date', '<=', $request->to_date);
+            }
+
+            // Apply customer filter if customer_id is provided
+            if ($request->filled('customer_id')) {
+                $query->where('customer_id', $request->customer_id);
+            }
+
+            // Get all matching invoices (no pagination for export)
+            $invoices = $query->latest('invoice_date')->get();
+
+            if ($invoices->isEmpty()) {
+                return redirect()->back()->with('error', 'No sales records found for the selected criteria.');
+            }
+
+            // Create temporary CSV file
+            $tempCsvPath = storage_path('app/customer_sales_history_' . Str::random(8) . '.csv');
+            $file = fopen($tempCsvPath, 'w');
+
+            // Add UTF-8 BOM for proper Excel encoding
+            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
+
             // Add header row
-            $writer->addRow([
-                'Reference' => 'Reference',
-                'Customer Name' => 'Customer Name',
-                'Ordered Date' => 'Ordered Date',
-                'Total Amount' => 'Total Amount',
-                'Paid' => 'Paid',
-                'Due' => 'Due',
+            fputcsv($file, [
+                'Invoice No',
+                'Customer Name',
+                'Ordered Date',
+                'Total Amount',
+                'Paid',
+                'Due',
+                'Appointment Date',
+                'POD',
+                'LR',
+                'DN',
+                'GRN',
+                'Payment Status',
             ]);
 
             // Add data rows
@@ -363,35 +434,50 @@ class ReportController extends Controller
                 $paidAmount = (float)($invoice->payments?->sum('amount') ?? 0);
                 $dueAmount = max(0, $totalAmount - $paidAmount);
 
-                $writer->addRow([
-                    'Reference' => $invoice->invoice_number ?? 'NA',
-                    'Customer Name' => $invoice->customer?->client_name ?? 'NA',
-                    'Ordered Date' => $invoice->invoice_date ? date('d-m-Y', strtotime($invoice->invoice_date)) : 'NA',
-                    'Total Amount' => number_format($totalAmount, 2),
-                    'Paid' => number_format($paidAmount, 2),
-                    'Due' => number_format($dueAmount, 2),
+                fputcsv($file, [
+                    $invoice->invoice_number ?? 'N/A',
+                    $invoice->customer?->client_name ?? 'N/A',
+                    $invoice->invoice_date ? $invoice->invoice_date->format('d-m-Y') : 'N/A',
+                    number_format($totalAmount, 2, '.', ''),
+                    number_format($paidAmount, 2, '.', ''),
+                    number_format($dueAmount, 2, '.', ''),
+                    $invoice->appointment?->appointment_date ?? 'N/A',
+                    $invoice->appointment?->pod ? 'Yes' : 'No',
+                    $invoice->appointment?->lr ? 'Yes' : 'No',
+                    $invoice->dns?->dn_amount ? 'Yes' : 'No',
+                    $invoice->appointment?->grn ? 'Yes' : 'No',
+                    isset($invoice->payments?->first()->payment_status) != null && $invoice->payments?->first()->payment_status == 'completed'  ? 'paid' : 'not paid',
                 ]);
             }
 
-            $writer->close();
+            fclose($file);
 
-            // Log activity
+            // Log activity for audit trail
             activity()
                 ->causedBy(Auth::user())
                 ->withProperties([
-                    'customer_id' => $request->customerId,
-                    'date' => $request->selectedDate,
+                    'from_date' => $request->from_date,
+                    'to_date' => $request->to_date,
+                    'customer_id' => $request->customer_id,
                     'records' => $invoices->count(),
                 ])
-                ->event('report_generated')
-                ->log('Customer sales history report generated');
+                ->event('csv_report_generated')
+                ->log('Customer sales history CSV report generated');
 
-            $fileName = 'Customer-Sales-History-' . date('d-m-Y', strtotime($request->selectedDate)) . '.xlsx';
+            DB::commit();
 
-            return response()->download($tempXlsxPath, $fileName, [
-                'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            // Generate filename with current date
+            $fileName = 'Customer-Sales-History-' . date('d-m-Y') . '.csv';
+
+            // Return CSV file as download and delete after sending
+            return response()->download($tempCsvPath, $fileName, [
+                'Content-Type' => 'text/csv',
+                'Content-Disposition' => 'attachment; filename="' . $fileName . '"',
             ])->deleteFileAfterSend(true);
+
         } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error generating customer sales CSV report: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Error generating sales report: ' . $e->getMessage());
         }
     }
