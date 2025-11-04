@@ -416,6 +416,7 @@ class InvoiceController extends Controller
                     }
 
                     $stock->available_quantity -= $item['quantity'];
+                    $stock->original_quantity -= $item['quantity'];
                     $stock->save();
                 }
             }
