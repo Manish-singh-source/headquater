@@ -349,7 +349,7 @@ function addProductRow() {
         <td>
             <select name="products[${rowIndex}][product_id]" class="form-select form-select-sm product-select" data-row="${rowIndex}" required>
                 <option value="">Select Product</option>
-                ${products.map(p => `<option value="${p.id}" data-sku="${p.sku}" data-price="${p.mrp}">${p.product_name} (${p.sku})</option>`).join('')}
+                ${products.map(p => `<option value="${p.id}" data-sku="${p.sku}" data-price="${p.mrp}">${p.sku}</option>`).join('')}
             </select>
         </td>
         <td>

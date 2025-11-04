@@ -121,7 +121,7 @@ class PurchaseOrderController extends Controller
                         'purchase_order_id' => $purchaseOrder->id,
                         'vendor_code' => $vendor->vendor_code ?? null,
                         'sku' => $record['SKU Code'],
-                        'ordered_quantity' => $record['Purchase Order Quantity'],
+                        'ordered_quantity' => $record['PO Quantity'] ?? 0,
                         'product_status' => 'not_found',
                         'created_at' => now(),
                         'updated_at' => now(),
@@ -152,7 +152,7 @@ class PurchaseOrderController extends Controller
                     'product_mrp' => $record['Product MRP'] ?? 0,
                     'mrp_confirmation' => $record['MRP Confirmation'] ?? '',
 
-                    'purchase_order_quantity' => $record['Purchase Order Quantity'] ?? '',
+                    'purchase_order_quantity' => $record['PO Quantity'] ?? 0,
                     'vendor_code' => $vendor->vendor_code ?? '',
                     'customer_status' => 'Found',
                     'vendor_status' => 'Found',
@@ -166,7 +166,7 @@ class PurchaseOrderController extends Controller
                 } else {
                     $purchaseOrderProduct->purchase_order_id = $request->purchaseId;
                 }
-                $purchaseOrderProduct->ordered_quantity = $record['Purchase Order Quantity'];
+                $purchaseOrderProduct->ordered_quantity = $record['PO Quantity'] ?? 0;
                 $purchaseOrderProduct->sku = $record['SKU Code'];
                 $purchaseOrderProduct->product_id = $product->id;
                 $purchaseOrderProduct->vendor_code = $vendor->vendor_code;
@@ -184,7 +184,7 @@ class PurchaseOrderController extends Controller
             DB::commit();
 
             if (! empty($vendorProducts)) {
-                dd($vendorProducts);
+                
             }
 
             // Create notification
@@ -840,7 +840,7 @@ class PurchaseOrderController extends Controller
                 DB::rollBack();
 
                 return back()->with('error', 'Payment amount is greater than due amount.');
-                dd($vendorPI->total_due_amount, $request->input('pay_amount'));
+               
             }
 
             if ($vendorPI->total_due_amount > 0 && $vendorPI->total_due_amount <= $vendorPI->total_amount) {

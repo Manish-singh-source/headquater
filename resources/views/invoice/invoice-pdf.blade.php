@@ -276,6 +276,8 @@
         @php
             $totalAmountSum = 0;
             $totalIgstSum = 0;
+            $totalBoxCount = 0;
+            $totalWeight = 0;
         @endphp
         @foreach ($invoiceDetails as $index => $detail)
             <tr>
@@ -283,6 +285,8 @@
                 {{ $totalAmount = $igstAmount + $detail->amount }}
                 {{ $totalAmountSum = $totalAmount + $totalAmountSum }}
                 {{ $totalIgstSum = $igstAmount + $totalIgstSum }}
+                {{ $totalBoxCount += $detail->box_count ?? 0 }}
+                {{ $totalWeight += $detail->weight ?? 0 }}
 
                 <td class="text-center">{{ $index + 1 }}</td>
                 <td>
@@ -341,10 +345,10 @@
             <td class="section-title">Terms & Conditions:</td>
         </tr>
         <tr>
-            <td>
-                TOTAL SETS - QTY {{ $invoiceDetails->sum('quantity') }}<br>
-                TOTAL BOX COUNT - {{ $TotalBoxCount }}<br>
-                WEIGHT - KG {{ $TotalWeight }}
+            <td colspan="2">
+                TOTAL&nbsp;SETS&nbsp;-&nbsp;QTY {{ $invoiceDetails->sum('quantity') }}<br>
+                TOTAL&nbsp;BOX&nbsp;COUNT&nbsp;- {{ $totalBoxCount ?? $TotalBoxCount ?? 0 }}<br>
+                WEIGHT&nbsp;-&nbsp;KG {{ $totalWeight ?? $TotalWeight ?? 0 }}
             </td>
 
         </tr>
