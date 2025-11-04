@@ -148,11 +148,10 @@ class ReadyToShip extends Controller
     public function issuesProducts()
     {
         try {
-            $vendorOrders = ProductIssue::where('issue_status', 'accept')
-                ->with(['order', 'product', 'purchaseOrder', 'tempOrder'])
+            $vendorOrders = ProductIssue::with(['order', 'product', 'purchaseOrder', 'tempOrder'])
                 ->latest()
                 ->paginate(15);
-
+                
             return view('exceed-shortage', compact('vendorOrders'));
         } catch (\Exception $e) {
             return redirect()->back()
@@ -210,8 +209,6 @@ class ReadyToShip extends Controller
 
             // Update return status
             $vendorReturnProduct->return_status = 'accepted';
-            $vendorReturnProduct->accepted_by = Auth::id();
-            $vendorReturnProduct->accepted_at = now();
             $vendorReturnProduct->save();
 
             // Update warehouse stock
@@ -293,8 +290,6 @@ class ReadyToShip extends Controller
 
             // Update return status
             $vendorReturnProduct->return_status = 'returned';
-            $vendorReturnProduct->returned_by = Auth::id();
-            $vendorReturnProduct->returned_at = now();
             $vendorReturnProduct->save();
 
             DB::commit();
@@ -355,8 +350,6 @@ class ReadyToShip extends Controller
                 }
 
                 $vendorReturnProduct->return_status = 'accepted';
-                $vendorReturnProduct->accepted_by = Auth::id();
-                $vendorReturnProduct->accepted_at = now();
                 $vendorReturnProduct->save();
 
                 $warehouseStock = WarehouseStock::where('sku', $vendorReturnProduct->sku)->first();

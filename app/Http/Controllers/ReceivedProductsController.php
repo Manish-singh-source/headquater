@@ -98,7 +98,11 @@ class ReceivedProductsController extends Controller
         DB::beginTransaction();
 
         try {
-            $vendorPI = VendorPI::with('products')->lockForUpdate()->findOrFail($request->vendor_pi_id);
+            $vendorPI = VendorPI::with('products')->find($request->vendor_pi_id);
+
+            if (!$vendorPI) {
+                return redirect()->back()->with('error', 'Vendor PI not found.');
+            }
 
             if ($vendorPI->status !== 'pending') {
                 return redirect()->back()->with('error', 'Vendor PI has already been processed.');
@@ -212,13 +216,18 @@ class ReceivedProductsController extends Controller
         DB::beginTransaction();
 
         try {
-            $purchaseOrder = PurchaseOrder::lockForUpdate()->findOrFail($request->purchase_order_id);
+            $purchaseOrder = PurchaseOrder::find($request->purchase_order_id);
+            if (!$purchaseOrder) {
+                return redirect()->back()->with('error', 'Purchase order not found.');
+            }
 
             $oldStatus = $purchaseOrder->status;
             $purchaseOrder->status = 'completed';
-            $purchaseOrder->completed_by = Auth::id();
-            $purchaseOrder->completed_at = now();
             $purchaseOrder->save();
+
+            if (!$purchaseOrder) {
+                return redirect()->back()->with('error', 'Failed to update purchase order status.');
+            }
 
             DB::commit();
 
@@ -287,16 +296,16 @@ class ReceivedProductsController extends Controller
      * @param Request $request
      * @return \Illuminate\Http\RedirectResponse
      */
-                    
+
     public function updateRecievedProduct(Request $request)
     {
-        $validator = Validator::make($request->all(), [
+        $validated = Validator::make($request->all(), [
             'pi_excel' => 'required|file|mimes:xlsx,csv,xls',
             'vendor_pi_id' => 'required|integer|exists:vendor_p_i_s,id',
         ]);
 
-        if ($validator->fails()) {
-            return redirect()->back()->withErrors($validator)->withInput();
+        if ($validated->fails()) {
+            return redirect()->back()->with('error', $validated->errors()->first());
         }
 
         $file = $request->file('pi_excel');
@@ -310,7 +319,12 @@ class ReceivedProductsController extends Controller
             $rows = $reader->getRows();
             $insertCount = 0;
 
-            $vendorPI = VendorPI::with('products')->lockForUpdate()->findOrFail($request->vendor_pi_id);
+            $vendorPI = VendorPI::with('products')->find($request->vendor_pi_id);
+
+            if (!$vendorPI) {
+                return redirect()->back()->with('error', 'Vendor PI not found.');
+            }
+
 
             if ($vendorPI->status !== 'pending' && $vendorPI->status !== 'approve') {
                 DB::rollBack();
@@ -326,11 +340,10 @@ class ReceivedProductsController extends Controller
 
                 $vendorSkuCode = trim($record['Vendor SKU Code']);
                 $quantityReceived = (int)($record['Quantity Received'] ?? 0);
-                $issueUnits = (int)($record['Issue Units'] ?? 0);
+                $issueUnits = 0;
                 $issueDescription = trim($record['Issue Description'] ?? '');
 
-                $productData = VendorPIProduct::lockForUpdate()
-                    ->where('vendor_sku_code', $vendorSkuCode)
+                $productData = VendorPIProduct::with('tempOrder')->where('vendor_sku_code', $vendorSkuCode)
                     ->where('vendor_pi_id', $vendorPI->id)
                     ->first();
 
@@ -350,7 +363,7 @@ class ReceivedProductsController extends Controller
                             'sku' => $productData->vendor_sku_code,
                             'return_quantity' => $extraQuantity,
                             'return_reason' => 'Extra',
-                            'return_description' => 'Extra products returned to vendor',
+                            'return_description' => $issueDescription != '' ? $issueDescription : 'Extra products returned to vendor',
                             'return_status' => 'pending',
                         ]);
                     } elseif ($productData->available_quantity > $quantityReceived) {
@@ -368,7 +381,7 @@ class ReceivedProductsController extends Controller
                             'quantity_received' => $quantityReceived,
                             'issue_item' => $shortageQuantity,
                             'issue_reason' => 'Shortage',
-                            'issue_description' => 'Shortage products',
+                            'issue_description' => $issueDescription != '' ? $issueDescription : 'Shortage products',
                             'issue_from' => 'vendor',
                             'issue_status' => 'pending',
                         ]);
@@ -378,11 +391,13 @@ class ReceivedProductsController extends Controller
                     }
                 }
 
+                $issueUnits = $extraQuantity ?? $shortageQuantity;
+                
                 // Process issue items
                 if ($issueUnits > 0) {
                     $productData->issue_item = $issueUnits;
                     $productData->issue_reason = ($productData->quantity_requirement < $quantityReceived) ? 'Exceed' : 'Shortage';
-                    $productData->issue_description = $issueDescription;
+                    $productData->issue_description = $issueDescription != '' ? $issueDescription : 'Issue items recorded';
                 } else {
                     $productData->issue_item = 0;
                     $productData->issue_reason = '';
