@@ -257,6 +257,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/customer-returns-edit/{id}', 'editCustomerReturn')->name('customer.returns.edit');
         Route::put('/customer-returns-update', 'updateCustomerReturn')->name('customer.returns.update');
         Route::delete('/customer-returns-delete/{id}', 'deleteCustomerReturn')->name('customer.returns.delete');
+        Route::put('/customer-returns-status', 'changeCustomerReturnStatus')->name('change.customer.return.status');
     });
 
     // Track order

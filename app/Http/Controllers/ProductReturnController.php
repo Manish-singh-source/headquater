@@ -92,8 +92,6 @@ class ProductReturnController extends Controller
             'sales_order_id' => 'required|integer|exists:sales_orders,id',
             'warehouse_id' => 'required|integer|exists:warehouses,id',
             'excel_file' => 'required|file|mimes:xlsx,csv,xls',
-            'return_reason' => 'required|string|max:255',
-            'return_description' => 'nullable|string|max:1000',
         ]);
 
         if ($validator->fails()) {
@@ -120,7 +118,7 @@ class ProductReturnController extends Controller
             if ($duplicateCheck) {
                 DB::rollBack();
 
-                return redirect()->back()->withErrors(['error' => $duplicateCheck]);
+                return redirect()->back()->with(['error' => $duplicateCheck]);
             }
 
             $insertCount = 0;
@@ -149,7 +147,7 @@ class ProductReturnController extends Controller
                 if (!$product) {
                     DB::rollBack();
 
-                    return redirect()->back()->withErrors(['error' => 'Product with SKU ' . $sku . ' not found.']);
+                    return redirect()->back()->with(['error' => 'Product with SKU ' . $sku . ' not found.']);
                 }
 
                 // Create customer return record
@@ -157,11 +155,11 @@ class ProductReturnController extends Controller
                     'sales_order_id' => $salesOrderId,
                     'warehouse_id' => $warehouseId,
                     'sku' => $sku,
-                    'product_id' => $product->id,
+                    // 'product_id' => $product->id,
                     'return_quantity' => $returnQuantity,
                     'return_reason' => $returnReason,
                     'return_description' => $returnDescription,
-                    'status' => 'pending',
+                    'return_status' => 'pending',
                 ]);
 
                 // Update warehouse stock
@@ -172,7 +170,7 @@ class ProductReturnController extends Controller
                 if (!$warehouseStock) {
                     DB::rollBack();
 
-                    return redirect()->back()->withErrors([
+                    return redirect()->back()->with([
                         'error' => 'Warehouse stock record not found for SKU: ' . $sku,
                     ]);
                 }
@@ -187,7 +185,7 @@ class ProductReturnController extends Controller
             if ($insertCount === 0) {
                 DB::rollBack();
 
-                return redirect()->back()->withErrors(['excel_file' => 'No valid return data found in the file.']);
+                return redirect()->back()->with(['excel_file' => 'No valid return data found in the file.']);
             }
 
             DB::commit();
@@ -405,6 +403,28 @@ class ProductReturnController extends Controller
             DB::rollBack();
 
             return redirect()->back()->with('error', 'Error deleting returns: ' . $e->getMessage());
+        }
+    }
+
+    public function changeCustomerReturnStatus(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'order_id' => 'required|integer|exists:customer_returns,id',
+            'status' => 'required|in:pending,accept,returned,completed',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()->with('error', $validator->errors()->first())->withInput();
+        }
+
+        try {
+            $customerReturn = CustomerReturn::findOrFail($request->order_id);
+            $customerReturn->return_status = $request->status;
+            $customerReturn->save();
+
+            return redirect()->back()->with('success', 'Customer return status updated successfully.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Error updating status: ' . $e->getMessage());
         }
     }
 }
