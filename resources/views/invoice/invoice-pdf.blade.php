@@ -295,7 +295,7 @@
 
                 <td class="right-align">{{ $detail->tempOrder?->hsn }}</td>
                 <td class="right-align">{{ $detail->quantity }}</td>
-                <td class="right-align">{{ $detail->salesOrderProduct->box_count }}</td>
+                <td class="right-align">{{ $detail->salesOrderProduct?->box_count }}</td>
                 <td class="right-align">{{ $detail->unit_price }}</td>
                 <td class="right-align">{{ $detail->amount }}</td>
                 <td class="right-align">{{ floor($detail->tax) }}%</td>
