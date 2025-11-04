@@ -40,17 +40,26 @@
                             <h5 class="mb-0">Invoice Details</h5>
                         </div>
                         <div class="card-body">
+                             <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h6 class="mb-0">Customers</h6>
+                                 <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addCustomerModal">
+                                           Add Customer
+                                        </button>
+                            </div>
                             <div class="row mb-3">
                                 <div class="col-md-6">
                                     <label class="form-label">Customer <span class="text-danger">*</span></label>
-                                    <select name="customer_id" id="customer_id" class="form-select @error('customer_id') is-invalid @enderror" required>
-                                        <option value="">Select Customer</option>
-                                        @foreach($customers as $customer)
-                                            <option value="{{ $customer->id }}" {{ old('customer_id') == $customer->id ? 'selected' : '' }}>
-                                                {{ $customer->client_name }} - {{ $customer->facility_name }}
-                                            </option>
-                                        @endforeach
-                                    </select>
+                                    <div class="input-group">
+                                        <select name="customer_id" id="customer_id" class="form-select @error('customer_id') is-invalid @enderror" required>
+                                            <option value="">Select Customer</option>
+                                            @foreach($customers as $customer)
+                                                <option value="{{ $customer->id }}" {{ old('customer_id') == $customer->id ? 'selected' : '' }}>
+                                                    {{ $customer->client_name }} - {{ $customer->facility_name }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                       
+                                    </div>
                                     @error('customer_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
                                 </div>
                                 <div class="col-md-6">
@@ -188,6 +197,131 @@
                 </div>
             </div>
         </form>
+
+        <!-- Add Customer Modal -->
+        <div class="modal fade" id="addCustomerModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="addCustomerModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <form id="addCustomerForm" method="POST">
+                        @csrf
+                        <div class="modal-header bg-primary text-white">
+                            <h5 class="modal-title" id="addCustomerModalLabel">Add New Customer</h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="alert alert-danger d-none" id="customerFormErrors">
+                                <ul class="mb-0" id="customerErrorList"></ul>
+                            </div>
+
+                            <!-- Customer Type Selection -->
+                            <div class="mb-3">
+                                <label class="form-label">Customer Type <span class="text-danger">*</span></label>
+                                <div class="d-flex gap-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="customer_type" id="typeGroup" value="group" checked>
+                                        <label class="form-check-label" for="typeGroup">
+                                            Customer Group
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="customer_type" id="typeIndividual" value="individual">
+                                        <label class="form-check-label" for="typeIndividual">
+                                            Individual Customer
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Customer Group Field (shown when group is selected) -->
+                            <div class="mb-3" id="customerGroupField">
+                                <label class="form-label">Customer Group <span class="text-danger">*</span></label>
+                                <select name="group_id" id="group_id" class="form-select">
+                                    <option value="">Select Customer Group</option>
+                                    @foreach($customerGroups as $group)
+                                        <option value="{{ $group->id }}">{{ $group->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Facility Name <span class="text-danger">*</span></label>
+                                    <input type="text" name="facility_name" id="facility_name" class="form-control" placeholder="Enter Facility Name">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Client Name <span class="text-danger">*</span></label>
+                                    <input type="text" name="client_name" id="client_name" class="form-control" placeholder="Enter Client Name">
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Contact Name <span class="text-danger">*</span></label>
+                                    <input type="text" name="contact_name" id="contact_name" class="form-control" placeholder="Enter Contact Name">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Email <span class="text-danger">*</span></label>
+                                    <input type="email" name="email" id="email" class="form-control" placeholder="Enter Email">
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Contact Number <span class="text-danger">*</span></label>
+                                    <input type="text" name="contact_no" id="contact_no" class="form-control" placeholder="Enter 10 digit number" maxlength="10">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Company Name</label>
+                                    <input type="text" name="company_name" id="company_name" class="form-control" placeholder="Enter Company Name">
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">GSTIN <span class="text-danger">*</span></label>
+                                    <input type="text" name="gstin" id="gstin" class="form-control" placeholder="Enter GSTIN" maxlength="15">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">PAN <span class="text-danger">*</span></label>
+                                    <input type="text" name="pan" id="pan" class="form-control" placeholder="Enter PAN" maxlength="10">
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Shipping Address</label>
+                                <textarea name="shipping_address" id="shipping_address" class="form-control" rows="2" placeholder="Enter Shipping Address"></textarea>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label">Shipping Country</label>
+                                    <input type="text" name="shipping_country" id="shipping_country" class="form-control" placeholder="Enter Country">
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label">Shipping State</label>
+                                    <input type="text" name="shipping_state" id="shipping_state" class="form-control" placeholder="Enter State">
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label">Shipping City</label>
+                                    <input type="text" name="shipping_city" id="shipping_city" class="form-control" placeholder="Enter City">
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Shipping ZIP</label>
+                                <input type="text" name="shipping_zip" id="shipping_zip" class="form-control" placeholder="Enter ZIP Code">
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="submit" class="btn btn-primary" id="saveCustomerBtn">
+                                <i class="bx bx-save"></i> Save Customer
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
 </main>
 
@@ -364,6 +498,125 @@ function removeRow(rowId) {
         calculateTotals();
     }
 }
+
+// Customer Modal Handling
+document.addEventListener('DOMContentLoaded', function() {
+    const customerTypeRadios = document.querySelectorAll('input[name="customer_type"]');
+    const customerGroupField = document.getElementById('customerGroupField');
+    const groupIdSelect = document.getElementById('group_id');
+
+    // Toggle customer group field based on type selection
+    customerTypeRadios.forEach(radio => {
+        radio.addEventListener('change', function() {
+            if (this.value === 'group') {
+                customerGroupField.style.display = 'block';
+                groupIdSelect.required = true;
+            } else {
+                customerGroupField.style.display = 'none';
+                groupIdSelect.required = false;
+                groupIdSelect.value = '';
+            }
+        });
+    });
+
+    // Handle customer form submission
+    const addCustomerForm = document.getElementById('addCustomerForm');
+    const saveCustomerBtn = document.getElementById('saveCustomerBtn');
+    const customerFormErrors = document.getElementById('customerFormErrors');
+    const customerErrorList = document.getElementById('customerErrorList');
+
+    addCustomerForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        // Hide previous errors
+        customerFormErrors.classList.add('d-none');
+        customerErrorList.innerHTML = '';
+
+        // Disable submit button
+        saveCustomerBtn.disabled = true;
+        saveCustomerBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Saving...';
+
+        const formData = new FormData(addCustomerForm);
+        const customerType = formData.get('customer_type');
+
+        // Set the appropriate route based on customer type
+        const route = customerType === 'individual'
+            ? '{{ route("customer.store.individual") }}'
+            : '{{ route("customer.store") }}';
+
+        fetch(route, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json'
+            },
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Add new customer to dropdown
+                const customerSelect = document.getElementById('customer_id');
+                const newOption = new Option(
+                    data.customer.client_name + ' - ' + data.customer.facility_name,
+                    data.customer.id,
+                    true,
+                    true
+                );
+                customerSelect.add(newOption);
+
+                // Close modal
+                const modal = bootstrap.Modal.getInstance(document.getElementById('addCustomerModal'));
+                modal.hide();
+
+                // Reset form
+                addCustomerForm.reset();
+
+                // Show success message
+                alert('Customer added successfully!');
+            } else {
+                // Show errors
+                if (data.errors) {
+                    customerFormErrors.classList.remove('d-none');
+                    for (let field in data.errors) {
+                        data.errors[field].forEach(error => {
+                            const li = document.createElement('li');
+                            li.textContent = error;
+                            customerErrorList.appendChild(li);
+                        });
+                    }
+                } else if (data.message) {
+                    customerFormErrors.classList.remove('d-none');
+                    const li = document.createElement('li');
+                    li.textContent = data.message;
+                    customerErrorList.appendChild(li);
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            customerFormErrors.classList.remove('d-none');
+            const li = document.createElement('li');
+            li.textContent = 'An error occurred. Please try again.';
+            customerErrorList.appendChild(li);
+        })
+        .finally(() => {
+            // Re-enable submit button
+            saveCustomerBtn.disabled = false;
+            saveCustomerBtn.innerHTML = '<i class="bx bx-save"></i> Save Customer';
+        });
+    });
+
+    // Reset modal when closed
+    document.getElementById('addCustomerModal').addEventListener('hidden.bs.modal', function() {
+        addCustomerForm.reset();
+        customerFormErrors.classList.add('d-none');
+        customerErrorList.innerHTML = '';
+        customerGroupField.style.display = 'block';
+        groupIdSelect.required = true;
+        document.getElementById('typeGroup').checked = true;
+    });
+});
 </script>
 @endsection
 
