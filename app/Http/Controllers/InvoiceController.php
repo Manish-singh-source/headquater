@@ -290,12 +290,15 @@ class InvoiceController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'customer_id' => 'required|exists:customers,id',
-            'warehouse_id' => 'required|exists:warehouses,id',
             'invoice_date' => 'required|date',
             'po_number' => 'nullable|string|max:255',
             'products' => 'required|array|min:1',
+            'products.*.warehouse_id' => 'required|exists:warehouses,id',
             'products.*.product_id' => 'required|exists:products,id',
+            'products.*.hsn' => 'nullable|string|max:255',
             'products.*.quantity' => 'required|numeric|min:0.01',
+            'products.*.box_count' => 'nullable|integer|min:0',
+            'products.*.weight' => 'nullable|numeric|min:0',
             'products.*.unit_price' => 'required|numeric|min:0',
             'products.*.discount' => 'nullable|numeric|min:0',
             'products.*.tax' => 'nullable|numeric|min:0',
@@ -353,9 +356,10 @@ class InvoiceController extends Controller
                 $paymentStatus = 'unpaid';
             }
 
-            // Create invoice
+            // Create invoice with warehouse_id = 0 (meaning "All Warehouses")
+            // Individual warehouse info is stored in invoice_details table
             $invoice = Invoice::create([
-                'warehouse_id' => $request->warehouse_id,
+                'warehouse_id' => 0,
                 'invoice_number' => $invoiceNumber,
                 'customer_id' => $request->customer_id,
                 'sales_order_id' => null,
@@ -384,8 +388,12 @@ class InvoiceController extends Controller
 
                 InvoiceDetails::create([
                     'invoice_id' => $invoice->id,
+                    'warehouse_id' => $item['warehouse_id'],
                     'product_id' => $item['product_id'],
+                    'hsn' => $item['hsn'] ?? null,
                     'quantity' => $item['quantity'],
+                    'box_count' => $item['box_count'] ?? null,
+                    'weight' => $item['weight'] ?? null,
                     'unit_price' => $item['unit_price'],
                     'discount' => $discount,
                     'amount' => $amount,
@@ -395,7 +403,7 @@ class InvoiceController extends Controller
                 ]);
 
                 // Update warehouse stock
-                $stock = WarehouseStock::where('warehouse_id', $request->warehouse_id)
+                $stock = WarehouseStock::where('warehouse_id', $item['warehouse_id'])
                     ->where('sku', $product->sku)
                     ->first();
 

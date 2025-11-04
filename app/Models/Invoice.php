@@ -51,6 +51,11 @@ class Invoice extends Model
         return $this->hasMany(InvoiceDetails::class);
     }
 
+    public function warehouseItems()
+    {
+        return $this->hasMany(InvoiceDetails::class)->with(['product', 'warehouse']);
+    }
+
     public function appointment()
     {
         return $this->hasOne(Appointment::class);

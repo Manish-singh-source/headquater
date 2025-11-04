@@ -9,8 +9,12 @@ class InvoiceDetails extends Model
     //
     protected $fillable = [
         'invoice_id',
+        'warehouse_id',
         'product_id',
+        'hsn',
         'quantity',
+        'box_count',
+        'weight',
         'unit_price',
         'discount',
         'amount',
@@ -32,6 +36,11 @@ class InvoiceDetails extends Model
         return $this->belongsTo(Product::class);
     }
 
+    public function warehouse()
+    {
+        return $this->belongsTo(Warehouse::class);
+    }
+
     public function tempOrder()
     {
         return $this->belongsTo(TempOrder::class, 'temp_order_id', 'id');
@@ -39,7 +48,7 @@ class InvoiceDetails extends Model
 
     public function salesOrderProduct()
     {
-        return $this->belongsTo(SalesOrderProduct::class, 'sales_order_product_id', 'id');  
+        return $this->belongsTo(SalesOrderProduct::class, 'sales_order_product_id', 'id');
     }
 
 }
