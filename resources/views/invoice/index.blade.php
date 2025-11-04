@@ -47,25 +47,79 @@
                     <!-- Tabs Navigation -->
                     <ul class="nav nav-tabs mb-3" id="invoiceTabs" role="tablist">
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link active" id="manual-tab" data-bs-toggle="tab" data-bs-target="#manual"
-                                    type="button" role="tab" aria-controls="manual" aria-selected="true">
-                                <i class="bx bx-receipt me-1"></i>Manual Invoices ({{ $manualInvoices->count() }})
+                            <button class="nav-link active" id="sales-order-tab" data-bs-toggle="tab" data-bs-target="#sales-order"
+                                    type="button" role="tab" aria-controls="sales-order" aria-selected="true">
+                                <i class="bx bx-cart me-1"></i>Sales Order Invoices ({{ $salesOrderInvoices->count() }})
                             </button>
                         </li>
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="sales-order-tab" data-bs-toggle="tab" data-bs-target="#sales-order"
-                                    type="button" role="tab" aria-controls="sales-order" aria-selected="false">
-                                <i class="bx bx-cart me-1"></i>Sales Order Invoices ({{ $salesOrderInvoices->count() }})
+                            <button class="nav-link" id="manual-tab" data-bs-toggle="tab" data-bs-target="#manual"
+                                    type="button" role="tab" aria-controls="manual" aria-selected="false">
+                                <i class="bx bx-receipt me-1"></i>Manual Invoices ({{ $manualInvoices->count() }})
                             </button>
                         </li>
                     </ul>
 
                     <!-- Tabs Content -->
                     <div class="tab-content" id="invoiceTabsContent">
-                        <!-- Manual Invoices Tab -->
-                        <div class="tab-pane fade show active" id="manual" role="tabpanel" aria-labelledby="manual-tab">
+                        <!-- Sales Order Invoices Tab -->
+                        <div class="tab-pane fade show active" id="sales-order" role="tabpanel" aria-labelledby="sales-order-tab">
                             <div class="table-responsive white-space-nowrap">
-                                <table class="table table-striped table-hover">
+                                <table id="example" class="table table-striped table-hover">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th style="width:40px;"><input class="form-check-input" type="checkbox" id="selectAllSales"></th>
+                                            <th>Order&nbsp;ID</th>
+                                            <th>Customer&nbsp;Group&nbsp;Name</th>
+                                            <th>Ordered&nbsp;Date</th>
+                                            <th>Status</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @forelse ($salesOrderInvoices as $invoice)
+                                            <tr>
+                                                <td><input class="form-check-input" type="checkbox"></td>
+                                                <td>#{{ $invoice->sales_order_id }}</td>
+                                                <td>{{ $invoice->salesOrder?->customerGroup?->name ?? 'N/A' }}</td>
+                                                <td>{{ $invoice->salesOrder?->created_at ? $invoice->salesOrder->created_at->format('d-M-Y') : 'N/A' }}</td>
+                                                <td>
+                                                    @if($invoice->salesOrder)
+                                                        <span class="badge {{ $invoice->salesOrder->status == 'completed' ? 'bg-success' : 'bg-warning' }}">
+                                                            {{ ucfirst($invoice->salesOrder->status) }}
+                                                        </span>
+                                                    @else
+                                                        <span class="badge bg-secondary">N/A</span>
+                                                    @endif
+                                                </td>
+                                                <td>
+                                                    <a aria-label="anchor" href="{{ route('invoices.view', $invoice->sales_order_id) }}"
+                                                        class="btn btn-icon btn-sm bg-primary-subtle me-1"
+                                                        data-bs-toggle="tooltip" data-bs-original-title="View">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13"
+                                                            viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                                            class="feather feather-eye text-primary">
+                                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                                            <circle cx="12" cy="12" r="3"></circle>
+                                                        </svg>
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        @empty
+                                            <tr>
+                                                <td colspan="6" class="text-center text-muted py-4">No sales order invoices found</td>
+                                            </tr>
+                                        @endforelse
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Manual Invoices Tab -->
+                        <div class="tab-pane fade" id="manual" role="tabpanel" aria-labelledby="manual-tab">
+                            <div class="table-responsive white-space-nowrap">
+                                <table id="example" class="table table-striped table-hover">
                                     <thead class="table-light">
                                         <tr>
                                             <th style="width:40px;"><input class="form-check-input" type="checkbox" id="selectAllManual"></th>
@@ -130,81 +184,6 @@
                                         @empty
                                             <tr>
                                                 <td colspan="9" class="text-center text-muted py-4">No manual invoices found</td>
-                                            </tr>
-                                        @endforelse
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-
-                        <!-- Sales Order Invoices Tab -->
-                        <div class="tab-pane fade" id="sales-order" role="tabpanel" aria-labelledby="sales-order-tab">
-                            <div class="table-responsive white-space-nowrap">
-                                <table class="table table-striped table-hover">
-                                    <thead class="table-light">
-                                        <tr>
-                                            <th style="width:40px;"><input class="form-check-input" type="checkbox" id="selectAllSales"></th>
-                                            <th>Invoice&nbsp;No</th>
-                                            <th>PO&nbsp;No</th>
-                                            <th>Customer&nbsp;Name</th>
-                                            <th>Due&nbsp;Date</th>
-                                            <th>Amount</th>
-                                            <th>Paid&nbsp;Amount</th>
-                                            <th>Due&nbsp;Amount</th>
-                                            <th>Action</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @forelse ($salesOrderInvoices as $invoice)
-                                            <tr>
-                                                <td><input class="form-check-input" type="checkbox"></td>
-                                                <td>{{ $invoice->invoice_number }}</td>
-                                                <td>{{ $invoice->po_number ?? 'N/A' }}</td>
-                                                <td>{{ $invoice->customer->client_name ?? 'N/A' }}</td>
-                                                <td>{{ $invoice->appointment?->appointment_date ?? 'N/A' }}</td>
-                                                <td>₹{{ number_format($invoice->total_amount, 2) }}</td>
-                                                <td>₹{{ number_format($invoice->payments->sum('amount'), 2) }}</td>
-                                                <td>₹{{ number_format($invoice->total_amount - $invoice->payments->sum('amount'), 2) }}</td>
-                                                <td>
-                                                    <a aria-label="anchor" href="{{ route('invoices-details', $invoice->id) }}"
-                                                        class="btn btn-icon btn-sm bg-primary-subtle me-1"
-                                                        data-bs-toggle="tooltip" data-bs-original-title="View">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13"
-                                                            viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                                                            class="feather feather-eye text-primary">
-                                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                                            <circle cx="12" cy="12" r="3"></circle>
-                                                        </svg>
-                                                    </a>
-                                                    @if (!$invoice->appointment || !$invoice->appointment->appointment_date || !$invoice->appointment->pod || !$invoice->appointment->grn)
-                                                        <a type="button" class="btn btn-icon btn-sm bg-success-subtle me-1"
-                                                            data-bs-toggle="modal" data-bs-target="#appointmentView-{{ $invoice->id }}">
-                                                            <img width="15" height="15"
-                                                                src="https://img.icons8.com/ios/50/calendar--v1.png"
-                                                                alt="calendar" />
-                                                        </a>
-                                                    @endif
-                                                    @if (!$invoice->dns)
-                                                        <a type="button" class="btn btn-icon btn-sm bg-success-subtle me-1"
-                                                            data-bs-toggle="modal" data-bs-target="#dnView-{{ $invoice->id }}">
-                                                            <img width="15" height="15"
-                                                                src="https://img.icons8.com/ios/50/document--v1.png"
-                                                                alt="document" />
-                                                        </a>
-                                                    @endif
-                                                    <a type="button" class="btn btn-icon btn-sm bg-success-subtle me-1"
-                                                        data-bs-toggle="modal" data-bs-target="#paymentView-{{ $invoice->id }}">
-                                                        <img width="15" height="15"
-                                                            src="https://img.icons8.com/ios/50/bank-card-back-side--v1.png"
-                                                            alt="payment" />
-                                                    </a>
-                                                    @include('invoice.partials.modals', ['invoice' => $invoice])
-                                                </td>
-                                            </tr>
-                                        @empty
-                                            <tr>
-                                                <td colspan="9" class="text-center text-muted py-4">No sales order invoices found</td>
                                             </tr>
                                         @endforelse
                                     </tbody>

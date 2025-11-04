@@ -24,7 +24,7 @@ class InvoiceController extends Controller
     public function index()
     {
         // Fetch all invoices with relationships
-        $invoices = Invoice::with(['warehouse', 'customer', 'salesOrder', 'appointment', 'dns', 'payments'])
+        $invoices = Invoice::with(['warehouse', 'customer', 'salesOrder.customerGroup', 'appointment', 'dns', 'payments'])
             ->orderBy('created_at', 'desc')
             ->get();
 
@@ -54,15 +54,32 @@ class InvoiceController extends Controller
             'date' => date('m/d/Y'),
         ];
         $invoice = Invoice::with(['warehouse', 'customer', 'salesOrder'])->findOrFail($id);
-        $salesOrderProducts = SalesOrderProduct::with('product', 'tempOrder')->where('sales_order_id', $invoice->sales_order_id)->where('customer_id', $invoice->customer_id)->get();
+        $invoiceDetails = InvoiceDetails::with('product', 'tempOrder', 'salesOrderProduct')->where('invoice_id', $id)->get();
+
+        // Check if it's a sales order invoice or manual invoice
+        if ($invoice->sales_order_id) {
+            // Sales Order Invoice
+            $salesOrderProducts = SalesOrderProduct::with('product', 'tempOrder')
+                ->where('sales_order_id', $invoice->sales_order_id)
+                ->where('customer_id', $invoice->customer_id)
+                ->get();
+
+            $totalWeight = $salesOrderProducts->sum('weight');
+            $totalBoxCount = $salesOrderProducts->sum('box_count');
+        } else {
+            // Manual Invoice - get totals from invoice_details
+            $salesOrderProducts = collect();
+            $totalWeight = $invoiceDetails->sum('weight');
+            $totalBoxCount = $invoiceDetails->sum('box_count');
+        }
 
         $data = [
             'title' => 'Invoice',
             'invoice' => $invoice,
-            'invoiceDetails' => InvoiceDetails::with('product', 'tempOrder', 'salesOrderProduct')->where('invoice_id', $id)->get(),
+            'invoiceDetails' => $invoiceDetails,
             'salesOrderProducts' => $salesOrderProducts,
-            'TotalWeight' => $salesOrderProducts->sum('weight'),
-            'TotalBoxCount' => $salesOrderProducts->sum('box_count'),
+            'TotalWeight' => $totalWeight,
+            'TotalBoxCount' => $totalBoxCount,
         ];
 
         $pdf = \PDF::loadView('invoice/invoice-pdf', $data);

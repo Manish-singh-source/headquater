@@ -279,6 +279,37 @@
                                 </div>
                             </div>
 
+                            <!-- Bill To Address Section -->
+                            <h6 class="mt-4 mb-3 text-primary"><i class="bx bx-map"></i> Bill To Address</h6>
+
+                            <div class="mb-3">
+                                <label class="form-label">Billing Address</label>
+                                <textarea name="billing_address" id="billing_address" class="form-control" rows="2" placeholder="Enter Billing Address"></textarea>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label">Billing Country</label>
+                                    <input type="text" name="billing_country" id="billing_country" class="form-control" placeholder="Enter Country">
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label">Billing State</label>
+                                    <input type="text" name="billing_state" id="billing_state" class="form-control" placeholder="Enter State">
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label">Billing City</label>
+                                    <input type="text" name="billing_city" id="billing_city" class="form-control" placeholder="Enter City">
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Billing ZIP</label>
+                                <input type="text" name="billing_zip" id="billing_zip" class="form-control" placeholder="Enter ZIP Code">
+                            </div>
+
+                            <!-- Ship To Address Section -->
+                            <h6 class="mt-4 mb-3 text-primary"><i class="bx bx-package"></i> Ship To Address</h6>
+
                             <div class="mb-3">
                                 <label class="form-label">Shipping Address</label>
                                 <textarea name="shipping_address" id="shipping_address" class="form-control" rows="2" placeholder="Enter Shipping Address"></textarea>
