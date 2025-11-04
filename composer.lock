@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "f1dc5d2b139442db5eb4e72624d49ed2",
+    "content-hash": "f1037d1f85e32b7d6afbe7e21e5e96c0",
     "packages": [
         {
             "name": "barryvdh/laravel-dompdf",
@@ -7349,16 +7349,16 @@
         },
         {
             "name": "laravel/boost",
-            "version": "v1.0.21",
+            "version": "v1.1.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/laravel/boost.git",
-                "reference": "149986e8e346ca435befa6bb92f51bbf09063772"
+                "reference": "4bd1692c064b2135eb2f8f7bd8bcb710e5e75f86"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laravel/boost/zipball/149986e8e346ca435befa6bb92f51bbf09063772",
-                "reference": "149986e8e346ca435befa6bb92f51bbf09063772",
+                "url": "https://api.github.com/repos/laravel/boost/zipball/4bd1692c064b2135eb2f8f7bd8bcb710e5e75f86",
+                "reference": "4bd1692c064b2135eb2f8f7bd8bcb710e5e75f86",
                 "shasum": ""
             },
             "require": {
@@ -7369,7 +7369,7 @@
                 "illuminate/support": "^10.0|^11.0|^12.0",
                 "laravel/mcp": "^0.1.1",
                 "laravel/prompts": "^0.1.9|^0.3",
-                "laravel/roster": "^0.2.4",
+                "laravel/roster": "^0.2.5",
                 "php": "^8.1"
             },
             "require-dev": {
@@ -7410,7 +7410,7 @@
                 "issues": "https://github.com/laravel/boost/issues",
                 "source": "https://github.com/laravel/boost"
             },
-            "time": "2025-09-03T08:23:46+00:00"
+            "time": "2025-09-18T07:33:27+00:00"
         },
         {
             "name": "laravel/mcp",

@@ -25,6 +25,11 @@ class Customer extends Model
         return $this->hasMany(SalesOrderProduct::class, 'customer_id', 'id');
     }
 
+    public function invoices()
+    {
+        return $this->hasMany(Invoice::class, 'customer_id', 'id');
+    }
+
     /**
      * Scopes
      */
