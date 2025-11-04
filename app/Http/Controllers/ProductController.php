@@ -341,6 +341,7 @@ class ProductController extends Controller
             'sets_ctn' => 'nullable|integer|min:0',
             'basic_rate' => 'nullable|numeric|min:0',
             'original_quantity' => 'nullable|integer|min:0',
+            'available_quantity' => 'nullable|integer|min:0',
         ]);
 
         if ($validator->fails()) {
@@ -377,18 +378,23 @@ class ProductController extends Controller
             $product->update($updateData);
 
             // Update warehouse stock if provided
-            if ($request->has('original_quantity')) {
+            if ($request->has('original_quantity') || $request->has('available_quantity')) {
                 $warehouseStock = WarehouseStock::where('sku', $product->sku)->first();
 
                 if ($warehouseStock) {
-                    $originalQty = (int)$request->original_quantity;
-                    $blockQty = (int)($warehouseStock->block_quantity ?? 0);
-                    $availableQty = max(0, $originalQty - $blockQty);
+                    $updateStockData = [];
 
-                    $warehouseStock->update([
-                        'original_quantity' => $originalQty,
-                        'available_quantity' => $availableQty,
-                    ]);
+                    // Update original quantity if provided
+                    if ($request->has('original_quantity')) {
+                        $updateStockData['original_quantity'] = (int)$request->original_quantity;
+                    }
+
+                    // Update available quantity if provided
+                    if ($request->has('available_quantity')) {
+                        $updateStockData['available_quantity'] = (int)$request->available_quantity;
+                    }
+
+                    $warehouseStock->update($updateStockData);
                 }
             }
 

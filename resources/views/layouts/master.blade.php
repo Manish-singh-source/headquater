@@ -344,6 +344,10 @@
                                       class="material-icons-outlined">arrow_right</i>Customers Group</a>
                           </li>
 
+                          <li><a href="{{ route('customer.index') }}"><i
+                                      class="material-icons-outlined">arrow_right</i>Customers</a>
+                          </li>
+
                           <li><a href="{{ route('vendor.index') }}"><i
                                       class="material-icons-outlined">arrow_right</i>Vendor</a>
                           </li>

@@ -281,6 +281,11 @@
                                 <input type="number" name="original_quantity" id="original_quantity"
                                     class="form-control">
                             </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="available_quantity" class="form-label">Available Quantity</label>
+                                <input type="number" name="available_quantity" id="available_quantity"
+                                    class="form-control">
+                            </div>
                         </div>
                     </div>
                     <div class="modal-footer">

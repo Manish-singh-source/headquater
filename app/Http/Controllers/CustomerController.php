@@ -18,8 +18,41 @@ use Spatie\SimpleExcel\SimpleExcelReader;
 class CustomerController extends Controller
 {
     /**
+     * Display all customers list
+     *
+     * @param Request $request
+     * @return \Illuminate\View\View
+     */
+    public function index(Request $request)
+    {
+        try {
+            $status = $request->query('status');
+
+            $customers = Customer::query();
+
+            if (!is_null($status)) {
+                $status = (int)$status;
+
+                if ($status === 1) {
+                    $customers->active();
+                } elseif ($status === 0) {
+                    $customers->inactive();
+                }
+            }
+
+            $customers = $customers->latest()
+                ->with('groupInfo.customerGroup')
+                ->paginate(15);
+
+            return view('customer.index', compact('customers', 'status'));
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Error retrieving customers: ' . $e->getMessage());
+        }
+    }
+
+    /**
      * Show create customer form
-     * 
+     *
      * @param int $g_id - Customer group ID
      * @return \Illuminate\View\View
      */
@@ -347,6 +380,11 @@ class CustomerController extends Controller
             'shipping_state' => 'nullable|min:2|max:100',
             'shipping_city' => 'nullable|min:2|max:100',
             'shipping_zip' => 'nullable|min:4|max:10',
+            'billing_address' => 'nullable|min:5|max:255',
+            'billing_country' => 'nullable|min:2|max:100',
+            'billing_state' => 'nullable|min:2|max:100',
+            'billing_city' => 'nullable|min:2|max:100',
+            'billing_zip' => 'nullable|min:4|max:10',
             'status' => 'nullable|in:1,0',
         ]);
 
@@ -376,6 +414,11 @@ class CustomerController extends Controller
                 'shipping_state' => trim($request->shipping_state ?? ''),
                 'shipping_city' => trim($request->shipping_city ?? ''),
                 'shipping_zip' => trim($request->shipping_zip ?? ''),
+                'billing_address' => trim($request->billing_address ?? ''),
+                'billing_country' => trim($request->billing_country ?? ''),
+                'billing_state' => trim($request->billing_state ?? ''),
+                'billing_city' => trim($request->billing_city ?? ''),
+                'billing_zip' => trim($request->billing_zip ?? ''),
             ]);
 
             // Add to customer group if provided

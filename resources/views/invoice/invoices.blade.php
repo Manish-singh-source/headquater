@@ -8,64 +8,62 @@
                 <div class="">
                     <nav aria-label="breadcrumb">
                         <ol class="breadcrumb mb-0 p-0">
-                            <li class="breadcrumb-item"><a href="javascript:;"><i class="bx bx-home-alt"></i></a>
-                            </li>
-                            <li class="breadcrumb-item active" aria-current="page">Invoices List</li>
+                            <li class="breadcrumb-item"><a href="{{ route('invoices') }}"><i class="bx bx-home-alt"></i></a></li>
+                            <li class="breadcrumb-item active" aria-current="page">Sales Order Invoices</li>
                         </ol>
                     </nav>
                 </div>
-                <div class="row g-3">
-                    <div class="col-12 col-md-auto">
-                        <div class="d-flex align-items-center gap-2 justify-content-lg-end">
-                            <a href="{{ route('invoices.manual.create') }}" class="btn btn-success px-4">
-                                <i class="bi bi-plus-lg me-2"></i>Create Manual Invoice
-                            </a>
-                            <a href="{{ route('create-invoice') }}" class="btn btn-primary px-4">
-                                <i class="bi bi-plus-lg me-2"></i>Create Invoice
-                            </a>
-                        </div>
-                    </div>
-                </div>
             </div>
+
+            @if(session('success'))
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    {{ session('success') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            @endif
+
+            @if(session('error'))
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    {{ session('error') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            @endif
 
             <div class="card mt-4">
                 <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0">Invoice List</h5>
+                       
+                    </div>
                     <div class="customer-table">
                         <div class="table-responsive white-space-nowrap">
-                            <table id="example" class="table table-striped">
+                            <table id="example" class="table table-striped table-hover">
                                 <thead class="table-light">
                                     <tr>
-                                        <th>
-                                            <input class="form-check-input" type="checkbox">
-                                        </th>
-                                        <th>Order&nbsp;Id</th>
+                                        <th style="width:40px;"><input class="form-check-input" type="checkbox" id="selectAll"></th>
+                                        <th>Order&nbsp;ID</th>
                                         <th>Invoice&nbsp;No</th>
                                         <th>PO&nbsp;No</th>
                                         <th>Customer&nbsp;Name</th>
                                         <th>Due&nbsp;Date</th>
                                         <th>Amount</th>
-                                        <th>Paid Amount</th>
-                                        <th>Due Amount</th>
+                                        <th>Paid&nbsp;Amount</th>
+                                        <th>Due&nbsp;Amount</th>
                                         <th>Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach ($invoices as $invoice)
+                                    @forelse ($invoices as $invoice)
                                         <tr>
-                                            <td>
-                                                <input class="form-check-input" type="checkbox">
-                                            </td>
+                                            <td><input class="form-check-input" type="checkbox"></td>
                                             <td>#{{ $invoice->sales_order_id }}</td>
                                             <td>{{ $invoice->invoice_number }}</td>
-                                            <td>{{ $invoice->po_number }}</td>
-                                            <td>{{ $invoice->customer->client_name }}</td>
-                                            <td>
-                                                {{ $invoice->appointment?->appointment_date ?? 'NA' }}
-                                            </td>
-                                            <td>{{ number_format($invoice->total_amount, 2) }}</td>
-                                            <td>{{ number_format($invoice->payments->sum('amount'), 2) }}</td>
-                                            <td>{{ number_format($invoice->total_amount - $invoice->payments->sum('amount'), 2) }}
-                                            </td>
+                                            <td>{{ $invoice->po_number ?? 'N/A' }}</td>
+                                            <td>{{ $invoice->customer->client_name ?? 'N/A' }}</td>
+                                            <td>{{ $invoice->appointment?->appointment_date ?? 'N/A' }}</td>
+                                            <td>₹{{ number_format($invoice->total_amount, 2) }}</td>
+                                            <td>₹{{ number_format($invoice->payments->sum('amount'), 2) }}</td>
+                                            <td>₹{{ number_format($invoice->total_amount - $invoice->payments->sum('amount'), 2) }}</td>
                                             <td>
                                                 <a aria-label="anchor" href="{{ route('invoices-details', $invoice->id) }}"
                                                     class="btn btn-icon btn-sm bg-primary-subtle me-1"
@@ -78,234 +76,71 @@
                                                         <circle cx="12" cy="12" r="3"></circle>
                                                     </svg>
                                                 </a>
-                                                @if (
-                                                    !$invoice->appointment ||
-                                                        !$invoice->appointment->appointment_date ||
-                                                        !$invoice->appointment->pod ||
-                                                        !$invoice->appointment->grn)
+                                                @if (!$invoice->appointment || !$invoice->appointment->appointment_date || !$invoice->appointment->pod || !$invoice->appointment->grn)
                                                     <a type="button" class="btn btn-icon btn-sm bg-success-subtle me-1"
-                                                        data-bs-toggle="modal"
-                                                        data-bs-target="#appointmentView-{{ $invoice->id }}">
+                                                        data-bs-toggle="modal" data-bs-target="#appointmentView-{{ $invoice->id }}">
                                                         <img width="15" height="15"
                                                             src="https://img.icons8.com/ios/50/calendar--v1.png"
-                                                            alt="bank-card-back-side--v1" />
+                                                            alt="calendar" />
                                                     </a>
                                                 @endif
                                                 @if (!$invoice->dns)
                                                     <a type="button" class="btn btn-icon btn-sm bg-success-subtle me-1"
-                                                        data-bs-toggle="modal"
-                                                        data-bs-target="#dnView-{{ $invoice->id }}">
+                                                        data-bs-toggle="modal" data-bs-target="#dnView-{{ $invoice->id }}">
                                                         <img width="15" height="15"
                                                             src="https://img.icons8.com/ios/50/document--v1.png"
-                                                            alt="bank-card-back-side--v1" />
+                                                            alt="document" />
                                                     </a>
                                                 @endif
-                                                @if ($invoice->payments->sum('amount') < $invoice->total_amount)
                                                 <a type="button" class="btn btn-icon btn-sm bg-success-subtle me-1"
-                                                    data-bs-toggle="modal"
-                                                    data-bs-target="#paymentView-{{ $invoice->id }}">
+                                                    data-bs-toggle="modal" data-bs-target="#paymentView-{{ $invoice->id }}">
                                                     <img width="15" height="15"
                                                         src="https://img.icons8.com/ios/50/bank-card-back-side--v1.png"
-                                                        alt="bank-card-back-side--v1" />
+                                                        alt="payment" />
                                                 </a>
-                                                @endif
-                                                <div class="modal fade" id="appointmentView-{{ $invoice->id }}"
-                                                    data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
-                                                    aria-labelledby="staticBackdropLabel" aria-hidden="true">
-                                                    <div class="modal-dialog">
-                                                        <div class="modal-content">
-                                                            <div class="modal-header">
-                                                                <h1 class="modal-title fs-5" id="staticBackdropLabel">Update
-                                                                    Inovice Details</h1>
-                                                                <button type="button" class="btn-close"
-                                                                    data-bs-dismiss="modal" aria-label="Close"></button>
-                                                            </div>
-                                                            <form method="POST"
-                                                                action="{{ route('invoices.appointment.update', $invoice->id) }}"
-                                                                enctype="multipart/form-data">
-                                                                @csrf
-                                                                @method('POST')
-                                                                <div class="modal-body">
-                                                                    <div class="col-12 mb-3">
-                                                                        <label for="appointment_date"
-                                                                            class="form-label">Appointment Date</label>
-                                                                        <input type="date" name="appointment_date"
-                                                                            id="appointment_date" class="form-control"
-                                                                            value="{{ $invoice->appointment->appointment_date ?? '' }}">
-                                                                    </div>
-                                                                    <div class="col-12 mb-3">
-                                                                        <label for="pod" class="form-label">Upload
-                                                                            POD</label>
-                                                                        <input type="file" name="pod"
-                                                                            id="pod" class="form-control">
-                                                                        @if ($invoice->appointment && $invoice->appointment->pod)
-                                                                            <a href="{{ asset('uploads/pod/' . $invoice->appointment->pod) }}"
-                                                                                target="_blank">View POD</a>
-                                                                        @endif
-                                                                    </div>
-                                                                    <div class="col-12 mb-3">
-                                                                        <label for="grn" class="form-label">Upload
-                                                                            GRN</label>
-                                                                        <input type="file" name="grn"
-                                                                            id="grn" class="form-control">
-                                                                        @if ($invoice->appointment && $invoice->appointment->grn)
-                                                                            <a href="{{ asset('uploads/grn/' . $invoice->appointment->grn) }}"
-                                                                                target="_blank">View GRN</a>
-                                                                        @endif
-                                                                    </div>
-                                                                </div>
-                                                                <div class="modal-footer">
-                                                                    <button type="button" class="btn btn-secondary"
-                                                                        data-bs-dismiss="modal">Close</button>
-                                                                    <input type="submit" class="btn btn-primary"
-                                                                        value="Submit" />
-                                                                </div>
-                                                            </form>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div class="modal fade" id="dnView-{{ $invoice->id }}"
-                                                    data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
-                                                    aria-labelledby="staticBackdropLabel" aria-hidden="true">
-                                                    <div class="modal-dialog">
-                                                        <div class="modal-content">
-                                                            <div class="modal-header">
-                                                                <h1 class="modal-title fs-5" id="staticBackdropLabel">
-                                                                    Update
-                                                                    DN Details</h1>
-                                                                <button type="button" class="btn-close"
-                                                                    data-bs-dismiss="modal" aria-label="Close"></button>
-                                                            </div>
-                                                            <form method="POST"
-                                                                action="{{ route('invoice.dn.update', $invoice->id) }}"
-                                                                enctype="multipart/form-data">
-                                                                @csrf
-                                                                @method('POST')
-                                                                <div class="modal-body">
-                                                                    <div class="col-12 mb-3">
-                                                                        <label for="dn_amount" class="form-label">DN
-                                                                            Amount<span
-                                                                                class="text-danger">*</span></label>
-                                                                        <input type="text" name="dn_amount"
-                                                                            id="dn_amount" class="form-control"
-                                                                            value="" required=""
-                                                                            placeholder="Upload Amount">
-                                                                    </div>
-                                                                    <div class="col-12 mb-3">
-                                                                        <label for="dn_reason" class="form-label">DN
-                                                                            Reason<span
-                                                                                class="text-danger">*</span></label>
-                                                                        <input type="text" name="dn_reason"
-                                                                            id="dn_reason" class="form-control"
-                                                                            value="" required=""
-                                                                            placeholder="DN Reason">
-                                                                    </div>
-                                                                    <div class="col-12 mb-3">
-                                                                        <label for="dn_receipt" class="form-label">DN
-                                                                            Receipt <span
-                                                                                class="text-danger">*</span></label>
-                                                                        <input type="file" name="dn_receipt"
-                                                                            id="dn_receipt" class="form-control"
-                                                                            value="" required=""
-                                                                            placeholder="Upload ID Document">
-                                                                    </div>
-                                                                </div>
-                                                                <div class="modal-footer">
-                                                                    <button type="button" class="btn btn-secondary"
-                                                                        data-bs-dismiss="modal">Close</button>
-                                                                    <button type="submit" id="holdOrder"
-                                                                        class="btn btn-primary">Submit</button>
-                                                                </div>
-                                                            </form>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <!-- Modal -->
-                                                <div class="modal fade" id="paymentView-{{ $invoice->id }}"
-                                                    data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
-                                                    aria-labelledby="staticBackdropLabel" aria-hidden="true">
-                                                    <div class="modal-dialog">
-                                                        <div class="modal-content">
-                                                            <div class="modal-header">
-                                                                <h1 class="modal-title fs-5" id="staticBackdropLabel">
-                                                                    Update Payment Details</h1>
-                                                                <button type="button" class="btn-close"
-                                                                    data-bs-dismiss="modal" aria-label="Close"></button>
-                                                            </div>
-                                                            <form method="POST"
-                                                                action="{{ route('invoice.payment.update', $invoice->id) }}"
-                                                                enctype="multipart/form-data">
-                                                                @csrf
-                                                                @method('post')
-                                                                <div class="modal-body">
-                                                                    <div class="col-12 mb-3">
-                                                                        <label for="utr_no" class="form-label">UTR
-                                                                            No<span class="text-danger">*</span></label>
-                                                                        <input type="text" name="utr_no"
-                                                                            id="utr_no" class="form-control"
-                                                                            value="" required=""
-                                                                            placeholder="UTR No">
-                                                                    </div>
-                                                                    <div class="col-12 mb-3">
-                                                                        <label for="payment_status"
-                                                                            class="form-label">Payment Amount<span
-                                                                                class="text-danger">*</span></label>
-                                                                        <input type="text" name="pay_amount"
-                                                                            class="form-control"
-                                                                            placeholder="Enter Payment Amount">
-                                                                    </div>
-                                                                    <div class="col-12 mb-3">
-                                                                        <label for="payment_method"
-                                                                            class="form-label">Payment Method<span
-                                                                                class="text-danger">*</span></label>
-                                                                        <select id="payment_method" name="payment_method"
-                                                                            class="form-select">
-                                                                            <option selected="" disabled>Payment Method
-                                                                            </option>
-                                                                            <option value="cash">Cash</option>
-                                                                            <option value="bank_transfers">Bank Transfers
-                                                                            </option>
-                                                                            <option value="checks">Checks</option>
-                                                                            <option value="mobile_payments">Mobile Payments
-                                                                            </option>
-                                                                        </select>
-                                                                    </div>
-                                                                    <div class="col-12 mb-3">
-                                                                        <label for="payment_status"
-                                                                            class="form-label">Payment Status<span
-                                                                                class="text-danger">*</span></label>
-                                                                        <select id="payment_status" name="payment_status"
-                                                                            class="form-select">
-                                                                            <option selected="" disabled>Payment Status
-                                                                            </option>
-                                                                            <option value="pending">Pending</option>
-                                                                            <option value="rejected">Rejected</option>
-                                                                            <option value="completed">Completed</option>
-                                                                        </select>
-                                                                    </div>
-                                                                </div>
-                                                                <div class="modal-footer">
-                                                                    <button type="button" class="btn btn-secondary"
-                                                                        data-bs-dismiss="modal">Close</button>
-                                                                    <button type="submit" id="holdOrder"
-                                                                        class="btn btn-primary">Submit</button>
-                                                                </div>
-                                                            </form>
-                                                        </div>
-                                                    </div>
-                                                </div>
+                                                @include('invoice.partials.modals', ['invoice' => $invoice])
                                             </td>
                                         </tr>
-                                    @endforeach
+                                    @empty
+                                        <tr>
+                                            <td colspan="10" class="text-center text-muted py-4">No invoices found for this sales order</td>
+                                        </tr>
+                                    @endforelse
                                 </tbody>
                             </table>
                         </div>
                     </div>
                 </div>
             </div>
-
-
         </div>
     </main>
     <!--end main wrapper-->
+@endsection
+
+@section('script')
+    <script>
+        $(document).ready(function() {
+            // DataTable is already initialized in master.blade.php for #example table
+            // This script adds additional functionality
+
+            // Export to Excel functionality
+            $('#exportInvoices').on('click', function() {
+                // Trigger the hidden Excel export button from DataTable
+                $('#example').DataTable().button('.buttons-excel').trigger();
+            });
+
+            // Select All checkbox functionality
+            $('#selectAll').on('click', function() {
+                var isChecked = $(this).prop('checked');
+                $('.form-check-input[type="checkbox"]').not('#selectAll').prop('checked', isChecked);
+            });
+
+            // Individual checkbox click
+            $('.form-check-input[type="checkbox"]').not('#selectAll').on('click', function() {
+                var totalCheckboxes = $('.form-check-input[type="checkbox"]').not('#selectAll').length;
+                var checkedCheckboxes = $('.form-check-input[type="checkbox"]:checked').not('#selectAll').length;
+                $('#selectAll').prop('checked', totalCheckboxes === checkedCheckboxes);
+            });
+        });
+    </script>
 @endsection

@@ -100,6 +100,7 @@ Route::middleware(['auth'])->group(function () {
 
     // Customer
     Route::controller(CustomerController::class)->group(function () {
+        Route::get('/customers', 'index')->name('customer.index');
         Route::get('/customer-create/{g_id}', 'create')->name('customer.create');
         Route::post('/customers/store', 'store')->name('customer.store');
         Route::post('/customers/store-individual', 'storeIndividual')->name('customer.store.individual');
