@@ -48,4 +48,9 @@ class SalesOrderProduct extends Model
     {
         return $this->belongsTo(Customer::class, 'customer_id', 'id');
     }
+
+    public function warehouseAllocations()
+    {
+        return $this->hasMany(WarehouseAllocation::class, 'sales_order_product_id', 'id');
+    }
 }
