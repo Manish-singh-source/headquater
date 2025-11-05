@@ -990,7 +990,7 @@ class SalesOrderController extends Controller
                 //         }
                 //     }
                 // }
-                // $salesOrder->status = $request->status;
+                $salesOrder->status = $request->status;
             } elseif ($request->status == 'completed') {
                 $salesOrder->status = $request->status;
             }

@@ -168,29 +168,7 @@
     <script>
         document.getElementById('changeStatus').addEventListener('change', function() {
             if (confirm('Are you sure you want to change status for order?')) {
-                const form = document.getElementById('statusForm');
-                form.addEventListener('submit', function() {
-                    // Get the current URL and extract the order ID
-                    const urlParts = window.location.pathname.split('/');
-                    const orderId = urlParts[urlParts.length - 2]; // Second to last segment
-                    
-                    // After successful submission, redirect to the ready-to-ship-detail page
-                    form.addEventListener('submit', function(e) {
-                        e.preventDefault();
-                        const formData = new FormData(form);
-                        fetch(form.action, {
-                            method: 'POST',
-                            body: formData
-                        })
-                        .then(response => {
-                            if (response.ok) {
-                                // Redirect to the ready-to-ship-detail page
-                                window.location.href = `/ready-to-ship-detail/${orderId}`;
-                            }
-                        });
-                    });
-                });
-                form.submit();
+                document.getElementById('statusForm').submit();
             }
         });
     </script>
