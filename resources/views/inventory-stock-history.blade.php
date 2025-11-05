@@ -23,7 +23,7 @@
                                     <i class="ti ti-file-text fs-24"></i>
                                 </span>
                                 <div class="ms-2">
-                                    <p class="text-dark mb-1">Total Product Available</p>
+                                    <p class="text-dark mb-1">Total Product </p>
                                     <div class="d-inline-flex align-items-center flex-wrap gap-2">
                                         <h4 class="text-dark">{{ $productsSum }}</h4>
                                         <!-- <span class="badge badge-soft-primary text-dark"><i class="ti ti-arrow-up me-1"></i>+22%</span> -->
@@ -32,6 +32,7 @@
                             </div>
                         </div>
                     </div>
+
                     <div class="col-xl-3 col-sm-6 col-12 d-flex">
                         <div class="card bg-white sale-widget flex-fill">
                             <div class="card-body d-flex align-items-center">
@@ -39,7 +40,24 @@
                                     <i class="ti ti-file-text fs-24"></i>
                                 </span>
                                 <div class="ms-2">
-                                    <p class="text-dark mb-1">Total Hold Products</p>
+                                    <p class="text-dark mb-1">Total Available Products </p>
+                                    <div class="d-inline-flex align-items-center flex-wrap gap-2">
+                                        <h4 class="text-dark">{{ $availableProductsSum }}</h4>
+                                        <!-- <span class="badge badge-soft-primary text-dark"><i class="ti ti-arrow-up me-1"></i>+22%</span> -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-xl-3 col-sm-6 col-12 d-flex">
+                        <div class="card bg-white sale-widget flex-fill">
+                            <div class="card-body d-flex align-items-center">
+                                <span class="sale-icon bg-white text-primary">
+                                    <i class="ti ti-file-text fs-24"></i>
+                                </span>
+                                <div class="ms-2">
+                                    <p class="text-dark mb-1">Total Blocked Products</p>
                                     <div class="d-inline-flex align-items-center flex-wrap gap-2">
                                         <h4 class="text-dark">{{ $blockProductsSum }}</h4>
                                         <!-- <span class="badge badge-soft-primary text-dark"><i class="ti ti-arrow-up me-1"></i>+22%</span> -->
@@ -48,7 +66,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-xl-3 col-sm-6 col-12 d-flex">
+                    {{-- <div class="col-xl-3 col-sm-6 col-12 d-flex">
                         <div class="card bg-white sale-widget flex-fill">
                             <div class="card-body d-flex align-items-center">
                                 <span class="sale-icon bg-white text-primary">
@@ -58,13 +76,13 @@
                                     <p class="text-dark mb-1">Total Shortage Products</p>
                                     <div class="d-inline-flex align-items-center flex-wrap gap-2">
                                         <h4 class="text-dark">0</h4>
-                                        <!-- <span class="badge badge-soft-primary text-dark"><i class="ti ti-arrow-up me-1"></i>+22%</span> -->
+                                        <span class="badge badge-soft-primary text-dark"><i class="ti ti-arrow-up me-1"></i>+22%</span> 
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="col-xl-3 col-sm-6 col-12 d-flex">
+                    </div> --}}
+                    {{-- <div class="col-xl-3 col-sm-6 col-12 d-flex">
                         <div class="card bg-white sale-widget flex-fill">
                             <div class="card-body d-flex align-items-center">
                                 <span class="sale-icon bg-white text-primary">
@@ -79,7 +97,7 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </div> --}}
                 </div>
 
             </div>
@@ -164,7 +182,7 @@
                                         {{-- <th>po&nbsp;status</th> --}}
                                         <th>Original&nbsp;Quantity</th>
                                         <th>Available&nbsp;Quantity</th>
-                                        <th>Hold&nbsp;Qty</th>
+                                        <th>Block&nbsp;Qty</th>
                                         <th>Date</th>
                                     </tr>
                                 </thead>

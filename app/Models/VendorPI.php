@@ -28,4 +28,9 @@ class VendorPI extends Model
     {
         return $this->hasOne(Vendor::class, 'vendor_code', 'vendor_code');
     }
+
+    public function payments()
+    {
+        return $this->hasMany(VendorPayment::class, 'vendor_pi_id', 'id');
+    }
 }

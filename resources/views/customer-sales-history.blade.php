@@ -260,7 +260,7 @@
                                         <td>{{ $invoice->appointment?->lr ? 'Yes' : 'No' }}</td>
                                         <td>{{ $invoice->dns?->dn_amount ? 'Yes' : 'No' }}</td>
                                         <td>{{ $invoice->appointment?->grn ? 'Yes' : 'No' }}</td>
-                                        <td>{{ isset($invoice->payments?->first()->payment_status) != null && $invoice->payments?->first()->payment_status == 'completed' ? 'paid' : 'not paid' }}
+                                        <td>{{ $invoice->payment_status ? ucfirst($invoice->payment_status) : 'Not Paid' }}
                                         </td>
                                         <td>
                                             <a href="{{ route('invoice.downloadPdf', $invoice->id) }}" target="_blank"
