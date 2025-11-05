@@ -16,13 +16,17 @@ use App\Models\SkuMapping;
 use App\Models\TempOrder;
 use App\Models\Vendor;
 use App\Models\Warehouse;
+use App\Models\WarehouseAllocation;
 use App\Models\WarehouseStock;
 use App\Models\WarehouseStockLog;
 use App\Services\NotificationService;
+use App\Services\WarehouseAllocationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Spatie\SimpleExcel\SimpleExcelReader;
@@ -130,6 +134,9 @@ class SalesOrderController extends Controller
             return redirect()->back()->with(['csv_file' => 'Please upload a CSV file.']);
         }
 
+        // Check if auto allocation is selected
+        $isAutoAllocation = ($warehouse_id === 'auto');
+
         DB::beginTransaction();
         try {
             $file = $request->file('csv_file')->getPathname();
@@ -156,7 +163,7 @@ class SalesOrderController extends Controller
 
             // Creating a new Sales order for customer
             $salesOrder = new SalesOrder;
-            $salesOrder->warehouse_id = $warehouse_id;
+            $salesOrder->warehouse_id = $isAutoAllocation ? null : $warehouse_id;
             $salesOrder->customer_group_id = $customer_group_id;
             $salesOrder->save();
             // sales order created
@@ -181,11 +188,35 @@ class SalesOrderController extends Controller
                 // dd($sku);
                 $skuMapping = $this->mapSku($sku);
 
-                if ($skuMapping) {
-                    $product = WarehouseStock::with('product')->where('sku', $skuMapping->product_sku)->where('warehouse_id', $warehouseId)->first();
-                    $sku = $product->sku;
+                // If auto allocation, get product from any warehouse
+                if ($isAutoAllocation) {
+                    if ($skuMapping) {
+                        $product = WarehouseStock::with('product')->where('sku', $skuMapping->product_sku)->first();
+                        $sku = $product ? $product->sku : $skuMapping->product_sku;
+                    } else {
+                        $product = WarehouseStock::with('product')->where('sku', $sku)->first();
+                    }
+
+                    // If not found in warehouse_stocks, check in products table
+                    if (!$product) {
+                        $productMaster = Product::where('sku', $sku)->first();
+                        if ($productMaster) {
+                            // Create a pseudo product object for consistency
+                            $product = (object)[
+                                'sku' => $productMaster->sku,
+                                'product' => $productMaster,
+                                'available_quantity' => 0, // Will be calculated from all warehouses
+                            ];
+                        }
+                    }
                 } else {
-                    $product = WarehouseStock::with('product')->where('sku', $sku)->where('warehouse_id', $warehouseId)->first();
+                    // Single warehouse selection
+                    if ($skuMapping) {
+                        $product = WarehouseStock::with('product')->where('sku', $skuMapping->product_sku)->where('warehouse_id', $warehouseId)->first();
+                        $sku = $product ? $product->sku : $skuMapping->product_sku;
+                    } else {
+                        $product = WarehouseStock::with('product')->where('sku', $sku)->where('warehouse_id', $warehouseId)->first();
+                    }
                 }
                 // sku mapping done
 
@@ -263,25 +294,41 @@ class SalesOrderController extends Controller
 
                 //
                 // check if product sku present in cache or not
-                if (! isset($productStockCache[$sku])) {
-                    // Fetch stock if not already cached
-                    // if stock entry present but quantity 0
-                    if (empty($product->available_quantity)) {
-                        $productStockCache[$sku] = [
-                            'available' => 0,
-                        ];
-                    } else {
-                        // else store available quantity
-                        $availableQty = $product->available_quantity;
+                if ($isAutoAllocation) {
+                    // For auto allocation, get total stock from all warehouses
+                    if (! isset($productStockCache[$sku])) {
+                        $totalAvailable = WarehouseStock::where('sku', $sku)
+                            ->whereHas('warehouse', function($q) {
+                                $q->where('status', '1'); // Only active warehouses
+                            })
+                            ->sum('available_quantity');
 
-                        if ($availableQty > 0) {
-                            $productStockCache[$sku] = [
-                                'available' => $availableQty,
-                            ];
-                        } else {
+                        $productStockCache[$sku] = [
+                            'available' => $totalAvailable,
+                        ];
+                    }
+                } else {
+                    // Single warehouse logic (existing)
+                    if (! isset($productStockCache[$sku])) {
+                        // Fetch stock if not already cached
+                        // if stock entry present but quantity 0
+                        if (empty($product->available_quantity)) {
                             $productStockCache[$sku] = [
                                 'available' => 0,
                             ];
+                        } else {
+                            // else store available quantity
+                            $availableQty = $product->available_quantity;
+
+                            if ($availableQty > 0) {
+                                $productStockCache[$sku] = [
+                                    'available' => $availableQty,
+                                ];
+                            } else {
+                                $productStockCache[$sku] = [
+                                    'available' => 0,
+                                ];
+                            }
                         }
                     }
                 }
@@ -368,7 +415,9 @@ class SalesOrderController extends Controller
                 $saveOrderProduct->customer_id = $customerInfo->id ?? null;
                 $saveOrderProduct->vendor_code = $vendorInfo->id ?? null;
                 $saveOrderProduct->ordered_quantity = $record['PO Quantity'] ?? 0;
-                $saveOrderProduct->purchase_ordered_quantity = $record['Purchase Order Quantity'] ?? 0;
+                // For auto-allocation, set purchase_ordered_quantity to 0 initially (will be updated later)
+                // For single warehouse, use Excel value
+                $saveOrderProduct->purchase_ordered_quantity = $isAutoAllocation ? 0 : ($record['Purchase Order Quantity'] ?? 0);
                 $saveOrderProduct->product_id = $product->product->id ?? null;
                 $saveOrderProduct->warehouse_stock_id = $product->id ?? null;
                 $saveOrderProduct->sku = $sku;
@@ -453,12 +502,55 @@ class SalesOrderController extends Controller
                 return redirect()->back()->with(['error' => 'No valid data found in the CSV file. Please check Vendor Codes: ' . $uniqueString]);
             }
 
+            // If auto allocation is selected, trigger warehouse allocation
+            if ($isAutoAllocation) {
+                $allocationService = new \App\Services\WarehouseAllocationService();
+
+                // Get all sales order products
+                $salesOrderProducts = SalesOrderProduct::where('sales_order_id', $salesOrder->id)->get();
+
+                foreach ($salesOrderProducts as $orderProduct) {
+                    // Auto allocate stock for each product
+                    $allocationResult = $allocationService->autoAllocateStock(
+                        $orderProduct->sku,
+                        $orderProduct->ordered_quantity,
+                        $salesOrder->id,
+                        $orderProduct->id
+                    );
+
+                    // If allocation failed, log it
+                    if (!$allocationResult['success']) {
+                        Log::warning('Auto allocation failed for SKU: ' . $orderProduct->sku, [
+                            'sales_order_id' => $salesOrder->id,
+                            'error' => $allocationResult['error'] ?? 'Unknown error'
+                        ]);
+                    }
+
+                    // If purchase order needed, it's already created in the loop above
+                    // Just update the purchase_ordered_quantity
+                    if ($allocationResult['need_purchase']) {
+                        $orderProduct->purchase_ordered_quantity = $allocationResult['pending_quantity'];
+                        $orderProduct->save();
+                    }
+                }
+
+                activity()
+                    ->performedOn($salesOrder)
+                    ->causedBy(Auth::user())
+                    ->log('Auto-allocated stock from multiple warehouses');
+            }
+
             DB::commit();
 
             // Create notification
             NotificationService::orderCreated('sales', $salesOrder->id);
 
-            return redirect()->route('sales.order.index')->with('success', 'Sales Order created successfully! Order ID: ' . $salesOrder->id);
+            $successMessage = 'Sales Order created successfully! Order ID: ' . $salesOrder->id;
+            if ($isAutoAllocation) {
+                $successMessage .= ' (Stock auto-allocated from multiple warehouses)';
+            }
+
+            return redirect()->route('sales.order.index')->with('success', $successMessage);
         } catch (\Exception $e) {
             DB::rollBack();
             dd($e);
@@ -659,6 +751,8 @@ class SalesOrderController extends Controller
             'warehouse',
             'orderedProducts.tempOrder.vendorPIProduct',
             'orderedProducts.warehouseStock',
+            'warehouseAllocations.warehouse',
+            'warehouseAllocations.product',
         ])
             ->withSum('orderedProducts', 'purchase_ordered_quantity')
             ->withSum('orderedProducts', 'ordered_quantity')
@@ -705,7 +799,15 @@ class SalesOrderController extends Controller
             ->unique()
             ->values();
 
-        return view('salesOrder.view', compact('uniqueBrands', 'uniquePONumbers', 'remainingQuantity', 'blockQuantity', 'salesOrder', 'vendorPiFulfillmentTotal', 'availableQuantity', 'orderedQuantity', 'unavailableQuantity', 'vendorPiReceivedTotal'));
+        // Get warehouse allocation breakdown
+        $warehouseAllocations = \App\Models\WarehouseAllocation::where('sales_order_id', $id)
+            ->with('warehouse', 'product')
+            ->orderBy('sku')
+            ->orderBy('sequence')
+            ->get()
+            ->groupBy('sku');
+
+        return view('salesOrder.view', compact('uniqueBrands', 'uniquePONumbers', 'remainingQuantity', 'blockQuantity', 'salesOrder', 'vendorPiFulfillmentTotal', 'availableQuantity', 'orderedQuantity', 'unavailableQuantity', 'vendorPiReceivedTotal', 'warehouseAllocations'));
     }
 
     public function destroy($id)
@@ -990,7 +1092,7 @@ class SalesOrderController extends Controller
                 //         }
                 //     }
                 // }
-                // $salesOrder->status = $request->status;
+                $salesOrder->status = $request->status;
             } elseif ($request->status == 'completed') {
                 $salesOrder->status = $request->status;
             }
@@ -1110,7 +1212,7 @@ class SalesOrderController extends Controller
 
                 // Create invoice with unique number
                 $invoice = new Invoice();
-                $invoice->warehouse_id = $salesOrder->warehouse_id;
+                $invoice->warehouse_id = $salesOrder->warehouse_id ?? 0; // Default to 0 if null (All Warehouses)
                 $invoice->invoice_number = 'INV-' . $timestamp . '-' . str_pad($invoiceCounter, 4, '0', STR_PAD_LEFT);
                 $invoice->customer_id = $customerId;
                 $invoice->sales_order_id = $salesOrder->id;
@@ -1209,7 +1311,10 @@ class SalesOrderController extends Controller
         if ($duplicateCheck) {
             return redirect()->back()->with(['error' => $duplicateCheck]);
         }
- 
+
+        // Check if auto allocation is selected
+        $isAutoAllocation = ($request->warehouse_id === 'auto');
+
         try {
 
             foreach ($reader->getRows() as $record) {
@@ -1226,11 +1331,35 @@ class SalesOrderController extends Controller
                 // map sku with product
                 $skuMapping = $this->mapSku($sku);
 
-                if ($skuMapping) {
-                    $product = WarehouseStock::with('product')->where('sku', $skuMapping->product_sku)->where('warehouse_id', $warehouseId)->first();
-                    $sku = $product->sku;
+                // If auto allocation, get product from any warehouse
+                if ($isAutoAllocation) {
+                    if ($skuMapping) {
+                        $product = WarehouseStock::with('product')->where('sku', $skuMapping->product_sku)->first();
+                        $sku = $product ? $product->sku : $skuMapping->product_sku;
+                    } else {
+                        $product = WarehouseStock::with('product')->where('sku', $sku)->first();
+                    }
+
+                    // If not found in warehouse_stocks, check in products table
+                    if (!$product) {
+                        $productMaster = Product::where('sku', $sku)->first();
+                        if ($productMaster) {
+                            // Create a pseudo product object for consistency
+                            $product = (object)[
+                                'sku' => $productMaster->sku,
+                                'product' => $productMaster,
+                                'available_quantity' => 0, // Will be calculated from all warehouses
+                            ];
+                        }
+                    }
                 } else {
-                    $product = WarehouseStock::with('product')->where('sku', $sku)->where('warehouse_id', $warehouseId)->first();
+                    // Single warehouse selection
+                    if ($skuMapping) {
+                        $product = WarehouseStock::with('product')->where('sku', $skuMapping->product_sku)->where('warehouse_id', $warehouseId)->first();
+                        $sku = $product ? $product->sku : $skuMapping->product_sku;
+                    } else {
+                        $product = WarehouseStock::with('product')->where('sku', $sku)->where('warehouse_id', $warehouseId)->first();
+                    }
                 }
                 // sku mapping done
                 // check if product is present
@@ -1290,22 +1419,44 @@ class SalesOrderController extends Controller
                     continue;
                 }
 
+                // Initialize stockEntry variable
+                $stockEntry = null;
+
                 // Fetch stock if not already cached
                 if (! isset($productStockCache[$sku])) {
-                    $stockEntry = WarehouseStock::with('product')
-                        ->where('sku', $sku)
-                        ->where('warehouse_id', $warehouseId)
-                        ->first();
+                    if ($isAutoAllocation) {
+                        // For auto allocation, get total stock from all warehouses
+                        $totalAvailable = WarehouseStock::where('sku', $sku)
+                            ->whereHas('warehouse', function($q) {
+                                $q->where('status', '1'); // Only active warehouses
+                            })
+                            ->sum('available_quantity');
 
-                    if (! isset($stockEntry)) {
                         $productStockCache[$sku] = [
-                            'available' => 0,
+                            'available' => $totalAvailable,
                         ];
+
+                        // Get first warehouse stock entry for product details
+                        $stockEntry = WarehouseStock::with('product')
+                            ->where('sku', $sku)
+                            ->first();
                     } else {
-                        $quantity = $stockEntry->available_quantity;
-                        $productStockCache[$sku] = [
-                            'available' => $quantity,
-                        ];
+                        // Single warehouse logic
+                        $stockEntry = WarehouseStock::with('product')
+                            ->where('sku', $sku)
+                            ->where('warehouse_id', $warehouseId)
+                            ->first();
+
+                        if (! isset($stockEntry)) {
+                            $productStockCache[$sku] = [
+                                'available' => 0,
+                            ];
+                        } else {
+                            $quantity = $stockEntry->available_quantity;
+                            $productStockCache[$sku] = [
+                                'available' => $quantity,
+                            ];
+                        }
                     }
                 }
 
@@ -1664,5 +1815,204 @@ class SalesOrderController extends Controller
         return response()->download($tempXlsxPath, 'Products-Vendor-Not-Found.xlsx', [
             'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         ])->deleteFileAfterSend(true);
+    }
+
+    /**
+     * Auto-allocate stock from multiple warehouses for a sales order
+     *
+     * @param int $id Sales Order ID
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function autoAllocateStock($id)
+    {
+        DB::beginTransaction();
+        try {
+            $salesOrder = SalesOrder::with('orderedProducts')->findOrFail($id);
+            $allocationService = new WarehouseAllocationService();
+
+            // Allocate stock for entire sales order
+            $result = $allocationService->allocateSalesOrder($id);
+
+            if (!$result['success']) {
+                DB::rollBack();
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Allocation failed: ' . $result['error'],
+                ], 500);
+            }
+
+            // If purchase order is needed, create it
+            if ($result['needs_purchase_order'] && !empty($result['purchase_order_items'])) {
+                // Get vendor from first ordered product (you can modify this logic)
+                $firstProduct = $salesOrder->orderedProducts->first();
+                $vendorId = $firstProduct->vendor_code ?? null;
+
+                if ($vendorId) {
+                    $purchaseResult = $allocationService->createPurchaseOrderForShortage(
+                        $id,
+                        $result['purchase_order_items'],
+                        $vendorId
+                    );
+
+                    $result['purchase_order'] = $purchaseResult;
+                }
+            }
+
+            DB::commit();
+
+            // Log activity
+            activity()
+                ->performedOn($salesOrder)
+                ->causedBy(Auth::user())
+                ->withProperties($result)
+                ->log("Multi-warehouse auto-allocation completed for Sales Order #{$id}");
+
+            return response()->json([
+                'success' => true,
+                'message' => $result['message'],
+                'data' => $result,
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Auto allocation failed: ' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Error: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Get allocation breakdown for a sales order
+     *
+     * @param int $id Sales Order ID
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getAllocationBreakdown($id)
+    {
+        try {
+            $validator = Validator::make(['id' => $id], [
+                'id' => 'required|exists:sales_orders,id',
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'errors' => $validator->errors(),
+                ], 422);
+            }
+
+            $allocationService = new WarehouseAllocationService();
+            $breakdown = $allocationService->getAllocationBreakdown($id);
+
+            return response()->json([
+                'success' => true,
+                'sales_order_id' => $id,
+                'allocations' => $breakdown,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Get allocation breakdown failed: ' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Error: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Manual allocation - allocate specific SKU from specific warehouse
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function manualAllocate(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'sales_order_id' => 'required|exists:sales_orders,id',
+            'sales_order_product_id' => 'required|exists:sales_order_products,id',
+            'sku' => 'required|string',
+            'warehouse_id' => 'required|exists:warehouses,id',
+            'quantity' => 'required|integer|min:1',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        DB::beginTransaction();
+        try {
+            // Check warehouse stock availability
+            $warehouseStock = WarehouseStock::where('warehouse_id', $request->warehouse_id)
+                ->where('sku', $request->sku)
+                ->first();
+
+            if (!$warehouseStock) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'SKU not found in selected warehouse',
+                ], 404);
+            }
+
+            if ($warehouseStock->available_quantity < $request->quantity) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "Insufficient stock. Available: {$warehouseStock->available_quantity}, Requested: {$request->quantity}",
+                ], 400);
+            }
+
+            // Get next sequence number
+            $lastSequence = WarehouseAllocation::where('sales_order_id', $request->sales_order_id)
+                ->where('sku', $request->sku)
+                ->max('sequence') ?? 0;
+
+            // Create allocation
+            $allocation = WarehouseAllocation::create([
+                'sales_order_id' => $request->sales_order_id,
+                'sales_order_product_id' => $request->sales_order_product_id,
+                'warehouse_id' => $request->warehouse_id,
+                'sku' => $request->sku,
+                'allocated_quantity' => $request->quantity,
+                'sequence' => $lastSequence + 1,
+                'status' => 'allocated',
+                'notes' => 'Manual allocation',
+            ]);
+
+            // Update warehouse stock
+            $warehouseStock->available_quantity -= $request->quantity;
+            $warehouseStock->block_quantity += $request->quantity;
+            $warehouseStock->save();
+
+            DB::commit();
+
+            // Log activity
+            activity()
+                ->performedOn($allocation)
+                ->causedBy(Auth::user())
+                ->withProperties([
+                    'warehouse_id' => $request->warehouse_id,
+                    'sku' => $request->sku,
+                    'quantity' => $request->quantity,
+                ])
+                ->log("Manual stock allocation created");
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Stock allocated successfully',
+                'allocation' => $allocation,
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Manual allocation failed: ' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Error: ' . $e->getMessage(),
+            ], 500);
+        }
     }
 }

@@ -143,6 +143,76 @@
                 </div>
             </div>
 
+            {{-- Warehouse Allocation Breakdown --}}
+            {{-- @if($warehouseAllocations && $warehouseAllocations->count() > 0)
+            <div class="card mb-3">
+                <div class="card-header bg-primary text-white">
+                    <h6 class="mb-0"><i class="bx bx-package"></i> Multi-Warehouse Stock Allocation Breakdown</h6>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="bx bx-info-circle"></i> This order was auto-allocated from multiple warehouses. Below is the breakdown:
+                    </div>
+
+                    @foreach($warehouseAllocations as $sku => $allocations)
+                        <div class="mb-4">
+                            <h6 class="text-primary">SKU: {{ $sku }}</h6>
+                            <div class="table-responsive">
+                                <table class="table table-sm table-bordered">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th style="width: 50px;">Seq</th>
+                                            <th>Warehouse</th>
+                                            <th style="width: 120px;">Allocated Qty</th>
+                                            <th style="width: 100px;">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @php
+                                            $totalAllocated = 0;
+                                        @endphp
+                                        @foreach($allocations as $allocation)
+                                            @php
+                                                $totalAllocated += $allocation->allocated_quantity;
+                                            @endphp
+                                            <tr>
+                                                <td class="text-center">{{ $allocation->sequence }}</td>
+                                                <td>
+                                                    <i class="bx bx-store"></i>
+                                                    {{ $allocation->warehouse->name ?? 'N/A' }}
+                                                </td>
+                                                <td class="text-center">
+                                                    <span class="badge bg-success">{{ $allocation->allocated_quantity }}</span>
+                                                </td>
+                                                <td class="text-center">
+                                                    @if($allocation->status == 'allocated')
+                                                        <span class="badge bg-success">Allocated</span>
+                                                    @elseif($allocation->status == 'fulfilled')
+                                                        <span class="badge bg-primary">Fulfilled</span>
+                                                    @elseif($allocation->status == 'pending')
+                                                        <span class="badge bg-warning">Pending</span>
+                                                    @else
+                                                        <span class="badge bg-secondary">{{ ucfirst($allocation->status) }}</span>
+                                                    @endif
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                        <tr class="table-active fw-bold">
+                                            <td colspan="2" class="text-end">Total Allocated:</td>
+                                            <td class="text-center">
+                                                <span class="badge bg-primary">{{ $totalAllocated }}</span>
+                                            </td>
+                                            <td></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+            @endif --}}
+
             <div class="card">
                 <div class="card-body">
                     <div class="div d-flex my-2">

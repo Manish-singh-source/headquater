@@ -63,11 +63,13 @@
                                                                         <option selected="" disabled=""
                                                                             value="">-- Select --
                                                                         </option>
+                                                                        <option value="auto" class="text-primary fw-bold">🔄 Auto Allocate (All Warehouses)</option>
                                                                         @foreach ($warehouses as $warehouse)
                                                                             <option value="{{ $warehouse->id }}">
                                                                                 {{ $warehouse->name }}</option>
                                                                         @endforeach
                                                                     </select>
+                                                                    <small class="text-muted d-block mt-1">Select "Auto Allocate" to check stock across all warehouses</small>
                                                                 </div>
                                                                 <div class="col-12 mb-3">
                                                                     <label for="document_image" class="form-label">Customer
@@ -122,11 +124,13 @@
                                                     <select class="form-control" name="warehouse_id" id="warehouseName">
                                                         <option selected="" disabled="" value="">-- Select --
                                                         </option>
+                                                        <option value="auto" class="text-primary fw-bold">🔄 Auto Allocate (All Warehouses)</option>
                                                         @foreach ($warehouses as $warehouse)
                                                             <option value="{{ $warehouse->id }}">{{ $warehouse->name }}
                                                             </option>
                                                         @endforeach
                                                     </select>
+                                                    <small class="text-muted">Select "Auto Allocate" to distribute stock from multiple warehouses automatically</small>
                                                 </div>
                                                 <div class="col-12 col-lg-3">
                                                     <label for="document_image" class="form-label">Customer PO (CSV/XLSX)

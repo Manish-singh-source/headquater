@@ -28,7 +28,14 @@
     --bs-orange-rgb: rgb(253, 126, 20);
 }
 
-
+.bg-primary {
+    --bs-bg-opacity: 1;
+    background-color: rgb(13 110 253 / 48%) !important;
+}
+.bg-success {
+    --bs-bg-opacity: 1;
+    background-color: rgb(2 194 122 / 45%) !important;
+}
 [data-bs-theme=dark] {
 	  color-scheme: dark;
 	--bs-body-color: #dee2e6;

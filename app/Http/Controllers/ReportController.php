@@ -13,29 +13,64 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
-use Spatie\SimpleExcel\SimpleExcelWriter;
 
 class ReportController extends Controller
 {
     /**
-     * Display vendor purchase history
+     * Display vendor purchase history with optional filtering
      *
+     * Filtering Logic:
+     * - All filters are optional and can be applied independently or in combination
+     * - from_date: Filter purchase orders from this date onwards (inclusive)
+     * - to_date: Filter purchase orders up to this date (inclusive)
+     * - vendor_code: Filter purchase orders for a specific vendor
+     * - If no filters applied, shows all completed purchase orders
+     * - Statistics (total amount, quantity) are calculated based on filtered results
+     *
+     * @param Request $request
      * @return \Illuminate\View\View
      */
-    public function vendorPurchaseHistory()
+    public function vendorPurchaseHistory(Request $request)
     {
         try {
-            $purchaseOrders = VendorPI::with('products')
-                ->where('status', 'completed')
-                ->latest()
-                ->paginate(15);
+            // Build the base query with relationships
+            $query = VendorPI::with('products', 'payments')->where('status', 'completed');
 
-            $purchaseOrdersTotal = VendorPIProduct::sum('mrp');
-            $purchaseOrdersTotalQuantity = VendorPIProduct::sum('quantity_received');
+            // Apply date range filter if from_date is provided
+            if ($request->filled('from_date')) {
+                $query->whereDate('created_at', '>=', $request->from_date);
+            }
 
+            // Apply date range filter if to_date is provided
+            if ($request->filled('to_date')) {
+                $query->whereDate('created_at', '<=', $request->to_date);
+            }
+
+            // Apply vendor filter if vendor_code is provided
+            if ($request->filled('vendor_code')) {
+                $query->where('vendor_code', $request->vendor_code);
+            }
+
+            // Clone query for statistics calculation before pagination
+            $statsQuery = clone $query;
+
+            // Get paginated purchase orders (15 per page)
+            $purchaseOrders = $query->latest()->paginate(15)->appends($request->all());
+
+            // Calculate statistics based on filtered results
+            // Get all vendor PI IDs from filtered results
+            $filteredVendorPIIds = $statsQuery->pluck('id');
+
+            // Calculate totals from filtered vendor PI products
+            $purchaseOrdersTotal = VendorPIProduct::whereIn('vendor_pi_id', $filteredVendorPIIds)->sum('mrp');
+            $purchaseOrdersTotalQuantity = VendorPIProduct::whereIn('vendor_pi_id', $filteredVendorPIIds)->sum('quantity_received');
+
+            // Get unique vendors from all completed purchase orders for dropdown
             $purchaseOrdersVendors = VendorPI::where('status', 'completed')
                 ->distinct('vendor_code')
                 ->pluck('vendor_code');
+
+            // dd($purchaseOrders);
 
             return view('vendor-purchase-history', compact(
                 'purchaseOrders',
@@ -44,62 +79,93 @@ class ReportController extends Controller
                 'purchaseOrdersVendors'
             ));
         } catch (\Exception $e) {
+            Log::error('Error retrieving vendor purchase history: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Error retrieving vendor purchase history: ' . $e->getMessage());
         }
     }
 
     /**
-     * Download vendor purchase history as Excel
+     * Download vendor purchase history as CSV
+     *
+     * CSV Generation Workflow:
+     * 1. Validate optional filter parameters (from_date, to_date, vendor_code)
+     * 2. Build query with same filtering logic as index method
+     * 3. Retrieve all matching vendor purchase orders (no pagination for export)
+     * 4. Generate CSV file with headers and data rows
+     * 5. Calculate amounts (total, paid, due) for each order
+     * 6. Log activity for audit trail
+     * 7. Return CSV file as download and delete temp file after sending
+     *
+     * All filters are optional - if none provided, exports all completed records
      *
      * @param Request $request
-     * @return \Illuminate\Http\Response|\Illuminate\Http\RedirectResponse
+     * @return \Symfony\Component\HttpFoundation\BinaryFileResponse|\Illuminate\Http\RedirectResponse
      */
     public function vendorPurchaseHistoryExcel(Request $request)
     {
+        // Validate optional filters
         $validator = Validator::make($request->all(), [
-            'selectedDateFrom' => 'required|date_format:Y-m-d',
-            'selectedDateTo' => 'required|date_format:Y-m-d|after_or_equal:selectedDateFrom',
-            'vendorCode' => 'required|string|max:255',
+            'date_from' => 'nullable|date',
+            'date_to' => 'nullable|date|after_or_equal:date_from',
+            'vendor_code' => 'nullable|string|max:255',
         ]);
 
         if ($validator->fails()) {
             return redirect()->back()->withErrors($validator)->withInput();
         }
 
+        DB::beginTransaction();
         try {
-            $tempXlsxPath = storage_path('app/vendor_purchase_history_' . Str::random(8) . '.xlsx');
-            $writer = SimpleExcelWriter::create($tempXlsxPath);
+            // Build query with same filtering logic as index method
+            $query = VendorPI::with('products')->where('status', 'completed');
 
-            // Fetch data with relationships
-            $vendorReports = VendorPI::with('products')
-                ->where('status', 'completed')
-                ->when($request->vendorCode, function ($query) use ($request) {
-                    $query->where('vendor_code', trim($request->vendorCode));
-                })
-                ->when($request->selectedDateFrom && $request->selectedDateTo, function ($query) use ($request) {
-                    $query->whereBetween('created_at', [
-                        $request->selectedDateFrom . ' 00:00:00',
-                        $request->selectedDateTo . ' 23:59:59',
-                    ]);
-                })
-                ->latest()
-                ->get();
-
-            if ($vendorReports->isEmpty()) {
-                return redirect()->back()->with('info', 'No records found for the selected criteria.');
+            // Apply date range filter if date_from is provided
+            if ($request->filled('date_from')) {
+                $query->whereDate('created_at', '>=', $request->date_from);
             }
 
+            // Apply date range filter if date_to is provided
+            if ($request->filled('date_to')) {
+                $query->whereDate('created_at', '<=', $request->date_to);
+            }
+
+            // Apply vendor filter if vendor_code is provided
+            if ($request->filled('vendor_code')) {
+                $query->where('vendor_code', $request->vendor_code);
+            }
+
+            // Get all matching vendor reports (no pagination for export)
+            $vendorReports = $query->latest()->get();
+
+            if ($vendorReports->isEmpty()) {
+                return redirect()->back()->with('error', 'No vendor purchase records found for the selected criteria.');
+            }
+
+            // Create temporary CSV file
+            $tempCsvPath = storage_path('app/vendor_purchase_history_' . Str::random(8) . '.csv');
+            $file = fopen($tempCsvPath, 'w');
+
+            // Add UTF-8 BOM for proper Excel encoding
+            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
+
             // Add header row
-            $writer->addRow([
-                'Order Id' => 'Order Id',
-                'Vendor Name' => 'Vendor Name',
-                'Ordered Status' => 'Ordered Status',
-                'Ordered Quantity' => 'Ordered Quantity',
-                'Received Quantity' => 'Received Quantity',
-                'Total Amount' => 'Total Amount',
-                'Paid' => 'Paid',
-                'Due' => 'Due',
-                'Ordered Date' => 'Ordered Date',
+            fputcsv($file, [
+                'Order Id',
+                'Vendor Name',
+                'Ordered Status',
+                'Ordered Quantity',
+                'Received Quantity',
+                'Total Amount',
+                'Paid',
+                'Due',
+                'Ordered Date',
+                'Appointment Date',
+                'POD',
+                'LR',
+                'DN',
+                'GRN',
+                'Invoice',
+                'Payment Status',
             ]);
 
             // Add data rows
@@ -108,42 +174,58 @@ class ReportController extends Controller
                 $receivedQty = $record->products->sum('quantity_received');
                 $totalAmount = $record->products->sum('mrp');
                 $paidAmount = $record->products->sum('paid_amount') ?? 0;
-                $dueAmount = $totalAmount - $paidAmount;
-
-                $writer->addRow([
-                    'Order Id' => $record->purchase_order_id ?? 'NA',
-                    'Vendor Name' => $record->vendor_code ?? 'NA',
-                    'Ordered Status' => ucfirst($record->status ?? 'N/A'),
-                    'Ordered Quantity' => $orderedQty,
-                    'Received Quantity' => $receivedQty,
-                    'Total Amount' => number_format($totalAmount, 2),
-                    'Paid' => number_format($paidAmount, 2),
-                    'Due' => number_format($dueAmount, 2),
-                    'Ordered Date' => $record->created_at?->format('d-m-Y') ?? 'NA',
+                $dueAmount = max(0, $totalAmount - $paidAmount);
+                fputcsv($file, [
+                    $record->purchase_order_id ?? 'NA',
+                    $record->vendor_code ?? 'NA',
+                    ucfirst($record->status ?? 'N/A'),
+                    $orderedQty,
+                    $receivedQty,
+                    number_format($totalAmount, 2, '.', ''),
+                    number_format($paidAmount, 2, '.', ''),
+                    number_format($dueAmount, 2, '.', ''),
+                    $record->created_at?->format('d-m-Y') ?? 'NA',
+                    $record->appointment?->appointment_date ?? 'NA',
+                    $record->appointment?->pod ? 'Yes' : 'No',
+                    $record->appointment?->lr ? 'Yes' : 'No',
+                    $record->dns?->dn_amount ? 'Yes' : 'No',
+                    $record->appointment?->grn ? 'Yes' : 'No',
+                    $record->invoice?->invoice_number ? 'Yes' : 'No',
+                    isset($record->payments?->first()->payment_status) != null && $record->payments?->first()->payment_status == 'completed' ? 'paid' : 'not paid',
                 ]);
+                
             }
 
-            $writer->close();
+            fclose($file);
 
-            $fileName = $request->vendorCode
-                ? 'Vendor-Purchase-History-' . str_replace(' ', '-', $request->vendorCode) . '.xlsx'
-                : 'Vendor-Purchase-History.xlsx';
-
-            // Log activity
+            // Log activity for audit trail
             activity()
                 ->causedBy(Auth::user())
                 ->withProperties([
-                    'vendor_code' => $request->vendorCode,
-                    'date' => $request->selectedDate,
+                    'vendor_code' => $request->vendor_code,
+                    'date_from' => $request->date_from,
+                    'date_to' => $request->date_to,
                     'records' => $vendorReports->count(),
                 ])
-                ->event('report_generated')
-                ->log('Vendor purchase history report generated');
+                ->event('csv_report_generated')
+                ->log('Vendor purchase history CSV report generated');
 
-            return response()->download($tempXlsxPath, $fileName, [
-                'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            DB::commit();
+
+            // Generate filename with vendor code or date
+            $fileName = $request->vendor_code
+                ? 'Vendor-Purchase-History-' . str_replace(' ', '-', $request->vendor_code) . '-' . date('d-m-Y') . '.csv'
+                : 'Vendor-Purchase-History-' . date('d-m-Y') . '.csv';
+
+            // Return CSV file as download and delete after sending
+            return response()->download($tempCsvPath, $fileName, [
+                'Content-Type' => 'text/csv',
+                'Content-Disposition' => 'attachment; filename="' . $fileName . '"',
             ])->deleteFileAfterSend(true);
+
         } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error generating vendor purchase CSV report: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Error generating report: ' . $e->getMessage());
         }
     }
@@ -162,11 +244,13 @@ class ReportController extends Controller
 
             $productsSum = WarehouseStock::sum('original_quantity');
             $blockProductsSum = WarehouseStock::sum('block_quantity');
+            $availableProductsSum = WarehouseStock::sum('available_quantity');
 
             return view('inventory-stock-history', compact(
                 'products',
                 'productsSum',
-                'blockProductsSum'
+                'blockProductsSum',
+                'availableProductsSum'
             ));
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Error retrieving inventory: ' . $e->getMessage());
@@ -174,94 +258,128 @@ class ReportController extends Controller
     }
 
     /**
-     * Download inventory stock history as Excel
+     * Download inventory stock history as Excel/CSV
+     *
+     * CSV Generation Workflow:
+     * 1. Validate optional filter parameters (from, to dates)
+     * 2. Build query with date range filtering if provided
+     * 3. Retrieve all matching warehouse stock records (no pagination for export)
+     * 4. Generate CSV file with headers and data rows
+     * 5. Log activity for audit trail
+     * 6. Return CSV file as download and delete temp file after sending
+     *
+     * Date Filtering Logic:
+     * - Both 'from' and 'to' parameters are optional
+     * - If 'from' is provided: filter records created on or after this date
+     * - If 'to' is provided: filter records created on or before this date
+     * - If both provided: filter records within the date range (inclusive)
+     * - If neither provided: export all records
      *
      * @param Request $request
-     * @return \Illuminate\Http\Response|\Illuminate\Http\RedirectResponse
+     * @return \Symfony\Component\HttpFoundation\BinaryFileResponse|\Illuminate\Http\RedirectResponse
      */
     public function inventoryStockHistoryExcel(Request $request)
     {
+        // Validate optional date filters
         $validator = Validator::make($request->all(), [
-            'selectedDateFrom' => 'required|date_format:Y-m-d',
-            'selectedDateTo' => 'required|date_format:Y-m-d|after_or_equal:selectedDateFrom',
+            'from' => 'nullable|date',
+            'to' => 'nullable|date|after_or_equal:from',
         ]);
 
         if ($validator->fails()) {
             return redirect()->back()->withErrors($validator)->withInput();
         }
 
+        DB::beginTransaction();
         try {
-            $tempXlsxPath = storage_path('app/inventory_stock_history_' . Str::random(8) . '.xlsx');
-            $writer = SimpleExcelWriter::create($tempXlsxPath);
+            // Build query with date range filtering
+            $query = WarehouseStock::with('product', 'warehouse');
 
-            $products = WarehouseStock::with('product', 'warehouse')
-                ->when($request->selectedDateFrom && $request->selectedDateTo, function ($query) use ($request) {
-                    $query->whereBetween('created_at', [
-                        $request->selectedDateFrom . ' 00:00:00',
-                        $request->selectedDateTo . ' 23:59:59',
-                    ]);
-                })
-                ->latest()
-                ->get();
-
-            if ($products->isEmpty()) {
-                return redirect()->back()->with('info', 'No inventory records found for the selected date.');
+            // Apply 'from' date filter if provided
+            if ($request->filled('from')) {
+                $query->whereDate('created_at', '>=', $request->from);
             }
 
+            // Apply 'to' date filter if provided
+            if ($request->filled('to')) {
+                $query->whereDate('created_at', '<=', $request->to);
+            }
+
+            // Get all matching records (no pagination for export)
+            $products = $query->latest()->get();
+
+            if ($products->isEmpty()) {
+                return redirect()->back()->with('error', 'No inventory records found for the selected criteria.');
+            }
+
+            // Create temporary CSV file
+            $tempCsvPath = storage_path('app/inventory_stock_history_' . Str::random(8) . '.csv');
+            $file = fopen($tempCsvPath, 'w');
+
+            // Add UTF-8 BOM for proper Excel encoding
+            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
+
             // Add header row
-            $writer->addRow([
-                'Brand' => 'Brand',
-                'Brand Title' => 'Brand Title',
-                'Category' => 'Category',
-                'SKU' => 'SKU',
-                'PCS/Set' => 'PCS/Set',
-                'Sets/CTN' => 'Sets/CTN',
-                'MRP' => 'MRP',
-                'Status' => 'Status',
-                'Original Quantity' => 'Original Quantity',
-                'Available Quantity' => 'Available Quantity',
-                'Hold Qty' => 'Hold Qty',
-                'Date' => 'Date',
+            fputcsv($file, [
+                'Brand',
+                'Brand Title',
+                'Category',
+                'SKU',
+                'PCS/Set',
+                'Sets/CTN',
+                'MRP',
+                'Original Quantity',
+                'Available Quantity',
+                'Hold Qty',
+                'Date',
             ]);
 
             // Add data rows
             foreach ($products as $record) {
                 $product = $record->product;
 
-                $writer->addRow([
-                    'Brand' => $product?->brand ?? 'N/A',
-                    'Brand Title' => $product?->brand_title ?? 'N/A',
-                    'Category' => $product?->category ?? 'N/A',
-                    'SKU' => $product?->sku ?? 'N/A',
-                    'PCS/Set' => $product?->pcs_set ?? 0,
-                    'Sets/CTN' => $product?->sets_ctn ?? 0,
-                    'MRP' => number_format($product?->mrp ?? 0, 2),
-                    'Status' => ($product?->status == '1') ? 'Active' : 'Inactive',
-                    'Original Quantity' => $record->original_quantity ?? 0,
-                    'Available Quantity' => $record->available_quantity ?? 0,
-                    'Hold Qty' => $record->block_quantity ?? 0,
-                    'Date' => $product?->created_at?->format('d-m-Y') ?? 'N/A',
+                fputcsv($file, [
+                    $product?->brand ?? 'N/A',
+                    $product?->brand_title ?? 'N/A',
+                    $product?->category ?? 'N/A',
+                    $product?->sku ?? 'N/A',
+                    $product?->pcs_set ?? 0,
+                    $product?->sets_ctn ?? 0,
+                    number_format($product?->mrp ?? 0, 2, '.', ''),
+                    $record->original_quantity ?? 0,
+                    $record->available_quantity ?? 0,
+                    $record->block_quantity ?? 0,
+                    $product?->created_at?->format('d-m-Y') ?? 'N/A',
                 ]);
             }
 
-            $writer->close();
+            fclose($file);
 
-            // Log activity
+            // Log activity for audit trail
             activity()
                 ->causedBy(Auth::user())
                 ->withProperties([
-                    'date' => $request->selectedDate,
+                    'from_date' => $request->from,
+                    'to_date' => $request->to,
                     'records' => $products->count(),
                 ])
-                ->event('report_generated')
-                ->log('Inventory stock history report generated');
+                ->event('csv_report_generated')
+                ->log('Inventory stock history CSV report generated');
 
-            $fileName = 'Inventory-Stock-History-' . date('d-m-Y', strtotime($request->selectedDate)) . '.xlsx';
+            DB::commit();
 
-            return response()->download($tempXlsxPath, $fileName, [
-                'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            // Generate filename with current date or date range
+            $fileName = 'Inventory-Stock-History-' . date('d-m-Y') . '.csv';
+
+            // Return CSV file as download and delete after sending
+            return response()->download($tempCsvPath, $fileName, [
+                'Content-Type' => 'text/csv',
+                'Content-Disposition' => 'attachment; filename="' . $fileName . '"',
             ])->deleteFileAfterSend(true);
+
         } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error generating inventory CSV report: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Error generating inventory report: ' . $e->getMessage());
         }
     }

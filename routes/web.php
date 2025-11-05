@@ -191,6 +191,11 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/download-not-found-customer/{id}', 'downloadNotFoundCustomer')->name('download.not.found.customer.excel');
         Route::get('/download-not-found-vendor/{id}', 'downloadNotFoundVendor')->name('download.not.found.vendor.excel');
         Route::post('/generate-invoice', 'generateInvoice')->name('generate.invoice');
+
+        // Multi-warehouse auto allocation routes
+        Route::post('/auto-allocate-stock/{id}', 'autoAllocateStock')->name('sales.order.auto.allocate');
+        Route::get('/allocation-breakdown/{id}', 'getAllocationBreakdown')->name('sales.order.allocation.breakdown');
+        Route::post('/manual-allocate', 'manualAllocate')->name('sales.order.manual.allocate');
     });
 
     // Place Order

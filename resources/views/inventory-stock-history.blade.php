@@ -23,7 +23,7 @@
                                     <i class="ti ti-file-text fs-24"></i>
                                 </span>
                                 <div class="ms-2">
-                                    <p class="text-dark mb-1">Total Product Available</p>
+                                    <p class="text-dark mb-1">Total Product </p>
                                     <div class="d-inline-flex align-items-center flex-wrap gap-2">
                                         <h4 class="text-dark">{{ $productsSum }}</h4>
                                         <!-- <span class="badge badge-soft-primary text-dark"><i class="ti ti-arrow-up me-1"></i>+22%</span> -->
@@ -32,6 +32,7 @@
                             </div>
                         </div>
                     </div>
+
                     <div class="col-xl-3 col-sm-6 col-12 d-flex">
                         <div class="card bg-white sale-widget flex-fill">
                             <div class="card-body d-flex align-items-center">
@@ -39,7 +40,24 @@
                                     <i class="ti ti-file-text fs-24"></i>
                                 </span>
                                 <div class="ms-2">
-                                    <p class="text-dark mb-1">Total Hold Products</p>
+                                    <p class="text-dark mb-1">Total Available Products </p>
+                                    <div class="d-inline-flex align-items-center flex-wrap gap-2">
+                                        <h4 class="text-dark">{{ $availableProductsSum }}</h4>
+                                        <!-- <span class="badge badge-soft-primary text-dark"><i class="ti ti-arrow-up me-1"></i>+22%</span> -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-xl-3 col-sm-6 col-12 d-flex">
+                        <div class="card bg-white sale-widget flex-fill">
+                            <div class="card-body d-flex align-items-center">
+                                <span class="sale-icon bg-white text-primary">
+                                    <i class="ti ti-file-text fs-24"></i>
+                                </span>
+                                <div class="ms-2">
+                                    <p class="text-dark mb-1">Total Blocked Products</p>
                                     <div class="d-inline-flex align-items-center flex-wrap gap-2">
                                         <h4 class="text-dark">{{ $blockProductsSum }}</h4>
                                         <!-- <span class="badge badge-soft-primary text-dark"><i class="ti ti-arrow-up me-1"></i>+22%</span> -->
@@ -48,7 +66,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-xl-3 col-sm-6 col-12 d-flex">
+                    {{-- <div class="col-xl-3 col-sm-6 col-12 d-flex">
                         <div class="card bg-white sale-widget flex-fill">
                             <div class="card-body d-flex align-items-center">
                                 <span class="sale-icon bg-white text-primary">
@@ -58,13 +76,13 @@
                                     <p class="text-dark mb-1">Total Shortage Products</p>
                                     <div class="d-inline-flex align-items-center flex-wrap gap-2">
                                         <h4 class="text-dark">0</h4>
-                                        <!-- <span class="badge badge-soft-primary text-dark"><i class="ti ti-arrow-up me-1"></i>+22%</span> -->
+                                        <span class="badge badge-soft-primary text-dark"><i class="ti ti-arrow-up me-1"></i>+22%</span> 
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="col-xl-3 col-sm-6 col-12 d-flex">
+                    </div> --}}
+                    {{-- <div class="col-xl-3 col-sm-6 col-12 d-flex">
                         <div class="card bg-white sale-widget flex-fill">
                             <div class="card-body d-flex align-items-center">
                                 <span class="sale-icon bg-white text-primary">
@@ -79,7 +97,7 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </div> --}}
                 </div>
 
             </div>
@@ -89,9 +107,10 @@
                     <div class="row align-items-end">
                         <div class="col-lg-10">
                             <div class="row">
-                                <div class="col-md-3">
+                                <div class="col-md-2">
                                     <div class="mb-3">
-                                        <label class="form-label">Choose From Date</label>
+                                        <label class="form-label">From Date <span
+                                                class="text-muted">(Optional)</span></label>
                                         <div class="input-icon-start position-relative">
                                             <input type="date" class="form-control date-range bookingrange"
                                                 id="date-from" placeholder="dd/mm/yyyy">
@@ -101,9 +120,9 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="col-md-3">
+                                <div class="col-md-2">
                                     <div class="mb-3">
-                                        <label class="form-label">Choose To Date</label>
+                                        <label class="form-label">To Date <span class="text-muted">(Optional)</span></label>
                                         <div class="input-icon-start position-relative">
                                             <input type="date" class="form-control date-range bookingrange"
                                                 id="date-to" placeholder="dd/mm/yyyy">
@@ -113,14 +132,29 @@
                                         </div>
                                     </div>
                                 </div>
+                                <div class="col-md-2">
+                                    <div class="mb-3">
+                                        <label class="form-label d-block">&nbsp;</label>
+                                        <button id="filterData" class="btn btn-primary w-100">
+                                            <i class="ti ti-filter me-1"></i>Apply Filter
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="mb-3">
+                                        <label class="form-label d-block">&nbsp;</label>
+                                        <button id="resetFilter" class="btn btn-secondary w-100">
+                                            <i class="ti ti-refresh me-1"></i>Reset Filter
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         <div class="col-lg-2">
                             <div class="mb-3">
-                                <button id="filterData" class="btn btn-primary w-100">Filter</button>
-                            </div>
-                            <div class="mb-3">
-                                <button id="exportData" class="btn btn-danger w-100">Generate Report</button>
+                                <button id="exportData" class="btn btn-success w-100">
+                                    <i class="ti ti-download me-1"></i>Generate Report
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -148,7 +182,7 @@
                                         {{-- <th>po&nbsp;status</th> --}}
                                         <th>Original&nbsp;Quantity</th>
                                         <th>Available&nbsp;Quantity</th>
-                                        <th>Hold&nbsp;Qty</th>
+                                        <th>Block&nbsp;Qty</th>
                                         <th>Date</th>
                                     </tr>
                                 </thead>
@@ -156,8 +190,8 @@
                                     @foreach ($products as $product)
                                         <tr>
                                             <td>
-                                                <input class="form-check-input row-checkbox" type="checkbox" name="ids[]"
-                                                    value="{{ $product->id }}">
+                                                <input class="form-check-input row-checkbox" type="checkbox"
+                                                    name="ids[]" value="{{ $product->id }}">
                                             </td>
                                             <td>
                                                 <div class="d-flex align-items-center gap-3">
@@ -197,10 +231,126 @@
     <script>
         $(document).ready(function() {
 
+            // Initialize DataTable for inventory stock history
+            var inventoryStockTable = $('#inventory-stock-history-table').DataTable({
+                "columnDefs": [{
+                    "orderable": false,
+                    "targets": [0] // Disable sorting for checkbox column
+                }],
+                lengthChange: true,
+                pageLength: 10,
+                order: [
+                    [11, 'desc']
+                ], // Sort by Date column (index 11) in descending order
+                buttons: [{
+                    extend: 'excelHtml5',
+                    className: 'd-none', // hide the default button
+                }]
+            });
+
+            /**
+             * Apply Filter Button Click Handler
+             *
+             * Filter Logic:
+             * 1. Get the selected from and to dates from input fields
+             * 2. Convert dates from YYYY-MM-DD to DD-MM-YYYY format for matching table data
+             * 3. Apply custom search function to filter table rows based on date range
+             * 4. If only from date: show records on or after that date
+             * 5. If only to date: show records on or before that date
+             * 6. If both dates: show records within the range (inclusive)
+             * 7. If no dates: show all records
+             */
+            $(document).on('click', '#filterData', function() {
+                var selectedDateFrom = $('#date-from').val().trim();
+                var selectedDateTo = $('#date-to').val().trim();
+
+                // Clear any existing custom search functions to avoid stacking filters
+                $.fn.dataTable.ext.search.length = 0;
+
+                // Helper to parse table date (DD-MM-YYYY) and normalize to midnight
+                function parseTableDate(dateStr) {
+                    if (!dateStr) return null;
+                    var parts = dateStr.trim().split('-');
+                    if (parts.length !== 3) return null;
+                    var d = new Date(+parts[2], +parts[1] - 1, +parts[0]);
+                    d.setHours(0, 0, 0, 0);
+                    return d;
+                }
+
+                // Helper to parse input[type=date] value (YYYY-MM-DD) and normalize to midnight
+                function parseInputDate(input) {
+                    if (!input) return null;
+                    var parts = input.split('-');
+                    if (parts.length !== 3) return null;
+                    var d = new Date(+parts[0], +parts[1] - 1, +parts[2]);
+                    d.setHours(0, 0, 0, 0);
+                    return d;
+                }
+
+                // Custom search function for date range filtering
+                $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
+                    // Get the date from the last column (index 11)
+                    var dateStr = data[11] || '';
+                    var rowDate = parseTableDate(dateStr);
+                    if (!rowDate) return true; // if no parsable date, don't filter it out
+
+                    var fromDate = parseInputDate(selectedDateFrom);
+                    var toDate = parseInputDate(selectedDateTo);
+
+                    if (fromDate && toDate) {
+                        return rowDate >= fromDate && rowDate <= toDate;
+                    } else if (fromDate) {
+                        return rowDate >= fromDate;
+                    } else if (toDate) {
+                        return rowDate <= toDate;
+                    }
+
+                    return true;
+                });
+
+                // Redraw the table with the filter applied
+                inventoryStockTable.draw();
+            });
+
+            /**
+             * Reset Filter Button Click Handler
+             *
+             * Reset Logic:
+             * 1. Clear both date input fields
+             * 2. Remove all custom search functions from DataTable
+             * 3. Redraw the table to show all records
+             * 4. Provide visual feedback to user
+             */
+            $(document).on('click', '#resetFilter', function() {
+                // Clear date input fields
+                $('#date-from').val('');
+                $('#date-to').val('');
+
+                // Remove all custom search functions (clear the array)
+                $.fn.dataTable.ext.search.length = 0;
+
+                // Redraw table to show all records
+                inventoryStockTable.draw();
+
+                // Optional: Show success message
+                console.log('Filters reset successfully');
+            });
+
+            /**
+             * Generate Report Button Click Handler
+             *
+             * CSV Export Logic:
+             * 1. Get the selected from and to dates from input fields
+             * 2. Build query parameters only for dates that are provided
+             * 3. Construct download URL with parameters
+             * 4. Trigger browser download of CSV file
+             * 5. The backend will filter data based on these parameters
+             * 6. If no dates provided, all records will be exported
+             */
             $(document).on('click', '#exportData', function() {
                 var selectedDateFrom = $("#date-from").val().trim();
                 var selectedDateTo = $("#date-to").val().trim();
-                // Use the from/to date inputs (selectedDate was undefined)
+
                 // Build query parameters only for the values provided
                 var params = [];
                 if (selectedDateFrom) {
@@ -218,56 +368,23 @@
                 window.location.href = downloadUrl;
             });
 
-            $(document).on('click', '#filterData', function() {
-                var selectedDateFrom = $('#date-from').val();
-                var selectedDateTo = $('#date-to').val();
-
-                // Format date range for filtering
-                var formattedDateRange = '';
-                if (selectedDateFrom && selectedDateTo) {
-                    formattedDateRange = selectedDateFrom + ' to ' + selectedDateTo;
-                } else if (selectedDateFrom) {
-                    formattedDateRange = selectedDateFrom;
-                } else if (selectedDateTo) {
-                    formattedDateRange = selectedDateTo;
-                }
-
-                // Apply date range filter to the DataTable (use vendorHistoryTable and last column)
-                vendorHistoryTable.column(-1).search(formattedDateRange ? '^' + formattedDateRange + '$' : '', true,
-                        false)
-                    .draw();
+            /**
+             * Select All Checkbox Handler
+             * Toggle all row checkboxes when header checkbox is clicked
+             */
+            $('#select-all').on('change', function() {
+                var isChecked = $(this).prop('checked');
+                $('.row-checkbox').prop('checked', isChecked);
             });
 
-
-            var vendorHistoryTable = $('#inventory-stock-history-table').DataTable({
-                "columnDefs": [{
-                        "orderable": false,
-                        //   "targets": [0, -1],
-                    } // Disable sorting for the 4th column (index starts at 0)
-                ],
-                lengthChange: true,
-                // buttons: ['excel', 'pdf', 'print']
-                // buttons: ['excel']
-                buttons: [{
-                    extend: 'excelHtml5',
-                    className: 'd-none', // hide the default button
-                }]
-            });
-
-            $('#date-select').on('change', function() {
-                var selected = $(this).val().trim();
-                if (selected) {
-                    var parts = selected.split('-');
-                    var formatted = parts[2] + '-' + parts[1] + '-' + parts[0];
-                }
-                vendorHistoryTable.column(-1).search(formatted ? '^' + formatted + '$' : '', true, false)
-                    .draw();
-            });
-
-            $('#vendor-select').on('change', function() {
-                var selected = $(this).val().trim();
-                vendorHistoryTable.column(2).search(selected ? '^' + selected + '$' : '', true, false)
-                    .draw();
+            /**
+             * Individual Checkbox Handler
+             * Update select-all checkbox state when individual checkboxes change
+             */
+            $(document).on('change', '.row-checkbox', function() {
+                var totalCheckboxes = $('.row-checkbox').length;
+                var checkedCheckboxes = $('.row-checkbox:checked').length;
+                $('#select-all').prop('checked', totalCheckboxes === checkedCheckboxes);
             });
 
         });

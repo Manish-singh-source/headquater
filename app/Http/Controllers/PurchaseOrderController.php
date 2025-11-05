@@ -20,7 +20,9 @@ use App\Models\WarehouseStock;
 use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Spatie\SimpleExcel\SimpleExcelReader;
@@ -601,7 +603,14 @@ class PurchaseOrderController extends Controller
                 }
 
                 $total_amount += $product->mrp * $product->quantity_received;
-                $updateStock = WarehouseStock::where('sku', $product->vendor_sku_code)->first();
+
+                // Get warehouse_id from VendorPI (selected during Excel upload)
+                $warehouseId = $vendorPI->warehouse_id;
+
+                // Find stock in the selected warehouse
+                $updateStock = WarehouseStock::where('sku', $product->vendor_sku_code)
+                    ->where('warehouse_id', $warehouseId)
+                    ->first();
 
                 // Calculate actual sales order requirement from temp_orders
                 $tempOrderProducts = TempOrder::where('vendor_pi_id', $product->vendor_pi_id)
@@ -627,10 +636,9 @@ class PurchaseOrderController extends Controller
                     $updateStock->available_quantity = $updateStock->available_quantity + $extraQuantity;
                     $updateStock->save();
                 } else {
-                    // If stock doesn't exist, create new entry
-                    $storeStock = WarehouseStock::create([
-                        'warehouse_id' => '0',
-                        'product_id' => '0',
+                    // If stock doesn't exist, create new entry in the selected warehouse
+                    WarehouseStock::create([
+                        'warehouse_id' => $warehouseId,
                         'sku' => $product->vendor_sku_code,
                         'original_quantity' => $receivedQuantity,
                         'available_quantity' => $extraQuantity,
@@ -873,21 +881,41 @@ class PurchaseOrderController extends Controller
     // Return or Accept vendor exceeded products
     public function vendorProductAccept($id)
     {
-        $vendorPIProduct = VendorPIProduct::findOrFail($id);
-        $vendorPIProduct->issue_status = 'accept';
+        DB::beginTransaction();
 
-        $product = WarehouseStock::where('sku', $vendorPIProduct->vendor_sku_code)->first();
-        if ($product) {
-            $product->original_quantity += $vendorPIProduct->issue_item;
-            $product->available_quantity += $vendorPIProduct->issue_item;
-            $product->save();
-        }
-        $vendorPIProduct->save();
-        if ($vendorPIProduct) {
+        try {
+            $vendorPIProduct = VendorPIProduct::with('order')->findOrFail($id);
+            $vendorPIProduct->issue_status = 'accept';
+
+            // Get warehouse_id from VendorPI
+            $warehouseId = $vendorPIProduct->order->warehouse_id;
+
+            // Find stock in the selected warehouse
+            $product = WarehouseStock::where('sku', $vendorPIProduct->vendor_sku_code)
+                ->where('warehouse_id', $warehouseId)
+                ->first();
+
+            if ($product) {
+                $product->original_quantity += $vendorPIProduct->issue_item;
+                $product->available_quantity += $vendorPIProduct->issue_item;
+                $product->save();
+            }
+
+            $vendorPIProduct->save();
+
+            DB::commit();
+
+            activity()
+                ->performedOn($vendorPIProduct)
+                ->causedBy(Auth::user())
+                ->log('Vendor exceeded products accepted');
+
             return back()->with('success', 'Products are accepted');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error($e->getMessage());
+            return back()->with('error', 'Something went wrong: ' . $e->getMessage());
         }
-
-        return back()->with('error', 'Something went wrong.');
     }
 
     public function changeStatus(Request $request)
