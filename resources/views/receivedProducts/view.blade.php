@@ -122,7 +122,6 @@
                                                 <table id="example" class="table align-middle">
                                                     <thead class="table-light">
                                                         <tr>
-                                                            <th>Order&nbsp;No</th>
                                                             <th>Purchase&nbsp;Order&nbsp;No</th>
                                                             <th>Vendor&nbsp;Code</th>
                                                             <th>Vendor&nbsp;SKU&nbsp;Code</th>
@@ -144,7 +143,6 @@
                                                     <tbody>
                                                         @foreach ($vendorPIs->products as $product)
                                                             <tr>
-                                                                <td>{{ $vendorPIs->id }}</td>
                                                                 <td>{{ $vendorPIs->purchase_order_id }}</td>
                                                                 <td>{{ $vendorPIs->vendor_code }}</td>
                                                                 <td>{{ $product->vendor_sku_code }}</td>
@@ -175,7 +173,7 @@
                                     </div>
                                 </div>
                                 @if ($vendorPIs->purchaseOrder->status != 'completed')
-                                    @if($vendorPIs->products[0]->quantity_received > 0)
+                                    @if ($vendorPIs->products[0]->quantity_received > 0)
                                         <div class="col-lg-12">
                                             <div class="row justify-content-between mb-3">
                                                 <form class="col-12 text-end" action="{{ route('received.products.status') }}"

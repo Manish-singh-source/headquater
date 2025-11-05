@@ -197,6 +197,7 @@ Route::middleware(['auth'])->group(function () {
     Route::controller(PurchaseOrderController::class)->group(function () {
         Route::get('/purchase-order', 'index')->name('purchase.order.index');
         Route::post('/purchase-order-store', 'store')->name('purchase.order.store');
+        Route::post('/custom-purchase-order-store', 'storeCustomPurchaseOrder')->name('custom.purchase.order.store');
         Route::get('/purchase-order-view/{id}', 'view')->name('purchase.order.view');
         Route::delete('/purchase-order-delete/{id}', 'delete')->name('purchase.order.delete');
         Route::delete('/purchase-orders-delete', 'multiDelete')->name('purchase.order.bulk.delete');

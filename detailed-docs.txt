@@ -976,3 +976,53 @@ Ensure robust security checks and validation for all user actions and uploads .
 6. Payment Process / Verification
 
 7. Order Completed / Closed 
+
+
+10-11
+
+columns:
+
+
+   sales order id (null)
+   purchase order id (generate)
+    warehouse_id, (select)
+   vendor code (select)
+
+   portal code 
+   vendor sku code 
+   title 
+   mrp 
+   gst 
+   hsn 
+   item code 
+   basic rate 
+   net landing rate
+   po quantity 
+   pi quantity 
+   purchase rate basic  
+
+custom purchase order:
+    warehouse_id, 
+    sales_order_id, 
+    customer_group_id, 
+    vendor_id, 
+    vendor_code, 
+    total_amount, 
+    total_paid_amount, 
+    total_due_amount, 
+    status, 
+    order_date,
+
+custom purchase order products:
+    temp_order_id, 
+    purchase_order_id, 
+    sales_order_id, 
+    sales_order_product_id, 
+    product_id, 
+    sku, 
+    vendor_code, 
+    ordered_quantity
+
+
+11-12 
+

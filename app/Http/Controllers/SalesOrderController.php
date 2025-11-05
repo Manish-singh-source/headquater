@@ -1209,7 +1209,7 @@ class SalesOrderController extends Controller
         if ($duplicateCheck) {
             return redirect()->back()->with(['error' => $duplicateCheck]);
         }
-
+ 
         try {
 
             foreach ($reader->getRows() as $record) {

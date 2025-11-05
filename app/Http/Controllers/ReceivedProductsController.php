@@ -173,7 +173,7 @@ class ReceivedProductsController extends Controller
             // Add data rows
             foreach ($vendorPI->products as $product) {
                 $writer->addRow([
-                    'Order No' => $vendorPI->id ?? '',
+                    // 'Order No' => $vendorPI->id ?? '',
                     'Purchase Order No' => $vendorPI->purchase_order_id ?? '',
                     'Vendor SKU Code' => $product->vendor_sku_code ?? '',
                     'Title' => $product->product?->brand_title ?? '',
@@ -366,6 +366,8 @@ class ReceivedProductsController extends Controller
                             'return_description' => $issueDescription != '' ? $issueDescription : 'Extra products returned to vendor',
                             'return_status' => 'pending',
                         ]);
+                        $issueUnits = $extraQuantity; 
+                        
                     } elseif ($productData->available_quantity > $quantityReceived) {
                         // Shortage - create issue entry
                         $shortageQuantity = $productData->available_quantity - $quantityReceived;
@@ -385,13 +387,14 @@ class ReceivedProductsController extends Controller
                             'issue_from' => 'vendor',
                             'issue_status' => 'pending',
                         ]);
+                        $issueUnits = $shortageQuantity;
                     } else {
                         // Exact quantity match
                         $productData->quantity_received = $quantityReceived;
                     }
                 }
 
-                $issueUnits = $extraQuantity ?? $shortageQuantity;
+                
                 
                 // Process issue items
                 if ($issueUnits > 0) {
