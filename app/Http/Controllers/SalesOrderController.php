@@ -1507,7 +1507,7 @@ class SalesOrderController extends Controller
                     'GST' => $gst ?? 0,
 
                     'Basic Rate' => $record['Basic Rate'] ?? 0,
-                    'Product Basic Rate' => intval($stockEntry->product->basic_rate) ?? 0,
+                    'Product Basic Rate' => isset($stockEntry->product->basic_rate) ? intval($stockEntry->product->basic_rate) : 0,
                     'Basic Rate Confirmation' => $rateConfirmation ?? 'Incorrect',
 
                     'Net Landing Rate' => $netLandingRate ?? 0,

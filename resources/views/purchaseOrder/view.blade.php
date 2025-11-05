@@ -543,11 +543,9 @@
                                         <th>
                                             <input class="form-check-input" type="checkbox" id="select-all">
                                         </th>
-                                        @forelse($purchaseOrder->purchaseOrderProducts as $order)
-                                            @isset($order->sales_order_id)
-                                                <th>Sales&nbsp;Order&nbsp;No</th>
-                                            @endisset
-                                        @endforeach
+                                        @isset($purchaseOrder->purchaseOrderProducts[0]->sales_order_id)
+                                            <th>Sales&nbsp;Order&nbsp;No</th>
+                                        @endisset
                                         <th>Purchase&nbsp;Order&nbsp;No</th>
                                         <th>Vendor&nbsp;Code</th>
                                         <th>Portal&nbsp;Code</th>

@@ -125,9 +125,9 @@
                                                 @endif
                                             </td>
                                             <td>{{ $order->purchase_order_products_count ?? 0 }}</td>
-                                            <td>{{ $order->total_amount ?? 0 }}</td>
-                                            <td>{{ $order->total_paid_amount ?? 0 }}</td>
-                                            <td>{{ $order->total_due_amount ?? 0 }}</td>
+                                            <td>{{ $order->vendorPI[0]->total_amount ?? 0 }}</td>
+                                            <td>{{ $order->vendorPI[0]->total_paid_amount ?? 0 }}</td>
+                                            <td>{{ $order->vendorPI[0]->total_due_amount ?? 0 }}</td>
                                             <td>{{ $order->created_at->format('d-M-Y') }}</td>
                                             <td>
                                                 <div class="d-flex">
