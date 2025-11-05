@@ -195,28 +195,37 @@ class InvoiceController extends Controller
     public function invoicePaymentUpdate(Request $request, $id)
     {
         // Logic to update invoice payment details
-        $validated = Validator::make($request->all(), [
+        $validator = Validator::make($request->all(), [
             'utr_no' => 'required|unique:payments,payment_utr_no',
-            'pay_amount' => 'required|numeric|min:0',
+            'pay_amount' => 'required|numeric|min:0.01',
             'payment_method' => 'required|string',
             'payment_status' => 'required|string',
         ]);
 
-        if ($validated->fails()) {
-            // If validation fails, redirect back with errors
-            return redirect()->back()->with('error',$validated->errors()->first())->withInput();
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator)->withInput();
         }
 
+        DB::beginTransaction();
         try {
-            $invoice = Invoice::findOrFail($id);
-            if ($invoice->total_amount <= $invoice->payments->sum('amount')) {
-                return redirect()->back()->with('error', 'Payment amount is already paid.');
-            }
-            if ($invoice->total_amount < $request->input('pay_amount')) {
-                return redirect()->back()->with('error', 'Payment amount is greater than due amount.');
-            }
-            
+            $invoice = Invoice::with('payments')->findOrFail($id);
 
+            // Calculate current paid amount and due amount
+            $currentPaidAmount = $invoice->payments->sum('amount');
+            $currentDueAmount = $invoice->total_amount - $currentPaidAmount;
+
+            // Validate payment amount
+            if ($currentDueAmount <= 0) {
+                DB::rollBack();
+                return redirect()->back()->with('error', 'Invoice is already fully paid.')->withInput();
+            }
+
+            if ($request->input('pay_amount') > $currentDueAmount) {
+                DB::rollBack();
+                return redirect()->back()->with('error', 'Payment amount (₹' . number_format($request->input('pay_amount'), 2) . ') is greater than due amount (₹' . number_format($currentDueAmount, 2) . ').')->withInput();
+            }
+
+            // Create payment record
             $payment = new Payment;
             $payment->invoice_id = $id;
             $payment->payment_utr_no = $request->input('utr_no');
@@ -224,11 +233,35 @@ class InvoiceController extends Controller
             $payment->payment_method = $request->input('payment_method');
             $payment->payment_status = $request->input('payment_status');
             $payment->save();
-        } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Failed to update invoice: '.$e->getMessage());
-        }
 
-        return redirect()->back()->with('success', 'Invoice updated successfully.');
+            // Update invoice paid_amount and balance_due
+            $newPaidAmount = $currentPaidAmount + $request->input('pay_amount');
+            $newBalanceDue = $invoice->total_amount - $newPaidAmount;
+
+            // Determine payment status
+            if ($newBalanceDue <= 0) {
+                $invoicePaymentStatus = 'paid';
+            } elseif ($newPaidAmount > 0) {
+                $invoicePaymentStatus = 'partial';
+            } else {
+                $invoicePaymentStatus = 'unpaid';
+            }
+
+            // Update invoice
+            $invoice->paid_amount = $newPaidAmount;
+            $invoice->balance_due = $newBalanceDue;
+            $invoice->payment_status = $invoicePaymentStatus;
+            $invoice->save();
+
+            DB::commit();
+            activity()->performedOn($invoice)->causedBy(Auth::user())->log('Payment added: ₹' . number_format($request->input('pay_amount'), 2));
+
+            return redirect()->back()->with('success', 'Payment added successfully. Paid: ₹' . number_format($newPaidAmount, 2) . ', Due: ₹' . number_format($newBalanceDue, 2));
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Invoice Payment Update Error: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Error: ' . $e->getMessage())->withInput();
+        }
     }
 
     public function invoiceDetails($id)
