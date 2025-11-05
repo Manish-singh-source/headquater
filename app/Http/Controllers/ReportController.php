@@ -174,94 +174,128 @@ class ReportController extends Controller
     }
 
     /**
-     * Download inventory stock history as Excel
+     * Download inventory stock history as Excel/CSV
+     *
+     * CSV Generation Workflow:
+     * 1. Validate optional filter parameters (from, to dates)
+     * 2. Build query with date range filtering if provided
+     * 3. Retrieve all matching warehouse stock records (no pagination for export)
+     * 4. Generate CSV file with headers and data rows
+     * 5. Log activity for audit trail
+     * 6. Return CSV file as download and delete temp file after sending
+     *
+     * Date Filtering Logic:
+     * - Both 'from' and 'to' parameters are optional
+     * - If 'from' is provided: filter records created on or after this date
+     * - If 'to' is provided: filter records created on or before this date
+     * - If both provided: filter records within the date range (inclusive)
+     * - If neither provided: export all records
      *
      * @param Request $request
-     * @return \Illuminate\Http\Response|\Illuminate\Http\RedirectResponse
+     * @return \Symfony\Component\HttpFoundation\BinaryFileResponse|\Illuminate\Http\RedirectResponse
      */
     public function inventoryStockHistoryExcel(Request $request)
     {
+        // Validate optional date filters
         $validator = Validator::make($request->all(), [
-            'selectedDateFrom' => 'required|date_format:Y-m-d',
-            'selectedDateTo' => 'required|date_format:Y-m-d|after_or_equal:selectedDateFrom',
+            'from' => 'nullable|date',
+            'to' => 'nullable|date|after_or_equal:from',
         ]);
 
         if ($validator->fails()) {
             return redirect()->back()->withErrors($validator)->withInput();
         }
 
+        DB::beginTransaction();
         try {
-            $tempXlsxPath = storage_path('app/inventory_stock_history_' . Str::random(8) . '.xlsx');
-            $writer = SimpleExcelWriter::create($tempXlsxPath);
+            // Build query with date range filtering
+            $query = WarehouseStock::with('product', 'warehouse');
 
-            $products = WarehouseStock::with('product', 'warehouse')
-                ->when($request->selectedDateFrom && $request->selectedDateTo, function ($query) use ($request) {
-                    $query->whereBetween('created_at', [
-                        $request->selectedDateFrom . ' 00:00:00',
-                        $request->selectedDateTo . ' 23:59:59',
-                    ]);
-                })
-                ->latest()
-                ->get();
-
-            if ($products->isEmpty()) {
-                return redirect()->back()->with('info', 'No inventory records found for the selected date.');
+            // Apply 'from' date filter if provided
+            if ($request->filled('from')) {
+                $query->whereDate('created_at', '>=', $request->from);
             }
 
+            // Apply 'to' date filter if provided
+            if ($request->filled('to')) {
+                $query->whereDate('created_at', '<=', $request->to);
+            }
+
+            // Get all matching records (no pagination for export)
+            $products = $query->latest()->get();
+
+            if ($products->isEmpty()) {
+                return redirect()->back()->with('error', 'No inventory records found for the selected criteria.');
+            }
+
+            // Create temporary CSV file
+            $tempCsvPath = storage_path('app/inventory_stock_history_' . Str::random(8) . '.csv');
+            $file = fopen($tempCsvPath, 'w');
+
+            // Add UTF-8 BOM for proper Excel encoding
+            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
+
             // Add header row
-            $writer->addRow([
-                'Brand' => 'Brand',
-                'Brand Title' => 'Brand Title',
-                'Category' => 'Category',
-                'SKU' => 'SKU',
-                'PCS/Set' => 'PCS/Set',
-                'Sets/CTN' => 'Sets/CTN',
-                'MRP' => 'MRP',
-                'Status' => 'Status',
-                'Original Quantity' => 'Original Quantity',
-                'Available Quantity' => 'Available Quantity',
-                'Hold Qty' => 'Hold Qty',
-                'Date' => 'Date',
+            fputcsv($file, [
+                'Brand',
+                'Brand Title',
+                'Category',
+                'SKU',
+                'PCS/Set',
+                'Sets/CTN',
+                'MRP',
+                'Original Quantity',
+                'Available Quantity',
+                'Hold Qty',
+                'Date',
             ]);
 
             // Add data rows
             foreach ($products as $record) {
                 $product = $record->product;
 
-                $writer->addRow([
-                    'Brand' => $product?->brand ?? 'N/A',
-                    'Brand Title' => $product?->brand_title ?? 'N/A',
-                    'Category' => $product?->category ?? 'N/A',
-                    'SKU' => $product?->sku ?? 'N/A',
-                    'PCS/Set' => $product?->pcs_set ?? 0,
-                    'Sets/CTN' => $product?->sets_ctn ?? 0,
-                    'MRP' => number_format($product?->mrp ?? 0, 2),
-                    'Status' => ($product?->status == '1') ? 'Active' : 'Inactive',
-                    'Original Quantity' => $record->original_quantity ?? 0,
-                    'Available Quantity' => $record->available_quantity ?? 0,
-                    'Hold Qty' => $record->block_quantity ?? 0,
-                    'Date' => $product?->created_at?->format('d-m-Y') ?? 'N/A',
+                fputcsv($file, [
+                    $product?->brand ?? 'N/A',
+                    $product?->brand_title ?? 'N/A',
+                    $product?->category ?? 'N/A',
+                    $product?->sku ?? 'N/A',
+                    $product?->pcs_set ?? 0,
+                    $product?->sets_ctn ?? 0,
+                    number_format($product?->mrp ?? 0, 2, '.', ''),
+                    $record->original_quantity ?? 0,
+                    $record->available_quantity ?? 0,
+                    $record->block_quantity ?? 0,
+                    $product?->created_at?->format('d-m-Y') ?? 'N/A',
                 ]);
             }
 
-            $writer->close();
+            fclose($file);
 
-            // Log activity
+            // Log activity for audit trail
             activity()
                 ->causedBy(Auth::user())
                 ->withProperties([
-                    'date' => $request->selectedDate,
+                    'from_date' => $request->from,
+                    'to_date' => $request->to,
                     'records' => $products->count(),
                 ])
-                ->event('report_generated')
-                ->log('Inventory stock history report generated');
+                ->event('csv_report_generated')
+                ->log('Inventory stock history CSV report generated');
 
-            $fileName = 'Inventory-Stock-History-' . date('d-m-Y', strtotime($request->selectedDate)) . '.xlsx';
+            DB::commit();
 
-            return response()->download($tempXlsxPath, $fileName, [
-                'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            // Generate filename with current date or date range
+            $fileName = 'Inventory-Stock-History-' . date('d-m-Y') . '.csv';
+
+            // Return CSV file as download and delete after sending
+            return response()->download($tempCsvPath, $fileName, [
+                'Content-Type' => 'text/csv',
+                'Content-Disposition' => 'attachment; filename="' . $fileName . '"',
             ])->deleteFileAfterSend(true);
+
         } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error generating inventory CSV report: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Error generating inventory report: ' . $e->getMessage());
         }
     }

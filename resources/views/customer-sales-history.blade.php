@@ -198,7 +198,7 @@
             <div class="card mt-4">
                 <div class="card-body">
                     <div class="table-responsive">
-                        <table class="table table-striped table-hover align-middle">
+                        <table id="customerSalesTable" class="table table-striped table-hover align-middle">
                             <thead class="table-light">
                                 <tr>
                                     <th style="width: 40px;">
@@ -319,6 +319,17 @@
 @section('script')
     <script>
         $(document).ready(function() {
+            // Initialize DataTable for customer sales table
+            $('#customerSalesTable').DataTable({
+                "pageLength": 10,
+                "lengthMenu": [ [10, 25, 50, 100], [10, 25, 50, 100] ],
+                "ordering": true,
+                "searching": true,
+                "language": {
+                    "search": "Search:",
+                    "lengthMenu": "Show _MENU_ entries"
+                }
+            });
             /**
              * Generate Report (CSV Export) Functionality
              *
@@ -395,6 +406,6 @@
             var tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {
                 return new bootstrap.Tooltip(tooltipTriggerEl);
             });
-        });
+    });
     </script>
 @endsection
