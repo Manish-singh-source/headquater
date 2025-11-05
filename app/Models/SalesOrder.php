@@ -80,4 +80,9 @@ class SalesOrder extends Model
     {
         return $this->hasMany(Invoice::class, 'sales_order_id', 'id');
     }
+
+    public function warehouseAllocations()
+    {
+        return $this->hasMany(WarehouseAllocation::class, 'sales_order_id', 'id');
+    }
 }

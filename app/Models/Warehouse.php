@@ -28,4 +28,19 @@ class Warehouse extends Model
     {
         return $this->hasMany(WarehouseStock::class, 'warehouse_id', 'id');
     }
+
+    public function warehouseAllocations()
+    {
+        return $this->hasMany(WarehouseAllocation::class, 'warehouse_id', 'id');
+    }
+
+    public function scopeActive($query)
+    {
+        return $query->where('status', '1');
+    }
+
+    public function scopeInactive($query)
+    {
+        return $query->where('status', '0');
+    }
 }
