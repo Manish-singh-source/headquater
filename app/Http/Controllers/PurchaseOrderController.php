@@ -678,8 +678,8 @@ class PurchaseOrderController extends Controller
                 // This was already handled in the warehouse stock update above
             }
 
-            $vendorPI->total_amount = $total_amount;
-            $vendorPI->total_due_amount = $total_amount;
+            $vendorPI->total_amount = $vendorPI->total_amount ?? $total_amount;
+            $vendorPI->total_due_amount = $vendorPI->total_amount ?? $total_amount;
             $vendorPI->save();
 
             DB::commit();
@@ -754,31 +754,38 @@ class PurchaseOrderController extends Controller
         //         File::delete(public_path('uploads/invoices/' . $purchaseOrderInvoice->invoice_file));
         //     }
         // }
+        try {
 
-        $vendorPIStatus = VendorPI::where('purchase_order_id', $request->purchase_order_id)->where('vendor_code', $request->vendor_code)->first();
+            $vendorPIStatus = VendorPI::where('purchase_order_id', $request->purchase_order_id)->where('vendor_code', $request->vendor_code)->first();
+            $vendorPIStatus->total_amount = $request->invoice_amount;
+            $vendorPIStatus->total_due_amount = $request->invoice_amount;
+            $vendorPIStatus->save();
 
-        if (! isset($vendorPIStatus)) {
-            return redirect()->back()->with('error', 'Vendor PI Is Not Uploaded');
+            if (! isset($vendorPIStatus)) {
+                return redirect()->back()->with('error', 'Vendor PI Is Not Uploaded');
+            }
+
+            $invoice_file = $request->file('invoice_file');
+            $ext = $invoice_file->getClientOriginalExtension();
+            $invoiceFileName = strtotime('now') . '-' . $request->purchase_order_id . '.' . $ext;
+            $invoice_file->move(public_path('uploads/invoices'), $invoiceFileName);
+
+            $purchaseInvoice = new PurchaseInvoice;
+            $purchaseInvoice->purchase_order_id = $request->purchase_order_id;
+            $purchaseInvoice->vendor_code = $request->vendor_code;
+            $purchaseInvoice->invoice_file = $invoiceFileName;
+            $purchaseInvoice->invoice_no = $request->invoice_no;
+            $purchaseInvoice->invoice_amount = $request->invoice_amount;
+            $purchaseInvoice->save();
+
+            if (! $purchaseInvoice) {
+                return back()->with('error', 'Something went wrong');
+            }
+
+            return redirect()->route('purchase.order.view', $request->purchase_order_id)->with('success', 'Invoice imported successfully.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Something went wrong: ' . $e->getMessage());
         }
-
-        $invoice_file = $request->file('invoice_file');
-        $ext = $invoice_file->getClientOriginalExtension();
-        $invoiceFileName = strtotime('now') . '-' . $request->purchase_order_id . '.' . $ext;
-        $invoice_file->move(public_path('uploads/invoices'), $invoiceFileName);
-
-        $purchaseInvoice = new PurchaseInvoice;
-        $purchaseInvoice->purchase_order_id = $request->purchase_order_id;
-        $purchaseInvoice->vendor_code = $request->vendor_code;
-        $purchaseInvoice->invoice_file = $invoiceFileName;
-        $purchaseInvoice->invoice_no = $request->invoice_no;
-        $purchaseInvoice->invoice_amount = $request->invoice_amount;
-        $purchaseInvoice->save();
-
-        if (! $purchaseInvoice) {
-            return back()->with('error', 'Something went wrong');
-        }
-
-        return redirect()->route('purchase.order.view', $request->purchase_order_id)->with('success', 'Invoice imported successfully.');
     }
 
     public function grnStore(Request $request)

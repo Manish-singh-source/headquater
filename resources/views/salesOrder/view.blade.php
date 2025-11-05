@@ -251,9 +251,11 @@
                                     <div class="dropdown-menu dropdown-menu-right dropdown-menu-lg-end">
                                         <button type="button" id="delete-selected"
                                             class="dropdown-item cursor-pointer">Delete All</button>
+                                        @if(in_array($salesOrder->status, ['ready_to_ship', 'shipped', 'completed']))
                                         <button type="button" class="dropdown-item cursor-pointer" id="generateInvoice">
                                             <i class="fa fa-file-excel-o"></i> Generate Invoice
                                         </button>
+                                        @endif
                                         <button type="button" class="dropdown-item cursor-pointer" id="exportData">
                                             <i class="fa fa-file-excel-o"></i> Export(Excel)
                                         </button>
