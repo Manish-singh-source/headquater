@@ -308,6 +308,9 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/invoice-appointment-update/{id}', 'invoiceAppointmentUpdate')->name('invoices.appointment.update');
         Route::post('/invoice-dn-update/{id}', 'invoiceDnUpdate')->name('invoice.dn.update');
         Route::post('/invoice-payment-update/{id}', 'invoicePaymentUpdate')->name('invoice.payment.update');
+
+        // Check PO Number 
+        Route::post('/check-po-number', 'checkPoNumber')->name('check.po.number');
     });
 
     Route::view('/excel-file-formats', 'excel-file-formats')->name('excel-file-formats');

@@ -75,16 +75,16 @@ class InvoiceController extends Controller
             $totalBoxCount = $invoiceDetails->sum('box_count');
         }
 
-        if($invoice->warehouse->state && $invoice->customer->shipping_state) {
-            $warehouseState = $invoice->warehouse->state->name;
-            $customerState = $invoice->customer->shipping_state;
-            // dd($warehouseState, $customerState);
-            if($warehouseState == $customerState) {
-                $igstStatus = true;
-            } else {
-                $igstStatus = false;
-            }
-        }
+        // if($invoice->warehouse->state && $invoice->customer->shipping_state) {
+        //     $warehouseState = $invoice->warehouse->state->name;
+        //     $customerState = $invoice->customer->shipping_state;
+        //     // dd($warehouseState, $customerState);
+        //     if($warehouseState == $customerState) {
+        //         $igstStatus = true;
+        //     } else {
+        //         $igstStatus = false;
+        //     }
+        // }
 
         $data = [
             'title' => 'Invoice',
@@ -141,7 +141,7 @@ class InvoiceController extends Controller
             if ($request->hasFile('pod')) {
                 $pod = $request->file('pod');
                 $ext = $pod->getClientOriginalExtension();
-                $podName = time().'_pod.'.$ext;
+                $podName = time() . '_pod.' . $ext;
 
                 // Store original image
                 $pod->move(public_path('uploads/pod'), $podName);
@@ -151,7 +151,7 @@ class InvoiceController extends Controller
             if ($request->hasFile('grn')) {
                 $grn = $request->file('grn');
                 $ext = $grn->getClientOriginalExtension();
-                $grnName = time().'_grn.'.$ext;
+                $grnName = time() . '_grn.' . $ext;
 
                 // Store original image
                 $grn->move(public_path('uploads/grn'), $grnName);
@@ -160,7 +160,7 @@ class InvoiceController extends Controller
 
             $appointment->save();
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Failed to update invoice: '.$e->getMessage());
+            return redirect()->back()->with('error', 'Failed to update invoice: ' . $e->getMessage());
         }
 
         return redirect()->back()->with('success', 'Invoice updated successfully.');
@@ -192,7 +192,7 @@ class InvoiceController extends Controller
             if ($request->hasFile('dn_receipt')) {
                 $dnReceipt = $request->file('dn_receipt');
                 $ext = $dnReceipt->getClientOriginalExtension();
-                $dnReceiptName = time().'.'.$ext;
+                $dnReceiptName = time() . '.' . $ext;
 
                 // Store original image
                 $dnReceipt->move(public_path('uploads/dn_receipts'), $dnReceiptName);
@@ -201,7 +201,7 @@ class InvoiceController extends Controller
 
             $dn->save();
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Failed to update invoice: '.$e->getMessage());
+            return redirect()->back()->with('error', 'Failed to update invoice: ' . $e->getMessage());
         }
 
         return redirect()->back()->with('success', 'Invoice updated successfully.');
@@ -356,12 +356,12 @@ class InvoiceController extends Controller
         $validator = Validator::make($request->all(), [
             'customer_id' => 'required|exists:customers,id',
             'invoice_date' => 'required|date',
-            'po_number' => 'nullable|string|max:255',
+            'po_number' => 'nullable|string|max:255|unique:invoices,po_number',
             'products' => 'required|array|min:1',
             'products.*.warehouse_id' => 'required|exists:warehouses,id',
             'products.*.product_id' => 'required|exists:products,id',
             'products.*.hsn' => 'nullable|string|max:255',
-            'products.*.quantity' => 'required|numeric|min:0.01',
+            'products.*.quantity' => 'required|numeric',
             'products.*.box_count' => 'nullable|integer|min:0',
             'products.*.weight' => 'nullable|numeric|min:0',
             'products.*.unit_price' => 'required|numeric|min:0',
@@ -384,6 +384,8 @@ class InvoiceController extends Controller
                 ->orderBy('id', 'desc')
                 ->first();
 
+            $timestamp = time();
+
             if ($lastInvoice) {
                 $lastNumber = (int) substr($lastInvoice->invoice_number, -3);
                 $newNumber = str_pad($lastNumber + 1, 3, '0', STR_PAD_LEFT);
@@ -391,7 +393,8 @@ class InvoiceController extends Controller
                 $newNumber = '001';
             }
 
-            $invoiceNumber = "INV-{$yearMonth}-{$newNumber}";
+            // $invoiceNumber = "INV-{$yearMonth}-{$newNumber}";
+            $invoiceNumber = 'INV-' . $timestamp . '-' . str_pad($newNumber + 1, 4, '0', STR_PAD_LEFT);
 
             // Calculate totals
             $subtotal = 0;
@@ -505,6 +508,34 @@ class InvoiceController extends Controller
             DB::rollBack();
             Log::error('Manual Invoice Creation Error: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Error: ' . $e->getMessage())->withInput();
+        }
+    }
+
+    // Check PO Number 
+    // if po number is already exists then return cannot use this po number 
+    // if po number is not exists then return you can use this po number 
+    public function checkPoNumber(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'po_number' => 'nullable|string|max:255',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'message' => $validator->errors()->first()], 422);
+        }
+
+        try {
+            $poNumber = $request->po_number;
+            $invoice = Invoice::where('po_number', $poNumber)->first();
+
+            if ($invoice) {
+                return response()->json(['success' => false, 'message' => 'PO Number already exists']);
+            } else {
+                return response()->json(['success' => true, 'message' => 'PO Number is available']);
+            }
+        } catch (\Exception $e) {
+            Log::error('Check PO Number Error: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Failed to check PO Number'], 500);
         }
     }
 }

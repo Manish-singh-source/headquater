@@ -423,7 +423,7 @@ class ReportController extends Controller
             $statsQuery = clone $query;
 
             // Get paginated invoices (15 per page)
-            $invoices = $query->latest('invoice_date')->paginate(15)->appends($request->all());
+            $invoices = $query->latest('invoice_date')->get();
 
             // Calculate statistics based on filtered results
             $invoicesAmountSum = $statsQuery->sum('total_amount');
@@ -459,6 +459,7 @@ class ReportController extends Controller
                 ],
             ];
 
+            // dd($data);
             return view('customer-sales-history', $data);
         } catch (\Exception $e) {
             Log::error('Error retrieving customer sales history: ' . $e->getMessage());

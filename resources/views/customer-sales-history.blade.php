@@ -61,7 +61,7 @@
                                 </div>
                                 <div class="flex-grow-1">
                                     <p class="mb-0 text-secondary">Total Invoices</p>
-                                    <h4 class="mb-0 fw-bold">{{ $invoices->total() }}</h4>
+                                    <h4 class="mb-0 fw-bold">{{ $invoices->count() }}</h4>
                                 </div>
                             </div>
                         </div>
@@ -257,7 +257,7 @@
                                         </td>
                                         <td>{{ $invoice->appointment?->appointment_date ?? 'N/A' }}</td>
                                         <td>{{ $invoice->appointment?->pod ? 'Yes' : 'No' }}</td>
-                                        <td>{{ $invoice->appointment?->lr ? 'Yes' : 'No' }}</td>
+                                        <td>{{ $invoice->status == 'shipped' ? 'Yes' : 'No' }}</td>
                                         <td>{{ $invoice->dns?->dn_amount ? 'Yes' : 'No' }}</td>
                                         <td>{{ $invoice->appointment?->grn ? 'Yes' : 'No' }}</td>
                                         <td>{{ $invoice->payment_status ? ucfirst($invoice->payment_status) : 'Not Paid' }}
@@ -284,7 +284,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="8" class="text-center text-muted py-4">
+                                        <td colspan="15" class="text-center text-muted py-4">
                                             <i class="bx bx-info-circle fs-4 d-block mb-2"></i>
                                             No sales records found
                                             @if ($filters['from_date'] || $filters['to_date'] || $filters['customer_id'])
@@ -298,7 +298,7 @@
                     </div>
 
                     <!-- Pagination -->
-                    @if ($invoices->hasPages())
+                    {{-- @if ($invoices->hasPages())
                         <div class="d-flex justify-content-between align-items-center mt-3">
                             <div class="text-muted">
                                 Showing {{ $invoices->firstItem() }} to {{ $invoices->lastItem() }} of
@@ -308,7 +308,7 @@
                                 {{ $invoices->links('pagination::bootstrap-5') }}
                             </div>
                         </div>
-                    @endif
+                    @endif --}}
                 </div>
             </div>
 
