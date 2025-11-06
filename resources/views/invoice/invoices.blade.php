@@ -8,21 +8,22 @@
                 <div class="">
                     <nav aria-label="breadcrumb">
                         <ol class="breadcrumb mb-0 p-0">
-                            <li class="breadcrumb-item"><a href="{{ route('invoices') }}"><i class="bx bx-home-alt"></i></a></li>
+                            <li class="breadcrumb-item"><a href="{{ route('invoices') }}"><i class="bx bx-home-alt"></i></a>
+                            </li>
                             <li class="breadcrumb-item active" aria-current="page">Sales Order Invoices</li>
                         </ol>
                     </nav>
                 </div>
             </div>
 
-            @if(session('success'))
+            @if (session('success'))
                 <div class="alert alert-success alert-dismissible fade show" role="alert">
                     {{ session('success') }}
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
             @endif
 
-            @if(session('error'))
+            @if (session('error'))
                 <div class="alert alert-danger alert-dismissible fade show" role="alert">
                     {{ session('error') }}
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
@@ -33,14 +34,15 @@
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h5 class="mb-0">Invoice List</h5>
-                       
+
                     </div>
                     <div class="customer-table">
                         <div class="table-responsive white-space-nowrap">
                             <table id="example" class="table table-striped table-hover">
                                 <thead class="table-light">
                                     <tr>
-                                        <th style="width:40px;"><input class="form-check-input" type="checkbox" id="selectAll"></th>
+                                        <th style="width:40px;"><input class="form-check-input" type="checkbox"
+                                                id="selectAll"></th>
                                         <th>Order&nbsp;ID</th>
                                         <th>Invoice&nbsp;No</th>
                                         <th>PO&nbsp;No</th>
@@ -63,7 +65,8 @@
                                             <td>{{ $invoice->appointment?->appointment_date ?? 'N/A' }}</td>
                                             <td>₹{{ number_format($invoice->total_amount, 2) }}</td>
                                             <td>₹{{ number_format($invoice->payments->sum('amount'), 2) }}</td>
-                                            <td>₹{{ number_format($invoice->total_amount - $invoice->payments->sum('amount'), 2) }}</td>
+                                            <td>₹{{ number_format($invoice->total_amount - $invoice->payments->sum('amount'), 2) }}
+                                            </td>
                                             <td>
                                                 <a aria-label="anchor" href="{{ route('invoices-details', $invoice->id) }}"
                                                     class="btn btn-icon btn-sm bg-primary-subtle me-1"
@@ -76,9 +79,14 @@
                                                         <circle cx="12" cy="12" r="3"></circle>
                                                     </svg>
                                                 </a>
-                                                @if (!$invoice->appointment || !$invoice->appointment->appointment_date || !$invoice->appointment->pod || !$invoice->appointment->grn)
+                                                @if (
+                                                    !$invoice->appointment ||
+                                                        !$invoice->appointment->appointment_date ||
+                                                        !$invoice->appointment->pod ||
+                                                        !$invoice->appointment->grn)
                                                     <a type="button" class="btn btn-icon btn-sm bg-success-subtle me-1"
-                                                        data-bs-toggle="modal" data-bs-target="#appointmentView-{{ $invoice->id }}">
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#appointmentView-{{ $invoice->id }}">
                                                         <img width="15" height="15"
                                                             src="https://img.icons8.com/ios/50/calendar--v1.png"
                                                             alt="calendar" />
@@ -86,24 +94,31 @@
                                                 @endif
                                                 @if (!$invoice->dns)
                                                     <a type="button" class="btn btn-icon btn-sm bg-success-subtle me-1"
-                                                        data-bs-toggle="modal" data-bs-target="#dnView-{{ $invoice->id }}">
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#dnView-{{ $invoice->id }}">
                                                         <img width="15" height="15"
                                                             src="https://img.icons8.com/ios/50/document--v1.png"
                                                             alt="document" />
                                                     </a>
                                                 @endif
-                                                <a type="button" class="btn btn-icon btn-sm bg-success-subtle me-1"
-                                                    data-bs-toggle="modal" data-bs-target="#paymentView-{{ $invoice->id }}">
-                                                    <img width="15" height="15"
-                                                        src="https://img.icons8.com/ios/50/bank-card-back-side--v1.png"
-                                                        alt="payment" />
-                                                </a>
-                                                @include('invoice.partials.modals', ['invoice' => $invoice])
+                                                @if (!$invoice->payments)
+                                                    <a type="button" class="btn btn-icon btn-sm bg-success-subtle me-1"
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#paymentView-{{ $invoice->id }}">
+                                                        <img width="15" height="15"
+                                                            src="https://img.icons8.com/ios/50/bank-card-back-side--v1.png"
+                                                            alt="payment" />
+                                                    </a>
+                                                @endif
+                                                @include('invoice.partials.modals', [
+                                                    'invoice' => $invoice,
+                                                ])
                                             </td>
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="10" class="text-center text-muted py-4">No invoices found for this sales order</td>
+                                            <td colspan="10" class="text-center text-muted py-4">No invoices found for
+                                                this sales order</td>
                                         </tr>
                                     @endforelse
                                 </tbody>
@@ -138,7 +153,8 @@
             // Individual checkbox click
             $('.form-check-input[type="checkbox"]').not('#selectAll').on('click', function() {
                 var totalCheckboxes = $('.form-check-input[type="checkbox"]').not('#selectAll').length;
-                var checkedCheckboxes = $('.form-check-input[type="checkbox"]:checked').not('#selectAll').length;
+                var checkedCheckboxes = $('.form-check-input[type="checkbox"]:checked').not('#selectAll')
+                    .length;
                 $('#selectAll').prop('checked', totalCheckboxes === checkedCheckboxes);
             });
         });

@@ -34,7 +34,7 @@ class ReportController extends Controller
     {
         try {
             // Build the base query with relationships
-            $query = VendorPI::with('products', 'payments')->where('status', 'completed');
+            $query = VendorPI::with('products', 'payments', 'purchaseInvoice', 'purchaseGrn', 'purchaseOrder')->where('status', 'completed');
 
             // Apply date range filter if from_date is provided
             if ($request->filled('from_date')) {
@@ -70,7 +70,7 @@ class ReportController extends Controller
                 ->distinct('vendor_code')
                 ->pluck('vendor_code');
 
-            // dd($purchaseOrders);
+            // dd($purchaseOrders);    
 
             return view('vendor-purchase-history', compact(
                 'purchaseOrders',

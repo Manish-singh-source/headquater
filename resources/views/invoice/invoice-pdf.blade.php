@@ -143,7 +143,7 @@
         }
 
         .rate {
-            width: 7%;
+            width: 6%;
         }
 
         .amt {
@@ -159,7 +159,7 @@
         }
 
         .total {
-            width: 8%;
+            width: 9%;
         }
 
         .right-align {
@@ -269,8 +269,15 @@
             <th class="box">BOX</th>
             <th class="rate">Rate</th>
             <th class="amt">Amount</th>
-            <th class="igstr">IGST </br> Rate</th>
-            <th class="igsta">IGST </br> Amount</th>
+            @if ($igstStatus)
+                <th class="igstr">CGST </br> Rate</th>
+                <th class="igsta">CGST </br> Amount</th>
+                <th class="igstr">SGST </br> Rate</th>
+                <th class="igsta">SGST </br> Amount</th>
+            @else
+                <th class="igstr">IGST </br> Rate</th>
+                <th class="igsta">IGST </br> Amount</th>
+            @endif
             <th class="total">Total</th>
         </tr>
         @php
@@ -285,8 +292,8 @@
                 {{ $totalAmount = $igstAmount + $detail->amount }}
                 {{ $totalAmountSum = $totalAmount + $totalAmountSum }}
                 {{ $totalIgstSum = $igstAmount + $totalIgstSum }}
-                {{ $totalBoxCount += $detail->box_count ?? 0 }}
-                {{ $totalWeight += $detail->weight ?? 0 }}
+                {{ $totalBoxCount += $detail->box_count ? $detail->box_count : $detail->salesOrderProduct?->box_count }}
+                {{ $totalWeight += $detail->weight ? $detail->weight : $detail->salesOrderProduct?->weight }}
 
                 <td class="text-center">{{ $index + 1 }}</td>
                 <td>
@@ -302,8 +309,15 @@
                 <td class="right-align">{{ $detail->box_count ?? $detail->salesOrderProduct?->box_count }}</td>
                 <td class="right-align">{{ $detail->unit_price }}</td>
                 <td class="right-align">{{ $detail->amount }}</td>
-                <td class="right-align">{{ floor($detail->tax) }}%</td>
-                <td class="right-align">{{ $igstAmount }}</td>
+                @if ($igstStatus)
+                    <td class="right-align">{{ floor($detail->tax / 2) }}%</td>
+                    <td class="right-align">{{ $igstAmount / 2 }}</td>
+                    <td class="right-align">{{ floor($detail->tax / 2) }}%</td>
+                    <td class="right-align">{{ $igstAmount / 2 }}</td>
+                @else
+                    <td class="right-align">{{ floor($detail->tax) }}%</td>
+                    <td class="right-align">{{ $igstAmount }}</td>
+                @endif
                 <td class="right-align">{{ $totalAmount }}</td>
             </tr>
         @endforeach
@@ -313,8 +327,15 @@
             <td class="right-align">{{ $TotalBoxCount }}</td>
             <td class="right-align">{{ $invoiceDetails->sum('unit_price') }}</td>
             <td class="right-align">{{ $invoiceDetails->sum('amount') }}</td>
-            <td class="right-align">{{ $invoiceDetails->sum('igst_rate') }}</td>
-            <td class="right-align">{{ $totalIgstSum }}</td>
+            @if ($igstStatus)
+                <td class="right-align">{{ $invoiceDetails->sum('igst_rate') / 2 }}</td>
+                <td class="right-align">{{ $totalIgstSum / 2 }}</td>
+                <td class="right-align">{{ $invoiceDetails->sum('igst_rate') / 2 }}</td>
+                <td class="right-align">{{ $totalIgstSum / 2 }}</td>
+            @else
+                <td class="right-align">{{ $invoiceDetails->sum('igst_rate') }}</td>
+                <td class="right-align">{{ $totalIgstSum }}</td>
+            @endif
             <td class="right-align">{{ $totalAmountSum }}</td>
         </tr>
     </table>
@@ -347,8 +368,8 @@
         <tr>
             <td colspan="2">
                 TOTAL&nbsp;SETS&nbsp;-&nbsp;QTY {{ $invoiceDetails->sum('quantity') }}<br>
-                TOTAL&nbsp;BOX&nbsp;COUNT&nbsp;- {{ $totalBoxCount ?? $TotalBoxCount ?? 0 }}<br>
-                WEIGHT&nbsp;-&nbsp;KG {{ $totalWeight ?? $TotalWeight ?? 0 }}
+                TOTAL&nbsp;BOX&nbsp;COUNT&nbsp;- {{ $totalBoxCount ?? ($TotalBoxCount ?? 0) }}<br>
+                WEIGHT&nbsp;-&nbsp;KG {{ $totalWeight ?? ($TotalWeight ?? 0) }}
             </td>
 
         </tr>

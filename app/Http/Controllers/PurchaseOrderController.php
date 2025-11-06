@@ -740,7 +740,7 @@ class PurchaseOrderController extends Controller
             'invoice_file' => 'required|mimes:pdf',
             'purchase_order_id' => 'required',
             'vendor_code' => 'required',
-            'invoice_no' => 'required',
+            'invoice_no' => 'required|unique:purchase_invoices,invoice_no',
             'invoice_amount' => 'required',
         ]);
 

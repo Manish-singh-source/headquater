@@ -245,6 +245,7 @@
                                             'blocked' => 'Blocked',
                                             'completed' => 'Completed',
                                             'ready_to_ship' => 'Ready To Ship',
+                                            'shipped' => 'Shipped',
                                         ];
                                     @endphp
                                     @forelse($salesOrder->orderedProducts as $order)

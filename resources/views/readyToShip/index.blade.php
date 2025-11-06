@@ -41,6 +41,7 @@
                                             'pending' => 'Pending',
                                             'blocked' => 'Blocked',
                                             'completed' => 'Completed',
+                                            'shipped' => 'Shipped',
                                             'ready_to_ship' => 'Ready To Ship',
                                             'ready_to_package' => 'Ready To Package',
                                         ];
