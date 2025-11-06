@@ -104,3 +104,139 @@
 
 11. Manage Sales Orders 
 
+
+
+
+
+
+
+
+
+
+
+Permission::create(['name' => 'List Staff']);
+Permission::create(['name' => 'Add Staff']);
+Permission::create(['name' => 'Update']);
+Permission::create(['name' => 'Status Change']);
+Permission::create(['name' => 'Delete']);
+Permission::create(['name' => 'Multi Delete']);
+Permission::create(['name' => 'Multi Status Change']);
+Permission::create(['name' => 'List Role']);
+Permission::create(['name' => 'Add Role']);
+Permission::create(['name' => 'Update']);
+Permission::create(['name' => 'Delete']);
+Permission::create(['name' => 'Multi Delete']);
+Permission::create(['name' => 'List Permissions']);
+Permission::create(['name' => 'Add Permissions']);
+Permission::create(['name' => 'Update']);
+Permission::create(['name' => 'Delete']);
+Permission::create(['name' => 'List of Customer Groups']);
+Permission::create(['name' => 'Tab Switching']);
+Permission::create(['name' => 'Create Customer Group']);
+Permission::create(['name' => 'Update Customer Group Name']);
+Permission::create(['name' => 'Delete Customer Group']);
+Permission::create(['name' => 'Change Status']);
+Permission::create(['name' => 'Multi Select Status Change']);
+Permission::create(['name' => 'Multi Select Delete']);
+Permission::create(['name' => 'View Customer Group:']);
+Permission::create(['name' => 'List of Customers']);
+Permission::create(['name' => 'Tab Switching']);
+Permission::create(['name' => 'Add Single Customer']);
+Permission::create(['name' => 'Bulk add Customer']);
+Permission::create(['name' => 'Multi Select Status Change']);
+Permission::create(['name' => 'Multi Select Delete']);
+Permission::create(['name' => 'Update Customer']);
+Permission::create(['name' => 'Delete Customer']);
+Permission::create(['name' => 'View Customer Info']);
+Permission::create(['name' => 'List of Vendors']);
+Permission::create(['name' => 'Tab Switching']);
+Permission::create(['name' => 'Add Vendor']);
+Permission::create(['name' => 'Bulk add Vendor']);
+Permission::create(['name' => 'Multi Select Status Change']);
+Permission::create(['name' => 'Multi Select Delete']);
+Permission::create(['name' => 'Update Vendor']);
+Permission::create(['name' => 'Delete Vendor']);
+Permission::create(['name' => 'View Vendor Info']);
+Permission::create(['name' => 'List of Products']);
+Permission::create(['name' => 'Tab Switching (quantity 0, quantity greater)']);
+Permission::create(['name' => 'Add Bulk Products']);
+Permission::create(['name' => 'Multi Select Status Change']);
+Permission::create(['name' => 'Multi Select Delete']);
+Permission::create(['name' => 'Export Products List']);
+Permission::create(['name' => 'Update Products Using Exported File']);
+Permission::create(['name' => 'Update Products']);
+Permission::create(['name' => 'Delete Products']);
+Permission::create(['name' => 'List of SKUs']);
+Permission::create(['name' => 'Bulk add SKUs']);
+Permission::create(['name' => 'Update SKUs']);
+Permission::create(['name' => 'Delete SKUs']);
+Permission::create(['name' => 'List of Warehouses']);
+Permission::create(['name' => 'Tab Switching']);
+Permission::create(['name' => 'Add Warehouses']);
+Permission::create(['name' => 'Multi Select Status Change']);
+Permission::create(['name' => 'Multi Select Delete']);
+Permission::create(['name' => 'Update Warehouses']);
+Permission::create(['name' => 'Delete Warehouses']);
+Permission::create(['name' => 'View Warehouse Info:']);
+Permission::create(['name' => 'Export Warehouse Products']);
+Permission::create(['name' => 'Custom Purchase Order Create']);
+Permission::create(['name' => 'Auto Purchase Order Create (using sales order)']);
+Permission::create(['name' => 'Tab Switching']);
+Permission::create(['name' => 'Multi Select Delete']);
+Permission::create(['name' => 'Delete Selected']);
+Permission::create(['name' => 'View Purchase Order:']);
+Permission::create(['name' => 'Vendor PO Export']);
+Permission::create(['name' => 'Vendor PI Upload(Updated Vendor PO file)']);
+Permission::create(['name' => 'Multi Select Delete']);
+Permission::create(['name' => 'Delete Selected']);
+Permission::create(['name' => 'Vendor PI Update (using Export & Upload)']);
+Permission::create(['name' => 'Add Vendor GRN']);
+Permission::create(['name' => 'Update GRN']);
+Permission::create(['name' => 'Delete GRN']);
+Permission::create(['name' => 'Add Vendor Invoice']);
+Permission::create(['name' => 'Update Invoice']);
+Permission::create(['name' => 'Delete Invoice']);
+Permission::create(['name' => 'Add Vendor Payments']);
+Permission::create(['name' => 'Check Availibility']);
+Permission::create(['name' => 'List of Sales Order']);
+Permission::create(['name' => 'Tab Switching']);
+Permission::create(['name' => 'Add Sales Order']);
+Permission::create(['name' => 'Delete Sales Order (if No products blocked in sales order)']);
+Permission::create(['name' => 'View Sales Order Info:']);
+Permission::create(['name' => 'Vendor, Customer, Sku not found excel download']);
+Permission::create(['name' => 'Tab Switching(based on invoice status)']);
+Permission::create(['name' => 'List of Products']);
+Permission::create(['name' => 'Export Customer PO']);
+Permission::create(['name' => 'Update Customer PO (using exported file)']);
+Permission::create(['name' => 'Multi delete products (release warehouse quantity)']);
+Permission::create(['name' => 'Generate Invoice (based on po_number)']);
+Permission::create(['name' => 'List of Invoices']);
+Permission::create(['name' => 'Tab Switching']);
+Permission::create(['name' => 'Create Invoices']);
+Permission::create(['name' => 'Add appointment details']);
+Permission::create(['name' => 'Add DN Details']);
+Permission::create(['name' => 'Add payments details']);
+Permission::create(['name' => 'View Invoices Details']);
+Permission::create(['name' => 'Download Invoice']);
+Permission::create(['name' => 'List of Received Products']);
+Permission::create(['name' => 'Tab Switching']);
+Permission::create(['name' => 'Delete Received Products']);
+Permission::create(['name' => 'View Received Products:']);
+Permission::create(['name' => 'Export Products']);
+Permission::create(['name' => 'Update Products(quantity received)']);
+Permission::create(['name' => 'Go to purchase order (after quantity received updated)']);
+Permission::create(['name' => 'Approve/Reject Received Quantity']);
+Permission::create(['name' => 'List of Packaging Lists']);
+Permission::create(['name' => 'View packaging lists']);
+Permission::create(['name' => 'Download Full Products List']);
+Permission::create(['name' => 'Update & upload Download Products List (update final dispatch quantity)']);
+Permission::create(['name' => 'Sent to Ready To Ship']);
+Permission::create(['name' => 'List of Ready to ship products customer wise']);
+Permission::create(['name' => 'View Ready to ship details']);
+Permission::create(['name' => 'Change status to shipped']);
+Permission::create(['name' => 'List of warehouses and vendor product shortage/exceed']);
+Permission::create(['name' => 'List of vendor return products']);
+Permission::create(['name' => 'Quantity Accept/Return']);
+Permission::create(['name' => 'Create Customer Return']);
+Permission::create(['name' => 'Upload Customer return products and it\'s quantity']);
+Permission::create(['name' => 'Track Order By using track Order id/sales order id/purchase order id']);
