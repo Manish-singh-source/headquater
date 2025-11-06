@@ -30,8 +30,9 @@ class InvoiceController extends Controller
 
         // Separate manual and sales order invoices
         $manualInvoices = $invoices->where('invoice_type', 'manual');
-        $salesOrderInvoices = $invoices->where('invoice_type', 'sales_order');
-
+        // $salesOrderInvoices = $invoices->where('invoice_type', 'sales_order');
+        $salesOrderInvoices = SalesOrder::with(['customerGroup', 'invoices'])->get();
+        // dd($salesOrderInvoices);
         return view('invoice.index', compact('invoices', 'manualInvoices', 'salesOrderInvoices'));
     }
 

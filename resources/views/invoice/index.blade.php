@@ -80,20 +80,20 @@
                                         @forelse ($salesOrderInvoices as $invoice)
                                             <tr>
                                                 <td><input class="form-check-input" type="checkbox"></td>
-                                                <td>#{{ $invoice->sales_order_id }}</td>
-                                                <td>{{ $invoice->salesOrder?->customerGroup?->name ?? 'N/A' }}</td>
-                                                <td>{{ $invoice->salesOrder?->created_at ? $invoice->salesOrder->created_at->format('d-M-Y') : 'N/A' }}</td>
+                                                <td>#{{ $invoice->id }}</td>
+                                                <td>{{ $invoice->customerGroup?->name ?? 'N/A' }}</td>
+                                                <td>{{ $invoice->created_at ? $invoice->created_at->format('d-M-Y') : 'N/A' }}</td>
                                                 <td>
-                                                    @if($invoice->salesOrder)
-                                                        <span class="badge {{ $invoice->salesOrder->status == 'completed' ? 'bg-success' : 'bg-warning' }}">
-                                                            {{ ucfirst($invoice->salesOrder->status) }}
+                                                    @if($invoice->status)
+                                                        <span class="badge {{ $invoice->status == 'completed' ? 'bg-success' : 'bg-warning' }}">
+                                                            {{ ucfirst($invoice->status) }}
                                                         </span>
                                                     @else
                                                         <span class="badge bg-secondary">N/A</span>
                                                     @endif
                                                 </td>
                                                 <td>
-                                                    <a aria-label="anchor" href="{{ route('invoices.view', $invoice->sales_order_id) }}"
+                                                    <a aria-label="anchor" href="{{ route('invoices.view', $invoice->id) }}"
                                                         class="btn btn-icon btn-sm bg-primary-subtle me-1"
                                                         data-bs-toggle="tooltip" data-bs-original-title="View">
                                                         <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13"
