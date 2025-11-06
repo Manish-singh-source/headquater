@@ -49,6 +49,7 @@ class InvoiceController extends Controller
 
     public function downloadPdf($id)
     {
+        $igstStatus = false;
         $data = [
             'title' => 'Welcome to Headquaters',
             'date' => date('m/d/Y'),
@@ -73,6 +74,17 @@ class InvoiceController extends Controller
             $totalBoxCount = $invoiceDetails->sum('box_count');
         }
 
+        if($invoice->warehouse->state && $invoice->customer->shipping_state) {
+            $warehouseState = $invoice->warehouse->state->name;
+            $customerState = $invoice->customer->shipping_state;
+            // dd($warehouseState, $customerState);
+            if($warehouseState == $customerState) {
+                $igstStatus = true;
+            } else {
+                $igstStatus = false;
+            }
+        }
+
         $data = [
             'title' => 'Invoice',
             'invoice' => $invoice,
@@ -80,7 +92,9 @@ class InvoiceController extends Controller
             'salesOrderProducts' => $salesOrderProducts,
             'TotalWeight' => $totalWeight,
             'TotalBoxCount' => $totalBoxCount,
+            'igstStatus' => $igstStatus,
         ];
+        // dd($data);
 
         $pdf = \PDF::loadView('invoice/invoice-pdf', $data);
         $pdf->setPaper('a4');

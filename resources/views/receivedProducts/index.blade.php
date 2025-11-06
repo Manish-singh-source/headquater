@@ -8,6 +8,7 @@
             'completed' => 'Completed',
             'ready_to_ship' => 'Ready To Ship',
             'ready_to_package' => 'Ready To Package',
+            'shipped' => 'Shipped',
         ];
     @endphp
 

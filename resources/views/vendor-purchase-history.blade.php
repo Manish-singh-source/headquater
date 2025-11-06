@@ -77,7 +77,7 @@
                                     <p class="text-dark mb-1">Total Amount</p>
                                     <div class="d-inline-flex align-items-center flex-wrap gap-2">
                                         <h4 class="text-dark">
-                                            {{ $purchaseOrdersTotal * $purchaseOrdersTotalQuantity . '₹' }}</h4>
+                                            {{ $purchaseOrders->sum('total_amount') . '₹' }}</h4>
                                         <!-- <span class="badge badge-soft-primary text-dark"><i class="ti ti-arrow-up me-1"></i>+22%</span> -->
                                     </div>
                                 </div>
@@ -93,7 +93,7 @@
                                 <div class="ms-2">
                                     <p class="text-dark mb-1">Total Paid Amount</p>
                                     <div class="d-inline-flex align-items-center flex-wrap gap-2">
-                                        <h4 class="text-dark">{{ $purchaseOrders->sum('paid_amount') }}</h4>
+                                        <h4 class="text-dark">{{ $purchaseOrders->sum('total_paid_amount') }}</h4>
                                         <!-- <span class="badge badge-soft-primary text-dark"><i class="ti ti-arrow-up me-1"></i>+22%</span> -->
                                     </div>
                                 </div>
@@ -109,7 +109,7 @@
                                 <div class="ms-2">
                                     <p class="text-dark mb-1">Total Due Amount</p>
                                     <div class="d-inline-flex align-items-center flex-wrap gap-2">
-                                        <h4 class="text-dark">{{ $purchaseOrders->sum('due_amount') }}</h4>
+                                        <h4 class="text-dark">{{ $purchaseOrders->sum('total_due_amount') }}</h4>
                                         <!-- <span class="badge badge-soft-primary text-dark"><i class="ti ti-arrow-up me-1"></i>+22%</span> -->
                                     </div>
                                 </div>
@@ -236,7 +236,7 @@
                                         <th>Paid</th>
                                         <th>Due</th>
                                         <th>Ordered&nbsp;Date</th>
-                                        <th>Appointment&nbsp;Date</th>
+                                        {{-- <th>Appointment&nbsp;Date</th> --}}
                                         <th>POD</th>
                                         <th>LR</th>
                                         <th>DN</th>
@@ -255,23 +255,30 @@
                                             <td><strong>{{ $purchaseOrder->purchase_order_id }}</strong></td>
                                             <td>{{ $purchaseOrder->vendor_code ?? 'NA' }}</td>
                                             <td>
-                                                <span
-                                                    class="badge bg-success">{{ ucfirst($purchaseOrder->status) }}</span>
+                                                @if ($purchaseOrder->purchaseOrder->status == 'pending')
+                                                    <span
+                                                        class="badge bg-danger">{{ ucfirst($purchaseOrder->purchaseOrder->status) }}</span>
+                                                @elseif($purchaseOrder->purchaseOrder->status == 'received')
+                                                    <span
+                                                        class="badge bg-warning">{{ ucfirst($purchaseOrder->purchaseOrder->status) }}</span>
+                                                @elseif($purchaseOrder->purchaseOrder->status == 'completed')
+                                                    <span
+                                                        class="badge bg-success">{{ ucfirst($purchaseOrder->purchaseOrder->status) }}</span>
+                                                @endif
                                             </td>
                                             <td>{{ $purchaseOrder->products->sum('quantity_requirement') }}</td>
                                             <td>{{ $purchaseOrder->products->sum('quantity_received') }}</td>
-                                            <td>₹{{ number_format($purchaseOrder->products->sum('mrp'), 2) }}</td>
-                                            <td>₹{{ number_format($purchaseOrder->products->sum('paid_amount') ?? 0, 2) }}
+                                            <td>₹{{ number_format($purchaseOrder->total_amount, 2) }}</td>
+                                            <td>₹{{ number_format($purchaseOrder->total_paid_amount ?? 0, 2) }}
+                                            <td>₹{{ number_format($purchaseOrder->total_due_amount ?? 0, 2) }}
                                             </td>
-                                            <td>₹{{ number_format(max(0, $purchaseOrder->products->sum('mrp') - ($purchaseOrder->products->sum('paid_amount') ?? 0)), 2) }}
-                                            </td>
-                                            <td>{{ $purchaseOrder->created_at?->format('d-m-Y') ?? 'NA' }}</td>
-                                            <td>{{ $purchaseOrder->appointment?->appointment_date ?? 'NA' }}</td>
+                                            <td>{{ $purchaseOrder->purchaseOrder?->order_date ?? 'NA' }}</td>
+                                            {{-- <td>{{ $purchaseOrder->appointment?->appointment_date ?? 'NA' }}</td> --}}
                                             <td>{{ $purchaseOrder->appointment?->pod ? 'Yes' : 'No' }}</td>
                                             <td>{{ $purchaseOrder->appointment?->lr ? 'Yes' : 'No' }}</td>
                                             <td>{{ $purchaseOrder->dns?->dn_amount ? 'Yes' : 'No' }}</td>
-                                            <td>{{ $purchaseOrder->appointment?->grn ? 'Yes' : 'No' }}</td>
-                                            <td>{{ $purchaseOrder->invoice?->invoice_number ? 'Yes' : 'No' }}</td>
+                                            <td>{{ $purchaseOrder->purchaseGrn?->id ? 'Yes' : 'No' }}</td>
+                                            <td>{{ $purchaseOrder->purchaseInvoice?->id ? 'Yes' : 'No' }}</td>
                                             <td>{{ $purchaseOrder->payment_status ? ucfirst($purchaseOrder->payment_status) : 'Not Paid' }}
                                             </td>
                                         </tr>

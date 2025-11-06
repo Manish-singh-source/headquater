@@ -144,7 +144,7 @@
             </div>
 
             {{-- Warehouse Allocation Breakdown --}}
-            {{-- @if($warehouseAllocations && $warehouseAllocations->count() > 0)
+            {{-- @if ($warehouseAllocations && $warehouseAllocations->count() > 0)
             <div class="card mb-3">
                 <div class="card-header bg-primary text-white">
                     <h6 class="mb-0"><i class="bx bx-package"></i> Multi-Warehouse Stock Allocation Breakdown</h6>
@@ -154,7 +154,7 @@
                         <i class="bx bx-info-circle"></i> This order was auto-allocated from multiple warehouses. Below is the breakdown:
                     </div>
 
-                    @foreach($warehouseAllocations as $sku => $allocations)
+                    @foreach ($warehouseAllocations as $sku => $allocations)
                         <div class="mb-4">
                             <h6 class="text-primary">SKU: {{ $sku }}</h6>
                             <div class="table-responsive">
@@ -171,7 +171,7 @@
                                         @php
                                             $totalAllocated = 0;
                                         @endphp
-                                        @foreach($allocations as $allocation)
+                                        @foreach ($allocations as $allocation)
                                             @php
                                                 $totalAllocated += $allocation->allocated_quantity;
                                             @endphp
@@ -185,7 +185,7 @@
                                                     <span class="badge bg-success">{{ $allocation->allocated_quantity }}</span>
                                                 </td>
                                                 <td class="text-center">
-                                                    @if($allocation->status == 'allocated')
+                                                    @if ($allocation->status == 'allocated')
                                                         <span class="badge bg-success">Allocated</span>
                                                     @elseif($allocation->status == 'fulfilled')
                                                         <span class="badge bg-primary">Fulfilled</span>
@@ -224,7 +224,7 @@
                         <div class="div d-flex justify-content-end my-3 gap-2">
 
 
-                            <div>
+                            {{-- <div>
                                 <select class="form-select border-2 border-primary" id="selectBrand"
                                     aria-label="Default select example" name="status">
                                     <option value="" selected>Select Brand</option>
@@ -232,7 +232,7 @@
                                         <option value="{{ $brand }}">{{ $brand }}</option>
                                     @endforeach
                                 </select>
-                            </div>
+                            </div> --}}
                             <div>
                                 <select class="form-select border-2 border-primary" id="selectPONumber"
                                     aria-label="Default select example" name="status">
@@ -251,18 +251,21 @@
                                     <div class="dropdown-menu dropdown-menu-right dropdown-menu-lg-end">
                                         <button type="button" id="delete-selected"
                                             class="dropdown-item cursor-pointer">Delete All</button>
-                                        @if(in_array($salesOrder->status, ['ready_to_ship', 'shipped', 'completed']))
-                                        <button type="button" class="dropdown-item cursor-pointer" id="generateInvoice">
-                                            <i class="fa fa-file-excel-o"></i> Generate Invoice
-                                        </button>
+                                        @if (in_array($salesOrder->status, ['ready_to_ship', 'shipped', 'completed']))
+                                            <button type="button" class="dropdown-item cursor-pointer"
+                                                id="generateInvoice">
+                                                <i class="fa fa-file-excel-o"></i> Generate Invoice
+                                            </button>
                                         @endif
-                                        <button type="button" class="dropdown-item cursor-pointer" id="exportData">
-                                            <i class="fa fa-file-excel-o"></i> Export(Excel)
-                                        </button>
-                                        <button class="dropdown-item cursor-pointer" data-bs-toggle="modal"
-                                            data-bs-target="#staticBackdrop1">
-                                            Update PO
-                                        </button>
+                                        @if (in_array($salesOrder->status, ['pending', 'blocked']))
+                                            <button type="button" class="dropdown-item cursor-pointer" id="exportData">
+                                                <i class="fa fa-file-excel-o"></i> Export(Excel)
+                                            </button>
+                                            <button class="dropdown-item cursor-pointer" data-bs-toggle="modal"
+                                                data-bs-target="#staticBackdrop1">
+                                                Update PO
+                                            </button>
+                                        @endif
                                     </div>
                                 </div>
                             </div>
@@ -332,6 +335,7 @@
                                             'blocked' => 'Blocked',
                                             'completed' => 'Delivered',
                                             'ready_to_ship' => 'Ready To Ship',
+                                            'shipped' => 'Shipped',
                                         ];
                                     @endphp
                                     @forelse($salesOrder->orderedProducts as $order)
