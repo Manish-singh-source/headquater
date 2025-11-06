@@ -553,7 +553,7 @@ class SalesOrderController extends Controller
             return redirect()->route('sales.order.index')->with('success', $successMessage);
         } catch (\Exception $e) {
             DB::rollBack();
-            dd($e);
+            // dd($e);
             return redirect()->back()->with(['error' => 'Something went wrong: ' . $e->getMessage()]);
         }
     }
@@ -1547,7 +1547,7 @@ class SalesOrderController extends Controller
 
             return view('salesOrder.process-order', ['customerGroup' => $customerGroup, 'warehouses' => $warehouses, 'fileData' => $insertedRows]);
         } catch (\Exception $e) {
-            dd($e);
+            // dd($e);
 
             return redirect()->back()->with('error', 'An error occurred while processing the CSV file. Please Check the file format and try again.');
         }

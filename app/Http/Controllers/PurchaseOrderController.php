@@ -212,7 +212,7 @@ class PurchaseOrderController extends Controller
 
             return redirect()->route('purchase.order.index')->with('success', 'Purchase Order created successfully! Order ID: ' . $purchaseOrder->id);
         } catch (\Exception $e) {
-            dd($e->getMessage());
+            // dd($e->getMessage());
             DB::rollBack();
 
             return redirect()->back()->with(['error' => 'Something went wrong: ' . $e->getMessage()]);

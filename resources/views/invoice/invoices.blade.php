@@ -101,7 +101,7 @@
                                                             alt="document" />
                                                     </a>
                                                 @endif
-                                                @if (!$invoice->payments)
+                                                @if ($invoice->payments->sum('amount') < $invoice->total_amount)
                                                     <a type="button" class="btn btn-icon btn-sm bg-success-subtle me-1"
                                                         data-bs-toggle="modal"
                                                         data-bs-target="#paymentView-{{ $invoice->id }}">

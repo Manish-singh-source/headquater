@@ -30,6 +30,7 @@ class DatabaseSeeder extends Seeder
             CitySeeder::class,
             WarehouseSeeder::class,
             VendorsSeeder::class,
+            PermissionsSeeder::class,
         ]);
     }
 }
