@@ -3,11 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\Warehouse;
 use Illuminate\Http\Request;
 use Spatie\Permission\Models\Role;
 use Illuminate\Support\Facades\Auth;
-use Spatie\Permission\Models\Permission;
 use Illuminate\Support\Facades\Hash;
+use Spatie\Permission\Models\Permission;
 use Illuminate\Support\Facades\Validator;
 
 class StaffController extends Controller
@@ -24,13 +25,15 @@ class StaffController extends Controller
     {
         // Logic to show the form for creating a new staff member
         $roles = Role::all(); // Assuming you have a Role model
-        return view('staffs.create', compact('roles'));
+        $warehouses = Warehouse::all();
+        return view('staffs.create', compact('roles', 'warehouses'));
     }
 
     public function store(Request $request)
     {
         // Logic to store a new staff member        
         $validated = Validator::make($request->all(), [
+            'warehouse_id' => 'required|unique:users,warehouse_id',
             'role' => 'required',
             'fname' => 'required',
             'lname' => 'required',
@@ -53,6 +56,7 @@ class StaffController extends Controller
         }
 
         $staff = User::create([
+            'warehouse_id' => $request->warehouse_id,
             'user_name' => $request->user_name,
             'fname' => $request->fname,
             'lname' => $request->lname,
@@ -67,7 +71,7 @@ class StaffController extends Controller
             'country' => $request->country,
             'state' => $request->state,
             'city' => $request->city,
-            'pincode' => $request->pincode
+            'pincode' => $request->pincode,
         ]);
 
         // Send email with credentials
