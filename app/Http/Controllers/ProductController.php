@@ -26,7 +26,7 @@ class ProductController extends Controller
     {
         try {
             $products = WarehouseStock::with('product', 'warehouse')
-                ->paginate(15);
+                ->get();
 
             return view('products.index', compact('products'));
         } catch (\Exception $e) {

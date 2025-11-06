@@ -46,6 +46,25 @@
                                                 @enderror
 
                                             </div>
+                                            
+                                            <div class="col-12 col-md-6">
+                                                <label for="marital" class="form-label">Warehouse Name
+                                                    <span class="text-danger">*</span></label>
+                                                <select class="form-select @error('warehouses_id') is-invalid @enderror"
+                                                    name="warehouse_id" id="warehouses_id">
+                                                    <option selected="" disabled="" value="">-- Select --
+                                                    </option>
+                                                    @foreach ($warehouses as $warehouse)
+                                                        <option value="{{ $warehouse->id }}">{{ $warehouse->name }}</option>
+                                                    @endforeach
+                                                </select>
+                                                @error('warehouses_id')
+                                                    <div class="invalid-feedback">
+                                                        {{ $message }}
+                                                    </div>
+                                                @enderror
+
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
