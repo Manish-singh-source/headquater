@@ -814,18 +814,40 @@ class SalesOrderController extends Controller
 
     public function destroy($id)
     {
+        DB::beginTransaction();
         try {
-            $order = SalesOrder::with('orderedProducts.tempOrder')->findOrFail($id);
+            $order = SalesOrder::with(['orderedProducts.tempOrder', 'orderedProducts.warehouseAllocations'])->findOrFail($id);
 
-            // $orderedProducts = SalesOrderProduct::with('tempOrder')->where('sales_order_id', $id)->get();
-            
             foreach ($order->orderedProducts as $product) {
-                $warehouseStock = WarehouseStock::where('id', $product->warehouse_stock_id)->first();
+                // Check if this is auto-allocation (has warehouse allocations) or single warehouse
+                $hasAutoAllocation = $product->warehouseAllocations && $product->warehouseAllocations->count() > 0;
 
-                if (isset($warehouseStock) && $warehouseStock->block_quantity > 0) {
-                    $warehouseStock->block_quantity = $warehouseStock->block_quantity - $product->tempOrder->block;
-                    $warehouseStock->available_quantity = $warehouseStock->available_quantity + $product->tempOrder->block;
-                    $warehouseStock->save();
+                if ($hasAutoAllocation) {
+                    // Handle auto-allocation case: Release blocked quantity from all allocated warehouses
+                    foreach ($product->warehouseAllocations as $allocation) {
+                        $warehouseStock = WarehouseStock::where('warehouse_id', $allocation->warehouse_id)
+                            ->where('sku', $allocation->sku)
+                            ->first();
+
+                        if ($warehouseStock) {
+                            // Release blocked quantity back to available
+                            $warehouseStock->block_quantity = max(0, $warehouseStock->block_quantity - $allocation->allocated_quantity);
+                            $warehouseStock->available_quantity = $warehouseStock->available_quantity + $allocation->allocated_quantity;
+                            $warehouseStock->save();
+                        }
+
+                        // Delete allocation record
+                        $allocation->delete();
+                    }
+                } else {
+                    // Handle single warehouse case: Release blocked quantity from single warehouse
+                    $warehouseStock = WarehouseStock::where('id', $product->warehouse_stock_id)->first();
+
+                    if (isset($warehouseStock) && $warehouseStock->block_quantity > 0 && isset($product->tempOrder)) {
+                        $warehouseStock->block_quantity = max(0, $warehouseStock->block_quantity - $product->tempOrder->block);
+                        $warehouseStock->available_quantity = $warehouseStock->available_quantity + $product->tempOrder->block;
+                        $warehouseStock->save();
+                    }
                 }
 
                 // Delete Temp Order Entry
@@ -835,70 +857,100 @@ class SalesOrderController extends Controller
             }
 
             $order->delete();
-            if ($order) {
-                return redirect()->route('sales.order.index')->with('success', 'Order deleted successfully.');
-            }
-            return redirect()->back()->with(['error' => 'Order Not Found.']);
+
+            DB::commit();
+
+            activity()
+                ->causedBy(Auth::user())
+                ->withProperties(['sales_order_id' => $id])
+                ->log("Sales order deleted and blocked quantities released");
+
+            return redirect()->route('sales.order.index')->with('success', 'Order deleted successfully.');
 
         } catch (\Exception $e) {
-            return redirect()->back()->with(['error' => 'Something went wrong: Please Try Again.']);
+            DB::rollBack();
+            Log::error('Error deleting sales order: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Something went wrong: Please Try Again.');
         }
     }
 
     public function deleteSelected(Request $request)
     {
+        $validator = Validator::make($request->all(), [
+            'ids' => 'required',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator)->withInput();
+        }
+
         $ids = is_array($request->ids) ? $request->ids : explode(',', $request->ids);
 
+        DB::beginTransaction();
         try {
             foreach ($ids as $salesOrderProductId) {
 
-                $salesOrderProduct = SalesOrderProduct::with('tempOrder')->find($salesOrderProductId);
+                $salesOrderProduct = SalesOrderProduct::with(['tempOrder', 'warehouseAllocations'])->find($salesOrderProductId);
 
                 if (! $salesOrderProduct) {
                     continue; // Skip if not found
                 }
 
-                if ($salesOrderProduct->tempOrder && $salesOrderProduct->tempOrder->block > 0) {
-                    $warehouseStock = WarehouseStock::find($salesOrderProduct->warehouse_stock_id);
+                // Check if this is auto-allocation (has warehouse allocations) or single warehouse
+                $hasAutoAllocation = $salesOrderProduct->warehouseAllocations && $salesOrderProduct->warehouseAllocations->count() > 0;
 
-                    if ($warehouseStock) {
-                        $availableQty = $warehouseStock->available_quantity + $salesOrderProduct->tempOrder->block;
-                        $blockQty = $warehouseStock->block_quantity - $salesOrderProduct->tempOrder->block;
+                if ($hasAutoAllocation) {
+                    // Handle auto-allocation case: Release blocked quantity from all allocated warehouses
+                    foreach ($salesOrderProduct->warehouseAllocations as $allocation) {
+                        $warehouseStock = WarehouseStock::where('warehouse_id', $allocation->warehouse_id)
+                            ->where('sku', $allocation->sku)
+                            ->first();
 
-                        while ($availableQty > 0) {
-                            $checkProduct = SalesOrderProduct::where('id', '!=', $salesOrderProduct->id)
-                                ->where('sales_order_id', $salesOrderProduct->sales_order_id)
-                                ->where('sku', $salesOrderProduct->sku)
-                                ->whereHas('tempOrder', function ($query) {
-                                    $query->where('unavailable_quantity', '>', 0);
-                                })
-                                ->with('tempOrder')
-                                ->first();
+                        if ($warehouseStock) {
+                            // Release blocked quantity back to available
+                            $warehouseStock->block_quantity = max(0, $warehouseStock->block_quantity - $allocation->allocated_quantity);
+                            $warehouseStock->available_quantity = $warehouseStock->available_quantity + $allocation->allocated_quantity;
+                            $warehouseStock->save();
 
-                            if (! $checkProduct || ! $checkProduct->tempOrder) {
-                                break; // No more matching products
-                            }
-
-                            $tempOrder = $checkProduct->tempOrder;
-                            $wanted = $tempOrder->po_qty - $tempOrder->available_quantity;
-
-                            if ($wanted <= 0) {
-                                break; // No more quantity needed
-                            }
-
-                            $allocated = min($wanted, $availableQty);
-                            $availableQty -= $allocated;
-                            $blockQty += $allocated;
-
-                            $tempOrder->available_quantity += $allocated;
-                            $tempOrder->unavailable_quantity -= $allocated;
-                            $tempOrder->block += $allocated;
-                            $tempOrder->save();
+                            // Log activity
+                            activity()
+                                ->performedOn($warehouseStock)
+                                ->causedBy(Auth::user())
+                                ->withProperties([
+                                    'warehouse_id' => $warehouseStock->warehouse_id,
+                                    'sku' => $allocation->sku,
+                                    'released_quantity' => $allocation->allocated_quantity,
+                                    'sales_order_product_id' => $salesOrderProductId,
+                                ])
+                                ->log("Blocked quantity released from warehouse on product deletion");
                         }
 
-                        $warehouseStock->block_quantity = $blockQty;
-                        $warehouseStock->available_quantity = $availableQty;
-                        $warehouseStock->save();
+                        // Delete allocation record
+                        $allocation->delete();
+                    }
+                } else {
+                    // Handle single warehouse case: Release blocked quantity from single warehouse
+                    if ($salesOrderProduct->tempOrder && $salesOrderProduct->tempOrder->block > 0) {
+                        $warehouseStock = WarehouseStock::find($salesOrderProduct->warehouse_stock_id);
+
+                        if ($warehouseStock) {
+                            // Release blocked quantity back to available
+                            $warehouseStock->block_quantity = max(0, $warehouseStock->block_quantity - $salesOrderProduct->tempOrder->block);
+                            $warehouseStock->available_quantity = $warehouseStock->available_quantity + $salesOrderProduct->tempOrder->block;
+                            $warehouseStock->save();
+
+                            // Log activity
+                            activity()
+                                ->performedOn($warehouseStock)
+                                ->causedBy(Auth::user())
+                                ->withProperties([
+                                    'warehouse_stock_id' => $warehouseStock->id,
+                                    'sku' => $salesOrderProduct->sku,
+                                    'released_quantity' => $salesOrderProduct->tempOrder->block,
+                                    'sales_order_product_id' => $salesOrderProductId,
+                                ])
+                                ->log("Blocked quantity released from warehouse on product deletion");
+                        }
                     }
                 }
 
@@ -907,12 +959,26 @@ class SalesOrderController extends Controller
                     $salesOrderProduct->tempOrder->delete();
                 }
 
+                // Delete sales order product
                 $salesOrderProduct->delete();
+
+                // Log activity
+                activity()
+                    ->causedBy(Auth::user())
+                    ->withProperties([
+                        'sales_order_product_id' => $salesOrderProductId,
+                        'sku' => $salesOrderProduct->sku,
+                    ])
+                    ->log("Sales order product deleted");
             }
+
+            DB::commit();
 
             return redirect()->back()->with('success', 'Selected products deleted successfully.');
         } catch (\Exception $e) {
-            return redirect()->back()->with(['error' => 'Something went wrong: ' . $e->getMessage()]);
+            DB::rollBack();
+            Log::error('Error deleting sales order products: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Something went wrong: ' . $e->getMessage());
         }
     }
 
