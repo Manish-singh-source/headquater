@@ -7,9 +7,8 @@
                 <div>
                     <nav aria-label="breadcrumb">
                         <ol class="breadcrumb mb-0 p-0">
-                            <li class="breadcrumb-item"><a href="javascript:;"><i class="bx bx-home-alt"></i></a>
-                            </li>
-                            <li class="breadcrumb-item active" aria-current="page">Permissions List</li>
+                            <li class="breadcrumb-item"><a href="{{ route('index') }}"><i class="bx bx-home-alt"></i></a></li>
+                            <li class="breadcrumb-item active" aria-current="page">Permission Groups</li>
                         </ol>
                     </nav>
                 </div>
@@ -17,87 +16,100 @@
                     <div class="row g-3 justify-content-end">
                         <div class="col-12 col-md-auto">
                             <div class="d-flex align-items-center gap-2 justify-content-lg-end">
-                                <a href="{{ route('permission.create') }}" class="btn btn-primary px-4"><i
-                                        class="bi bi-plus-lg me-2"></i>Add
-                                    Permission</a>
+                                <button type="button" class="btn btn-danger px-4" id="delete-selected" style="display:none;">
+                                    <i class="bi bi-trash me-2"></i>Delete Selected
+                                </button>
+                                <a href="{{ route('permission.create') }}" class="btn btn-primary px-4">
+                                    <i class="bi bi-plus-lg me-2"></i>Add Permission Group
+                                </a>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div class="card mt-4">
-                <div class="card-body">
-                    <div class="customer-table">
-                        <div class="table-responsive white-space-nowrap">
-                            <table id="example" class="table table-striped">
+            @if($errors->any())
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <ul class="mb-0">
+                        @foreach($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            @endif
+
+            @if(session('success'))
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    {{ session('success') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            @endif
+
+            @if(session('error'))
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    {{ session('error') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            @endif
+
+            @forelse($permissionGroups as $group)
+                <div class="card mt-4">
+                    <div class="card-header bg-light">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center gap-3">
+                                <input class="form-check-input group-checkbox" type="checkbox" name="ids[]" value="{{ $group->id }}" style="width: 20px; height: 20px;">
+                                <div>
+                                    <h5 class="mb-0">{{ $group->name }}</h5>
+                                    @if($group->description)
+                                        <small class="text-muted">{{ $group->description }}</small>
+                                    @endif
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="badge {{ $group->status ? 'bg-success' : 'bg-secondary' }}">
+                                    {{ $group->status ? 'Active' : 'Inactive' }}
+                                </span>
+                                <div class="form-check form-switch mb-0">
+                                    <input class="form-check-input status-toggle" type="checkbox"
+                                           data-id="{{ $group->id }}"
+                                           {{ $group->status ? 'checked' : '' }}
+                                           style="width: 40px; height: 20px;">
+                                </div>
+                                <a href="{{ route('permission.edit', $group->id) }}" class="btn btn-sm btn-info">
+                                    <i class="bx bx-pencil"></i> Edit
+                                </a>
+                                <form action="{{ route('permission.destroy', $group->id) }}" method="POST" style="display:inline;">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-sm btn-danger"
+                                            onclick="return confirm('Are you sure? This will delete all permissions in this group.')">
+                                        <i class="bx bx-trash"></i> Delete
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
                                 <thead class="table-light">
                                     <tr>
-                                        <th>
-                                            <input class="form-check-input" type="checkbox" id="select-all">
-                                        </th>
-                                        <th>Name</th>
-                                        <th>Action</th>
+                                        <th style="width:40px;">#</th>
+                                        <th>Permission Name</th>
+                                        <th style="width:120px;">Guard</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @forelse($permissions as $permission)
+                                    @forelse($group->permissions as $index => $permission)
                                         <tr>
-                                            <td>
-                                                <input class="form-check-input row-checkbox" type="checkbox" name="ids[]"
-                                                    value="{{ $permission->id }}">
-                                            </td>
-                                            <td>
-                                                <a class="d-flex align-items-center gap-3" href="#">
-                                                    <p class="mb-0 customer-name fw-bold">{{ $permission->name }}</p>
-                                                </a>
-                                            </td>
-                                            <td>
-                                                <div class="d-flex">
-                                                    <a aria-label="anchor" href="{{ route('permission.edit', $permission->id) }}"
-                                                        class="btn btn-icon btn-sm bg-warning-subtle me-1"
-                                                        data-bs-toggle="tooltip" data-bs-original-title="Edit">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="13"
-                                                            height="13" viewBox="0 0 24 24" fill="none"
-                                                            stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                                            stroke-linejoin="round"
-                                                            class="feather feather-edit text-warning">
-                                                            <path
-                                                                d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7">
-                                                            </path>
-                                                            <path
-                                                                d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z">
-                                                            </path>
-                                                        </svg>
-                                                    </a>
-                                                    <form action="{{ route('permission.destroy', $permission->id) }}" method="POST"
-                                                        onsubmit="return confirm('Are you sure?')">
-                                                        @csrf
-                                                        @method('DELETE')
-                                                        <button type="submit"
-                                                            class="btn btn-icon btn-sm bg-danger-subtle delete-row">
-                                                            <svg xmlns="http://www.w3.org/2000/svg" width="13"
-                                                                height="13" viewBox="0 0 24 24" fill="none"
-                                                                stroke="currentColor" stroke-width="2"
-                                                                stroke-linecap="round" stroke-linejoin="round"
-                                                                class="feather feather-trash-2 text-danger">
-                                                                <polyline points="3 6 5 6 21 6"></polyline>
-                                                                <path
-                                                                    d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
-                                                                </path>
-                                                                <line x1="10" y1="11" x2="10"
-                                                                    y2="17"></line>
-                                                                <line x1="14" y1="11" x2="14"
-                                                                    y2="17"></line>
-                                                            </svg>
-                                                        </button>
-                                                    </form>
-                                                </div>
-                                            </td>
+                                            <td>{{ $index + 1 }}</td>
+                                            <td>{{ $permission->name }}</td>
+                                            <td><span class="badge bg-primary">{{ $permission->guard_name }}</span></td>
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td class="text-center" colspan="5">No Roles Found</td>
+                                            <td colspan="3" class="text-center text-muted py-4">No permissions in this group</td>
                                         </tr>
                                     @endforelse
                                 </tbody>
@@ -105,8 +117,111 @@
                         </div>
                     </div>
                 </div>
-            </div>
+            @empty
+                <div class="card mt-4">
+                    <div class="card-body">
+                        <div class="text-center text-muted py-5">
+                            <i class="bx bx-folder-open" style="font-size: 48px;"></i>
+                            <p class="mt-3">No permission groups found</p>
+                            <a href="{{ route('permission.create') }}" class="btn btn-primary">
+                                <i class="bi bi-plus-lg me-2"></i>Create Your First Permission Group
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            @endforelse
         </div>
     </main>
     <!--end main wrapper-->
-@endsection 
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Handle select all checkboxes
+            const groupCheckboxes = document.querySelectorAll('.group-checkbox');
+            const deleteSelectedBtn = document.getElementById('delete-selected');
+
+            groupCheckboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    const anyChecked = Array.from(groupCheckboxes).some(cb => cb.checked);
+                    deleteSelectedBtn.style.display = anyChecked ? 'inline-block' : 'none';
+                });
+            });
+
+            // Handle delete selected
+            deleteSelectedBtn.addEventListener('click', function() {
+                const selectedIds = Array.from(groupCheckboxes)
+                    .filter(cb => cb.checked)
+                    .map(cb => cb.value);
+
+                if (selectedIds.length === 0) {
+                    alert('Please select at least one permission group');
+                    return;
+                }
+
+                if (confirm(`Are you sure you want to delete ${selectedIds.length} permission group(s)? This will also delete all permissions in these groups.`)) {
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = '{{ route("delete.selected.permission") }}';
+
+                    const csrfToken = document.createElement('input');
+                    csrfToken.type = 'hidden';
+                    csrfToken.name = '_token';
+                    csrfToken.value = '{{ csrf_token() }}';
+                    form.appendChild(csrfToken);
+
+                    const methodField = document.createElement('input');
+                    methodField.type = 'hidden';
+                    methodField.name = '_method';
+                    methodField.value = 'DELETE';
+                    form.appendChild(methodField);
+
+                    selectedIds.forEach(id => {
+                        const input = document.createElement('input');
+                        input.type = 'hidden';
+                        input.name = 'ids[]';
+                        input.value = id;
+                        form.appendChild(input);
+                    });
+
+                    document.body.appendChild(form);
+                    form.submit();
+                }
+            });
+
+            // Handle status toggle
+            const statusToggles = document.querySelectorAll('.status-toggle');
+            statusToggles.forEach(toggle => {
+                toggle.addEventListener('change', function() {
+                    const groupId = this.dataset.id;
+                    const status = this.checked ? 1 : 0;
+
+                    fetch('{{ route("permission.toggleStatus") }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        body: JSON.stringify({
+                            id: groupId,
+                            status: status
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            location.reload();
+                        } else {
+                            alert('Failed to update status');
+                            this.checked = !this.checked;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('An error occurred');
+                        this.checked = !this.checked;
+                    });
+                });
+            });
+        });
+    </script>
+@endsection

@@ -296,13 +296,15 @@
           <div class="sidebar-nav">
               <!--navigation-->
               <ul class="metismenu" id="sidenav">
-                  <li>
-                      <a href="{{ route('index') }}">
-                          <div class="parent-icon"><i class="material-icons-outlined">home</i>
-                          </div>
-                          <div class="menu-title">Dashboard</div>
-                      </a>
-                  </li>
+                  @can('View Dashboard')
+                      <li>
+                          <a href="{{ route('index') }}">
+                              <div class="parent-icon"><i class="material-icons-outlined">home</i>
+                              </div>
+                              <div class="menu-title">Dashboard</div>
+                          </a>
+                      </li>
+                  @endcan
                   {{-- 
                   <li>
                       <a href="{{ route('analytics.dashboard') }}">
@@ -312,59 +314,80 @@
                       </a>
                   </li> 
                   --}}
-                  <li>
-                      <a href="javascript:;" class="has-arrow">
-                          <div class="parent-icon"><i class="material-icons-outlined">key</i>
-                          </div>
-                          <div class="menu-title">Access Control</div>
-                      </a>
-                      <ul>
-                          <li><a href="{{ route('staff.index') }}"><i
-                                      class="material-icons-outlined">arrow_right</i>Staff</a>
-                          </li>
-                          <li><a href="{{ route('role.index') }}"><i
-                                      class="material-icons-outlined">arrow_right</i>Role</a>
-                          </li>
-                          <li><a href="{{ route('permission.index') }}"><i
-                                      class="material-icons-outlined">arrow_right</i>Permissions</a>
-                          </li>
-                      </ul>
-                  </li>
+                  @can('View Access Control')
+                      <li>
+                          <a href="javascript:;" class="has-arrow">
+                              <div class="parent-icon"><i class="material-icons-outlined">key</i>
+                              </div>
+                              <div class="menu-title">Access Control</div>
+                          </a>
+                          <ul>
+                              @can('View Staffs')
+                                  <li><a href="{{ route('staff.index') }}"><i
+                                              class="material-icons-outlined">arrow_right</i>Staff</a>
+                                  </li>
+                              @endcan
+                              @can('View Roles')
+                                  <li><a href="{{ route('role.index') }}"><i
+                                              class="material-icons-outlined">arrow_right</i>Role</a>
+                                  </li>
+                              @endcan
+                              @can('View Permissions')
+                                  <li><a href="{{ route('permission.index') }}"><i
+                                              class="material-icons-outlined">arrow_right</i>Permissions</a>
+                                  </li>
+                              @endcan
+                          </ul>
+                      </li>
+                  @endcan
 
+                  @can('View Master')
+                      <li>
+                          <a href="javascript:;" class="has-arrow">
+                              <div class="parent-icon"><i class="material-icons-outlined">category</i>
+                              </div>
+                              <div class="menu-title">Master</div>
+                          </a>
+                          <ul>
+                              @can('View Customer Groups')
+                              <li><a href="{{ route('customer.groups.index') }}"><i
+                                          class="material-icons-outlined">arrow_right</i>Customers Group</a>
+                              </li>
+                              @endcan
 
-                  <li>
-                      <a href="javascript:;" class="has-arrow">
-                          <div class="parent-icon"><i class="material-icons-outlined">category</i>
-                          </div>
-                          <div class="menu-title">Master</div>
-                      </a>
-                      <ul>
+                              @can('View Customers')
+                              <li><a href="{{ route('customer.index') }}"><i
+                                          class="material-icons-outlined">arrow_right</i>Customers</a>
+                              </li>
+                              @endcan
 
-                          <li><a href="{{ route('customer.groups.index') }}"><i
-                                      class="material-icons-outlined">arrow_right</i>Customers Group</a>
-                          </li>
+                              @can('View Vendors')
+                              <li><a href="{{ route('vendor.index') }}"><i
+                                          class="material-icons-outlined">arrow_right</i>Vendor</a>
+                              </li>
+                              @endcan
 
-                          <li><a href="{{ route('customer.index') }}"><i
-                                      class="material-icons-outlined">arrow_right</i>Customers</a>
-                          </li>
+                              @can('View Products')
+                              <li><a href="{{ route('products.index') }}"><i
+                                          class="material-icons-outlined">arrow_right</i>Products</a>
+                              </li>
+                              @endcan
 
-                          <li><a href="{{ route('vendor.index') }}"><i
-                                      class="material-icons-outlined">arrow_right</i>Vendor</a>
-                          </li>
+                              @can('View SKU Mapping')
+                              <li>
+                                  <a href="{{ route('sku.mapping') }}"><i
+                                          class="material-icons-outlined">arrow_right</i>SKU Mapping</a>
+                              </li>
+                              @endcan
 
-                          <li><a href="{{ route('products.index') }}"><i
-                                      class="material-icons-outlined">arrow_right</i>Products</a>
-                          </li>
-                          <li>
-                              <a href="{{ route('sku.mapping') }}"><i
-                                      class="material-icons-outlined">arrow_right</i>SKU Mapping</a>
-                          </li>
-
-                          <li><a href="{{ route('warehouse.index') }}"><i
-                                      class="material-icons-outlined">arrow_right</i>Warehouses</a>
-                          </li>
-                      </ul>
-                  </li>
+                              @can('View Warehouses')
+                              <li><a href="{{ route('warehouse.index') }}"><i
+                                          class="material-icons-outlined">arrow_right</i>Warehouses</a>
+                              </li>
+                              @endcan
+                          </ul>
+                      </li>
+                  @endcan
 
                   <li>
                       <a href="javascript:;" class="has-arrow">

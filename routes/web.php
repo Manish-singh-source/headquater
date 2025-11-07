@@ -83,6 +83,7 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/update-permission/{id}', 'update')->name('permission.update');
         Route::delete('/delete-permission/{id}', 'destroy')->name('permission.destroy');
         Route::delete('/permission/delete-selected', 'deleteSelected')->name('delete.selected.permission');
+        Route::post('/permission/toggle-status', 'toggleStatus')->name('permission.toggleStatus');
     });
 
     Route::controller(CustomerGroupController::class)->group(function () {
