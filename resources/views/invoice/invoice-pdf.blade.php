@@ -214,7 +214,13 @@
             <td>PO No: </td>
             <td>{{ $invoice->po_number }}</td>
             <td>PO Date: </td>
-            <td>{{ $invoiceDetails[0]->tempOrder?->po_date ?? '' }}</td>
+            @if ($invoice->po_date)
+            <td>{{ $invoice->po_date ? $invoice->po_date->format('d-m-Y') : '' }}</td>
+            @elseif($invoiceDetails[0]->tempOrder?->po_date)
+            <td>{{ $invoiceDetails[0]->tempOrder?->po_date }}</td>
+            @else
+                <td></td>
+            @endif
         </tr>
     </table>
 
@@ -263,10 +269,21 @@
     <table class="invoice-table">
         <tr class="section-title">
             <th class="sno">S No.</th>
-            <th class="item-desc">Item Description</th>
-            <th class="hsn">HSN </br>Code</th>
-            <th class="qty">Qty</th>
-            <th class="box">BOX</th>
+            @if ($invoiceItemType === 'service')
+                <th class="item-desc">Service Title</th>
+                <th class="hsn">Category</th>
+                <th class="hsn">Description</th>
+                <th class="hsn">Campaign Name</th>
+                <th class="qty">Qty</th>
+                <th class="box">Unit Type</th>
+                <th class="box">BOX</th>
+                <th class="box">Weight (KG)</th>
+            @else
+                <th class="item-desc">Item Description</th>
+                <th class="hsn">HSN </br>Code</th>
+                <th class="qty">Qty</th>
+                <th class="box">BOX</th>
+            @endif
             <th class="rate">Rate</th>
             <th class="amt">Amount</th>
             @if ($igstStatus)
@@ -296,17 +313,29 @@
                 {{ $totalWeight += $detail->weight ? $detail->weight : $detail->salesOrderProduct?->weight }}
 
                 <td class="text-center">{{ $index + 1 }}</td>
-                <td>
-                    <strong style="color: #000000;"> {{ $detail->product->ean_code }} </strong>
-                    <br>
-                    {{ $detail->product->sku }}
-                    <br>
-                    {{ $detail->product->brand_title }}
-                </td>
 
-                <td class="right-align">{{ $detail->hsn ?? $detail->tempOrder?->hsn }}</td>
-                <td class="right-align">{{ $detail->quantity }}</td>
-                <td class="right-align">{{ $detail->box_count ?? $detail->salesOrderProduct?->box_count }}</td>
+                @if ($invoiceItemType === 'service')
+                    <td>{{ $detail->service_title }}</td>
+                    <td>{{ $detail->service_category }}</td>
+                    <td>{{ $detail->service_description }}</td>
+                    <td>{{ $detail->campaign_name }}</td>
+                    <td class="right-align">{{ $detail->quantity }}</td>
+                    <td>{{ $detail->unit_type }}</td>
+                    <td class="right-align">{{ $detail->box_count ?? 0 }}</td>
+                    <td class="right-align">{{ $detail->weight ?? 0 }}</td>
+                @else
+                    <td>
+                        <strong style="color: #000000;"> {{ $detail->product?->ean_code }} </strong>
+                        <br>
+                        {{ $detail->product?->sku }}
+                        <br>
+                        {{ $detail->product?->brand_title }}
+                    </td>
+                    <td class="right-align">{{ $detail->hsn ?? $detail->tempOrder?->hsn }}</td>
+                    <td class="right-align">{{ $detail->quantity }}</td>
+                    <td class="right-align">{{ $detail->box_count ?? $detail->salesOrderProduct?->box_count }}</td>
+                @endif
+
                 <td class="right-align">{{ $detail->unit_price }}</td>
                 <td class="right-align">{{ $detail->amount }}</td>
                 @if ($igstStatus)
@@ -322,9 +351,17 @@
             </tr>
         @endforeach
         <tr>
-            <td colspan="3" class="section-title">Total</td>
-            <td class="right-align">{{ $invoiceDetails->sum('quantity') }}</td>
-            <td class="right-align">{{ $TotalBoxCount }}</td>
+            @if ($invoiceItemType === 'service')
+                <td colspan="5" class="section-title">Total</td>
+                <td class="right-align">{{ $invoiceDetails->sum('quantity') }}</td>
+                <td></td>
+                <td class="right-align">{{ $totalBoxCount ?? ($TotalBoxCount ?? 0) }}</td>
+                <td class="right-align">{{ $totalWeight ?? ($TotalWeight ?? 0) }}</td>
+            @else
+                <td colspan="3" class="section-title">Total</td>
+                <td class="right-align">{{ $invoiceDetails->sum('quantity') }}</td>
+                <td class="right-align">{{ $TotalBoxCount }}</td>
+            @endif
             <td class="right-align">{{ $invoiceDetails->sum('unit_price') }}</td>
             <td class="right-align">{{ $invoiceDetails->sum('amount') }}</td>
             @if ($igstStatus)

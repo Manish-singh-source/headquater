@@ -23,12 +23,15 @@ class Invoice extends Model
         'payment_mode',
         'payment_status',
         'invoice_type',
+        'invoice_item_type',
         'notes',
         'po_number',
+        'po_date',
     ];
 
     protected $casts = [
         'invoice_date' => 'date',
+        'po_date' => 'date',
     ];
 
     public function warehouse()

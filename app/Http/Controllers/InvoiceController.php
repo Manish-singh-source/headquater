@@ -94,6 +94,7 @@ class InvoiceController extends Controller
             'TotalWeight' => $totalWeight,
             'TotalBoxCount' => $totalBoxCount,
             'igstStatus' => $igstStatus,
+            'invoiceItemType' => $invoice->invoice_item_type ?? 'product',
         ];
         // dd($data);
 
@@ -357,16 +358,30 @@ class InvoiceController extends Controller
             'customer_id' => 'required|exists:customers,id',
             'invoice_date' => 'required|date',
             'po_number' => 'nullable|string|max:255|unique:invoices,po_number',
-            'products' => 'required|array|min:1',
-            'products.*.warehouse_id' => 'required|exists:warehouses,id',
-            'products.*.product_id' => 'required|exists:products,id',
+            'po_date' => 'nullable|date',
+            'invoice_item_type' => 'required|in:product,service',
+            'products' => 'required_if:invoice_item_type,product|array',
+            'products.*.warehouse_id' => 'required_with:products|exists:warehouses,id',
+            'products.*.product_id' => 'required_with:products|exists:products,id',
             'products.*.hsn' => 'nullable|string|max:255',
-            'products.*.quantity' => 'required|numeric',
+            'products.*.quantity' => 'required_with:products|numeric',
             'products.*.box_count' => 'nullable|integer|min:0',
             'products.*.weight' => 'nullable|numeric|min:0',
-            'products.*.unit_price' => 'required|numeric|min:0',
+            'products.*.unit_price' => 'required_with:products|numeric|min:0',
             'products.*.discount' => 'nullable|numeric|min:0',
             'products.*.tax' => 'nullable|numeric|min:0',
+            'services' => 'required_if:invoice_item_type,service|array',
+            'services.*.service_title' => 'nullable|string|max:255',
+            'services.*.service_category' => 'nullable|string|max:255',
+            'services.*.service_description' => 'nullable|string',
+            'services.*.campaign_name' => 'nullable|string|max:255',
+            'services.*.quantity' => 'required_with:services|integer|min:1',
+            'services.*.unit_type' => 'nullable|string|max:255',
+            'services.*.box_count' => 'nullable|integer|min:0',
+            'services.*.weight' => 'nullable|numeric|min:0',
+            'services.*.unit_price' => 'required_with:services|numeric|min:0',
+            'services.*.discount' => 'nullable|numeric|min:0',
+            'services.*.tax' => 'nullable|numeric|min:0',
             'payment_mode' => 'nullable|string|max:255',
             'paid_amount' => 'nullable|numeric|min:0',
             'notes' => 'nullable|string',
@@ -396,19 +411,32 @@ class InvoiceController extends Controller
             // $invoiceNumber = "INV-{$yearMonth}-{$newNumber}";
             $invoiceNumber = 'INV-' . $timestamp . '-' . str_pad($newNumber + 1, 4, '0', STR_PAD_LEFT);
 
-            // Calculate totals
+            // Calculate totals based on invoice type
             $subtotal = 0;
             $totalTax = 0;
             $totalDiscount = 0;
 
-            foreach ($request->products as $item) {
-                $amount = $item['quantity'] * $item['unit_price'];
-                $discount = $item['discount'] ?? 0;
-                $tax = $item['tax'] ?? 0;
+            if ($request->invoice_item_type === 'product') {
+                foreach ($request->products as $item) {
+                    $amount = $item['quantity'] * $item['unit_price'];
+                    $discount = $item['discount'] ?? 0;
+                    $tax = $item['tax'] ?? 0;
 
-                $subtotal += $amount;
-                $totalDiscount += $discount;
-                $totalTax += $tax;
+                    $subtotal += $amount;
+                    $totalDiscount += $discount;
+                    $totalTax += $tax;
+                }
+            } else {
+                // Service invoice - calculation with discount and tax
+                foreach ($request->services as $item) {
+                    $amount = $item['quantity'] * $item['unit_price'];
+                    $discount = $item['discount'] ?? 0;
+                    $tax = $item['tax'] ?? 0;
+
+                    $subtotal += $amount;
+                    $totalDiscount += $discount;
+                    $totalTax += $tax;
+                }
             }
 
             $totalAmount = $subtotal - $totalDiscount + $totalTax;
@@ -433,6 +461,7 @@ class InvoiceController extends Controller
                 'sales_order_id' => null,
                 'invoice_date' => $request->invoice_date,
                 'po_number' => $request->po_number,
+                'po_date' => $request->po_date,
                 'subtotal' => $subtotal,
                 'tax_amount' => $totalTax,
                 'discount_amount' => $totalDiscount,
@@ -443,49 +472,80 @@ class InvoiceController extends Controller
                 'payment_mode' => $request->payment_mode,
                 'payment_status' => $paymentStatus,
                 'invoice_type' => 'manual',
+                'invoice_item_type' => $request->invoice_item_type,
                 'notes' => $request->notes,
             ]);
 
-            // Create invoice details and update stock
-            foreach ($request->products as $item) {
-                $product = Product::findOrFail($item['product_id']);
-                $amount = $item['quantity'] * $item['unit_price'];
-                $discount = $item['discount'] ?? 0;
-                $tax = $item['tax'] ?? 0;
-                $totalPrice = $amount - $discount + $tax;
+            // Create invoice details based on type
+            if ($request->invoice_item_type === 'product') {
+                // Create product invoice details and update stock
+                foreach ($request->products as $item) {
+                    $product = Product::findOrFail($item['product_id']);
+                    $amount = $item['quantity'] * $item['unit_price'];
+                    $discount = $item['discount'] ?? 0;
+                    $tax = $item['tax'] ?? 0;
+                    $totalPrice = $amount - $discount + $tax;
 
-                InvoiceDetails::create([
-                    'invoice_id' => $invoice->id,
-                    'warehouse_id' => $item['warehouse_id'],
-                    'product_id' => $item['product_id'],
-                    'hsn' => $item['hsn'] ?? null,
-                    'quantity' => $item['quantity'],
-                    'box_count' => $item['box_count'] ?? null,
-                    'weight' => $item['weight'] ?? null,
-                    'unit_price' => $item['unit_price'],
-                    'discount' => $discount,
-                    'amount' => $amount,
-                    'tax' => $tax,
-                    'total_price' => $totalPrice,
-                    'description' => $item['description'] ?? null,
-                ]);
+                    InvoiceDetails::create([
+                        'invoice_id' => $invoice->id,
+                        'warehouse_id' => $item['warehouse_id'],
+                        'product_id' => $item['product_id'],
+                        'hsn' => $item['hsn'] ?? null,
+                        'quantity' => $item['quantity'],
+                        'box_count' => $item['box_count'] ?? null,
+                        'weight' => $item['weight'] ?? null,
+                        'unit_price' => $item['unit_price'],
+                        'discount' => $discount,
+                        'amount' => $amount,
+                        'tax' => $tax,
+                        'total_price' => $totalPrice,
+                        'description' => $item['description'] ?? null,
+                    ]);
 
-                // Update warehouse stock
-                $stock = WarehouseStock::where('warehouse_id', $item['warehouse_id'])
-                    ->where('sku', $product->sku)
-                    ->first();
+                    // Update warehouse stock
+                    $stock = WarehouseStock::where('warehouse_id', $item['warehouse_id'])
+                        ->where('sku', $product->sku)
+                        ->first();
 
-                if ($stock) {
-                    if ($stock->available_quantity < $item['quantity']) {
-                        DB::rollBack();
-                        return redirect()->back()
-                            ->with('error', "Insufficient stock for product: {$product->product_name}. Available: {$stock->available_quantity}")
-                            ->withInput();
+                    if ($stock) {
+                        if ($stock->available_quantity < $item['quantity']) {
+                            DB::rollBack();
+                            return redirect()->back()
+                                ->with('error', "Insufficient stock for product: {$product->product_name}. Available: {$stock->available_quantity}")
+                                ->withInput();
+                        }
+
+                        $stock->available_quantity -= $item['quantity'];
+                        $stock->original_quantity -= $item['quantity'];
+                        $stock->save();
                     }
+                }
+            } else {
+                // Create service invoice details (no stock management)
+                foreach ($request->services as $item) {
+                    $amount = $item['quantity'] * $item['unit_price'];
+                    $discount = $item['discount'] ?? 0;
+                    $tax = $item['tax'] ?? 0;
+                    $totalPrice = $amount - $discount + $tax;
 
-                    $stock->available_quantity -= $item['quantity'];
-                    $stock->original_quantity -= $item['quantity'];
-                    $stock->save();
+                    InvoiceDetails::create([
+                        'invoice_id' => $invoice->id,
+                        'warehouse_id' => null,
+                        'product_id' => null,
+                        'quantity' => $item['quantity'],
+                        'unit_price' => $item['unit_price'],
+                        'amount' => $amount,
+                        'total_price' => $totalPrice,
+                        'discount' => $discount,
+                        'tax' => $tax,
+                        'service_title' => $item['service_title'] ?? null,
+                        'service_category' => $item['service_category'] ?? null,
+                        'service_description' => $item['service_description'] ?? null,
+                        'campaign_name' => $item['campaign_name'] ?? null,
+                        'unit_type' => $item['unit_type'] ?? null,
+                        'box_count' => $item['box_count'] ?? null,
+                        'weight' => $item['weight'] ?? null,
+                    ]);
                 }
             }
 
