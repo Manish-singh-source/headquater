@@ -83,16 +83,17 @@
                                                             <th>PO&nbsp;Quantity</th>
                                                             <th>Available</th>
                                                             <th>Unavailable&nbsp;Qty</th>
+                                                            <th>Warehouse&nbsp;Allocation</th>
                                                             <th>Reason</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
                                                         @forelse($fileData as $data)
                                                             <tr>
-                                                                {{-- 
+                                                                {{--
                                                                 'block' => $record['Block'],
                                                                 'purchase_order_quantity' => $record['Purchase Order Quantity'] ?? '',
-                                                                'vendor_code' => $record['Vendor Code'], 
+                                                                'vendor_code' => $record['Vendor Code'],
                                                                 --}}
                                                                 <td>{{ $data['Customer Name'] }}</td>
                                                                 <td>{{ $data['PO Number'] }}</td>
@@ -117,8 +118,9 @@
                                                                 <td>{{ $data['Case Pack Quantity'] }}</td>
                                                                 <td>{{ $data['PO Quantity'] }}</td>
                                                                 <td>{!! $data['Available Quantity'] !!}</td>
-                                                                <td>{!! $data['Unavailable Quantity'] !!}</td>  
-                                                                <td>{!! $data['Reason'] !!}</td>  
+                                                                <td>{!! $data['Unavailable Quantity'] !!}</td>
+                                                                <td>{!! $data['Warehouse Allocation'] ?? '' !!}</td>
+                                                                <td>{!! $data['Reason'] !!}</td>
                                                             </tr>
                                                         @empty
                                                             <tr>

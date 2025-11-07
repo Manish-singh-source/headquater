@@ -396,7 +396,8 @@ class SalesOrderController extends Controller
                 ]);
 
                 // Block Quantity in WarehouseStock Table
-                if ($product) {
+                // Skip this for auto allocation - WarehouseAllocationService will handle it
+                if ($product && !$isAutoAllocation) {
                     if (intval($record['Block']) > intval($product->available_quantity)) {
                         $blockQuantity = $product->block_quantity + $product->available_quantity;
                     } else {
@@ -419,7 +420,8 @@ class SalesOrderController extends Controller
                 // For single warehouse, use Excel value
                 $saveOrderProduct->purchase_ordered_quantity = $isAutoAllocation ? 0 : ($record['Purchase Order Quantity'] ?? 0);
                 $saveOrderProduct->product_id = $product->product->id ?? null;
-                $saveOrderProduct->warehouse_stock_id = $product->id ?? null;
+                // For auto allocation, warehouse_stock_id is null (multiple warehouses)
+                $saveOrderProduct->warehouse_stock_id = $isAutoAllocation ? null : ($product->id ?? null);
                 $saveOrderProduct->sku = $sku;
                 $saveOrderProduct->price = $record['Basic Rate'] ?? null;
                 // what is exactly subtotal ??
@@ -1413,6 +1415,7 @@ class SalesOrderController extends Controller
                         'PO Quantity' => $poQty,
                         'Available Quantity' => 0,
                         'Unavailable Quantity' => 0,
+                        'Warehouse Allocation' => '',
                         'Reason' => $reason,
                     ];
 
@@ -1462,6 +1465,56 @@ class SalesOrderController extends Controller
 
                 // Use cached values
                 $availableQty = $productStockCache[$sku]['available'];
+
+                // Calculate warehouse-wise allocation for both auto and single warehouse
+                $warehouseBreakdown = '';
+                if ($isAutoAllocation) {
+                    // Auto allocation: show breakdown from all active warehouses
+                    $warehouseStocks = WarehouseStock::with('warehouse')
+                        ->where('sku', $sku)
+                        ->whereHas('warehouse', function($q) {
+                            $q->where('status', '1');
+                        })
+                        ->where('available_quantity', '>', 0)
+                        ->orderBy('warehouse_id', 'asc')
+                        ->get();
+
+                    $remainingQty = $poQty;
+                    $allocations = [];
+
+                    foreach ($warehouseStocks as $stock) {
+                        if ($remainingQty <= 0) break;
+
+                        $allocateQty = min($stock->available_quantity, $remainingQty);
+                        $currentUnavailable = max(0, $remainingQty - $allocateQty);
+                        $allocations[] = $stock->warehouse->name . ' - PO Qty: ' . $remainingQty . ', Available: ' . $allocateQty . ', Unavailable: ' . $currentUnavailable;
+                        $remainingQty -= $allocateQty;
+                    }
+
+                    if (!empty($allocations)) {
+                        $warehouseBreakdown = implode('<br>', $allocations);
+                    }
+
+                    if ($remainingQty > 0) {
+                        $warehouseBreakdown .= ($warehouseBreakdown ? '<br>' : '') . 'PO Required: ' . $remainingQty;
+                    }
+                } else {
+                    // Single warehouse: show breakdown for selected warehouse
+                    $warehouseStock = WarehouseStock::with('warehouse')
+                        ->where('sku', $sku)
+                        ->where('warehouse_id', $warehouseId)
+                        ->first();
+
+                    if ($warehouseStock) {
+                        $allocateQty = min($warehouseStock->available_quantity, $poQty);
+                        $unavailableQty = max(0, $poQty - $allocateQty);
+                        $warehouseBreakdown = $warehouseStock->warehouse->name . ' - PO Qty: ' . $poQty . ', Available: ' . $allocateQty . ', Unavailable: ' . $unavailableQty;
+
+                        if ($unavailableQty > 0) {
+                            $warehouseBreakdown .= '<br>PO Required: ' . $unavailableQty;
+                        }
+                    }
+                }
 
                 // Stock check
                 if ($availableQty >= $poQty) {
@@ -1522,6 +1575,7 @@ class SalesOrderController extends Controller
                     'PO Quantity' => $poQty ?? 0,
                     'Available Quantity' => $availableQty ?? 0,
                     'Unavailable Quantity' => $shortQty ?? 0,
+                    'Warehouse Allocation' => $warehouseBreakdown ?? '',
                     'Reason' => '',
                 ];
             }
@@ -1600,6 +1654,7 @@ class SalesOrderController extends Controller
                 'Available Quantity' => $row['Available Quantity'] ?? '',
                 'Unavailable Quantity' => $row['Unavailable Quantity'] ?? '',
                 'Case Pack Quantity' => $row['Case Pack Quantity'] ?? '',
+                'Warehouse Allocation' => strip_tags($row['Warehouse Allocation'] ?? ''),
                 'Purchase Order Quantity' => $row['Unavailable Quantity'] ?? '',
                 'Block' => '0',
                 'Vendor Code' => $product->vendor_code ?? '',
