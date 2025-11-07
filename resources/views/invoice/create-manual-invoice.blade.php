@@ -70,7 +70,7 @@
                                 </div>
 
                                 <div class="row mb-3">
-                                    <div class="col-md-6">
+                                    <div class="col-md-4">
                                         <label class="form-label">Invoice Date <span class="text-danger">*</span></label>
                                         <input type="date" name="invoice_date"
                                             class="form-control @error('invoice_date') is-invalid @enderror"
@@ -79,7 +79,7 @@
                                             <div class="invalid-feedback">{{ $message }}</div>
                                         @enderror
                                     </div>
-                                    <div class="col-md-6">
+                                    <div class="col-md-4">
                                         <label class="form-label">PO Number</label>
                                         <input type="text" id="po_number" name="po_number"
                                             class="form-control @error('po_number') is-invalid @enderror"
@@ -89,39 +89,107 @@
                                             <div class="invalid-feedback">{{ $message }}</div>
                                         @enderror
                                     </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label">PO Date</label>
+                                        <input type="date" name="po_date"
+                                            class="form-control @error('po_date') is-invalid @enderror"
+                                            value="{{ old('po_date') }}" placeholder="Enter PO Date">
+                                        @error('po_date')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
                                 </div>
 
                                 <hr>
 
-                                <div class="d-flex justify-content-between align-items-center mb-3">
-                                    <h6 class="mb-0">Products</h6>
-                                    <button type="button" class="btn btn-sm btn-primary" id="addProductRow">
-                                        <i class="bx bx-plus"></i> Add Product
-                                    </button>
+                                <!-- Invoice Type Selection -->
+                                <div class="mb-3">
+                                    <label class="form-label">Invoice Type <span class="text-danger">*</span></label>
+                                    <div class="d-flex gap-3">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="invoice_item_type" id="invoiceTypeProduct" value="product" checked>
+                                            <label class="form-check-label" for="invoiceTypeProduct">
+                                                Product
+                                            </label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="invoice_item_type" id="invoiceTypeService" value="service">
+                                            <label class="form-check-label" for="invoiceTypeService">
+                                                Service-Marketing
+                                            </label>
+                                        </div>
+                                    </div>
                                 </div>
 
-                                <div class="table-responsive">
-                                    <table class="table table-bordered" id="productsTable">
-                                        <thead class="table-light">
-                                            <tr>
-                                                <th style="width: 12%;">Warehouse <span class="text-danger">*</span></th>
-                                                <th style="width: 15%;">Product <span class="text-danger">*</span></th>
-                                                <th style="width: 7%;">HSN</th>
-                                                <th style="width: 5%;">Stock</th>
-                                                <th style="width: 6%;">Qty <span class="text-danger">*</span></th>
-                                                <th style="width: 6%;">Box Count</th>
-                                                <th style="width: 6%;">Weight</th>
-                                                <th style="width: 9%;">Rate <span class="text-danger">*</span></th>
-                                                <th style="width: 7%;">Discount</th>
-                                                <th style="width: 7%;">Tax</th>
-                                                <th style="width: 10%;">Total</th>
-                                                <th style="width: 10%;">Action</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="productRows">
-                                            <!-- Product rows will be added here -->
-                                        </tbody>
-                                    </table>
+                                <hr>
+
+                                <!-- Products Section -->
+                                <div id="productsSection">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <h6 class="mb-0">Products</h6>
+                                        <button type="button" class="btn btn-sm btn-primary" id="addProductRow">
+                                            <i class="bx bx-plus"></i> Add Product
+                                        </button>
+                                    </div>
+
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered" id="productsTable">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    <th style="width: 12%;">Warehouse <span class="text-danger">*</span></th>
+                                                    <th style="width: 15%;">Product <span class="text-danger">*</span></th>
+                                                    <th style="width: 7%;">HSN</th>
+                                                    <th style="width: 5%;">Stock</th>
+                                                    <th style="width: 6%;">Qty <span class="text-danger">*</span></th>
+                                                    <th style="width: 6%;">Box Count</th>
+                                                    <th style="width: 6%;">Weight</th>
+                                                    <th style="width: 9%;">Rate <span class="text-danger">*</span></th>
+                                                    <th style="width: 7%;">Discount</th>
+                                                    <th style="width: 7%;">Tax</th>
+                                                    <th style="width: 10%;">Total</th>
+                                                    <th style="width: 10%;">Action</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="productRows">
+                                                <!-- Product rows will be added here -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
+                                <!-- Services Section -->
+                                <div id="servicesSection" style="display: none;">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <h6 class="mb-0">Services</h6>
+                                        <button type="button" class="btn btn-sm btn-primary" id="addServiceRow">
+                                            <i class="bx bx-plus"></i> Add Service
+                                        </button>
+                                    </div>
+
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered" id="servicesTable">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    <th style="width: 10%;">Service Title</th>
+                                                    <th style="width: 8%;">Category</th>
+                                                    <th style="width: 10%;">Description</th>
+                                                    <th style="width: 9%;">Campaign Name</th>
+                                                    <th style="width: 5%;">Qty <span class="text-danger">*</span></th>
+                                                    <th style="width: 7%;">Unit Type</th>
+                                                    <th style="width: 6%;">Box Count</th>
+                                                    <th style="width: 6%;">Weight (KG)</th>
+                                                    <th style="width: 7%;">Rate <span class="text-danger">*</span></th>
+                                                    <th style="width: 6%;">Discount</th>
+                                                    <th style="width: 6%;">Tax</th>
+                                                    <th style="width: 7%;">Total</th>
+                                                    <th style="width: 5%;">Action</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="serviceRows">
+                                                <!-- Service rows will be added here -->
+                                            </tbody>
+                                        </table>
+                                    </div>
                                 </div>
 
                                 <div class="mb-3">
@@ -392,6 +460,7 @@
 
     <script>
         let rowIndex = 0;
+        let serviceRowIndex = 0;
         const products = @json($products);
         const warehouses = @json($warehouses);
 
@@ -402,9 +471,47 @@
             // Add product row button
             document.getElementById('addProductRow').addEventListener('click', addProductRow);
 
+            // Add service row button
+            document.getElementById('addServiceRow').addEventListener('click', addServiceRow);
+
             // Paid amount change
             document.getElementById('paid_amount').addEventListener('input', calculateTotals);
+
+            // Invoice type toggle
+            document.querySelectorAll('input[name="invoice_item_type"]').forEach(radio => {
+                radio.addEventListener('change', function() {
+                    toggleInvoiceType(this.value);
+                });
+            });
         });
+
+        function toggleInvoiceType(type) {
+            const productsSection = document.getElementById('productsSection');
+            const servicesSection = document.getElementById('servicesSection');
+
+            if (type === 'product') {
+                productsSection.style.display = 'block';
+                servicesSection.style.display = 'none';
+                // Clear service rows
+                document.getElementById('serviceRows').innerHTML = '';
+                serviceRowIndex = 0;
+                // Add product row if none exists
+                if (document.getElementById('productRows').children.length === 0) {
+                    addProductRow();
+                }
+            } else {
+                productsSection.style.display = 'none';
+                servicesSection.style.display = 'block';
+                // Clear product rows
+                document.getElementById('productRows').innerHTML = '';
+                rowIndex = 0;
+                // Add service row if none exists
+                if (document.getElementById('serviceRows').children.length === 0) {
+                    addServiceRow();
+                }
+            }
+            calculateTotals();
+        }
 
         function addProductRow() {
             rowIndex++;
@@ -565,11 +672,24 @@
             let totalDiscount = 0;
             let totalTax = 0;
 
+            // Calculate product totals
             document.querySelectorAll('#productRows tr').forEach(row => {
                 const quantity = parseFloat(row.querySelector('.quantity-input')?.value) || 0;
                 const price = parseFloat(row.querySelector('.price-input')?.value) || 0;
                 const discount = parseFloat(row.querySelector('.discount-input')?.value) || 0;
                 const tax = parseFloat(row.querySelector('.tax-input')?.value) || 0;
+
+                subtotal += (quantity * price);
+                totalDiscount += discount;
+                totalTax += tax;
+            });
+
+            // Calculate service totals
+            document.querySelectorAll('#serviceRows tr').forEach(row => {
+                const quantity = parseFloat(row.querySelector('.service-quantity-input')?.value) || 0;
+                const price = parseFloat(row.querySelector('.service-price-input')?.value) || 0;
+                const discount = parseFloat(row.querySelector('.service-discount-input')?.value) || 0;
+                const tax = parseFloat(row.querySelector('.service-tax-input')?.value) || 0;
 
                 subtotal += (quantity * price);
                 totalDiscount += discount;
@@ -602,6 +722,95 @@
 
         function removeRow(rowId) {
             const row = document.getElementById(`row_${rowId}`);
+            if (row) {
+                row.remove();
+                calculateTotals();
+            }
+        }
+
+        // Service Functions
+        function addServiceRow() {
+            serviceRowIndex++;
+            const tbody = document.getElementById('serviceRows');
+            const row = document.createElement('tr');
+            row.id = `service_row_${serviceRowIndex}`;
+
+            row.innerHTML = `
+        <td>
+            <input type="text" name="services[${serviceRowIndex}][service_title]" class="form-control form-control-sm" placeholder="Service Title">
+        </td>
+        <td>
+            <input type="text" name="services[${serviceRowIndex}][service_category]" class="form-control form-control-sm" placeholder="Category">
+        </td>
+        <td>
+            <textarea name="services[${serviceRowIndex}][service_description]" class="form-control form-control-sm" rows="1" placeholder="Description"></textarea>
+        </td>
+        <td>
+            <input type="text" name="services[${serviceRowIndex}][campaign_name]" class="form-control form-control-sm" placeholder="Campaign Name">
+        </td>
+        <td>
+            <input type="number" name="services[${serviceRowIndex}][quantity]" class="form-control form-control-sm service-quantity-input" data-row="${serviceRowIndex}" min="1" value="1" required>
+        </td>
+        <td>
+            <input type="text" name="services[${serviceRowIndex}][unit_type]" class="form-control form-control-sm" placeholder="e.g., Hours, Days">
+        </td>
+        <td>
+            <input type="number" name="services[${serviceRowIndex}][box_count]" class="form-control form-control-sm" placeholder="0" min="0">
+        </td>
+        <td>
+            <input type="number" name="services[${serviceRowIndex}][weight]" class="form-control form-control-sm" placeholder="0" min="0" step="0.01">
+        </td>
+        <td>
+            <input type="number" name="services[${serviceRowIndex}][unit_price]" class="form-control form-control-sm service-price-input" data-row="${serviceRowIndex}" min="0" step="0.01" required>
+        </td>
+        <td>
+            <input type="number" name="services[${serviceRowIndex}][discount]" class="form-control form-control-sm service-discount-input" data-row="${serviceRowIndex}" min="0" value="0">
+        </td>
+        <td>
+            <input type="number" name="services[${serviceRowIndex}][tax]" class="form-control form-control-sm service-tax-input" data-row="${serviceRowIndex}" min="0" value="0">
+        </td>
+        <td>
+            <input type="text" class="form-control form-control-sm service-row-total" id="service_total_${serviceRowIndex}" readonly value="0">
+        </td>
+        <td>
+            <button type="button" class="btn btn-sm btn" onclick="removeServiceRow(${serviceRowIndex})">
+               <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trash-2 text-danger">
+                    <polyline points="3 6 5 6 21 6"></polyline>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                    <line x1="10" y1="11" x2="10" y2="17"></line>
+                    <line x1="14" y1="11" x2="14" y2="17"></line>
+                </svg>
+            </button>
+        </td>
+    `;
+
+            tbody.appendChild(row);
+
+            // Attach event listeners
+            row.querySelectorAll('.service-quantity-input, .service-price-input, .service-discount-input, .service-tax-input').forEach(input => {
+                input.addEventListener('input', calculateServiceRowTotal);
+            });
+        }
+
+        function calculateServiceRowTotal(event) {
+            const row = event.target.closest('tr');
+            const rowId = event.target.dataset.row;
+
+            const quantity = parseFloat(row.querySelector('.service-quantity-input').value) || 0;
+            const price = parseFloat(row.querySelector('.service-price-input').value) || 0;
+            const discount = parseFloat(row.querySelector('.service-discount-input').value) || 0;
+            const tax = parseFloat(row.querySelector('.service-tax-input').value) || 0;
+
+            const amount = quantity * price;
+            const total = amount - discount + tax;
+
+            document.getElementById(`service_total_${rowId}`).value = total.toFixed(2);
+
+            calculateTotals();
+        }
+
+        function removeServiceRow(rowId) {
+            const row = document.getElementById(`service_row_${rowId}`);
             if (row) {
                 row.remove();
                 calculateTotals();

@@ -24,6 +24,11 @@ class InvoiceDetails extends Model
         'temp_order_id',
         'sales_order_product_id',
         'po_number',
+        'service_title',
+        'service_category',
+        'service_description',
+        'campaign_name',
+        'unit_type',
     ];
 
     public function invoice()
