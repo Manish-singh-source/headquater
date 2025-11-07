@@ -5,9 +5,12 @@ namespace App\Http\Controllers;
 use App\Models\Customer;
 use App\Models\SalesOrder;
 use App\Models\SalesOrderProduct;
+use App\Models\WarehouseAllocation;
 use App\Models\WarehouseProductIssue;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Spatie\SimpleExcel\SimpleExcelReader;
@@ -37,22 +40,58 @@ class PackagingController extends Controller
      */
     public function view($id)
     {
-        $salesOrder = SalesOrder::with([
-            'customerGroup',
-            'warehouse',
-            'orderedProducts.product',
-            'orderedProducts.customer',
-            'orderedProducts.tempOrder',
-            'orderedProducts.warehouseStock',
-        ])->findOrFail($id);
+        try {
+            $user = Auth::user();
+            $isAdmin = $user->hasRole('Admin'); // Check if user is admin
+            $userWarehouseId = $user->warehouse_id; // Get user's warehouse ID
 
-        $facilityNames = $salesOrder->orderedProducts
-            ->pluck('customer.facility_name')
-            ->filter()
-            ->unique()
-            ->values();
+            // Load sales order with relationships
+            $salesOrder = SalesOrder::with([
+                'customerGroup',
+                'warehouse',
+                'orderedProducts.product',
+                'orderedProducts.customer',
+                'orderedProducts.tempOrder',
+                'orderedProducts.warehouseStock',
+                'orderedProducts.warehouseAllocations.warehouse', // Load warehouse allocations
+            ])->findOrFail($id);
 
-        return view('packagingList.view', compact('salesOrder', 'facilityNames'));
+            // Filter products based on user role and warehouse
+            if (!$isAdmin && $userWarehouseId) {
+                // For warehouse users: Filter products to show only their warehouse's products
+                $filteredProducts = $salesOrder->orderedProducts->filter(function ($product) use ($userWarehouseId) {
+                    // Check if product has warehouse allocations (auto-allocation)
+                    if ($product->warehouseAllocations && $product->warehouseAllocations->count() > 0) {
+                        // Check if any allocation is from user's warehouse
+                        return $product->warehouseAllocations->contains('warehouse_id', $userWarehouseId);
+                    } else {
+                        // Single warehouse allocation: Check warehouse_stock_id
+                        if ($product->warehouseStock) {
+                            return $product->warehouseStock->warehouse_id == $userWarehouseId;
+                        }
+                    }
+                    return false;
+                });
+
+                // Replace orderedProducts with filtered collection
+                $salesOrder->setRelation('orderedProducts', $filteredProducts);
+            }
+
+            // For admin: Show all products (no filtering needed)
+
+            $facilityNames = $salesOrder->orderedProducts
+                ->pluck('customer.facility_name')
+                ->filter()
+                ->unique()
+                ->values();
+
+            // Pass additional data to view
+            return view('packagingList.view', compact('salesOrder', 'facilityNames', 'isAdmin', 'userWarehouseId'));
+        } catch (\Exception $e) {
+            Log::error('Error loading packaging view: ' . $e->getMessage());
+            return redirect()->route('packaging.list.index')
+                ->with('error', 'Error loading packaging details: ' . $e->getMessage());
+        }
     }
 
     /**
@@ -75,6 +114,11 @@ class PackagingController extends Controller
         // Create writer
         $writer = SimpleExcelWriter::create($tempXlsxPath);
 
+        // Get user info for filtering
+        $user = Auth::user();
+        $isAdmin = $user->hasRole('Admin');
+        $userWarehouseId = $user->warehouse_id;
+
         // Fetch data with relationships
         $salesOrder = SalesOrder::with([
             'customerGroup',
@@ -82,7 +126,8 @@ class PackagingController extends Controller
             'orderedProducts.product',
             'orderedProducts.customer',
             'orderedProducts.tempOrder',
-            'orderedProducts.warehouseStock',
+            'orderedProducts.warehouseStock.warehouse',
+            'orderedProducts.warehouseAllocations.warehouse',
         ])
             ->findOrFail($id);
 
@@ -92,22 +137,56 @@ class PackagingController extends Controller
         }
         $facilityNames = $facilityNames->filter()->unique()->values();
 
+        // Filter products based on user role (same as view method)
+        $filteredProducts = $salesOrder->orderedProducts;
+        if (!$isAdmin && $userWarehouseId) {
+            $filteredProducts = $salesOrder->orderedProducts->filter(function ($product) use ($userWarehouseId) {
+                if ($product->warehouseAllocations && $product->warehouseAllocations->count() > 0) {
+                    return $product->warehouseAllocations->contains('warehouse_id', $userWarehouseId);
+                } else {
+                    if ($product->warehouseStock) {
+                        return $product->warehouseStock->warehouse_id == $userWarehouseId;
+                    }
+                }
+                return false;
+            });
+        }
+
         // Add rows
-        foreach ($salesOrder->orderedProducts as $order) {
-
-            // $totalDispatchQty = 0;
-            // if ($order->tempOrder?->vendor_pi_received_quantity) {
-            //     $order->tempOrder->vendor_pi_fulfillment_quantity = $order->tempOrder->vendor_pi_received_quantity;
-            // }
-
-            // if ($order->ordered_quantity <= ($order->tempOrder?->available_quantity ?? 0) + ($order->tempOrder?->vendor_pi_fulfillment_quantity ?? 0)) {
-            //     $totalDispatchQty = $order->ordered_quantity;
-            // } else {
-            //     $totalDispatchQty = ($order->tempOrder?->available_quantity ?? 0) + ($order->tempOrder?->vendor_pi_fulfillment_quantity ?? 0);
-            // }
+        foreach ($filteredProducts as $order) {
 
             if (isset($request->facility_name) && $order->tempOrder->facility_name != $request->facility_name) {
                 continue;
+            }
+
+            // Build warehouse allocation text
+            $warehouseAllocation = '';
+            $hasAllocations = $order->warehouseAllocations && $order->warehouseAllocations->count() > 0;
+
+            if ($hasAllocations) {
+                // Auto-allocation: Show warehouse-wise breakdown
+                if ($isAdmin) {
+                    // Admin sees all warehouses
+                    $allocations = [];
+                    foreach ($order->warehouseAllocations->sortBy('sequence') as $allocation) {
+                        $allocations[] = ($allocation->warehouse->name ?? 'N/A') . ': ' . $allocation->allocated_quantity;
+                    }
+                    $warehouseAllocation = implode(', ', $allocations);
+                } else {
+                    // Warehouse user sees only their warehouse
+                    $allocations = [];
+                    foreach ($order->warehouseAllocations->where('warehouse_id', $userWarehouseId) as $allocation) {
+                        $allocations[] = ($allocation->warehouse->name ?? 'N/A') . ': ' . $allocation->allocated_quantity;
+                    }
+                    $warehouseAllocation = implode(', ', $allocations);
+                }
+            } else {
+                // Single warehouse allocation
+                if ($order->warehouseStock) {
+                    $warehouseAllocation = ($order->warehouseStock->warehouse->name ?? 'N/A') . ': ' . ($order->tempOrder->block ?? 0);
+                } else {
+                    $warehouseAllocation = 'N/A';
+                }
             }
 
             $writer->addRow([
@@ -127,7 +206,7 @@ class PackagingController extends Controller
                 'MRP' => $order->tempOrder->mrp ?? '',
                 'PO Quantity' => $order->tempOrder->po_qty ?? '',
                 'Purchase Order Quantity' => $order->tempOrder->purchase_order_quantity ?? '',
-                // 'Warehouse Stock' => $order->warehouseStock->original_quantity ?? '',
+                'Warehouse Allocation' => $warehouseAllocation,
                 // 'PI Quantity' => $order->tempOrder?->vendor_pi_fulfillment_quantity,
                 'Purchase Order No' => $order->tempOrder->po_number ?? '',
                 'Total Dispatch Qty' => $order->dispatched_quantity ?? 0,
