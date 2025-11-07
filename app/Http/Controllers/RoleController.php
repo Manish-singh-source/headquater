@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\PermissionGroup;
 use Illuminate\Http\Request;
 use Spatie\Permission\Models\Role;
-use Spatie\Permission\Models\Permission;
 
 class RoleController extends Controller
 {
@@ -19,9 +19,9 @@ class RoleController extends Controller
     public function create()
     {
         // Logic to show create role form
-        $permissions = Permission::all(); // Fetch all permissions
-        return view('roles.create', compact('permissions'));
-    } 
+        $permissionGroups = PermissionGroup::with('permissions')->active()->get();
+        return view('roles.create', compact('permissionGroups'));
+    }
 
     public function store(Request $request)
     {
@@ -47,8 +47,8 @@ class RoleController extends Controller
         // Logic to show edit role form
         $role = Role::with('permissions')->findOrFail($id);
         $rolePermissions = $role->permissions->pluck('name')->toArray(); // Get permissions for the role
-        $permissions = Permission::all();
-        return view('roles.edit', compact('role', 'permissions', 'rolePermissions'));
+        $permissionGroups = PermissionGroup::with('permissions')->active()->get();
+        return view('roles.edit', compact('role', 'permissionGroups', 'rolePermissions'));
     }
 
     public function update(Request $request, $id)

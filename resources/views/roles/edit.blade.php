@@ -25,38 +25,63 @@
                                 </div>
 
                                 <div class="mt-3">
-                                    <h5>
-                                        Permissions
-                                    </h5>
+                                    <h5>Permissions</h5>
+                                    <small class="text-muted">Select permissions for this role (grouped by category)</small>
 
-                                    <div class="row g-3">
-                                        {{-- Dashboard --}}
-                                        <div class="col-xl-12">
-                                            <div class="border rounded p-3">
-                                                <div class="row g-3">
+                                    <div class="row g-3 mt-2">
+                                        @forelse($permissionGroups as $group)
+                                            <div class="col-xl-12">
+                                                <div class="border rounded p-3">
+                                                    <div class="d-flex align-items-center justify-content-between mb-3">
+                                                        <h6 class="mb-0">
+                                                            <i class="bx bx-folder me-2"></i>{{ $group->name }}
+                                                            @if($group->description)
+                                                                <small class="text-muted d-block mt-1">{{ $group->description }}</small>
+                                                            @endif
+                                                        </h6>
+                                                        <div class="form-check">
+                                                            <input type="checkbox" class="form-check-input select-all-group"
+                                                                   data-group="{{ $group->id }}"
+                                                                   id="select-all-{{ $group->id }}">
+                                                            <label class="form-check-label" for="select-all-{{ $group->id }}">
+                                                                Select All
+                                                            </label>
+                                                        </div>
+                                                    </div>
 
-                                                    @foreach ($permissions as $permission)
-                                                        <div class="col-md-6">
-                                                            <div
-                                                                class="d-flex align-items-center justify-content-between gap-3 form-control p-2">
-                                                                <label class="mb-0">
-                                                                    {{ ucfirst($permission->name) }}
-                                                                </label>
-                                                                <div class="form-check form-switch">
-                                                                    <input type="checkbox" value="{{ $permission->name }}"
-                                                                        name="permissions[]" class="form-check-input"
-                                                                        id="permission-{{ $permission->id }}" {{ in_array($permission->name, $rolePermissions) ? 'checked' : ''  }}>
-                                                                    <label class="form-check-label"
-                                                                        for="permission-{{ $permission->id }}"></label>
+                                                    <div class="row g-3">
+                                                        @forelse($group->permissions as $permission)
+                                                            <div class="col-md-6">
+                                                                <div class="d-flex align-items-center justify-content-between gap-3 form-control p-2">
+                                                                    <label class="mb-0">
+                                                                        {{ ucfirst($permission->name) }}
+                                                                    </label>
+                                                                    <div class="form-check form-switch">
+                                                                        <input type="checkbox" value="{{ $permission->name }}"
+                                                                            name="permissions[]" class="form-check-input permission-checkbox"
+                                                                            data-group="{{ $group->id }}"
+                                                                            id="permission-{{ $permission->id }}"
+                                                                            {{ in_array($permission->name, $rolePermissions) ? 'checked' : '' }}>
+                                                                        <label class="form-check-label"
+                                                                            for="permission-{{ $permission->id }}"></label>
+                                                                    </div>
                                                                 </div>
                                                             </div>
-                                                        </div>
-                                                    @endforeach
-
+                                                        @empty
+                                                            <div class="col-12">
+                                                                <p class="text-muted mb-0">No permissions in this group</p>
+                                                            </div>
+                                                        @endforelse
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-
+                                        @empty
+                                            <div class="col-12">
+                                                <div class="alert alert-warning">
+                                                    No permission groups found. Please create permission groups first.
+                                                </div>
+                                            </div>
+                                        @endforelse
                                     </div>
                                 </div>
 
@@ -74,4 +99,38 @@
         </div>
     </main>
     <!--end main wrapper-->
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Handle select all for each group
+            document.querySelectorAll('.select-all-group').forEach(selectAll => {
+                selectAll.addEventListener('change', function() {
+                    const groupId = this.dataset.group;
+                    const checkboxes = document.querySelectorAll(`.permission-checkbox[data-group="${groupId}"]`);
+                    checkboxes.forEach(checkbox => {
+                        checkbox.checked = this.checked;
+                    });
+                });
+
+                // Update select all state based on individual checkboxes
+                const groupId = selectAll.dataset.group;
+                const checkboxes = document.querySelectorAll(`.permission-checkbox[data-group="${groupId}"]`);
+
+                checkboxes.forEach(checkbox => {
+                    checkbox.addEventListener('change', function() {
+                        const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+                        const anyChecked = Array.from(checkboxes).some(cb => cb.checked);
+                        selectAll.checked = allChecked;
+                        selectAll.indeterminate = anyChecked && !allChecked;
+                    });
+                });
+
+                // Initialize select all state
+                const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+                const anyChecked = Array.from(checkboxes).some(cb => cb.checked);
+                selectAll.checked = allChecked;
+                selectAll.indeterminate = anyChecked && !allChecked;
+            });
+        });
+    </script>
 @endsection

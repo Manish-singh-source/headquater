@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Spatie\Permission\Models\Role;
 
 class DatabaseSeeder extends Seeder
 {
@@ -16,6 +17,7 @@ class DatabaseSeeder extends Seeder
         // User::factory(10)->create();
 
         User::create([
+            'warehouse_id' => 0,
             'user_name' => 'superadmin',
             'fname' => 'Super',
             'lname' => 'Admin',
@@ -23,14 +25,24 @@ class DatabaseSeeder extends Seeder
             'password' => '123456',
         ]);
 
+        Role::create([
+            'name' => 'Super Admin',
+            'guard_name' => 'web',
+        ]);
+
+        User::first()->assignRole('Super Admin');
+
+
+
         $this->call([
-            // StaffSeeder::class,
             CountrySeeder::class,
             StateSeeder::class,
             CitySeeder::class,
             WarehouseSeeder::class,
             VendorsSeeder::class,
             PermissionsSeeder::class,
+            RolesTableSeeder::class,
+            UsersTableSeeder::class,
         ]);
     }
 }
