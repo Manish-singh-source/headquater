@@ -2,13 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\PermissionGroup;
 use App\Models\User;
 use App\Models\Warehouse;
 use Illuminate\Http\Request;
 use Spatie\Permission\Models\Role;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Spatie\Permission\Models\Permission;
 use Illuminate\Support\Facades\Validator;
 
 class StaffController extends Controller
@@ -153,13 +153,13 @@ class StaffController extends Controller
         // Logic to view a staff member
         $staff = User::findOrFail($id);
         $staffPermissions = $staff->getAllPermissions();
-        $permissions = Permission::all(); // Assuming you have a Permission model
+        $permissionGroups = PermissionGroup::with('permissions')->active()->get();
 
         if (!$staff) {
             return redirect()->route('staff.index')->with('error', 'Staff member not found.');
         }
         // Assuming you have a view file for displaying staff details
-        return view('staffs.view', compact('staff', 'staffPermissions', 'permissions'));
+        return view('staffs.view', compact('staff', 'staffPermissions', 'permissionGroups'));
     }
 
     public function deleteSelected(Request $request)
