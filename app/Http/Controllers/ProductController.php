@@ -28,6 +28,43 @@ class ProductController extends Controller
             $products = WarehouseStock::with('product', 'warehouse')
                 ->get();
 
+            // Get all warehouse allocations grouped by SKU and warehouse
+            $allocations = DB::table('warehouse_allocations')
+                ->select('sku', 'warehouse_id', DB::raw('SUM(allocated_quantity) as total_allocated'))
+                ->where('status', '!=', 'cancelled')
+                ->groupBy('sku', 'warehouse_id')
+                ->get()
+                ->groupBy('sku');
+
+            // Get all sales order products with pending purchase orders grouped by SKU
+            $purchaseOrderRequirements = DB::table('sales_order_products')
+                ->select('sku', DB::raw('SUM(purchase_ordered_quantity) as total_po_required'))
+                ->whereNotNull('purchase_ordered_quantity')
+                ->where('purchase_ordered_quantity', '>', 0)
+                ->groupBy('sku')
+                ->get()
+                ->keyBy('sku');
+
+            // Attach allocation and PO data to products
+            foreach ($products as $product) {
+                $sku = $product->sku;
+
+                // Get allocations for this SKU and warehouse
+                if (isset($allocations[$sku])) {
+                    $warehouseAllocation = $allocations[$sku]->firstWhere('warehouse_id', $product->warehouse_id);
+                    $product->allocated_quantity = $warehouseAllocation ? $warehouseAllocation->total_allocated : 0;
+                } else {
+                    $product->allocated_quantity = 0;
+                }
+
+                // Get PO requirements for this SKU
+                if (isset($purchaseOrderRequirements[$sku])) {
+                    $product->po_required = $purchaseOrderRequirements[$sku]->total_po_required;
+                } else {
+                    $product->po_required = 0;
+                }
+            }
+
             return view('products.index', compact('products'));
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Error retrieving products: ' . $e->getMessage());

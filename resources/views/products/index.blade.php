@@ -115,7 +115,9 @@
                                         <th>po&nbsp;status</th>
                                         <th>Original&nbsp;Quantity</th>
                                         <th>Available&nbsp;Quantity</th>
-                                        <th>Hold&nbsp;Qty</th>
+                                        <th>Blocked&nbsp;Qty</th>
+                                        <th>Allocated&nbsp;Qty</th>
+                                        <th>PO&nbsp;Required</th>
                                         <th>Date</th>
                                         <th>Action</th>
                                     </tr>
@@ -158,6 +160,22 @@
                                                 @if ($product->block_quantity)
                                                     <span class="badge text-danger bg-danger-subtle">
                                                         {{ $product->block_quantity }}</span>
+                                                @else
+                                                    <span>0</span>
+                                                @endif
+                                            </td>
+                                            <td>
+                                                @if ($product->allocated_quantity ?? 0)
+                                                    <span class="badge text-warning bg-warning-subtle">
+                                                        {{ $product->allocated_quantity }}</span>
+                                                @else
+                                                    <span>0</span>
+                                                @endif
+                                            </td>
+                                            <td>
+                                                @if ($product->po_required ?? 0)
+                                                    <span class="badge text-info bg-info-subtle">
+                                                        {{ $product->po_required }}</span>
                                                 @else
                                                     <span>0</span>
                                                 @endif
