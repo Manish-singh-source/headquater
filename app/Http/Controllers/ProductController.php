@@ -82,17 +82,17 @@ class ProductController extends Controller
             // Check for duplicates
             $seen = [];
             foreach ($rows as $record) {
-                if (empty($record['SKU Code'] ?? null)) {
+                if (empty($record['SKU Code'] ?? null) || empty($request->warehouse_id ?? null)) {
                     continue;
                 }
 
-                $key = strtolower(trim($record['SKU Code'] ?? ''));
+                $key = strtolower(trim($record['SKU Code'] ?? '') . '|' . strtolower(trim($request->warehouse_id ?? '')));
 
                 if (isset($seen[$key])) {
                     DB::rollBack();
 
                     return redirect()->back()->with([
-                        'error' => 'Please check excel file: duplicate SKU ('.$record['SKU Code'].') found in the file.',
+                        'error' => 'Please check excel file: duplicate SKU ('.$record['SKU Code'].') found for same warehouse ('.$request->warehouse_id.').',
                     ]);
                 }
 
@@ -103,7 +103,7 @@ class ProductController extends Controller
             $insertCount = 0;
             
             foreach ($reader->getRows() as $record) {
-                if (empty($record['SKU Code'] ?? null)) {
+                if (empty($record['SKU Code'] ?? null) || empty($request->warehouse_id ?? null)) {
                     continue;
                 }
                 

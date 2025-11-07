@@ -89,7 +89,7 @@
                 <div class="card-body">
                     <div class="product-table">
                         <div class="table-responsive white-space-nowrap">
-                            <table id="example" class="table align-middle">
+                            <table id="productTable" class="table align-middle">
                                 <thead class="table-light">
                                     <tr>
                                         <th>
@@ -302,7 +302,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Initialize DataTable if not already initialized
-            var table = $('#example').DataTable ? $('#example').DataTable() : null;
+            var table = $('#productTable').DataTable ? $('#productTable').DataTable() : null;
 
             // Select All functionality (across all pages)
             const selectAll = document.getElementById('select-all');
