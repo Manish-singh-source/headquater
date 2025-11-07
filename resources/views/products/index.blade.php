@@ -274,7 +274,8 @@
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label for="basic_rate" class="form-label">Basic Rate</label>
-                                <input type="number" step="0.01" name="basic_rate" id="basic_rate" class="form-control">
+                                <input type="number" step="0.01" name="basic_rate" id="basic_rate"
+                                    class="form-control">
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label for="original_quantity" class="form-label">Original Quantity</label>
@@ -300,19 +301,44 @@
 @section('script')
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Select All functionality
+            // Initialize DataTable if not already initialized
+            var table = $('#example').DataTable ? $('#example').DataTable() : null;
+
+            // Select All functionality (across all pages)
             const selectAll = document.getElementById('select-all');
-            const checkboxes = document.querySelectorAll('.row-checkbox');
             selectAll.addEventListener('change', function() {
-                checkboxes.forEach(cb => cb.checked = selectAll.checked);
+                if (table) {
+                    // Select/deselect all checkboxes in all pages
+                    table.rows().every(function() {
+                        var node = this.node();
+                        var cb = node.querySelector('.row-checkbox');
+                        if (cb) cb.checked = selectAll.checked;
+                    });
+                } else {
+                    // Fallback if DataTable not initialized
+                    document.querySelectorAll('.row-checkbox').forEach(cb => cb.checked = selectAll
+                    .checked);
+                }
             });
 
-            // Delete Selected functionality
+            // Delete Selected functionality (across all pages)
             document.getElementById('delete-selected').addEventListener('click', function() {
                 let selected = [];
-                document.querySelectorAll('.row-checkbox:checked').forEach(cb => {
-                    selected.push(cb.value);
-                });
+                if (table) {
+                    // Get all checked checkboxes across all pages
+                    table.rows().every(function() {
+                        var node = this.node();
+                        var cb = node.querySelector('.row-checkbox');
+                        if (cb && cb.checked) {
+                            selected.push(cb.value);
+                        }
+                    });
+                } else {
+                    // Fallback if DataTable not initialized
+                    document.querySelectorAll('.row-checkbox:checked').forEach(cb => {
+                        selected.push(cb.value);
+                    });
+                }
                 if (selected.length === 0) {
                     alert('Please select at least one record.');
                     return;
@@ -372,7 +398,8 @@
                     const ws = product.warehouse_stock || product.warehouseStock || null;
                     if (ws) {
                         $('#original_quantity').val(ws.original_quantity ?? ws.originalQuantity ?? 0);
-                        $('#available_quantity').val(ws.available_quantity ?? ws.availableQuantity ?? 0);
+                        $('#available_quantity').val(ws.available_quantity ?? ws.availableQuantity ??
+                        0);
                     } else {
                         $('#original_quantity').val(0);
                         $('#available_quantity').val(0);
