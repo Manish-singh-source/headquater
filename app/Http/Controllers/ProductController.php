@@ -82,11 +82,11 @@ class ProductController extends Controller
             // Check for duplicates
             $seen = [];
             foreach ($rows as $record) {
-                if (empty($record['SKU Code'] ?? null)) {
+                if (empty($record['SKU Code'] ?? null) || empty($request->warehouse_id ?? null)) {
                     continue;
                 }
 
-                $key = strtolower(trim($record['SKU Code'] ?? ''));
+                $key = strtolower(trim($record['SKU Code'] ?? '') . '|' . $request->warehouse_id);
 
                 if (isset($seen[$key])) {
                     DB::rollBack();
@@ -103,7 +103,7 @@ class ProductController extends Controller
             $insertCount = 0;
             
             foreach ($reader->getRows() as $record) {
-                if (empty($record['SKU Code'] ?? null)) {
+                if (empty($record['SKU Code'] ?? null) || empty($request->warehouse_id ?? null)) {
                     continue;
                 }
                 
