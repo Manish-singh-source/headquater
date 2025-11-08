@@ -182,7 +182,11 @@
                                             {{-- <td>{{ $order->tempOrder?->vendor_pi_fulfillment_quantity }}</td> --}}
                                             <td>{{ $order->tempOrder->po_number }}</td>
                                             <td>
-                                                {{ $order->dispatched_quantity ?? 0 }}
+                                                @if($isSuperAdmin)
+                                                    {{ ($displayProduct['allocated_quantity'] ?? 0) + ($order->tempOrder?->vendor_pi_received_quantity ?? 0) }}
+                                                @else
+                                                    {{ ($order->dispatched_quantity ?? 0) + ($order->tempOrder?->vendor_pi_received_quantity ?? 0) }}
+                                                @endif
                                             </td>
                                             <td>
                                                 {{ $order->final_dispatched_quantity ?? 0 }}
@@ -248,7 +252,7 @@
                 // Filter by client name
                 $('#customerPOTable').on('change', function() {
                     var selected = $(this).val().trim();
-                    customerPOTableList.column(3).search(selected ? '^' + selected + '$' : '', true, false)
+                    customerPOTableList.column(2).search(selected ? '^' + selected + '$' : '', true, false)
                         .draw();
                 });
             }
