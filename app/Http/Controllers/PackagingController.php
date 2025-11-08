@@ -42,7 +42,8 @@ class PackagingController extends Controller
     {
         try {
             $user = Auth::user();
-            $isAdmin = $user->hasRole('Admin'); // Check if user is admin
+            $isAdmin = $user->roles->contains('name', 'Admin'); // Check if user is admin
+            $isSuperAdmin = $user->roles->contains('name', 'Super Admin'); // Check if user is super admin
             $userWarehouseId = $user->warehouse_id; // Get user's warehouse ID
 
             // Load sales order with relationships
@@ -57,7 +58,7 @@ class PackagingController extends Controller
             ])->findOrFail($id);
 
             // Filter products based on user role and warehouse
-            if (!$isAdmin && $userWarehouseId) {
+            if (!$isAdmin && !$isSuperAdmin && $userWarehouseId) {
                 // For warehouse users: Filter products to show only their warehouse's products
                 $filteredProducts = $salesOrder->orderedProducts->filter(function ($product) use ($userWarehouseId) {
                     // Check if product has warehouse allocations (auto-allocation)
@@ -77,16 +78,63 @@ class PackagingController extends Controller
                 $salesOrder->setRelation('orderedProducts', $filteredProducts);
             }
 
-            // For admin: Show all products (no filtering needed)
+            // For admin and super admin: Show all products (no filtering needed)
 
             $facilityNames = $salesOrder->orderedProducts
                 ->pluck('customer.facility_name')
                 ->filter()
                 ->unique()
-                ->values();
+                ->values()
+                ->toArray();
+
+            $displayProducts = [];
+            $facilityNamesArray = [];
+            if ($isSuperAdmin) {
+                // For super admin, create separate rows for each warehouse allocation
+                foreach ($salesOrder->orderedProducts as $order) {
+                    $hasAllocations = $order->warehouseAllocations && $order->warehouseAllocations->count() > 0;
+
+                    if ($hasAllocations) {
+                        // Multiple warehouses
+                        foreach ($order->warehouseAllocations as $allocation) {
+                            $displayProducts[] = [
+                                'order' => $order,
+                                'warehouse_name' => $allocation->warehouse->name ?? 'N/A',
+                                'allocated_quantity' => $allocation->allocated_quantity,
+                                'warehouse_allocation_display' => $allocation->warehouse->name . ': ' . $allocation->allocated_quantity,
+                            ];
+                            $facilityNamesArray[] = $order->tempOrder->facility_name;
+                        }
+                    } else {
+                        // Single warehouse or no allocation
+                        $warehouseName = $order->warehouseStock ? $order->warehouseStock->warehouse->name : 'N/A';
+                        $allocatedQty = $order->tempOrder->block ?? 0;
+                        $displayProducts[] = [
+                            'order' => $order,
+                            'warehouse_name' => $warehouseName,
+                            'allocated_quantity' => $allocatedQty,
+                            'warehouse_allocation_display' => $warehouseName . ': ' . $allocatedQty,
+                        ];
+                        $facilityNamesArray[] = $order->tempOrder->facility_name;
+                    }
+                }
+            } else {
+                // For non-super admin, keep original structure
+                foreach ($salesOrder->orderedProducts as $order) {
+                    $displayProducts[] = [
+                        'order' => $order,
+                        'warehouse_name' => null, // Not shown
+                        'allocated_quantity' => null,
+                        'warehouse_allocation_display' => '', // Will be handled in view
+                    ];
+                    $facilityNamesArray[] = $order->tempOrder->facility_name;
+                }
+            }
+
+            $facilityNames = array_unique(array_merge($facilityNames, $facilityNamesArray));
 
             // Pass additional data to view
-            return view('packagingList.view', compact('salesOrder', 'facilityNames', 'isAdmin', 'userWarehouseId'));
+            return view('packagingList.view', compact('salesOrder', 'facilityNames', 'isAdmin', 'isSuperAdmin', 'userWarehouseId', 'displayProducts'));
         } catch (\Exception $e) {
             Log::error('Error loading packaging view: ' . $e->getMessage());
             return redirect()->route('packaging.list.index')
@@ -116,7 +164,7 @@ class PackagingController extends Controller
 
         // Get user info for filtering
         $user = Auth::user();
-        $isAdmin = $user->hasRole('Admin');
+        $isAdmin = $user->roles->contains('name', 'Admin');
         $userWarehouseId = $user->warehouse_id;
 
         // Fetch data with relationships
@@ -190,6 +238,7 @@ class PackagingController extends Controller
             }
 
             $writer->addRow([
+                'Warehouse Name' => $order->warehouseStock ? $order->warehouseStock->warehouse->name : 'N/A',
                 'Customer Name' => $order->customer->contact_name ?? '',
                 // 'PO Number' => $order->tempOrder->po_number ?? '',
                 'SKU Code' => $order->tempOrder->sku ?? '',
