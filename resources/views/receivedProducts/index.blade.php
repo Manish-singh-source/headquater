@@ -123,6 +123,7 @@
                                                         </a>
                                                     @endcan --}}
 
+                                                    {{-- 
                                                     <form action="{{ route('purchase.order.delete', $order->id) }}"
                                                         method="POST" onsubmit="return confirm('Are you sure?')">
                                                         @csrf
@@ -144,7 +145,8 @@
                                                                     y2="17"></line>
                                                             </svg>
                                                         </button>
-                                                    </form>
+                                                    </form> 
+                                                    --}}
                                                 </div>
                                             </td>
                                         </tr>

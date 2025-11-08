@@ -83,32 +83,75 @@
     -- Upload Warehouse Excel Format  
 
 10. Manage Purchase Orders 
-    -- View Purchase Orders
-    -- Add Purchase Orders               --- x
-    -- Edit Purchase Orders               --- x
+    -- View Purchase Orders List 
+    -- Add Purchase Orders               
     -- Delete Purchase Orders
     -- Multi Select Delete Purchase Orders
-    -- Multi Select Change Purchase Order Status                --- x
+    -- View Purchase Order 
+        -- Change Status 
+        -- Add vendor grn 
+        -- Add vendor invoice 
+        -- Add vendor payment 
 
-11. Manage Purchase Order Products 
-    -- View Purchase Order Products
-    -- Add Purchase Order Products       --- x
-    -- Edit Purchase Order Products      --- x
-    -- Delete Purchase Order Products
-    -- Multi Select Delete Purchase Order Products 
-    -- Download Purchase Order Products Excel Format 
-    -- Upload Purchase Order Products Excel Format             --- x
-    -- Upload Vendor GRN 
-    -- Upload Vendor Invoice 
-    -- Upload Vendor Payment 
+        -- Export Vendor PO 
+        -- Update Vendor PO (using Export & Upload)
+        -- Multi Delete Vendor PO Product
+        -- Delete Purchase Order Product 
+
+        -- Approve/Reject Vendor PI 
 
 11. Manage Sales Orders 
+    -- View Sales Orders List
+    -- Add Sales Orders 
+    -- Check Availibility 
+    -- Store Sales Order 
+    -- Delete Sales Order         
+    -- View Sales Order 
+        -- Status Change 
+        -- Multi Select Delete Sales Order 
+        -- Export Excel 
+        -- Update PO 
+        -- Generate Invoice 
 
+12. Received Products 
+    -- View Received Products List 
+    -- View Received Products 
+    -- Download Received Products Excel Format 
+    -- Upload Received Products Excel Format 
 
+13. Packaging List 
+    -- View Packaging List 
+    -- View Packaging Products 
+    -- Download Packaging Products Excel Format 
+    -- Upload Packaging Products Excel Format 
+    -- Ready to Ship (change status)
 
+14. Ready to Ship 
+    -- View Ready to Ship List 
+    -- View Ready to Ship Products 
+    -- Change Status to Shipped 
+        
+15. Product Issues 
+    -- View Product Issues List 
 
+16. Vendor Return Products 
+    -- View Vendor Return Products List 
+    -- Change Status to Accept/Return 
 
+17. Track Order 
+    -- Track Order
 
+18. Vendor Purchase History Report 
+    -- View Vendor Purchase History Report 
+    -- Download Vendor Purchase History Report 
+
+19. Customer Sales History Report 
+    -- View Customer Sales History Report 
+    -- Download Customer Sales History Report 
+
+20. Inventory Stock History Report 
+    -- View Inventory Stock History Report 
+    -- Download Inventory Stock History Report 
 
 
 

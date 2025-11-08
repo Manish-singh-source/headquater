@@ -165,6 +165,8 @@ class SalesOrderController extends Controller
             $salesOrder = new SalesOrder;
             $salesOrder->warehouse_id = $isAutoAllocation ? null : $warehouse_id;
             $salesOrder->customer_group_id = $customer_group_id;
+            $salesOrder->order_date = now();
+            $salesOrder->status = 'blocked';
             $salesOrder->save();
             // sales order created
 
@@ -432,9 +434,9 @@ class SalesOrderController extends Controller
                 // Make a purchase order if one or more than one products have less quantity in warehouse
                 if ($shortQty > 0) {
                     // change sales order status to blocked
-                    $salesOrderStatus = SalesOrder::find($salesOrder->id);
-                    $salesOrderStatus->status = 'blocked';
-                    $salesOrderStatus->save();
+                    // $salesOrderStatus = SalesOrder::find($salesOrder->id);
+                    // $salesOrderStatus->status = 'blocked';
+                    // $salesOrderStatus->save();
                     // sales order status changed to blocked
 
                     if (! isset($productStockCache[$vendorCode])) {
