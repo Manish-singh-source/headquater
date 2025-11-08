@@ -60,6 +60,7 @@ class PackagingController extends Controller
             ])->findOrFail($id);
 
             // Filter products based on user role and warehouse
+            // For packaging view, show products that are allocated to user's warehouse
             if (!$isAdmin && $userWarehouseId) {
                 // For warehouse users: Filter products to show only their warehouse's products
                 $filteredProducts = $salesOrder->orderedProducts->filter(function ($product) use ($userWarehouseId, $salesOrder) {
@@ -72,9 +73,14 @@ class PackagingController extends Controller
                         if ($product->warehouseStock) {
                             return $product->warehouseStock->warehouse_id == $userWarehouseId;
                         }
-                        // If warehouseStock is null, check sales order's warehouse_id
-                        elseif ($salesOrder->warehouse_id) {
-                            return $salesOrder->warehouse_id == $userWarehouseId;
+                        // If warehouseStock is null (auto-allocation case), check if any warehouse stock has blocked quantity for this SKU
+                        else {
+                            // Load warehouse stock for this SKU and check if user's warehouse has blocked quantity
+                            $warehouseStock = \App\Models\WarehouseStock::where('sku', $product->sku)
+                                ->where('warehouse_id', $userWarehouseId)
+                                ->where('block_quantity', '>', 0)
+                                ->first();
+                            return $warehouseStock !== null;
                         }
                     }
                     return false;
@@ -616,15 +622,15 @@ class PackagingController extends Controller
                             $productsToUpdate[] = $product->id;
                         }
                     } else {
-                        // Warehouse user: Check if their warehouse has allocation
+                        // Warehouse user: Check if their warehouse has allocation and is ready
                         $userAllocation = $product->warehouseAllocations->where('warehouse_id', $userWarehouseId)->first();
                         if ($userAllocation && $userAllocation->final_dispatched_quantity > 0) {
-                            // Don't update product status yet, just mark allocation as ready
-                            // Product status will be updated when all warehouses are ready
+                            // For warehouse users, update the product status immediately for their warehouse portion
+                            $productsToUpdate[] = $product->id;
                         }
                     }
                 } else {
-                    // Single warehouse product
+                    // Single warehouse product or auto-allocation without explicit allocations
                     if ($isAdmin) {
                         $productsToUpdate[] = $product->id;
                     } else {
@@ -634,6 +640,15 @@ class PackagingController extends Controller
                             $belongsToUserWarehouse = true;
                         } elseif ($salesOrder->warehouse_id == $userWarehouseId) {
                             $belongsToUserWarehouse = true;
+                        } else {
+                            // For auto-allocation case: check if user's warehouse has blocked quantity for this SKU
+                            $warehouseStock = \App\Models\WarehouseStock::where('sku', $product->sku)
+                                ->where('warehouse_id', $userWarehouseId)
+                                ->where('block_quantity', '>', 0)
+                                ->first();
+                            if ($warehouseStock) {
+                                $belongsToUserWarehouse = true;
+                            }
                         }
 
                         if ($belongsToUserWarehouse && $product->final_dispatched_quantity > 0) {

@@ -27,10 +27,43 @@ class ReadyToShip extends Controller
     public function index()
     {
         try {
-            $orders = SalesOrder::where('status', 'ready_to_ship')
-                ->with('customerGroup')
-                ->latest()
-                ->paginate(15);
+            $user = Auth::user();
+            // Check if user is admin (Super Admin or Admin role, or warehouse_id is null/0)
+            $isAdmin = $user->hasRole(['Super Admin', 'Admin']) || !$user->warehouse_id;
+            $userWarehouseId = $user->warehouse_id;
+
+            $query = SalesOrder::where('status', 'ready_to_ship')
+                ->with('customerGroup');
+
+            // For warehouse users, only show orders that have products allocated to their warehouse
+            if (!$isAdmin && $userWarehouseId) {
+                $query->whereHas('orderedProducts', function ($q) use ($userWarehouseId) {
+                    $q->where(function ($subQuery) use ($userWarehouseId) {
+                        // Check for explicit warehouse allocations
+                        $subQuery->whereHas('warehouseAllocations', function ($allocQuery) use ($userWarehouseId) {
+                            $allocQuery->where('warehouse_id', $userWarehouseId);
+                        })
+                        // Or check for warehouse stock with blocked quantity
+                        ->orWhereHas('warehouseStock', function ($stockQuery) use ($userWarehouseId) {
+                            $stockQuery->where('warehouse_id', $userWarehouseId);
+                        })
+                        // Or check for auto-allocated products with blocked quantity in user's warehouse
+                        ->orWhere(function ($autoAllocQuery) use ($userWarehouseId) {
+                            $autoAllocQuery->whereNull('warehouse_stock_id')
+                                ->where('sku', '!=', '')
+                                ->whereExists(function ($existsQuery) use ($userWarehouseId) {
+                                    $existsQuery->selectRaw('1')
+                                        ->from('warehouse_stocks')
+                                        ->whereColumn('warehouse_stocks.sku', 'sales_order_products.sku')
+                                        ->where('warehouse_stocks.warehouse_id', $userWarehouseId)
+                                        ->where('warehouse_stocks.block_quantity', '>', 0);
+                                });
+                        });
+                    });
+                });
+            }
+
+            $orders = $query->latest()->paginate(15);
 
             return view('readyToShip.index', compact('orders'));
         } catch (\Exception $e) {
@@ -135,7 +168,8 @@ class ReadyToShip extends Controller
             }
 
             // Filter products based on user role and warehouse
-            if (!$isAdmin && $userWarehouseId) {
+            // Skip warehouse filtering for 'ready_to_ship' orders as they are already packaged
+            if (!$isAdmin && $userWarehouseId && $salesOrder->status !== 'ready_to_ship') {
                 // For warehouse users: Filter products to show only their warehouse's products
                 $filteredProducts = $salesOrder->orderedProducts->filter(function ($product) use ($userWarehouseId, $salesOrder) {
                     // Check if product has warehouse allocations (auto-allocation)
