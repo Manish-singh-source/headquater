@@ -42,7 +42,8 @@ class PackagingController extends Controller
     {
         try {
             $user = Auth::user();
-            $isAdmin = $user->hasRole('Admin'); // Check if user is admin
+            // Check if user is admin (Super Admin or Admin role, or warehouse_id is null/0)
+            $isAdmin = $user->hasRole(['Super Admin', 'Admin']) || !$user->warehouse_id;
             $userWarehouseId = $user->warehouse_id; // Get user's warehouse ID
 
             // Load sales order with relationships
@@ -116,7 +117,8 @@ class PackagingController extends Controller
 
         // Get user info for filtering
         $user = Auth::user();
-        $isAdmin = $user->hasRole('Admin');
+        // Check if user is admin (Super Admin or Admin role, or warehouse_id is null/0)
+        $isAdmin = $user->hasRole(['Super Admin', 'Admin']) || !$user->warehouse_id;
         $userWarehouseId = $user->warehouse_id;
 
         // Fetch data with relationships
@@ -311,7 +313,8 @@ class PackagingController extends Controller
         try {
             // Get user info
             $user = Auth::user();
-            $isAdmin = $user->hasRole('Admin');
+            // Check if user is admin (Super Admin or Admin role, or warehouse_id is null/0)
+            $isAdmin = $user->hasRole(['Super Admin', 'Admin']) || !$user->warehouse_id;
             $userWarehouseId = $user->warehouse_id;
 
             $reader = SimpleExcelReader::create($filepath, $extension);

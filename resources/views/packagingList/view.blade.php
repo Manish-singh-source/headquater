@@ -1,3 +1,5 @@
+@extends('layouts.master')
+
 @section('styles')
     <style>
         #hideTable {
@@ -7,7 +9,6 @@
     </style>
 @endsection
 
-@extends('layouts.master')
 @section('main-content')
     <!--start main wrapper-->
     <main class="main-wrapper">
@@ -17,6 +18,17 @@
                     <h5 class="mb-3">Packaging List: <span id="salesOrderId">{{ $salesOrder->id }}</span></h5>
                 </div>
             </div>
+
+            {{-- Debug Info - Only show in debug mode --}}
+            @if(config('app.debug'))
+            <div class="alert alert-info alert-dismissible fade show" role="alert">
+                <strong>Debug Info:</strong><br>
+                Is Admin: {{ isset($isAdmin) ? ($isAdmin ? 'Yes' : 'No') : 'NOT SET' }}<br>
+                User Warehouse ID: {{ $userWarehouseId ?? 'NOT SET' }}<br>
+                Total Products: {{ $salesOrder->orderedProducts->count() }}<br>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            @endif
             <div class="card">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center my-2">
