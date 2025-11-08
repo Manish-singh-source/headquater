@@ -43,6 +43,7 @@ class PackagingController extends Controller
         try {
             $user = Auth::user();
             // Check if user is admin (Super Admin or Admin role, or warehouse_id is null/0)
+            $isSuperAdmin = $user->hasRole('Super Admin');
             $isAdmin = $user->hasRole(['Super Admin', 'Admin']) || !$user->warehouse_id;
             $userWarehouseId = $user->warehouse_id; // Get user's warehouse ID
 
@@ -58,7 +59,7 @@ class PackagingController extends Controller
             ])->findOrFail($id);
 
             // Filter products based on user role and warehouse
-            if (!$isAdmin && !$isSuperAdmin && $userWarehouseId) {
+            if (!$isAdmin && $userWarehouseId) {
                 // For warehouse users: Filter products to show only their warehouse's products
                 $filteredProducts = $salesOrder->orderedProducts->filter(function ($product) use ($userWarehouseId) {
                     // Check if product has warehouse allocations (auto-allocation)
