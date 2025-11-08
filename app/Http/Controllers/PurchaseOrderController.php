@@ -8,6 +8,7 @@ use App\Models\PurchaseGrn;
 use App\Models\PurchaseInvoice;
 use App\Models\PurchaseOrder;
 use App\Models\PurchaseOrderProduct;
+use App\Models\SalesOrder;
 use App\Models\SalesOrderProduct;
 use App\Models\SkuMapping;
 use App\Models\TempOrder;
@@ -16,6 +17,7 @@ use App\Models\VendorPayment;
 use App\Models\VendorPI;
 use App\Models\VendorPIProduct;
 use App\Models\Warehouse;
+use App\Models\WarehouseAllocation;
 use App\Models\WarehouseStock;
 use App\Services\NotificationService;
 use Illuminate\Http\Request;
@@ -652,8 +654,11 @@ class PurchaseOrderController extends Controller
                 $quantityToAllocate = $receivedQuantity; // Start with total received
 
                 foreach ($tempOrderProducts as $tempOrderproduct) {
+                    $allocatedQty = 0; // Track how much was allocated to this temp order
+
                     if ($tempOrderproduct->unavailable_quantity <= $quantityToAllocate && $tempOrderproduct->unavailable_quantity > 0) {
                         // This temp order needs less than or equal to what we have
+                        $allocatedQty = $tempOrderproduct->unavailable_quantity;
                         $tempOrderproduct->available_quantity += $tempOrderproduct->unavailable_quantity;
                         $tempOrderproduct->block += $tempOrderproduct->unavailable_quantity;
                         $tempOrderproduct->vendor_pi_received_quantity += $tempOrderproduct->unavailable_quantity;
@@ -661,6 +666,7 @@ class PurchaseOrderController extends Controller
                         $tempOrderproduct->unavailable_quantity = 0;
                     } else {
                         // This temp order needs more than what we have left
+                        $allocatedQty = $quantityToAllocate;
                         $tempOrderproduct->available_quantity += $quantityToAllocate;
                         $tempOrderproduct->block += $quantityToAllocate;
                         $tempOrderproduct->vendor_pi_received_quantity += $quantityToAllocate;
@@ -668,6 +674,62 @@ class PurchaseOrderController extends Controller
                         $quantityToAllocate = 0;
                     }
                     $tempOrderproduct->save();
+
+                    // Update WarehouseAllocation if this is an auto-allocation order
+                    if ($allocatedQty > 0) {
+                        // Find the sales order product associated with this temp order
+                        $salesOrderProduct = SalesOrderProduct::where('temp_order_id', $tempOrderproduct->id)->first();
+
+                        if ($salesOrderProduct) {
+                            // Check if this sales order uses auto-allocation (has warehouse allocations)
+                            $existingAllocations = WarehouseAllocation::where('sales_order_product_id', $salesOrderProduct->id)
+                                ->where('warehouse_id', $warehouseId)
+                                ->where('sku', $product->vendor_sku_code)
+                                ->first();
+
+                            if ($existingAllocations) {
+                                // Update existing allocation
+                                $existingAllocations->allocated_quantity += $allocatedQty;
+                                $existingAllocations->save();
+
+                                Log::info('Updated WarehouseAllocation', [
+                                    'allocation_id' => $existingAllocations->id,
+                                    'warehouse_id' => $warehouseId,
+                                    'sku' => $product->vendor_sku_code,
+                                    'added_quantity' => $allocatedQty,
+                                    'new_total' => $existingAllocations->allocated_quantity
+                                ]);
+                            } else {
+                                // Check if there are any allocations for this product (to determine if it's auto-allocation)
+                                $hasAllocations = WarehouseAllocation::where('sales_order_product_id', $salesOrderProduct->id)->exists();
+
+                                if ($hasAllocations) {
+                                    // This is an auto-allocation order, create new allocation for this warehouse
+                                    $maxSequence = WarehouseAllocation::where('sales_order_product_id', $salesOrderProduct->id)
+                                        ->max('sequence') ?? 0;
+
+                                    $newAllocation = WarehouseAllocation::create([
+                                        'sales_order_id' => $salesOrderProduct->sales_order_id,
+                                        'sales_order_product_id' => $salesOrderProduct->id,
+                                        'warehouse_id' => $warehouseId,
+                                        'sku' => $product->vendor_sku_code,
+                                        'allocated_quantity' => $allocatedQty,
+                                        'sequence' => $maxSequence + 1,
+                                        'status' => 'allocated',
+                                        'notes' => 'Allocated from received products (Vendor PI: ' . $vendorPI->id . ')',
+                                    ]);
+
+                                    Log::info('Created new WarehouseAllocation', [
+                                        'allocation_id' => $newAllocation->id,
+                                        'warehouse_id' => $warehouseId,
+                                        'sku' => $product->vendor_sku_code,
+                                        'allocated_quantity' => $allocatedQty,
+                                        'sequence' => $maxSequence + 1
+                                    ]);
+                                }
+                            }
+                        }
+                    }
 
                     if ($quantityToAllocate <= 0) {
                         break; // Stop if we've allocated all received quantity to sales orders

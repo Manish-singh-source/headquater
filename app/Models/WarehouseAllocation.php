@@ -10,6 +10,9 @@ class WarehouseAllocation extends Model
 
     protected $casts = [
         'allocated_quantity' => 'integer',
+        'final_dispatched_quantity' => 'integer',
+        'box_count' => 'integer',
+        'weight' => 'integer',
         'sequence' => 'integer',
     ];
 

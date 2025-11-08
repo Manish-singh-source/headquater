@@ -52,7 +52,7 @@ class PackagingController extends Controller
                 'orderedProducts.product',
                 'orderedProducts.customer',
                 'orderedProducts.tempOrder',
-                'orderedProducts.warehouseStock',
+                'orderedProducts.warehouseStock.warehouse', // Load warehouse stock with warehouse
                 'orderedProducts.warehouseAllocations.warehouse', // Load warehouse allocations
             ])->findOrFail($id);
 
@@ -137,7 +137,8 @@ class PackagingController extends Controller
         }
         $facilityNames = $facilityNames->filter()->unique()->values();
 
-        // Filter products based on user role (same as view method)
+        // For warehouse users: Filter products to show only their warehouse's products
+        // For admin: Show all products
         $filteredProducts = $salesOrder->orderedProducts;
         if (!$isAdmin && $userWarehouseId) {
             $filteredProducts = $salesOrder->orderedProducts->filter(function ($product) use ($userWarehouseId) {
@@ -159,14 +160,16 @@ class PackagingController extends Controller
                 continue;
             }
 
-            // Build warehouse allocation text
+            // Build warehouse allocation text and warehouse name
             $warehouseAllocation = '';
+            $warehouseName = '';
             $hasAllocations = $order->warehouseAllocations && $order->warehouseAllocations->count() > 0;
 
             if ($hasAllocations) {
                 // Auto-allocation: Show warehouse-wise breakdown
                 if ($isAdmin) {
-                    // Admin sees all warehouses
+                    // Admin sees all warehouses - show "All"
+                    $warehouseName = 'All';
                     $allocations = [];
                     foreach ($order->warehouseAllocations->sortBy('sequence') as $allocation) {
                         $allocations[] = ($allocation->warehouse->name ?? 'N/A') . ': ' . $allocation->allocated_quantity;
@@ -176,6 +179,7 @@ class PackagingController extends Controller
                     // Warehouse user sees only their warehouse
                     $allocations = [];
                     foreach ($order->warehouseAllocations->where('warehouse_id', $userWarehouseId) as $allocation) {
+                        $warehouseName = $allocation->warehouse->name ?? 'N/A';
                         $allocations[] = ($allocation->warehouse->name ?? 'N/A') . ': ' . $allocation->allocated_quantity;
                     }
                     $warehouseAllocation = implode(', ', $allocations);
@@ -183,15 +187,70 @@ class PackagingController extends Controller
             } else {
                 // Single warehouse allocation
                 if ($order->warehouseStock) {
+                    $warehouseName = $order->warehouseStock->warehouse->name ?? 'N/A';
                     $warehouseAllocation = ($order->warehouseStock->warehouse->name ?? 'N/A') . ': ' . ($order->tempOrder->block ?? 0);
+                } elseif ($order->tempOrder && $order->tempOrder->block > 0 && $isAdmin) {
+                    // Fallback: Show block quantity without warehouse name if admin
+                    $warehouseName = 'All';
+                    $warehouseAllocation = 'Total Blocked: ' . $order->tempOrder->block;
                 } else {
+                    $warehouseName = 'N/A';
                     $warehouseAllocation = 'N/A';
                 }
             }
 
+            // Calculate Total Dispatch Qty based on user role
+            $totalDispatchQty = 0;
+            if ($hasAllocations) {
+                // Auto-allocation case
+                if ($isAdmin) {
+                    // Admin: Show total from all warehouses
+                    $totalDispatchQty = $order->warehouseAllocations->sum('allocated_quantity');
+                } else {
+                    // Warehouse user: Show only their warehouse's quantity
+                    $totalDispatchQty = $order->warehouseAllocations
+                        ->where('warehouse_id', $userWarehouseId)
+                        ->sum('allocated_quantity');
+                }
+            } else {
+                // Single warehouse case or fallback
+                if ($isAdmin) {
+                    // Admin: Show full blocked quantity from tempOrder
+                    $totalDispatchQty = $order->tempOrder->block ?? 0;
+                } else {
+                    // Warehouse user: Show only if it's their warehouse
+                    if ($order->warehouseStock && $order->warehouseStock->warehouse_id == $userWarehouseId) {
+                        $totalDispatchQty = $order->tempOrder->block ?? 0;
+                    } else {
+                        $totalDispatchQty = 0;
+                    }
+                }
+            }
+
+            // Fallback: If still 0 and admin, use tempOrder->block
+            if ($totalDispatchQty == 0 && $isAdmin && isset($order->tempOrder->block)) {
+                $totalDispatchQty = $order->tempOrder->block;
+            }
+
+            // Get final dispatch quantity from warehouse allocations if available
+            $finalDispatchQty = 0;
+            if ($hasAllocations) {
+                if ($isAdmin) {
+                    // Admin: Sum all warehouses' final dispatch quantities
+                    $finalDispatchQty = $order->warehouseAllocations->sum('final_dispatched_quantity') ?: 0;
+                } else {
+                    // Warehouse user: Only their warehouse's final dispatch quantity
+                    $finalDispatchQty = $order->warehouseAllocations
+                        ->where('warehouse_id', $userWarehouseId)
+                        ->sum('final_dispatched_quantity') ?: 0;
+                }
+            } else {
+                // Single warehouse or fallback to sales_order_products table
+                $finalDispatchQty = $order->final_dispatched_quantity ?? 0;
+            }
+
             $writer->addRow([
                 'Customer Name' => $order->customer->contact_name ?? '',
-                // 'PO Number' => $order->tempOrder->po_number ?? '',
                 'SKU Code' => $order->tempOrder->sku ?? '',
                 'Facility Name' => $order->tempOrder->facility_name ?? '',
                 'Facility Location' => $order->tempOrder->facility_location ?? '',
@@ -206,11 +265,11 @@ class PackagingController extends Controller
                 'MRP' => $order->tempOrder->mrp ?? '',
                 'PO Quantity' => $order->tempOrder->po_qty ?? '',
                 'Purchase Order Quantity' => $order->tempOrder->purchase_order_quantity ?? '',
+                'Warehouse Name' => $warehouseName,
                 'Warehouse Allocation' => $warehouseAllocation,
-                // 'PI Quantity' => $order->tempOrder?->vendor_pi_fulfillment_quantity,
                 'Purchase Order No' => $order->tempOrder->po_number ?? '',
-                'Total Dispatch Qty' => $order->dispatched_quantity ?? 0,
-                'Final Dispatch Qty' => $order->final_dispatched_quantity ?? 0,
+                'Total Dispatch Qty' => $totalDispatchQty,
+                'Final Dispatch Qty' => $finalDispatchQty,
                 'Box Count' => $order->box_count ?? 0,
                 'Weight' => $order->weight ?? 0,
                 'Issue Units' => '',
@@ -250,6 +309,11 @@ class PackagingController extends Controller
         DB::beginTransaction();
 
         try {
+            // Get user info
+            $user = Auth::user();
+            $isAdmin = $user->hasRole('Admin');
+            $userWarehouseId = $user->warehouse_id;
+
             $reader = SimpleExcelReader::create($filepath, $extension);
             $rows = $reader->getRows();
             $insertCount = 0;
@@ -269,7 +333,7 @@ class PackagingController extends Controller
                 }
 
                 // Find the sales order product
-                $order = SalesOrderProduct::with('tempOrder')
+                $order = SalesOrderProduct::with(['tempOrder', 'warehouseAllocations'])
                     ->where('customer_id', $customer->id)
                     ->where('sales_order_id', $request->salesOrderId)
                     ->where('sku', $record['SKU Code'])
@@ -283,7 +347,9 @@ class PackagingController extends Controller
                 $this->updateSalesOrderProduct(
                     $order,
                     $record,
-                    $request->salesOrderId
+                    $request->salesOrderId,
+                    $isAdmin,
+                    $userWarehouseId
                 );
 
                 $insertCount++;
@@ -296,10 +362,17 @@ class PackagingController extends Controller
 
             DB::commit();
 
+            // Log activity
+            activity()
+                ->causedBy(Auth::user())
+                ->withProperties(['sales_order_id' => $request->salesOrderId, 'records_updated' => $insertCount])
+                ->log('Packaging products updated');
+
             return redirect()->route('packaging.list.index')
                 ->with('success', 'Packaging products updated successfully. ' . $insertCount . ' records processed.');
         } catch (\Exception $e) {
             DB::rollBack();
+            Log::error('Error updating packaging products: ' . $e->getMessage());
 
             return redirect()->back()->with('error', 'Error processing file: ' . $e->getMessage());
         }
@@ -311,9 +384,11 @@ class PackagingController extends Controller
      * @param SalesOrderProduct $order
      * @param array $record
      * @param int $salesOrderId
+     * @param bool $isAdmin
+     * @param int|null $userWarehouseId
      * @return void
      */
-    private function updateSalesOrderProduct($order, $record, $salesOrderId)
+    private function updateSalesOrderProduct($order, $record, $salesOrderId, $isAdmin, $userWarehouseId)
     {
         $finalDispatchQty = (int)($record['Final Dispatch Qty'] ?? $order->dispatched_quantity);
         $boxCount = (int)($record['Box Count'] ?? 0);
@@ -326,9 +401,64 @@ class PackagingController extends Controller
             $finalDispatchQty = 0;
         }
 
-        $order->final_dispatched_quantity = $finalDispatchQty;
-        $order->box_count = $boxCount;
-        $order->weight = $weight;
+        // Check if product has warehouse allocations (auto-allocation)
+        $hasAllocations = $order->warehouseAllocations && $order->warehouseAllocations->count() > 0;
+
+        if ($hasAllocations) {
+            // Update warehouse allocations table
+            if ($isAdmin) {
+                // Admin: Update all warehouse allocations proportionally or set total
+                // For simplicity, we'll update the final_dispatched_quantity as total
+                // You can distribute proportionally if needed
+                $totalAllocated = $order->warehouseAllocations->sum('allocated_quantity');
+
+                foreach ($order->warehouseAllocations as $allocation) {
+                    if ($totalAllocated > 0) {
+                        // Distribute final dispatch quantity proportionally
+                        $proportion = $allocation->allocated_quantity / $totalAllocated;
+                        $allocation->final_dispatched_quantity = (int)($finalDispatchQty * $proportion);
+                        $allocation->box_count = (int)($boxCount * $proportion);
+                        $allocation->weight = (int)($weight * $proportion);
+                    } else {
+                        $allocation->final_dispatched_quantity = 0;
+                        $allocation->box_count = 0;
+                        $allocation->weight = 0;
+                    }
+                    $allocation->save();
+                }
+            } else {
+                // Warehouse user: Update only their warehouse allocation
+                $userAllocation = $order->warehouseAllocations
+                    ->where('warehouse_id', $userWarehouseId)
+                    ->first();
+
+                if ($userAllocation) {
+                    $userAllocation->final_dispatched_quantity = $finalDispatchQty;
+                    $userAllocation->box_count = $boxCount;
+                    $userAllocation->weight = $weight;
+                    $userAllocation->save();
+                }
+            }
+
+            // Update sales_order_products table with aggregated values
+            if ($isAdmin) {
+                $order->final_dispatched_quantity = $finalDispatchQty;
+                $order->box_count = $boxCount;
+                $order->weight = $weight;
+            } else {
+                // For warehouse users, aggregate from all allocations
+                $order->final_dispatched_quantity = $order->warehouseAllocations->sum('final_dispatched_quantity');
+                $order->box_count = $order->warehouseAllocations->sum('box_count');
+                $order->weight = $order->warehouseAllocations->sum('weight');
+            }
+        } else {
+            // Single warehouse allocation - update sales_order_products table directly
+            $order->final_dispatched_quantity = $finalDispatchQty;
+            $order->box_count = $boxCount;
+            $order->weight = $weight;
+        }
+
+        // Update status
         $order->status = 'packaged';
 
         // Handle shortage: dispatched > final
@@ -341,18 +471,20 @@ class PackagingController extends Controller
 
             $order->save();
 
-            // Create warehouse product issue record
-            WarehouseProductIssue::create([
-                'customer_id' => $order->customer_id,
-                'sales_order_id' => $salesOrderId,
-                'sales_order_product_id' => $order->id,
-                'sku' => $order->tempOrder?->sku ?? '',
-                'issue_item' => $shortageQuantity,
-                'issue_reason' => 'Shortage',
-                'issue_description' => 'Shortage products',
-                'issue_from' => 'warehouse',
-                'issue_status' => 'pending',
-            ]);
+            // Create warehouse product issue record (only once, not per warehouse)
+            if (!$hasAllocations || $isAdmin) {
+                WarehouseProductIssue::create([
+                    'customer_id' => $order->customer_id,
+                    'sales_order_id' => $salesOrderId,
+                    'sales_order_product_id' => $order->id,
+                    'sku' => $order->tempOrder?->sku ?? '',
+                    'issue_item' => $shortageQuantity,
+                    'issue_reason' => 'Shortage',
+                    'issue_description' => 'Shortage products',
+                    'issue_from' => 'warehouse',
+                    'issue_status' => 'pending',
+                ]);
+            }
         }
         // Handle exceed: dispatched < final
         elseif ($order->dispatched_quantity < $finalDispatchQty) {
