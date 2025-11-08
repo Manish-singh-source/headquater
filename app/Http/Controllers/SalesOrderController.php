@@ -809,7 +809,57 @@ class SalesOrderController extends Controller
             ->get()
             ->groupBy('sku');
 
-        return view('salesOrder.view', compact('uniqueBrands', 'uniquePONumbers', 'remainingQuantity', 'blockQuantity', 'salesOrder', 'vendorPiFulfillmentTotal', 'availableQuantity', 'orderedQuantity', 'unavailableQuantity', 'vendorPiReceivedTotal', 'warehouseAllocations'));
+        // Check if user is super admin
+        $isSuperAdmin = Auth::user() && Auth::user()->roles->contains('name', 'Super Admin');
+
+        $displayProducts = [];
+        $facilityNames = [];
+
+        if ($isSuperAdmin) {
+            // For super admin, create separate rows for each warehouse allocation
+            foreach ($salesOrder->orderedProducts as $order) {
+                $hasAllocations = $order->warehouseAllocations && $order->warehouseAllocations->count() > 0;
+
+                if ($hasAllocations) {
+                    // Multiple warehouses
+                    foreach ($order->warehouseAllocations as $allocation) {
+                        $displayProducts[] = [
+                            'order' => $order,
+                            'warehouse_name' => $allocation->warehouse->name ?? 'N/A',
+                            'allocated_quantity' => $allocation->allocated_quantity,
+                            'warehouse_allocation_display' => $allocation->warehouse->name . ': ' . $allocation->allocated_quantity,
+                        ];
+                        $facilityNames[] = $order->tempOrder->facility_name;
+                    }
+                } else {
+                    // Single warehouse or no allocation
+                    $warehouseName = $order->warehouseStock ? $order->warehouseStock->warehouse->name : 'N/A';
+                    $allocatedQty = $order->tempOrder->block ?? 0;
+                    $displayProducts[] = [
+                        'order' => $order,
+                        'warehouse_name' => $warehouseName,
+                        'allocated_quantity' => $allocatedQty,
+                        'warehouse_allocation_display' => $warehouseName . ': ' . $allocatedQty,
+                    ];
+                    $facilityNames[] = $order->tempOrder->facility_name;
+                }
+            }
+        } else {
+            // For non-super admin, keep original structure
+            foreach ($salesOrder->orderedProducts as $order) {
+                $displayProducts[] = [
+                    'order' => $order,
+                    'warehouse_name' => null, // Not shown
+                    'allocated_quantity' => null,
+                    'warehouse_allocation_display' => '', // Will be handled in view
+                ];
+                $facilityNames[] = $order->tempOrder->facility_name;
+            }
+        }
+
+        $facilityNames = array_unique($facilityNames);
+
+        return view('packagingList.view', compact('uniqueBrands', 'uniquePONumbers', 'remainingQuantity', 'blockQuantity', 'salesOrder', 'vendorPiFulfillmentTotal', 'availableQuantity', 'orderedQuantity', 'unavailableQuantity', 'vendorPiReceivedTotal', 'warehouseAllocations', 'displayProducts', 'facilityNames', 'isSuperAdmin'));
     }
 
     public function destroy($id)

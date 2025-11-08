@@ -92,6 +92,7 @@
                             <table id="customerPOTableList" class="table align-middle">
                                 <thead class="table-light">
                                     <tr>
+                                        <th>Warehouse&nbsp;Name</th>
                                         <th>Customer&nbsp;Name</th>
                                         {{-- <th>PO&nbsp;Number</th> --}}
                                         <th>SKU&nbsp;Code</th>
@@ -118,8 +119,12 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @forelse($salesOrder->orderedProducts as $order)
+                                    @forelse($displayProducts as $displayProduct)
+                                        @php
+                                            $order = $displayProduct['order'];
+                                        @endphp
                                         <tr>
+                                            <td>{{ $displayProduct['warehouse_name'] ?? 'N/A' }}</td>
                                             <td>{{ $order->customer->contact_name }}</td>
                                             {{-- <td>{{ $order->tempOrder->po_number }}</td> --}}
                                             <td>{{ $order->tempOrder->sku }}</td>
@@ -137,43 +142,51 @@
                                             <td>{{ $order->tempOrder->po_qty }}</td>
                                             <td>{{ $order->tempOrder->purchase_order_quantity }}</td>
                                             <td>
-                                                @php
-                                                    // Check if product has warehouse allocations (auto-allocation)
-                                                    $hasAllocations = $order->warehouseAllocations && $order->warehouseAllocations->count() > 0;
-                                                @endphp
-
-                                                @if($hasAllocations)
-                                                    {{-- Auto-allocation: Show warehouse-wise breakdown --}}
-                                                    @if($isAdmin ?? false)
-                                                        {{-- Admin sees all warehouses --}}
-                                                        @foreach($order->warehouseAllocations->sortBy('sequence') as $allocation)
-                                                            <div class="mb-1">
-                                                                <strong>{{ $allocation->warehouse->name ?? 'N/A' }}</strong>: {{ $allocation->allocated_quantity }}
-                                                            </div>
-                                                        @endforeach
-                                                    @else
-                                                        {{-- Warehouse user sees only their warehouse --}}
-                                                        @foreach($order->warehouseAllocations->where('warehouse_id', $userWarehouseId ?? 0) as $allocation)
-                                                            <div class="mb-1">
-                                                                <strong>{{ $allocation->warehouse->name ?? 'N/A' }}</strong>: {{ $allocation->allocated_quantity }}
-                                                            </div>
-                                                        @endforeach
-                                                    @endif
+                                                @if($isSuperAdmin)
+                                                    {{ $displayProduct['warehouse_allocation_display'] }}
                                                 @else
-                                                    {{-- Single warehouse allocation --}}
-                                                    @if($order->warehouseStock)
-                                                        <div>
-                                                            <strong>{{ $order->warehouseStock->warehouse->name ?? 'N/A' }}</strong>: {{ $order->tempOrder->block ?? 0 }}
-                                                        </div>
+                                                    @php
+                                                        // Check if product has warehouse allocations (auto-allocation)
+                                                        $hasAllocations = $order->warehouseAllocations && $order->warehouseAllocations->count() > 0;
+                                                    @endphp
+
+                                                    @if($hasAllocations)
+                                                        {{-- Auto-allocation: Show warehouse-wise breakdown --}}
+                                                        @if($isAdmin ?? false)
+                                                            {{-- Admin sees all warehouses --}}
+                                                            @foreach($order->warehouseAllocations->sortBy('sequence') as $allocation)
+                                                                <div class="mb-1">
+                                                                    <strong>{{ $allocation->warehouse->name ?? 'N/A' }}</strong>: {{ $allocation->allocated_quantity }}
+                                                                </div>
+                                                            @endforeach
+                                                        @else
+                                                            {{-- Warehouse user sees only their warehouse --}}
+                                                            @foreach($order->warehouseAllocations->where('warehouse_id', $userWarehouseId ?? 0) as $allocation)
+                                                                <div class="mb-1">
+                                                                    <strong>{{ $allocation->warehouse->name ?? 'N/A' }}</strong>: {{ $allocation->allocated_quantity }}
+                                                                </div>
+                                                            @endforeach
+                                                        @endif
                                                     @else
-                                                        <span class="text-muted">N/A</span>
+                                                        {{-- Single warehouse allocation --}}
+                                                        @if($order->warehouseStock)
+                                                            <div>
+                                                                <strong>{{ $order->warehouseStock->warehouse->name ?? 'N/A' }}</strong>: {{ $order->tempOrder->block ?? 0 }}
+                                                            </div>
+                                                        @else
+                                                            <span class="text-muted">N/A</span>
+                                                        @endif
                                                     @endif
                                                 @endif
                                             </td>
                                             {{-- <td>{{ $order->tempOrder?->vendor_pi_fulfillment_quantity }}</td> --}}
                                             <td>{{ $order->tempOrder->po_number }}</td>
                                             <td>
-                                                {{ $order->dispatched_quantity ?? 0 }}
+                                                @if($isSuperAdmin)
+                                                    {{ ($displayProduct['allocated_quantity'] ?? 0) + ($order->tempOrder?->vendor_pi_received_quantity ?? 0) }}
+                                                @else
+                                                    {{ ($order->dispatched_quantity ?? 0) + ($order->tempOrder?->vendor_pi_received_quantity ?? 0) }}
+                                                @endif
                                             </td>
                                             <td>
                                                 {{ $order->final_dispatched_quantity ?? 0 }}
@@ -183,7 +196,7 @@
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="22" class="text-center">No records found. Please update or upload
+                                            <td colspan="23" class="text-center">No records found. Please update or upload
                                                 a PO to see data.</td>
                                         </tr>
                                     @endforelse
