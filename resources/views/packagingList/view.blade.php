@@ -158,24 +158,57 @@
                                                 @php
                                                     // Check if product has warehouse allocations (auto-allocation)
                                                     $hasAllocations = $order->warehouseAllocations && $order->warehouseAllocations->count() > 0;
+                                                    $warehouseName = 'N/A';
+
+                                                    if ($hasAllocations) {
+                                                        if ($isAdmin ?? false) {
+                                                            $warehouseName = 'All';
+                                                        } else {
+                                                            $userAllocation = $order->warehouseAllocations->where('warehouse_id', $userWarehouseId ?? 0)->first();
+                                                            $warehouseName = $userAllocation ? ($userAllocation->warehouse->name ?? 'N/A') : 'N/A';
+                                                        }
+                                                    } else {
+                                                        if ($order->warehouseStock) {
+                                                            $warehouseName = $order->warehouseStock->warehouse->name ?? 'N/A';
+                                                        } elseif ($order->tempOrder && $order->tempOrder->block > 0 && ($isAdmin ?? false)) {
+                                                            $warehouseName = 'All';
+                                                        }
+                                                    }
+                                                @endphp
+                                                {{ $warehouseName }}
+                                            </td>
+                                            <td>
+                                                @php
+                                                    $hasAllocations = $order->warehouseAllocations && $order->warehouseAllocations->count() > 0;
                                                 @endphp
 
                                                 @if($hasAllocations)
                                                     {{-- Auto-allocation: Show warehouse-wise breakdown --}}
                                                     @if($isAdmin ?? false)
                                                         {{-- Admin sees all warehouses --}}
-                                                        @foreach($order->warehouseAllocations->sortBy('sequence') as $allocation)
-                                                            <div class="mb-1">
-                                                                <strong>{{ $allocation->warehouse->name ?? 'N/A' }}</strong>: {{ $allocation->allocated_quantity }}
-                                                            </div>
-                                                        @endforeach
+                                                        @if($order->warehouseAllocations->count() > 0)
+                                                            @foreach($order->warehouseAllocations->sortBy('sequence') as $allocation)
+                                                                <div class="mb-1">
+                                                                    <strong>{{ $allocation->warehouse->name ?? 'N/A' }}</strong>: {{ $allocation->allocated_quantity }}
+                                                                </div>
+                                                            @endforeach
+                                                        @else
+                                                            <span class="text-muted">No allocations</span>
+                                                        @endif
                                                     @else
                                                         {{-- Warehouse user sees only their warehouse --}}
-                                                        @foreach($order->warehouseAllocations->where('warehouse_id', $userWarehouseId ?? 0) as $allocation)
-                                                            <div class="mb-1">
-                                                                <strong>{{ $allocation->warehouse->name ?? 'N/A' }}</strong>: {{ $allocation->allocated_quantity }}
-                                                            </div>
-                                                        @endforeach
+                                                        @php
+                                                            $userAllocations = $order->warehouseAllocations->where('warehouse_id', $userWarehouseId ?? 0);
+                                                        @endphp
+                                                        @if($userAllocations->count() > 0)
+                                                            @foreach($userAllocations as $allocation)
+                                                                <div class="mb-1">
+                                                                    <strong>{{ $allocation->warehouse->name ?? 'N/A' }}</strong>: {{ $allocation->allocated_quantity }}
+                                                                </div>
+                                                            @endforeach
+                                                        @else
+                                                            <span class="text-muted">N/A</span>
+                                                        @endif
                                                     @endif
                                                 @else
                                                     {{-- Single warehouse allocation --}}
@@ -183,6 +216,15 @@
                                                         <div>
                                                             <strong>{{ $order->warehouseStock->warehouse->name ?? 'N/A' }}</strong>: {{ $order->tempOrder->block ?? 0 }}
                                                         </div>
+                                                    @elseif($order->tempOrder && $order->tempOrder->block > 0)
+                                                        {{-- Fallback: Show block quantity without warehouse name if admin --}}
+                                                        @if($isAdmin ?? false)
+                                                            <div>
+                                                                <strong>Total Blocked</strong>: {{ $order->tempOrder->block }}
+                                                            </div>
+                                                        @else
+                                                            <span class="text-muted">N/A</span>
+                                                        @endif
                                                     @else
                                                         <span class="text-muted">N/A</span>
                                                     @endif
@@ -191,7 +233,43 @@
                                             {{-- <td>{{ $order->tempOrder?->vendor_pi_fulfillment_quantity }}</td> --}}
                                             <td>{{ $order->tempOrder->po_number }}</td>
                                             <td>
-                                                {{ $order->dispatched_quantity ?? 0 }}
+                                                @php
+                                                    // Calculate Total Dispatch Qty based on user role
+                                                    $totalDispatchQty = 0;
+                                                    $hasAllocations = $order->warehouseAllocations && $order->warehouseAllocations->count() > 0;
+
+                                                    if ($hasAllocations) {
+                                                        // Auto-allocation case
+                                                        if ($isAdmin ?? false) {
+                                                            // Admin: Show total from all warehouses
+                                                            $totalDispatchQty = $order->warehouseAllocations->sum('allocated_quantity');
+                                                        } else {
+                                                            // Warehouse user: Show only their warehouse's quantity
+                                                            $totalDispatchQty = $order->warehouseAllocations
+                                                                ->where('warehouse_id', $userWarehouseId ?? 0)
+                                                                ->sum('allocated_quantity');
+                                                        }
+                                                    } else {
+                                                        // Single warehouse case or fallback
+                                                        if ($isAdmin ?? false) {
+                                                            // Admin: Show full blocked quantity from tempOrder
+                                                            $totalDispatchQty = $order->tempOrder->block ?? 0;
+                                                        } else {
+                                                            // Warehouse user: Show only if it's their warehouse
+                                                            if ($order->warehouseStock && $order->warehouseStock->warehouse_id == ($userWarehouseId ?? 0)) {
+                                                                $totalDispatchQty = $order->tempOrder->block ?? 0;
+                                                            } else {
+                                                                $totalDispatchQty = 0;
+                                                            }
+                                                        }
+                                                    }
+
+                                                    // Fallback: If still 0 and admin, use tempOrder->block
+                                                    if ($totalDispatchQty == 0 && ($isAdmin ?? false) && isset($order->tempOrder->block)) {
+                                                        $totalDispatchQty = $order->tempOrder->block;
+                                                    }
+                                                @endphp
+                                                {{ $totalDispatchQty }}
                                             </td>
                                             <td>
                                                 @php

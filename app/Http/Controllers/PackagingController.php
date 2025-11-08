@@ -164,7 +164,8 @@ class PackagingController extends Controller
 
         // Get user info for filtering
         $user = Auth::user();
-        $isAdmin = $user->hasRole('Admin');
+        // Check if user is admin (Super Admin or Admin role, or warehouse_id is null/0)
+        $isAdmin = $user->hasRole(['Super Admin', 'Admin']) || !$user->warehouse_id;
         $userWarehouseId = $user->warehouse_id;
 
         // Fetch data with relationships
