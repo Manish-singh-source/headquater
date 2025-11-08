@@ -243,6 +243,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/packing-products-list/{id}', 'view')->name('packing.products.view');
         Route::get('/download-packing-products-excel', 'downloadPackagingProducts')->name('download.packing.products.excel');
         Route::post('/update-packaging-products', 'updatePackagingProducts')->name('update.packing.products');
+        Route::put('/change-packaging-status-to-ready-to-ship', 'changeStatusToReadyToShip')->name('change.packaging.status.ready.to.ship');
     });
 
     //

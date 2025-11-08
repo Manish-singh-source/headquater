@@ -859,7 +859,7 @@ class SalesOrderController extends Controller
 
         $facilityNames = array_unique($facilityNames);
 
-        return view('packagingList.view', compact('uniqueBrands', 'uniquePONumbers', 'remainingQuantity', 'blockQuantity', 'salesOrder', 'vendorPiFulfillmentTotal', 'availableQuantity', 'orderedQuantity', 'unavailableQuantity', 'vendorPiReceivedTotal', 'warehouseAllocations', 'displayProducts', 'facilityNames', 'isSuperAdmin'));
+        return view('salesOrder.view', compact('uniqueBrands', 'uniquePONumbers', 'remainingQuantity', 'blockQuantity', 'salesOrder', 'vendorPiFulfillmentTotal', 'availableQuantity', 'orderedQuantity', 'unavailableQuantity', 'vendorPiReceivedTotal', 'warehouseAllocations', 'displayProducts', 'facilityNames', 'isSuperAdmin'));
     }
 
     public function destroy($id)
@@ -1039,6 +1039,15 @@ class SalesOrderController extends Controller
             $salesOrderDetails = SalesOrderProduct::with('tempOrder')->where('sales_order_id', $salesOrder->id)->get();
 
             if ($request->status == 'ready_to_ship') {
+                // Check if all products are ready_to_ship
+                $totalProducts = $salesOrderDetails->count();
+                $readyToShipProducts = $salesOrderDetails->where('status', 'ready_to_ship')->count();
+
+                if ($totalProducts != $readyToShipProducts) {
+                    $pendingProducts = $totalProducts - $readyToShipProducts;
+                    return redirect()->back()
+                        ->with('error', 'Cannot change order status to Ready to Ship. ' . $pendingProducts . ' product(s) are still in packaging. Please ensure all warehouse persons have marked their products as ready to ship.');
+                }
                 // $customerFacilityName = SalesOrderProduct::with('customer')
                 //     ->where('sales_order_id', $salesOrder->id)
                 //     ->get()

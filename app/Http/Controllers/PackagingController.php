@@ -7,6 +7,7 @@ use App\Models\SalesOrder;
 use App\Models\SalesOrderProduct;
 use App\Models\WarehouseAllocation;
 use App\Models\WarehouseProductIssue;
+use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -61,7 +62,7 @@ class PackagingController extends Controller
             // Filter products based on user role and warehouse
             if (!$isAdmin && $userWarehouseId) {
                 // For warehouse users: Filter products to show only their warehouse's products
-                $filteredProducts = $salesOrder->orderedProducts->filter(function ($product) use ($userWarehouseId) {
+                $filteredProducts = $salesOrder->orderedProducts->filter(function ($product) use ($userWarehouseId, $salesOrder) {
                     // Check if product has warehouse allocations (auto-allocation)
                     if ($product->warehouseAllocations && $product->warehouseAllocations->count() > 0) {
                         // Check if any allocation is from user's warehouse
@@ -70,6 +71,10 @@ class PackagingController extends Controller
                         // Single warehouse allocation: Check warehouse_stock_id
                         if ($product->warehouseStock) {
                             return $product->warehouseStock->warehouse_id == $userWarehouseId;
+                        }
+                        // If warehouseStock is null, check sales order's warehouse_id
+                        elseif ($salesOrder->warehouse_id) {
+                            return $salesOrder->warehouse_id == $userWarehouseId;
                         }
                     }
                     return false;
@@ -551,6 +556,161 @@ class PackagingController extends Controller
         // Handle exact match: dispatched == final
         else {
             $order->save();
+        }
+    }
+
+    /**
+     * Change status to ready_to_ship for warehouse-specific products
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function changeStatusToReadyToShip(Request $request)
+    {
+        DB::beginTransaction();
+
+        try {
+            $validator = Validator::make($request->all(), [
+                'order_id' => 'required|integer|exists:sales_orders,id',
+            ]);
+
+            if ($validator->fails()) {
+                return redirect()->back()
+                    ->withErrors($validator)
+                    ->withInput()
+                    ->with('error', 'Invalid order ID.');
+            }
+
+            $user = Auth::user();
+            $isAdmin = $user->hasRole(['Super Admin', 'Admin']) || !$user->warehouse_id;
+            $userWarehouseId = $user->warehouse_id;
+
+            $salesOrder = SalesOrder::with([
+                'orderedProducts.warehouseAllocations',
+                'orderedProducts.warehouseStock',
+            ])->findOrFail($request->order_id);
+
+            if ($salesOrder->status !== 'ready_to_package') {
+                return redirect()->back()
+                    ->with('error', 'Order is not in ready_to_package status.');
+            }
+
+            // Get products to update based on user role
+            $productsToUpdate = [];
+
+            foreach ($salesOrder->orderedProducts as $product) {
+                $hasAllocations = $product->warehouseAllocations && $product->warehouseAllocations->count() > 0;
+
+                if ($hasAllocations) {
+                    // Multi-warehouse product
+                    if ($isAdmin) {
+                        // Admin: Update all products if all warehouses are ready
+                        $allWarehousesReady = true;
+                        foreach ($product->warehouseAllocations as $allocation) {
+                            if (!$allocation->final_dispatched_quantity || $allocation->final_dispatched_quantity == 0) {
+                                $allWarehousesReady = false;
+                                break;
+                            }
+                        }
+                        if ($allWarehousesReady) {
+                            $productsToUpdate[] = $product->id;
+                        }
+                    } else {
+                        // Warehouse user: Check if their warehouse has allocation
+                        $userAllocation = $product->warehouseAllocations->where('warehouse_id', $userWarehouseId)->first();
+                        if ($userAllocation && $userAllocation->final_dispatched_quantity > 0) {
+                            // Don't update product status yet, just mark allocation as ready
+                            // Product status will be updated when all warehouses are ready
+                        }
+                    }
+                } else {
+                    // Single warehouse product
+                    if ($isAdmin) {
+                        $productsToUpdate[] = $product->id;
+                    } else {
+                        // Check if product belongs to user's warehouse
+                        $belongsToUserWarehouse = false;
+                        if ($product->warehouseStock && $product->warehouseStock->warehouse_id == $userWarehouseId) {
+                            $belongsToUserWarehouse = true;
+                        } elseif ($salesOrder->warehouse_id == $userWarehouseId) {
+                            $belongsToUserWarehouse = true;
+                        }
+
+                        if ($belongsToUserWarehouse && $product->final_dispatched_quantity > 0) {
+                            $productsToUpdate[] = $product->id;
+                        }
+                    }
+                }
+            }
+
+            if (empty($productsToUpdate)) {
+                return redirect()->back()
+                    ->with('error', 'No products are ready to ship. Please ensure final dispatch quantities are set.');
+            }
+
+            // Update product statuses
+            SalesOrderProduct::whereIn('id', $productsToUpdate)
+                ->update(['status' => 'ready_to_ship']);
+
+            // Log activity for each product
+            foreach ($productsToUpdate as $productId) {
+                $product = SalesOrderProduct::find($productId);
+                activity()
+                    ->performedOn($product)
+                    ->causedBy($user)
+                    ->withProperties([
+                        'old_status' => 'packaging',
+                        'new_status' => 'ready_to_ship',
+                        'sales_order_id' => $salesOrder->id,
+                    ])
+                    ->log('Product status changed to ready_to_ship');
+            }
+
+            // Check if ALL products in the order are now ready_to_ship
+            $totalProducts = $salesOrder->orderedProducts->count();
+            $readyToShipProducts = SalesOrderProduct::where('sales_order_id', $salesOrder->id)
+                ->where('status', 'ready_to_ship')
+                ->count();
+
+            if ($totalProducts == $readyToShipProducts) {
+                // All products are ready, update sales order status
+                $oldStatus = $salesOrder->status;
+                $salesOrder->status = 'ready_to_ship';
+                $salesOrder->save();
+
+                // Create status change notification
+                NotificationService::statusChanged('sales', $salesOrder->id, $oldStatus, $salesOrder->status);
+
+                activity()
+                    ->performedOn($salesOrder)
+                    ->causedBy($user)
+                    ->withProperties([
+                        'old_status' => $oldStatus,
+                        'new_status' => 'ready_to_ship',
+                    ])
+                    ->log('Sales order status changed to ready_to_ship (all products ready)');
+
+                DB::commit();
+
+                return redirect()->route('readyToShip.view', $salesOrder->id)
+                    ->with('success', 'All products are ready to ship! Order status changed to "Ready to Ship". Order ID: ' . $salesOrder->id);
+            } else {
+                // Some products are still in packaging
+                DB::commit();
+
+                $message = $isAdmin
+                    ? count($productsToUpdate) . ' product(s) marked as ready to ship. ' . ($totalProducts - $readyToShipProducts) . ' product(s) still in packaging.'
+                    : 'Your warehouse products marked as ready to ship. Waiting for other warehouses.';
+
+                return redirect()->back()
+                    ->with('success', $message);
+            }
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error changing status to ready_to_ship: ' . $e->getMessage());
+            return redirect()->back()
+                ->with('error', 'Error changing status: ' . $e->getMessage());
         }
     }
 }

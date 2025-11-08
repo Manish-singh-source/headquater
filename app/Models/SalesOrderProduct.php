@@ -9,6 +9,46 @@ class SalesOrderProduct extends Model
     //
     protected $guarded = [];
 
+    protected $casts = [
+        'status' => 'string',
+    ];
+
+    // Scope methods for status filtering
+    public function scopePending($query)
+    {
+        return $query->where('status', 'pending');
+    }
+
+    public function scopePackaging($query)
+    {
+        return $query->where('status', 'packaging');
+    }
+
+    public function scopePackaged($query)
+    {
+        return $query->where('status', 'packaged');
+    }
+
+    public function scopeReadyToShip($query)
+    {
+        return $query->where('status', 'ready_to_ship');
+    }
+
+    public function scopeDispatched($query)
+    {
+        return $query->where('status', 'dispatched');
+    }
+
+    public function scopeShipped($query)
+    {
+        return $query->where('status', 'shipped');
+    }
+
+    public function scopeCompleted($query)
+    {
+        return $query->where('status', 'completed');
+    }
+
     public function product()
     {
         return $this->hasOne(Product::class, 'sku', 'sku');

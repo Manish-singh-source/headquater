@@ -101,6 +101,8 @@
                                                 <th>Net&nbsp;Landing&nbsp;Rate</th>
                                                 <th>MRP</th>
                                                 <th>PO&nbsp;Quantity</th>
+                                                <th>Warehouse&nbsp;Name</th>
+                                                <th>Warehouse&nbsp;Allocation</th>
                                                 <th>Warehouse&nbsp;Stock</th>
                                                 {{-- <th>PI&nbsp;Qty</th> --}}
                                                 <th>Purchase&nbsp;Order&nbsp;No</th>
@@ -120,7 +122,10 @@
                                                     'shipped' => 'Shipped'
                                                 ];
                                             @endphp
-                                            @forelse($salesOrder->orderedProducts as $order)
+                                            @forelse($displayProducts as $displayProduct)
+                                                @php
+                                                    $order = $displayProduct['order'];
+                                                @endphp
                                                 <tr>
                                                     <td>{{ $order->customer->contact_name }}</td>
                                                     {{-- <td>{{ $order->tempOrder->po_number }}</td> --}}
@@ -137,18 +142,63 @@
                                                     <td>{{ $order->tempOrder->net_landing_rate }}</td>
                                                     <td>{{ $order->tempOrder->mrp }}</td>
                                                     <td>{{ $order->tempOrder->po_qty }}</td>
-                                                    {{-- Need to check --}}
-                                                    {{-- <td>{{ $order->warehouseStock->block_quantity ?? '0' }}</td> --}}
-                                                    {{-- <td>{{ $order->ordered_quantity }}</td> --}}
+
+                                                    {{-- Warehouse Name --}}
+                                                    <td>{{ $displayProduct['warehouse_name'] ?? 'N/A' }}</td>
+
+                                                    {{-- Warehouse Allocation --}}
+                                                    <td>
+                                                        @php
+                                                            $hasAllocations = $order->warehouseAllocations && $order->warehouseAllocations->count() > 0;
+                                                        @endphp
+                                                        @if($hasAllocations)
+                                                            @if($isSuperAdmin ?? false)
+                                                                {{ $displayProduct['warehouse_name'] }}: {{ $displayProduct['allocated_quantity'] }}
+                                                            @elseif($isAdmin ?? false)
+                                                                @foreach($order->warehouseAllocations as $allocation)
+                                                                    {{ $allocation->warehouse->name ?? 'N/A' }}: {{ $allocation->allocated_quantity }}@if(!$loop->last), @endif
+                                                                @endforeach
+                                                            @else
+                                                                {{ $displayProduct['warehouse_name'] }}: {{ $displayProduct['allocated_quantity'] }}
+                                                            @endif
+                                                        @else
+                                                            {{ $order->tempOrder->block ?? 0 }}
+                                                        @endif
+                                                    </td>
+
+                                                    {{-- Warehouse Stock --}}
                                                     <td>{{ $order->warehouseStock->original_quantity ?? '0' }}</td>
+
                                                     <td>{{ $order->tempOrder->po_number }}</td>
+
+                                                    {{-- Total Dispatch Qty --}}
                                                     <td>{{ $order->dispatched_quantity ?? 0 }}</td>
-                                                    <td>{{ $order->final_dispatched_quantity ?? 0 }}</td>
-                                                    <td>{{ $statuses[$salesOrder->status] ?? 'On Hold' }}</td>
+
+                                                    {{-- Final Dispatch Qty --}}
+                                                    <td>{{ $displayProduct['final_dispatched_quantity'] ?? 0 }}</td>
+
+                                                    {{-- Product Status --}}
+                                                    <td>
+                                                        @php
+                                                            $productStatus = $order->status ?? 'pending';
+                                                            $statusBadges = [
+                                                                'pending' => 'bg-secondary',
+                                                                'packaging' => 'bg-warning',
+                                                                'packaged' => 'bg-info',
+                                                                'ready_to_ship' => 'bg-success',
+                                                                'dispatched' => 'bg-primary',
+                                                                'shipped' => 'bg-dark',
+                                                                'completed' => 'bg-success',
+                                                            ];
+                                                        @endphp
+                                                        <span class="badge {{ $statusBadges[$productStatus] ?? 'bg-secondary' }}">
+                                                            {{ $statuses[$productStatus] ?? 'Unknown' }}
+                                                        </span>
+                                                    </td>
                                                 </tr>
                                             @empty
                                                 <tr>
-                                                    <td colspan="7">No Records Found</td>
+                                                    <td colspan="22">No Records Found</td>
                                                 </tr>
                                             @endforelse
                                         </tbody>

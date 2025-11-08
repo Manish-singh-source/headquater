@@ -109,13 +109,20 @@ class ReadyToShip extends Controller
                 return redirect()->back()->with('error', 'Invalid order or customer ID.');
             }
 
+            $user = Auth::user();
+            // Check if user is admin (Super Admin or Admin role, or warehouse_id is null/0)
+            $isSuperAdmin = $user->hasRole('Super Admin');
+            $isAdmin = $user->hasRole(['Super Admin', 'Admin']) || !$user->warehouse_id;
+            $userWarehouseId = $user->warehouse_id;
+
             $salesOrder = SalesOrder::with([
                 'customerGroup',
                 'warehouse',
                 'orderedProducts.product',
                 'orderedProducts.tempOrder',
                 'orderedProducts.customer',
-                'orderedProducts.warehouseStock',
+                'orderedProducts.warehouseStock.warehouse',
+                'orderedProducts.warehouseAllocations.warehouse',
             ])
                 ->where('status', 'ready_to_ship')
                 ->with(['orderedProducts' => function ($q) use ($c_id) {
@@ -127,13 +134,122 @@ class ReadyToShip extends Controller
                 return redirect()->back()->with('error', 'Order not found.');
             }
 
+            // Filter products based on user role and warehouse
+            if (!$isAdmin && $userWarehouseId) {
+                // For warehouse users: Filter products to show only their warehouse's products
+                $filteredProducts = $salesOrder->orderedProducts->filter(function ($product) use ($userWarehouseId, $salesOrder) {
+                    // Check if product has warehouse allocations (auto-allocation)
+                    if ($product->warehouseAllocations && $product->warehouseAllocations->count() > 0) {
+                        // Check if any allocation is from user's warehouse
+                        return $product->warehouseAllocations->contains('warehouse_id', $userWarehouseId);
+                    } else {
+                        // Single warehouse allocation: Check warehouse_stock_id
+                        if ($product->warehouseStock) {
+                            return $product->warehouseStock->warehouse_id == $userWarehouseId;
+                        }
+                        // If warehouseStock is null, check sales order's warehouse_id
+                        elseif ($salesOrder->warehouse_id) {
+                            return $salesOrder->warehouse_id == $userWarehouseId;
+                        }
+                    }
+                    return false;
+                });
+
+                // Replace orderedProducts with filtered collection
+                $salesOrder->setRelation('orderedProducts', $filteredProducts);
+            }
+
+            // Prepare display products with warehouse-wise breakdown
+            $displayProducts = [];
+            if ($isSuperAdmin) {
+                // For super admin, create separate rows for each warehouse allocation
+                foreach ($salesOrder->orderedProducts as $order) {
+                    $hasAllocations = $order->warehouseAllocations && $order->warehouseAllocations->count() > 0;
+
+                    if ($hasAllocations) {
+                        // Multiple warehouses
+                        foreach ($order->warehouseAllocations as $allocation) {
+                            $displayProducts[] = [
+                                'order' => $order,
+                                'warehouse_name' => $allocation->warehouse->name ?? 'N/A',
+                                'allocated_quantity' => $allocation->allocated_quantity,
+                                'final_dispatched_quantity' => $allocation->final_dispatched_quantity ?? 0,
+                            ];
+                        }
+                    } else {
+                        // Single warehouse or no allocation
+                        $warehouseName = 'N/A';
+
+                        // Try to get warehouse name from warehouseStock relationship
+                        if ($order->warehouseStock && $order->warehouseStock->warehouse) {
+                            $warehouseName = $order->warehouseStock->warehouse->name;
+                        }
+                        // If not found, try to get from warehouse_id in sales_order
+                        elseif ($salesOrder->warehouse) {
+                            $warehouseName = $salesOrder->warehouse->name;
+                        }
+
+                        $allocatedQty = $order->tempOrder->block ?? 0;
+                        $displayProducts[] = [
+                            'order' => $order,
+                            'warehouse_name' => $warehouseName,
+                            'allocated_quantity' => $allocatedQty,
+                            'final_dispatched_quantity' => $order->final_dispatched_quantity ?? 0,
+                        ];
+                    }
+                }
+            } else {
+                // For non-super admin, keep original structure
+                foreach ($salesOrder->orderedProducts as $order) {
+                    $hasAllocations = $order->warehouseAllocations && $order->warehouseAllocations->count() > 0;
+
+                    if ($hasAllocations && !$isAdmin && $userWarehouseId) {
+                        // Warehouse user: Show only their warehouse's data
+                        $userAllocation = $order->warehouseAllocations->where('warehouse_id', $userWarehouseId)->first();
+                        if ($userAllocation) {
+                            $displayProducts[] = [
+                                'order' => $order,
+                                'warehouse_name' => $userAllocation->warehouse->name ?? 'N/A',
+                                'allocated_quantity' => $userAllocation->allocated_quantity,
+                                'final_dispatched_quantity' => $userAllocation->final_dispatched_quantity ?? 0,
+                            ];
+                        }
+                    } else {
+                        // Admin or single warehouse
+                        $warehouseName = 'N/A';
+
+                        if ($isAdmin) {
+                            $warehouseName = 'All';
+                        } else {
+                            // Try to get warehouse name from warehouseStock relationship
+                            if ($order->warehouseStock && $order->warehouseStock->warehouse) {
+                                $warehouseName = $order->warehouseStock->warehouse->name;
+                            }
+                            // If not found, try to get from warehouse_id in sales_order
+                            elseif ($salesOrder->warehouse) {
+                                $warehouseName = $salesOrder->warehouse->name;
+                            }
+                        }
+
+                        $displayProducts[] = [
+                            'order' => $order,
+                            'warehouse_name' => $warehouseName,
+                            'allocated_quantity' => null,
+                            'final_dispatched_quantity' => $hasAllocations
+                                ? $order->warehouseAllocations->sum('final_dispatched_quantity')
+                                : ($order->final_dispatched_quantity ?? 0),
+                        ];
+                    }
+                }
+            }
+
             $customerInfo = Customer::findOrFail($c_id);
 
             $invoice = Invoice::where('customer_id', $c_id)
                 ->where('sales_order_id', $id)
                 ->first();
 
-            return view('readyToShip.view-detail', compact('salesOrder', 'customerInfo', 'invoice'));
+            return view('readyToShip.view-detail', compact('salesOrder', 'customerInfo', 'invoice', 'displayProducts', 'isAdmin', 'isSuperAdmin', 'userWarehouseId'));
         } catch (\Exception $e) {
             return redirect()->back()
                 ->with('error', 'Error loading order details: ' . $e->getMessage());

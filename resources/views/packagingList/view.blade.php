@@ -129,6 +129,7 @@
                                         <th>Final&nbsp;Dispatch&nbsp;Qty</th>
                                         <th>Box&nbsp;Count</th>
                                         <th>Weight</th>
+                                        <th>Status</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -296,10 +297,36 @@
                                             </td>
                                             <td>{{ $order->box_count ?? 0 }}</td>
                                             <td>{{ $order->weight ?? 0 }}</td>
+                                            <td>
+                                                @php
+                                                    $statusBadges = [
+                                                        'pending' => 'bg-secondary',
+                                                        'packaging' => 'bg-warning',
+                                                        'packaged' => 'bg-info',
+                                                        'ready_to_ship' => 'bg-success',
+                                                        'dispatched' => 'bg-primary',
+                                                        'shipped' => 'bg-dark',
+                                                        'completed' => 'bg-success',
+                                                    ];
+                                                    $statusLabels = [
+                                                        'pending' => 'Pending',
+                                                        'packaging' => 'Packaging',
+                                                        'packaged' => 'Packaged',
+                                                        'ready_to_ship' => 'Ready to Ship',
+                                                        'dispatched' => 'Dispatched',
+                                                        'shipped' => 'Shipped',
+                                                        'completed' => 'Completed',
+                                                    ];
+                                                    $currentStatus = $order->status ?? 'pending';
+                                                @endphp
+                                                <span class="badge {{ $statusBadges[$currentStatus] ?? 'bg-secondary' }}">
+                                                    {{ $statusLabels[$currentStatus] ?? 'Unknown' }}
+                                                </span>
+                                            </td>
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="23" class="text-center">No records found. Please update or upload
+                                            <td colspan="24" class="text-center">No records found. Please update or upload
                                                 a PO to see data.</td>
                                         </tr>
                                     @endforelse
@@ -322,13 +349,18 @@
                     </a>
                 </div> --}}
                 <div class="text-end">
-                    <form action="{{ route('change.sales.order.status') }}" method="POST"
-                        onsubmit="return confirm('Are you sure?')">
+                    <form action="{{ route('change.packaging.status.ready.to.ship') }}" method="POST"
+                        onsubmit="return confirm('Are you sure you want to mark your products as ready to ship?')">
                         @csrf
                         @method('PUT')
                         <input type="hidden" name="order_id" value="{{ $salesOrder->id }}">
-                        <input type="hidden" name="status" value="ready_to_ship">
-                        <button class="btn btn-success w-sm waves ripple-light" type="submit">Ready to Ship</button>
+                        <button class="btn btn-success w-sm waves ripple-light" type="submit">
+                            @if($isAdmin ?? false)
+                                Mark All Ready to Ship
+                            @else
+                                Mark My Products Ready to Ship
+                            @endif
+                        </button>
                     </form>
                 </div>
             </div>
