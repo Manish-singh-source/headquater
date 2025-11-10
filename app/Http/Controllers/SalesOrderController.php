@@ -1316,8 +1316,8 @@ class SalesOrderController extends Controller
             // Validate sales order exists
             $salesOrder = SalesOrder::findOrFail($request->order_id);
 
-            // Build query with eager loading
-            $salesOrderDetails = SalesOrderProduct::with(['tempOrder', 'customer', 'product'])
+            // Build query with eager loading (including warehouseAllocations for grouping)
+            $salesOrderDetails = SalesOrderProduct::with(['tempOrder', 'customer', 'product', 'warehouseAllocations.warehouse'])
                 ->where('sales_order_id', $salesOrder->id);
 
             // Apply filters
@@ -1345,7 +1345,7 @@ class SalesOrderController extends Controller
                 return redirect()->back()->with('error', 'No sales order details found matching the criteria.');
             }
 
-            // Group by: facility_name + po_number + optional(brand) + optional(client_name)
+            // Group by: warehouse_id + po_number + facility_name + optional(brand) + optional(client_name)
             $invoicesGroup = [];
 
             foreach ($salesOrderDetails as $detail) {
@@ -1357,20 +1357,37 @@ class SalesOrderController extends Controller
                 $facilityName = $detail->customer->facility_name ?? '';
                 $poNumber = $detail->tempOrder->po_number ?? '';
 
-                // Build dynamic grouping key
-                $groupKey = $facilityName . '|' . $poNumber;
+                // Get warehouse allocations for this product
+                $allocations = $detail->warehouseAllocations;
 
-                if ($request->filled('brand')) {
-                    $brand = $detail->product->brand ?? '';
-                    $groupKey .= '|' . $brand;
+                // If no allocations, skip this detail
+                if ($allocations->isEmpty()) {
+                    continue;
                 }
 
-                if ($request->filled('client_name')) {
-                    $clientName = $detail->customer->client_name ?? '';
-                    $groupKey .= '|' . $clientName;
-                }
+                // Group by each warehouse allocation
+                foreach ($allocations as $allocation) {
+                    $warehouseId = $allocation->warehouse_id;
 
-                $invoicesGroup[$groupKey][] = $detail;
+                    // Build dynamic grouping key: warehouse_id + po_number + facility_name
+                    $groupKey = $warehouseId . '|' . $poNumber . '|' . $facilityName;
+
+                    if ($request->filled('brand')) {
+                        $brand = $detail->product->brand ?? '';
+                        $groupKey .= '|' . $brand;
+                    }
+
+                    if ($request->filled('client_name')) {
+                        $clientName = $detail->customer->client_name ?? '';
+                        $groupKey .= '|' . $clientName;
+                    }
+
+                    // Store detail with allocation info
+                    $invoicesGroup[$groupKey][] = [
+                        'detail' => $detail,
+                        'allocation' => $allocation,
+                    ];
+                }
             }
 
             // Validate we have groups to process
@@ -1388,23 +1405,34 @@ class SalesOrderController extends Controller
                 // Reset total for this invoice
                 $invoiceTotal = 0;
 
-                $customerId = $invoiceData[0]->customer_id;
+                // Extract warehouse_id from groupKey (first part before |)
+                $groupParts = explode('|', $groupKey);
+                $warehouseId = (int) $groupParts[0];
+
+                // Get customer_id and po_number from first item
+                $firstItem = $invoiceData[0];
+                $customerId = $firstItem['detail']->customer_id;
+                $poNumber = $firstItem['detail']->tempOrder->po_number ?? '';
 
                 // Create invoice with unique number
                 $invoice = new Invoice();
-                $invoice->warehouse_id = $salesOrder->warehouse_id ?? 0; // Default to 0 if null (All Warehouses)
+                $invoice->warehouse_id = $warehouseId;
                 $invoice->invoice_number = 'INV-' . $timestamp . '-' . str_pad($invoiceCounter, 4, '0', STR_PAD_LEFT);
                 $invoice->customer_id = $customerId;
                 $invoice->sales_order_id = $salesOrder->id;
                 $invoice->invoice_date = now();
                 $invoice->round_off = 0;
                 $invoice->total_amount = 0; // Will update after calculating
-                $invoice->po_number = $invoiceData[0]->tempOrder->po_number ?? '';
+                $invoice->po_number = $poNumber;
                 $invoice->save();
 
                 // Process invoice details
-                foreach ($invoiceData as $detail) {
-                    $quantity = (int) $detail->ordered_quantity;
+                foreach ($invoiceData as $item) {
+                    $detail = $item['detail'];
+                    $allocation = $item['allocation'];
+
+                    // Use allocated quantity instead of ordered quantity
+                    $quantity = (int) $allocation->allocated_quantity;
                     $unitPrice = (float) $detail->product->mrp;
                     $lineTotal = $quantity * $unitPrice;
 
@@ -1415,6 +1443,7 @@ class SalesOrderController extends Controller
                     $invoiceDetail->invoice_id = $invoice->id;
                     $invoiceDetail->product_id = $detail->product_id;
                     $invoiceDetail->temp_order_id = $detail->temp_order_id;
+                    $invoiceDetail->warehouse_id = $warehouseId;
                     $invoiceDetail->quantity = $quantity;
                     $invoiceDetail->unit_price = $unitPrice;
                     $invoiceDetail->discount = 0;
@@ -1425,10 +1454,8 @@ class SalesOrderController extends Controller
                     $invoiceDetail->po_number = $detail->tempOrder->po_number ?? null;
                     $invoiceDetail->save();
 
-                    // Update sales order product status
-                    $detail->status = 'dispatched';
-                    $detail->invoice_status = 'completed';
-                    $detail->save();
+                    // Update sales order product status only if all allocations are processed
+                    // We'll handle this separately after all invoices are created
                 }
 
                 // Update invoice with calculated total
@@ -1437,6 +1464,35 @@ class SalesOrderController extends Controller
 
                 $generatedInvoices[] = $invoice->id;
                 $invoiceCounter++;
+            }
+
+            // Update sales order product status after all invoices are created
+            foreach ($salesOrderDetails as $detail) {
+                // Check if all allocations for this product have been invoiced
+                $allAllocationsInvoiced = true;
+                foreach ($detail->warehouseAllocations as $allocation) {
+                    // Check if this allocation was included in any generated invoice
+                    $found = false;
+                    foreach ($invoicesGroup as $groupKey => $items) {
+                        foreach ($items as $item) {
+                            if ($item['detail']->id === $detail->id && $item['allocation']->id === $allocation->id) {
+                                $found = true;
+                                break 2;
+                            }
+                        }
+                    }
+                    if (!$found) {
+                        $allAllocationsInvoiced = false;
+                        break;
+                    }
+                }
+
+                // Update status only if all allocations are invoiced
+                if ($allAllocationsInvoiced) {
+                    $detail->status = 'dispatched';
+                    $detail->invoice_status = 'completed';
+                    $detail->save();
+                }
             }
 
             DB::commit();
