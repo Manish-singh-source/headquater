@@ -310,20 +310,44 @@ class ReadyToShip extends Controller
     }
 
     /**
-     * Display pending vendor product returns
+     * Display vendor product returns with optional status filter
      *
-     * @return \Illuminate\View\View
+     * @param Request $request
+     * @return \Illuminate\View\View|\Illuminate\Http\JsonResponse
      */
-    public function returnAccept()
+    public function returnAccept(Request $request)
     {
         try {
-            $vendorOrders = VendorReturnProduct::with('vendorPIProduct')
-                ->where('return_status', 'pending')
-                ->latest()
-                ->paginate(15);
+            // Default to 'all' so the page shows all records when no status is provided
+            $status = $request->get('status', 'all');
 
-            return view('return-or-accept', compact('vendorOrders'));
+            $query = VendorReturnProduct::with('vendorPIProduct.product');
+
+            // Filter by status if not 'all'
+            if ($status !== 'all') {
+                $query->where('return_status', $status);
+            }
+
+            $vendorOrders = $query->latest()->get();
+
+            // If AJAX request, return only the table HTML
+            if ($request->ajax()) {
+                // Pass the current status to the partial so action links can preserve the active tab
+                return response()->json([
+                    'success' => true,
+                    'html' => view('partials.vendor-return-table', compact('vendorOrders', 'status'))->render()
+                ]);
+            }
+
+            return view('return-or-accept', compact('vendorOrders', 'status'));
         } catch (\Exception $e) {
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Error retrieving vendor returns: ' . $e->getMessage()
+                ], 500);
+            }
+
             return redirect()->back()
                 ->with('error', 'Error retrieving vendor returns: ' . $e->getMessage());
         }
@@ -394,18 +418,18 @@ class ReadyToShip extends Controller
 
                 DB::commit();
 
-                return redirect()->back()
+                return redirect()->route('return.accept', ['status' => request()->get('status', 'all')])
                     ->with('success', 'Vendor return products accepted successfully. Stock updated.');
             } else {
                 DB::rollBack();
 
-                return redirect()->back()
+                return redirect()->route('return.accept', ['status' => request()->get('status', 'all')])
                     ->with('error', 'Warehouse stock not found for SKU: ' . $vendorReturnProduct->sku);
             }
         } catch (\Exception $e) {
             DB::rollBack();
 
-            return redirect()->back()
+            return redirect()->route('return.accept', ['status' => request()->get('status', 'all')])
                 ->with('error', 'Error accepting vendor products: ' . $e->getMessage());
         }
     }
@@ -457,12 +481,11 @@ class ReadyToShip extends Controller
                 ->event('returned')
                 ->log('Vendor return products marked as returned');
 
-            return redirect()->back()
+            return redirect()->route('return.accept', ['status' => request()->get('status', 'all')])
                 ->with('success', 'Vendor return products marked as returned successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
-
-            return redirect()->back()
+            return redirect()->route('return.accept', ['status' => request()->get('status', 'all')])
                 ->with('error', 'Error returning vendor products: ' . $e->getMessage());
         }
     }
@@ -523,11 +546,11 @@ class ReadyToShip extends Controller
                 $message .= ", Errors: {$errorCount}";
             }
 
-            return redirect()->back()->with('success', $message);
+            return redirect()->route('return.accept', ['status' => request()->get('status', 'all')])->with('success', $message);
         } catch (\Exception $e) {
             DB::rollBack();
 
-            return redirect()->back()
+            return redirect()->route('return.accept', ['status' => request()->get('status', 'all')])
                 ->with('error', 'Error processing bulk accept: ' . $e->getMessage());
         }
     }
