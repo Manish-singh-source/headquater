@@ -433,9 +433,8 @@ class SalesOrderController extends Controller
 
                 // Create warehouse allocation record for single warehouse orders
                 if (!$isAutoAllocation && $product && $product->warehouse_id) {
-                    $allocatedQty = intval($record['Block']) > intval($product->available_quantity)
-                        ? intval($product->available_quantity)
-                        : intval($record['Block']);
+                    // Use the block quantity from TempOrder (already calculated correctly)
+                    $allocatedQty = intval($tempSalesOrder->block);
 
                     if ($allocatedQty > 0) {
                         WarehouseAllocation::create([

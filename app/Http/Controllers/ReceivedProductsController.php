@@ -21,20 +21,29 @@ class ReceivedProductsController extends Controller
 {
     /**
      * Display list of pending purchase orders with vendor PIs
+     * Filters by warehouse if user is assigned to a specific warehouse
      *
      * @return \Illuminate\View\View
      */
     public function index()
     {
         try {
-            $purchaseOrders = PurchaseOrder::with(['purchaseOrderProducts', 'vendorPI'])
+            $user = Auth::user();
+            $userWarehouseId = $user->warehouse_id;
+
+            $query = PurchaseOrder::with(['purchaseOrderProducts', 'vendorPI'])
                 ->where('status', 'pending')
                 ->withCount('purchaseOrderProducts')
-                ->whereHas('vendorPI', function ($query) {
+                ->whereHas('vendorPI', function ($query) use ($userWarehouseId) {
                     $query->where('status', 'pending');
-                })
-                ->latest()
-                ->paginate(15);
+
+                    // Filter by warehouse if user is assigned to a specific warehouse
+                    if ($userWarehouseId) {
+                        $query->where('warehouse_id', $userWarehouseId);
+                    }
+                });
+
+            $purchaseOrders = $query->latest()->paginate(15);
 
             return view('receivedProducts.index', compact('purchaseOrders'));
         } catch (\Exception $e) {

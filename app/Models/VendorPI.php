@@ -41,4 +41,9 @@ class VendorPI extends Model
     public function purchaseGrn() {
         return $this->hasOne(PurchaseGrn::class, 'purchase_order_id', 'purchase_order_id');
     }
+
+    public function warehouse()
+    {
+        return $this->belongsTo(Warehouse::class, 'warehouse_id', 'id');
+    }
 }

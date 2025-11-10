@@ -227,10 +227,11 @@ class PurchaseOrderController extends Controller
             'pi_excel' => 'required|file|mimes:xlsx,csv,xls',
             'purchase_order_id' => 'required|exists:purchase_orders,id',
             'vendor_code' => 'required|string|max:255',
+            'warehouse_id' => 'required|integer|exists:warehouses,id',
         ]);
 
         if ($validated->fails()) {
-            return redirect()->back()->with('error', $validated->errors()->first());
+            return redirect()->back()->with('error', $validated->errors()->first())->withInput();
         }
 
         $file = $request->file('pi_excel');
@@ -249,6 +250,7 @@ class PurchaseOrderController extends Controller
             $vendorPi = VendorPI::create([
                 'purchase_order_id' => $request->purchase_order_id,
                 'vendor_code' => $request->vendor_code,
+                'warehouse_id' => $request->warehouse_id,
             ]);
 
             foreach ($rows as $record) {
@@ -325,10 +327,11 @@ class PurchaseOrderController extends Controller
             'purchase_order_id' => 'required|exists:purchase_orders,id',
             'sales_order_id' => 'nullable|exists:sales_orders,id',
             'vendor_code' => 'required|string|max:255',
+            'warehouse_id' => 'required|integer|exists:warehouses,id',
         ]);
 
         if ($validated->fails()) {
-            return redirect()->back()->with('error', $validated->errors()->first());
+            return redirect()->back()->with('error', $validated->errors()->first())->withInput();
         }
 
         $file = $request->file('pi_excel');
@@ -348,6 +351,7 @@ class PurchaseOrderController extends Controller
                 'purchase_order_id' => $request->purchase_order_id,
                 'vendor_code' => $request->vendor_code,
                 'sales_order_id' => $request->sales_order_id,
+                'warehouse_id' => $request->warehouse_id,
             ]);
 
             foreach ($rows as $record) {
@@ -457,7 +461,12 @@ class PurchaseOrderController extends Controller
         $purchaseGrn = PurchaseGrn::where('purchase_order_id', $id)->get();
         $vendorPIs = VendorPI::with('products.product')->where('purchase_order_id', $id)->where('status', '!=', 'completed')->get();
 
-        return view('purchaseOrder.view', compact('purchaseOrder', 'facilityNames', 'purchaseOrderProducts', 'uploadedPIOfVendors', 'vendorPIs', 'purchaseInvoice', 'purchaseGrn'));
+        // Get only active warehouses for warehouse selection
+        $warehouses = Warehouse::where('status', '1')
+            ->orderBy('name')
+            ->get();
+
+        return view('purchaseOrder.view', compact('purchaseOrder', 'facilityNames', 'purchaseOrderProducts', 'uploadedPIOfVendors', 'vendorPIs', 'purchaseInvoice', 'purchaseGrn', 'warehouses'));
     }
 
     public function update(Request $request)
