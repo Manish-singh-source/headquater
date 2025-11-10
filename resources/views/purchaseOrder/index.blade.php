@@ -103,7 +103,19 @@
                                 </thead>
                                 <tbody>
                                     @forelse($purchaseOrders as $order)
-                                        <tr>
+                                        @php
+                                            // Check if any VendorPI has 'approve' status (waiting for admin approval)
+                                            $hasApprovalPending = false;
+                                            if(isset($order->vendorPI) && count($order->vendorPI) > 0) {
+                                                foreach($order->vendorPI as $vendorPI) {
+                                                    if($vendorPI->status === 'approve') {
+                                                        $hasApprovalPending = true;
+                                                        break;
+                                                    }
+                                                }
+                                            }
+                                        @endphp
+                                        <tr @if($hasApprovalPending) style="background-color: #ffcccc;" @endif>
                                             <td>
                                                 <input class="form-check-input row-checkbox" type="checkbox" name="ids[]"
                                                     value="{{ $order->id }}">

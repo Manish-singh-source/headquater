@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Invoice;
+use App\Models\InvoiceDetails;
 use App\Models\Customer;
 use App\Models\SalesOrder;
 use App\Models\ProductIssue;
@@ -201,17 +202,18 @@ class ReadyToShip extends Controller
                     $hasAllocations = $order->warehouseAllocations && $order->warehouseAllocations->count() > 0;
 
                     if ($hasAllocations) {
-                        // Multiple warehouses
+                        // Has warehouse allocations (both single and multi-warehouse)
                         foreach ($order->warehouseAllocations as $allocation) {
                             $displayProducts[] = [
                                 'order' => $order,
                                 'warehouse_name' => $allocation->warehouse->name ?? 'N/A',
                                 'allocated_quantity' => $allocation->allocated_quantity,
                                 'final_dispatched_quantity' => $allocation->final_dispatched_quantity ?? 0,
+                                'allocation_id' => $allocation->id,
                             ];
                         }
                     } else {
-                        // Single warehouse or no allocation
+                        // Fallback: No allocation record (legacy data)
                         $warehouseName = 'N/A';
 
                         // Try to get warehouse name from warehouseStock relationship
@@ -229,27 +231,45 @@ class ReadyToShip extends Controller
                             'warehouse_name' => $warehouseName,
                             'allocated_quantity' => $allocatedQty,
                             'final_dispatched_quantity' => $order->final_dispatched_quantity ?? 0,
+                            'allocation_id' => null,
                         ];
                     }
                 }
             } else {
-                // For non-super admin, keep original structure
+                // For non-super admin (warehouse users and admins)
                 foreach ($salesOrder->orderedProducts as $order) {
                     $hasAllocations = $order->warehouseAllocations && $order->warehouseAllocations->count() > 0;
 
-                    if ($hasAllocations && !$isAdmin && $userWarehouseId) {
-                        // Warehouse user: Show only their warehouse's data
-                        $userAllocation = $order->warehouseAllocations->where('warehouse_id', $userWarehouseId)->first();
-                        if ($userAllocation) {
-                            $displayProducts[] = [
-                                'order' => $order,
-                                'warehouse_name' => $userAllocation->warehouse->name ?? 'N/A',
-                                'allocated_quantity' => $userAllocation->allocated_quantity,
-                                'final_dispatched_quantity' => $userAllocation->final_dispatched_quantity ?? 0,
-                            ];
+                    if ($hasAllocations) {
+                        if (!$isAdmin && $userWarehouseId) {
+                            // Warehouse user: Show only their warehouse's allocations
+                            $userAllocations = $order->warehouseAllocations->filter(function($allocation) use ($userWarehouseId) {
+                                return $allocation->warehouse_id == $userWarehouseId;
+                            });
+
+                            foreach ($userAllocations as $allocation) {
+                                $displayProducts[] = [
+                                    'order' => $order,
+                                    'warehouse_name' => $allocation->warehouse->name ?? 'N/A',
+                                    'allocated_quantity' => $allocation->allocated_quantity,
+                                    'final_dispatched_quantity' => $allocation->final_dispatched_quantity ?? 0,
+                                    'allocation_id' => $allocation->id,
+                                ];
+                            }
+                        } else {
+                            // Admin: Show all allocations
+                            foreach ($order->warehouseAllocations as $allocation) {
+                                $displayProducts[] = [
+                                    'order' => $order,
+                                    'warehouse_name' => $allocation->warehouse->name ?? 'N/A',
+                                    'allocated_quantity' => $allocation->allocated_quantity,
+                                    'final_dispatched_quantity' => $allocation->final_dispatched_quantity ?? 0,
+                                    'allocation_id' => $allocation->id,
+                                ];
+                            }
                         }
                     } else {
-                        // Admin or single warehouse
+                        // Fallback: No allocation record (legacy data)
                         $warehouseName = 'N/A';
 
                         if ($isAdmin) {
@@ -269,9 +289,8 @@ class ReadyToShip extends Controller
                             'order' => $order,
                             'warehouse_name' => $warehouseName,
                             'allocated_quantity' => null,
-                            'final_dispatched_quantity' => $hasAllocations
-                                ? $order->warehouseAllocations->sum('final_dispatched_quantity')
-                                : ($order->final_dispatched_quantity ?? 0),
+                            'final_dispatched_quantity' => $order->final_dispatched_quantity ?? 0,
+                            'allocation_id' => null,
                         ];
                     }
                 }
@@ -279,9 +298,16 @@ class ReadyToShip extends Controller
 
             $customerInfo = Customer::findOrFail($c_id);
 
-            $invoice = Invoice::where('customer_id', $c_id)
-                ->where('sales_order_id', $id)
-                ->first();
+            // Get invoice based on user role
+            $invoiceQuery = Invoice::where('customer_id', $c_id)
+                ->where('sales_order_id', $id);
+
+            if (!$isSuperAdmin && !$isAdmin && $userWarehouseId) {
+                // Warehouse users can only see invoices for their warehouse
+                $invoiceQuery->where('warehouse_id', $userWarehouseId);
+            }
+
+            $invoice = $invoiceQuery->first();
 
             return view('readyToShip.view-detail', compact('salesOrder', 'customerInfo', 'invoice', 'displayProducts', 'isAdmin', 'isSuperAdmin', 'userWarehouseId'));
         } catch (\Exception $e) {
@@ -464,6 +490,179 @@ class ReadyToShip extends Controller
 
             return redirect()->back()
                 ->with('error', 'Error returning vendor products: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Generate warehouse-specific invoice
+     *
+     * @param int $orderId
+     * @param int $customerId
+     * @param int $warehouseId
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function generateWarehouseInvoice($orderId, $customerId, $warehouseId)
+    {
+        try {
+            $user = Auth::user();
+            $isSuperAdmin = $user->hasRole('Super Admin');
+            $isAdmin = $user->hasRole(['Super Admin', 'Admin']) || !$user->warehouse_id;
+
+            // Validate permissions - Super Admin can generate for any warehouse, warehouse users only for their warehouse
+            if (!$isSuperAdmin && !$isAdmin && $user->warehouse_id != $warehouseId && $warehouseId != 0) {
+                return redirect()->back()->with('error', 'You can only generate invoices for your warehouse.');
+            }
+
+            $salesOrder = SalesOrder::with([
+                'customerGroup',
+                'orderedProducts.product',
+                'orderedProducts.tempOrder',
+                'orderedProducts.customer',
+                'orderedProducts.warehouseStock.warehouse',
+                'orderedProducts.warehouseAllocations.warehouse',
+            ])
+            ->where('status', 'ready_to_ship')
+            ->findOrFail($orderId);
+
+            // Get products for this warehouse
+            $warehouseProducts = $salesOrder->orderedProducts->filter(function ($product) use ($customerId, $warehouseId) {
+                if ($product->customer_id != $customerId) {
+                    return false;
+                }
+
+                // If warehouseId is 0 (single warehouse case), include all products
+                if ($warehouseId == 0) {
+                    return true;
+                }
+
+                // Check warehouse allocations
+                if ($product->warehouseAllocations && $product->warehouseAllocations->count() > 0) {
+                    return $product->warehouseAllocations->contains('warehouse_id', $warehouseId);
+                }
+
+                // Check warehouse stock
+                if ($product->warehouseStock) {
+                    return $product->warehouseStock->warehouse_id == $warehouseId;
+                }
+
+                return false;
+            });
+
+            if ($warehouseProducts->isEmpty()) {
+                return redirect()->back()->with('error', 'No products found for this warehouse.');
+            }
+
+            DB::beginTransaction();
+
+            // Generate invoice number
+            $yearMonth = date('Ym');
+            $lastInvoice = Invoice::where('invoice_number', 'LIKE', "INV-{$yearMonth}-%")
+                ->orderBy('id', 'desc')
+                ->first();
+
+            $timestamp = time();
+
+            if ($lastInvoice) {
+                $lastNumber = (int) substr($lastInvoice->invoice_number, -3);
+                $newNumber = str_pad($lastNumber + 1, 3, '0', STR_PAD_LEFT);
+            } else {
+                $newNumber = '001';
+            }
+
+            $invoiceNumber = 'INV-' . $timestamp . '-' . str_pad($newNumber + 1, 4, '0', STR_PAD_LEFT);
+
+            // Calculate totals
+            $subtotal = 0;
+            $totalTax = 0;
+            $totalDiscount = 0;
+
+            foreach ($warehouseProducts as $product) {
+                $quantity = 0;
+                $unitPrice = $product->tempOrder->mrp ?? 0;
+
+                // Get quantity from warehouse allocation or final dispatched
+                if ($product->warehouseAllocations && $product->warehouseAllocations->count() > 0) {
+                    $allocation = $product->warehouseAllocations->where('warehouse_id', $warehouseId)->first();
+                    $quantity = $allocation ? $allocation->final_dispatched_quantity ?? $allocation->allocated_quantity : 0;
+                } else {
+                    $quantity = $product->final_dispatched_quantity ?? 0;
+                }
+
+                $amount = $quantity * $unitPrice;
+                $discount = 0; // Can be modified based on requirements
+                $tax = 0; // Can be modified based on requirements
+
+                $subtotal += $amount;
+                $totalDiscount += $discount;
+                $totalTax += $tax;
+            }
+
+            $totalAmount = $subtotal - $totalDiscount + $totalTax;
+
+            // Create invoice
+            $invoice = Invoice::create([
+                'warehouse_id' => $warehouseId,
+                'invoice_number' => $invoiceNumber,
+                'customer_id' => $customerId,
+                'sales_order_id' => $orderId,
+                'invoice_date' => now(),
+                'po_number' => $salesOrder->po_number,
+                'po_date' => $salesOrder->po_date,
+                'subtotal' => $subtotal,
+                'tax_amount' => $totalTax,
+                'discount_amount' => $totalDiscount,
+                'round_off' => 0,
+                'total_amount' => $totalAmount,
+                'paid_amount' => 0,
+                'balance_due' => $totalAmount,
+                'payment_mode' => null,
+                'payment_status' => 'unpaid',
+                'invoice_type' => 'sales_order',
+                'invoice_item_type' => 'product',
+                'notes' => "Warehouse-specific invoice for " . \App\Models\Warehouse::find($warehouseId)->name,
+            ]);
+
+            // Create invoice details
+            foreach ($warehouseProducts as $product) {
+                $quantity = 0;
+                $unitPrice = $product->tempOrder->mrp ?? 0;
+
+                if ($product->warehouseAllocations && $product->warehouseAllocations->count() > 0) {
+                    $allocation = $product->warehouseAllocations->where('warehouse_id', $warehouseId)->first();
+                    $quantity = $allocation ? $allocation->final_dispatched_quantity ?? $allocation->allocated_quantity : 0;
+                } else {
+                    $quantity = $product->final_dispatched_quantity ?? 0;
+                }
+
+                $amount = $quantity * $unitPrice;
+
+                InvoiceDetails::create([
+                    'invoice_id' => $invoice->id,
+                    'warehouse_id' => $warehouseId,
+                    'product_id' => $product->product_id,
+                    'sales_order_product_id' => $product->id,
+                    'hsn' => $product->tempOrder->hsn ?? null,
+                    'quantity' => $quantity,
+                    'box_count' => $product->box_count ?? null,
+                    'weight' => $product->weight ?? null,
+                    'unit_price' => $unitPrice,
+                    'discount' => 0,
+                    'amount' => $amount,
+                    'tax' => 0,
+                    'total_price' => $amount,
+                    'description' => $product->tempOrder->description ?? null,
+                ]);
+            }
+
+            DB::commit();
+
+            activity()->performedOn($invoice)->causedBy($user)->log("Warehouse-specific invoice generated for Order #{$orderId}, Warehouse #{$warehouseId}");
+
+            return redirect()->route('invoices.view', $orderId)->with('success', 'Warehouse invoice generated successfully!');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'Error generating warehouse invoice: ' . $e->getMessage());
         }
     }
 

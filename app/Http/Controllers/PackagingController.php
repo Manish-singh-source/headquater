@@ -107,18 +107,19 @@ class PackagingController extends Controller
                     $hasAllocations = $order->warehouseAllocations && $order->warehouseAllocations->count() > 0;
 
                     if ($hasAllocations) {
-                        // Multiple warehouses
+                        // Has warehouse allocations (both single and multi-warehouse)
                         foreach ($order->warehouseAllocations as $allocation) {
                             $displayProducts[] = [
                                 'order' => $order,
                                 'warehouse_name' => $allocation->warehouse->name ?? 'N/A',
                                 'allocated_quantity' => $allocation->allocated_quantity,
                                 'warehouse_allocation_display' => $allocation->warehouse->name . ': ' . $allocation->allocated_quantity,
+                                'allocation_id' => $allocation->id,
                             ];
                             $facilityNamesArray[] = $order->tempOrder->facility_name;
                         }
                     } else {
-                        // Single warehouse or no allocation
+                        // Fallback: No allocation record found (legacy data)
                         $warehouseName = $order->warehouseStock ? $order->warehouseStock->warehouse->name : 'N/A';
                         $allocatedQty = $order->tempOrder->block ?? 0;
                         $displayProducts[] = [
@@ -126,20 +127,43 @@ class PackagingController extends Controller
                             'warehouse_name' => $warehouseName,
                             'allocated_quantity' => $allocatedQty,
                             'warehouse_allocation_display' => $warehouseName . ': ' . $allocatedQty,
+                            'allocation_id' => null,
                         ];
                         $facilityNamesArray[] = $order->tempOrder->facility_name;
                     }
                 }
             } else {
-                // For non-super admin, keep original structure
+                // For non-super admin (warehouse users), show warehouse-specific allocations
                 foreach ($salesOrder->orderedProducts as $order) {
-                    $displayProducts[] = [
-                        'order' => $order,
-                        'warehouse_name' => null, // Not shown
-                        'allocated_quantity' => null,
-                        'warehouse_allocation_display' => '', // Will be handled in view
-                    ];
-                    $facilityNamesArray[] = $order->tempOrder->facility_name;
+                    $hasAllocations = $order->warehouseAllocations && $order->warehouseAllocations->count() > 0;
+
+                    if ($hasAllocations) {
+                        // Filter allocations for user's warehouse
+                        $userAllocations = $order->warehouseAllocations->filter(function($allocation) use ($userWarehouseId) {
+                            return $allocation->warehouse_id == $userWarehouseId;
+                        });
+
+                        foreach ($userAllocations as $allocation) {
+                            $displayProducts[] = [
+                                'order' => $order,
+                                'warehouse_name' => $allocation->warehouse->name ?? 'N/A',
+                                'allocated_quantity' => $allocation->allocated_quantity,
+                                'warehouse_allocation_display' => $allocation->warehouse->name . ': ' . $allocation->allocated_quantity,
+                                'allocation_id' => $allocation->id,
+                            ];
+                            $facilityNamesArray[] = $order->tempOrder->facility_name;
+                        }
+                    } else {
+                        // Fallback: No allocation record (legacy data)
+                        $displayProducts[] = [
+                            'order' => $order,
+                            'warehouse_name' => null,
+                            'allocated_quantity' => null,
+                            'warehouse_allocation_display' => '',
+                            'allocation_id' => null,
+                        ];
+                        $facilityNamesArray[] = $order->tempOrder->facility_name;
+                    }
                 }
             }
 
@@ -239,21 +263,55 @@ class PackagingController extends Controller
                 } else {
                     // Warehouse user sees only their warehouse
                     $allocations = [];
-                    foreach ($order->warehouseAllocations->where('warehouse_id', $userWarehouseId) as $allocation) {
-                        $warehouseName = $allocation->warehouse->name ?? 'N/A';
-                        $allocations[] = ($allocation->warehouse->name ?? 'N/A') . ': ' . $allocation->allocated_quantity;
+                    $userAllocations = $order->warehouseAllocations->where('warehouse_id', $userWarehouseId);
+
+                    if ($userAllocations->count() > 0) {
+                        foreach ($userAllocations as $allocation) {
+                            $warehouseName = $allocation->warehouse->name ?? 'N/A';
+                            $allocations[] = ($allocation->warehouse->name ?? 'N/A') . ': ' . $allocation->allocated_quantity;
+                        }
+                        $warehouseAllocation = implode(', ', $allocations);
+                    } else {
+                        // Fallback: Check warehouse stock for this SKU in user's warehouse
+                        $warehouseStock = \App\Models\WarehouseStock::where('sku', $order->sku)
+                            ->where('warehouse_id', $userWarehouseId)
+                            ->where('block_quantity', '>', 0)
+                            ->first();
+
+                        if ($warehouseStock && $order->tempOrder) {
+                            $warehouseName = $warehouseStock->warehouse->name ?? 'N/A';
+                            $warehouseAllocation = ($warehouseStock->warehouse->name ?? 'N/A') . ': ' . ($order->tempOrder->block ?? 0);
+                        } else {
+                            $warehouseName = 'N/A';
+                            $warehouseAllocation = 'N/A';
+                        }
                     }
-                    $warehouseAllocation = implode(', ', $allocations);
                 }
             } else {
                 // Single warehouse allocation
                 if ($order->warehouseStock) {
                     $warehouseName = $order->warehouseStock->warehouse->name ?? 'N/A';
                     $warehouseAllocation = ($order->warehouseStock->warehouse->name ?? 'N/A') . ': ' . ($order->tempOrder->block ?? 0);
-                } elseif ($order->tempOrder && $order->tempOrder->block > 0 && $isAdmin) {
-                    // Fallback: Show block quantity without warehouse name if admin
-                    $warehouseName = 'All';
-                    $warehouseAllocation = 'Total Blocked: ' . $order->tempOrder->block;
+                } elseif ($order->tempOrder && $order->tempOrder->block > 0) {
+                    if ($isAdmin) {
+                        // Admin: Show block quantity without warehouse name
+                        $warehouseName = 'All';
+                        $warehouseAllocation = 'Total Blocked: ' . $order->tempOrder->block;
+                    } else {
+                        // Warehouse user: Check warehouse stock for this SKU
+                        $warehouseStock = \App\Models\WarehouseStock::where('sku', $order->sku)
+                            ->where('warehouse_id', $userWarehouseId)
+                            ->where('block_quantity', '>', 0)
+                            ->first();
+
+                        if ($warehouseStock && $order->tempOrder) {
+                            $warehouseName = $warehouseStock->warehouse->name ?? 'N/A';
+                            $warehouseAllocation = ($warehouseStock->warehouse->name ?? 'N/A') . ': ' . ($order->tempOrder->block ?? 0);
+                        } else {
+                            $warehouseName = 'N/A';
+                            $warehouseAllocation = 'N/A';
+                        }
+                    }
                 } else {
                     $warehouseName = 'N/A';
                     $warehouseAllocation = 'N/A';
@@ -288,8 +346,8 @@ class PackagingController extends Controller
                 }
             }
 
-            // Fallback: If still 0 and admin, use tempOrder->block
-            if ($totalDispatchQty == 0 && $isAdmin && isset($order->tempOrder->block)) {
+            // Fallback: If still 0, use tempOrder->block (order-specific blocked quantity)
+            if ($totalDispatchQty == 0 && isset($order->tempOrder->block)) {
                 $totalDispatchQty = $order->tempOrder->block;
             }
 

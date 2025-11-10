@@ -67,6 +67,73 @@
                                 <span><b> Shipping Address</b></span>
                                 <span> {{ $customerInfo->shipping_address ?? 'NA' }}</span>
                             </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center  mb-2 pe-3">
+                                <span><b>Actions</b></span>
+                                <span>
+                                    @php
+                                        $warehouseButtons = [];
+                                        foreach($displayProducts as $product) {
+                                            $warehouseName = $product['warehouse_name'];
+                                            if($warehouseName !== 'N/A' && $warehouseName !== 'All' && !in_array($warehouseName, $warehouseButtons)) {
+                                                $warehouseButtons[] = $warehouseName;
+                                            }
+                                        }
+                                    @endphp
+
+                                    @if(count($warehouseButtons) > 1)
+                                        @if($invoice)
+                                            <a href="{{ route('invoices.view', $salesOrder->id) }}" class="btn btn-sm btn-primary me-1">View All Invoices</a>
+                                        @endif
+                                        @foreach(array_unique($warehouseButtons) as $whName)
+                                            @php
+                                                $warehouse = \App\Models\Warehouse::where('name', $whName)->first();
+                                                if($warehouse) {
+                                                    $hasProducts = collect($displayProducts)->contains('warehouse_name', $whName);
+                                                    $warehouseInvoice = \App\Models\Invoice::where('sales_order_id', $salesOrder->id)
+                                                        ->where('customer_id', $customerInfo->id)
+                                                        ->where('warehouse_id', $warehouse->id)
+                                                        ->first();
+                                                    if($hasProducts) {
+                                                        // Check if user can see this invoice
+                                                        $canViewInvoice = true;
+                                                        if(!$isSuperAdmin && !$isAdmin && $userWarehouseId && $warehouse->id != $userWarehouseId) {
+                                                            $canViewInvoice = false;
+                                                        }
+                                                        if($canViewInvoice) {
+                                            @endphp
+                                                @if($warehouseInvoice)
+                                                    <a href="{{ route('invoices-details', $warehouseInvoice->id) }}"
+                                                       class="btn btn-sm btn-info me-1 mb-1">
+                                                        View {{ $whName }} Invoice
+                                                    </a>
+                                                @else
+                                                    @if($isSuperAdmin || $isAdmin || (!$userWarehouseId || $warehouse->id == $userWarehouseId))
+                                                    <a href="{{ route('ready.to.ship.generate.warehouse.invoice', ['orderId' => $salesOrder->id, 'customerId' => $customerInfo->id, 'warehouseId' => $warehouse->id]) }}"
+                                                       class="btn btn-sm btn-success me-1 mb-1"
+                                                       onclick="return confirm('Generate invoice for {{ $whName }} warehouse?')">
+                                                        Generate {{ $whName }} Invoice
+                                                    </a>
+                                                    @endif
+                                                @endif
+                                            @php
+                                                        }
+                                                    }
+                                                }
+                                            @endphp
+                                        @endforeach
+                                    @else
+                                        @if($invoice)
+                                            <a href="{{ route('invoices.view', $salesOrder->id) }}" class="btn btn-sm btn-primary">View Invoice</a>
+                                        @else
+                                            <a href="{{ route('ready.to.ship.generate.warehouse.invoice', ['orderId' => $salesOrder->id, 'customerId' => $customerInfo->id, 'warehouseId' => 0]) }}"
+                                               class="btn btn-sm btn-success"
+                                               onclick="return confirm('Generate invoice for this order?')">
+                                                Generate Invoice
+                                            </a>
+                                        @endif
+                                    @endif
+                                </span>
+                            </li>
                         </ul>
                     </div>
                 </div>
@@ -159,10 +226,18 @@
                                                                     {{ $allocation->warehouse->name ?? 'N/A' }}: {{ $allocation->allocated_quantity }}@if(!$loop->last), @endif
                                                                 @endforeach
                                                             @else
-                                                                {{ $displayProduct['warehouse_name'] }}: {{ $displayProduct['allocated_quantity'] }}
+                                                                @if(isset($displayProduct['allocated_quantity']) && $displayProduct['allocated_quantity'] !== null)
+                                                                    {{ $displayProduct['warehouse_name'] }}: {{ $displayProduct['allocated_quantity'] }}
+                                                                @else
+                                                                    N/A
+                                                                @endif
                                                             @endif
                                                         @else
-                                                            {{ $order->tempOrder->block ?? 0 }}
+                                                            @if(isset($displayProduct['allocated_quantity']) && $displayProduct['allocated_quantity'] !== null)
+                                                                {{ $displayProduct['warehouse_name'] }}: {{ $displayProduct['allocated_quantity'] }}
+                                                            @else
+                                                                {{ $order->tempOrder->block ?? 0 }}
+                                                            @endif
                                                         @endif
                                                     </td>
 

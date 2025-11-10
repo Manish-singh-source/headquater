@@ -431,6 +431,37 @@ class SalesOrderController extends Controller
                 $saveOrderProduct->subtotal = ($record['Basic Rate'] ?? 0) * ($record['PO Quantity'] ?? 0);
                 $saveOrderProduct->save();
 
+                // Create warehouse allocation record for single warehouse orders
+                if (!$isAutoAllocation && $product && $product->warehouse_id) {
+                    $allocatedQty = intval($record['Block']) > intval($product->available_quantity)
+                        ? intval($product->available_quantity)
+                        : intval($record['Block']);
+
+                    if ($allocatedQty > 0) {
+                        WarehouseAllocation::create([
+                            'sales_order_id' => $salesOrder->id,
+                            'sales_order_product_id' => $saveOrderProduct->id,
+                            'warehouse_id' => $product->warehouse_id,
+                            'sku' => $sku,
+                            'allocated_quantity' => $allocatedQty,
+                            'sequence' => 1,
+                            'status' => 'allocated',
+                            'notes' => "Allocated from warehouse {$product->warehouse->name}",
+                        ]);
+
+                        activity()
+                            ->performedOn($saveOrderProduct)
+                            ->causedBy(Auth::user())
+                            ->withProperties([
+                                'warehouse_id' => $product->warehouse_id,
+                                'warehouse_name' => $product->warehouse->name,
+                                'sku' => $sku,
+                                'allocated_quantity' => $allocatedQty,
+                            ])
+                            ->log("Stock allocated from warehouse {$product->warehouse->name}");
+                    }
+                }
+
                 // Make a purchase order if one or more than one products have less quantity in warehouse
                 if ($shortQty > 0) {
                     // change sales order status to blocked
@@ -823,18 +854,19 @@ class SalesOrderController extends Controller
                 $hasAllocations = $order->warehouseAllocations && $order->warehouseAllocations->count() > 0;
 
                 if ($hasAllocations) {
-                    // Multiple warehouses
+                    // Has warehouse allocations (both single and multi-warehouse)
                     foreach ($order->warehouseAllocations as $allocation) {
                         $displayProducts[] = [
                             'order' => $order,
                             'warehouse_name' => $allocation->warehouse->name ?? 'N/A',
                             'allocated_quantity' => $allocation->allocated_quantity,
                             'warehouse_allocation_display' => $allocation->warehouse->name . ': ' . $allocation->allocated_quantity,
+                            'allocation_id' => $allocation->id,
                         ];
                         $facilityNames[] = $order->tempOrder->facility_name;
                     }
                 } else {
-                    // Single warehouse or no allocation
+                    // Fallback: No allocation record (legacy data)
                     $warehouseName = $order->warehouseStock ? $order->warehouseStock->warehouse->name : 'N/A';
                     $allocatedQty = $order->tempOrder->block ?? 0;
                     $displayProducts[] = [
@@ -842,19 +874,39 @@ class SalesOrderController extends Controller
                         'warehouse_name' => $warehouseName,
                         'allocated_quantity' => $allocatedQty,
                         'warehouse_allocation_display' => $warehouseName . ': ' . $allocatedQty,
+                        'allocation_id' => null,
                     ];
                     $facilityNames[] = $order->tempOrder->facility_name;
                 }
             }
         } else {
-            // For non-super admin, keep original structure
+            // For non-super admin, show warehouse allocation info if available
             foreach ($salesOrder->orderedProducts as $order) {
-                $displayProducts[] = [
-                    'order' => $order,
-                    'warehouse_name' => null, // Not shown
-                    'allocated_quantity' => null,
-                    'warehouse_allocation_display' => '', // Will be handled in view
-                ];
+                $hasAllocations = $order->warehouseAllocations && $order->warehouseAllocations->count() > 0;
+
+                if ($hasAllocations) {
+                    // Build warehouse allocation display string
+                    $allocationDisplay = [];
+                    foreach ($order->warehouseAllocations as $allocation) {
+                        $allocationDisplay[] = $allocation->warehouse->name . ': ' . $allocation->allocated_quantity;
+                    }
+                    $displayProducts[] = [
+                        'order' => $order,
+                        'warehouse_name' => null, // Not shown separately
+                        'allocated_quantity' => null,
+                        'warehouse_allocation_display' => implode(', ', $allocationDisplay),
+                        'allocation_id' => null,
+                    ];
+                } else {
+                    // Fallback: No allocation record
+                    $displayProducts[] = [
+                        'order' => $order,
+                        'warehouse_name' => null,
+                        'allocated_quantity' => null,
+                        'warehouse_allocation_display' => '',
+                        'allocation_id' => null,
+                    ];
+                }
                 $facilityNames[] = $order->tempOrder->facility_name;
             }
         }

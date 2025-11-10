@@ -165,8 +165,19 @@
                                                         if ($isAdmin ?? false) {
                                                             $warehouseName = 'All';
                                                         } else {
+                                                            // Warehouse user: Show their warehouse name
                                                             $userAllocation = $order->warehouseAllocations->where('warehouse_id', $userWarehouseId ?? 0)->first();
-                                                            $warehouseName = $userAllocation ? ($userAllocation->warehouse->name ?? 'N/A') : 'N/A';
+                                                            if ($userAllocation) {
+                                                                $warehouseName = $userAllocation->warehouse->name ?? 'N/A';
+                                                            } else {
+                                                                // Fallback: Check if any warehouse stock exists for this SKU in user's warehouse
+                                                                $warehouseStock = \App\Models\WarehouseStock::where('sku', $order->sku)
+                                                                    ->where('warehouse_id', $userWarehouseId ?? 0)
+                                                                    ->first();
+                                                                if ($warehouseStock) {
+                                                                    $warehouseName = $warehouseStock->warehouse->name ?? 'N/A';
+                                                                }
+                                                            }
                                                         }
                                                     } else {
                                                         if ($order->warehouseStock) {
@@ -208,7 +219,20 @@
                                                                 </div>
                                                             @endforeach
                                                         @else
-                                                            <span class="text-muted">N/A</span>
+                                                            {{-- Fallback: Check warehouse stock for this SKU in user's warehouse --}}
+                                                            @php
+                                                                $warehouseStock = \App\Models\WarehouseStock::where('sku', $order->sku)
+                                                                    ->where('warehouse_id', $userWarehouseId ?? 0)
+                                                                    ->where('block_quantity', '>', 0)
+                                                                    ->first();
+                                                            @endphp
+                                                            @if($warehouseStock && $order->tempOrder)
+                                                                <div class="mb-1">
+                                                                    <strong>{{ $warehouseStock->warehouse->name ?? 'N/A' }}</strong>: {{ $order->tempOrder->block ?? 0 }}
+                                                                </div>
+                                                            @else
+                                                                <span class="text-muted">N/A</span>
+                                                            @endif
                                                         @endif
                                                     @endif
                                                 @else
@@ -224,7 +248,20 @@
                                                                 <strong>Total Blocked</strong>: {{ $order->tempOrder->block }}
                                                             </div>
                                                         @else
-                                                            <span class="text-muted">N/A</span>
+                                                            {{-- Warehouse user: Check warehouse stock for this SKU --}}
+                                                            @php
+                                                                $warehouseStock = \App\Models\WarehouseStock::where('sku', $order->sku)
+                                                                    ->where('warehouse_id', $userWarehouseId ?? 0)
+                                                                    ->where('block_quantity', '>', 0)
+                                                                    ->first();
+                                                            @endphp
+                                                            @if($warehouseStock && $order->tempOrder)
+                                                                <div>
+                                                                    <strong>{{ $warehouseStock->warehouse->name ?? 'N/A' }}</strong>: {{ $order->tempOrder->block ?? 0 }}
+                                                                </div>
+                                                            @else
+                                                                <span class="text-muted">N/A</span>
+                                                            @endif
                                                         @endif
                                                     @else
                                                         <span class="text-muted">N/A</span>
@@ -265,8 +302,8 @@
                                                         }
                                                     }
 
-                                                    // Fallback: If still 0 and admin, use tempOrder->block
-                                                    if ($totalDispatchQty == 0 && ($isAdmin ?? false) && isset($order->tempOrder->block)) {
+                                                    // Fallback: If still 0, use tempOrder->block (order-specific blocked quantity)
+                                                    if ($totalDispatchQty == 0 && isset($order->tempOrder->block)) {
                                                         $totalDispatchQty = $order->tempOrder->block;
                                                     }
                                                 @endphp

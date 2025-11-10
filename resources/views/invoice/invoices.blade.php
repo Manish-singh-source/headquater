@@ -47,6 +47,7 @@
                                         <th>Invoice&nbsp;No</th>
                                         <th>PO&nbsp;No</th>
                                         <th>Customer&nbsp;Name</th>
+                                        <th>Warehouse</th>
                                         <th>Due&nbsp;Date</th>
                                         <th>Amount</th>
                                         <th>Paid&nbsp;Amount</th>
@@ -62,6 +63,7 @@
                                             <td>{{ $invoice->invoice_number }}</td>
                                             <td>{{ $invoice->po_number ?? 'N/A' }}</td>
                                             <td>{{ $invoice->customer->client_name ?? 'N/A' }}</td>
+                                            <td>{{ $invoice->warehouse->name ?? 'All Warehouses' }}</td>
                                             <td>{{ $invoice->appointment?->appointment_date ?? 'N/A' }}</td>
                                             <td>₹{{ number_format($invoice->total_amount, 2) }}</td>
                                             <td>₹{{ number_format($invoice->payments->sum('amount'), 2) }}</td>
@@ -117,7 +119,7 @@
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="10" class="text-center text-muted py-4">No invoices found for
+                                            <td colspan="11" class="text-center text-muted py-4">No invoices found for
                                                 this sales order</td>
                                         </tr>
                                     @endforelse

@@ -23,10 +23,22 @@ class InvoiceController extends Controller
 {
     public function index()
     {
+        $user = Auth::user();
+        $isSuperAdmin = $user->hasRole('Super Admin');
+        $isAdmin = $user->hasRole(['Super Admin', 'Admin']) || !$user->warehouse_id;
+        $userWarehouseId = $user->warehouse_id;
+
         // Fetch all invoices with relationships
-        $invoices = Invoice::with(['warehouse', 'customer', 'salesOrder.customerGroup', 'appointment', 'dns', 'payments'])
-            ->orderBy('created_at', 'desc')
-            ->get();
+        $query = Invoice::with(['warehouse', 'customer', 'salesOrder.customerGroup', 'appointment', 'dns', 'payments'])
+            ->orderBy('created_at', 'desc');
+
+        // Filter invoices based on user role
+        if (!$isSuperAdmin && !$isAdmin && $userWarehouseId) {
+            // Warehouse users can only see invoices for their warehouse
+            $query->where('warehouse_id', $userWarehouseId);
+        }
+
+        $invoices = $query->get();
 
         // Separate manual and sales order invoices
         $manualInvoices = $invoices->where('invoice_type', 'manual');
@@ -38,10 +50,24 @@ class InvoiceController extends Controller
 
     public function view($id)
     {
+        $user = Auth::user();
+        $isSuperAdmin = $user->hasRole('Super Admin');
+        $isAdmin = $user->hasRole(['Super Admin', 'Admin']) || !$user->warehouse_id;
+        $userWarehouseId = $user->warehouse_id;
+
+        // Fetch invoices for this sales order
+        $query = Invoice::with(['warehouse', 'customer', 'salesOrder', 'appointment', 'dns', 'payments'])
+            ->where('sales_order_id', $id);
+
+        // Filter invoices based on user role
+        if (!$isSuperAdmin && !$isAdmin && $userWarehouseId) {
+            // Warehouse users can only see invoices for their warehouse
+            $query->where('warehouse_id', $userWarehouseId);
+        }
 
         $data = [
             'title' => 'Invoices',
-            'invoices' => Invoice::with(['warehouse', 'customer', 'salesOrder', 'appointment', 'dns', 'payments'])->where('sales_order_id', $id)->get(),
+            'invoices' => $query->get(),
         ];
 
         // dd($data);
