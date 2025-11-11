@@ -86,8 +86,8 @@ class InvoiceController extends Controller
 
         // Check if it's a sales order invoice or manual invoice
         if ($invoice->sales_order_id) {
-            // Sales Order Invoice
-            $salesOrderProducts = SalesOrderProduct::with('product', 'tempOrder')
+            // Sales Order Invoice - get ALL products for this sales order and customer
+            $salesOrderProducts = SalesOrderProduct::with('product', 'tempOrder', 'warehouseAllocations.warehouse')
                 ->where('sales_order_id', $invoice->sales_order_id)
                 ->where('customer_id', $invoice->customer_id)
                 ->get();

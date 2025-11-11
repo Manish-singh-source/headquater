@@ -211,7 +211,30 @@
                                                     <td>{{ $order->tempOrder->po_qty }}</td>
 
                                                     {{-- Warehouse Name --}}
-                                                    <td>{{ $displayProduct['warehouse_name'] ?? 'N/A' }}</td>
+                                                    <td>
+                                                        @php
+                                                            $warehouseName = $displayProduct['warehouse_name'] ?? 'N/A';
+
+                                                            // If no allocations, check warehouse stock for blocked quantity
+                                                            if ($warehouseName === 'N/A' || $warehouseName === 'All') {
+                                                                $warehouseStock = \App\Models\WarehouseStock::where('sku', $order->sku)
+                                                                    ->where('block_quantity', '>', 0)
+                                                                    ->first();
+
+                                                                if ($warehouseStock) {
+                                                                    if ($isAdmin ?? false) {
+                                                                        $warehouseName = $warehouseStock->warehouse->name ?? 'N/A';
+                                                                    } else {
+                                                                        // Warehouse user: Only show if it's their warehouse
+                                                                        if ($warehouseStock->warehouse_id == ($userWarehouseId ?? 0)) {
+                                                                            $warehouseName = $warehouseStock->warehouse->name ?? 'N/A';
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        @endphp
+                                                        {{ $warehouseName }}
+                                                    </td>
 
                                                     {{-- Warehouse Allocation --}}
                                                     <td>
@@ -233,10 +256,29 @@
                                                                 @endif
                                                             @endif
                                                         @else
-                                                            @if(isset($displayProduct['allocated_quantity']) && $displayProduct['allocated_quantity'] !== null)
-                                                                {{ $displayProduct['warehouse_name'] }}: {{ $displayProduct['allocated_quantity'] }}
+                                                            {{-- Check warehouse stock for blocked quantity --}}
+                                                            @php
+                                                                $warehouseStock = \App\Models\WarehouseStock::where('sku', $order->sku)
+                                                                    ->where('block_quantity', '>', 0)
+                                                                    ->first();
+                                                            @endphp
+                                                            @if($warehouseStock)
+                                                                @if($isAdmin ?? false)
+                                                                    {{ $warehouseStock->warehouse->name ?? 'N/A' }}: {{ $warehouseStock->block_quantity }}
+                                                                @else
+                                                                    {{-- Warehouse user: Only show if it's their warehouse --}}
+                                                                    @if($warehouseStock->warehouse_id == ($userWarehouseId ?? 0))
+                                                                        {{ $warehouseStock->warehouse->name ?? 'N/A' }}: {{ $warehouseStock->block_quantity }}
+                                                                    @else
+                                                                        N/A
+                                                                    @endif
+                                                                @endif
                                                             @else
-                                                                {{ $order->tempOrder->block ?? 0 }}
+                                                                @if(isset($displayProduct['allocated_quantity']) && $displayProduct['allocated_quantity'] !== null)
+                                                                    {{ $displayProduct['warehouse_name'] }}: {{ $displayProduct['allocated_quantity'] }}
+                                                                @else
+                                                                    {{ $order->tempOrder->block ?? 0 }}
+                                                                @endif
                                                             @endif
                                                         @endif
                                                     </td>

@@ -170,7 +170,7 @@ class ReadyToShip extends Controller
 
             // Filter products based on user role and warehouse
             // Skip warehouse filtering for 'ready_to_ship' orders as they are already packaged
-            if (!$isAdmin && $userWarehouseId && $salesOrder->status !== 'ready_to_ship') {
+            if (!$isAdmin && $userWarehouseId) {
                 // For warehouse users: Filter products to show only their warehouse's products
                 $filteredProducts = $salesOrder->orderedProducts->filter(function ($product) use ($userWarehouseId, $salesOrder) {
                     // Check if product has warehouse allocations (auto-allocation)
@@ -178,6 +178,15 @@ class ReadyToShip extends Controller
                         // Check if any allocation is from user's warehouse
                         return $product->warehouseAllocations->contains('warehouse_id', $userWarehouseId);
                     } else {
+                        // Check warehouse stock for blocked quantity
+                        $warehouseStock = \App\Models\WarehouseStock::where('sku', $product->sku)
+                            ->where('warehouse_id', $userWarehouseId)
+                            ->where('block_quantity', '>', 0)
+                            ->first();
+                        if ($warehouseStock) {
+                            return true;
+                        }
+
                         // Single warehouse allocation: Check warehouse_stock_id
                         if ($product->warehouseStock) {
                             return $product->warehouseStock->warehouse_id == $userWarehouseId;

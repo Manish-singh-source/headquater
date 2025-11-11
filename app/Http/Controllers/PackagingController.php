@@ -230,6 +230,15 @@ class PackagingController extends Controller
                 if ($product->warehouseAllocations && $product->warehouseAllocations->count() > 0) {
                     return $product->warehouseAllocations->contains('warehouse_id', $userWarehouseId);
                 } else {
+                    // Check warehouse stock for blocked quantity
+                    $warehouseStock = \App\Models\WarehouseStock::where('sku', $product->sku)
+                        ->where('warehouse_id', $userWarehouseId)
+                        ->where('block_quantity', '>', 0)
+                        ->first();
+                    if ($warehouseStock) {
+                        return true;
+                    }
+
                     if ($product->warehouseStock) {
                         return $product->warehouseStock->warehouse_id == $userWarehouseId;
                     }
@@ -293,20 +302,29 @@ class PackagingController extends Controller
                     $warehouseName = $order->warehouseStock->warehouse->name ?? 'N/A';
                     $warehouseAllocation = ($order->warehouseStock->warehouse->name ?? 'N/A') . ': ' . ($order->tempOrder->block ?? 0);
                 } elseif ($order->tempOrder && $order->tempOrder->block > 0) {
-                    if ($isAdmin) {
-                        // Admin: Show block quantity without warehouse name
-                        $warehouseName = 'All';
-                        $warehouseAllocation = 'Total Blocked: ' . $order->tempOrder->block;
-                    } else {
-                        // Warehouse user: Check warehouse stock for this SKU
-                        $warehouseStock = \App\Models\WarehouseStock::where('sku', $order->sku)
-                            ->where('warehouse_id', $userWarehouseId)
-                            ->where('block_quantity', '>', 0)
-                            ->first();
+                    // Check warehouse stock for blocked quantity
+                    $warehouseStock = \App\Models\WarehouseStock::where('sku', $order->sku)
+                        ->where('block_quantity', '>', 0)
+                        ->first();
 
-                        if ($warehouseStock && $order->tempOrder) {
+                    if ($warehouseStock) {
+                        if ($isAdmin) {
                             $warehouseName = $warehouseStock->warehouse->name ?? 'N/A';
-                            $warehouseAllocation = ($warehouseStock->warehouse->name ?? 'N/A') . ': ' . ($order->tempOrder->block ?? 0);
+                            $warehouseAllocation = ($warehouseStock->warehouse->name ?? 'N/A') . ': ' . $order->tempOrder->block;
+                        } else {
+                            // Warehouse user: Only show if it's their warehouse
+                            if ($warehouseStock->warehouse_id == $userWarehouseId) {
+                                $warehouseName = $warehouseStock->warehouse->name ?? 'N/A';
+                                $warehouseAllocation = ($warehouseStock->warehouse->name ?? 'N/A') . ': ' . ($order->tempOrder->block ?? 0);
+                            } else {
+                                $warehouseName = 'N/A';
+                                $warehouseAllocation = 'N/A';
+                            }
+                        }
+                    } else {
+                        if ($isAdmin) {
+                            $warehouseName = 'All';
+                            $warehouseAllocation = 'Total Blocked: ' . $order->tempOrder->block;
                         } else {
                             $warehouseName = 'N/A';
                             $warehouseAllocation = 'N/A';
