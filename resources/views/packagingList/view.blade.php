@@ -19,7 +19,7 @@
                 </div>
             </div>
 
-            {{-- Debug Info - Only show in debug mode --}}
+            {{-- Debug Info - Only show in debug mode
             @if(config('app.debug'))
             <div class="alert alert-info alert-dismissible fade show" role="alert">
                 <strong>Debug Info:</strong><br>
@@ -28,7 +28,7 @@
                 Total Products: {{ $salesOrder->orderedProducts->count() }}<br>
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
-            @endif
+            @endif --}}
             <div class="card">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center my-2">
@@ -104,7 +104,6 @@
                             <table id="customerPOTableList" class="table align-middle">
                                 <thead class="table-light">
                                     <tr>
-                                        <th>Warehouse&nbsp;Name</th>
                                         <th>Customer&nbsp;Name</th>
                                         {{-- <th>PO&nbsp;Number</th> --}}
                                         <th>SKU&nbsp;Code</th>
@@ -138,7 +137,6 @@
                                             $order = $displayProduct['order'];
                                         @endphp
                                         <tr>
-                                            <td>{{ $displayProduct['warehouse_name'] ?? 'N/A' }}</td>
                                             <td>{{ $order->customer->contact_name }}</td>
                                             {{-- <td>{{ $order->tempOrder->po_number }}</td> --}}
                                             <td>{{ $order->tempOrder->sku }}</td>
@@ -180,7 +178,21 @@
                                                             }
                                                         }
                                                     } else {
-                                                        if ($order->warehouseStock) {
+                                                        // No allocations found - check warehouse stock for blocked quantity
+                                                        $warehouseStock = \App\Models\WarehouseStock::where('sku', $order->sku)
+                                                            ->where('block_quantity', '>', 0)
+                                                            ->first();
+
+                                                        if ($warehouseStock) {
+                                                            if ($isAdmin ?? false) {
+                                                                $warehouseName = $warehouseStock->warehouse->name ?? 'N/A';
+                                                            } else {
+                                                                // Warehouse user: Only show if it's their warehouse
+                                                                if ($warehouseStock->warehouse_id == ($userWarehouseId ?? 0)) {
+                                                                    $warehouseName = $warehouseStock->warehouse->name ?? 'N/A';
+                                                                }
+                                                            }
+                                                        } elseif ($order->warehouseStock) {
                                                             $warehouseName = $order->warehouseStock->warehouse->name ?? 'N/A';
                                                         } elseif ($order->tempOrder && $order->tempOrder->block > 0 && ($isAdmin ?? false)) {
                                                             $warehouseName = 'All';
@@ -242,22 +254,43 @@
                                                             <strong>{{ $order->warehouseStock->warehouse->name ?? 'N/A' }}</strong>: {{ $order->tempOrder->block ?? 0 }}
                                                         </div>
                                                     @elseif($order->tempOrder && $order->tempOrder->block > 0)
-                                                        {{-- Fallback: Show block quantity without warehouse name if admin --}}
-                                                        @if($isAdmin ?? false)
-                                                            <div>
-                                                                <strong>Total Blocked</strong>: {{ $order->tempOrder->block }}
-                                                            </div>
-                                                        @else
-                                                            {{-- Warehouse user: Check warehouse stock for this SKU --}}
-                                                            @php
-                                                                $warehouseStock = \App\Models\WarehouseStock::where('sku', $order->sku)
-                                                                    ->where('warehouse_id', $userWarehouseId ?? 0)
+                                                        {{-- Fallback: Try to find warehouse from warehouse stock --}}
+                                                        @php
+                                                            $fallbackWarehouseName = 'N/A';
+                                                            $fallbackQuantity = $order->tempOrder->block ?? 0;
+
+                                                            // First, try to get from warehouse stock for this SKU
+                                                            $warehouseStock = \App\Models\WarehouseStock::where('sku', $order->sku)
+                                                                ->where('block_quantity', '>', 0)
+                                                                ->first();
+
+                                                            if ($warehouseStock) {
+                                                                $fallbackWarehouseName = $warehouseStock->warehouse->name ?? 'N/A';
+                                                            } elseif ($isAdmin ?? false) {
+                                                                // For admin, if no warehouse stock found but we have blocked quantity,
+                                                                // it might be from auto-allocation that didn't create allocations yet
+                                                                $fallbackWarehouseName = 'Multiple Warehouses';
+                                                            } elseif ($userWarehouseId) {
+                                                                // For warehouse user, check their specific warehouse
+                                                                $userWarehouseStock = \App\Models\WarehouseStock::where('sku', $order->sku)
+                                                                    ->where('warehouse_id', $userWarehouseId)
                                                                     ->where('block_quantity', '>', 0)
                                                                     ->first();
-                                                            @endphp
-                                                            @if($warehouseStock && $order->tempOrder)
+                                                                if ($userWarehouseStock) {
+                                                                    $fallbackWarehouseName = $userWarehouseStock->warehouse->name ?? 'N/A';
+                                                                }
+                                                            }
+                                                        @endphp
+
+                                                        @if($isAdmin ?? false)
+                                                            <div>
+                                                                <strong>{{ $fallbackWarehouseName }}</strong>: {{ $fallbackQuantity }}
+                                                            </div>
+                                                        @else
+                                                            {{-- Warehouse user: Show only if it's their warehouse --}}
+                                                            @if($fallbackWarehouseName !== 'N/A' && $fallbackWarehouseName !== 'Multiple Warehouses')
                                                                 <div>
-                                                                    <strong>{{ $warehouseStock->warehouse->name ?? 'N/A' }}</strong>: {{ $order->tempOrder->block ?? 0 }}
+                                                                    <strong>{{ $fallbackWarehouseName }}</strong>: {{ $fallbackQuantity }}
                                                                 </div>
                                                             @else
                                                                 <span class="text-muted">N/A</span>
@@ -363,7 +396,7 @@
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="24" class="text-center">No records found. Please update or upload
+                                            <td colspan="23" class="text-center">No records found. Please update or upload
                                                 a PO to see data.</td>
                                         </tr>
                                     @endforelse

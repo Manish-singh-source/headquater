@@ -95,7 +95,7 @@
                                 <div class="row">
                                     <div class="col-12">
                                         <button type="submit" class="btn btn-primary">
-                                            <i class="bi bi-check-circle me-2"></i>Create Group
+                                            <i class="bi bi-check-circle me-2"></i>Submit
                                         </button>
                                         <a href="{{ route('customer.groups.index') }}" class="btn btn-secondary">
                                             <i class="bi bi-x-circle me-2"></i>Cancel
