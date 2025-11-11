@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Models\PurchaseOrder;
 use App\Models\SalesOrder;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
@@ -36,9 +37,18 @@ class AppServiceProvider extends ServiceProvider
             $readyToShipCount = SalesOrder::where('status', 'ready_to_ship')->count();
 
             // Count pending purchase orders with pending vendor PIs
+            // Filter by warehouse if user is assigned to a specific warehouse
+            $user = Auth::user();
+            $userWarehouseId = $user ? $user->warehouse_id : null;
+
             $receivedProductsCount = PurchaseOrder::where('status', 'pending')
-                ->whereHas('vendorPI', function ($query) {
+                ->whereHas('vendorPI', function ($query) use ($userWarehouseId) {
                     $query->where('status', 'pending');
+
+                    // Filter by warehouse if user is assigned to a specific warehouse
+                    if ($userWarehouseId) {
+                        $query->where('warehouse_id', $userWarehouseId);
+                    }
                 })
                 ->count();
 
