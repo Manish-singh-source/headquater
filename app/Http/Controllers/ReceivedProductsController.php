@@ -444,21 +444,30 @@ class ReceivedProductsController extends Controller
                 return redirect()->back()->withErrors(['pi_excel' => 'No valid data found in the file.']);
             }
 
+            // Update VendorPI status to 'completed' to indicate products have been received
+            $oldStatus = $vendorPI->status;
+            $vendorPI->status = 'completed';
+            $vendorPI->save();
+
             DB::commit();
 
             // Log activity
             activity()
                 ->performedOn($vendorPI)
                 ->causedBy(Auth::user())
-                ->withProperties(['records_processed' => $insertCount])
+                ->withProperties([
+                    'records_processed' => $insertCount,
+                    'old_status' => $oldStatus,
+                    'new_status' => 'completed',
+                ])
                 ->event('products_received')
-                ->log('Received products updated: ' . $insertCount . ' records');
+                ->log('Received products updated: ' . $insertCount . ' records, status changed to completed');
 
             // Create notification
             NotificationService::productsReceived('purchase', $vendorPI->purchase_order_id, $insertCount);
 
             return redirect()->back()
-                ->with('success', 'Successfully processed ' . $insertCount . ' product(s).');
+                ->with('success', 'Successfully processed ' . $insertCount . ' product(s). Status updated to Completed.');
         } catch (\Exception $e) {
             DB::rollBack();
 

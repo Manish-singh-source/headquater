@@ -518,19 +518,17 @@
                         Generate Invoice
                     </a>
                 </div> --}}
-                @if(!($isAdmin ?? false))
-                    <div class="text-end">
-                        <form action="{{ route('change.packaging.status.ready.to.ship') }}" method="POST"
-                            onsubmit="return confirm('Are you sure you want to mark products as Ready to Ship?')">
-                            @csrf
-                            @method('PUT')
-                            <input type="hidden" name="order_id" value="{{ $salesOrder->id }}">
-                            <button class="btn btn-success w-sm waves ripple-light" type="submit">
-                                <i class="bx bx-package"></i> Ready to Ship
-                            </button>
-                        </form>
-                    </div>
-                @endif
+                <div class="text-end">
+                    <form action="{{ route('change.packaging.status.ready.to.ship') }}" method="POST"
+                        onsubmit="return confirm('Are you sure you want to mark products as Ready to Ship?')">
+                        @csrf
+                        @method('PUT')
+                        <input type="hidden" name="order_id" value="{{ $salesOrder->id }}">
+                        <button class="btn btn-success w-sm waves ripple-light" type="submit">
+                            <i class="bx bx-package"></i> Ready to Ship
+                        </button>
+                    </form>
+                </div>
             </div>
         </div>
     </main>

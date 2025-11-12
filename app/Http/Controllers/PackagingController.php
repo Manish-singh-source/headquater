@@ -26,9 +26,13 @@ class PackagingController extends Controller
      */
     public function index()
     {
+        // Show all orders in packaging workflow to maintain history
+        // ready_to_package: Initial state when order is ready for packaging
+        // Note: Individual products may have different statuses (packaging, packaged, ready_to_ship)
         $orders = SalesOrder::with('customerGroup')
-            ->where('status', 'ready_to_package')
-            ->get();
+            ->whereIn('status', ['ready_to_package', 'ready_to_ship'])
+            ->latest()
+            ->paginate(15);
 
         return view('packagingList.index', compact('orders'));
     }
