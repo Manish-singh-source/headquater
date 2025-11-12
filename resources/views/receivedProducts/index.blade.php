@@ -3,17 +3,12 @@
     @php
         $statuses = [
             'pending' => 'Pending',
-            'approve' => 'Sent For Approval',
-            'reject' => 'Rejected',
+            'approved' => 'Approved',
+            'blocked' => 'Blocked',
             'completed' => 'Completed',
-        ];
-
-        $statusBadges = [
-            'pending' => 'bg-warning',
-            'approve' => 'bg-info',
-            'approved' => 'bg-info',
-            'completed' => 'bg-success',
-            'blocked' => 'bg-danger',
+            'ready_to_ship' => 'Ready To Ship',
+            'ready_to_package' => 'Ready To Package',
+            'shipped' => 'Shipped',
         ];
     @endphp
 
@@ -35,38 +30,27 @@
             <div class="card mt-4">
                 <div class="card-body">
 
-                    <ul class="nav nav-pills mb-3" role="tablist">
+                    {{-- 
+                    <ul class="nav nav-tabs mb-3" role="tablist">
                         <li class="nav-item" role="presentation">
-                            <a class="nav-link {{ $status === 'all' ? 'active' : '' }}"
-                                href="{{ route('received-products.index', ['status' => 'all']) }}">
-                                All Orders
-                            </a>
+                            <button class="nav-link active status-filter-tab" id="all-tab" data-bs-toggle="tab"
+                                data-order="all" data-bs-target="#all" type="button" role="tab" aria-controls="all"
+                                aria-selected="true">All</button>
                         </li>
+
                         <li class="nav-item" role="presentation">
-                            <a class="nav-link {{ $status === 'pending' ? 'active' : '' }}"
-                                href="{{ route('received-products.index', ['status' => 'pending']) }}">
-                                Pending
-                            </a>
+                            <button class="nav-link status-filter-tab" id="active-tab" data-bs-toggle="tab"
+                                data-order="Completed" data-bs-target="#active" type="button" role="tab"
+                                aria-controls="active" aria-selected="false">Completed</button>
                         </li>
+
                         <li class="nav-item" role="presentation">
-                            <a class="nav-link {{ $status === 'completed' ? 'active' : '' }}"
-                                href="{{ route('received-products.index', ['status' => 'completed']) }}">
-                                Completed
-                            </a>
+                            <button class="nav-link status-filter-tab" id="inactive-tab" data-bs-toggle="tab"
+                                data-order="Pending" data-bs-target="#inactive" type="button" role="tab"
+                                aria-controls="inactive" aria-selected="false">Pending</button>
                         </li>
-                        <li class="nav-item" role="presentation">
-                            <a class="nav-link {{ $status === 'approve' ? 'active' : '' }}"
-                                href="{{ route('received-products.index', ['status' => 'approve']) }}">
-                                Sent For Approval
-                            </a>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <a class="nav-link {{ $status === 'reject' ? 'active' : '' }}"
-                                href="{{ route('received-products.index', ['status' => 'reject']) }}">
-                                Rejected
-                            </a>
-                        </li>
-                    </ul>
+                    </ul> 
+                    --}}
 
                     <div class="customer-table">
                         <div class="table-responsive white-space-nowrap">
@@ -79,7 +63,7 @@
                                         {{-- <th>Sales Order Id</th> --}}
                                         <th>Purchase Order Id</th>
                                         <th>Vendor Code</th>
-                                        <th>PI Status</th>
+                                        <th>Order Status</th>
                                         <th>Total Product</th>
                                         <th>Ordered Date</th>
                                         <th>Action</th>
@@ -87,11 +71,6 @@
                                 </thead>
                                 <tbody>
                                     @forelse($purchaseOrders as $order)
-                                        @php
-                                            $vendorPI = $order->vendorPI->first();
-                                            $piStatus = $vendorPI ? $vendorPI->status : 'N/A';
-                                            $badgeClass = $statusBadges[$piStatus] ?? 'bg-secondary';
-                                        @endphp
                                         <tr>
                                             <td>
                                                 <input class="form-check-input row-checkbox" type="checkbox" name="ids[]"
@@ -105,7 +84,7 @@
                                                 </p>
                                             </td>
                                             <td>
-                                                {{ $statuses[$order->vendorPI[0]->status] ?? 'On Hold' }}
+                                                {{ $statuses[$order->status] ?? 'On Hold' }}
                                             </td>
                                             <td>{{ $order->purchase_order_products_count ?? 0 }}</td>
                                             <td>{{ $order->created_at->format('d-M-Y') }}</td>
@@ -205,7 +184,7 @@
 
             $('.status-filter-tab').on('click', function() {
                 var selected = $(this).data('order').trim();
-                console.log(selected);
+                console.log(selected); 
 
                 if (selected === 'all') {
                     selected = '';

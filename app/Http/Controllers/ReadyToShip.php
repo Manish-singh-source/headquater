@@ -33,8 +33,7 @@ class ReadyToShip extends Controller
             $isAdmin = $user->hasRole(['Super Admin', 'Admin']) || !$user->warehouse_id;
             $userWarehouseId = $user->warehouse_id;
 
-            // Show all orders in ready_to_ship and shipped states to maintain history
-            $query = SalesOrder::whereIn('status', ['ready_to_ship', 'shipped'])
+            $query = SalesOrder::where('status', 'ready_to_ship')
                 ->with('customerGroup');
 
             // For warehouse users, only show orders that have products allocated to their warehouse
@@ -92,12 +91,12 @@ class ReadyToShip extends Controller
             }
 
             $order = SalesOrder::with('orderedProducts')
-                ->whereIn('status', ['ready_to_ship', 'shipped'])
+                ->where('status', 'ready_to_ship')
                 ->findOrFail($id);
 
             if (!$order) {
                 return redirect()->route('ready.to.ship.index')
-                    ->with('error', 'Order not found.');
+                    ->with('error', 'Order not found or not ready to ship.');
             }
 
             // Get unique customers for this order
@@ -159,7 +158,7 @@ class ReadyToShip extends Controller
                 'orderedProducts.warehouseStock.warehouse',
                 'orderedProducts.warehouseAllocations.warehouse',
             ])
-                ->whereIn('status', ['ready_to_ship', 'shipped'])
+                ->where('status', 'ready_to_ship')
                 ->with(['orderedProducts' => function ($q) use ($c_id) {
                     $q->where('customer_id', (int)$c_id);
                 }])
