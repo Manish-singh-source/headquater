@@ -1,23 +1,62 @@
 @extends('layouts.master')
 @section('main-content')
+    @php
+        $statuses = [
+            'pending' => 'Pending',
+            'approve' => 'Sent For Approval',
+            'reject' => 'Rejected',
+            'completed' => 'Completed',
+        ];
+    @endphp
+
     <!--start main wrapper-->
     <main class="main-wrapper">
         <div class="main-content">
             <!--breadcrumb-->
-            <div class="page-breadcrumb d-none d-sm-flex align-items-center mb-3">
-                <div class="">
+            <div class="page-breadcrumb d-none d-sm-flex align-items-center justify-content-between mb-3">
+                <div>
                     <nav aria-label="breadcrumb">
                         <ol class="breadcrumb mb-0 p-0">
-                            <li class="breadcrumb-item"><a href="javascript:;"><i class="bx bx-home-alt"></i></a>
+                            <li class="breadcrumb-item"><a href="{{ route('index') }}"><i class="bx bx-home-alt"></i></a>
                             </li>
-                            <li class="breadcrumb-item active" aria-current="page">Packaging List</li>
+                            <li class="breadcrumb-item active" aria-current="page">Packaging List:</li>
                         </ol>
                     </nav>
                 </div>
             </div>
+            @include('layouts.errors')
 
             <div class="card mt-4">
                 <div class="card-body">
+                    {{-- 
+                    <ul class="nav nav-pills mb-3" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <a class="nav-link {{ $overall_status === 'all' ? 'active' : '' }}"
+                                href="{{ route('packaging.list.index', ['status' => 'all']) }}">
+                                All Orders
+                            </a>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <a class="nav-link {{ $overall_status === 'packaging' ? 'active' : '' }}"
+                                href="{{ route('packaging.list.index', ['status' => 'packaging']) }}">
+                                Ready To Package
+                            </a>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <a class="nav-link {{ $overall_status === 'partial_packaged' ? 'active' : '' }}"
+                                href="{{ route('packaging.list.index', ['status' => 'partial_packaged']) }}">
+                                Partial Packaged
+                            </a>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <a class="nav-link {{ $overall_status === 'packaged' ? 'active' : '' }}"
+                                href="{{ route('packaging.list.index', ['status' => 'packaged']) }}">
+                                Fully Packaged
+                            </a>
+                        </li>
+                    </ul> 
+                    --}}
+
                     <div class="customer-table">
                         <div class="table-responsive white-space-nowrap">
                             <table id="example" class="table table-striped">
@@ -59,7 +98,7 @@
                                             </td>
                                             <td>{{ $order->created_at->format('d-M-Y') }}</td>
                                             <td>
-                                                {{ $statuses[$order->status] ?? 'On Hold' }}
+                                                {{ $statuses[$order->status] ?? 'N/A' }}
                                             </td>
                                             <td>
                                                 <a aria-label="anchor"

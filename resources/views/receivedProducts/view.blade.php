@@ -1,19 +1,31 @@
 @extends('layouts.master')
 @section('main-content')
+
+    @php
+        $statuses = [
+            'pending' => 'Pending',
+            'received' => 'Products Received',
+            'rejected' => 'Rejected',
+            'completed' => 'Completed',
+        ];
+    @endphp
+
     <!--start main wrapper-->
     <main class="main-wrapper">
         <div class="main-content">
-            <div class="page-breadcrumb d-none d-sm-flex align-items-center mb-3">
+            <div class="page-breadcrumb d-none d-sm-flex align-items-center justify-content-between mb-3">
                 <div>
                     <nav aria-label="breadcrumb">
                         <ol class="breadcrumb mb-0 p-0">
-                            <li class="breadcrumb-item"><a href="javascript:;"><i class="bx bx-home-alt"></i></a>
+                            <li class="breadcrumb-item"><a href="{{ route('index') }}"><i class="bx bx-home-alt"></i></a>
                             </li>
-                            <li class="breadcrumb-item active" aria-current="page"><b>Received Vendor Order:</b></li>
+                            <li class="breadcrumb-item active" aria-current="page">Received Vendor Order:</li>
                         </ol>
                     </nav>
                 </div>
             </div>
+
+            @include('layouts.errors')
 
             <div class="div my-2">
                 <div class="row">
@@ -36,6 +48,12 @@
                                 <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                                     <span><b>Vendor Contact Name</b></span>
                                     <span> <b id="vendor-name">{{ $vendorPIs->vendor->contact_name }}</b></span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
+                                    <span><b>Purchase Order Status</b></span>
+                                    <span class="badge bg-primary-subtle text-primary fw-bold">
+                                        {{ $statuses[$vendorPIs->purchaseOrder->status] }}
+                                    </span>
                                 </li>
                             </ul>
                         </div>
@@ -91,12 +109,33 @@
                                                                     </div>
 
                                                                     <div class="col-12 mb-3">
+                                                                        <label for="warehouse_id" class="form-label">Select
+                                                                            Warehouse <span class="text-danger">*</span></label>
+                                                                        <select name="warehouse_id" id="warehouse_id"
+                                                                            class="form-select @error('warehouse_id') is-invalid @enderror"
+                                                                            required>
+                                                                            <option value="">-- Select Warehouse --
+                                                                            </option>
+                                                                            @foreach ($warehouses as $warehouse)
+                                                                                <option value="{{ $warehouse->id }}"
+                                                                                    {{ old('warehouse_id') == $warehouse->id ? 'selected' : '' }}>
+                                                                                    {{ $warehouse->name }}
+                                                                                </option>
+                                                                            @endforeach
+                                                                        </select>
+                                                                        @error('warehouse_id')
+                                                                            <div class="invalid-feedback">{{ $message }}</div>
+                                                                        @enderror
+                                                                    </div>
+
+                                                                    <div class="col-12 mb-3">
                                                                         <label for="pi_excel" class="form-label">Updated Vendor
                                                                             PI
                                                                             (CSV/ELSX) <span
                                                                                 class="text-danger">*</span></label>
                                                                         <input type="file" name="pi_excel" id="pi_excel"
-                                                                            class="form-control @error('pi_excel') is-invalid @enderror" value="" required="">
+                                                                            class="form-control @error('pi_excel') is-invalid @enderror"
+                                                                            value="" required="">
                                                                         @error('pi_excel')
                                                                             <div class="invalid-feedback">{{ $message }}</div>
                                                                         @enderror
@@ -175,12 +214,13 @@
                                         </div>
                                     </div>
                                 </div>
-                                @if ($vendorPIs->purchaseOrder->status != 'completed')
+                                @if ($vendorPIs->status != 'completed')
                                     @if ($vendorPIs->products[0]->quantity_received > 0)
                                         <div class="col-lg-12">
                                             <div class="row justify-content-between mb-3">
-                                                <form class="col-12 text-end" action="{{ route('received.products.status') }}"
-                                                    method="POST" onsubmit="return confirm('Are you sure?')">
+                                                <form class="col-12 text-end"
+                                                    action="{{ route('received.products.status') }}" method="POST"
+                                                    onsubmit="return confirm('Are you sure?')">
                                                     @csrf
                                                     @method('POST')
                                                     <input type="hidden" name="vendor_pi_id" value="{{ $vendorPIs->id }}">

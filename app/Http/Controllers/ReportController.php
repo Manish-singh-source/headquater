@@ -33,49 +33,60 @@ class ReportController extends Controller
     public function vendorPurchaseHistory(Request $request)
     {
         try {
-            // Build the base query with relationships
-            $query = VendorPI::with('products', 'payments', 'purchaseInvoice', 'purchaseGrn', 'purchaseOrder')->where('status', 'completed');
+            // Build the base query from VendorPIProduct with all necessary relationships
+            $query = VendorPIProduct::with([
+                'order' => function ($q) {
+                    $q->with(['vendor', 'payments', 'purchaseInvoice', 'purchaseGrn', 'purchaseOrder', 'warehouse']);
+                },
+                'product'
+            ]);
 
-            // Apply date range filter if from_date is provided
-            if ($request->filled('from_date')) {
-                $query->whereDate('created_at', '>=', $request->from_date);
-            }
+            // Apply filters on the parent VendorPI relationship
+            $query->whereHas('order', function ($q) use ($request) {
+                // Filter only completed orders
+                $q->where('status', 'completed');
 
-            // Apply date range filter if to_date is provided
-            if ($request->filled('to_date')) {
-                $query->whereDate('created_at', '<=', $request->to_date);
-            }
+                // Apply date range filter if from_date is provided
+                if ($request->filled('from_date')) {
+                    $q->whereDate('created_at', '>=', $request->from_date);
+                }
 
-            // Apply vendor filter if vendor_code is provided
-            if ($request->filled('vendor_code')) {
-                $query->where('vendor_code', $request->vendor_code);
-            }
+                // Apply date range filter if to_date is provided
+                if ($request->filled('to_date')) {
+                    $q->whereDate('created_at', '<=', $request->to_date);
+                }
+
+                // Apply vendor filter if vendor_code is provided
+                if ($request->filled('vendor_code')) {
+                    $q->where('vendor_code', $request->vendor_code);
+                }
+            });
 
             // Clone query for statistics calculation before pagination
             $statsQuery = clone $query;
 
-            // Get paginated purchase orders (15 per page)
-            $purchaseOrders = $query->latest()->paginate(15)->appends($request->all());
+            // Get paginated vendor PI products (15 per page)
+            $vendorPIProducts = $query->latest('id')->paginate(15)->appends($request->all());
 
             // Calculate statistics based on filtered results
-            // Get all vendor PI IDs from filtered results
-            $filteredVendorPIIds = $statsQuery->pluck('id');
+            $purchaseOrdersTotal = $statsQuery->sum('mrp');
+            $purchaseOrdersTotalQuantity = $statsQuery->sum('quantity_received');
 
-            // Calculate totals from filtered vendor PI products
-            $purchaseOrdersTotal = VendorPIProduct::whereIn('vendor_pi_id', $filteredVendorPIIds)->sum('mrp');
-            $purchaseOrdersTotalQuantity = VendorPIProduct::whereIn('vendor_pi_id', $filteredVendorPIIds)->sum('quantity_received');
+            // Count unique vendor PIs for total orders
+            $totalOrders = $statsQuery->distinct('vendor_pi_id')->count('vendor_pi_id');
 
             // Get unique vendors from all completed purchase orders for dropdown
             $purchaseOrdersVendors = VendorPI::where('status', 'completed')
                 ->distinct('vendor_code')
                 ->pluck('vendor_code');
 
-            // dd($purchaseOrders);    
+            // dd($vendorPIProducts);
 
             return view('vendor-purchase-history', compact(
-                'purchaseOrders',
+                'vendorPIProducts',
                 'purchaseOrdersTotal',
                 'purchaseOrdersTotalQuantity',
+                'totalOrders',
                 'purchaseOrdersVendors'
             ));
         } catch (\Exception $e) {
@@ -146,7 +157,7 @@ class ReportController extends Controller
             $file = fopen($tempCsvPath, 'w');
 
             // Add UTF-8 BOM for proper Excel encoding
-            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
+            fprintf($file, chr(0xEF) . chr(0xBB) . chr(0xBF));
 
             // Add header row
             fputcsv($file, [
@@ -193,7 +204,6 @@ class ReportController extends Controller
                     $record->invoice?->invoice_number ? 'Yes' : 'No',
                     isset($record->payments?->first()->payment_status) != null && $record->payments?->first()->payment_status == 'completed' ? 'paid' : 'not paid',
                 ]);
-                
             }
 
             fclose($file);
@@ -222,7 +232,6 @@ class ReportController extends Controller
                 'Content-Type' => 'text/csv',
                 'Content-Disposition' => 'attachment; filename="' . $fileName . '"',
             ])->deleteFileAfterSend(true);
-
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Error generating vendor purchase CSV report: ' . $e->getMessage());
@@ -317,7 +326,7 @@ class ReportController extends Controller
             $file = fopen($tempCsvPath, 'w');
 
             // Add UTF-8 BOM for proper Excel encoding
-            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
+            fprintf($file, chr(0xEF) . chr(0xBB) . chr(0xBF));
 
             // Add header row
             fputcsv($file, [
@@ -376,7 +385,6 @@ class ReportController extends Controller
                 'Content-Type' => 'text/csv',
                 'Content-Disposition' => 'attachment; filename="' . $fileName . '"',
             ])->deleteFileAfterSend(true);
-
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Error generating inventory CSV report: ' . $e->getMessage());
@@ -529,7 +537,7 @@ class ReportController extends Controller
             $file = fopen($tempCsvPath, 'w');
 
             // Add UTF-8 BOM for proper Excel encoding
-            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
+            fprintf($file, chr(0xEF) . chr(0xBB) . chr(0xBF));
 
             // Add header row
             fputcsv($file, [
@@ -593,7 +601,6 @@ class ReportController extends Controller
                 'Content-Type' => 'text/csv',
                 'Content-Disposition' => 'attachment; filename="' . $fileName . '"',
             ])->deleteFileAfterSend(true);
-
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Error generating customer sales CSV report: ' . $e->getMessage());
