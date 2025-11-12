@@ -3,12 +3,21 @@
     @php
         $statuses = [
             'pending' => 'Pending',
+            'approve' => 'Approved',
             'approved' => 'Approved',
             'blocked' => 'Blocked',
             'completed' => 'Completed',
             'ready_to_ship' => 'Ready To Ship',
             'ready_to_package' => 'Ready To Package',
             'shipped' => 'Shipped',
+        ];
+
+        $statusBadges = [
+            'pending' => 'bg-warning',
+            'approve' => 'bg-info',
+            'approved' => 'bg-info',
+            'completed' => 'bg-success',
+            'blocked' => 'bg-danger',
         ];
     @endphp
 
@@ -63,7 +72,7 @@
                                         {{-- <th>Sales Order Id</th> --}}
                                         <th>Purchase Order Id</th>
                                         <th>Vendor Code</th>
-                                        <th>Order Status</th>
+                                        <th>PI Status</th>
                                         <th>Total Product</th>
                                         <th>Ordered Date</th>
                                         <th>Action</th>
@@ -71,6 +80,11 @@
                                 </thead>
                                 <tbody>
                                     @forelse($purchaseOrders as $order)
+                                        @php
+                                            $vendorPI = $order->vendorPI->first();
+                                            $piStatus = $vendorPI ? $vendorPI->status : 'N/A';
+                                            $badgeClass = $statusBadges[$piStatus] ?? 'bg-secondary';
+                                        @endphp
                                         <tr>
                                             <td>
                                                 <input class="form-check-input row-checkbox" type="checkbox" name="ids[]"
@@ -84,7 +98,9 @@
                                                 </p>
                                             </td>
                                             <td>
-                                                {{ $statuses[$order->status] ?? 'On Hold' }}
+                                                <span class="badge {{ $badgeClass }}">
+                                                    {{ $statuses[$piStatus] ?? 'N/A' }}
+                                                </span>
                                             </td>
                                             <td>{{ $order->purchase_order_products_count ?? 0 }}</td>
                                             <td>{{ $order->created_at->format('d-M-Y') }}</td>
