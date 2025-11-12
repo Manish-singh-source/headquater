@@ -25,18 +25,32 @@ class ReceivedProductsController extends Controller
      *
      * @return \Illuminate\View\View
      */
-    public function index()
+    public function index(Request $request)
     {
         try {
             $user = Auth::user();
             $userWarehouseId = $user->warehouse_id;
+            $status = $request->get('status', 'all');
 
-            $query = PurchaseOrder::with(['purchaseOrderProducts', 'vendorPI'])
-                ->where('status', 'pending')
-                ->withCount('purchaseOrderProducts')
-                ->whereHas('vendorPI', function ($query) use ($userWarehouseId) {
-                    // Show all VendorPI records (pending, approve, completed) to maintain history
-                    $query->whereIn('status', ['pending', 'approve', 'completed']);
+            $query = PurchaseOrder::with(['purchaseOrderProducts', 'vendorPI']);
+
+            // if ($status === 'pending') {
+            //     $query->where('status', 'pending');
+            // } elseif ($status === 'completed') {
+            //     $query->where('status', 'completed');
+            // }
+
+            $query->withCount('purchaseOrderProducts')
+                ->whereHas('vendorPI', function ($query) use ($userWarehouseId, $status) {
+                    if ($status === 'pending') {
+                        $query->where('status', 'pending');
+                    } elseif ($status === 'completed') {
+                        $query->where('status', 'completed');
+                    }elseif ($status === 'approve') {
+                        $query->where('status', 'approve');
+                    }elseif ($status === 'reject') {
+                        $query->where('status', 'reject');
+                    }
 
                     // Filter by warehouse if user is assigned to a specific warehouse
                     if ($userWarehouseId) {
@@ -46,7 +60,7 @@ class ReceivedProductsController extends Controller
 
             $purchaseOrders = $query->latest()->paginate(15);
 
-            return view('receivedProducts.index', compact('purchaseOrders'));
+            return view('receivedProducts.index', compact('purchaseOrders', 'status'));
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Error retrieving purchase orders: ' . $e->getMessage());
         }
@@ -380,8 +394,7 @@ class ReceivedProductsController extends Controller
                             'return_description' => $issueDescription != '' ? $issueDescription : 'Extra products returned to vendor',
                             'return_status' => 'pending',
                         ]);
-                        $issueUnits = $extraQuantity; 
-                        
+                        $issueUnits = $extraQuantity;
                     } elseif ($productData->available_quantity > $quantityReceived) {
                         // Shortage - create issue entry
                         $shortageQuantity = $productData->available_quantity - $quantityReceived;
@@ -408,8 +421,8 @@ class ReceivedProductsController extends Controller
                     }
                 }
 
-                
-                
+
+
                 // Process issue items
                 if ($issueUnits > 0) {
                     $productData->issue_item = $issueUnits;
