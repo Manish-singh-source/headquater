@@ -82,12 +82,7 @@ class ReceivedProductsController extends Controller
                 return redirect()->back()->with('error', 'Vendor PI not found.');
             }
 
-            // Get only active warehouses (excluding 'All Warehouse')
-            $warehouses = \App\Models\Warehouse::where('status', '1')
-                ->orderBy('name')
-                ->get();
-
-            return view('receivedProducts.view', compact('vendorPIs', 'warehouses'));
+            return view('receivedProducts.view', compact('vendorPIs'));
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Error loading vendor PI: ' . $e->getMessage());
         }
@@ -316,7 +311,6 @@ class ReceivedProductsController extends Controller
         $validated = Validator::make($request->all(), [
             'pi_excel' => 'required|file|mimes:xlsx,csv,xls',
             'vendor_pi_id' => 'required|integer|exists:vendor_p_i_s,id',
-            'warehouse_id' => 'required|integer|exists:warehouses,id',
         ]);
 
         if ($validated->fails()) {
@@ -347,10 +341,6 @@ class ReceivedProductsController extends Controller
                 return redirect()->back()
                     ->with('error', 'This vendor PI has already been processed.');
             }
-
-            // Store warehouse_id in VendorPI for later use in approveRequest
-            $vendorPI->warehouse_id = $request->warehouse_id;
-            $vendorPI->save();
 
             foreach ($rows as $record) {
                 if (empty($record['Vendor SKU Code'] ?? null)) {

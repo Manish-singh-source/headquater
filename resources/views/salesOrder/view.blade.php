@@ -325,6 +325,7 @@
                                         <th>Block&nbsp;Quantity</th>
                                         <th>Qty&nbsp;Fullfilled</th>
                                         <th class="d-none">Status</th>
+                                        <th>Warehouse&nbsp;Allocation</th>
                                         <th>Invoice&nbsp;Status</th>
                                     </tr>
                                 </thead>
@@ -405,11 +406,63 @@
                                                 @endif
                                             </td>
                                             <td class="d-none">{{ ucfirst($order->status) }}</td>
+                                            <td>
+                                                @php
+                                                    // Check if product has warehouse allocations (auto-allocation)
+                                                    $hasAllocations = $order->warehouseAllocations && $order->warehouseAllocations->count() > 0;
+                                                @endphp
+
+                                                @if($hasAllocations)
+                                                    {{-- Auto-allocation: Show warehouse-wise breakdown --}}
+                                                    @if($order->warehouseAllocations->count() > 0)
+                                                        @foreach($order->warehouseAllocations->sortBy('sequence') as $allocation)
+                                                            <div class="mb-1">
+                                                                <strong>{{ $allocation->warehouse->name ?? 'N/A' }}</strong>: {{ $allocation->allocated_quantity }}
+                                                            </div>
+                                                        @endforeach
+                                                    @else
+                                                        <span class="text-muted">No allocations</span>
+                                                    @endif
+                                                @else
+                                                    {{-- Single warehouse allocation or legacy data --}}
+                                                    @if($order->warehouseStock)
+                                                        <div>
+                                                            <strong>{{ $order->warehouseStock->warehouse->name ?? 'N/A' }}</strong>: {{ $order->tempOrder->block ?? 0 }}
+                                                        </div>
+                                                    @elseif($order->tempOrder && $order->tempOrder->block > 0)
+                                                        {{-- Fallback: Try to find warehouse from warehouse stock --}}
+                                                        @php
+                                                            $fallbackWarehouseName = 'N/A';
+                                                            $fallbackQuantity = $order->tempOrder->block ?? 0;
+
+                                                            // First, try to get from warehouse stock for this SKU with block quantity
+                                                            $warehouseStock = \App\Models\WarehouseStock::where('sku', $order->sku)
+                                                                ->where('block_quantity', '>', 0)
+                                                                ->first();
+
+                                                            if ($warehouseStock) {
+                                                                $fallbackWarehouseName = $warehouseStock->warehouse->name ?? 'N/A';
+                                                            } else {
+                                                                // If no warehouse stock found, try to get from sales order warehouse
+                                                                if ($salesOrder->warehouse) {
+                                                                    $fallbackWarehouseName = $salesOrder->warehouse->name;
+                                                                }
+                                                            }
+                                                        @endphp
+
+                                                        <div>
+                                                            <strong>{{ $fallbackWarehouseName }}</strong>: {{ $fallbackQuantity }}
+                                                        </div>
+                                                    @else
+                                                        <span class="text-muted">N/A</span>
+                                                    @endif
+                                                @endif
+                                            </td>
                                             <td>{{ ucfirst($order->invoice_status) }}</td>
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="24" class="text-center">No Records Found</td>
+                                            <td colspan="25" class="text-center">No Records Found</td>
                                         </tr>
                                     @endforelse
                                 </tbody>
