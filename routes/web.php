@@ -244,6 +244,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/download-packing-products-excel', 'downloadPackagingProducts')->name('download.packing.products.excel');
         Route::post('/update-packaging-products', 'updatePackagingProducts')->name('update.packing.products');
         Route::put('/change-packaging-status-to-ready-to-ship', 'changeStatusToReadyToShip')->name('change.packaging.status.ready.to.ship');
+        Route::post('/approve-warehouse-allocation/{id}', 'approveWarehouseAllocation')->name('approve.warehouse.allocation');
+        Route::post('/reject-warehouse-allocation/{id}', 'rejectWarehouseAllocation')->name('reject.warehouse.allocation');
     });
 
     //

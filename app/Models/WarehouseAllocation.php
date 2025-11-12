@@ -14,6 +14,7 @@ class WarehouseAllocation extends Model
         'box_count' => 'integer',
         'weight' => 'integer',
         'sequence' => 'integer',
+        'approved_at' => 'datetime',
     ];
 
     /**
@@ -32,6 +33,11 @@ class WarehouseAllocation extends Model
     public function warehouse()
     {
         return $this->belongsTo(Warehouse::class, 'warehouse_id', 'id');
+    }
+
+    public function approvedBy()
+    {
+        return $this->belongsTo(User::class, 'approved_by', 'id');
     }
 
     public function product()
@@ -81,6 +87,21 @@ class WarehouseAllocation extends Model
     public function scopeByOrder($query, $orderId)
     {
         return $query->where('sales_order_id', $orderId);
+    }
+
+    public function scopePendingApproval($query)
+    {
+        return $query->where('approval_status', 'pending');
+    }
+
+    public function scopeApproved($query)
+    {
+        return $query->where('approval_status', 'approved');
+    }
+
+    public function scopeRejected($query)
+    {
+        return $query->where('approval_status', 'rejected');
     }
 
     /**
