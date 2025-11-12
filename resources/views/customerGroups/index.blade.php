@@ -40,33 +40,10 @@
                 </div>
             </div>
 
-            @if ($errors->any())
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    <ul class="mb-0">
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            @endif
+            @include('layouts.errors')
 
-            @if (session('success'))
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    {{ session('success') }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            @endif
-
-            @if (session('error'))
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    {{ session('error') }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            @endif
-
-            <!-- Status Filter Tabs -->
-            <div class="card">
+            <!-- Customer Groups Table -->
+            <div class="card mt-4">
                 <div class="card-body">
                     <ul class="nav nav-pills mb-3" role="tablist">
                         <li class="nav-item" role="presentation">
@@ -88,64 +65,7 @@
                             </a>
                         </li>
                     </ul>
-                </div>
-            </div>
 
-            <!-- Customer Groups Cards -->
-            {{-- 
-            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 row-cols-xl-4 g-3 mb-4">
-                @forelse ($customerGroups as $group)
-                    <div class="col">
-                        <div class="card h-100">
-                            <div class="card-body">
-                                <div class="d-flex align-items-center justify-content-between mb-3">
-                                    <h6 class="mb-0 fw-bold">{{ $group->name }}</h6>
-                                    <span class="badge {{ $group->status == '1' ? 'bg-success' : 'bg-secondary' }}">
-                                        {{ $group->status == '1' ? 'Active' : 'Inactive' }}
-                                    </span>
-                                </div>
-                                <div class="mb-3">
-                                    <div class="d-flex justify-content-between mb-2">
-                                        <span class="text-muted">Total Customers:</span>
-                                        <span class="fw-bold">{{ $group->total_customers ?? 0 }}</span>
-                                    </div>
-                                    <div class="d-flex justify-content-between mb-2">
-                                        <span class="text-muted">Active:</span>
-                                        <span class="text-success fw-bold">{{ $group->active_customers ?? 0 }}</span>
-                                    </div>
-                                    <div class="d-flex justify-content-between">
-                                        <span class="text-muted">Inactive:</span>
-                                        <span class="text-secondary fw-bold">{{ $group->inactive_customers ?? 0 }}</span>
-                                    </div>
-                                </div>
-                                <div class="d-flex gap-2">
-                                    <a href="{{ route('customer.groups.view', $group->id) }}"
-                                        class="btn btn-sm btn-primary flex-fill">
-                                        <i class="bx bx-show me-1"></i>View
-                                    </a>
-                                    <a href="{{ route('customer.groups.edit', $group->id) }}"
-                                        class="btn btn-sm btn-warning flex-fill">
-                                        <i class="bx bx-edit me-1"></i>Edit
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                @empty
-                    <div class="col-12">
-                        <div class="card">
-                            <div class="card-body text-center py-5">
-                                <p class="text-muted mb-0">No customer groups found</p>
-                            </div>
-                        </div>
-                    </div>
-                @endforelse
-            </div> 
-            --}}
-
-            <!-- Customer Groups Table -->
-            <div class="card mt-4">
-                <div class="card-body">
                     <div class="customer-table">
                         <div class="table-responsive white-space-nowrap">
                             <table id="example" class="table table-striped table-hover">
