@@ -43,10 +43,47 @@ class PackagingController extends Controller
     {
         try {
             $user = Auth::user();
-            // Check if user is admin (Super Admin or Admin role, or warehouse_id is null/0)
+
             $isSuperAdmin = $user->hasRole('Super Admin');
             $isAdmin = $user->hasRole(['Super Admin', 'Admin']) || !$user->warehouse_id;
-            $userWarehouseId = $user->warehouse_id; // Get user's warehouse ID
+            $userWarehouseId = $user->warehouse_id;
+
+            $salesOrder = SalesOrder::with([
+                'customerGroup',
+                'warehouse',
+                'orderedProducts' => function ($query) use ($userWarehouseId, $isSuperAdmin) {
+                    // Only include orderedProducts that have warehouseAllocations for this warehouse
+                    $query->whereHas('warehouseAllocations', function ($q) use ($userWarehouseId, $isSuperAdmin) {
+                        if (!$isSuperAdmin && $userWarehouseId) {
+                            $q->where('warehouse_id', $userWarehouseId);
+                        }
+                    })->with([
+                        'product',
+                        'customer',
+                        'tempOrder',
+                        'warehouseStock.warehouse',
+                        'warehouseAllocations.warehouse',
+                    ]);
+                },
+            ])
+                ->whereHas('orderedProducts.warehouseAllocations', function ($query) use ($userWarehouseId, $isSuperAdmin) {
+                    if (!$isSuperAdmin && $userWarehouseId) {
+                        $query->where('warehouse_id', $userWarehouseId);
+                    }
+                })
+                ->findOrFail($id);
+
+
+            $facilityNames = $salesOrder->orderedProducts
+                ->pluck('customer.facility_name')
+                ->filter()
+                ->unique()
+                ->values()
+                ->toArray();
+
+
+            // dd($salesOrder);
+            return view('packagingList.view', compact('salesOrder', 'facilityNames', 'isAdmin', 'isSuperAdmin', 'userWarehouseId', 'user'));
 
             // Load sales order with relationships
             $salesOrder = SalesOrder::with([
@@ -139,7 +176,7 @@ class PackagingController extends Controller
 
                     if ($hasAllocations) {
                         // Filter allocations for user's warehouse
-                        $userAllocations = $order->warehouseAllocations->filter(function($allocation) use ($userWarehouseId) {
+                        $userAllocations = $order->warehouseAllocations->filter(function ($allocation) use ($userWarehouseId) {
                             return $allocation->warehouse_id == $userWarehouseId;
                         });
 
@@ -177,6 +214,8 @@ class PackagingController extends Controller
                     ->where('final_dispatched_quantity', '>', 0)
                     ->count();
             }
+
+            // dd($displayProducts);
 
             // Pass additional data to view
             return view('packagingList.view', compact('salesOrder', 'facilityNames', 'isAdmin', 'isSuperAdmin', 'userWarehouseId', 'displayProducts', 'pendingApprovalsCount'));
@@ -591,8 +630,8 @@ class PackagingController extends Controller
             // Update sales_order_products table with aggregated values
             if ($isAdmin) {
                 $order->final_dispatched_quantity = $finalDispatchQty;
-                $order->box_count = $boxCount;
-                $order->weight = $weight;
+                // $order->box_count = $boxCount;
+                // $order->weight = $weight;
             } else {
                 // For warehouse users, aggregate from all allocations
                 $order->final_dispatched_quantity = $order->warehouseAllocations->sum('final_dispatched_quantity');
@@ -602,8 +641,8 @@ class PackagingController extends Controller
         } else {
             // Single warehouse allocation - update sales_order_products table directly
             $order->final_dispatched_quantity = $finalDispatchQty;
-            $order->box_count = $boxCount;
-            $order->weight = $weight;
+            // $order->box_count = $boxCount;
+            // $order->weight = $weight;
         }
 
         // DO NOT change status here - keep it as 'packaging'
@@ -892,7 +931,6 @@ class PackagingController extends Controller
                         ->with('success', $message);
                 }
             }
-
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Error changing status to ready_to_ship: ' . $e->getMessage());
@@ -999,7 +1037,6 @@ class PackagingController extends Controller
 
             return redirect()->back()
                 ->with('success', 'Warehouse allocation approved successfully.');
-
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Error approving warehouse allocation: ' . $e->getMessage());
@@ -1055,7 +1092,6 @@ class PackagingController extends Controller
 
             return redirect()->back()
                 ->with('success', 'Warehouse allocation rejected successfully.');
-
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Error rejecting warehouse allocation: ' . $e->getMessage());
