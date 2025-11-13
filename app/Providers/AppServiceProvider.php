@@ -54,7 +54,16 @@ class AppServiceProvider extends ServiceProvider
 
             $packagingListCount = SalesOrder::where('status', 'ready_to_package')->count();
 
-            $view->with(compact('readyToShipCount', 'receivedProductsCount', 'packagingListCount'));
+            // Count pending purchase orders
+            $purchaseOrderCount = PurchaseOrder::where('status', 'pending')->count();
+
+            // Count active sales orders (not completed)
+            $salesOrderCount = SalesOrder::where('status', '!=', 'completed')->count();
+
+            // Count unpaid or partially paid invoices
+            $invoiceCount = \App\Models\Invoice::whereIn('payment_status', ['unpaid', 'partial'])->count();
+
+            $view->with(compact('readyToShipCount', 'receivedProductsCount', 'packagingListCount', 'purchaseOrderCount', 'salesOrderCount', 'invoiceCount'));
         });
     }
 }
