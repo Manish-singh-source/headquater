@@ -16,17 +16,48 @@
 
             <div class="col">
                 <div class="row">
-                    <div class="col-xl-3 col-sm-6 col-12 d-flex">
+                    <div class="col-xl-2 col-sm-6 col-12 d-flex">
                         <div class="card bg-white sale-widget flex-fill">
                             <div class="card-body d-flex align-items-center">
                                 <span class="sale-icon bg-white text-primary">
-                                    <i class="ti ti-file-text fs-24"></i>
+                                    <i class="ti ti-package fs-24"></i>
                                 </span>
                                 <div class="ms-2">
-                                    <p class="text-dark mb-1">Total Product </p>
+                                    <p class="text-dark mb-1">Total Stock</p>
                                     <div class="d-inline-flex align-items-center flex-wrap gap-2">
-                                        <h4 class="text-dark">{{ $productsSum }}</h4>
-                                        <!-- <span class="badge badge-soft-primary text-dark"><i class="ti ti-arrow-up me-1"></i>+22%</span> -->
+                                        <h4 class="text-dark">{{ number_format($productsSum/2) }}</h4>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-xl-2 col-sm-6 col-12 d-flex">
+                        <div class="card bg-white sale-widget flex-fill">
+                            <div class="card-body d-flex align-items-center">
+                                <span class="sale-icon bg-white text-success">
+                                    <i class="ti ti-check-circle fs-24"></i>
+                                </span>
+                                <div class="ms-2">
+                                    <p class="text-dark mb-1">Available</p>
+                                    <div class="d-inline-flex align-items-center flex-wrap gap-2">
+                                        <h4 class="text-dark">{{ number_format($availableProductsSum/2) }}</h4>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-xl-2 col-sm-6 col-12 d-flex">
+                        <div class="card bg-white sale-widget flex-fill">
+                            <div class="card-body d-flex align-items-center">
+                                <span class="sale-icon bg-white text-warning">
+                                    <i class="ti ti-clock-pause fs-24"></i>
+                                </span>
+                                <div class="ms-2">
+                                    <p class="text-dark mb-1">Blocked</p>
+                                    <div class="d-inline-flex align-items-center flex-wrap gap-2">
+                                        <h4 class="text-dark">{{ number_format($blockProductsSum/2) }}</h4>
                                     </div>
                                 </div>
                             </div>
@@ -36,128 +67,287 @@
                     <div class="col-xl-3 col-sm-6 col-12 d-flex">
                         <div class="card bg-white sale-widget flex-fill">
                             <div class="card-body d-flex align-items-center">
-                                <span class="sale-icon bg-white text-primary">
-                                    <i class="ti ti-file-text fs-24"></i>
+                                <span class="sale-icon bg-white text-info">
+                                    <i class="ti ti-currency-rupee fs-24"></i>
                                 </span>
                                 <div class="ms-2">
-                                    <p class="text-dark mb-1">Total Available Products </p>
+                                    <p class="text-dark mb-1">Stock Value</p>
                                     <div class="d-inline-flex align-items-center flex-wrap gap-2">
-                                        <h4 class="text-dark">{{ $availableProductsSum }}</h4>
-                                        <!-- <span class="badge badge-soft-primary text-dark"><i class="ti ti-arrow-up me-1"></i>+22%</span> -->
+                                        <h4 class="text-dark">₹{{ number_format($totalStockValue/2, 2) }}</h4>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="col-xl-3 col-sm-6 col-12 d-flex">
+                    <div class="col-xl-1 col-sm-6 col-12 d-flex">
                         <div class="card bg-white sale-widget flex-fill">
                             <div class="card-body d-flex align-items-center">
-                                <span class="sale-icon bg-white text-primary">
-                                    <i class="ti ti-file-text fs-24"></i>
+                                <span class="sale-icon bg-white text-danger">
+                                    <i class="ti ti-alert-triangle fs-24"></i>
                                 </span>
                                 <div class="ms-2">
-                                    <p class="text-dark mb-1">Total Blocked Products</p>
+                                    <p class="text-dark mb-1">Low Stock</p>
                                     <div class="d-inline-flex align-items-center flex-wrap gap-2">
-                                        <h4 class="text-dark">{{ $blockProductsSum }}</h4>
-                                        <!-- <span class="badge badge-soft-primary text-dark"><i class="ti ti-arrow-up me-1"></i>+22%</span> -->
+                                        <h4 class="text-dark">{{ $lowStockCount }}</h4>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    {{-- <div class="col-xl-3 col-sm-6 col-12 d-flex">
+
+                    <div class="col-xl-2 col-sm-6 col-12 d-flex">
                         <div class="card bg-white sale-widget flex-fill">
                             <div class="card-body d-flex align-items-center">
-                                <span class="sale-icon bg-white text-primary">
-                                    <i class="ti ti-file-text fs-24"></i>
+                                <span class="sale-icon bg-white text-secondary">
+                                    <i class="ti ti-x fs-24"></i>
                                 </span>
                                 <div class="ms-2">
-                                    <p class="text-dark mb-1">Total Shortage Products</p>
+                                    <p class="text-dark mb-1">Out of Stock</p>
                                     <div class="d-inline-flex align-items-center flex-wrap gap-2">
-                                        <h4 class="text-dark">0</h4>
-                                        <span class="badge badge-soft-primary text-dark"><i class="ti ti-arrow-up me-1"></i>+22%</span> 
+                                        <h4 class="text-dark">{{ $outOfStockCount }}</h4>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div> --}}
-                    {{-- <div class="col-xl-3 col-sm-6 col-12 d-flex">
-                        <div class="card bg-white sale-widget flex-fill">
-                            <div class="card-body d-flex align-items-center">
-                                <span class="sale-icon bg-white text-primary">
-                                    <i class="ti ti-file-text fs-24"></i>
-                                </span>
-                                <div class="ms-2">
-                                    <p class="text-dark mb-1">Total Exceed Products</p>
-                                    <div class="d-inline-flex align-items-center flex-wrap gap-2">
-                                        <h4 class="text-dark">0</h4>
-                                        <!-- <span class="badge badge-soft-primary text-dark"><i class="ti ti-arrow-up me-1"></i>+22%</span> -->
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div> --}}
+                    </div>
                 </div>
-
             </div>
 
             <div class="card mt-4">
-                <div class="card-body pb-1">
-                    <div class="row align-items-end">
-                        <div class="col-lg-10">
-                            <div class="row">
-                                <div class="col-md-2">
-                                    <div class="mb-3">
-                                        <label class="form-label">From Date <span
-                                                class="text-muted">(Optional)</span></label>
-                                        <div class="input-icon-start position-relative">
-                                            <input type="date" class="form-control date-range bookingrange"
-                                                id="date-from" placeholder="dd/mm/yyyy">
-                                            <span class="input-icon-left">
-                                                <i class="ti ti-calendar"></i>
-                                            </span>
+                <div class="card-body">
+                    <h6 class="mb-3 fw-bold"><i class="bx bx-filter-alt me-2"></i>Filter Options</h6>
+                    <form id="filterForm" method="GET" action="{{ route('inventory-stock-history') }}">
+                        <div class="row align-items-start">
+                            <div class="col-lg-10">
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <div class="mb-3">
+                                            <label class="form-label">Warehouse</label>
+                                            <div class="dropdown">
+                                                <button class="btn btn-outline-secondary dropdown-toggle w-100 text-start"
+                                                    type="button" id="warehouseDropdown" data-bs-toggle="dropdown">
+                                                    <i class="bx bx-filter-alt me-1"></i>Select Warehouse
+                                                </button>
+                                                <ul class="dropdown-menu w-100" id="warehouseCheckboxList"
+                                                    style="max-height: 250px; overflow-y: auto;">
+                                                    @foreach ($warehouses as $warehouse)
+                                                        <li class="px-2 py-1">
+                                                            <div class="form-check">
+                                                                <input class="form-check-input warehouse-checkbox"
+                                                                    type="checkbox" name="warehouse_id[]"
+                                                                    value="{{ $warehouse->id }}"
+                                                                    id="warehouse_{{ $loop->index }}"
+                                                                    {{ in_array($warehouse->id, (array) request('warehouse_id')) ? 'checked' : '' }}>
+                                                                <label class="form-check-label w-100 cursor-pointer"
+                                                                    for="warehouse_{{ $loop->index }}">
+                                                                    {{ $warehouse->name }}
+                                                                </label>
+                                                            </div>
+                                                        </li>
+                                                    @endforeach
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="mb-3">
+                                            <label class="form-label">Category</label>
+                                            <div class="dropdown">
+                                                <button class="btn btn-outline-secondary dropdown-toggle w-100 text-start"
+                                                    type="button" id="categoryDropdown" data-bs-toggle="dropdown">
+                                                    <i class="bx bx-filter-alt me-1"></i>Select Category
+                                                </button>
+                                                <ul class="dropdown-menu w-100" id="categoryCheckboxList"
+                                                    style="max-height: 250px; overflow-y: auto;">
+                                                    @foreach ($categories as $category)
+                                                        <li class="px-2 py-1">
+                                                            <div class="form-check">
+                                                                <input class="form-check-input category-checkbox"
+                                                                    type="checkbox" name="category[]"
+                                                                    value="{{ $category }}"
+                                                                    id="category_{{ $loop->index }}"
+                                                                    {{ in_array($category, (array) request('category')) ? 'checked' : '' }}>
+                                                                <label class="form-check-label w-100 cursor-pointer"
+                                                                    for="category_{{ $loop->index }}">
+                                                                    {{ $category }}
+                                                                </label>
+                                                            </div>
+                                                        </li>
+                                                    @endforeach
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="mb-3">
+                                            <label class="form-label">Brand</label>
+                                            <div class="dropdown">
+                                                <button class="btn btn-outline-secondary dropdown-toggle w-100 text-start"
+                                                    type="button" id="brandDropdown" data-bs-toggle="dropdown">
+                                                    <i class="bx bx-filter-alt me-1"></i>Select Brand
+                                                </button>
+                                                <ul class="dropdown-menu w-100" id="brandCheckboxList"
+                                                    style="max-height: 250px; overflow-y: auto;">
+                                                    @foreach ($brands as $brand)
+                                                        <li class="px-2 py-1">
+                                                            <div class="form-check">
+                                                                <input class="form-check-input brand-checkbox"
+                                                                    type="checkbox" name="brand[]"
+                                                                    value="{{ $brand }}"
+                                                                    id="brand_{{ $loop->index }}"
+                                                                    {{ in_array($brand, (array) request('brand')) ? 'checked' : '' }}>
+                                                                <label class="form-check-label w-100 cursor-pointer"
+                                                                    for="brand_{{ $loop->index }}">
+                                                                    {{ $brand }}
+                                                                </label>
+                                                            </div>
+                                                        </li>
+                                                    @endforeach
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="mb-3">
+                                            <label class="form-label">SKU</label>
+                                            <div class="dropdown">
+                                                <button class="btn btn-outline-secondary dropdown-toggle w-100 text-start"
+                                                    type="button" id="skuDropdown" data-bs-toggle="dropdown">
+                                                    <i class="bx bx-filter-alt me-1"></i>Select SKU
+                                                </button>
+                                                <ul class="dropdown-menu w-100" id="skuCheckboxList"
+                                                    style="max-height: 250px; overflow-y: auto;">
+                                                    @foreach ($skus as $sku)
+                                                        <li class="px-2 py-1">
+                                                            <div class="form-check">
+                                                                <input class="form-check-input sku-checkbox"
+                                                                    type="checkbox" name="sku[]"
+                                                                    value="{{ $sku }}"
+                                                                    id="sku_{{ $loop->index }}"
+                                                                    {{ in_array($sku, (array) request('sku')) ? 'checked' : '' }}>
+                                                                <label class="form-check-label w-100 cursor-pointer"
+                                                                    for="sku_{{ $loop->index }}">
+                                                                    {{ $sku }}
+                                                                </label>
+                                                            </div>
+                                                        </li>
+                                                    @endforeach
+                                                </ul>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                                <div class="col-md-2">
-                                    <div class="mb-3">
-                                        <label class="form-label">To Date <span class="text-muted">(Optional)</span></label>
-                                        <div class="input-icon-start position-relative">
-                                            <input type="date" class="form-control date-range bookingrange"
-                                                id="date-to" placeholder="dd/mm/yyyy">
-                                            <span class="input-icon-left">
-                                                <i class="ti ti-calendar"></i>
-                                            </span>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label class="form-label">From Date</label>
+                                            <div class="input-icon-start position-relative">
+                                                <input type="date" class="form-control" id="date-from" name="from_date"
+                                                    value="{{ request('from_date') }}" placeholder="dd/mm/yyyy">
+                                                <span class="input-icon-left">
+                                                    <i class="ti ti-calendar"></i>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label class="form-label">To Date</label>
+                                            <div class="input-icon-start position-relative">
+                                                <input type="date" class="form-control" id="date-to" name="to_date"
+                                                    value="{{ request('to_date') }}" placeholder="dd/mm/yyyy">
+                                                <span class="input-icon-left">
+                                                    <i class="ti ti-calendar"></i>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label class="form-label">Status</label>
+                                            <div class="dropdown">
+                                                <button class="btn btn-outline-secondary dropdown-toggle w-100 text-start"
+                                                    type="button" id="statusDropdown" data-bs-toggle="dropdown">
+                                                    <i class="bx bx-filter-alt me-1"></i>Select Status
+                                                </button>
+                                                <ul class="dropdown-menu w-100" id="statusCheckboxList">
+                                                    <li class="px-2 py-1">
+                                                        <div class="form-check">
+                                                            <input class="form-check-input status-checkbox"
+                                                                type="checkbox" name="status[]"
+                                                                value="Normal"
+                                                                id="status_normal"
+                                                                {{ in_array('Normal', (array) request('status')) ? 'checked' : '' }}>
+                                                            <label class="form-check-label w-100 cursor-pointer"
+                                                                for="status_normal">
+                                                                Normal
+                                                            </label>
+                                                        </div>
+                                                    </li>
+                                                    <li class="px-2 py-1">
+                                                        <div class="form-check">
+                                                            <input class="form-check-input status-checkbox"
+                                                                type="checkbox" name="status[]"
+                                                                value="Low Stock"
+                                                                id="status_low"
+                                                                {{ in_array('Low Stock', (array) request('status')) ? 'checked' : '' }}>
+                                                            <label class="form-check-label w-100 cursor-pointer"
+                                                                for="status_low">
+                                                                Low Stock
+                                                            </label>
+                                                        </div>
+                                                    </li>
+                                                    <li class="px-2 py-1">
+                                                        <div class="form-check">
+                                                            <input class="form-check-input status-checkbox"
+                                                                type="checkbox" name="status[]"
+                                                                value="Out of Stock"
+                                                                id="status_out"
+                                                                {{ in_array('Out of Stock', (array) request('status')) ? 'checked' : '' }}>
+                                                            <label class="form-check-label w-100 cursor-pointer"
+                                                                for="status_out">
+                                                                Out of Stock
+                                                            </label>
+                                                        </div>
+                                                    </li>
+                                                </ul>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                                <div class="col-md-2">
+                            </div>
+
+                            <div class="col-lg-2">
+                                <!-- Apply Filter Button -->
+                                <div class="col">
                                     <div class="mb-3">
-                                        <label class="form-label d-block">&nbsp;</label>
-                                        <button id="filterData" class="btn btn-primary w-100">
-                                            <i class="ti ti-filter me-1"></i>Apply Filter
+                                        <button type="submit" id="filterData" class="btn btn-primary w-100">
+                                            <i class="bx bx-filter me-1"></i>Apply Filter
                                         </button>
                                     </div>
                                 </div>
-                                <div class="col-md-2">
+
+                                <!-- Reset Filter Button -->
+                                <div class="col">
                                     <div class="mb-3">
-                                        <label class="form-label d-block">&nbsp;</label>
-                                        <button id="resetFilter" class="btn btn-secondary w-100">
-                                            <i class="ti ti-refresh me-1"></i>Reset Filter
+                                        <button type="button" id="resetFilters" class="btn btn-secondary w-100">
+                                            <i class="bx bx-reset me-1"></i>Reset Filters
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Action Buttons -->
+                                <div class="col">
+                                    <div class="mb-3">
+                                        <button type="button" id="exportData" class="btn btn-danger w-100">
+                                            <i class="bx bx-download me-1"></i>Generate Report
                                         </button>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <div class="col-lg-2">
-                            <div class="mb-3">
-                                <button id="exportData" class="btn btn-success w-100">
-                                    <i class="ti ti-download me-1"></i>Generate Report
-                                </button>
-                            </div>
-                        </div>
-                    </div>
+                    </form>
                 </div>
             </div>
 
@@ -172,46 +362,60 @@
                                         <th>
                                             <input class="form-check-input" type="checkbox" id="select-all">
                                         </th>
+                                        <th>Warehouse</th>
                                         <th>Brand</th>
-                                        <th>Brand&nbsp;Title</th>
+                                        <th>Brand Title</th>
                                         <th>Category</th>
                                         <th>SKU</th>
                                         <th>PCS/Set</th>
                                         <th>Sets/CTN</th>
                                         <th>MRP</th>
-                                        {{-- <th>po&nbsp;status</th> --}}
-                                        <th>Original&nbsp;Quantity</th>
-                                        <th>Available&nbsp;Quantity</th>
-                                        <th>Block&nbsp;Qty</th>
+                                        <th>Original Qty</th>
+                                        <th>Available Qty</th>
+                                        <th>Block Qty</th>
+                                        <th>Stock Value</th>
+                                        <th>Status</th>
                                         <th>Date</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @foreach ($products as $product)
+                                        @php
+                                            $stockValue = ($product->available_quantity ?? 0) * ($product->product->mrp ?? 0);
+                                            $status = 'Normal';
+                                            if (($product->available_quantity ?? 0) <= 10 && ($product->available_quantity ?? 0) > 0) {
+                                                $status = 'Low Stock';
+                                            } elseif (($product->available_quantity ?? 0) == 0) {
+                                                $status = 'Out of Stock';
+                                            }
+                                        @endphp
                                         <tr>
                                             <td>
                                                 <input class="form-check-input row-checkbox" type="checkbox"
                                                     name="ids[]" value="{{ $product->id }}">
                                             </td>
+                                            <td>{{ $product->warehouse->name ?? 'N/A' }}</td>
+                                            <td>{{ $product->product->brand ?? 'N/A' }}</td>
+                                            <td>{{ $product->product->brand_title ?? 'N/A' }}</td>
+                                            <td>{{ $product->product->category ?? 'N/A' }}</td>
+                                            <td>{{ $product->product->sku ?? 'N/A' }}</td>
+                                            <td>{{ $product->product->pcs_set ?? 0 }}</td>
+                                            <td>{{ $product->product->sets_ctn ?? 0 }}</td>
+                                            <td>₹{{ number_format($product->product->mrp ?? 0, 2) }}</td>
+                                            <td>{{ number_format($product->original_quantity ?? 0) }}</td>
+                                            <td>{{ number_format($product->available_quantity ?? 0) }}</td>
+                                            <td>{{ number_format($product->block_quantity ?? 0) }}</td>
+                                            <td>₹{{ number_format($stockValue, 2) }}</td>
                                             <td>
-                                                <div class="d-flex align-items-center gap-3">
-                                                    <div class="product-info">
-                                                        <a href="javascript:;"
-                                                            class="product-title">{{ $product->product->brand }}</a>
-                                                    </div>
-                                                </div>
+                                                @if($status == 'Out of Stock')
+                                                    <span class="badge bg-danger">Out of Stock</span>
+                                                @elseif($status == 'Low Stock')
+                                                    <span class="badge bg-warning">Low Stock</span>
+                                                @else
+                                                    <span class="badge bg-success">Normal</span>
+                                                @endif
                                             </td>
-                                            <td>{{ $product->product->brand_title }}</td>
-                                            <td>{{ $product->product->category }}</td>
-                                            <td>{{ $product->product->sku }}</td>
-                                            <td>{{ $product->product->pcs_set }}</td>
-                                            <td>{{ $product->product->sets_ctn }}</td>
-                                            <td>{{ $product->product->mrp }}</td>
-                                            {{-- <td>{{ $product->product->status === '1' ? 'Active' : 'Inactive' }}</td> --}}
-                                            <td>{{ $product->original_quantity ?? 0 }}</td>
-                                            <td>{{ $product->available_quantity ?? 0 }}</td>
-                                            <td>{{ $product->block_quantity ?? 0 }}</td>
-                                            <td>{{ $product->product->created_at->format('d-m-Y') }}</td>
+                                            <td>{{ $product->created_at->format('d-m-Y') }}</td>
                                         </tr>
                                     @endforeach
                                 </tbody>
@@ -231,6 +435,18 @@
     <script>
         $(document).ready(function() {
 
+            /**
+             * Prevent dropdown from closing when clicking on checkboxes
+             */
+            $(document).on('click', '.dropdown-menu', function(e) {
+                e.stopPropagation();
+            });
+
+            /**
+             * Add cursor pointer styling to checkbox labels
+             */
+            $('.form-check-label').css('cursor', 'pointer');
+
             // Initialize DataTable for inventory stock history
             var inventoryStockTable = $('#inventory-stock-history-table').DataTable({
                 "columnDefs": [{
@@ -238,134 +454,113 @@
                     "targets": [0] // Disable sorting for checkbox column
                 }],
                 lengthChange: true,
-                pageLength: 10,
+                pageLength: 15,
                 order: [
-                    [11, 'desc']
-                ], // Sort by Date column (index 11) in descending order
+                    [14, 'desc']
+                ], // Sort by Date column (index 14) in descending order
                 buttons: [{
                     extend: 'excelHtml5',
                     className: 'd-none', // hide the default button
                 }]
             });
 
-            /**
-             * Apply Filter Button Click Handler
-             *
-             * Filter Logic:
-             * 1. Get the selected from and to dates from input fields
-             * 2. Convert dates from YYYY-MM-DD to DD-MM-YYYY format for matching table data
-             * 3. Apply custom search function to filter table rows based on date range
-             * 4. If only from date: show records on or after that date
-             * 5. If only to date: show records on or before that date
-             * 6. If both dates: show records within the range (inclusive)
-             * 7. If no dates: show all records
-             */
-            $(document).on('click', '#filterData', function() {
-                var selectedDateFrom = $('#date-from').val().trim();
-                var selectedDateTo = $('#date-to').val().trim();
-
-                // Clear any existing custom search functions to avoid stacking filters
-                $.fn.dataTable.ext.search.length = 0;
-
-                // Helper to parse table date (DD-MM-YYYY) and normalize to midnight
-                function parseTableDate(dateStr) {
-                    if (!dateStr) return null;
-                    var parts = dateStr.trim().split('-');
-                    if (parts.length !== 3) return null;
-                    var d = new Date(+parts[2], +parts[1] - 1, +parts[0]);
-                    d.setHours(0, 0, 0, 0);
-                    return d;
-                }
-
-                // Helper to parse input[type=date] value (YYYY-MM-DD) and normalize to midnight
-                function parseInputDate(input) {
-                    if (!input) return null;
-                    var parts = input.split('-');
-                    if (parts.length !== 3) return null;
-                    var d = new Date(+parts[0], +parts[1] - 1, +parts[2]);
-                    d.setHours(0, 0, 0, 0);
-                    return d;
-                }
-
-                // Custom search function for date range filtering
-                $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
-                    // Get the date from the last column (index 11)
-                    var dateStr = data[11] || '';
-                    var rowDate = parseTableDate(dateStr);
-                    if (!rowDate) return true; // if no parsable date, don't filter it out
-
-                    var fromDate = parseInputDate(selectedDateFrom);
-                    var toDate = parseInputDate(selectedDateTo);
-
-                    if (fromDate && toDate) {
-                        return rowDate >= fromDate && rowDate <= toDate;
-                    } else if (fromDate) {
-                        return rowDate >= fromDate;
-                    } else if (toDate) {
-                        return rowDate <= toDate;
-                    }
-
-                    return true;
-                });
-
-                // Redraw the table with the filter applied
-                inventoryStockTable.draw();
-            });
 
             /**
              * Reset Filter Button Click Handler
              *
              * Reset Logic:
-             * 1. Clear both date input fields
-             * 2. Remove all custom search functions from DataTable
-             * 3. Redraw the table to show all records
-             * 4. Provide visual feedback to user
+             * 1. Clear all filter input fields
+             * 2. Reload page without any filters
              */
-            $(document).on('click', '#resetFilter', function() {
-                // Clear date input fields
+            $(document).on('click', '#resetFilters', function(e) {
+                e.preventDefault();
+
+                // Clear all filter inputs
                 $('#date-from').val('');
                 $('#date-to').val('');
+                $('.warehouse-checkbox').prop('checked', false);
+                $('.category-checkbox').prop('checked', false);
+                $('.brand-checkbox').prop('checked', false);
+                $('.sku-checkbox').prop('checked', false);
+                $('.status-checkbox').prop('checked', false);
 
-                // Remove all custom search functions (clear the array)
-                $.fn.dataTable.ext.search.length = 0;
-
-                // Redraw table to show all records
-                inventoryStockTable.draw();
-
-                // Optional: Show success message
-                console.log('Filters reset successfully');
+                // Redirect to base URL without filters
+                window.location.href = '{{ route('inventory-stock-history') }}';
             });
 
             /**
-             * Generate Report Button Click Handler
+             * Export CSV Button Click Handler
              *
              * CSV Export Logic:
-             * 1. Get the selected from and to dates from input fields
-             * 2. Build query parameters only for dates that are provided
+             * 1. Collect all current filter values
+             * 2. Build query parameters for all filters that have values
              * 3. Construct download URL with parameters
              * 4. Trigger browser download of CSV file
-             * 5. The backend will filter data based on these parameters
-             * 6. If no dates provided, all records will be exported
              */
-            $(document).on('click', '#exportData', function() {
-                var selectedDateFrom = $("#date-from").val().trim();
-                var selectedDateTo = $("#date-to").val().trim();
+            $(document).on('click', '#exportData', function(e) {
+                e.preventDefault();
 
-                // Build query parameters only for the values provided
+                // Get current filter values from the form
+                var dateFrom = $("#date-from").val().trim();
+                var dateTo = $("#date-to").val().trim();
+
+                // Build query parameters for CSV export
                 var params = [];
-                if (selectedDateFrom) {
-                    params.push('from=' + encodeURIComponent(selectedDateFrom));
+
+                // Add from_date parameter if provided
+                if (dateFrom) {
+                    params.push('from_date=' + encodeURIComponent(dateFrom));
                 }
-                if (selectedDateTo) {
-                    params.push('to=' + encodeURIComponent(selectedDateTo));
+
+                // Add to_date parameter if provided
+                if (dateTo) {
+                    params.push('to_date=' + encodeURIComponent(dateTo));
                 }
-                var queryString = params.length ? '?' + params.join('&') : '';
+
+                // Add warehouse_id[] parameters from checked checkboxes
+                $('.warehouse-checkbox:checked').each(function() {
+                    params.push('warehouse_id[]=' + encodeURIComponent($(this).val()));
+                });
+
+                // Add category[] parameters from checked checkboxes
+                $('.category-checkbox:checked').each(function() {
+                    params.push('category[]=' + encodeURIComponent($(this).val()));
+                });
+
+                // Add brand[] parameters from checked checkboxes
+                $('.brand-checkbox:checked').each(function() {
+                    params.push('brand[]=' + encodeURIComponent($(this).val()));
+                });
+
+                // Add sku[] parameters from checked checkboxes
+                $('.sku-checkbox:checked').each(function() {
+                    params.push('sku[]=' + encodeURIComponent($(this).val()));
+                });
+
+                // Add status[] parameters from checked checkboxes
+                $('.status-checkbox:checked').each(function() {
+                    params.push('status[]=' + encodeURIComponent($(this).val()));
+                });
 
                 // Construct download URL with parameters
-                var downloadUrl = '{{ route('inventory.stock.history.excel') }}' + queryString;
+                var downloadUrl = '{{ route('inventory.stock.history.excel') }}';
+                if (params.length > 0) {
+                    downloadUrl += '?' + params.join('&');
+                }
+
+                // Show loading indicator
+                var originalText = $(this).html();
+                $(this).html('<i class="bx bx-loader-alt bx-spin me-1"></i>Generating...');
+                $(this).prop('disabled', true);
 
                 // Trigger browser download
                 window.location.href = downloadUrl;
+
+                // Reset button after a short delay
+                setTimeout(function() {
+                    $('#exportData').html(originalText);
+                    $('#exportData').prop('disabled', false);
+                }, 2000);
             });
 
             /**
