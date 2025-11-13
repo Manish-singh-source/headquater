@@ -56,9 +56,19 @@ class ReportController extends Controller
                     $q->whereDate('created_at', '<=', $request->to_date);
                 }
 
+                // Apply purchase order filter if purchase_order_no is provided
+                if ($request->filled('purchase_order_no')) {
+                    $q->where('purchase_order_id', $request->purchase_order_no);
+                }
+
                 // Apply vendor filter if vendor_code is provided
                 if ($request->filled('vendor_code')) {
                     $q->where('vendor_code', $request->vendor_code);
+                }
+
+                // Apply sku filter if sku is provided
+                if ($request->filled('sku')) {
+                    $q->where('vendor_sku_code', $request->sku);
                 }
             });
 
@@ -75,19 +85,29 @@ class ReportController extends Controller
             // Count unique vendor PIs for total orders
             $totalOrders = $statsQuery->distinct('vendor_pi_id')->count('vendor_pi_id');
 
+            // Get unique purchase order numbers from all completed purchase orders for dropdown
+            $purchaseOrderNumbers = VendorPI::distinct('purchase_order_id')
+                ->pluck('purchase_order_id');
+
             // Get unique vendors from all completed purchase orders for dropdown
             $purchaseOrdersVendors = VendorPI::where('status', 'completed')
                 ->distinct('vendor_code')
                 ->pluck('vendor_code');
 
-            // dd($vendorPIProducts);
+            // Get unique vendors from all completed purchase orders for dropdown
+            $purchaseOrdersSKUs = VendorPIProduct::distinct('vendor_sku_code')
+                ->pluck('vendor_sku_code');    
+
+            // dd($purchaseOrdersSKUs);
 
             return view('vendor-purchase-history', compact(
                 'vendorPIProducts',
                 'purchaseOrdersTotal',
                 'purchaseOrdersTotalQuantity',
                 'totalOrders',
-                'purchaseOrdersVendors'
+                'purchaseOrderNumbers',
+                'purchaseOrdersVendors',
+                'purchaseOrdersSKUs'
             ));
         } catch (\Exception $e) {
             Log::error('Error retrieving vendor purchase history: ' . $e->getMessage());
@@ -114,41 +134,54 @@ class ReportController extends Controller
      */
     public function vendorPurchaseHistoryExcel(Request $request)
     {
-        // Validate optional filters
-        $validator = Validator::make($request->all(), [
-            'date_from' => 'nullable|date',
-            'date_to' => 'nullable|date|after_or_equal:date_from',
-            'vendor_code' => 'nullable|string|max:255',
-        ]);
-
-        if ($validator->fails()) {
-            return redirect()->back()->withErrors($validator)->withInput();
-        }
-
         DB::beginTransaction();
         try {
-            // Build query with same filtering logic as index method
-            $query = VendorPI::with('products')->where('status', 'completed');
+           // Build the base query from VendorPIProduct with all necessary relationships
+            $query = VendorPIProduct::with([
+                'order' => function ($q) {
+                    $q->with(['vendor', 'payments', 'purchaseInvoice', 'purchaseGrn', 'purchaseOrder', 'warehouse']);
+                },
+                'product'
+            ]);
 
-            // Apply date range filter if date_from is provided
-            if ($request->filled('date_from')) {
-                $query->whereDate('created_at', '>=', $request->date_from);
-            }
+            // Apply filters on the parent VendorPI relationship
+            $query->whereHas('order', function ($q) use ($request) {
+                // Filter only completed orders
+                $q->where('status', 'completed');
 
-            // Apply date range filter if date_to is provided
-            if ($request->filled('date_to')) {
-                $query->whereDate('created_at', '<=', $request->date_to);
-            }
+                // Apply date range filter if from_date is provided
+                if ($request->filled('from_date')) {
+                    $q->whereDate('created_at', '>=', $request->from_date);
+                }
 
-            // Apply vendor filter if vendor_code is provided
-            if ($request->filled('vendor_code')) {
-                $query->where('vendor_code', $request->vendor_code);
-            }
+                // Apply date range filter if to_date is provided
+                if ($request->filled('to_date')) {
+                    $q->whereDate('created_at', '<=', $request->to_date);
+                }
 
-            // Get all matching vendor reports (no pagination for export)
-            $vendorReports = $query->latest()->get();
+                // Apply purchase order filter if purchase_order_no is provided
+                if ($request->filled('purchase_order_no')) {
+                    $q->where('purchase_order_id', $request->purchase_order_no);
+                }
 
-            if ($vendorReports->isEmpty()) {
+                // Apply vendor filter if vendor_code is provided
+                if ($request->filled('vendor_code')) {
+                    $q->where('vendor_code', $request->vendor_code);
+                }
+
+                // Apply sku filter if sku is provided
+                if ($request->filled('sku')) {
+                    $q->where('vendor_sku_code', $request->sku);
+                }
+            });
+
+            // Clone query for statistics calculation before pagination
+            $statsQuery = clone $query;
+
+            // Get paginated vendor PI products (15 per page)
+            $vendorPIProducts = $query->latest('id')->paginate(15)->appends($request->all());
+
+            if ($vendorPIProducts->isEmpty()) {
                 return redirect()->back()->with('error', 'No vendor purchase records found for the selected criteria.');
             }
 
@@ -161,64 +194,95 @@ class ReportController extends Controller
 
             // Add header row
             fputcsv($file, [
-                'Order Id',
+                'Purchse Order No',
+                'Purchase Order Date',
                 'Vendor Name',
-                'Ordered Status',
-                'Ordered Quantity',
-                'Received Quantity',
-                'Total Amount',
-                'Paid',
-                'Due',
-                'Ordered Date',
-                'Appointment Date',
-                'POD',
-                'LR',
-                'DN',
-                'GRN',
-                'Invoice',
+                'GSTIN',
+                'Item Name',
+                'SKU',
+                'HSN/SAC',
+                'Quantity',
+                'UOM',
+                'Rate',
+                'Discount',
+                'Taxable Value',
+                'GST',
+                'CGST',
+                'SGST',
+                'IGST',
+                'GST Amount',
+                'Cess',
+                'Cess Amount',
+                'PAN',
                 'Payment Status',
+                'Payment Method',
+                'Invoice Ref',
+                'Invoice Date',
+                'Due Date',
+                'Shipping Charges',
+                'Status',
+                'Warehouse',
             ]);
 
             // Add data rows
-            foreach ($vendorReports as $record) {
-                $orderedQty = $record->products->sum('quantity_requirement');
-                $receivedQty = $record->products->sum('quantity_received');
-                $totalAmount = $record->products->sum('mrp');
-                $paidAmount = $record->products->sum('paid_amount') ?? 0;
-                $dueAmount = max(0, $totalAmount - $paidAmount);
+            foreach ($vendorPIProducts as $product) {
+                $order = $product['order'];
+                $vendor = $order->vendor ?? null;
+                $purchaseInvoice = $order->purchaseInvoice ?? null;
+                $payment = $order->payments->first() ?? null;
+                $gstRate = floatval($product->gst ?? 0);
+                $taxableValue = floatval($product->mrp ?? 0);
+                $gstAmount = ($taxableValue * $gstRate) / 100;
+                $cessRate = floatval($product->cess ?? 0);
+                $cessAmount = ($taxableValue * $cessRate) / 100;
+
                 fputcsv($file, [
-                    $record->purchase_order_id ?? 'NA',
-                    $record->vendor_code ?? 'NA',
-                    ucfirst($record->status ?? 'N/A'),
-                    $orderedQty,
-                    $receivedQty,
-                    number_format($totalAmount, 2, '.', ''),
-                    number_format($paidAmount, 2, '.', ''),
-                    number_format($dueAmount, 2, '.', ''),
-                    $record->created_at?->format('d-m-Y') ?? 'NA',
-                    $record->appointment?->appointment_date ?? 'NA',
-                    $record->appointment?->pod ? 'Yes' : 'No',
-                    $record->appointment?->lr ? 'Yes' : 'No',
-                    $record->dns?->dn_amount ? 'Yes' : 'No',
-                    $record->appointment?->grn ? 'Yes' : 'No',
-                    $record->invoice?->invoice_number ? 'Yes' : 'No',
-                    isset($record->payments?->first()->payment_status) != null && $record->payments?->first()->payment_status == 'completed' ? 'paid' : 'not paid',
+                    $order->purchase_order_id ?? 'N/A',
+                    // $order->created_at ? $order->created_at->format('d-m-Y') : 'N/A',
+                    $order->created_at->format('d-m-Y') ?? 'N/A',
+                    $vendor->client_name ?? 'N/A',
+                    $vendor->gst_number ?? 'N/A',
+                    $product->title ?? 'N/A',
+                    $product->vendor_sku_code ?? 'N/A',
+                    $product->hsn ?? 'N/A',
+                    $product->quantity_received ?? 0,
+                    $product->product->unit_type ?? 'PCS',
+                    $product->purchase_rate ?? 0,
+                    0, // Discount
+                    $taxableValue,
+                    $gstRate,
+                    $gstRate/2 ?? 0,    // Adjust based on your logic
+                    $gstRate/2 ?? 0,    // Adjust based on your logic
+                    $gstRate ?? 0,    // Adjust based on your logic
+                    $gstAmount,
+                    $cessRate,
+                    $cessAmount,
+                    $vendor->pan_number ?? 'N/A',
+                    $payment ? ($payment->payment_status == 'completed' ? 'Paid' : 'Pending') : 'Pending',
+                    $payment ? $payment->payment_method : 'N/A',
+                    $purchaseInvoice->invoice_no ?? 'N/A',
+                    $purchaseInvoice?->created_at ? $purchaseInvoice->created_at->format('d-m-Y') : 'N/A',
+                    'N/A', // Due Date
+                    0, // Shipping Charges
+                    ucfirst($order->status ?? 'N/A'),
+                    $order->warehouse->name ?? 'N/A',
                 ]);
             }
 
             fclose($file);
 
             // Log activity for audit trail
-            activity()
-                ->causedBy(Auth::user())
-                ->withProperties([
-                    'vendor_code' => $request->vendor_code,
-                    'date_from' => $request->date_from,
-                    'date_to' => $request->date_to,
-                    'records' => $vendorReports->count(),
-                ])
-                ->event('csv_report_generated')
-                ->log('Vendor purchase history CSV report generated');
+            // activity()
+            //     ->causedBy(Auth::user())
+            //     ->withProperties([
+            //         'vendor_code' => $request->vendor_code,
+            //         'date_from' => $request->date_from,
+            //         'date_to' => $request->date_to,
+            //         'sku' => $request->sku,
+            //         'records' => $vendorReports->count(),
+            //     ])
+            //     ->event('csv_report_generated')
+            //     ->log('Vendor purchase history CSV report generated');
 
             DB::commit();
 
