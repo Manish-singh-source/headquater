@@ -19,6 +19,109 @@
                 </div>
             </div>
 
+            {{-- Pending Approvals - Individual Warehouse Cards for Admin --}}
+            @if ($isAdmin ?? false)
+                @php
+                    $displayProducts = [];
+                    $facilityNamesArray = [];
+                    foreach ($salesOrder->orderedProducts as $order) {
+                        foreach ($order->warehouseAllocations as $allocation) {
+                            $displayProducts[] = [
+                                'order' => $order,
+                                'warehouse_name' => $allocation->warehouse->name ?? 'N/A',
+                                'allocated_quantity' => $allocation->allocated_quantity,
+                                'warehouse_allocation_display' =>
+                                    $allocation->warehouse->name . ': ' . $allocation->allocated_quantity,
+                                'allocation_id' => $allocation->id,
+                            ];
+                            $facilityNamesArray[] = $order->tempOrder->facility_name;
+                        }
+                    }
+
+                    // Group pending allocations by warehouse
+                    $pendingWarehouseData = [];
+                    foreach ($salesOrder->orderedProducts as $order) {
+                        $allocationId = $displayProduct['allocation_id'] ?? null;
+                        if ($allocationId) {
+                            $order = $displayProduct['order'];
+                            $allocation = $order->warehouseAllocations->firstWhere('id', $allocationId);
+                            if (
+                                $allocation &&
+                                $allocation->approval_status === 'pending' &&
+                                $allocation->final_dispatched_quantity > 0
+                            ) {
+                                $warehouseId = $allocation->warehouse_id;
+                                $warehouseName = $displayProduct['warehouse_name'];
+
+                                if (!isset($pendingWarehouseData[$warehouseId])) {
+                                    $pendingWarehouseData[$warehouseId] = [
+                                        'name' => $warehouseName,
+                                        'allocation_ids' => [],
+                                        'product_count' => 0,
+                                    ];
+                                }
+
+                                if (!in_array($allocationId, $pendingWarehouseData[$warehouseId]['allocation_ids'])) {
+                                    $pendingWarehouseData[$warehouseId]['allocation_ids'][] = $allocationId;
+                                    $pendingWarehouseData[$warehouseId]['product_count']++;
+                                }
+                            }
+                        }
+                    }
+                @endphp
+
+                @if (count($pendingWarehouseData) > 0)
+                    <div class="mb-3">
+                        <h6 class="mb-2"><i class="bx bx-info-circle me-1"></i> Pending Warehouse Approvals</h6>
+                        <div class="row g-2">
+                            @foreach ($pendingWarehouseData as $warehouseId => $warehouseData)
+                                <div class="col-md-6">
+                                    <div class="alert alert-warning mb-0" role="alert">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <strong><i class="bx bx-store me-1"></i>
+                                                    {{ $warehouseData['name'] }}</strong>
+                                                <br>
+                                                <small class="text-muted">{{ $warehouseData['product_count'] }} product(s)
+                                                    ready for approval</small>
+                                            </div>
+                                            <div>
+                                                <form action="{{ route('change.packaging.status.ready.to.ship') }}"
+                                                    method="POST" class="d-inline"
+                                                    onsubmit="return confirm('Are you sure you want to approve {{ $warehouseData['name'] }} allocations?')">
+                                                    @csrf
+                                                    @method('PUT')
+                                                    <input type="hidden" name="order_id" value="{{ $salesOrder->id }}">
+                                                    <input type="hidden" name="warehouse_id" value="{{ $warehouseId }}">
+                                                    <button type="submit" class="btn btn-success btn-sm">
+                                                        <i class="bx bx-check"></i> Approve
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+
+                        @if (count($pendingWarehouseData) > 1)
+                            <div class="mt-2 text-end">
+                                <form action="{{ route('change.packaging.status.ready.to.ship') }}" method="POST"
+                                    class="d-inline"
+                                    onsubmit="return confirm('Are you sure you want to approve ALL warehouse allocations?')">
+                                    @csrf
+                                    @method('PUT')
+                                    <input type="hidden" name="order_id" value="{{ $salesOrder->id }}">
+                                    <button type="submit" class="btn btn-success">
+                                        <i class="bx bx-check-double"></i> Approve All Warehouses
+                                    </button>
+                                </form>
+                            </div>
+                        @endif
+                    </div>
+                @endif
+            @endif
+
             <div class="card">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center my-2">
@@ -62,7 +165,8 @@
 
                                             <div class="modal-body">
                                                 <div class="col-12 mb-3">
-                                                    <input type="hidden" name="salesOrderId" value="{{ $salesOrder->id }}">
+                                                    <input type="hidden" name="salesOrderId"
+                                                        value="{{ $salesOrder->id }}">
                                                 </div>
 
                                                 <div class="col-12 mb-3">
@@ -225,7 +329,56 @@
                                                     @endif
                                                 @endforeach
                                             </td>
-                                            <td>{{ $order->status }}</td>
+                                            <td>
+                                                @php
+                                                    $statusBadges = [
+                                                        'pending' => 'bg-secondary',
+                                                        'packaging' => 'bg-warning',
+                                                        'packaged' => 'bg-info',
+                                                        'ready_to_ship' => 'bg-success',
+                                                        'dispatched' => 'bg-primary',
+                                                        'shipped' => 'bg-dark',
+                                                        'completed' => 'bg-success',
+                                                    ];
+                                                    $statusLabels = [
+                                                        'pending' => 'Pending',
+                                                        'packaging' => 'Packaging',
+                                                        'packaged' => 'Packaged',
+                                                        'ready_to_ship' => 'Ready to Ship',
+                                                        'dispatched' => 'Dispatched',
+                                                        'shipped' => 'Shipped',
+                                                        'completed' => 'Completed',
+                                                    ];
+
+                                                    // For multi-warehouse products, determine status based on warehouse allocation
+                                                    $currentStatus = 'packaging'; // Default status
+                                                    $allocationId = $displayProduct['allocation_id'] ?? null;
+
+                                                    if ($allocationId) {
+                                                        // Multi-warehouse product - check allocation status
+                                                        $allocation = $order->warehouseAllocations->firstWhere(
+                                                            'id',
+                                                            $allocationId,
+                                                        );
+
+                                                        if ($allocation) {
+                                                            if ($allocation->approval_status === 'approved') {
+                                                                $currentStatus = 'ready_to_ship';
+                                                            } elseif ($allocation->final_dispatched_quantity > 0) {
+                                                                $currentStatus = 'packaged';
+                                                            } else {
+                                                                $currentStatus = 'packaging';
+                                                            }
+                                                        }
+                                                    } else {
+                                                        // Single warehouse product - use product status
+                                                        $currentStatus = $order->status ?? 'packaging';
+                                                    }
+                                                @endphp
+                                                <span class="badge {{ $statusBadges[$currentStatus] ?? 'bg-secondary' }}">
+                                                    {{ $statusLabels[$currentStatus] ?? 'Unknown' }}
+                                                </span>
+                                            </td>
                                         </tr>
                                     @empty
                                         <tr>
