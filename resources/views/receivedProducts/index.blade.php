@@ -3,12 +3,9 @@
     @php
         $statuses = [
             'pending' => 'Pending',
-            'approved' => 'Approved',
-            'blocked' => 'Blocked',
+            'approve' => 'Sent For Approval',
+            'reject' => 'Rejected',
             'completed' => 'Completed',
-            'ready_to_ship' => 'Ready To Ship',
-            'ready_to_package' => 'Ready To Package',
-            'shipped' => 'Shipped',
         ];
     @endphp
 
@@ -30,27 +27,38 @@
             <div class="card mt-4">
                 <div class="card-body">
 
-                    {{-- 
-                    <ul class="nav nav-tabs mb-3" role="tablist">
+                    <ul class="nav nav-pills mb-3" role="tablist">
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link active status-filter-tab" id="all-tab" data-bs-toggle="tab"
-                                data-order="all" data-bs-target="#all" type="button" role="tab" aria-controls="all"
-                                aria-selected="true">All</button>
+                            <a class="nav-link {{ $status === 'all' ? 'active' : '' }}"
+                                href="{{ route('received-products.index', ['status' => 'all']) }}">
+                                All Orders
+                            </a>
                         </li>
-
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link status-filter-tab" id="active-tab" data-bs-toggle="tab"
-                                data-order="Completed" data-bs-target="#active" type="button" role="tab"
-                                aria-controls="active" aria-selected="false">Completed</button>
+                            <a class="nav-link {{ $status === 'pending' ? 'active' : '' }}"
+                                href="{{ route('received-products.index', ['status' => 'pending']) }}">
+                                Pending
+                            </a>
                         </li>
-
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link status-filter-tab" id="inactive-tab" data-bs-toggle="tab"
-                                data-order="Pending" data-bs-target="#inactive" type="button" role="tab"
-                                aria-controls="inactive" aria-selected="false">Pending</button>
+                            <a class="nav-link {{ $status === 'completed' ? 'active' : '' }}"
+                                href="{{ route('received-products.index', ['status' => 'completed']) }}">
+                                Completed
+                            </a>
                         </li>
-                    </ul> 
-                    --}}
+                        <li class="nav-item" role="presentation">
+                            <a class="nav-link {{ $status === 'approve' ? 'active' : '' }}"
+                                href="{{ route('received-products.index', ['status' => 'approve']) }}">
+                                Sent For Approval
+                            </a>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <a class="nav-link {{ $status === 'reject' ? 'active' : '' }}"
+                                href="{{ route('received-products.index', ['status' => 'reject']) }}">
+                                Rejected
+                            </a>
+                        </li>
+                    </ul>
 
                     <div class="customer-table">
                         <div class="table-responsive white-space-nowrap">
@@ -84,7 +92,7 @@
                                                 </p>
                                             </td>
                                             <td>
-                                                {{ $statuses[$order->status] ?? 'On Hold' }}
+                                                {{ $statuses[$order->vendorPI[0]->status] ?? 'On Hold' }}
                                             </td>
                                             <td>{{ $order->purchase_order_products_count ?? 0 }}</td>
                                             <td>{{ $order->created_at->format('d-M-Y') }}</td>
@@ -184,7 +192,7 @@
 
             $('.status-filter-tab').on('click', function() {
                 var selected = $(this).data('order').trim();
-                console.log(selected); 
+                console.log(selected);
 
                 if (selected === 'all') {
                     selected = '';
