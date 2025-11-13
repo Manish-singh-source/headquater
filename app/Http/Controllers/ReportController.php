@@ -56,19 +56,34 @@ class ReportController extends Controller
                     $q->whereDate('created_at', '<=', $request->to_date);
                 }
 
-                // Apply purchase order filter if purchase_order_no is provided
+                // Apply purchase order filter if purchase_order_no is provided (supports single or multiple)
                 if ($request->filled('purchase_order_no')) {
-                    $q->where('purchase_order_id', $request->purchase_order_no);
+                    $po = $request->input('purchase_order_no');
+                    if (is_array($po)) {
+                        $q->whereIn('purchase_order_id', $po);
+                    } else {
+                        $q->where('purchase_order_id', $po);
+                    }
                 }
 
-                // Apply vendor filter if vendor_code is provided
+                // Apply vendor filter if vendor_code is provided (supports single or multiple)
                 if ($request->filled('vendor_code')) {
-                    $q->where('vendor_code', $request->vendor_code);
+                    $vc = $request->input('vendor_code');
+                    if (is_array($vc)) {
+                        $q->whereIn('vendor_code', $vc);
+                    } else {
+                        $q->where('vendor_code', $vc);
+                    }
                 }
 
-                // Apply sku filter if sku is provided
+                // Apply sku filter if sku is provided (supports single or multiple)
                 if ($request->filled('sku')) {
-                    $q->where('vendor_sku_code', $request->sku);
+                    $sku = $request->input('sku');
+                    if (is_array($sku)) {
+                        $q->whereIn('vendor_sku_code', $sku);
+                    } else {
+                        $q->where('vendor_sku_code', $sku);
+                    }
                 }
             });
 
@@ -100,6 +115,8 @@ class ReportController extends Controller
 
             // dd($purchaseOrdersSKUs);
 
+            $filters = $request->only(['from_date', 'to_date', 'purchase_order_no', 'vendor_code', 'sku']);
+
             return view('vendor-purchase-history', compact(
                 'vendorPIProducts',
                 'purchaseOrdersTotal',
@@ -107,7 +124,8 @@ class ReportController extends Controller
                 'totalOrders',
                 'purchaseOrderNumbers',
                 'purchaseOrdersVendors',
-                'purchaseOrdersSKUs'
+                'purchaseOrdersSKUs',
+                'filters'
             ));
         } catch (\Exception $e) {
             Log::error('Error retrieving vendor purchase history: ' . $e->getMessage());
@@ -159,27 +177,42 @@ class ReportController extends Controller
                     $q->whereDate('created_at', '<=', $request->to_date);
                 }
 
-                // Apply purchase order filter if purchase_order_no is provided
+                // Apply purchase order filter if purchase_order_no is provided (supports single or multiple)
                 if ($request->filled('purchase_order_no')) {
-                    $q->where('purchase_order_id', $request->purchase_order_no);
+                    $po = $request->input('purchase_order_no');
+                    if (is_array($po)) {
+                        $q->whereIn('purchase_order_id', $po);
+                    } else {
+                        $q->where('purchase_order_id', $po);
+                    }
                 }
 
-                // Apply vendor filter if vendor_code is provided
+                // Apply vendor filter if vendor_code is provided (supports single or multiple)
                 if ($request->filled('vendor_code')) {
-                    $q->where('vendor_code', $request->vendor_code);
+                    $vc = $request->input('vendor_code');
+                    if (is_array($vc)) {
+                        $q->whereIn('vendor_code', $vc);
+                    } else {
+                        $q->where('vendor_code', $vc);
+                    }
                 }
 
-                // Apply sku filter if sku is provided
+                // Apply sku filter if sku is provided (supports single or multiple)
                 if ($request->filled('sku')) {
-                    $q->where('vendor_sku_code', $request->sku);
+                    $sku = $request->input('sku');
+                    if (is_array($sku)) {
+                        $q->whereIn('vendor_sku_code', $sku);
+                    } else {
+                        $q->where('vendor_sku_code', $sku);
+                    }
                 }
             });
 
-            // Clone query for statistics calculation before pagination
+            // Clone query for statistics calculation before export
             $statsQuery = clone $query;
 
-            // Get paginated vendor PI products (15 per page)
-            $vendorPIProducts = $query->latest('id')->paginate(15)->appends($request->all());
+            // For export we want all matching records (no pagination)
+            $vendorPIProducts = $query->latest('id')->get();
 
             if ($vendorPIProducts->isEmpty()) {
                 return redirect()->back()->with('error', 'No vendor purchase records found for the selected criteria.');
@@ -286,9 +319,19 @@ class ReportController extends Controller
 
             DB::commit();
 
-            // Generate filename with vendor code or date
-            $fileName = $request->vendor_code
-                ? 'Vendor-Purchase-History-' . str_replace(' ', '-', $request->vendor_code) . '-' . date('d-m-Y') . '.csv'
+            // Generate filename with vendor code(s) or date
+            $vendorPart = '';
+            if ($request->filled('vendor_code')) {
+                $vc = $request->input('vendor_code');
+                if (is_array($vc)) {
+                    $vendorPart = implode('-', array_map(function ($v) { return preg_replace('/[^A-Za-z0-9\-]/', '', str_replace(' ', '-', $v)); }, $vc));
+                } else {
+                    $vendorPart = preg_replace('/[^A-Za-z0-9\-]/', '', str_replace(' ', '-', $vc));
+                }
+            }
+
+            $fileName = $vendorPart
+                ? 'Vendor-Purchase-History-' . $vendorPart . '-' . date('d-m-Y') . '.csv'
                 : 'Vendor-Purchase-History-' . date('d-m-Y') . '.csv';
 
             // Return CSV file as download and delete after sending
