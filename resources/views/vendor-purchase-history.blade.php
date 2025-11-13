@@ -121,8 +121,8 @@
             </div>
 
             <!-- Filter Section -->
-            <div class="card mt-4">
-                <div class="card-body pb-1">
+            <div class="card">
+                <div class="card-body">
                     <h6 class="mb-3 fw-bold"><i class="bx bx-filter-alt me-2"></i>Filter Options</h6>
                     <form id="filterForm" method="GET" action="{{ route('vendor-purchase-history') }}">
                         <div class="row align-items-start">
@@ -161,15 +161,30 @@
                                     <div class="col-md-2">
                                         <div class="mb-3">
                                             <label class="form-label">Purchase Order No</label>
-                                            <select id="purchase-order-no" name="purchase_order_no" class="form-select">
-                                                <option value="">-- All Purchase Orders --</option>
-                                                @foreach ($purchaseOrderNumbers as $purchaseOrderNumber)
-                                                    <option value="{{ $purchaseOrderNumber }}"
-                                                        {{ request('purchase_order_no') == $purchaseOrderNumber ? 'selected' : '' }}>
-                                                        {{ $purchaseOrderNumber }}
-                                                    </option>
-                                                @endforeach
-                                            </select>
+                                            <div class="dropdown">
+                                                <button class="btn btn-outline-secondary dropdown-toggle w-100 text-start"
+                                                    type="button" id="poDropdown" data-bs-toggle="dropdown">
+                                                    <i class="bx bx-filter-alt me-1"></i>Select PO
+                                                </button>
+                                                <ul class="dropdown-menu w-100" id="poCheckboxList"
+                                                    style="max-height: 250px; overflow-y: auto;">
+                                                    @foreach ($purchaseOrderNumbers as $purchaseOrderNumber)
+                                                        <li class="px-2 py-1">
+                                                            <div class="form-check">
+                                                                <input class="form-check-input po-checkbox"
+                                                                    type="checkbox" name="purchase_order_no[]"
+                                                                    value="{{ $purchaseOrderNumber }}"
+                                                                    id="po_{{ $loop->index }}"
+                                                                    {{ in_array($purchaseOrderNumber, (array) request('purchase_order_no')) ? 'checked' : '' }}>
+                                                                <label class="form-check-label w-100 cursor-pointer"
+                                                                    for="po_{{ $loop->index }}">
+                                                                    {{ $purchaseOrderNumber }}
+                                                                </label>
+                                                            </div>
+                                                        </li>
+                                                    @endforeach
+                                                </ul>
+                                            </div>
                                         </div>
                                     </div>
 
@@ -177,15 +192,30 @@
                                     <div class="col-md-2">
                                         <div class="mb-3">
                                             <label class="form-label">Vendor Name</label>
-                                            <select id="vendor-code" name="vendor_code" class="form-select">
-                                                <option value="">-- All Vendors --</option>
-                                                @foreach ($purchaseOrdersVendors as $purchaseOrdersVendor)
-                                                    <option value="{{ $purchaseOrdersVendor }}"
-                                                        {{ request('vendor_code') == $purchaseOrdersVendor ? 'selected' : '' }}>
-                                                        {{ $purchaseOrdersVendor }}
-                                                    </option>
-                                                @endforeach
-                                            </select>
+                                            <div class="dropdown">
+                                                <button class="btn btn-outline-secondary dropdown-toggle w-100 text-start"
+                                                    type="button" id="vendorDropdown" data-bs-toggle="dropdown">
+                                                    <i class="bx bx-filter-alt me-1"></i>Select Vendor
+                                                </button>
+                                                <ul class="dropdown-menu w-100" id="vendorCheckboxList"
+                                                    style="max-height: 250px; overflow-y: auto;">
+                                                    @foreach ($purchaseOrdersVendors as $purchaseOrdersVendor)
+                                                        <li class="px-2 py-1">
+                                                            <div class="form-check">
+                                                                <input class="form-check-input vendor-checkbox"
+                                                                    type="checkbox" name="vendor_code[]"
+                                                                    value="{{ $purchaseOrdersVendor }}"
+                                                                    id="vendor_{{ $loop->index }}"
+                                                                    {{ in_array($purchaseOrdersVendor, (array) request('vendor_code')) ? 'checked' : '' }}>
+                                                                <label class="form-check-label w-100 cursor-pointer"
+                                                                    for="vendor_{{ $loop->index }}">
+                                                                    {{ $purchaseOrdersVendor }}
+                                                                </label>
+                                                            </div>
+                                                        </li>
+                                                    @endforeach
+                                                </ul>
+                                            </div>
                                         </div>
                                     </div>
 
@@ -193,21 +223,32 @@
                                     <div class="col-md-2">
                                         <div class="mb-3">
                                             <label class="form-label">SKU</label>
-                                            <select id="sku" name="sku" class="form-select">
-                                                <option value="">-- All SKUs --</option>
-                                                @foreach ($purchaseOrdersSKUs as $product)
-                                                    <option value="{{ $product }}"
-                                                        {{ request('sku') == $product ? 'selected' : '' }}>
-                                                        {{ $product }}
-                                                    </option>
-                                                @endforeach
-                                            </select>
+                                            <div class="dropdown">
+                                                <button class="btn btn-outline-secondary dropdown-toggle w-100 text-start"
+                                                    type="button" id="skuDropdown" data-bs-toggle="dropdown">
+                                                    <i class="bx bx-filter-alt me-1"></i>Select SKU
+                                                </button>
+                                                <ul class="dropdown-menu w-100" id="skuCheckboxList"
+                                                    style="max-height: 250px; overflow-y: auto;">
+                                                    @foreach ($purchaseOrdersSKUs as $product)
+                                                        <li class="px-2 py-1">
+                                                            <div class="form-check">
+                                                                <input class="form-check-input sku-checkbox"
+                                                                    type="checkbox" name="sku[]"
+                                                                    value="{{ $product }}"
+                                                                    id="sku_{{ $loop->index }}"
+                                                                    {{ in_array($product, (array) request('sku')) ? 'checked' : '' }}>
+                                                                <label class="form-check-label w-100 cursor-pointer"
+                                                                    for="sku_{{ $loop->index }}">
+                                                                    {{ $product }}
+                                                                </label>
+                                                            </div>
+                                                        </li>
+                                                    @endforeach
+                                                </ul>
+                                            </div>
                                         </div>
                                     </div>
-
-
-
-
                                 </div>
                             </div>
 
@@ -238,14 +279,56 @@
                                         </button>
                                     </div>
                                 </div>
-
                             </div>
                         </div>
-
-                </div>
                 </form>
             </div>
         </div>
+
+        <!-- Active Filters Summary -->
+        @php
+            $activeFilters = [];
+            if (!empty($filters['from_date'])) {
+                $activeFilters['From'] = $filters['from_date'];
+            }
+            if (!empty($filters['to_date'])) {
+                $activeFilters['To'] = $filters['to_date'];
+            }
+            if (!empty($filters['purchase_order_no'])) {
+                $activeFilters['Purchase Orders'] = (array) $filters['purchase_order_no'];
+            }
+            if (!empty($filters['vendor_code'])) {
+                $activeFilters['Vendors'] = (array) $filters['vendor_code'];
+            }
+            if (!empty($filters['sku'])) {
+                $activeFilters['SKUs'] = (array) $filters['sku'];
+            }
+        @endphp
+
+        @if (!empty($activeFilters))
+            <div class="card mt-3">
+                <div class="card-body">
+                    <h6 class="mb-2 fw-bold">Active Filters</h6>
+                    <div class="d-flex flex-wrap gap-2">
+                        @foreach ($activeFilters as $label => $value)
+                            @if (is_array($value))
+                                <div class="me-2">
+                                    <strong>{{ $label }}:</strong>
+                                    @foreach ($value as $v)
+                                        <span class="badge bg-secondary ms-1">{{ $v }}</span>
+                                    @endforeach
+                                </div>
+                            @else
+                                <div class="me-2"><strong>{{ $label }}:</strong> <span
+                                        class="text-muted">{{ $value }}</span></div>
+                            @endif
+                        @endforeach
+                    </div>
+                    <div class="mt-2 text-muted">Total matching records: <strong>{{ $vendorPIProducts->total() }}</strong>
+                    </div>
+                </div>
+            </div>
+        @endif
 
 
         <!-- Data Table Section -->
@@ -394,6 +477,18 @@
         $(document).ready(function() {
 
             /**
+             * Prevent dropdown from closing when clicking on checkboxes
+             */
+            $(document).on('click', '.dropdown-menu', function(e) {
+                e.stopPropagation();
+            });
+
+            /**
+             * Add cursor pointer styling to checkbox labels
+             */
+            $('.form-check-label').css('cursor', 'pointer');
+
+            /**
              * CSV Export Functionality
              *
              * When "Generate Report" button is clicked:
@@ -410,37 +505,34 @@
                 // Get current filter values from the form
                 var dateFrom = $("#date-from").val().trim();
                 var dateTo = $("#date-to").val().trim();
-                var purchaseOrderNo = $("#purchase-order-no").val().trim();
-                var vendorCode = $("#vendor-code").val().trim();
-                var sku = $("#sku").val().trim();
 
                 // Build query parameters for CSV export
                 var params = [];
 
-                // Add date_from parameter if provided
+                // Add from_date parameter if provided
                 if (dateFrom) {
-                    params.push('date_from=' + encodeURIComponent(dateFrom));
+                    params.push('from_date=' + encodeURIComponent(dateFrom));
                 }
 
-                // Add date_to parameter if provided
+                // Add to_date parameter if provided
                 if (dateTo) {
-                    params.push('date_to=' + encodeURIComponent(dateTo));
+                    params.push('to_date=' + encodeURIComponent(dateTo));
                 }
 
-                // Add purchase_order_no parameter if provided
-                if (purchaseOrderNo) {
-                    params.push('purchase_order_no=' + encodeURIComponent(purchaseOrderNo));
-                }
+                // Add purchase_order_no[] parameters from checked checkboxes
+                $('.po-checkbox:checked').each(function() {
+                    params.push('purchase_order_no[]=' + encodeURIComponent($(this).val()));
+                });
 
-                // Add vendor_code parameter if provided
-                if (vendorCode) {
-                    params.push('vendor_code=' + encodeURIComponent(vendorCode));
-                }
+                // Add vendor_code[] parameters from checked checkboxes
+                $('.vendor-checkbox:checked').each(function() {
+                    params.push('vendor_code[]=' + encodeURIComponent($(this).val()));
+                });
 
-                // Add sku parameter if provided
-                if (sku) {
-                    params.push('sku=' + encodeURIComponent(sku));
-                }
+                // Add sku[] parameters from checked checkboxes
+                $('.sku-checkbox:checked').each(function() {
+                    params.push('sku[]=' + encodeURIComponent($(this).val()));
+                });
 
                 // Construct download URL with parameters
                 var downloadUrl = '{{ route('vendor.purchase.history.excel') }}';
@@ -478,9 +570,9 @@
                 // Clear all filter inputs
                 $('#date-from').val('');
                 $('#date-to').val('');
-                $('#purchase-order-no').val('');
-                $('#vendor-code').val('');
-                $('#sku').val('');
+                $('.po-checkbox').prop('checked', false);
+                $('.vendor-checkbox').prop('checked', false);
+                $('.sku-checkbox').prop('checked', false);
 
                 // Redirect to base URL without filters
                 window.location.href = '{{ route('vendor-purchase-history') }}';
