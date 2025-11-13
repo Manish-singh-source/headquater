@@ -397,8 +397,11 @@
                       </a>
                       <ul>
                           <li><a href="{{ route('purchase.order.index') }}"><i
-                                      class="material-icons-outlined">arrow_right</i>Purchase
-                                  Order</a>
+                                      class="material-icons-outlined">arrow_right</i>Purchase Order
+                                      @if (isset($purchaseOrderCount) && $purchaseOrderCount > 0)
+                                          <span class="badge badge-pill badge-danger">{{ $purchaseOrderCount }}</span>
+                                      @endif
+                                  </a>
                           </li>
                       </ul>
                   </li>
@@ -411,8 +414,11 @@
                       </a>
                       <ul>
                           <li><a href="{{ route('sales.order.index') }}"><i
-                                      class="material-icons-outlined">arrow_right</i>Sales
-                                  Order</a>
+                                      class="material-icons-outlined">arrow_right</i>Sales Order
+                                      @if (isset($salesOrderCount) && $salesOrderCount > 0)
+                                          <span class="badge badge-pill badge-danger">{{ $salesOrderCount }}</span>
+                                      @endif
+                                  </a>
                           </li>
                       </ul>
                   </li>
@@ -421,7 +427,11 @@
                       <a href="{{ route('invoices') }}">
                           <div class="parent-icon"><i class="material-icons-outlined">receipt_long</i>
                           </div>
-                          <div class="menu-title">Invoices</div>
+                          <div class="menu-title">Invoices
+                              @if (isset($invoiceCount) && $invoiceCount > 0)
+                                  <span class="badge badge-pill badge-danger">{{ $invoiceCount }}</span>
+                              @endif
+                          </div>
                       </a>
                   </li>
 
