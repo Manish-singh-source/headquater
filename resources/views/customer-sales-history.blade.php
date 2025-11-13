@@ -257,16 +257,7 @@
                                         </td>
                                         <td>{{ $invoice->appointment?->appointment_date ?? 'N/A' }}</td>
                                         <td>{{ $invoice->appointment?->pod ? 'Yes' : 'No' }}</td>
-                                        <td>{{ $invoice->salesOrder->status == 'shipped' ? 'Yes' : 'No' }}</td>
-
-
-
-
-
-
-
-
-                                        
+                                        <td>{{ $invoice?->salesOrder?->status == 'shipped' ? 'Yes' : 'No' }}</td>
                                         <td>{{ $invoice->dns?->dn_amount ? 'Yes' : 'No' }}</td>
                                         <td>{{ $invoice->appointment?->grn ? 'Yes' : 'No' }}</td>
                                         <td>{{ $invoice->payment_status ? ucfirst($invoice->payment_status) : 'Not Paid' }}
