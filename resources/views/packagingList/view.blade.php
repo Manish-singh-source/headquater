@@ -9,6 +9,27 @@
     </style>
 @endsection
 
+@php
+    $statusBadges = [
+        'pending' => 'bg-secondary',
+        'packaging' => 'bg-warning',
+        'packaged' => 'bg-info',
+        'ready_to_ship' => 'bg-success',
+        'dispatched' => 'bg-primary',
+        'shipped' => 'bg-dark',
+        'completed' => 'bg-success',
+    ];
+    $statusLabels = [
+        'pending' => 'Pending',
+        'packaging' => 'Packaging',
+        'packaged' => 'Packaged',
+        'ready_to_ship' => 'Ready to Ship',
+        'dispatched' => 'Dispatched',
+        'shipped' => 'Shipped',
+        'completed' => 'Completed',
+    ];
+@endphp
+
 @section('main-content')
     <!--start main wrapper-->
     <main class="main-wrapper">
@@ -132,7 +153,7 @@
                         <div class="d-flex justify-content-end my-3 gap-2">
 
                             <!-- Client Name Dropdown -->
-                            <ul class="nav nav-tabs" id="vendorTabs" role="tablist">
+                            {{-- <ul class="nav nav-tabs" id="vendorTabs" role="tablist">
                                 <select class="form-select border-2 border-primary" id="customerPOTable"
                                     aria-label="Select Client Name">
                                     <option value="" selected> -- Select Client Name --</option>
@@ -140,7 +161,7 @@
                                         <option value="{{ $name }}">{{ $name }}</option>
                                     @endforeach
                                 </select>
-                            </ul>
+                            </ul> --}}
 
                             <button class="btn btn-sm border-2 border-primary" data-bs-toggle="modal"
                                 data-bs-target="#staticBackdrop1" class="btn btn-sm border-2 border-primary">
@@ -249,135 +270,162 @@
                                                 <td>{{ $user->warehouse->name }}</td>
                                             @endif
                                             <td>
-                                                @foreach ($order->warehouseAllocations as $allocation)
-                                                    @if ($isSuperAdmin ?? false)
-                                                        <div>
-                                                            {{ $allocation->warehouse->name }}:
-                                                            {{ $allocation->allocated_quantity }}
-                                                        </div>
-                                                    @else
-                                                        @if ($user->warehouse_id == $allocation->warehouse_id)
+                                                @if ($order->warehouseAllocations->count() >= 1)
+                                                    @foreach ($order->warehouseAllocations as $allocation)
+                                                        @if ($isSuperAdmin ?? false)
                                                             <div>
-                                                                {{ $allocation->allocated_quantity ?? 0 }}
+                                                                {{ $allocation->warehouse->name }}:
+                                                                {{ $allocation->allocated_quantity }}
                                                             </div>
+                                                        @else
+                                                            @if ($user->warehouse_id == $allocation->warehouse_id)
+                                                                <div>
+                                                                    {{ $user->warehouse->name }}:
+                                                                    {{ $allocation->allocated_quantity ?? 0 }}
+                                                                </div>
+                                                            @endif
                                                         @endif
-                                                    @endif
-                                                @endforeach
+                                                    @endforeach
+                                                @else
+                                                    {{ $order->dispatched_quantity ?? 0 }}
+                                                @endif
                                             </td>
                                             <td>{{ $order->tempOrder->po_number }}</td>
                                             <td>
-                                                @foreach ($order->warehouseAllocations as $allocation)
-                                                    @if ($isSuperAdmin ?? false)
-                                                        <div>
-                                                            {{ $allocation->warehouse->name }}:
-                                                            {{ $allocation->allocated_quantity ?? 0 }}
-                                                        </div>
-                                                    @else
-                                                        @if ($user->warehouse_id == $allocation->warehouse_id)
+                                                @if ($order->warehouseAllocations->count() > 1)
+                                                    @foreach ($order->warehouseAllocations as $allocation)
+                                                        @if ($isSuperAdmin ?? false)
                                                             <div>
+                                                                {{ $allocation->warehouse->name }}:
                                                                 {{ $allocation->allocated_quantity ?? 0 }}
                                                             </div>
+                                                        @else
+                                                            @if ($user->warehouse_id == $allocation->warehouse_id)
+                                                                <div>
+                                                                    {{ $allocation->allocated_quantity ?? 0 }}
+                                                                </div>
+                                                            @endif
                                                         @endif
-                                                    @endif
-                                                @endforeach
+                                                    @endforeach
+                                                @else
+                                                    {{ $order->dispatched_quantity ?? 0 }}
+                                                @endif
                                             </td>
                                             <td>
-                                                @foreach ($order->warehouseAllocations as $allocation)
-                                                    @if ($isSuperAdmin ?? false)
-                                                        <div>
-                                                            {{ $allocation->warehouse->name }}:
-                                                            {{ $allocation->final_dispatched_quantity ?? 0 }}
-                                                        </div>
-                                                    @else
-                                                        @if ($user->warehouse_id == $allocation->warehouse_id)
+                                                @if ($order->warehouseAllocations->count() > 1)
+                                                    @foreach ($order->warehouseAllocations as $allocation)
+                                                        @if ($isSuperAdmin ?? false)
                                                             <div>
+                                                                {{ $allocation->warehouse->name }}:
                                                                 {{ $allocation->final_dispatched_quantity ?? 0 }}
                                                             </div>
+                                                        @else
+                                                            @if ($user->warehouse_id == $allocation->warehouse_id)
+                                                                <div>
+                                                                    {{ $allocation->final_dispatched_quantity ?? 0 }}
+                                                                </div>
+                                                            @endif
                                                         @endif
-                                                    @endif
-                                                @endforeach
+                                                    @endforeach
+                                                @else
+                                                    {{ $order->final_dispatched_quantity ?? 0 }}
+                                                @endif
                                             </td>
                                             <td>
-                                                @foreach ($order->warehouseAllocations as $allocation)
-                                                    @if ($isSuperAdmin ?? false)
-                                                        <div>
-                                                            {{ $allocation->warehouse->name }}:
-                                                            {{ $allocation->box_count ?? 0 }}
-                                                        </div>
-                                                    @else
-                                                        @if ($user->warehouse_id == $allocation->warehouse_id)
+                                                @if ($order->warehouseAllocations->count() > 1)
+                                                    @foreach ($order->warehouseAllocations as $allocation)
+                                                        @if ($isSuperAdmin ?? false)
                                                             <div>
+                                                                {{ $allocation->warehouse->name }}:
                                                                 {{ $allocation->box_count ?? 0 }}
                                                             </div>
+                                                        @else
+                                                            @if ($user->warehouse_id == $allocation->warehouse_id)
+                                                                <div>
+                                                                    {{ $allocation->box_count ?? 0 }}
+                                                                </div>
+                                                            @endif
                                                         @endif
-                                                    @endif
-                                                @endforeach
+                                                    @endforeach
+                                                @else
+                                                    {{ $order->box_count ?? 0 }}
+                                                @endif
                                             </td>
                                             <td>
-                                                @foreach ($order->warehouseAllocations as $allocation)
-                                                    @if ($isSuperAdmin ?? false)
-                                                        <div>
-                                                            {{ $allocation->warehouse->name }}:
-                                                            {{ $allocation->weight ?? 0 }}
-                                                        </div>
-                                                    @else
-                                                        @if ($user->warehouse_id == $allocation->warehouse_id)
+                                                @if ($order->warehouseAllocations->count() > 1)
+                                                    @foreach ($order->warehouseAllocations as $allocation)
+                                                        @if ($isSuperAdmin ?? false)
                                                             <div>
+                                                                {{ $allocation->warehouse->name }}:
                                                                 {{ $allocation->weight ?? 0 }}
                                                             </div>
+                                                        @else
+                                                            @if ($user->warehouse_id == $allocation->warehouse_id)
+                                                                <div>
+                                                                    {{ $allocation->weight ?? 0 }}
+                                                                </div>
+                                                            @endif
                                                         @endif
-                                                    @endif
-                                                @endforeach
+                                                    @endforeach
+                                                @else
+                                                    {{ $order->weight ?? 0 }}
+                                                @endif
                                             </td>
                                             <td>
-                                                @php
-                                                    $statusBadges = [
-                                                        'pending' => 'bg-secondary',
-                                                        'packaging' => 'bg-warning',
-                                                        'packaged' => 'bg-info',
-                                                        'ready_to_ship' => 'bg-success',
-                                                        'dispatched' => 'bg-primary',
-                                                        'shipped' => 'bg-dark',
-                                                        'completed' => 'bg-success',
-                                                    ];
-                                                    $statusLabels = [
-                                                        'pending' => 'Pending',
-                                                        'packaging' => 'Packaging',
-                                                        'packaged' => 'Packaged',
-                                                        'ready_to_ship' => 'Ready to Ship',
-                                                        'dispatched' => 'Dispatched',
-                                                        'shipped' => 'Shipped',
-                                                        'completed' => 'Completed',
-                                                    ];
-
-                                                    // For multi-warehouse products, determine status based on warehouse allocation
-                                                    $currentStatus = 'packaging'; // Default status
-                                                    $allocationId = $displayProduct['allocation_id'] ?? null;
-
-                                                    if ($allocationId) {
-                                                        // Multi-warehouse product - check allocation status
-                                                        $allocation = $order->warehouseAllocations->firstWhere(
-                                                            'id',
-                                                            $allocationId,
-                                                        );
-
-                                                        if ($allocation) {
-                                                            if ($allocation->approval_status === 'approved') {
-                                                                $currentStatus = 'ready_to_ship';
-                                                            } elseif ($allocation->final_dispatched_quantity > 0) {
-                                                                $currentStatus = 'packaged';
-                                                            } else {
-                                                                $currentStatus = 'packaging';
-                                                            }
-                                                        }
-                                                    } else {
-                                                        // Single warehouse product - use product status
-                                                        $currentStatus = $order->status ?? 'packaging';
-                                                    }
-                                                @endphp
-                                                <span class="badge {{ $statusBadges[$currentStatus] ?? 'bg-secondary' }}">
-                                                    {{ $statusLabels[$currentStatus] ?? 'Unknown' }}
-                                                </span>
+                                                @if ($order->status == 'ready_to_ship')
+                                                    @if ($isSuperAdmin ?? false)
+                                                        <span
+                                                            class="badge {{ $statusBadges[$order->status] ?? 'bg-secondary' }}">
+                                                            {{ $user->warehouse->name }}:
+                                                            {{ $statusLabels[$order->status] ?? 'Ready to Ship' }}
+                                                        </span>
+                                                    @else
+                                                        <span
+                                                            class="badge {{ $statusBadges[$order->status] ?? 'bg-secondary' }}">
+                                                            {{ $statusLabels[$order->status] ?? 'Ready to Ship' }}
+                                                        </span>
+                                                    @endif
+                                                @else
+                                                    @if ($order->warehouseAllocations->count() >= 1)
+                                                        @foreach ($order->warehouseAllocations as $allocation)
+                                                            @if ($isSuperAdmin ?? false)
+                                                                @if ($allocation->final_dispatched_quantity > 0)
+                                                                    <span
+                                                                        class="badge {{ $statusBadges['packaged'] ?? 'bg-secondary' }}">
+                                                                        {{ $allocation->warehouse->name }}:
+                                                                        {{ $statusLabels['packaged'] ?? 'Unknown' }}
+                                                                    </span>
+                                                                @else
+                                                                    <span
+                                                                        class="badge {{ $statusBadges['packaging'] ?? 'bg-secondary' }}">
+                                                                        {{ $allocation->warehouse->name }}:
+                                                                        {{ $statusLabels['packaging'] ?? 'Unknown' }}
+                                                                    </span>
+                                                                @endif
+                                                            @else
+                                                                @if ($user->warehouse_id == $allocation->warehouse_id)
+                                                                    @if ($allocation->final_dispatched_quantity > 0)
+                                                                        <span
+                                                                            class="badge {{ $statusBadges['packaged'] ?? 'bg-secondary' }}">
+                                                                            {{ $statusLabels['packaged'] ?? 'Unknown' }}
+                                                                        </span>
+                                                                    @else
+                                                                        <span
+                                                                            class="badge {{ $statusBadges['packaging'] ?? 'bg-secondary' }}">
+                                                                            {{ $statusLabels['packaging'] ?? 'Unknown' }}
+                                                                        </span>
+                                                                    @endif
+                                                                @endif
+                                                            @endif
+                                                        @endforeach
+                                                    @else
+                                                        <span
+                                                            class="badge {{ $statusBadges[$order->status] ?? 'bg-secondary' }}">
+                                                            {{-- {{ $order->warehouse->name }}: --}}
+                                                            {{ $statusLabels[$order->status] ?? 'Unknown' }}
+                                                        </span>
+                                                    @endif
+                                                @endif
                                             </td>
                                         </tr>
                                     @empty
@@ -405,19 +453,21 @@
                         Generate Invoice
                     </a>
                 </div> --}}
-                @if (!($isAdmin ?? false))
-                    <div class="text-end">
-                        <form action="{{ route('change.packaging.status.ready.to.ship') }}" method="POST"
-                            onsubmit="return confirm('Are you sure you want to mark products as Ready to Ship?')">
-                            @csrf
-                            @method('PUT')
-                            <input type="hidden" name="order_id" value="{{ $salesOrder->id }}">
-                            <button class="btn btn-success w-sm waves ripple-light" type="submit">
-                                <i class="bx bx-package"></i> Ready to Ship
-                            </button>
-                        </form>
-                    </div>
-                @endif
+                <div class="text-end">
+                    <form action="{{ route('change.packaging.status.ready.to.ship') }}" method="POST"
+                        onsubmit="return confirm('Are you sure you want to mark your products as ready to ship?')">
+                        @csrf
+                        @method('PUT')
+                        <input type="hidden" name="order_id" value="{{ $salesOrder->id }}">
+                        <button class="btn btn-success w-sm waves ripple-light" type="submit">
+                            @if ($isAdmin ?? false)
+                                Mark All Ready to Ship
+                            @else
+                                Mark My Products Ready to Ship
+                            @endif
+                        </button>
+                    </form>
+                </div>
             </div>
         </div>
     </main>

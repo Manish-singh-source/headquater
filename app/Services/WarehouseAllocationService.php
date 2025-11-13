@@ -69,6 +69,12 @@ class WarehouseAllocationService
 
                 // Create allocation record only if allocating quantity > 0
                 if ($allocateQty > 0) {
+
+                    // update sales order products warehouse_stock_id
+                    // $salesOrderProduct = SalesOrderProduct::find($salesOrderProductId);
+                    // $salesOrderProduct->warehouse_stock_id = $warehouseStock->warehouse_id;
+                    // $salesOrderProduct->save();
+
                     $allocation = WarehouseAllocation::create([
                         'sales_order_id' => $salesOrderId,
                         'sales_order_product_id' => $salesOrderProductId,

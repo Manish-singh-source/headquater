@@ -109,26 +109,6 @@
                                                                     </div>
 
                                                                     <div class="col-12 mb-3">
-                                                                        <label for="warehouse_id" class="form-label">Select
-                                                                            Warehouse <span class="text-danger">*</span></label>
-                                                                        <select name="warehouse_id" id="warehouse_id"
-                                                                            class="form-select @error('warehouse_id') is-invalid @enderror"
-                                                                            required>
-                                                                            <option value="">-- Select Warehouse --
-                                                                            </option>
-                                                                            @foreach ($warehouses as $warehouse)
-                                                                                <option value="{{ $warehouse->id }}"
-                                                                                    {{ old('warehouse_id') == $warehouse->id ? 'selected' : '' }}>
-                                                                                    {{ $warehouse->name }}
-                                                                                </option>
-                                                                            @endforeach
-                                                                        </select>
-                                                                        @error('warehouse_id')
-                                                                            <div class="invalid-feedback">{{ $message }}</div>
-                                                                        @enderror
-                                                                    </div>
-
-                                                                    <div class="col-12 mb-3">
                                                                         <label for="pi_excel" class="form-label">Updated Vendor
                                                                             PI
                                                                             (CSV/ELSX) <span

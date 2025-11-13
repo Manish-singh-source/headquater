@@ -555,7 +555,7 @@ class PackagingController extends Controller
                 ->withProperties(['sales_order_id' => $request->salesOrderId, 'records_updated' => $insertCount])
                 ->log('Packaging products updated');
 
-            return redirect()->route('packaging.list.index')
+            return redirect()->route('packing.products.view', $request->salesOrderId)
                 ->with('success', 'Packaging products updated successfully. ' . $insertCount . ' records processed.');
         } catch (\Exception $e) {
             DB::rollBack();
@@ -630,8 +630,8 @@ class PackagingController extends Controller
             // Update sales_order_products table with aggregated values
             if ($isAdmin) {
                 $order->final_dispatched_quantity = $finalDispatchQty;
-                // $order->box_count = $boxCount;
-                // $order->weight = $weight;
+                $order->box_count = $boxCount;
+                $order->weight = $weight;
             } else {
                 // For warehouse users, aggregate from all allocations
                 $order->final_dispatched_quantity = $order->warehouseAllocations->sum('final_dispatched_quantity');
@@ -641,13 +641,12 @@ class PackagingController extends Controller
         } else {
             // Single warehouse allocation - update sales_order_products table directly
             $order->final_dispatched_quantity = $finalDispatchQty;
-            // $order->box_count = $boxCount;
-            // $order->weight = $weight;
+            $order->box_count = $boxCount;
+            $order->weight = $weight;
         }
 
-        // DO NOT change status here - keep it as 'packaging'
-        // Status will only change when warehouse clicks "Ready to Ship" button
-        // and admin approves it
+        // Update status
+        $order->status = 'packaged';
 
         // Handle shortage: dispatched > final
         if ($order->dispatched_quantity > $finalDispatchQty) {
