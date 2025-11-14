@@ -6,6 +6,10 @@ use App\Models\City;
 use App\Models\Country;
 use App\Models\Customer;
 use App\Models\CustomerGroupMember;
+use App\Models\CustomerReturn;
+use App\Models\Invoice;
+use App\Models\Payment;
+use App\Models\SalesOrder;
 use App\Models\State;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -240,7 +244,7 @@ class CustomerController extends Controller
             return redirect()->route('customer.groups.index')->with('success', $message);
         } catch (\Exception $e) {
             DB::rollBack();
-            \Log::error('CSV Import Error: ' . $e->getMessage(), [
+            Log::error('CSV Import Error: ' . $e->getMessage(), [
                 'group_id' => $g_id,
                 'trace' => $e->getTraceAsString()
             ]);
@@ -541,7 +545,7 @@ class CustomerController extends Controller
                 ->with('success', 'Customer updated successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
-            \Log::error('Customer Update Error: ' . $e->getMessage());
+            Log::error('Customer Update Error: ' . $e->getMessage());
             return back()->with('error', 'Failed to update customer: ' . $e->getMessage())->withInput();
         }
     }
@@ -573,29 +577,102 @@ class CustomerController extends Controller
             return redirect()->back()->with('success', 'Customer deleted successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
-            \Log::error('Customer Delete Error: ' . $e->getMessage());
+            Log::error('Customer Delete Error: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Failed to delete customer: ' . $e->getMessage());
         }
     }
 
     /**
-     * Show customer details with related data
-     * 
+     * Show customer details with comprehensive related data
+     *
      * @param int $id - Customer ID
      * @return \Illuminate\View\View
      */
     public function detail($id)
     {
         try {
+            // Get customer with basic relationships
             $customerDetails = Customer::with([
-                'groupInfo.customerGroup',
-                'orders.product',
-                'orders.tempOrder'
+                'groupInfo.customerGroup'
             ])->findOrFail($id);
 
-            return view('customer.detail-view', compact('customerDetails'));
+            // Calculate customer metrics
+            $customerMetrics = [
+                'total_sales' => 0,
+                'total_invoices' => 0,
+                'pending_payments' => 0,
+                'total_products' => 0
+            ];
+
+            // Get customer invoices with relationships
+            $customerInvoices = Invoice::with([
+                'warehouse',
+                'salesOrder',
+                'payments',
+                'details.product'
+            ])
+            ->where('customer_id', $id)
+            ->orderBy('invoice_date', 'desc')
+            ->get();
+
+            // Calculate metrics from invoices
+            $customerMetrics['total_invoices'] = $customerInvoices->count();
+            $customerMetrics['total_sales'] = $customerInvoices->sum('total_amount');
+            $customerMetrics['total_products'] = $customerInvoices->sum(function($invoice) {
+                return $invoice->details->sum('quantity');
+            });
+
+            // Calculate pending payments
+            $customerMetrics['pending_payments'] = $customerInvoices->sum(function($invoice) {
+                return $invoice->total_amount - $invoice->payments->sum('amount');
+            });
+
+            // Get customer sales orders
+            $customerOrders = SalesOrder::with([
+                'warehouse',
+                'customerGroup',
+                'orderedProducts.product',
+                'orderedProducts.tempOrder'
+            ])
+            ->whereHas('orderedProducts', function($query) use ($id) {
+                $query->where('customer_id', $id);
+            })
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+            // Get customer payments
+            $customerPayments = Payment::with([
+                'invoice.salesOrder'
+            ])
+            ->whereHas('invoice', function($query) use ($id) {
+                $query->where('customer_id', $id);
+            })
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+            // Get customer returns
+            $customerReturns = CustomerReturn::with([
+                'salesOrder',
+                'warehouse',
+                'product'
+            ])
+            ->whereHas('salesOrder.orderedProducts', function($query) use ($id) {
+                $query->where('customer_id', $id);
+            })
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+            return view('customer.detail-view', compact(
+                'customerDetails',
+                'customerMetrics',
+                'customerInvoices',
+                'customerOrders',
+                'customerPayments',
+                'customerReturns'
+            ));
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Customer not found.');
+            Log::error('Customer Detail Error: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Customer not found or error loading details.');
         }
     }
 
@@ -685,7 +762,7 @@ class CustomerController extends Controller
             return redirect()->route('user-profile')->with('success', 'Profile updated successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
-            \Log::error('Profile Update Error: ' . $e->getMessage());
+            Log::error('Profile Update Error: ' . $e->getMessage());
             return back()->with('error', 'Failed to update profile: ' . $e->getMessage())->withInput();
         }
     }

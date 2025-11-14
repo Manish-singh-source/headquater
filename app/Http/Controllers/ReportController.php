@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
+use PDF;
 
 class ReportController extends Controller
 {
@@ -716,7 +717,10 @@ class ReportController extends Controller
      * - from_date: Filter invoices from this date onwards (inclusive)
      * - to_date: Filter invoices up to this date (inclusive)
      * - customer_id: Filter invoices for a specific customer
-     * - If no filters applied, shows all invoices
+     * - region: Filter by customer billing/shipping state
+     * - payment_status: Filter by payment status (paid/unpaid/partial)
+     * - customer_type: Filter by customer group
+     * - If no filters applied, shows all customer aggregates
      * - Statistics (total amount, paid, due) are calculated based on filtered results
      *
      * @param Request $request
@@ -726,7 +730,7 @@ class ReportController extends Controller
     {
         try {
             // Build the base query with relationships
-            $query = Invoice::with(['warehouse', 'customer', 'salesOrder', 'payments']);
+            $query = Invoice::with(['warehouse', 'customer.groupInfo.customerGroup', 'salesOrder', 'payments']);
 
             // Apply date range filter if from_date is provided
             if ($request->filled('from_date')) {
@@ -743,22 +747,92 @@ class ReportController extends Controller
                 $query->where('customer_id', $request->customer_id);
             }
 
-            // Clone query for statistics calculation before pagination
+            // Apply region filter
+            if ($request->filled('region')) {
+                $query->whereHas('customer', function ($q) use ($request) {
+                    $q->where('billing_state', $request->region)
+                      ->orWhere('shipping_state', $request->region);
+                });
+            }
+
+            // Apply payment status filter
+            if ($request->filled('payment_status')) {
+                if ($request->payment_status === 'paid') {
+                    $query->whereRaw('(total_amount - COALESCE((SELECT SUM(amount) FROM payments WHERE payments.invoice_id = invoices.id), 0)) <= 0');
+                } elseif ($request->payment_status === 'unpaid') {
+                    $query->whereRaw('(total_amount - COALESCE((SELECT SUM(amount) FROM payments WHERE payments.invoice_id = invoices.id), 0)) = total_amount');
+                } elseif ($request->payment_status === 'partial') {
+                    $query->whereRaw('(total_amount - COALESCE((SELECT SUM(amount) FROM payments WHERE payments.invoice_id = invoices.id), 0)) > 0')
+                          ->whereRaw('(total_amount - COALESCE((SELECT SUM(amount) FROM payments WHERE payments.invoice_id = invoices.id), 0)) < total_amount');
+                }
+            }
+
+            // Apply customer type/group filter
+            if ($request->filled('customer_type')) {
+                $query->whereHas('customer.groupInfo.customerGroup', function ($q) use ($request) {
+                    $q->where('id', $request->customer_type);
+                });
+            }
+
+            // Clone query for statistics calculation
             $statsQuery = clone $query;
 
-            // Get paginated invoices (15 per page)
-            $invoices = $query->latest('invoice_date')->get();
+            // Get all invoices for aggregation
+            $invoices = $query->get();
 
-            // Calculate statistics based on filtered results
-            $invoicesAmountSum = $statsQuery->sum('total_amount');
+            // Aggregate data by customer
+            $customerAggregates = $invoices->groupBy('customer_id')->map(function ($customerInvoices, $customerId) {
+                $customer = $customerInvoices->first()->customer;
+                $totalAmount = $customerInvoices->sum('total_amount');
+                $totalPaid = $customerInvoices->sum(function ($invoice) {
+                    return $invoice->payments->sum('amount');
+                });
+                $totalDue = $totalAmount - $totalPaid;
+                $totalInvoices = $customerInvoices->count();
+                $totalProducts = $customerInvoices->sum(function ($invoice) {
+                    return $invoice->details->sum('quantity');
+                });
 
-            // Calculate total paid amount from filtered invoices
-            $filteredInvoiceIds = $statsQuery->pluck('id');
-            $invoicesAmountPaidSum = DB::table('payments')
-                ->whereIn('invoice_id', $filteredInvoiceIds)
-                ->sum('amount');
+                // Payment status counts
+                $paidCount = 0;
+                $unpaidCount = 0;
+                $partialCount = 0;
 
-            // Get unique customers from all invoices for dropdown
+                foreach ($customerInvoices as $invoice) {
+                    $paid = $invoice->payments->sum('amount');
+                    if ($paid >= $invoice->total_amount) {
+                        $paidCount++;
+                    } elseif ($paid > 0) {
+                        $partialCount++;
+                    } else {
+                        $unpaidCount++;
+                    }
+                }
+
+                // Date range
+                $minDate = $customerInvoices->min('invoice_date');
+                $maxDate = $customerInvoices->max('invoice_date');
+
+                return [
+                    'customer' => $customer,
+                    'total_sales_amount' => $totalAmount,
+                    'total_invoices' => $totalInvoices,
+                    'total_products_sold' => $totalProducts,
+                    'paid_invoices' => $paidCount,
+                    'unpaid_invoices' => $unpaidCount,
+                    'partial_invoices' => $partialCount,
+                    'outstanding_balance' => $totalDue,
+                    'date_range_start' => $minDate,
+                    'date_range_end' => $maxDate,
+                ];
+            })->sortByDesc('total_sales_amount')->values();
+
+            // Calculate overall statistics
+            $totalRevenue = $customerAggregates->sum('total_sales_amount');
+            $totalPendingPayments = $customerAggregates->sum('outstanding_balance');
+            $topCustomer = $customerAggregates->first();
+
+            // Get filter dropdown data
             $customers = Customer::select('id', 'client_name')
                 ->whereHas('invoices')
                 ->orderBy('client_name')
@@ -770,20 +844,35 @@ class ReportController extends Controller
                     ];
                 });
 
+            $regions = Customer::distinct()
+                ->whereNotNull('billing_state')
+                ->pluck('billing_state')
+                ->merge(Customer::distinct()->whereNotNull('shipping_state')->pluck('shipping_state'))
+                ->unique()
+                ->sort()
+                ->values();
+
+            $customerGroups = \App\Models\CustomerGroup::active()->select('id', 'name')->get();
+
             $data = [
                 'title' => 'Customer Sales History',
-                'invoices' => $invoices,
-                'invoicesAmountSum' => $invoicesAmountSum,
-                'invoicesAmountPaidSum' => $invoicesAmountPaidSum,
+                'customerAggregates' => $customerAggregates,
+                'totalRevenue' => $totalRevenue,
+                'totalPendingPayments' => $totalPendingPayments,
+                'topCustomer' => $topCustomer,
                 'customers' => $customers,
+                'regions' => $regions,
+                'customerGroups' => $customerGroups,
                 'filters' => [
                     'from_date' => $request->from_date,
                     'to_date' => $request->to_date,
                     'customer_id' => $request->customer_id,
+                    'region' => $request->region,
+                    'payment_status' => $request->payment_status,
+                    'customer_type' => $request->customer_type,
                 ],
             ];
 
-            // dd($data);
             return view('customer-sales-history', $data);
         } catch (\Exception $e) {
             Log::error('Error retrieving customer sales history: ' . $e->getMessage());
@@ -792,18 +881,15 @@ class ReportController extends Controller
     }
 
     /**
-     * Download customer sales history as CSV
+     * Download customer sales history as Excel
      *
-     * CSV Generation Workflow:
-     * 1. Validate optional filter parameters (from_date, to_date, customer_id)
+     * Excel Generation Workflow:
+     * 1. Validate optional filter parameters
      * 2. Build query with same filtering logic as index method
-     * 3. Retrieve all matching invoices (no pagination for export)
-     * 4. Generate CSV file with headers and data rows
-     * 5. Calculate amounts (total, paid, due) for each invoice
-     * 6. Log activity for audit trail
-     * 7. Return CSV file as download and delete temp file after sending
-     *
-     * All filters are optional - if none provided, exports all records
+     * 3. Aggregate data by customer
+     * 4. Generate Excel file with customer summary data
+     * 5. Log activity for audit trail
+     * 6. Return Excel file as download and delete temp file after sending
      *
      * @param Request $request
      * @return \Symfony\Component\HttpFoundation\BinaryFileResponse|\Illuminate\Http\RedirectResponse
@@ -815,6 +901,9 @@ class ReportController extends Controller
             'from_date' => 'nullable|date',
             'to_date' => 'nullable|date|after_or_equal:from_date',
             'customer_id' => 'nullable|integer|exists:customers,id',
+            'region' => 'nullable|string',
+            'payment_status' => 'nullable|in:paid,unpaid,partial',
+            'customer_type' => 'nullable|integer|exists:customer_groups,id',
         ]);
 
         if ($validator->fails()) {
@@ -823,77 +912,136 @@ class ReportController extends Controller
 
         DB::beginTransaction();
         try {
-            // Build query with same filtering logic as index method
-            $query = Invoice::with(['warehouse', 'customer', 'salesOrder', 'payments']);
+            // Use the same aggregation logic as the index method
+            $query = Invoice::with(['warehouse', 'customer.groupInfo.customerGroup', 'salesOrder', 'payments']);
 
-            // Apply date range filter if from_date is provided
+            // Apply filters (same as index method)
             if ($request->filled('from_date')) {
                 $query->where('invoice_date', '>=', $request->from_date);
             }
-
-            // Apply date range filter if to_date is provided
             if ($request->filled('to_date')) {
                 $query->where('invoice_date', '<=', $request->to_date);
             }
-
-            // Apply customer filter if customer_id is provided
             if ($request->filled('customer_id')) {
                 $query->where('customer_id', $request->customer_id);
             }
-
-            // Get all matching invoices (no pagination for export)
-            $invoices = $query->latest('invoice_date')->get();
-
-            if ($invoices->isEmpty()) {
-                return redirect()->back()->with('error', 'No sales records found for the selected criteria.');
+            if ($request->filled('region')) {
+                $query->whereHas('customer', function ($q) use ($request) {
+                    $q->where('billing_state', $request->region)
+                      ->orWhere('shipping_state', $request->region);
+                });
+            }
+            if ($request->filled('payment_status')) {
+                if ($request->payment_status === 'paid') {
+                    $query->whereRaw('(total_amount - COALESCE((SELECT SUM(amount) FROM payments WHERE payments.invoice_id = invoices.id), 0)) <= 0');
+                } elseif ($request->payment_status === 'unpaid') {
+                    $query->whereRaw('(total_amount - COALESCE((SELECT SUM(amount) FROM payments WHERE payments.invoice_id = invoices.id), 0)) = total_amount');
+                } elseif ($request->payment_status === 'partial') {
+                    $query->whereRaw('(total_amount - COALESCE((SELECT SUM(amount) FROM payments WHERE payments.invoice_id = invoices.id), 0)) > 0')
+                          ->whereRaw('(total_amount - COALESCE((SELECT SUM(amount) FROM payments WHERE payments.invoice_id = invoices.id), 0)) < total_amount');
+                }
+            }
+            if ($request->filled('customer_type')) {
+                $query->whereHas('customer.groupInfo.customerGroup', function ($q) use ($request) {
+                    $q->where('id', $request->customer_type);
+                });
             }
 
-            // Create temporary CSV file
-            $tempCsvPath = storage_path('app/customer_sales_history_' . Str::random(8) . '.csv');
-            $file = fopen($tempCsvPath, 'w');
+            // Get all invoices for aggregation
+            $invoices = $query->get();
 
-            // Add UTF-8 BOM for proper Excel encoding
-            fprintf($file, chr(0xEF) . chr(0xBB) . chr(0xBF));
+            if ($invoices->isEmpty()) {
+                return redirect()->back()->with('error', 'No customer sales records found for the selected criteria.');
+            }
+
+            // Aggregate data by customer (same logic as index)
+            $customerAggregates = $invoices->groupBy('customer_id')->map(function ($customerInvoices, $customerId) {
+                $customer = $customerInvoices->first()->customer;
+                $totalAmount = $customerInvoices->sum('total_amount');
+                $totalPaid = $customerInvoices->sum(function ($invoice) {
+                    return $invoice->payments->sum('amount');
+                });
+                $totalDue = $totalAmount - $totalPaid;
+                $totalInvoices = $customerInvoices->count();
+                $totalProducts = $customerInvoices->sum(function ($invoice) {
+                    return $invoice->details->sum('quantity');
+                });
+
+                $paidCount = 0;
+                $unpaidCount = 0;
+                $partialCount = 0;
+
+                foreach ($customerInvoices as $invoice) {
+                    $paid = $invoice->payments->sum('amount');
+                    if ($paid >= $invoice->total_amount) {
+                        $paidCount++;
+                    } elseif ($paid > 0) {
+                        $partialCount++;
+                    } else {
+                        $unpaidCount++;
+                    }
+                }
+
+                $minDate = $customerInvoices->min('invoice_date');
+                $maxDate = $customerInvoices->max('invoice_date');
+
+                return [
+                    'customer_name' => $customer->client_name ?? 'N/A',
+                    'customer_group' => $customer->groupInfo->customerGroup->name ?? 'N/A',
+                    'email' => $customer->email ?? '',
+                    'total_sales_amount' => $totalAmount,
+                    'total_invoices' => $totalInvoices,
+                    'total_products_sold' => $totalProducts,
+                    'paid_invoices' => $paidCount,
+                    'unpaid_invoices' => $unpaidCount,
+                    'partial_invoices' => $partialCount,
+                    'outstanding_balance' => $totalDue,
+                    'date_range_start' => $minDate ? $minDate->format('d-m-Y') : 'N/A',
+                    'date_range_end' => $maxDate ? $maxDate->format('d-m-Y') : 'N/A',
+                ];
+            })->sortByDesc('total_sales_amount')->values();
+
+            // Create temporary Excel file
+            $tempXlsxPath = storage_path('app/customer_sales_history_' . Str::random(8) . '.xlsx');
+
+            // Create writer
+            $writer = \Spatie\SimpleExcel\SimpleExcelWriter::create($tempXlsxPath);
 
             // Add header row
-            fputcsv($file, [
-                'Invoice No',
+            $writer->addRow([
                 'Customer Name',
-                'Ordered Date',
-                'Total Amount',
-                'Paid',
-                'Due',
-                'Appointment Date',
-                'POD',
-                'LR',
-                'DN',
-                'GRN',
-                'Payment Status',
+                'Customer Group',
+                'Email',
+                'Total Sales Amount',
+                'Total Invoices',
+                'Total Products Sold',
+                'Paid Invoices',
+                'Unpaid Invoices',
+                'Partial Invoices',
+                'Outstanding Balance',
+                'Date Range Start',
+                'Date Range End',
             ]);
 
             // Add data rows
-            foreach ($invoices as $invoice) {
-                $totalAmount = (float)($invoice->total_amount ?? 0);
-                $paidAmount = (float)($invoice->payments?->sum('amount') ?? 0);
-                $dueAmount = max(0, $totalAmount - $paidAmount);
-
-                fputcsv($file, [
-                    $invoice->invoice_number ?? 'N/A',
-                    $invoice->customer?->client_name ?? 'N/A',
-                    $invoice->invoice_date ? $invoice->invoice_date->format('d-m-Y') : 'N/A',
-                    number_format($totalAmount, 2, '.', ''),
-                    number_format($paidAmount, 2, '.', ''),
-                    number_format($dueAmount, 2, '.', ''),
-                    $invoice->appointment?->appointment_date ?? 'N/A',
-                    $invoice->appointment?->pod ? 'Yes' : 'No',
-                    $invoice->appointment?->lr ? 'Yes' : 'No',
-                    $invoice->dns?->dn_amount ? 'Yes' : 'No',
-                    $invoice->appointment?->grn ? 'Yes' : 'No',
-                    isset($invoice->payments?->first()->payment_status) != null && $invoice->payments?->first()->payment_status == 'completed'  ? 'paid' : 'not paid',
+            foreach ($customerAggregates as $aggregate) {
+                $writer->addRow([
+                    $aggregate['customer_name'],
+                    $aggregate['customer_group'],
+                    $aggregate['email'],
+                    number_format($aggregate['total_sales_amount'], 2, '.', ''),
+                    $aggregate['total_invoices'],
+                    $aggregate['total_products_sold'],
+                    $aggregate['paid_invoices'],
+                    $aggregate['unpaid_invoices'],
+                    $aggregate['partial_invoices'],
+                    number_format($aggregate['outstanding_balance'], 2, '.', ''),
+                    $aggregate['date_range_start'],
+                    $aggregate['date_range_end'],
                 ]);
             }
 
-            fclose($file);
+            $writer->close();
 
             // Log activity for audit trail
             activity()
@@ -902,25 +1050,202 @@ class ReportController extends Controller
                     'from_date' => $request->from_date,
                     'to_date' => $request->to_date,
                     'customer_id' => $request->customer_id,
-                    'records' => $invoices->count(),
+                    'region' => $request->region,
+                    'payment_status' => $request->payment_status,
+                    'customer_type' => $request->customer_type,
+                    'records' => $customerAggregates->count(),
                 ])
-                ->event('csv_report_generated')
-                ->log('Customer sales history CSV report generated');
+                ->event('excel_report_generated')
+                ->log('Customer sales history Excel report generated');
 
             DB::commit();
 
-            // Generate filename with current date
-            $fileName = 'Customer-Sales-History-' . date('d-m-Y') . '.csv';
+            // Generate filename
+            $fileName = 'Customer-Sales-Summary-' . date('d-m-Y') . '.xlsx';
 
-            // Return CSV file as download and delete after sending
-            return response()->download($tempCsvPath, $fileName, [
-                'Content-Type' => 'text/csv',
-                'Content-Disposition' => 'attachment; filename="' . $fileName . '"',
+            // Return Excel file as download and delete after sending
+            return response()->download($tempXlsxPath, $fileName, [
+                'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
             ])->deleteFileAfterSend(true);
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error generating customer sales CSV report: ' . $e->getMessage());
+            Log::error('Error generating customer sales Excel report: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Error generating sales report: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Download customer sales history as PDF
+     *
+     * PDF Generation Workflow:
+     * 1. Validate optional filter parameters
+     * 2. Build query with same filtering logic as index method
+     * 3. Aggregate data by customer
+     * 4. Generate PDF with formatted customer summary report
+     * 5. Log activity for audit trail
+     * 6. Return PDF file as download and delete temp file after sending
+     *
+     * @param Request $request
+     * @return \Symfony\Component\HttpFoundation\BinaryFileResponse|\Illuminate\Http\RedirectResponse
+     */
+    public function customerSalesHistoryPdf(Request $request)
+    {
+        // Validate optional filters (same as Excel)
+        $validator = Validator::make($request->all(), [
+            'from_date' => 'nullable|date',
+            'to_date' => 'nullable|date|after_or_equal:from_date',
+            'customer_id' => 'nullable|integer|exists:customers,id',
+            'region' => 'nullable|string',
+            'payment_status' => 'nullable|in:paid,unpaid,partial',
+            'customer_type' => 'nullable|integer|exists:customer_groups,id',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator)->withInput();
+        }
+
+        try {
+            // Use the same aggregation logic as the index method
+            $query = Invoice::with(['warehouse', 'customer.groupInfo.customerGroup', 'salesOrder', 'payments']);
+
+            // Apply filters (same as index method)
+            if ($request->filled('from_date')) {
+                $query->where('invoice_date', '>=', $request->from_date);
+            }
+            if ($request->filled('to_date')) {
+                $query->where('invoice_date', '<=', $request->to_date);
+            }
+            if ($request->filled('customer_id')) {
+                $query->where('customer_id', $request->customer_id);
+            }
+            if ($request->filled('region')) {
+                $query->whereHas('customer', function ($q) use ($request) {
+                    $q->where('billing_state', $request->region)
+                      ->orWhere('shipping_state', $request->region);
+                });
+            }
+            if ($request->filled('payment_status')) {
+                if ($request->payment_status === 'paid') {
+                    $query->whereRaw('(total_amount - COALESCE((SELECT SUM(amount) FROM payments WHERE payments.invoice_id = invoices.id), 0)) <= 0');
+                } elseif ($request->payment_status === 'unpaid') {
+                    $query->whereRaw('(total_amount - COALESCE((SELECT SUM(amount) FROM payments WHERE payments.invoice_id = invoices.id), 0)) = total_amount');
+                } elseif ($request->payment_status === 'partial') {
+                    $query->whereRaw('(total_amount - COALESCE((SELECT SUM(amount) FROM payments WHERE payments.invoice_id = invoices.id), 0)) > 0')
+                          ->whereRaw('(total_amount - COALESCE((SELECT SUM(amount) FROM payments WHERE payments.invoice_id = invoices.id), 0)) < total_amount');
+                }
+            }
+            if ($request->filled('customer_type')) {
+                $query->whereHas('customer.groupInfo.customerGroup', function ($q) use ($request) {
+                    $q->where('id', $request->customer_type);
+                });
+            }
+
+            // Get all invoices for aggregation
+            $invoices = $query->get();
+
+            if ($invoices->isEmpty()) {
+                return redirect()->back()->with('error', 'No customer sales records found for the selected criteria.');
+            }
+
+            // Aggregate data by customer (same logic as index)
+            $customerAggregates = $invoices->groupBy('customer_id')->map(function ($customerInvoices, $customerId) {
+                $customer = $customerInvoices->first()->customer;
+                $totalAmount = $customerInvoices->sum('total_amount');
+                $totalPaid = $customerInvoices->sum(function ($invoice) {
+                    return $invoice->payments->sum('amount');
+                });
+                $totalDue = $totalAmount - $totalPaid;
+                $totalInvoices = $customerInvoices->count();
+                $totalProducts = $customerInvoices->sum(function ($invoice) {
+                    return $invoice->details->sum('quantity');
+                });
+
+                $paidCount = 0;
+                $unpaidCount = 0;
+                $partialCount = 0;
+
+                foreach ($customerInvoices as $invoice) {
+                    $paid = $invoice->payments->sum('amount');
+                    if ($paid >= $invoice->total_amount) {
+                        $paidCount++;
+                    } elseif ($paid > 0) {
+                        $partialCount++;
+                    } else {
+                        $unpaidCount++;
+                    }
+                }
+
+                $minDate = $customerInvoices->min('invoice_date');
+                $maxDate = $customerInvoices->max('invoice_date');
+
+                return [
+                    'customer' => $customer,
+                    'total_sales_amount' => $totalAmount,
+                    'total_invoices' => $totalInvoices,
+                    'total_products_sold' => $totalProducts,
+                    'paid_invoices' => $paidCount,
+                    'unpaid_invoices' => $unpaidCount,
+                    'partial_invoices' => $partialCount,
+                    'outstanding_balance' => $totalDue,
+                    'date_range_start' => $minDate,
+                    'date_range_end' => $maxDate,
+                ];
+            })->sortByDesc('total_sales_amount')->values();
+
+            // Calculate overall statistics
+            $totalRevenue = $customerAggregates->sum('total_sales_amount');
+            $totalPendingPayments = $customerAggregates->sum('outstanding_balance');
+            $topCustomer = $customerAggregates->first();
+
+            // Prepare data for PDF
+            $pdfData = [
+                'title' => 'Customer Sales Summary Report',
+                'generated_at' => now()->format('d-m-Y H:i:s'),
+                'filters' => [
+                    'from_date' => $request->from_date,
+                    'to_date' => $request->to_date,
+                    'customer_id' => $request->customer_id,
+                    'region' => $request->region,
+                    'payment_status' => $request->payment_status,
+                    'customer_type' => $request->customer_type,
+                ],
+                'summary' => [
+                    'total_customers' => $customerAggregates->count(),
+                    'total_revenue' => $totalRevenue,
+                    'total_pending_payments' => $totalPendingPayments,
+                    'top_customer' => $topCustomer ? $topCustomer['customer']->client_name : 'N/A',
+                    'top_customer_amount' => $topCustomer ? $topCustomer['total_sales_amount'] : 0,
+                ],
+                'customerAggregates' => $customerAggregates,
+            ];
+
+            // Generate PDF
+            $pdf = \PDF::loadView('reports.customer-sales-summary-pdf', $pdfData);
+            $pdf->setPaper('a4', 'landscape');
+
+            // Log activity
+            activity()
+                ->causedBy(Auth::user())
+                ->withProperties([
+                    'from_date' => $request->from_date,
+                    'to_date' => $request->to_date,
+                    'customer_id' => $request->customer_id,
+                    'region' => $request->region,
+                    'payment_status' => $request->payment_status,
+                    'customer_type' => $request->customer_type,
+                    'records' => $customerAggregates->count(),
+                ])
+                ->event('pdf_report_generated')
+                ->log('Customer sales history PDF report generated');
+
+            // Generate filename
+            $fileName = 'Customer-Sales-Summary-' . date('d-m-Y') . '.pdf';
+
+            // Return PDF as download
+            return $pdf->download($fileName);
+        } catch (\Exception $e) {
+            Log::error('Error generating customer sales PDF report: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Error generating PDF report: ' . $e->getMessage());
         }
     }
 }
