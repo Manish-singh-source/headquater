@@ -168,6 +168,7 @@ class ProductController extends Controller
                         'pcs_set' => $record['PCS/Set'] ?? '',
                         'sets_ctn' => $record['Sets/CTN'] ?? '',
                         'gst' => $record['GST'] ?? '',
+                        'hsn' => $record['HSN'] ?? '',
                         'basic_rate' => isset($record['Basic Rate']) ? intval($record['Basic Rate']) : '',
                         'net_landing_rate' => $netLandingRate,
                         'case_pack_quantity' => $casePackQuantity,
@@ -275,6 +276,7 @@ class ProductController extends Controller
                     'pcs_set' => Arr::get($record, 'PCS/Set') ?? '',
                     'sets_ctn' => Arr::get($record, 'Sets/CTN') ?? '',
                     'gst' => Arr::get($record, 'GST') ?? '',
+                    'hsn' => Arr::get($record, 'HSN') ?? '',
 
                     'basic_rate' => isset($record['Basic Rate']) ? $record['Basic Rate'] : '',
                     'net_landing_rate' => $netLandingRate,
@@ -377,6 +379,7 @@ class ProductController extends Controller
             'pcs_set' => 'nullable|integer|min:0',
             'sets_ctn' => 'nullable|integer|min:0',
             'basic_rate' => 'nullable|numeric|min:0',
+            'hsn' => 'nullable|string|max:50',
             'original_quantity' => 'nullable|integer|min:0',
             'available_quantity' => 'nullable|integer|min:0',
         ]);
@@ -403,6 +406,7 @@ class ProductController extends Controller
                 'category' => $request->category,
                 'pcs_set' => (int)($request->pcs_set ?? 0),
                 'sets_ctn' => (int)($request->sets_ctn ?? 0),
+                'hsn' => $request->hsn,
             ];
 
             if ($request->has('basic_rate') && $request->basic_rate !== null && $request->basic_rate !== '') {
@@ -604,6 +608,7 @@ class ProductController extends Controller
                     'Vendor Name' => $stock->product?->vendor_name ?? '',
                     'Vendor Purchase Rate' => $stock->product?->vendor_purchase_rate ?? '',
                     'GST' => $stock->product?->gst ?? '',
+                    'HSN' => $stock->product?->hsn ?? '',
                     'Vendor Net Landing' => $stock->product?->vendor_net_landing ?? '',
                     'Stock' => $stock->available_quantity ?? 0,
                 ]);
