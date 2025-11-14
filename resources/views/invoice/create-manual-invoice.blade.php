@@ -600,10 +600,11 @@
             const warehouseId = selectElement.value;
             const productSelect = document.querySelector(`select[name="products[${rowId}][product_id]"]`);
 
-            // Reset product selection and stock when warehouse changes
+            // Reset product selection, stock and HSN when warehouse changes
             if (productSelect.value) {
                 productSelect.value = '';
                 document.getElementById(`stock_${rowId}`).value = '0';
+                document.querySelector(`input[name="products[${rowId}][hsn]"]`).value = '';
             }
         }
 
@@ -624,7 +625,7 @@
                 const price = selectedOption.dataset.price;
                 document.querySelector(`input[name="products[${rowId}][unit_price]"]`).value = price;
 
-                // Check stock
+                // Check stock and get product details
                 fetch('{{ route('invoices.check-stock') }}', {
                         method: 'POST',
                         headers: {
@@ -639,7 +640,13 @@
                     .then(response => response.json())
                     .then(data => {
                         if (data.success) {
+                            // Populate stock
                             document.getElementById(`stock_${rowId}`).value = data.available_quantity;
+
+                            // Populate HSN code if available
+                            if (data.product && data.product.hsn) {
+                                document.querySelector(`input[name="products[${rowId}][hsn]"]`).value = data.product.hsn;
+                            }
                         }
                     })
                     .catch(error => console.error('Error:', error));
