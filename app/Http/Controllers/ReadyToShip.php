@@ -25,13 +25,25 @@ class ReadyToShip extends Controller
      *
      * @return \Illuminate\View\View
      */
-    public function index()
+    public function index(Request $request)
     {
         try {
             $user = Auth::user();
             // Check if user is admin (Super Admin or Admin role, or warehouse_id is null/0)
             $isAdmin = $user->hasRole(['Super Admin', 'Admin']) || !$user->warehouse_id;
             $userWarehouseId = $user->warehouse_id;
+
+            // $status = $request->query('status', 'all');
+            // $orders = SalesOrder::with('customerGroup')->with('orderedProducts', function ($q) use ($status) {
+            //     $q->where('status', 'ready_to_ship');
+            // });
+            // $orders = $orders->get();
+            // return view('readyToShip.index', compact('orders'));
+
+
+
+
+
 
             $query = SalesOrder::where('status', 'ready_to_ship')
                 ->with('customerGroup');
@@ -44,22 +56,22 @@ class ReadyToShip extends Controller
                         $subQuery->whereHas('warehouseAllocations', function ($allocQuery) use ($userWarehouseId) {
                             $allocQuery->where('warehouse_id', $userWarehouseId);
                         })
-                        // Or check for warehouse stock with blocked quantity
-                        ->orWhereHas('warehouseStock', function ($stockQuery) use ($userWarehouseId) {
-                            $stockQuery->where('warehouse_id', $userWarehouseId);
-                        })
-                        // Or check for auto-allocated products with blocked quantity in user's warehouse
-                        ->orWhere(function ($autoAllocQuery) use ($userWarehouseId) {
-                            $autoAllocQuery->whereNull('warehouse_stock_id')
-                                ->where('sku', '!=', '')
-                                ->whereExists(function ($existsQuery) use ($userWarehouseId) {
-                                    $existsQuery->selectRaw('1')
-                                        ->from('warehouse_stocks')
-                                        ->whereColumn('warehouse_stocks.sku', 'sales_order_products.sku')
-                                        ->where('warehouse_stocks.warehouse_id', $userWarehouseId)
-                                        ->where('warehouse_stocks.block_quantity', '>', 0);
-                                });
-                        });
+                            // Or check for warehouse stock with blocked quantity
+                            ->orWhereHas('warehouseStock', function ($stockQuery) use ($userWarehouseId) {
+                                $stockQuery->where('warehouse_id', $userWarehouseId);
+                            })
+                            // Or check for auto-allocated products with blocked quantity in user's warehouse
+                            ->orWhere(function ($autoAllocQuery) use ($userWarehouseId) {
+                                $autoAllocQuery->whereNull('warehouse_stock_id')
+                                    ->where('sku', '!=', '')
+                                    ->whereExists(function ($existsQuery) use ($userWarehouseId) {
+                                        $existsQuery->selectRaw('1')
+                                            ->from('warehouse_stocks')
+                                            ->whereColumn('warehouse_stocks.sku', 'sales_order_products.sku')
+                                            ->where('warehouse_stocks.warehouse_id', $userWarehouseId)
+                                            ->where('warehouse_stocks.block_quantity', '>', 0);
+                                    });
+                            });
                     });
                 });
             }
@@ -78,7 +90,7 @@ class ReadyToShip extends Controller
      * @param int $id
      * @return \Illuminate\View\View
      */
-    public function view($id)
+    public function view($id, Request $request)
     {
         try {
             $validator = Validator::make(['id' => $id], [
@@ -90,9 +102,13 @@ class ReadyToShip extends Controller
                     ->with('error', 'Invalid order ID.');
             }
 
+            $status = $request->query('status', 'all');
+
             $order = SalesOrder::with('orderedProducts')
-                ->where('status', 'ready_to_ship')
-                ->findOrFail($id);
+                ->with('orderedProducts', function ($q) use ($status) {
+                    $q->where('status', 'ready_to_ship');
+                })
+                ->find($id);
 
             if (!$order) {
                 return redirect()->route('ready.to.ship.index')
@@ -116,7 +132,7 @@ class ReadyToShip extends Controller
 
             return view('readyToShip.view', compact('customerInfo', 'order'));
         } catch (\Exception $e) {
-            return redirect()->route('ready.to.ship.index')
+            return redirect()->route('readyToShip.index')
                 ->with('error', 'Error loading order: ' . $e->getMessage());
         }
     }
@@ -158,7 +174,9 @@ class ReadyToShip extends Controller
                 'orderedProducts.warehouseStock.warehouse',
                 'orderedProducts.warehouseAllocations.warehouse',
             ])
-                ->where('status', 'ready_to_ship')
+                ->with(['orderedProducts' => function ($q) {
+                    $q->where('status', 'ready_to_ship');
+                }])
                 ->with(['orderedProducts' => function ($q) use ($c_id) {
                     $q->where('customer_id', (int)$c_id);
                 }])
@@ -252,7 +270,7 @@ class ReadyToShip extends Controller
                     if ($hasAllocations) {
                         if (!$isAdmin && $userWarehouseId) {
                             // Warehouse user: Show only their warehouse's allocations
-                            $userAllocations = $order->warehouseAllocations->filter(function($allocation) use ($userWarehouseId) {
+                            $userAllocations = $order->warehouseAllocations->filter(function ($allocation) use ($userWarehouseId) {
                                 return $allocation->warehouse_id == $userWarehouseId;
                             });
 
@@ -336,7 +354,7 @@ class ReadyToShip extends Controller
             $vendorOrders = ProductIssue::with(['order', 'product', 'purchaseOrder', 'tempOrder'])
                 ->latest()
                 ->paginate(15);
-                
+
             return view('exceed-shortage', compact('vendorOrders'));
         } catch (\Exception $e) {
             return redirect()->back()
@@ -553,8 +571,8 @@ class ReadyToShip extends Controller
                 'orderedProducts.warehouseStock.warehouse',
                 'orderedProducts.warehouseAllocations.warehouse',
             ])
-            ->where('status', 'ready_to_ship')
-            ->findOrFail($orderId);
+                ->where('status', 'ready_to_ship')
+                ->findOrFail($orderId);
 
             // Get products for this warehouse
             $warehouseProducts = $salesOrder->orderedProducts->filter(function ($product) use ($customerId, $warehouseId) {
@@ -691,7 +709,6 @@ class ReadyToShip extends Controller
             activity()->performedOn($invoice)->causedBy($user)->log("Warehouse-specific invoice generated for Order #{$orderId}, Warehouse #{$warehouseId}");
 
             return redirect()->route('invoices.view', $orderId)->with('success', 'Warehouse invoice generated successfully!');
-
         } catch (\Exception $e) {
             DB::rollBack();
             return redirect()->back()->with('error', 'Error generating warehouse invoice: ' . $e->getMessage());

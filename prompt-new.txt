@@ -228,3 +228,20 @@ use Spatie\SimpleExcel\SimpleExcelReader;
 ✓ Eager load | ✗ N+1 queries
 ✓ withInput() | ✗ Lose data
 ✓ @error directives | ✗ No feedback
+
+
+
+
+
+
+
+
+
+
+
+
+packaging, 
+packaged, 
+ready_to_ship, 
+shipped, 
+completed

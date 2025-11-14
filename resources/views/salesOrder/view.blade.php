@@ -143,76 +143,6 @@
                 </div>
             </div>
 
-            {{-- Warehouse Allocation Breakdown --}}
-            {{-- @if ($warehouseAllocations && $warehouseAllocations->count() > 0)
-            <div class="card mb-3">
-                <div class="card-header bg-primary text-white">
-                    <h6 class="mb-0"><i class="bx bx-package"></i> Multi-Warehouse Stock Allocation Breakdown</h6>
-                </div>
-                <div class="card-body">
-                    <div class="alert alert-info">
-                        <i class="bx bx-info-circle"></i> This order was auto-allocated from multiple warehouses. Below is the breakdown:
-                    </div>
-
-                    @foreach ($warehouseAllocations as $sku => $allocations)
-                        <div class="mb-4">
-                            <h6 class="text-primary">SKU: {{ $sku }}</h6>
-                            <div class="table-responsive">
-                                <table class="table table-sm table-bordered">
-                                    <thead class="table-light">
-                                        <tr>
-                                            <th style="width: 50px;">Seq</th>
-                                            <th>Warehouse</th>
-                                            <th style="width: 120px;">Allocated Qty</th>
-                                            <th style="width: 100px;">Status</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @php
-                                            $totalAllocated = 0;
-                                        @endphp
-                                        @foreach ($allocations as $allocation)
-                                            @php
-                                                $totalAllocated += $allocation->allocated_quantity;
-                                            @endphp
-                                            <tr>
-                                                <td class="text-center">{{ $allocation->sequence }}</td>
-                                                <td>
-                                                    <i class="bx bx-store"></i>
-                                                    {{ $allocation->warehouse->name ?? 'N/A' }}
-                                                </td>
-                                                <td class="text-center">
-                                                    <span class="badge bg-success">{{ $allocation->allocated_quantity }}</span>
-                                                </td>
-                                                <td class="text-center">
-                                                    @if ($allocation->status == 'allocated')
-                                                        <span class="badge bg-success">Allocated</span>
-                                                    @elseif($allocation->status == 'fulfilled')
-                                                        <span class="badge bg-primary">Fulfilled</span>
-                                                    @elseif($allocation->status == 'pending')
-                                                        <span class="badge bg-warning">Pending</span>
-                                                    @else
-                                                        <span class="badge bg-secondary">{{ ucfirst($allocation->status) }}</span>
-                                                    @endif
-                                                </td>
-                                            </tr>
-                                        @endforeach
-                                        <tr class="table-active fw-bold">
-                                            <td colspan="2" class="text-end">Total Allocated:</td>
-                                            <td class="text-center">
-                                                <span class="badge bg-primary">{{ $totalAllocated }}</span>
-                                            </td>
-                                            <td></td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    @endforeach
-                </div>
-            </div>
-            @endif --}}
-
             <div class="card">
                 <div class="card-body">
                     <div class="div d-flex my-2">
@@ -222,17 +152,6 @@
 
                         <!-- Tabs Navigation -->
                         <div class="div d-flex justify-content-end my-3 gap-2">
-
-
-                            {{-- <div>
-                                <select class="form-select border-2 border-primary" id="selectBrand"
-                                    aria-label="Default select example" name="status">
-                                    <option value="" selected>Select Brand</option>
-                                    @foreach ($uniqueBrands as $brand)
-                                        <option value="{{ $brand }}">{{ $brand }}</option>
-                                    @endforeach
-                                </select>
-                            </div> --}}
                             <div>
                                 <select class="form-select border-2 border-primary" id="selectPONumber"
                                     aria-label="Default select example" name="status">
@@ -324,9 +243,9 @@
                                         <th>Purchase&nbsp;Order&nbsp;Quantity</th>
                                         <th>Block&nbsp;Quantity</th>
                                         <th>Qty&nbsp;Fullfilled</th>
-                                        <th class="d-none">Status</th>
                                         <th>Warehouse&nbsp;Allocation</th>
                                         <th>Invoice&nbsp;Status</th>
+                                        <th>Product&nbsp;Status</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -364,15 +283,6 @@
                                             <td>{{ $order->tempOrder?->product_mrp }}</td>
                                             <td>{{ $order->tempOrder?->mrp_confirmation }}</td>
                                             <td>{{ $order->tempOrder?->po_number }}</td>
-                                            {{-- <td>
-                                                @if ($order->tempOrder?->rate_confirmation == 'Correct')
-                                                    <span
-                                                        class="badge text-success bg-success-subtle">{{ $order->tempOrder?->rate_confirmation }}</span>
-                                                @else
-                                                    <span
-                                                        class="badge text-danger bg-danger-subtle">{{ $order->tempOrder?->rate_confirmation }}</span>
-                                                @endif
-                                            </td> --}}
                                             <td>{{ $order->ordered_quantity }}</td>
                                             <td>{{ $order->tempOrder?->purchase_order_quantity }}</td>
                                             <td>{{ $order->tempOrder?->block }}</td>
@@ -405,7 +315,6 @@
                                                     @endif
                                                 @endif
                                             </td>
-                                            <td class="d-none">{{ ucfirst($order->status) }}</td>
                                             <td>
                                                 @php
                                                     // Check if product has warehouse allocations (auto-allocation)
@@ -459,6 +368,17 @@
                                                 @endif
                                             </td>
                                             <td>{{ ucfirst($order->invoice_status) }}</td>
+                                            <td>
+                                                @if($order->warehouseAllocations->count() > 0)
+                                                    @foreach($order->warehouseAllocations->sortBy('sequence') as $allocation)
+                                                        <div class="mb-1">
+                                                            <strong>{{ $allocation->warehouse->name ?? 'N/A' }}</strong>: {{ ucfirst($allocation->product_status) }}
+                                                        </div>
+                                                    @endforeach
+                                                @else 
+                                                    {{ ucfirst($order->product_status) }}
+                                                @endif 
+                                            </td>
                                         </tr>
                                     @empty
                                         <tr>
