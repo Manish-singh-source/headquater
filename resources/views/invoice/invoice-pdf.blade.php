@@ -81,7 +81,7 @@
 
         td,
         th {
-            border: 1px solid #000;
+            border: 1px solid #daa520;
             padding: 3px;
             /* Reduce padding */
             vertical-align: top;
@@ -104,14 +104,14 @@
         }
 
         .title {
-            background-color: #d0e4f5;
+            background-color: #ffffcc;
             font-weight: bold;
             text-align: center;
             font-size: 16px;
         }
 
         .section-title {
-            background-color: #d0e4f5;
+            background-color: #ffffcc;
             font-weight: bold;
         }
 
@@ -169,6 +169,10 @@
         .text-center {
             text-align: center;
         }
+
+        .invoice-table td {
+            background-color: #e8f07f0e;
+        }
     </style>
 </head>
 
@@ -176,9 +180,9 @@
 
     <table class="no-border">
         <tr>
-            <td width="20%" rowspan="4" style="text-align:left;">Company Logo</td>
+            <td width="20%" rowspan="4" style="text-align:left;"> <img src="{{ $image }}" alt="Logo" style="height: 100px; width: auto;"> </td>
             <td class="header" colspan="2">INOVIZIDEAS PVT. LTD.</td>
-            <td rowspan="4" style="text-align:right;">Original for Recipient</td>
+            <td width="20%" rowspan="4" style="text-align:right; vertical-align: center;"> <img src="{{ $image1 }}" alt="Original for Recipient" style="height: 90px; width: auto;"> </td>
         </tr>
         <tr>
             <td colspan="2" style="text-align:center;">
@@ -200,13 +204,13 @@
         <tr>
             <td colspan="4" class="title">Tax&nbsp;Invoice</td>
         </tr>
-        <tr>
+        <tr class="invoice-table">
             <td>Invoice&nbsp;No:</td>
             <td>{{ $invoice->invoice_number }}</td>
             <td>Invoice&nbsp;date:</td>
             <td>{{ $invoice->invoice_date->format('d-m-Y') }}</td>
         </tr>
-        <tr>
+        <tr class="invoice-table">
             {{-- <td>Reverse&nbsp;Charge&nbsp;(Y/N):</td> --}}
             {{-- <td>N</td> --}}
             {{-- <td>State: {{ $invoice->customer->shipping_state }}</td> --}}
@@ -229,19 +233,19 @@
             <td colspan="3" class="section-title">Bill&nbsp;To</td>
             <td colspan="3" class="section-title">Ship&nbsp;To</td>
         </tr>
-        <tr>
+        <tr class="invoice-table">
             <td>Name:</td>
             <td colspan="2">{{ $invoice->customer->client_name }}</td>
             <td>Name:</td>
             <td colspan="2">{{ $invoice->customer->client_name }}</td>
         </tr>
-        <tr>
+        <tr class="invoice-table">
             <td>Address:</td>
             <td colspan="2">{{ $invoice->customer->billing_address }}</td>
             <td>Address:</td>
             <td colspan="2">{{ $invoice->customer->shipping_address }}</td>
         </tr>
-        <tr>
+        <tr class="invoice-table">
             <td>State:</td>
             <td colspan="2">{{ $invoice->customer->billing_state }}</td>
             {{-- <td>GSTIN: {{ $invoice->customer->gstin }}</td> --}}
@@ -250,7 +254,7 @@
             <td colspan="2">{{ $invoice->customer->shipping_state }}</td>
             {{-- <td colspan="2">GSTIN: {{ $invoice->customer->gstin }}</td> --}}
         </tr>
-        <tr>
+        <tr class="invoice-table">
             <td>GSTIN: </td>
             <td>{{ $invoice->customer->gstin }}</td>
             <td>PAN: {{ $invoice->customer->pan }}</td>
@@ -258,7 +262,7 @@
             <td>{{ $invoice->customer->gstin }}</td>
             <td>PAN: {{ $invoice->customer->pan }}</td>
         </tr>
-        <tr>
+        <tr class="invoice-table">
             <td>Contact Name: </td>
             <td colspan="2">{{ $invoice->customer->contact_name }}</td>
             <td>Contact No.: </td>
@@ -378,7 +382,7 @@
     </table>
 
     <table>
-        <tr>
+        <tr class="invoice-table">
             <td>Total&nbsp;Invoice&nbsp;amount&nbsp;in&nbsp;words:</td>
             {{-- <td colspan="3">{{ ucfirst(numberToWords(floor($totalAmountSum))) }} Rupees Only</td> --}}
             <td colspan="3" class="right-align">{{ $totalAmountSum }}</td>
@@ -390,19 +394,19 @@
             <td width="70%" class="section-title">Bank Details</td>
             <td width="30%" class="section-title text-center">Sign/Stamp</td>
         </tr>
-        <tr>
+        <tr class="invoice-table">
             <td>Bank A/C:</td>
             <td rowspan="4" class="text-center" style="height:50px; vertical-align:bottom;">
                 (Authorised Signature)
             </td>
         </tr>
-        <tr>
+        <tr class="invoice-table">
             <td>Bank IFSC:</td>
         </tr>
         <tr>
             <td class="section-title">Terms & Conditions:</td>
         </tr>
-        <tr>
+        <tr class="invoice-table">
             <td colspan="2">
                 TOTAL&nbsp;SETS&nbsp;-&nbsp;QTY {{ $invoiceDetails->sum('quantity') }}<br>
                 TOTAL&nbsp;BOX&nbsp;COUNT&nbsp;- {{ $totalBoxCount ?? ($TotalBoxCount ?? 0) }}<br>
