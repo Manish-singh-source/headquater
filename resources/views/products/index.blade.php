@@ -111,6 +111,7 @@
                                         <th>Vendor&nbsp;Name</th>
                                         <th>Vendor&nbsp;Purchase&nbsp;Rate</th>
                                         <th>GST</th>
+                                        <th>HSN</th>
                                         <th>Vendor&nbsp;Net&nbsp;Landing</th>
                                         <th>po&nbsp;status</th>
                                         <th>Original&nbsp;Quantity</th>
@@ -152,6 +153,7 @@
                                             <td>{{ $product->product->vendor_name ?? 'NA' }}</td>
                                             <td>{{ $product->product->vendor_purchase_rate ?? 'NA' }}</td>
                                             <td>{{ $product->product->gst ?? 'NA' }}</td>
+                                            <td>{{ $product->product->hsn ?? 'NA' }}</td>
                                             <td>{{ $product->product->vendor_net_landing ?? 'NA' }}</td>
                                             <td>{{ $product->product->status === '1' ? 'Active' : 'Inactive' }}</td>
                                             <td>{{ $product->original_quantity ?? 'NA' }}</td>
@@ -296,6 +298,10 @@
                                     class="form-control">
                             </div>
                             <div class="col-md-6 mb-3">
+                                <label for="hsn" class="form-label">HSN</label>
+                                <input type="text" name="hsn" id="hsn" class="form-control">
+                            </div>
+                            <div class="col-md-6 mb-3">
                                 <label for="original_quantity" class="form-label">Original Quantity</label>
                                 <input type="number" name="original_quantity" id="original_quantity"
                                     class="form-control">
@@ -411,6 +417,7 @@
                     $('#pcs_set').val(product.pcs_set);
                     $('#sets_ctn').val(product.sets_ctn);
                     $('#basic_rate').val(product.basic_rate);
+                    $('#hsn').val(product.hsn);
 
                     // Handle warehouse stock data
                     const ws = product.warehouse_stock || product.warehouseStock || null;
