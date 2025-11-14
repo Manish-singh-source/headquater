@@ -62,7 +62,7 @@
                                                 {{ $customerOrders->contact_name }}
                                             </td>
                                             <td>
-                                                {{ $customerOrders->orders_count }}
+                                                {{ $warehouseAllocationsCount }}
                                             </td>
                                             {{-- 
                                             <td>
