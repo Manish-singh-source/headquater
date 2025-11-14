@@ -720,7 +720,7 @@ class PurchaseOrderController extends Controller
 
                             if ($existingAllocations) {
                                 // Update existing allocation
-                                $existingAllocations->allocated_quantity += $allocatedQty;
+                                $existingAllocations->allocated_quantity = $allocatedQty;
                                 $existingAllocations->save();
 
                                 Log::info('Updated WarehouseAllocation', [

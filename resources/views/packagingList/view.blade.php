@@ -17,6 +17,7 @@
         'ready_to_ship' => 'bg-success',
         'dispatched' => 'bg-primary',
         'shipped' => 'bg-dark',
+        'approval_pending' => 'bg-secondary',
         'completed' => 'bg-success',
     ];
     $statusLabels = [
@@ -26,7 +27,28 @@
         'ready_to_ship' => 'Ready to Ship',
         'dispatched' => 'Dispatched',
         'shipped' => 'Shipped',
+        'approval_pending' => 'Ready to Ship Approval Pending',
         'completed' => 'Completed',
+    ];
+
+    $allocationStatusBadges = [
+        'pending' => 'bg-secondary',
+        'packaging' => 'bg-warning',
+        'partially_packaged' => 'bg-warning',
+        'approval_pending' => 'bg-secondary',
+        'packaged' => 'bg-info',
+        'completed' => 'bg-success',
+        'cancelled' => 'bg-danger',
+    ];
+
+    $allocationStatusLabels = [
+        'pending' => 'Pending',
+        'packaging' => 'Packaging',
+        'partially_packaged' => 'Partially Packaged',
+        'approval_pending' => 'Ready to Ship Approval Pending',
+        'packaged' => 'Packaged',
+        'completed' => 'Ready to Ship',
+        'cancelled' => 'Cancelled',
     ];
 @endphp
 
@@ -42,78 +64,34 @@
 
             {{-- Pending Approvals - Individual Warehouse Cards for Admin --}}
             @if ($isAdmin ?? false)
-                @php
-                    $displayProducts = [];
-                    $facilityNamesArray = [];
-                    foreach ($salesOrder->orderedProducts as $order) {
-                        foreach ($order->warehouseAllocations as $allocation) {
-                            $displayProducts[] = [
-                                'order' => $order,
-                                'warehouse_name' => $allocation->warehouse->name ?? 'N/A',
-                                'allocated_quantity' => $allocation->allocated_quantity,
-                                'warehouse_allocation_display' =>
-                                    $allocation->warehouse->name . ': ' . $allocation->allocated_quantity,
-                                'allocation_id' => $allocation->id,
-                            ];
-                            $facilityNamesArray[] = $order->tempOrder->facility_name;
-                        }
-                    }
-
-                    // Group pending allocations by warehouse
-                    $pendingWarehouseData = [];
-                    foreach ($salesOrder->orderedProducts as $order) {
-                        $allocationId = $displayProduct['allocation_id'] ?? null;
-                        if ($allocationId) {
-                            $order = $displayProduct['order'];
-                            $allocation = $order->warehouseAllocations->firstWhere('id', $allocationId);
-                            if (
-                                $allocation &&
-                                $allocation->approval_status === 'pending' &&
-                                $allocation->final_dispatched_quantity > 0
-                            ) {
-                                $warehouseId = $allocation->warehouse_id;
-                                $warehouseName = $displayProduct['warehouse_name'];
-
-                                if (!isset($pendingWarehouseData[$warehouseId])) {
-                                    $pendingWarehouseData[$warehouseId] = [
-                                        'name' => $warehouseName,
-                                        'allocation_ids' => [],
-                                        'product_count' => 0,
-                                    ];
-                                }
-
-                                if (!in_array($allocationId, $pendingWarehouseData[$warehouseId]['allocation_ids'])) {
-                                    $pendingWarehouseData[$warehouseId]['allocation_ids'][] = $allocationId;
-                                    $pendingWarehouseData[$warehouseId]['product_count']++;
-                                }
-                            }
-                        }
-                    }
-                @endphp
-
-                @if (count($pendingWarehouseData) > 0)
+                @if (count($pendingApprovalList) > 0)
                     <div class="mb-3">
                         <h6 class="mb-2"><i class="bx bx-info-circle me-1"></i> Pending Warehouse Approvals</h6>
                         <div class="row g-2">
-                            @foreach ($pendingWarehouseData as $warehouseId => $warehouseData)
+                            @foreach ($pendingApprovalList as $warehouseId)
                                 <div class="col-md-6">
                                     <div class="alert alert-warning mb-0" role="alert">
                                         <div class="d-flex justify-content-between align-items-center">
                                             <div>
                                                 <strong><i class="bx bx-store me-1"></i>
-                                                    {{ $warehouseData['name'] }}</strong>
+                                                    {{ $warehouseId['name'] }}</strong>
                                                 <br>
-                                                <small class="text-muted">{{ $warehouseData['product_count'] }} product(s)
+                                                <small class="text-muted">{{ $warehouseId['product_count'] }} product(s)
                                                     ready for approval</small>
                                             </div>
                                             <div>
                                                 <form action="{{ route('change.packaging.status.ready.to.ship') }}"
                                                     method="POST" class="d-inline"
-                                                    onsubmit="return confirm('Are you sure you want to approve {{ $warehouseData['name'] }} allocations?')">
+                                                    onsubmit="return confirm('Are you sure you want to approve {{ $warehouseId['name'] }} allocations?')">
                                                     @csrf
                                                     @method('PUT')
-                                                    <input type="hidden" name="order_id" value="{{ $salesOrder->id }}">
-                                                    <input type="hidden" name="warehouse_id" value="{{ $warehouseId }}">
+                                                    <input type="hidden" name="sales_order_id"
+                                                        value="{{ $salesOrder->id }}">
+                                                    <input type="hidden" name="user_id" value="{{ $user->id }}">
+                                                    <input type="hidden" name="warehouse_id"
+                                                        value="{{ $warehouseId['warehouse_id'] }}">
+                                                    <input type="hidden" name="allocation_ids"
+                                                        value="{{ implode(',', $warehouseId['allocation_ids']) }}">
                                                     <button type="submit" class="btn btn-success btn-sm">
                                                         <i class="bx bx-check"></i> Approve
                                                     </button>
@@ -125,14 +103,17 @@
                             @endforeach
                         </div>
 
-                        @if (count($pendingWarehouseData) > 1)
+                        @if (count($pendingApprovalList) > 1)
                             <div class="mt-2 text-end">
                                 <form action="{{ route('change.packaging.status.ready.to.ship') }}" method="POST"
                                     class="d-inline"
                                     onsubmit="return confirm('Are you sure you want to approve ALL warehouse allocations?')">
                                     @csrf
                                     @method('PUT')
-                                    <input type="hidden" name="order_id" value="{{ $salesOrder->id }}">
+                                    <input type="hidden" name="sales_order_id" value="{{ $salesOrder->id }}">
+                                    <input type="hidden" name="user_id" value="{{ $user->id }}">
+                                    <input type="hidden" name="warehouse_id" value="">
+                                    <input type="hidden" name="allocation_ids" value="">
                                     <button type="submit" class="btn btn-success">
                                         <i class="bx bx-check-double"></i> Approve All Warehouses
                                     </button>
@@ -153,7 +134,7 @@
                         <div class="d-flex justify-content-end my-3 gap-2">
 
                             <!-- Client Name Dropdown -->
-                            {{-- <ul class="nav nav-tabs" id="vendorTabs" role="tablist">
+                            <ul class="nav nav-tabs" id="vendorTabs" role="tablist">
                                 <select class="form-select border-2 border-primary" id="customerPOTable"
                                     aria-label="Select Client Name">
                                     <option value="" selected> -- Select Client Name --</option>
@@ -161,7 +142,7 @@
                                         <option value="{{ $name }}">{{ $name }}</option>
                                     @endforeach
                                 </select>
-                            </ul> --}}
+                            </ul>
 
                             <button class="btn btn-sm border-2 border-primary" data-bs-toggle="modal"
                                 data-bs-target="#staticBackdrop1" class="btn btn-sm border-2 border-primary">
@@ -262,7 +243,7 @@
                                             <td>{{ $order->tempOrder->basic_rate }}</td>
                                             <td>{{ $order->tempOrder->net_landing_rate }}</td>
                                             <td>{{ $order->tempOrder->mrp }}</td>
-                                            <td>{{ $order->tempOrder->po_qty }}</td>
+                                            <td>{{ $order->ordered_quantity }}</td>
                                             <td>{{ $order->purchase_ordered_quantity }}</td>
                                             @if ($isSuperAdmin)
                                                 <td>All</td>
@@ -292,7 +273,7 @@
                                             </td>
                                             <td>{{ $order->tempOrder->po_number }}</td>
                                             <td>
-                                                @if ($order->warehouseAllocations->count() > 1)
+                                                @if ($order->warehouseAllocations->count() >= 1)
                                                     @foreach ($order->warehouseAllocations as $allocation)
                                                         @if ($isSuperAdmin ?? false)
                                                             <div>
@@ -312,7 +293,7 @@
                                                 @endif
                                             </td>
                                             <td>
-                                                @if ($order->warehouseAllocations->count() > 1)
+                                                @if ($order->warehouseAllocations->count() >= 1)
                                                     @foreach ($order->warehouseAllocations as $allocation)
                                                         @if ($isSuperAdmin ?? false)
                                                             <div>
@@ -332,7 +313,7 @@
                                                 @endif
                                             </td>
                                             <td>
-                                                @if ($order->warehouseAllocations->count() > 1)
+                                                @if ($order->warehouseAllocations->count() >= 1)
                                                     @foreach ($order->warehouseAllocations as $allocation)
                                                         @if ($isSuperAdmin ?? false)
                                                             <div>
@@ -352,7 +333,7 @@
                                                 @endif
                                             </td>
                                             <td>
-                                                @if ($order->warehouseAllocations->count() > 1)
+                                                @if ($order->warehouseAllocations->count() >= 1)
                                                     @foreach ($order->warehouseAllocations as $allocation)
                                                         @if ($isSuperAdmin ?? false)
                                                             <div>
@@ -376,7 +357,7 @@
                                                     @if ($isSuperAdmin ?? false)
                                                         <span
                                                             class="badge {{ $statusBadges[$order->status] ?? 'bg-secondary' }}">
-                                                            {{ $user->warehouse->name }}:
+                                                            {{-- {{ $user->warehouse->name }}: --}}
                                                             {{ $statusLabels[$order->status] ?? 'Ready to Ship' }}
                                                         </span>
                                                     @else
@@ -391,28 +372,28 @@
                                                             @if ($isSuperAdmin ?? false)
                                                                 @if ($allocation->final_dispatched_quantity > 0)
                                                                     <span
-                                                                        class="badge {{ $statusBadges['packaged'] ?? 'bg-secondary' }}">
+                                                                        class="badge {{ $allocationStatusBadges[$allocation->product_status] ?? 'bg-secondary' }}">
                                                                         {{ $allocation->warehouse->name }}:
-                                                                        {{ $statusLabels['packaged'] ?? 'Unknown' }}
+                                                                        {{ $allocationStatusLabels[$allocation->product_status] ?? 'Unknown' }}
                                                                     </span>
                                                                 @else
                                                                     <span
-                                                                        class="badge {{ $statusBadges['packaging'] ?? 'bg-secondary' }}">
+                                                                        class="badge {{ $allocationStatusBadges[$allocation->product_status] ?? 'bg-secondary' }}">
                                                                         {{ $allocation->warehouse->name }}:
-                                                                        {{ $statusLabels['packaging'] ?? 'Unknown' }}
+                                                                        {{ $allocationStatusLabels[$allocation->product_status] ?? 'Unknown' }}
                                                                     </span>
                                                                 @endif
                                                             @else
                                                                 @if ($user->warehouse_id == $allocation->warehouse_id)
                                                                     @if ($allocation->final_dispatched_quantity > 0)
                                                                         <span
-                                                                            class="badge {{ $statusBadges['packaged'] ?? 'bg-secondary' }}">
-                                                                            {{ $statusLabels['packaged'] ?? 'Unknown' }}
+                                                                            class="badge {{ $allocationStatusBadges[$allocation->product_status] ?? 'bg-secondary' }}">
+                                                                            {{ $allocationStatusLabels[$allocation->product_status] ?? 'Unknown' }}
                                                                         </span>
                                                                     @else
                                                                         <span
-                                                                            class="badge {{ $statusBadges['packaging'] ?? 'bg-secondary' }}">
-                                                                            {{ $statusLabels['packaging'] ?? 'Unknown' }}
+                                                                            class="badge {{ $allocationStatusBadges[$allocation->product_status] ?? 'bg-secondary' }}">
+                                                                            {{ $allocationStatusLabels[$allocation->product_status] ?? 'Unknown' }}
                                                                         </span>
                                                                     @endif
                                                                 @endif
@@ -458,7 +439,9 @@
                         onsubmit="return confirm('Are you sure you want to mark your products as ready to ship?')">
                         @csrf
                         @method('PUT')
-                        <input type="hidden" name="order_id" value="{{ $salesOrder->id }}">
+                        <input type="hidden" name="sales_order_id" value="{{ $salesOrder->id }}">
+                        <input type="hidden" name="warehouse_id" value="{{ $user->warehouse_id }}">
+                        <input type="hidden" name="user_id" value="{{ $user->id }}">
                         <button class="btn btn-success w-sm waves ripple-light" type="submit">
                             @if ($isAdmin ?? false)
                                 Mark All Ready to Ship
@@ -498,8 +481,11 @@
             }
 
             $("#exportPackagingProducts").on("click", function() {
-                var customerFacilityName = $("#customerPOTable").val().trim();
+                var customerFacilityName = $("#customerPOTable").val().trim() || '';
                 var salesOrderId = $("#salesOrderId").text().trim();
+                console.log("clicked");
+                console.log(customerFacilityName);
+                console.log(salesOrderId);
 
                 // if (customerFacilityName != "" && salesOrderId != "") {
                 $.ajax({

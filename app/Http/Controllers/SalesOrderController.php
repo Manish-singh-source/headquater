@@ -1232,17 +1232,15 @@ class SalesOrderController extends Controller
                             $order->dispatched_quantity = $order->tempOrder->block ?? 0;
                         }
                     }
-
-                    // if ($order->tempOrder?->vendor_pi_received_quantity) {
-                    //     $order->tempOrder->vendor_pi_fulfillment_quantity = $order->tempOrder->vendor_pi_received_quantity;
-                    // }
-
-                    // if ($order->ordered_quantity <= ($order->tempOrder?->available_quantity ?? 0) + ($order->tempOrder?->vendor_pi_fulfillment_quantity ?? 0)) {
-                    //     $order->dispatched_quantity = $order->ordered_quantity;
-                    // } else {
-                    //     $order->dispatched_quantity = ($order->tempOrder?->available_quantity ?? 0) + ($order->tempOrder?->vendor_pi_fulfillment_quantity ?? 0);
-                    // }
                     $order->status = 'packaging';
+                    $order->product_status = 'packaging';
+
+                    if($order->warehouseAllocations->count() > 0) {
+                        foreach ($order->warehouseAllocations as $allocation) {
+                            $allocation->product_status = 'packaging';
+                            $allocation->save();
+                        }
+                    }
                     $order->save();
                 }
                 $salesOrderUpdate->save();
@@ -1255,23 +1253,6 @@ class SalesOrderController extends Controller
                     $order->status = 'shipped';
                     $order->save();
                 }
-
-                // $customerFacilityName = SalesOrderProduct::with('customer')
-                //     ->where('sales_order_id', $salesOrder->id)
-                //     ->get()
-                //     ->pluck('customer')
-                //     ->filter()
-                //     ->unique('client_name')
-                //     ->pluck('client_name', 'id');
-
-                // foreach ($customerFacilityName as $customer_id => $facility_name) {
-                //     foreach ($salesOrderDetails as $detail) {
-                //         if ($detail->customer_id == $customer_id) {
-                //             $detail->status = 'completed';
-                //             $detail->save();
-                //         }
-                //     }
-                // }
                 $salesOrder->status = $request->status;
             } elseif ($request->status == 'completed') {
                 $salesOrder->status = $request->status;

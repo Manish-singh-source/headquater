@@ -2,18 +2,19 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use App\Models\Customer;
 use App\Models\SalesOrder;
+use Illuminate\Support\Str;
+use Illuminate\Http\Request;
 use App\Models\SalesOrderProduct;
+use Illuminate\Support\Facades\DB;
 use App\Models\WarehouseAllocation;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 use App\Models\WarehouseProductIssue;
 use App\Services\NotificationService;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Str;
 use Spatie\SimpleExcel\SimpleExcelReader;
 use Spatie\SimpleExcel\SimpleExcelWriter;
 
@@ -24,13 +25,20 @@ class PackagingController extends Controller
      *
      * @return \Illuminate\View\View
      */
-    public function index()
+    public function index(Request $request)
     {
-        $orders = SalesOrder::with('customerGroup')
-            ->where('status', 'ready_to_package')
-            ->get();
-
-        return view('packagingList.index', compact('orders'));
+        $status = $request->query('status', 'all');
+        $orders = SalesOrder::with('customerGroup');
+        if ($status === 'all') {
+            $orders->whereIn('status', ['ready_to_package', 'ready_to_ship']);
+        } elseif ($status === 'ready_to_package') {
+            $orders->where('status', 'ready_to_package');
+        } elseif ($status === 'ready_to_ship') {
+            $orders->where('status', 'ready_to_ship');
+        }
+        $orders = $orders->get();
+        
+        return view('packagingList.index', compact('orders', 'status'));
     }
 
     /**
@@ -73,6 +81,7 @@ class PackagingController extends Controller
                 })
                 ->findOrFail($id);
 
+            // dd($salesOrder);
 
             $facilityNames = $salesOrder->orderedProducts
                 ->pluck('customer.facility_name')
@@ -81,9 +90,22 @@ class PackagingController extends Controller
                 ->values()
                 ->toArray();
 
+            $pendingApprovalList = [];
 
-            // dd($salesOrder);
-            return view('packagingList.view', compact('salesOrder', 'facilityNames', 'isAdmin', 'isSuperAdmin', 'userWarehouseId', 'user'));
+            foreach ($salesOrder->orderedProducts as $order) {
+                foreach ($order->warehouseAllocations as $allocation) {
+                    if ($allocation->product_status === 'approval_pending') {
+                        $pendingApprovalList[$allocation->warehouse_id][$allocation->sales_order_id][$allocation->sales_order_product_id] = $allocation->id;
+                        $pendingApprovalList[$allocation->warehouse_id]['name'] = $allocation->warehouse->name;
+                        $pendingApprovalList[$allocation->warehouse_id]['product_count'] = count($pendingApprovalList[$allocation->warehouse_id][$allocation->sales_order_id]);
+                        $pendingApprovalList[$allocation->warehouse_id]['allocation_ids'][] = $allocation->id;
+                        $pendingApprovalList[$allocation->warehouse_id]['warehouse_id'] = $allocation->warehouse_id;
+                    }
+                }
+            }
+
+            // dd($pendingApprovalList);
+            return view('packagingList.view', compact('salesOrder', 'facilityNames', 'isAdmin', 'isSuperAdmin', 'userWarehouseId', 'user', 'pendingApprovalList'));
 
             // Load sales order with relationships
             $salesOrder = SalesOrder::with([
@@ -597,8 +619,11 @@ class PackagingController extends Controller
                 // Admin: Update all warehouse allocations proportionally or set total
                 // For simplicity, we'll update the final_dispatched_quantity as total
                 // You can distribute proportionally if needed
-                $totalAllocated = $order->warehouseAllocations->sum('allocated_quantity');
-
+                if ($order->warehouseAllocations->count() > 1) {
+                    $totalAllocated = $order->warehouseAllocations->sum('allocated_quantity');
+                } else {
+                    $totalAllocated = $order->warehouseAllocations->first()->allocated_quantity;
+                }
                 foreach ($order->warehouseAllocations as $allocation) {
                     if ($totalAllocated > 0) {
                         // Distribute final dispatch quantity proportionally
@@ -606,6 +631,7 @@ class PackagingController extends Controller
                         $allocation->final_dispatched_quantity = (int)($finalDispatchQty * $proportion);
                         $allocation->box_count = (int)($boxCount * $proportion);
                         $allocation->weight = (int)($weight * $proportion);
+                        $allocation->product_status = 'packaged';
                     } else {
                         $allocation->final_dispatched_quantity = 0;
                         $allocation->box_count = 0;
@@ -623,6 +649,7 @@ class PackagingController extends Controller
                     $userAllocation->final_dispatched_quantity = $finalDispatchQty;
                     $userAllocation->box_count = $boxCount;
                     $userAllocation->weight = $weight;
+                    $userAllocation->product_status = 'packaged';
                     $userAllocation->save();
                 }
             }
@@ -647,6 +674,7 @@ class PackagingController extends Controller
 
         // Update status
         $order->status = 'packaged';
+        $order->product_status = 'packaged';
 
         // Handle shortage: dispatched > final
         if ($order->dispatched_quantity > $finalDispatchQty) {
@@ -702,18 +730,19 @@ class PackagingController extends Controller
 
         try {
             $validator = Validator::make($request->all(), [
-                'order_id' => 'required|integer|exists:sales_orders,id',
+                'sales_order_id' => 'required|integer|exists:sales_orders,id',
                 'warehouse_id' => 'nullable|integer|exists:warehouses,id',
+                'user_id' => 'nullable|integer|exists:users,id',
             ]);
 
             if ($validator->fails()) {
                 return redirect()->back()
                     ->withErrors($validator)
                     ->withInput()
-                    ->with('error', 'Invalid order ID.');
+                    ->with('error', 'Invalid request.');
             }
 
-            $user = Auth::user();
+            $user = User::findOrFail($request->user_id);
             $isAdmin = $user->hasRole(['Super Admin', 'Admin']) || !$user->warehouse_id;
             $userWarehouseId = $user->warehouse_id;
             $specificWarehouseId = $request->warehouse_id; // For admin to approve specific warehouse
@@ -721,7 +750,7 @@ class PackagingController extends Controller
             $salesOrder = SalesOrder::with([
                 'orderedProducts.warehouseAllocations',
                 'orderedProducts.warehouseStock',
-            ])->findOrFail($request->order_id);
+            ])->findOrFail($request->sales_order_id);
 
             if ($salesOrder->status !== 'ready_to_package') {
                 return redirect()->back()
@@ -743,6 +772,7 @@ class PackagingController extends Controller
                             // Change status from 'draft' to 'pending' when warehouse clicks "Ready to Ship"
                             if ($allocation->final_dispatched_quantity > 0 && $allocation->approval_status === 'draft') {
                                 $allocation->approval_status = 'pending';
+                                $allocation->product_status = 'approval_pending';
                                 $allocation->save();
                                 $allocationsUpdated++;
 
@@ -790,6 +820,7 @@ class PackagingController extends Controller
                             if ($allocation->final_dispatched_quantity > 0 && $allocation->approval_status === 'pending') {
                                 // Approve this allocation
                                 $allocation->approval_status = 'approved';
+                                $allocation->product_status = 'completed';
                                 $allocation->approved_by = $user->id;
                                 $allocation->approved_at = now();
                                 $allocation->save();
@@ -840,6 +871,8 @@ class PackagingController extends Controller
                             $productsToUpdate[] = $product->id;
                         }
                     }
+                    $product->product_status = 'completed';
+                    $product->save();
                 }
 
                 if (empty($productsToUpdate) && $allocationsApproved === 0) {

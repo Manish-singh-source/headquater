@@ -28,34 +28,28 @@
 
             <div class="card mt-4">
                 <div class="card-body">
-                    {{-- 
+                    
                     <ul class="nav nav-pills mb-3" role="tablist">
                         <li class="nav-item" role="presentation">
-                            <a class="nav-link {{ $overall_status === 'all' ? 'active' : '' }}"
+                            <a class="nav-link {{ $status === 'all' ? 'active' : '' }}"
                                 href="{{ route('packaging.list.index', ['status' => 'all']) }}">
                                 All Orders
                             </a>
                         </li>
                         <li class="nav-item" role="presentation">
-                            <a class="nav-link {{ $overall_status === 'packaging' ? 'active' : '' }}"
-                                href="{{ route('packaging.list.index', ['status' => 'packaging']) }}">
+                            <a class="nav-link {{ $status === 'ready_to_package' ? 'active' : '' }}"
+                                href="{{ route('packaging.list.index', ['status' => 'ready_to_package']) }}">
                                 Ready To Package
                             </a>
                         </li>
                         <li class="nav-item" role="presentation">
-                            <a class="nav-link {{ $overall_status === 'partial_packaged' ? 'active' : '' }}"
-                                href="{{ route('packaging.list.index', ['status' => 'partial_packaged']) }}">
-                                Partial Packaged
-                            </a>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <a class="nav-link {{ $overall_status === 'packaged' ? 'active' : '' }}"
-                                href="{{ route('packaging.list.index', ['status' => 'packaged']) }}">
-                                Fully Packaged
+                            <a class="nav-link {{ $status === 'ready_to_ship' ? 'active' : '' }}"
+                                href="{{ route('packaging.list.index', ['status' => 'ready_to_ship']) }}">
+                                Ready To Ship
                             </a>
                         </li>
                     </ul> 
-                    --}}
+                   
 
                     <div class="customer-table">
                         <div class="table-responsive white-space-nowrap">
