@@ -770,6 +770,10 @@ class ReportController extends Controller
                 $query->where('order_date', '<=', $request->to_date);
             }
 
+            if ($request->filled('warehouse_id')) {
+                $query->whereIn('warehouse_id', (array) $request->warehouse_id);
+            }
+
             // Customer Filter
             if ($request->filled('customer_id')) {
                 $query->whereIn('customer_id', (array) $request->customer_id);
@@ -882,6 +886,8 @@ class ReportController extends Controller
                     ];
                 });
 
+            $warehouses = Warehouse::active()->select('id', 'name')->get();
+
             $regions = Customer::distinct()
                 ->whereNotNull('billing_state')
                 ->pluck('billing_state')
@@ -926,6 +932,7 @@ class ReportController extends Controller
 
             $data = [
                 'title' => 'Customer Sales Summary',
+                'warehouses' => $warehouses,
                 'invoices' => $salesOrders, // Keep variable name for view compatibility
                 'totalRevenue' => $totalRevenue,
                 'totalPendingPayments' => $totalPendingPayments,

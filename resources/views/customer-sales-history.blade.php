@@ -191,6 +191,44 @@
                                         </div>
                                     </div>
 
+                                    <!-- Warehouse Filter -->
+                                    <div class="col-md-2">
+                                        <div class="mb-3">  
+                                            <label class="form-label">Warehouse</label>
+                                            <div class="dropdown">
+                                                <button class="btn btn-outline-secondary dropdown-toggle w-100 text-start"
+                                                    type="button" id="warehouseDropdown" data-bs-toggle="dropdown">
+                                                    <i class="bx bx-filter-alt me-1"></i>
+                                                    <span id="warehouseDropdownText">
+                                                        @if (is_array($filters['warehouse_id'] ?? null) && count($filters['warehouse_id']) > 0)
+                                                            {{ count($filters['warehouse_id']) }} selected
+                                                        @else
+                                                            Select Warehouse
+                                                        @endif
+                                                    </span> 
+                                                    </button>
+                                                <ul class="dropdown-menu w-100" id="warehouseCheckboxList"
+                                                    style="max-height: 250px; overflow-y: auto;">
+                                                    @foreach ($warehouses as $warehouse)
+                                                        <li class="px-2 py-1">
+                                                            <div class="form-check">
+                                                                <input class="form-check-input warehouse-checkbox"
+                                                                    type="checkbox" name="warehouse_id[]"
+                                                                    value="{{ $warehouse->id }}"
+                                                                    id="warehouse_{{ $warehouse->id }}"
+                                                                    {{ in_array($warehouse->id, (array) ($filters['warehouse_id'] ?? [])) ? 'checked' : '' }}>
+                                                                <label class="form-check-label w-100 cursor-pointer"
+                                                                    for="warehouse_{{ $warehouse->id }}">
+                                                                    {{ $warehouse->name }}
+                                                                </label>
+                                                            </div>
+                                                        </li>
+                                                    @endforeach
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+
                                     <!-- Region Filter -->
                                     <div class="col-md-2">
                                         <div class="mb-3">
@@ -324,10 +362,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-
-                                <!-- Second Row of Filters -->
-                                <div class="row">
+                                
 
                                     <!-- Invoice No Filter -->
                                     <div class="col-md-2">
@@ -504,6 +539,7 @@
                             <thead class="table-light">
                                 <tr>
                                     <th>Customer&nbsp;Group&nbsp;Name</th>
+                                    <th>Warehouse&nbsp;Name</th>
                                     <th>Customer&nbsp;Name</th>
                                     <th>Customer&nbsp;GSTIN</th>
                                     <th>Invoice&nbsp;No</th>
@@ -535,6 +571,7 @@
                                     <th>GST</th>
                                     <th>Total</th>
                                     <th>Status</th>
+                                    <th>Total&nbsp;Amount</th>
                                     <th>Amount&nbsp;Paid</th>
                                     <th>Balance</th>
                                     <th>Date&nbsp;Of&nbsp;Payment</th>
@@ -553,9 +590,15 @@
                                             @foreach ($product->warehouseAllocations as $allocation)
                                                 <tr>
                                                     <td>{{ $salesOrder->customerGroup->name ?? 'N/A' }}</td>
+                                                    <td>{{ $allocation->warehouse->name ?? 'N/A' }}</td>
                                                     <td>{{ $product->customer->client_name ?? 'N/A' }}</td>
                                                     <td>{{ $product->tempOrder->gst ?? 'N/A' }}</td>
-                                                    <td>{{ $salesOrder->invoices->first()->invoice_number ?? 'N/A' }}</td>
+                                                    @foreach($salesOrder->invoices as $invoice) 
+                                                        @if($invoice->warehouse_id == $allocation->warehouse_id) 
+                                                            <td>{{ $invoice->invoice_number ?? 'N/A' }}</td> 
+                                                        @endif
+                                                    @endforeach
+                                                    {{-- <td>{{ $salesOrder->invoices->first()->invoice_number ??   'N/A' }}</td> --}}
                                                     {{-- <td>{{ $salesOrder->created_by ?? 'N/A' }}</td> --}}
                                                     <td>{{ $product->customer->contact_no ?? 'N/A' }}</td>
                                                     <td>{{ $product->customer->email ?? 'N/A' }}</td>
@@ -564,19 +607,19 @@
                                                     <td>{{ $product->tempOrder->po_number ?? 'N/A' }}</td>
                                                     <td>{{ $product->tempOrder->po_date ?? 'N/A' }}</td>
 
-                                                    <td>{{ $product->invoiceDetails->first()?->invoice->appointment->appointment_date->format('d-m-Y') ?? 'N/A' }}
+                                                    <td>{{ $product->invoiceDetails->first()?->invoice?->appointment?->appointment_date->format('d-m-Y') ?? 'N/A' }}
                                                     </td>
-                                                    <td>{{ $product->invoiceDetails->first()?->invoice->appointment->appointment_date->addMonth()->format('d-m-Y') ?? 'N/A' }}
+                                                    <td>{{ $product->invoiceDetails->first()?->invoice?->appointment?->appointment_date->addMonth()->format('d-m-Y') ?? 'N/A' }}
                                                     </td>
 
                                                     {{-- <td>{{ $salesOrder->due_date ?? 'N/A' }}</td>   --}}
-                                                    <td>{{ $product->invoiceDetails->first()?->invoice->appointment->pod ? 'Yes' : 'No' }}
+                                                    <td>{{ $product->invoiceDetails->first()?->invoice?->appointment?->pod ? 'Yes' : 'No' }}
                                                     </td>
-                                                    <td>{{ $product->invoiceDetails->first()?->invoice->appointment->grn ? 'Yes' : 'No' }}
+                                                    <td>{{ $product->invoiceDetails->first()?->invoice?->appointment?->grn ? 'Yes' : 'No' }}
                                                     </td>
-                                                    <td>{{ $product->invoiceDetails->first()?->invoice->dns->dn_amount ?? 0 }}
+                                                    <td>{{ $product->invoiceDetails->first()?->invoice?->dns?->dn_amount ?? 0 }}
                                                     </td>
-                                                    <td>{{ $product->invoiceDetails->first()?->invoice->dns->dn_receipt ? 'Yes' : 'No' }}
+                                                    <td>{{ $product->invoiceDetails->first()?->invoice?->dns?->dn_receipt ? 'Yes' : 'No' }}
                                                     </td>
                                                     <td>{{ $salesOrder->appointment?->lr ? 'Yes' : 'No' }}</td>
                                                     <td>{{ $salesOrder->invoices->first()->currency ?? 'INR' }}</td>
@@ -594,17 +637,18 @@
                                                     <td>{{ $allocation->final_dispatched_quantity * $product->price * (1 + $product->tempOrder->gst / 100) ?? 'N/A' }}
                                                     </td>
                                                     <td>{{ $statuses[$salesOrder->status] ?? 'N/A' }}</td>
+                                                    <td>{{ $product->invoiceDetails->first()?->invoice?->total_amount ?? 'N/A' }}
                                                     {{-- @if ($loop->first) --}}
                                                     {{-- <td rowspan="{{ $product->warehouseAllocations->count() }}"> --}}
                                                     <td>
-                                                        {{ $product->invoiceDetails->first()?->invoice->paid_amount ?? 'N/A' }}
+                                                        {{ $product->invoiceDetails->first()?->invoice?->paid_amount ?? 'N/A' }}
                                                     </td>
                                                     {{-- @endif --}}
-                                                    <td>{{ $product->invoiceDetails->first()?->invoice->balance_due ?? 'N/A' }}
+                                                    <td>{{ $product->invoiceDetails->first()?->invoice?->balance_due ?? 'N/A' }}
                                                     </td>
-                                                    <td>{{ $product->invoiceDetails->first()?->invoice->payments->first()->created_at->format('d-m-Y') ?? 'N/A' }}
+                                                    <td>{{ $product->invoiceDetails->first()?->invoice?->payments?->first()?->created_at->format('d-m-Y') ?? 'N/A' }}
                                                     </td>
-                                                    <td>{{ $product->invoiceDetails->first()?->invoice->payments->first()->payment_method ?? 'N/A' }}
+                                                    <td>{{ $product->invoiceDetails->first()?->invoice?->payments?->first()?->payment_method ?? 'N/A' }}
                                                     </td>
 
                                                     <td>{{ $product->tempOrder->gst / 2 ?? 'N/A' }}</td>
