@@ -79,7 +79,7 @@ class PackagingController extends Controller
                         $query->where('warehouse_id', $userWarehouseId);
                     }
                 })
-                ->findOrFail($id);
+                ->find($id);
 
             // dd($salesOrder);
 

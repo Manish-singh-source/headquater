@@ -300,7 +300,7 @@ class SalesOrderController extends Controller
                     // For auto allocation, get total stock from all warehouses
                     if (! isset($productStockCache[$sku])) {
                         $totalAvailable = WarehouseStock::where('sku', $sku)
-                            ->whereHas('warehouse', function($q) {
+                            ->whereHas('warehouse', function ($q) {
                                 $q->where('status', '1'); // Only active warehouses
                             })
                             ->sum('available_quantity');
@@ -562,8 +562,8 @@ class SalesOrderController extends Controller
 
                     // If purchase order needed, it's already created in the loop above
                     // Just update the purchase_ordered_quantity
-                    if ($allocationResult['need_purchase']) {
-                        $orderProduct->purchase_ordered_quantity = $allocationResult['pending_quantity'];
+                    if (isset($allocationResult['need_purchase']) && $allocationResult['need_purchase']) {
+                        $orderProduct->purchase_ordered_quantity = $allocationResult['pending_quantity'] ?? 0;
                         $orderProduct->save();
                     }
                 }
@@ -969,7 +969,6 @@ class SalesOrderController extends Controller
                 ->log("Sales order deleted and blocked quantities released");
 
             return redirect()->route('sales.order.index')->with('success', 'Order deleted successfully.');
-
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Error deleting sales order: ' . $e->getMessage());
@@ -1235,7 +1234,7 @@ class SalesOrderController extends Controller
                     $order->status = 'packaging';
                     $order->product_status = 'packaging';
 
-                    if($order->warehouseAllocations->count() > 0) {
+                    if ($order->warehouseAllocations->count() > 0) {
                         foreach ($order->warehouseAllocations as $allocation) {
                             $allocation->product_status = 'packaging';
                             $allocation->save();
@@ -1645,7 +1644,7 @@ class SalesOrderController extends Controller
                     if ($isAutoAllocation) {
                         // For auto allocation, get total stock from all warehouses
                         $totalAvailable = WarehouseStock::where('sku', $sku)
-                            ->whereHas('warehouse', function($q) {
+                            ->whereHas('warehouse', function ($q) {
                                 $q->where('status', '1'); // Only active warehouses
                             })
                             ->sum('available_quantity');
@@ -1687,7 +1686,7 @@ class SalesOrderController extends Controller
                     // Auto allocation: show breakdown from all active warehouses
                     $warehouseStocks = WarehouseStock::with('warehouse')
                         ->where('sku', $sku)
-                        ->whereHas('warehouse', function($q) {
+                        ->whereHas('warehouse', function ($q) {
                             $q->where('status', '1');
                         })
                         ->where('available_quantity', '>', 0)

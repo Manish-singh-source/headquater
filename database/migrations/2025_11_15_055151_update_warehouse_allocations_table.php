@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::table('warehouse_allocations', function (Blueprint $table) {
             //
-            $table->enum('status', ['pending', 'blocked', 'ready_to_packaged', 'ready_to_ship', 'packaged', 'shipped', 'delivered', 'completed', 'cancelled'])->default('pending')->change();
+            // $table->enum('status', ['pending', 'blocked', 'ready_to_packaged', 'ready_to_ship', 'packaged', 'shipped', 'delivered', 'completed', 'cancelled'])->default('pending')->change();
         });
     }
 
@@ -24,7 +24,7 @@ return new class extends Migration
     {
         Schema::table('warehouse_allocations', function (Blueprint $table) {
             //
-            $table->enum('status', ['pending', 'allocated', 'fulfilled', 'cancelled'])->default('pending')->change();
+            // $table->enum('status', ['pending', 'allocated', 'fulfilled', 'cancelled'])->default('pending')->change();
         });
     }
 };
