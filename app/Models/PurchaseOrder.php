@@ -33,4 +33,19 @@ class PurchaseOrder extends Model
     {
         return $this->hasOne(Vendor::class, 'id', 'vendor_id');
     }
+
+    public function warehouse()
+    {
+        return $this->belongsTo(Warehouse::class, 'warehouse_id', 'id');
+    }
+
+    public function purchaseGrn()
+    {
+        return $this->hasOne(PurchaseGrn::class, 'purchase_order_id', 'id');
+    }
+
+    public function payments()
+    {
+        return $this->hasManyThrough(VendorPayment::class, VendorPI::class, 'purchase_order_id', 'vendor_pi_id', 'id', 'id');
+    }
 }

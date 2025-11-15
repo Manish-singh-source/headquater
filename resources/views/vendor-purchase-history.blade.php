@@ -1,5 +1,34 @@
 @extends('layouts.master')
 @section('main-content')
+
+
+    @php
+        $statusBadges = [
+            'paid' => 'bg-success',
+            'pending' => 'bg-danger',
+            'partial_paid' => 'bg-warning',
+        ];
+        $statusLabels = [
+            'paid' => 'Paid',
+            'partial_paid' => 'Partial Paid',
+            'pending' => 'Pending',
+        ];
+
+        $allocationStatusBadges = [
+            'pending' => 'bg-secondary',
+            'approve' => 'bg-warning',
+            'reject' => 'bg-danger',
+            'completed' => 'bg-success',
+        ];
+
+        $allocationStatusLabels = [
+            'pending' => 'Pending',
+            'approve' => 'Approval Pending',
+            'reject' => 'Rejected',
+            'completed' => 'Completed',
+        ];
+    @endphp
+
     <main class="main-wrapper">
         <div class="main-content">
             <!-- Breadcrumb Navigation -->
@@ -281,200 +310,223 @@
                                 </div>
                             </div>
                         </div>
-                </form>
+                    </form>
+                </div>
             </div>
-        </div>
 
-        <!-- Active Filters Summary -->
-        @php
-            $activeFilters = [];
-            if (!empty($filters['from_date'])) {
-                $activeFilters['From'] = $filters['from_date'];
-            }
-            if (!empty($filters['to_date'])) {
-                $activeFilters['To'] = $filters['to_date'];
-            }
-            if (!empty($filters['purchase_order_no'])) {
-                $activeFilters['Purchase Orders'] = (array) $filters['purchase_order_no'];
-            }
-            if (!empty($filters['vendor_code'])) {
-                $activeFilters['Vendors'] = (array) $filters['vendor_code'];
-            }
-            if (!empty($filters['sku'])) {
-                $activeFilters['SKUs'] = (array) $filters['sku'];
-            }
-        @endphp
+            <!-- Active Filters Summary -->
+            @php
+                $activeFilters = [];
+                if (!empty($filters['from_date'])) {
+                    $activeFilters['From'] = $filters['from_date'];
+                }
+                if (!empty($filters['to_date'])) {
+                    $activeFilters['To'] = $filters['to_date'];
+                }
+                if (!empty($filters['purchase_order_no'])) {
+                    $activeFilters['Purchase Orders'] = (array) $filters['purchase_order_no'];
+                }
+                if (!empty($filters['vendor_code'])) {
+                    $activeFilters['Vendors'] = (array) $filters['vendor_code'];
+                }
+                if (!empty($filters['sku'])) {
+                    $activeFilters['SKUs'] = (array) $filters['sku'];
+                }
+            @endphp
 
-        @if (!empty($activeFilters))
-            <div class="card mt-3">
+            @if (!empty($activeFilters))
+                <div class="card mt-3">
+                    <div class="card-body">
+                        <h6 class="mb-2 fw-bold">Active Filters</h6>
+                        <div class="d-flex flex-wrap gap-2">
+                            @foreach ($activeFilters as $label => $value)
+                                @if (is_array($value))
+                                    <div class="me-2">
+                                        <strong>{{ $label }}:</strong>
+                                        @foreach ($value as $v)
+                                            <span class="badge bg-secondary ms-1">{{ $v }}</span>
+                                        @endforeach
+                                    </div>
+                                @else
+                                    <div class="me-2"><strong>{{ $label }}:</strong> <span
+                                            class="text-muted">{{ $value }}</span></div>
+                                @endif
+                            @endforeach
+                        </div>
+                        <div class="mt-2 text-muted">Total matching records:
+                            <strong>{{ $vendorPIProducts->total() }}</strong>
+                        </div>
+                    </div>
+                </div>
+            @endif
+
+
+            <!-- Data Table Section -->
+            <div class="card mt-4">
                 <div class="card-body">
-                    <h6 class="mb-2 fw-bold">Active Filters</h6>
-                    <div class="d-flex flex-wrap gap-2">
-                        @foreach ($activeFilters as $label => $value)
-                            @if (is_array($value))
-                                <div class="me-2">
-                                    <strong>{{ $label }}:</strong>
-                                    @foreach ($value as $v)
-                                        <span class="badge bg-secondary ms-1">{{ $v }}</span>
-                                    @endforeach
-                                </div>
-                            @else
-                                <div class="me-2"><strong>{{ $label }}:</strong> <span
-                                        class="text-muted">{{ $value }}</span></div>
-                            @endif
-                        @endforeach
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="mb-0 fw-bold">
+                            <i class="bx bx-list-ul me-2"></i>Vendor Purchase Records
+                            <span class="badge bg-primary ms-2">{{ $vendorPIProducts->total() }} Total</span>
+                        </h6>
                     </div>
-                    <div class="mt-2 text-muted">Total matching records: <strong>{{ $vendorPIProducts->total() }}</strong>
+
+                    <div class="customer-table">
+                        <div class="table-responsive white-space-nowrap">
+                            <table id="vendor-purchase-history-table" class="table table-striped table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th style="width:40px;">
+                                            <input class="form-check-input" type="checkbox" id="select-all">
+                                        </th>
+                                        <th>Purchse&nbsp;Order&nbsp;No</th>
+                                        <th>Purchase&nbsp;Order&nbsp;Date</th>
+                                        <th>Vendor&nbsp;Name</th>
+                                        <th>GSTIN</th>
+                                        <th>Item&nbsp;Name</th>
+                                        <th>SKU</th>
+                                        <th>HSN/SAC</th>
+                                        <th>Quantity</th>
+                                        <th>UoM</th>
+                                        <th>Rate</th>
+                                        <th>Discount</th>
+                                        <th>Taxable&nbsp;Value</th>
+                                        <th>GST</th>
+                                        <th>CGST</th>
+                                        <th>SGST</th>
+                                        <th>IGST</th>
+                                        <th>GST&nbsp;Amount</th>
+                                        <th>Cess</th>
+                                        <th>Cess&nbsp;Amount</th>
+                                        <th>PAN</th>
+                                        <th>Payment&nbsp;Status</th>
+                                        <th>Payment&nbsp;Method</th>
+                                        <th>Invoice&nbsp;Ref</th>
+                                        <th>Invoice&nbsp;Date</th>
+                                        <th>Invoice&nbsp;Amount</th>
+                                        <th>Invoice&nbsp;Due</th>
+                                        <th>Invoice&nbsp;Paid</th>
+                                        <th>Invioice&nbsp;Uploaded</th>
+                                        <th>GRN&nbsp;Uploaded</th>
+                                        <th>Due&nbsp;Date</th>
+                                        <th>Shipping&nbsp;Charges</th>
+                                        <th>PO&nbsp;Created</th>
+                                        <th>PI&nbsp;Received</th>
+                                        <th>Approved</th>
+                                        <th>Warehouse</th>
+                                        {{-- <th>Remarks</th> --}}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @forelse($vendorPIProducts as $purchaseOrder)
+                                        @php
+                                            $vendor = $purchaseOrder->vendor ?? null;
+                                            $purchaseInvoice = $purchaseOrder->purchaseInvoices->first() ?? null;
+                                            $vendorPI = $purchaseOrder->vendorPI->first() ?? null;
+                                            $payment = $vendorPI ? $vendorPI->payments->first() : null;
+                                            $purchaseGrn = $purchaseOrder->purchaseGrn ?? null;
+                                        @endphp
+
+                                        @forelse($purchaseOrder->purchaseOrderProducts as $product)
+                                            @php
+                                                $productDetails = $product->product ?? null;
+                                                $gstRate = floatval($productDetails->gst ?? 0);
+                                                $unitCost = floatval($product->unit_cost ?? 0);
+                                                $quantity = floatval($product->ordered_quantity ?? 0);
+                                                $taxableValue = $product->product->mrp * $quantity;
+                                                $gstAmount = ($taxableValue * $gstRate) / 100;
+
+                                                // Calculate CGST/SGST/IGST based on state (simplified)
+                                                $cgst = $gstRate / 2;
+                                                $sgst = $gstRate / 2;
+                                                $igst = 0; // Set to $gstRate if interstate
+                                            @endphp
+                                            <tr>
+                                                <td>
+                                                    <input class="form-check-input item-checkbox" type="checkbox"
+                                                        name="ids[]" value="{{ $purchaseOrder->id }}">
+                                                </td>
+                                                <td>{{ $purchaseOrder->id ?? 'N/A' }}</td>
+                                                <td>{{ $purchaseOrder->created_at ? $purchaseOrder->created_at->format('d-m-Y') : 'N/A' }}
+                                                </td>
+                                                <td>{{ $vendor->client_name ?? 'N/A' }}</td>
+                                                <td>{{ $vendor->gst_number ?? 'N/A' }}</td>
+                                                <td>{{ $productDetails->brand_title ?? 'N/A' }}</td>
+                                                <td>{{ $product->sku ?? 'N/A' }}</td>
+                                                <td>{{ $productDetails->hsn ?? 'N/A' }}</td>
+                                                <td>{{ $product->ordered_quantity ?? 0 }}</td>
+                                                <td>PCS</td>
+                                                <td>₹{{ number_format($product->product->mrp ?? 0, 2) }}</td>
+                                                <td>₹{{ number_format($product->discount_per_unit ?? 0, 2) }}</td>
+                                                <td>₹{{ number_format($taxableValue, 2) }}</td>
+                                                <td>{{ $gstRate }}%</td>
+                                                <td>{{ $cgst }}%</td>
+                                                <td>{{ $sgst }}%</td>
+                                                <td>{{ $gstRate }}%</td>
+                                                <td>₹{{ number_format($gstAmount, 2) }}</td>
+                                                <td>0%</td>
+                                                <td>₹0.00</td>
+                                                <td>{{ $vendor->pan_number ?? 'N/A' }}</td>
+                                                <td>
+                                                    <span
+                                                        class="badge {{ $vendorPI && $statusBadges[$vendorPI->payment_status] ? $statusBadges[$vendorPI->payment_status] : 'bg-danger' }}">
+                                                        {{ $vendorPI && $statusLabels[$vendorPI->payment_status] ? $statusLabels[$vendorPI->payment_status] : 'Pending' }}
+                                                    </span>
+                                                </td>
+                                                <td>{{ $payment->payment_method ?? 'N/A' }}</td>
+                                                <td>{{ $purchaseInvoice->invoice_no ?? 'N/A' }}</td>
+                                                <td>{{ $purchaseInvoice ? ($purchaseInvoice->created_at ? $purchaseInvoice->created_at->format('d-m-Y') : 'N/A') : 'N/A' }}
+                                                </td>
+                                                <td>{{ $vendorPI->total_amount ?? 'N/A' }}</td>
+                                                <td>{{ $vendorPI->total_due_amount ?? 'N/A' }}</td>
+                                                <td>{{ $vendorPI->total_paid_amount ?? 'N/A' }}</td>
+                                                <td>{{ $purchaseInvoice ? 'Yes' : 'No' }}</td>
+                                                <td>{{ $purchaseGrn ? 'Yes' : 'No' }}</td>
+                                                <td>{{ $vendorPI && $vendorPI->updated_at ? $vendorPI->updated_at->addMonth()->format('d-m-Y') : 'N/A' }}
+                                                </td>
+                                                <td>N/A</td>
+                                                <td>{{ $purchaseOrder->created_at ? $purchaseOrder->created_at->format('d-m-Y') : 'N/A' }}
+                                                </td>
+                                                {{-- <td>{{ $vendorPI && $vendorPI->created_at ? $vendorPI->created_at->format('d-m-Y') : 'N/A' }}
+                                                </td> --}}
+                                                <td>{{ $vendorPI && $vendorPI->updated_at ? $vendorPI->updated_at->format('d-m-Y') : 'N/A' }}
+                                                </td>
+                                                <td>
+                                                    <span
+                                                        class="badge {{ $vendorPI && $allocationStatusBadges[$vendorPI->status] ? $allocationStatusBadges[$vendorPI->status] : 'bg-secondary' }}">
+                                                        {{ $vendorPI ? $allocationStatusLabels[$vendorPI->status] : 'N/A' }}
+                                                    </span>
+                                                </td>
+                                                <td>{{ $vendorPI->warehouse->name ?? 'N/A' }}</td>
+                                            </tr>
+                                        @empty
+                                            <tr>
+                                                <td colspan="34" class="text-center text-muted py-4">No products in this
+                                                    order</td>
+                                            </tr>
+                                        @endforelse
+                                    @empty
+                                        <tr>
+                                            <td colspan="34" class="text-center text-muted py-4">No records found</td>
+                                        </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Pagination -->
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <div>
+                            Showing {{ $vendorPIProducts->firstItem() ?? 0 }} to {{ $vendorPIProducts->lastItem() ?? 0 }}
+                            of {{ $vendorPIProducts->total() }} entries
+                        </div>
+                        <div>
+                            {{ $vendorPIProducts->links() }}
+                        </div>
                     </div>
                 </div>
             </div>
-        @endif
-
-
-        <!-- Data Table Section -->
-        <div class="card mt-4">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h6 class="mb-0 fw-bold">
-                        <i class="bx bx-list-ul me-2"></i>Vendor Purchase Records
-                        <span class="badge bg-primary ms-2">{{ $vendorPIProducts->total() }} Total</span>
-                    </h6>
-                </div>
-
-                <div class="customer-table">
-                    <div class="table-responsive white-space-nowrap">
-                        <table id="vendor-purchase-history-table" class="table table-striped table-hover">
-                            <thead class="table-light">
-                                <tr>
-                                    <th style="width:40px;">
-                                        <input class="form-check-input" type="checkbox" id="select-all">
-                                    </th>
-                                    <th>Purchse&nbsp;Order&nbsp;No</th>
-                                    <th>Purchase&nbsp;Order&nbsp;Date</th>
-                                    <th>Vendor&nbsp;Name</th>
-                                    <th>GSTIN</th>
-                                    <th>Item&nbsp;Name</th>
-                                    <th>SKU</th>
-                                    <th>HSN/SAC</th>
-                                    <th>Quantity</th>
-                                    <th>UoM</th>
-                                    <th>Rate</th>
-                                    <th>Discount</th>
-                                    <th>Taxable&nbsp;Value</th>
-                                    <th>GST</th>
-                                    <th>CGST</th>
-                                    <th>SGST</th>
-                                    <th>IGST</th>
-                                    <th>GST&nbsp;Amount</th>
-                                    <th>Cess</th>
-                                    <th>Cess&nbsp;Amount</th>
-                                    <th>PAN</th>
-                                    <th>Payment&nbsp;Status</th>
-                                    <th>Payment&nbsp;Method</th>
-                                    <th>Invoice&nbsp;Ref</th>
-                                    <th>Invoice&nbsp;Date</th>
-                                    <th>Invoice&nbsp;Amount</th>
-                                    <th>Invioice&nbsp;Uploaded</th>
-                                    <th>GRN&nbsp;Uploaded</th>
-                                    <th>Due&nbsp;Date</th>
-                                    <th>Shipping&nbsp;Charges</th>
-                                    <th>PO&nbsp;Created</th>
-                                    <th>PI&nbsp;Received</th>
-                                    <th>Approved</th>
-                                    <th>Warehouse</th>
-                                    {{-- <th>Remarks</th> --}}
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @forelse($vendorPIProducts as $product)
-                                    @php
-                                        $order = $product->order;
-                                        $vendor = $order->vendor ?? null;
-                                        $purchaseInvoice = $order->purchaseInvoice ?? null;
-                                        $payment = $order->payments->first() ?? null;
-                                        $gstRate = floatval($product->gst ?? 0);
-                                        $taxableValue = floatval($product->mrp ?? 0);
-                                        $gstAmount = ($taxableValue * $gstRate) / 100;
-
-                                        // Calculate CGST/SGST/IGST based on state (simplified - you may need to add state comparison logic)
-                                        $cgst = $gstRate / 2;
-                                        $sgst = $gstRate / 2;
-                                        $igst = 0; // Set to $gstRate if interstate
-                                    @endphp
-                                    <tr>
-                                        <td>
-                                            <input class="form-check-input item-checkbox" type="checkbox" name="ids[]"
-                                                value="{{ $product->id }}">
-                                        </td>
-                                        <td>{{ $order->purchase_order_id ?? 'N/A' }}</td>
-                                        <td>{{ $order->created_at ? $order->created_at->format('d-m-Y') : 'N/A' }}</td>
-                                        <td>{{ $vendor->client_name ?? 'N/A' }}</td>
-                                        <td>{{ $vendor->gst_number ?? 'N/A' }}</td>
-                                        <td>{{ $product->title ?? 'N/A' }}</td>
-                                        <td>{{ $product->vendor_sku_code ?? 'N/A' }}</td>
-                                        <td>{{ $product->hsn ?? 'N/A' }}</td>
-                                        <td>{{ $product->quantity_received ?? 0 }}</td>
-                                        <td>{{ $product->product->unit_type ?? 'PCS' }}</td>
-                                        <td>₹{{ number_format($product->purchase_rate ?? 0, 2) }}</td>
-                                        <td>₹0.00</td>
-                                        <td>₹{{ number_format($taxableValue, 2) }}</td>
-                                        <td>{{ $gstRate }}%</td>
-                                        <td>{{ $cgst }}%</td>
-                                        <td>{{ $sgst }}%</td>
-                                        <td>{{ $gstRate }}%</td>
-                                        <td>₹{{ number_format($gstAmount, 2) }}</td>
-                                        <td>0%</td>
-                                        <td>₹0.00</td>
-                                        <td>{{ $vendor->pan_number ?? 'N/A' }}</td>
-                                        <td>
-                                            @if ($payment && $payment->payment_status == 'completed')
-                                                <span class="badge bg-success">Paid</span>
-                                            @else
-                                                <span class="badge bg-warning">Pending</span>
-                                            @endif
-                                        </td>
-                                        <td>{{ $payment->payment_method ?? 'N/A' }}</td>
-                                        <td>{{ $purchaseInvoice->invoice_no ?? 'N/A' }}</td>
-                                        <td>{{ $purchaseInvoice ? ($purchaseInvoice->created_at ? $purchaseInvoice->created_at->format('d-m-Y') : 'N/A') : 'N/A' }}
-                                        </td>
-                                        <td>N/A</td>
-                                        <td>N/A</td>
-                                        <td>N/A</td>
-                                        <td>N/A</td>
-                                        <td>N/A</td>
-                                        <td>N/A</td>
-                                        <td>N/A</td>
-                                        <td>
-                                            <span
-                                                class="badge {{ $order->status == 'completed' ? 'bg-success' : 'bg-secondary' }}">
-                                                {{ ucfirst($order->status ?? 'N/A') }}
-                                            </span>
-                                        </td>
-                                        <td>{{ $order->warehouse->name ?? 'N/A' }}</td>
-                                        {{-- <td>{{ $product->issue_description ?? '-' }}</td> --}}
-                                    </tr>
-                                @empty
-                                    <tr>
-                                        <td colspan="30" class="text-center text-muted py-4">No records found</td>
-                                    </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- Pagination -->
-                <div class="d-flex justify-content-between align-items-center mt-3">
-                    <div>
-                        Showing {{ $vendorPIProducts->firstItem() ?? 0 }} to {{ $vendorPIProducts->lastItem() ?? 0 }}
-                        of {{ $vendorPIProducts->total() }} entries
-                    </div>
-                    <div>
-                        {{ $vendorPIProducts->links() }}
-                    </div>
-                </div>
-            </div>
-        </div>
 
 
         </div>

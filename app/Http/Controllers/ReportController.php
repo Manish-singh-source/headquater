@@ -5,8 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Customer;
 use App\Models\Invoice;
 use App\Models\Product;
+use App\Models\PurchaseOrder;
+use App\Models\PurchaseOrderProduct;
 use App\Models\VendorPI;
-use App\Models\VendorPIProduct;
 use App\Models\Warehouse;
 use App\Models\WarehouseStock;
 use Illuminate\Http\Request;
@@ -35,90 +36,96 @@ class ReportController extends Controller
      */
     public function vendorPurchaseHistory(Request $request)
     {
-        try {
-            // Build the base query from VendorPIProduct with all necessary relationships
-            $query = VendorPIProduct::with([
-                'order' => function ($q) {
-                    $q->with(['vendor', 'payments', 'purchaseInvoice', 'purchaseGrn', 'purchaseOrder', 'warehouse']);
-                },
-                'product'
+        try { // Build base query with all relations
+            $query = PurchaseOrder::with([
+                'vendor',
+                'warehouse',
+                'purchaseOrderProducts.product',
+                'vendorPI.payments',
+                'purchaseInvoices',
+                'purchaseGrn'
             ]);
 
-            // Apply filters on the parent VendorPI relationship
-            $query->whereHas('order', function ($q) use ($request) {
-                // Filter only completed orders
-                $q->where('status', 'completed');
+            // Filter only completed vendorPI OR allow null vendorPI
+            // $query->where(function ($q) {
+            //     $q->whereHas('vendorPI', function ($p) {
+            //         $p->where('status', 'completed');
+            //     })
+            //         ->orDoesntHave('vendorPI');
+            // });
 
-                // Apply date range filter if from_date is provided
-                if ($request->filled('from_date')) {
-                    $q->whereDate('created_at', '>=', $request->from_date);
-                }
+            // Date range filter
+            if ($request->filled('from_date')) {
+                $query->whereDate('created_at', '>=', $request->from_date);
+            }
 
-                // Apply date range filter if to_date is provided
-                if ($request->filled('to_date')) {
-                    $q->whereDate('created_at', '<=', $request->to_date);
-                }
+            if ($request->filled('to_date')) {
+                $query->whereDate('created_at', '<=', $request->to_date);
+            }
 
-                // Apply purchase order filter if purchase_order_no is provided (supports single or multiple)
-                if ($request->filled('purchase_order_no')) {
-                    $po = $request->input('purchase_order_no');
-                    if (is_array($po)) {
-                        $q->whereIn('purchase_order_id', $po);
-                    } else {
-                        $q->where('purchase_order_id', $po);
-                    }
-                }
+            // Purchase order filter
+            if ($request->filled('purchase_order_no')) {
+                $po = $request->purchase_order_no;
+                $query->whereIn('id', (array) $po);
+            }
 
-                // Apply vendor filter if vendor_code is provided (supports single or multiple)
-                if ($request->filled('vendor_code')) {
-                    $vc = $request->input('vendor_code');
-                    if (is_array($vc)) {
-                        $q->whereIn('vendor_code', $vc);
-                    } else {
-                        $q->where('vendor_code', $vc);
-                    }
-                }
+            // Vendor filter
+            if ($request->filled('vendor_code')) {
+                $vc = $request->vendor_code;
 
-                // Apply sku filter if sku is provided (supports single or multiple)
-                if ($request->filled('sku')) {
-                    $sku = $request->input('sku');
-                    if (is_array($sku)) {
-                        $q->whereIn('vendor_sku_code', $sku);
-                    } else {
-                        $q->where('vendor_sku_code', $sku);
-                    }
-                }
-            });
+                $query->where(function ($q) use ($vc) {
+                    $q->whereHas('vendor', function ($v) use ($vc) {
+                        $v->whereIn('vendor_code', (array) $vc);
+                    })
+                        ->orDoesntHave('vendor'); // allow purchase orders without vendor
+                });
+            }
 
-            // Clone query for statistics calculation before pagination
+            // SKU filter
+            if ($request->filled('sku')) {
+                $sku = $request->sku;
+
+                $query->where(function ($q) use ($sku) {
+                    $q->whereHas('purchaseOrderProducts', function ($p) use ($sku) {
+                        $p->whereIn('sku', (array) $sku);
+                    })
+                        ->orDoesntHave('purchaseOrderProducts'); // allow purchase orders without products
+                });
+            }
+
+            // Clone for stats
             $statsQuery = clone $query;
 
-            // Get paginated vendor PI products (15 per page)
+            // dd($statsQuery->get());
+
+            // Get paginated purchase orders (15 per page)
             $vendorPIProducts = $query->latest('id')->paginate(15)->appends($request->all());
 
             // Calculate statistics based on filtered results
-            $purchaseOrdersTotal = $statsQuery->sum('mrp');
-            $purchaseOrdersTotalQuantity = $statsQuery->sum('quantity_received');
+            $purchaseOrdersTotal = $statsQuery->sum('total_amount');
+            $purchaseOrdersTotalQuantity = $statsQuery->withCount('purchaseOrderProducts')->get()->sum('purchase_order_products_count');
 
-            // Count unique vendor PIs for total orders
-            $totalOrders = $statsQuery->distinct('vendor_pi_id')->count('vendor_pi_id');
+            // Count total orders
+            $totalOrders = $statsQuery->count();
 
-            // Get unique purchase order numbers from all completed purchase orders for dropdown
-            $purchaseOrderNumbers = VendorPI::distinct('purchase_order_id')
-                ->pluck('purchase_order_id');
+            // Get unique purchase order IDs from all completed purchase orders for dropdown
+            $purchaseOrderNumbers = PurchaseOrder::whereHas('vendorPI', function ($q) {
+                $q->where('status', 'completed');
+            })->distinct('id')->pluck('id');
 
-            // Get unique vendors from all completed purchase orders for dropdown
-            $purchaseOrdersVendors = VendorPI::where('status', 'completed')
-                ->distinct('vendor_code')
-                ->pluck('vendor_code');
+            // Get unique vendor codes from all completed purchase orders for dropdown
+            $purchaseOrdersVendors = PurchaseOrder::whereHas('vendorPI', function ($q) {
+                $q->where('status', 'completed');
+            })->with('vendor')->get()->pluck('vendor.vendor_code')->unique()->filter();
 
-            // Get unique vendors from all completed purchase orders for dropdown
-            $purchaseOrdersSKUs = VendorPIProduct::distinct('vendor_sku_code')
-                ->pluck('vendor_sku_code');    
-
-            // dd($purchaseOrdersSKUs);
+            // Get unique SKUs from all completed purchase orders for dropdown
+            $purchaseOrdersSKUs = PurchaseOrderProduct::whereHas('purchaseOrder.vendorPI', function ($q) {
+                $q->where('status', 'completed');
+            })->distinct('sku')->pluck('sku');
 
             $filters = $request->only(['from_date', 'to_date', 'purchase_order_no', 'vendor_code', 'sku']);
+
+            // dd($vendorPIProducts);
 
             return view('vendor-purchase-history', compact(
                 'vendorPIProducts',
@@ -157,62 +164,68 @@ class ReportController extends Controller
     {
         DB::beginTransaction();
         try {
-           // Build the base query from VendorPIProduct with all necessary relationships
-            $query = VendorPIProduct::with([
-                'order' => function ($q) {
-                    $q->with(['vendor', 'payments', 'purchaseInvoice', 'purchaseGrn', 'purchaseOrder', 'warehouse']);
-                },
-                'product'
+            // Build the base query from PurchaseOrder with all necessary relationships
+            $query = PurchaseOrder::with([
+                'vendor',
+                'warehouse',
+                'purchaseOrderProducts.product',
+                'vendorPI.payments',
+                'purchaseInvoices',
+                'purchaseGrn'
             ]);
 
-            // Apply filters on the parent VendorPI relationship
-            $query->whereHas('order', function ($q) use ($request) {
-                // Filter only completed orders
+            // Filter only completed orders
+            $query->whereHas('vendorPI', function ($q) {
                 $q->where('status', 'completed');
-
-                // Apply date range filter if from_date is provided
-                if ($request->filled('from_date')) {
-                    $q->whereDate('created_at', '>=', $request->from_date);
-                }
-
-                // Apply date range filter if to_date is provided
-                if ($request->filled('to_date')) {
-                    $q->whereDate('created_at', '<=', $request->to_date);
-                }
-
-                // Apply purchase order filter if purchase_order_no is provided (supports single or multiple)
-                if ($request->filled('purchase_order_no')) {
-                    $po = $request->input('purchase_order_no');
-                    if (is_array($po)) {
-                        $q->whereIn('purchase_order_id', $po);
-                    } else {
-                        $q->where('purchase_order_id', $po);
-                    }
-                }
-
-                // Apply vendor filter if vendor_code is provided (supports single or multiple)
-                if ($request->filled('vendor_code')) {
-                    $vc = $request->input('vendor_code');
-                    if (is_array($vc)) {
-                        $q->whereIn('vendor_code', $vc);
-                    } else {
-                        $q->where('vendor_code', $vc);
-                    }
-                }
-
-                // Apply sku filter if sku is provided (supports single or multiple)
-                if ($request->filled('sku')) {
-                    $sku = $request->input('sku');
-                    if (is_array($sku)) {
-                        $q->whereIn('vendor_sku_code', $sku);
-                    } else {
-                        $q->where('vendor_sku_code', $sku);
-                    }
-                }
             });
 
-            // Clone query for statistics calculation before export
-            $statsQuery = clone $query;
+            // Apply date range filter if from_date is provided
+            if ($request->filled('from_date')) {
+                $query->whereDate('created_at', '>=', $request->from_date);
+            }
+
+            // Apply date range filter if to_date is provided
+            if ($request->filled('to_date')) {
+                $query->whereDate('created_at', '<=', $request->to_date);
+            }
+
+            // Apply purchase order filter if purchase_order_no is provided (supports single or multiple)
+            if ($request->filled('purchase_order_no')) {
+                $po = $request->input('purchase_order_no');
+                if (is_array($po)) {
+                    $query->whereIn('id', $po);
+                } else {
+                    $query->where('id', $po);
+                }
+            }
+
+            // Apply vendor filter if vendor_code is provided (supports single or multiple)
+            if ($request->filled('vendor_code')) {
+                $vc = $request->input('vendor_code');
+                if (is_array($vc)) {
+                    $query->whereHas('vendor', function ($q) use ($vc) {
+                        $q->whereIn('vendor_code', $vc);
+                    });
+                } else {
+                    $query->whereHas('vendor', function ($q) use ($vc) {
+                        $q->where('vendor_code', $vc);
+                    });
+                }
+            }
+
+            // Apply sku filter if sku is provided (supports single or multiple)
+            if ($request->filled('sku')) {
+                $sku = $request->input('sku');
+                if (is_array($sku)) {
+                    $query->whereHas('purchaseOrderProducts', function ($q) use ($sku) {
+                        $q->whereIn('sku', $sku);
+                    });
+                } else {
+                    $query->whereHas('purchaseOrderProducts', function ($q) use ($sku) {
+                        $q->where('sku', $sku);
+                    });
+                }
+            }
 
             // For export we want all matching records (no pagination)
             $vendorPIProducts = $query->latest('id')->get();
@@ -260,49 +273,55 @@ class ReportController extends Controller
                 'Warehouse',
             ]);
 
-            // Add data rows
-            foreach ($vendorPIProducts as $product) {
-                $order = $product['order'];
-                $vendor = $order->vendor ?? null;
-                $purchaseInvoice = $order->purchaseInvoice ?? null;
-                $payment = $order->payments->first() ?? null;
-                $gstRate = floatval($product->gst ?? 0);
-                $taxableValue = floatval($product->mrp ?? 0);
-                $gstAmount = ($taxableValue * $gstRate) / 100;
-                $cessRate = floatval($product->cess ?? 0);
-                $cessAmount = ($taxableValue * $cessRate) / 100;
+            // Add data rows - loop through purchase orders and their products
+            foreach ($vendorPIProducts as $purchaseOrder) {
+                $vendor = $purchaseOrder->vendor ?? null;
+                $purchaseInvoice = $purchaseOrder->purchaseInvoices->first() ?? null;
+                $vendorPI = $purchaseOrder->vendorPI->first() ?? null;
+                $payment = $vendorPI ? $vendorPI->payments->first() : null;
 
-                fputcsv($file, [
-                    $order->purchase_order_id ?? 'N/A',
-                    // $order->created_at ? $order->created_at->format('d-m-Y') : 'N/A',
-                    $order->created_at->format('d-m-Y') ?? 'N/A',
-                    $vendor->client_name ?? 'N/A',
-                    $vendor->gst_number ?? 'N/A',
-                    $product->title ?? 'N/A',
-                    $product->vendor_sku_code ?? 'N/A',
-                    $product->hsn ?? 'N/A',
-                    $product->quantity_received ?? 0,
-                    $product->product->unit_type ?? 'PCS',
-                    $product->purchase_rate ?? 0,
-                    0, // Discount
-                    $taxableValue,
-                    $gstRate,
-                    $gstRate/2 ?? 0,    // Adjust based on your logic
-                    $gstRate/2 ?? 0,    // Adjust based on your logic
-                    $gstRate ?? 0,    // Adjust based on your logic
-                    $gstAmount,
-                    $cessRate,
-                    $cessAmount,
-                    $vendor->pan_number ?? 'N/A',
-                    $payment ? ($payment->payment_status == 'completed' ? 'Paid' : 'Pending') : 'Pending',
-                    $payment ? $payment->payment_method : 'N/A',
-                    $purchaseInvoice->invoice_no ?? 'N/A',
-                    $purchaseInvoice?->created_at ? $purchaseInvoice->created_at->format('d-m-Y') : 'N/A',
-                    'N/A', // Due Date
-                    0, // Shipping Charges
-                    ucfirst($order->status ?? 'N/A'),
-                    $order->warehouse->name ?? 'N/A',
-                ]);
+                // Loop through each product in the purchase order
+                foreach ($purchaseOrder->purchaseOrderProducts as $product) {
+                    $productDetails = $product->product ?? null;
+                    $gstRate = floatval($productDetails->gst ?? 0);
+                    $unitCost = floatval($product->unit_cost ?? 0);
+                    $quantity = floatval($product->ordered_quantity ?? 0);
+                    $taxableValue = $unitCost * $quantity;
+                    $gstAmount = ($taxableValue * $gstRate) / 100;
+                    $cessRate = 0; // Cess not in purchase_order_products table
+                    $cessAmount = 0;
+
+                    fputcsv($file, [
+                        $purchaseOrder->id ?? 'N/A',
+                        $purchaseOrder->created_at ? $purchaseOrder->created_at->format('d-m-Y') : 'N/A',
+                        $vendor->client_name ?? 'N/A',
+                        $vendor->gst_number ?? 'N/A',
+                        $productDetails->brand_title ?? 'N/A',
+                        $product->sku ?? 'N/A',
+                        $productDetails->hsn ?? 'N/A',
+                        $product->ordered_quantity ?? 0,
+                        'PCS',
+                        $product->unit_cost ?? 0,
+                        $product->discount_per_unit ?? 0,
+                        $taxableValue,
+                        $gstRate,
+                        $gstRate / 2,
+                        $gstRate / 2,
+                        $gstRate,
+                        $gstAmount,
+                        $cessRate,
+                        $cessAmount,
+                        $vendor->pan_number ?? 'N/A',
+                        $payment ? ($payment->payment_status == 'completed' ? 'Paid' : 'Pending') : 'Pending',
+                        $payment ? $payment->payment_method : 'N/A',
+                        $purchaseInvoice->invoice_no ?? 'N/A',
+                        $purchaseInvoice?->created_at ? $purchaseInvoice->created_at->format('d-m-Y') : 'N/A',
+                        'N/A', // Due Date
+                        0, // Shipping Charges
+                        $vendorPI ? ucfirst($vendorPI->status) : 'N/A',
+                        $purchaseOrder->warehouse->name ?? 'N/A',
+                    ]);
+                }
             }
 
             fclose($file);
@@ -327,7 +346,9 @@ class ReportController extends Controller
             if ($request->filled('vendor_code')) {
                 $vc = $request->input('vendor_code');
                 if (is_array($vc)) {
-                    $vendorPart = implode('-', array_map(function ($v) { return preg_replace('/[^A-Za-z0-9\-]/', '', str_replace(' ', '-', $v)); }, $vc));
+                    $vendorPart = implode('-', array_map(function ($v) {
+                        return preg_replace('/[^A-Za-z0-9\-]/', '', str_replace(' ', '-', $v));
+                    }, $vc));
                 } else {
                     $vendorPart = preg_replace('/[^A-Za-z0-9\-]/', '', str_replace(' ', '-', $vc));
                 }
@@ -454,8 +475,8 @@ class ReportController extends Controller
                 SUM(block_quantity) as total_blocked,
                 SUM(available_quantity * COALESCE(products.mrp, 0)) as total_value
             ')
-            ->leftJoin('products', 'warehouse_stocks.sku', '=', 'products.sku')
-            ->first();
+                ->leftJoin('products', 'warehouse_stocks.sku', '=', 'products.sku')
+                ->first();
 
             $productsSum = $stats->total_original ?? 0;
             $availableProductsSum = $stats->total_available ?? 0;
@@ -762,13 +783,13 @@ class ReportController extends Controller
                     $query->whereHas('customer', function ($q) use ($regions) {
                         $q->where(function ($subQ) use ($regions) {
                             $subQ->whereIn('billing_state', $regions)
-                                 ->orWhereIn('shipping_state', $regions);
+                                ->orWhereIn('shipping_state', $regions);
                         });
                     });
                 } else {
                     $query->whereHas('customer', function ($q) use ($regions) {
                         $q->where('billing_state', $regions)
-                          ->orWhere('shipping_state', $regions);
+                            ->orWhere('shipping_state', $regions);
                     });
                 }
             }
@@ -786,7 +807,7 @@ class ReportController extends Controller
                             } elseif ($status === 'partial') {
                                 $q->orWhere(function ($subQ) {
                                     $subQ->whereRaw('(total_amount - COALESCE((SELECT SUM(amount) FROM payments WHERE payments.invoice_id = invoices.id), 0)) > 0')
-                                         ->whereRaw('(total_amount - COALESCE((SELECT SUM(amount) FROM payments WHERE payments.invoice_id = invoices.id), 0)) < total_amount');
+                                        ->whereRaw('(total_amount - COALESCE((SELECT SUM(amount) FROM payments WHERE payments.invoice_id = invoices.id), 0)) < total_amount');
                                 });
                             }
                         }
@@ -798,7 +819,7 @@ class ReportController extends Controller
                         $query->whereRaw('(total_amount - COALESCE((SELECT SUM(amount) FROM payments WHERE payments.invoice_id = invoices.id), 0)) = total_amount');
                     } elseif ($paymentStatuses === 'partial') {
                         $query->whereRaw('(total_amount - COALESCE((SELECT SUM(amount) FROM payments WHERE payments.invoice_id = invoices.id), 0)) > 0')
-                              ->whereRaw('(total_amount - COALESCE((SELECT SUM(amount) FROM payments WHERE payments.invoice_id = invoices.id), 0)) < total_amount');
+                            ->whereRaw('(total_amount - COALESCE((SELECT SUM(amount) FROM payments WHERE payments.invoice_id = invoices.id), 0)) < total_amount');
                     }
                 }
             }
@@ -1007,13 +1028,13 @@ class ReportController extends Controller
                     $query->whereHas('customer', function ($q) use ($regions) {
                         $q->where(function ($subQ) use ($regions) {
                             $subQ->whereIn('billing_state', $regions)
-                                 ->orWhereIn('shipping_state', $regions);
+                                ->orWhereIn('shipping_state', $regions);
                         });
                     });
                 } else {
                     $query->whereHas('customer', function ($q) use ($regions) {
                         $q->where('billing_state', $regions)
-                          ->orWhere('shipping_state', $regions);
+                            ->orWhere('shipping_state', $regions);
                     });
                 }
             }
@@ -1031,7 +1052,7 @@ class ReportController extends Controller
                             } elseif ($status === 'partial') {
                                 $q->orWhere(function ($subQ) {
                                     $subQ->whereRaw('(total_amount - COALESCE((SELECT SUM(amount) FROM payments WHERE payments.invoice_id = invoices.id), 0)) > 0')
-                                         ->whereRaw('(total_amount - COALESCE((SELECT SUM(amount) FROM payments WHERE payments.invoice_id = invoices.id), 0)) < total_amount');
+                                        ->whereRaw('(total_amount - COALESCE((SELECT SUM(amount) FROM payments WHERE payments.invoice_id = invoices.id), 0)) < total_amount');
                                 });
                             }
                         }
@@ -1043,7 +1064,7 @@ class ReportController extends Controller
                         $query->whereRaw('(total_amount - COALESCE((SELECT SUM(amount) FROM payments WHERE payments.invoice_id = invoices.id), 0)) = total_amount');
                     } elseif ($paymentStatuses === 'partial') {
                         $query->whereRaw('(total_amount - COALESCE((SELECT SUM(amount) FROM payments WHERE payments.invoice_id = invoices.id), 0)) > 0')
-                              ->whereRaw('(total_amount - COALESCE((SELECT SUM(amount) FROM payments WHERE payments.invoice_id = invoices.id), 0)) < total_amount');
+                            ->whereRaw('(total_amount - COALESCE((SELECT SUM(amount) FROM payments WHERE payments.invoice_id = invoices.id), 0)) < total_amount');
                     }
                 }
             }
@@ -1311,13 +1332,13 @@ class ReportController extends Controller
                     $query->whereHas('customer', function ($q) use ($regions) {
                         $q->where(function ($subQ) use ($regions) {
                             $subQ->whereIn('billing_state', $regions)
-                                 ->orWhereIn('shipping_state', $regions);
+                                ->orWhereIn('shipping_state', $regions);
                         });
                     });
                 } else {
                     $query->whereHas('customer', function ($q) use ($regions) {
                         $q->where('billing_state', $regions)
-                          ->orWhere('shipping_state', $regions);
+                            ->orWhere('shipping_state', $regions);
                     });
                 }
             }
@@ -1335,7 +1356,7 @@ class ReportController extends Controller
                             } elseif ($status === 'partial') {
                                 $q->orWhere(function ($subQ) {
                                     $subQ->whereRaw('(total_amount - COALESCE((SELECT SUM(amount) FROM payments WHERE payments.invoice_id = invoices.id), 0)) > 0')
-                                         ->whereRaw('(total_amount - COALESCE((SELECT SUM(amount) FROM payments WHERE payments.invoice_id = invoices.id), 0)) < total_amount');
+                                        ->whereRaw('(total_amount - COALESCE((SELECT SUM(amount) FROM payments WHERE payments.invoice_id = invoices.id), 0)) < total_amount');
                                 });
                             }
                         }
@@ -1347,7 +1368,7 @@ class ReportController extends Controller
                         $query->whereRaw('(total_amount - COALESCE((SELECT SUM(amount) FROM payments WHERE payments.invoice_id = invoices.id), 0)) = total_amount');
                     } elseif ($paymentStatuses === 'partial') {
                         $query->whereRaw('(total_amount - COALESCE((SELECT SUM(amount) FROM payments WHERE payments.invoice_id = invoices.id), 0)) > 0')
-                              ->whereRaw('(total_amount - COALESCE((SELECT SUM(amount) FROM payments WHERE payments.invoice_id = invoices.id), 0)) < total_amount');
+                            ->whereRaw('(total_amount - COALESCE((SELECT SUM(amount) FROM payments WHERE payments.invoice_id = invoices.id), 0)) < total_amount');
                     }
                 }
             }
