@@ -191,6 +191,83 @@ class ReadyToShip extends Controller
             }
 
             $user = Auth::user();
+
+            $isSuperAdmin = $user->hasRole('Super Admin');
+            $isAdmin = $user->hasRole(['Super Admin', 'Admin']) || !$user->warehouse_id;
+            $userWarehouseId = $user->warehouse_id;
+
+
+            $salesOrder = SalesOrder::with([
+                'customerGroup',
+                'warehouse',
+                'orderedProducts' => function ($query) use ($userWarehouseId, $isSuperAdmin) {
+                    // Only include orderedProducts that have warehouseAllocations for this warehouse
+                    $query->whereHas('warehouseAllocations', function ($q) use ($userWarehouseId, $isSuperAdmin) {
+                        if (!$isSuperAdmin && $userWarehouseId) {
+                            $q->where('warehouse_id', $userWarehouseId);
+                        }
+                    })->with([
+                        'product',
+                        'customer',
+                        'tempOrder',
+                        'warehouseStock.warehouse',
+                        'warehouseAllocations.warehouse',
+                    ]);
+                },
+            ])
+                ->whereHas('orderedProducts.warehouseAllocations', function ($query) use ($userWarehouseId, $isSuperAdmin) {
+                    if (!$isSuperAdmin && $userWarehouseId) {
+                        $query->where('warehouse_id', $userWarehouseId);
+                    }
+                })
+                ->findOrFail($id);
+
+            $facilityNames = $salesOrder->orderedProducts
+                ->pluck('customer.facility_name')
+                ->filter()
+                ->unique()
+                ->values()
+                ->toArray();
+
+            $pendingApprovalList = [];
+
+            foreach ($salesOrder->orderedProducts as $order) {
+                foreach ($order->warehouseAllocations as $allocation) {
+                    if ($allocation->product_status === 'approval_pending') {
+                        $pendingApprovalList[$allocation->warehouse_id][$allocation->sales_order_id][$allocation->sales_order_product_id] = $allocation->id;
+                        $pendingApprovalList[$allocation->warehouse_id]['name'] = $allocation->warehouse->name;
+                        $pendingApprovalList[$allocation->warehouse_id]['product_count'] = count($pendingApprovalList[$allocation->warehouse_id][$allocation->sales_order_id]);
+                        $pendingApprovalList[$allocation->warehouse_id]['allocation_ids'][] = $allocation->id;
+                        $pendingApprovalList[$allocation->warehouse_id]['warehouse_id'] = $allocation->warehouse_id;
+                    }
+                }
+            }
+
+            $customerInfo = Customer::findOrFail($c_id);
+
+            // Get invoice based on user role
+            $invoiceQuery = Invoice::where('customer_id', $c_id)
+                ->where('sales_order_id', $id);
+
+            if (!$isSuperAdmin && !$isAdmin && $userWarehouseId) {
+                // Warehouse users can only see invoices for their warehouse
+                $invoiceQuery->where('warehouse_id', $userWarehouseId);
+            }
+
+            $invoice = $invoiceQuery->first();
+
+            // dd($pendingApprovalList);
+            return view('readyToShip.view-detail', compact('salesOrder', 'facilityNames', 'isAdmin', 'isSuperAdmin', 'userWarehouseId', 'user', 'pendingApprovalList', 'invoice', 'customerInfo'));
+
+
+
+
+
+
+
+
+
+            $user = Auth::user();
             // Check if user is admin (Super Admin or Admin role, or warehouse_id is null/0)
             $isSuperAdmin = $user->hasRole('Super Admin');
             $isAdmin = $user->hasRole(['Super Admin', 'Admin']) || !$user->warehouse_id;
@@ -203,11 +280,10 @@ class ReadyToShip extends Controller
                 'orderedProducts.customer',
                 'orderedProducts.warehouseAllocations.warehouse',
             ])
-
                 // Filter orderedProducts by customer
                 ->with(['orderedProducts' => function ($q) use ($c_id) {
-                    if(!$isAdmin){
-                        $q->whereHas('warehouseAllocations', function($allocQuery) use ($userWarehouseId) {
+                    if (!$isAdmin) {
+                        $q->whereHas('warehouseAllocations', function ($allocQuery) use ($userWarehouseId) {
                             $allocQuery->where('warehouse_id', $userWarehouseId);
                         });
                     }
@@ -237,7 +313,7 @@ class ReadyToShip extends Controller
                 ->findOrFail($id);
 
 
-            dd($salesOrder);
+            // dd($salesOrder);
 
             if (!$salesOrder) {
                 return redirect()->back()->with('error', 'Order not found.');

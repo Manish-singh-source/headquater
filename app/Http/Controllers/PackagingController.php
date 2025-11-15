@@ -55,7 +55,7 @@ class PackagingController extends Controller
             $isSuperAdmin = $user->hasRole('Super Admin');
             $isAdmin = $user->hasRole(['Super Admin', 'Admin']) || !$user->warehouse_id;
             $userWarehouseId = $user->warehouse_id;
-
+            
             $salesOrder = SalesOrder::with([
                 'customerGroup',
                 'warehouse',
