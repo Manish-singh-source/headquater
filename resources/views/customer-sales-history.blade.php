@@ -494,28 +494,33 @@
                         <table id="customerSalesTable" class="table table-striped table-hover align-middle">
                             <thead class="table-light">
                                 <tr>
-                                    <th>Customer Group Name</th>
-                                    <th>Customer Name</th>
-                                    <th>Customer GSTIN</th>
-                                    <th>Invoice No</th>
-                                    <th>Creator Name</th>
-                                    <th>Customer Phone No</th>
-                                    <th>Customer Email</th>
-                                    <th>Customer City</th>
-                                    <th>Customer State</th>
-                                    <th>PO No</th>
-                                    <th>PO Date</th>
-                                    <th>Appointment Date</th>
-                                    <th>Due Date</th>
+                                    <th>Customer&nbsp;Group&nbsp;Name</th>
+                                    <th>Customer&nbsp;Name</th>
+                                    <th>Customer&nbsp;GSTIN</th>
+                                    <th>Invoice&nbsp;No</th>
+                                    <th>Creator&nbsp;Name</th>
+                                    <th>Customer&nbsp;Phone&nbsp;No</th>
+                                    <th>Customer&nbsp;Email</th>
+                                    <th>Customer&nbsp;City</th>
+                                    <th>Customer&nbsp;State</th>
+                                    <th>PO&nbsp;No</th>
+                                    <th>PO&nbsp;Date</th>
+                                    <th>Appointment&nbsp;Date</th>
+                                    <th>Due&nbsp;Date</th>
+                                    <th>POD</th>
+                                    <th>GRN</th>
+                                    <th>DN</th>
+                                    <th>DN&nbsp;Reciept</th>
+                                    <th>LR</th>
                                     <th>Currency</th>
                                     <th>Amount</th>
                                     <th>Tax</th>
                                     <th>Total</th>
                                     <th>Status</th>
-                                    <th>Amount Paid</th>
+                                    <th>Amount&nbsp;Paid</th>
                                     <th>Balance</th>
-                                    <th>Date Of Payment</th>
-                                    <th>Payment Mode</th>
+                                    <th>Date&nbsp;Of&nbsp;Payment</th>
+                                    <th>Payment&nbsp;Mode</th>
                                     <th>CGST</th>
                                     <th>SGST</th>
                                     <th>IGST</th>
@@ -585,6 +590,11 @@
                                                 N/A
                                             @endif
                                         </td>
+                                        <td>N/A</td>
+                                        <td>N/A</td>
+                                        <td>N/A</td>
+                                        <td>N/A</td>
+                                        <td>N/A</td>
                                         <td>N/A</td>
                                         <td>INR</td>
                                         <td>₹{{ number_format($invoice->subtotal ?? ($invoice->total_amount - $taxAmount), 2) }}</td>
