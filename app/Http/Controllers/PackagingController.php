@@ -441,19 +441,31 @@ class PackagingController extends Controller
 
             // Get final dispatch quantity from warehouse allocations if available
             $finalDispatchQty = 0;
+            $boxCount = 0;
+            $weight = 0;
             if ($hasAllocations) {
                 if ($isAdmin) {
                     // Admin: Sum all warehouses' final dispatch quantities
                     $finalDispatchQty = $order->warehouseAllocations->sum('final_dispatched_quantity') ?: 0;
+                    $boxCount = $order->warehouseAllocations->sum('box_count') ?: 0;
+                    $weight = $order->warehouseAllocations->sum('weight') ?: 0;
                 } else {
                     // Warehouse user: Only their warehouse's final dispatch quantity
                     $finalDispatchQty = $order->warehouseAllocations
                         ->where('warehouse_id', $userWarehouseId)
                         ->sum('final_dispatched_quantity') ?: 0;
+                    $boxCount = $order->warehouseAllocations
+                        ->where('warehouse_id', $userWarehouseId)
+                        ->sum('box_count') ?: 0;
+                    $weight = $order->warehouseAllocations
+                        ->where('warehouse_id', $userWarehouseId)
+                        ->sum('weight') ?: 0;
                 }
             } else {
                 // Single warehouse or fallback to sales_order_products table
                 $finalDispatchQty = $order->final_dispatched_quantity ?? 0;
+                $boxCount = $order->box_count ?? 0;
+                $weight = $order->weight ?? 0;
             }
 
             $writer->addRow([
@@ -478,8 +490,8 @@ class PackagingController extends Controller
                 'Purchase Order No' => $order->tempOrder->po_number ?? '',
                 'Total Dispatch Qty' => $totalDispatchQty,
                 'Final Dispatch Qty' => $finalDispatchQty,
-                'Box Count' => $order->box_count ?? 0,
-                'Weight' => $order->weight ?? 0,
+                'Box Count' => $boxCount,
+                'Weight' => $weight,
                 'Issue Units' => '',
                 'Issue Reason' => '',
             ]);
