@@ -9,6 +9,11 @@ class SalesOrder extends Model
     //
     protected $guarded = [];
 
+    public function customer()
+    {
+        return $this->belongsTo(Customer::class);
+    }
+
     public function customerGroup()
     {
         return $this->belongsTo(CustomerGroup::class);

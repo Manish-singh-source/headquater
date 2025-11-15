@@ -93,4 +93,15 @@ class SalesOrderProduct extends Model
     {
         return $this->hasMany(WarehouseAllocation::class, 'sales_order_product_id', 'id');
     }
+
+    public function salesOrder()
+    {
+        return $this->belongsTo(SalesOrder::class, 'sales_order_id', 'id');
+    }
+
+    public function invoiceDetails()
+    {
+        return $this->hasMany(InvoiceDetails::class, 'sales_order_product_id', 'id');
+    }
+    
 }

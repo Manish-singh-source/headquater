@@ -11,4 +11,9 @@ class Appointment extends Model
     protected $casts = [
         'appointment_date' => 'date',
     ];
+
+    public function invoice()
+    {
+        return $this->belongsTo(Invoice::class);
+    }
 }

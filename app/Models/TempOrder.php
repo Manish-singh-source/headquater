@@ -18,4 +18,9 @@ class TempOrder extends Model
     {
         return $this->hasOne(VendorPIProduct::class, 'id', 'vendor_pi_id');
     }
+
+    public function orderedProduct()
+    {
+        return $this->hasOne(SalesOrderProduct::class, 'temp_order_id', 'id');
+    }
 }

@@ -1,5 +1,15 @@
 @extends('layouts.master')
 @section('main-content')
+    @php
+        $statuses = [
+            'pending' => 'Pending',
+            'blocked' => 'Blocked',
+            'shipped' => 'Shipped',
+            'completed' => 'Complete',
+            'ready_to_ship' => 'Ready To Ship',
+            'ready_to_package' => 'Ready To Package',
+        ];
+    @endphp
     <main class="main-wrapper">
         <div class="main-content">
             <!-- Breadcrumb Navigation -->
@@ -61,7 +71,7 @@
                                 </div>
                                 <div class="flex-grow-1">
                                     <p class="mb-0 text-secondary">Total Invoices</p>
-                                    <h4 class="mb-0 fw-bold">{{ $invoices->total() }}</h4>
+                                    <h4 class="mb-0 fw-bold">{{ $invoices->count() }}</h4>
                                 </div>
                             </div>
                         </div>
@@ -152,7 +162,7 @@
                                                     type="button" id="customerDropdown" data-bs-toggle="dropdown">
                                                     <i class="bx bx-filter-alt me-1"></i>
                                                     <span id="customerDropdownText">
-                                                        @if(is_array($filters['customer_id'] ?? null) && count($filters['customer_id']) > 0)
+                                                        @if (is_array($filters['customer_id'] ?? null) && count($filters['customer_id']) > 0)
                                                             {{ count($filters['customer_id']) }} selected
                                                         @else
                                                             Select Customer
@@ -168,7 +178,7 @@
                                                                     type="checkbox" name="customer_id[]"
                                                                     value="{{ $customer['id'] }}"
                                                                     id="customer_{{ $customer['id'] }}"
-                                                                    {{ in_array($customer['id'], (array)($filters['customer_id'] ?? [])) ? 'checked' : '' }}>
+                                                                    {{ in_array($customer['id'], (array) ($filters['customer_id'] ?? [])) ? 'checked' : '' }}>
                                                                 <label class="form-check-label w-100 cursor-pointer"
                                                                     for="customer_{{ $customer['id'] }}">
                                                                     {{ $customer['name'] }}
@@ -190,7 +200,7 @@
                                                     type="button" id="regionDropdown" data-bs-toggle="dropdown">
                                                     <i class="bx bx-filter-alt me-1"></i>
                                                     <span id="regionDropdownText">
-                                                        @if(is_array($filters['region'] ?? null) && count($filters['region']) > 0)
+                                                        @if (is_array($filters['region'] ?? null) && count($filters['region']) > 0)
                                                             {{ count($filters['region']) }} selected
                                                         @else
                                                             Select Region
@@ -206,7 +216,7 @@
                                                                     type="checkbox" name="region[]"
                                                                     value="{{ $region }}"
                                                                     id="region_{{ $loop->index }}"
-                                                                    {{ in_array($region, (array)($filters['region'] ?? [])) ? 'checked' : '' }}>
+                                                                    {{ in_array($region, (array) ($filters['region'] ?? [])) ? 'checked' : '' }}>
                                                                 <label class="form-check-label w-100 cursor-pointer"
                                                                     for="region_{{ $loop->index }}">
                                                                     {{ $region }}
@@ -228,7 +238,7 @@
                                                     type="button" id="paymentStatusDropdown" data-bs-toggle="dropdown">
                                                     <i class="bx bx-filter-alt me-1"></i>
                                                     <span id="paymentStatusDropdownText">
-                                                        @if(is_array($filters['payment_status'] ?? null) && count($filters['payment_status']) > 0)
+                                                        @if (is_array($filters['payment_status'] ?? null) && count($filters['payment_status']) > 0)
                                                             {{ count($filters['payment_status']) }} selected
                                                         @else
                                                             Select Status
@@ -239,10 +249,9 @@
                                                     <li class="px-2 py-1">
                                                         <div class="form-check">
                                                             <input class="form-check-input payment-status-checkbox"
-                                                                type="checkbox" name="payment_status[]"
-                                                                value="paid"
+                                                                type="checkbox" name="payment_status[]" value="paid"
                                                                 id="payment_status_paid"
-                                                                {{ in_array('paid', (array)($filters['payment_status'] ?? [])) ? 'checked' : '' }}>
+                                                                {{ in_array('paid', (array) ($filters['payment_status'] ?? [])) ? 'checked' : '' }}>
                                                             <label class="form-check-label w-100 cursor-pointer"
                                                                 for="payment_status_paid">
                                                                 Paid
@@ -252,10 +261,9 @@
                                                     <li class="px-2 py-1">
                                                         <div class="form-check">
                                                             <input class="form-check-input payment-status-checkbox"
-                                                                type="checkbox" name="payment_status[]"
-                                                                value="partial"
+                                                                type="checkbox" name="payment_status[]" value="partial"
                                                                 id="payment_status_partial"
-                                                                {{ in_array('partial', (array)($filters['payment_status'] ?? [])) ? 'checked' : '' }}>
+                                                                {{ in_array('partial', (array) ($filters['payment_status'] ?? [])) ? 'checked' : '' }}>
                                                             <label class="form-check-label w-100 cursor-pointer"
                                                                 for="payment_status_partial">
                                                                 Partial
@@ -265,10 +273,9 @@
                                                     <li class="px-2 py-1">
                                                         <div class="form-check">
                                                             <input class="form-check-input payment-status-checkbox"
-                                                                type="checkbox" name="payment_status[]"
-                                                                value="unpaid"
+                                                                type="checkbox" name="payment_status[]" value="unpaid"
                                                                 id="payment_status_unpaid"
-                                                                {{ in_array('unpaid', (array)($filters['payment_status'] ?? [])) ? 'checked' : '' }}>
+                                                                {{ in_array('unpaid', (array) ($filters['payment_status'] ?? [])) ? 'checked' : '' }}>
                                                             <label class="form-check-label w-100 cursor-pointer"
                                                                 for="payment_status_unpaid">
                                                                 Unpaid
@@ -289,7 +296,7 @@
                                                     type="button" id="customerTypeDropdown" data-bs-toggle="dropdown">
                                                     <i class="bx bx-filter-alt me-1"></i>
                                                     <span id="customerTypeDropdownText">
-                                                        @if(is_array($filters['customer_type'] ?? null) && count($filters['customer_type']) > 0)
+                                                        @if (is_array($filters['customer_type'] ?? null) && count($filters['customer_type']) > 0)
                                                             {{ count($filters['customer_type']) }} selected
                                                         @else
                                                             Select Type
@@ -305,7 +312,7 @@
                                                                     type="checkbox" name="customer_type[]"
                                                                     value="{{ $group->id }}"
                                                                     id="customer_type_{{ $group->id }}"
-                                                                    {{ in_array($group->id, (array)($filters['customer_type'] ?? [])) ? 'checked' : '' }}>
+                                                                    {{ in_array($group->id, (array) ($filters['customer_type'] ?? [])) ? 'checked' : '' }}>
                                                                 <label class="form-check-label w-100 cursor-pointer"
                                                                     for="customer_type_{{ $group->id }}">
                                                                     {{ $group->name }}
@@ -331,7 +338,7 @@
                                                     type="button" id="invoiceNoDropdown" data-bs-toggle="dropdown">
                                                     <i class="bx bx-filter-alt me-1"></i>
                                                     <span id="invoiceNoDropdownText">
-                                                        @if(is_array($filters['invoice_no'] ?? null) && count($filters['invoice_no']) > 0)
+                                                        @if (is_array($filters['invoice_no'] ?? null) && count($filters['invoice_no']) > 0)
                                                             {{ count($filters['invoice_no']) }} selected
                                                         @else
                                                             Select Invoice
@@ -347,7 +354,7 @@
                                                                     type="checkbox" name="invoice_no[]"
                                                                     value="{{ $invoiceNo }}"
                                                                     id="invoice_no_{{ $loop->index }}"
-                                                                    {{ in_array($invoiceNo, (array)($filters['invoice_no'] ?? [])) ? 'checked' : '' }}>
+                                                                    {{ in_array($invoiceNo, (array) ($filters['invoice_no'] ?? [])) ? 'checked' : '' }}>
                                                                 <label class="form-check-label w-100 cursor-pointer"
                                                                     for="invoice_no_{{ $loop->index }}">
                                                                     {{ $invoiceNo }}
@@ -369,7 +376,7 @@
                                                     type="button" id="poNoDropdown" data-bs-toggle="dropdown">
                                                     <i class="bx bx-filter-alt me-1"></i>
                                                     <span id="poNoDropdownText">
-                                                        @if(is_array($filters['po_no'] ?? null) && count($filters['po_no']) > 0)
+                                                        @if (is_array($filters['po_no'] ?? null) && count($filters['po_no']) > 0)
                                                             {{ count($filters['po_no']) }} selected
                                                         @else
                                                             Select PO
@@ -385,7 +392,7 @@
                                                                     type="checkbox" name="po_no[]"
                                                                     value="{{ $poNo }}"
                                                                     id="po_no_{{ $loop->index }}"
-                                                                    {{ in_array($poNo, (array)($filters['po_no'] ?? [])) ? 'checked' : '' }}>
+                                                                    {{ in_array($poNo, (array) ($filters['po_no'] ?? [])) ? 'checked' : '' }}>
                                                                 <label class="form-check-label w-100 cursor-pointer"
                                                                     for="po_no_{{ $loop->index }}">
                                                                     {{ $poNo }}
@@ -404,10 +411,11 @@
                                             <label class="form-label">Appointment Date</label>
                                             <div class="dropdown">
                                                 <button class="btn btn-outline-secondary dropdown-toggle w-100 text-start"
-                                                    type="button" id="appointmentDateDropdown" data-bs-toggle="dropdown">
+                                                    type="button" id="appointmentDateDropdown"
+                                                    data-bs-toggle="dropdown">
                                                     <i class="bx bx-filter-alt me-1"></i>
                                                     <span id="appointmentDateDropdownText">
-                                                        @if(is_array($filters['appointment_date'] ?? null) && count($filters['appointment_date']) > 0)
+                                                        @if (is_array($filters['appointment_date'] ?? null) && count($filters['appointment_date']) > 0)
                                                             {{ count($filters['appointment_date']) }} selected
                                                         @else
                                                             Select Date
@@ -423,7 +431,7 @@
                                                                     type="checkbox" name="appointment_date[]"
                                                                     value="{{ $date }}"
                                                                     id="appointment_date_{{ $loop->index }}"
-                                                                    {{ in_array($date, (array)($filters['appointment_date'] ?? [])) ? 'checked' : '' }}>
+                                                                    {{ in_array($date, (array) ($filters['appointment_date'] ?? [])) ? 'checked' : '' }}>
                                                                 <label class="form-check-label w-100 cursor-pointer"
                                                                     for="appointment_date_{{ $loop->index }}">
                                                                     {{ $date }}
@@ -467,7 +475,8 @@
                                             {{-- <label class="form-label">&nbsp;</label> --}}
                                             <div class="d-flex gap-2">
                                                 <!-- Generate Excel Report Button -->
-                                                <button type="button" id="generateExcelReport" class="btn btn-success flex-fill">
+                                                <button type="button" id="generateExcelReport"
+                                                    class="btn btn-success flex-fill">
                                                     <i class="bx bx-download me-1"></i>Export Excel
                                                 </button>
                                                 <!-- Generate PDF Report Button -->
@@ -498,11 +507,12 @@
                                     <th>Customer&nbsp;Name</th>
                                     <th>Customer&nbsp;GSTIN</th>
                                     <th>Invoice&nbsp;No</th>
-                                    <th>Creator&nbsp;Name</th>
+                                    {{-- <th>Creator&nbsp;Name</th> --}}
                                     <th>Customer&nbsp;Phone&nbsp;No</th>
                                     <th>Customer&nbsp;Email</th>
                                     <th>Customer&nbsp;City</th>
                                     <th>Customer&nbsp;State</th>
+
                                     <th>PO&nbsp;No</th>
                                     <th>PO&nbsp;Date</th>
                                     <th>Appointment&nbsp;Date</th>
@@ -513,8 +523,16 @@
                                     <th>DN&nbsp;Reciept</th>
                                     <th>LR</th>
                                     <th>Currency</th>
-                                    <th>Amount</th>
-                                    <th>Tax</th>
+
+                                    <th>SKU</th>
+                                    <th>HSN</th>
+                                    <th>Ordered&nbsp;Quantity</th>
+                                    <th>Dispatched&nbsp;Quantity</th>
+                                    <th>Box&nbsp;Count</th>
+                                    <th>Weight</th>
+                                    <th>Unit&nbsp;Price</th>
+                                    <th>Subtotal</th>
+                                    <th>GST</th>
                                     <th>Total</th>
                                     <th>Status</th>
                                     <th>Amount&nbsp;Paid</th>
@@ -529,121 +547,146 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @forelse ($invoices as $invoice)
-                                    @php
-                                        $customer = $invoice->customer;
-                                        $customerGroup = $customer->groupInfo->customerGroup ?? null;
-                                        $salesOrder = $invoice->salesOrder;
-                                        $payments = $invoice->payments;
-                                        $totalPaid = $payments->sum('amount');
-                                        $balance = $invoice->total_amount - $totalPaid;
-                                        $appointment = $invoice->appointment;
-                                        $dns = $invoice->dns;
+                                @forelse ($invoices as $salesOrder)
+                                    @foreach ($salesOrder->orderedProducts as $product)
+                                        @if ($product->warehouseAllocations->count() > 0)
+                                            @foreach ($product->warehouseAllocations as $allocation)
+                                                <tr>
+                                                    <td>{{ $salesOrder->customerGroup->name ?? 'N/A' }}</td>
+                                                    <td>{{ $product->customer->client_name ?? 'N/A' }}</td>
+                                                    <td>{{ $product->tempOrder->gst ?? 'N/A' }}</td>
+                                                    <td>{{ $salesOrder->invoices->first()->invoice_number ?? 'N/A' }}</td>
+                                                    {{-- <td>{{ $salesOrder->created_by ?? 'N/A' }}</td> --}}
+                                                    <td>{{ $product->customer->contact_no ?? 'N/A' }}</td>
+                                                    <td>{{ $product->customer->email ?? 'N/A' }}</td>
+                                                    <td>{{ $product->customer->shipping_city ?? 'N/A' }}</td>
+                                                    <td>{{ $product->customer->shipping_state ?? 'N/A' }}</td>
+                                                    <td>{{ $product->tempOrder->po_number ?? 'N/A' }}</td>
+                                                    <td>{{ $product->tempOrder->po_date ?? 'N/A' }}</td>
 
-                                        // Calculate tax breakdown (assuming GST is stored in invoice details)
-                                        $cgst = 0;
-                                        $sgst = 0;
-                                        $igst = 0;
-                                        $cess = 0;
-                                        $taxAmount = 0;
+                                                    <td>{{ $product->invoiceDetails->first()?->invoice->appointment->appointment_date->format('d-m-Y') ?? 'N/A' }}
+                                                    </td>
+                                                    <td>{{ $product->invoiceDetails->first()?->invoice->appointment->appointment_date->addMonth()->format('d-m-Y') ?? 'N/A' }}
+                                                    </td>
 
-                                        foreach ($invoice->details as $detail) {
-                                            $gstRate = $detail->tax ?? 0;
-                                            $taxAmount += $detail->tax ?? 0;
-                                            $cess += $detail->cess ?? 0;
+                                                    {{-- <td>{{ $salesOrder->due_date ?? 'N/A' }}</td>   --}}
+                                                    <td>{{ $product->invoiceDetails->first()?->invoice->appointment->pod ? 'Yes' : 'No' }}
+                                                    </td>
+                                                    <td>{{ $product->invoiceDetails->first()?->invoice->appointment->grn ? 'Yes' : 'No' }}
+                                                    </td>
+                                                    <td>{{ $product->invoiceDetails->first()?->invoice->dns->dn_amount ?? 0 }}
+                                                    </td>
+                                                    <td>{{ $product->invoiceDetails->first()?->invoice->dns->dn_receipt ? 'Yes' : 'No' }}
+                                                    </td>
+                                                    <td>{{ $salesOrder->appointment?->lr ? 'Yes' : 'No' }}</td>
+                                                    <td>{{ $salesOrder->invoices->first()->currency ?? 'INR' }}</td>
 
-                                            // Assuming CGST/SGST split for intra-state, IGST for inter-state
-                                            if ($customer->billing_state === $customer->shipping_state) {
-                                                $cgst += $gstRate / 2;
-                                                $sgst += $gstRate / 2;
-                                            } else {
-                                                $igst += $gstRate;
-                                            }
-                                        }
+                                                    <td>{{ $product->tempOrder->sku ?? 'N/A' }}</td>
+                                                    <td>{{ $product->tempOrder->hsn ?? 'N/A' }}</td>
+                                                    <td>{{ $product->ordered_quantity ?? 'N/A' }}</td>
+                                                    <td>{{ $allocation->final_dispatched_quantity ?? 'N/A' }}</td>
+                                                    <td>{{ $allocation->box_count ?? 'N/A' }}</td>
+                                                    <td>{{ $allocation->weight ?? 'N/A' }}</td>
+                                                    <td>{{ $product->price ?? 'N/A' }}</td>
+                                                    <td>{{ $allocation->final_dispatched_quantity * $product->price ?? 'N/A' }}
+                                                    </td>
+                                                    <td>{{ $product->tempOrder->gst ?? 'N/A' }}</td>
+                                                    <td>{{ $allocation->final_dispatched_quantity * $product->price * (1 + $product->tempOrder->gst / 100) ?? 'N/A' }}
+                                                    </td>
+                                                    <td>{{ $statuses[$salesOrder->status] ?? 'N/A' }}</td>
+                                                    {{-- @if ($loop->first) --}}
+                                                    {{-- <td rowspan="{{ $product->warehouseAllocations->count() }}"> --}}
+                                                    <td>
+                                                        {{ $product->invoiceDetails->first()?->invoice->paid_amount ?? 'N/A' }}
+                                                    </td>
+                                                    {{-- @endif --}}
+                                                    <td>{{ $product->invoiceDetails->first()?->invoice->balance_due ?? 'N/A' }}
+                                                    </td>
+                                                    <td>{{ $product->invoiceDetails->first()?->invoice->payments->first()->created_at->format('d-m-Y') ?? 'N/A' }}
+                                                    </td>
+                                                    <td>{{ $product->invoiceDetails->first()?->invoice->payments->first()->payment_method ?? 'N/A' }}
+                                                    </td>
 
-                                        // Get latest payment details
-                                        $latestPayment = $payments->sortByDesc('created_at')->first();
-                                    @endphp
-                                    <tr>
-                                        <td>{{ $customerGroup->name ?? 'N/A' }}</td>
-                                        <td>
-                                            <div>
-                                                <span class="fw-semibold">{{ $customer->client_name ?? 'N/A' }}</span>
-                                                <br><small class="text-muted">{{ $customer->company_name ?? '' }}</small>
-                                            </div>
-                                        </td>
-                                        <td>{{ $customer->gstin ?? 'N/A' }}</td>
-                                        <td>
-                                            <span class="fw-semibold">{{ $invoice->invoice_number }}</span>
-                                        </td>
-                                        <td>System</td>
-                                        <td>{{ $customer->contact_no ?? 'N/A' }}</td>
-                                        <td>{{ $customer->email ?? 'N/A' }}</td>
-                                        <td>{{ $customer->billing_city ?? $customer->shipping_city ?? 'N/A' }}</td>
-                                        <td>{{ $customer->billing_state ?? $customer->shipping_state ?? 'N/A' }}</td>
-                                        <td>{{ $invoice->po_number ?? $salesOrder->po_number ?? 'N/A' }}</td>
-                                        <td>{{ $salesOrder ? $salesOrder->created_at->format('d-m-Y') : 'N/A' }}</td>
-                                        <td>
-                                            @if($appointment && $appointment->appointment_date)
-                                                {{ is_string($appointment->appointment_date) ? \Carbon\Carbon::parse($appointment->appointment_date)->format('d-m-Y') : $appointment->appointment_date->format('d-m-Y') }}
-                                            @else
-                                                N/A
-                                            @endif
-                                        </td>
-                                        <td>N/A</td>
-                                        <td>N/A</td>
-                                        <td>N/A</td>
-                                        <td>N/A</td>
-                                        <td>N/A</td>
-                                        <td>N/A</td>
-                                        <td>INR</td>
-                                        <td>₹{{ number_format($invoice->subtotal ?? ($invoice->total_amount - $taxAmount), 2) }}</td>
-                                        <td>₹{{ number_format($taxAmount, 2) }}</td>
-                                        <td>
-                                            <span class="fw-semibold">₹{{ number_format($invoice->total_amount, 2) }}</span>
-                                        </td>
-                                        <td>
-                                            @if($balance <= 0)
-                                                <span class="badge bg-success">Paid</span>
-                                            @elseif($totalPaid > 0)
-                                                <span class="badge bg-warning">Partial</span>
-                                            @else
-                                                <span class="badge bg-danger">Unpaid</span>
-                                            @endif
-                                        </td>
-                                        <td>₹{{ number_format($totalPaid, 2) }}</td>
-                                        <td>
-                                            <span class="fw-semibold {{ $balance > 0 ? 'text-danger' : 'text-success' }}">
-                                                ₹{{ number_format($balance, 2) }}
-                                            </span>
-                                        </td>
-                                        <td>{{ $latestPayment ? $latestPayment->created_at->format('d-m-Y') : 'N/A' }}</td>
-                                        <td>{{ $latestPayment ? $latestPayment->payment_method : 'N/A' }}</td>
-                                        <td>₹{{ number_format($cgst, 2) }}</td>
-                                        <td>₹{{ number_format($sgst, 2) }}</td>
-                                        <td>₹{{ number_format($igst, 2) }}</td>
-                                        <td>₹{{ number_format($cess, 2) }}</td>
-                                        <td>
-                                            <a href="{{ route('invoices.view', $invoice->id) }}" target="_blank"
-                                                class="btn btn-icon btn-sm bg-primary-subtle me-1"
-                                                data-bs-toggle="tooltip" title="View Invoice">
-                                                <i class="bx bx-show text-primary"></i>
-                                            </a>
-                                            <a href="{{ route('invoice.downloadPdf', $invoice->id) }}" target="_blank"
-                                                class="btn btn-icon btn-sm bg-success-subtle"
-                                                data-bs-toggle="tooltip" title="Download PDF">
-                                                <i class="bx bx-download text-success"></i>
-                                            </a>
-                                        </td>
-                                    </tr>
+                                                    <td>{{ $product->tempOrder->gst / 2 ?? 'N/A' }}</td>
+                                                    <td>{{ $product->tempOrder->gst / 2 ?? 'N/A' }}</td>
+                                                    <td>{{ $product->tempOrder->gst ?? 'N/A' }}</td>
+                                                    <td>{{ $product->invoiceDetails->first()?->invoice->cess ?? 'N/A' }}
+                                                    </td>
+                                                    <td>
+                                                        <a href=""
+                                                            class="btn btn-icon btn-sm bg-primary-subtle me-1"
+                                                            data-bs-toggle="tooltip" title="View Sales Order">
+                                                            <i class="bx bx-show text-primary"></i>
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                            @endforeach
+                                        @else
+                                            <tr>
+                                                <td>{{ $salesOrder->customerGroup->name ?? 'N/A' }}</td>
+                                                <td>{{ $product->customer->client_name ?? 'N/A' }}</td>
+                                                <td>{{ $product->tempOrder->gst ?? 'N/A' }}</td>
+                                                <td>{{ $salesOrder->invoices->first()->invoice_number ?? 'N/A' }}</td>
+                                                <td>{{ $salesOrder->created_by ?? 'N/A' }}</td>
+                                                <td>{{ $product->customer->contact_no ?? 'N/A' }}</td>
+                                                <td>{{ $product->customer->email ?? 'N/A' }}</td>
+                                                <td>{{ $product->customer->shipping_city ?? 'N/A' }}</td>
+                                                <td>{{ $product->customer->shipping_state ?? 'N/A' }}</td>
+                                                <td>{{ $product->tempOrder->po_number ?? 'N/A' }}</td>
+                                                <td>{{ $product->tempOrder->po_date ?? 'N/A' }}</td>
+
+                                                <td>{{ $product->invoiceDetails->first()?->invoice->appointment->appointment_date->format('d-m-Y') ?? 'N/A' }}
+                                                </td>
+                                                <td>{{ $product->invoiceDetails->first()?->invoice->appointment->appointment_date->addMonth()->format('d-m-Y') ?? 'N/A' }}
+                                                </td>
+
+                                                {{-- <td>{{ $salesOrder->due_date ?? 'N/A' }}</td>   --}}
+                                                <td>{{ $product->invoiceDetails->first()?->invoice->appointment->pod ? 'Yes' : 'No' }}
+                                                </td>
+                                                <td>{{ $product->invoiceDetails->first()?->invoice->appointment->grn ? 'Yes' : 'No' }}
+                                                </td>
+                                                <td>{{ $product->invoiceDetails->first()?->invoice->dns->dn_amount ?? 0 }}
+                                                </td>
+                                                <td>{{ $product->invoiceDetails->first()?->invoice->dns->dn_receipt ? 'Yes' : 'No' }}
+                                                </td>
+                                                <td>{{ $salesOrder->appointment?->lr ? 'Yes' : 'No' }}</td>
+                                                <td>{{ $salesOrder->invoices->first()->currency ?? 'INR' }}</td>
+
+                                                <td>{{ $product->tempOrder->sku ?? 'N/A' }}</td>
+                                                <td>{{ $product->tempOrder->hsn ?? 'N/A' }}</td>
+                                                <td>{{ $product->ordered_quantity ?? 'N/A' }}</td>
+                                                <td>{{ $product->final_dispatched_quantity ?? 'N/A' }}</td>
+                                                <td>{{ $product->box_count ?? 'N/A' }}</td>
+                                                <td>{{ $product->weight ?? 'N/A' }}</td>
+                                                <td>{{ $product->price ?? 'N/A' }}</td>
+                                                <td>{{ $product->subtotal ?? 'N/A' }}</td>
+                                                <td>{{ $product->tempOrder->gst ?? 'N/A' }}</td>
+                                                <td>{{ $product->final_dispatched_quantity * $product->price * (1 + $product->tempOrder->gst / 100) ?? 'N/A' }}
+                                                </td>
+                                                <td>{{ $statuses[$salesOrder->status] ?? 'N/A' }}</td>
+                                                <td>{{ $salesOrder->invoices->first()->amount_paid ?? 'N/A' }}</td>
+                                                <td>{{ $salesOrder->invoices->first()->balance_due ?? 'N/A' }}</td>
+                                                <td>{{ $salesOrder->invoices->first()->payment_date ?? 'N/A' }}</td>
+                                                <td>{{ $salesOrder->invoices->first()->payment_mode ?? 'N/A' }}</td>
+
+                                                <td>{{ $product->tempOrder->gst / 2 ?? 'N/A' }}</td>
+                                                <td>{{ $product->tempOrder->gst / 2 ?? 'N/A' }}</td>
+                                                <td>{{ $product->tempOrder->gst ?? 'N/A' }}</td>
+                                                <td>{{ $salesOrder->invoices->first()->cess ?? 'N/A' }}</td>
+                                                <td>
+                                                    <a href="" class="btn btn-icon btn-sm bg-primary-subtle me-1"
+                                                        data-bs-toggle="tooltip" title="View Sales Order">
+                                                        <i class="bx bx-show text-primary"></i>
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        @endif
+                                    @endforeach
                                 @empty
                                     <tr>
-                                        <td colspan="27" class="text-center text-muted py-4">
+                                        <td colspan="32" class="text-center text-muted py-4">
                                             <i class="bx bx-info-circle fs-4 d-block mb-2"></i>
-                                            No customer sales records found
-                                            @if ($filters['from_date'] || $filters['to_date'] || $filters['customer_id'] || $filters['region'] || $filters['payment_status'] || $filters['customer_type'])
-                                                for the selected filters.
-                                            @endif
+                                            No customer sales records found for the selected criteria.
                                         </td>
                                     </tr>
                                 @endforelse
@@ -651,12 +694,6 @@
                         </table>
                     </div>
 
-                    <!-- Pagination -->
-                    @if($invoices->hasPages())
-                        <div class="d-flex justify-content-center mt-3">
-                            {{ $invoices->appends(request()->query())->links() }}
-                        </div>
-                    @endif
                 </div>
             </div>
 
@@ -682,16 +719,20 @@
             // Initialize DataTable for customer sales table with custom sorting
             $('#customerSalesTable').DataTable({
                 "pageLength": 25,
-                "lengthMenu": [ [10, 25, 50, 100], [10, 25, 50, 100] ],
+                "lengthMenu": [
+                    [10, 25, 50, 100],
+                    [10, 25, 50, 100]
+                ],
                 "ordering": true,
                 "searching": true,
-                "order": [[10, "desc"]], // Default sort by Invoice Date descending
+                "order": [
+                    [10, "desc"]
+                ], // Default sort by Invoice Date descending
                 "language": {
                     "search": "Search:",
                     "lengthMenu": "Show _MENU_ entries"
                 },
-                "columnDefs": [
-                    {
+                "columnDefs": [{
                         "targets": [14, 15, 16, 19, 23, 24, 25, 26], // Amount columns
                         "type": "num-fmt",
                         "render": function(data, type, row) {
@@ -706,7 +747,8 @@
                         "type": "date",
                         "render": function(data, type, row) {
                             if (type === 'sort') {
-                                return data ? new Date(data.split('-').reverse().join('-')).getTime() : 0;
+                                return data ? new Date(data.split('-').reverse().join('-'))
+                                    .getTime() : 0;
                             }
                             return data;
                         }
@@ -730,23 +772,28 @@
              * Update dropdown button text when checkboxes change
              */
             $(document).on('change', '.customer-checkbox', function() {
-                updateDropdownText('.customer-checkbox', 'customerDropdown', 'customerDropdownText', 'Select Customer');
+                updateDropdownText('.customer-checkbox', 'customerDropdown', 'customerDropdownText',
+                    'Select Customer');
             });
 
             $(document).on('change', '.region-checkbox', function() {
-                updateDropdownText('.region-checkbox', 'regionDropdown', 'regionDropdownText', 'Select Region');
+                updateDropdownText('.region-checkbox', 'regionDropdown', 'regionDropdownText',
+                    'Select Region');
             });
 
             $(document).on('change', '.payment-status-checkbox', function() {
-                updateDropdownText('.payment-status-checkbox', 'paymentStatusDropdown', 'paymentStatusDropdownText', 'Select Status');
+                updateDropdownText('.payment-status-checkbox', 'paymentStatusDropdown',
+                    'paymentStatusDropdownText', 'Select Status');
             });
 
             $(document).on('change', '.customer-type-checkbox', function() {
-                updateDropdownText('.customer-type-checkbox', 'customerTypeDropdown', 'customerTypeDropdownText', 'Select Type');
+                updateDropdownText('.customer-type-checkbox', 'customerTypeDropdown',
+                    'customerTypeDropdownText', 'Select Type');
             });
 
             $(document).on('change', '.invoice-no-checkbox', function() {
-                updateDropdownText('.invoice-no-checkbox', 'invoiceNoDropdown', 'invoiceNoDropdownText', 'Select Invoice');
+                updateDropdownText('.invoice-no-checkbox', 'invoiceNoDropdown', 'invoiceNoDropdownText',
+                    'Select Invoice');
             });
 
             $(document).on('change', '.po-no-checkbox', function() {
@@ -754,7 +801,8 @@
             });
 
             $(document).on('change', '.appointment-date-checkbox', function() {
-                updateDropdownText('.appointment-date-checkbox', 'appointmentDateDropdown', 'appointmentDateDropdownText', 'Select Date');
+                updateDropdownText('.appointment-date-checkbox', 'appointmentDateDropdown',
+                    'appointmentDateDropdownText', 'Select Date');
             });
 
             /**
@@ -785,26 +833,54 @@
                 // Get current filter values
                 var fromDate = $('#from_date').val();
                 var toDate = $('#to_date').val();
-                var customerId = $('input[name="customer_id[]"]:checked').map(function() { return this.value; }).get();
-                var region = $('input[name="region[]"]:checked').map(function() { return this.value; }).get();
-                var paymentStatus = $('input[name="payment_status[]"]:checked').map(function() { return this.value; }).get();
-                var customerType = $('input[name="customer_type[]"]:checked').map(function() { return this.value; }).get();
-                var invoiceNo = $('input[name="invoice_no[]"]:checked').map(function() { return this.value; }).get();
-                var poNo = $('input[name="po_no[]"]:checked').map(function() { return this.value; }).get();
-                var appointmentDate = $('input[name="appointment_date[]"]:checked').map(function() { return this.value; }).get();
+                var customerId = $('input[name="customer_id[]"]:checked').map(function() {
+                    return this.value;
+                }).get();
+                var region = $('input[name="region[]"]:checked').map(function() {
+                    return this.value;
+                }).get();
+                var paymentStatus = $('input[name="payment_status[]"]:checked').map(function() {
+                    return this.value;
+                }).get();
+                var customerType = $('input[name="customer_type[]"]:checked').map(function() {
+                    return this.value;
+                }).get();
+                var invoiceNo = $('input[name="invoice_no[]"]:checked').map(function() {
+                    return this.value;
+                }).get();
+                var poNo = $('input[name="po_no[]"]:checked').map(function() {
+                    return this.value;
+                }).get();
+                var appointmentDate = $('input[name="appointment_date[]"]:checked').map(function() {
+                    return this.value;
+                }).get();
 
                 // Build query parameters array
                 var params = [];
 
                 if (fromDate) params.push('from_date=' + encodeURIComponent(fromDate));
                 if (toDate) params.push('to_date=' + encodeURIComponent(toDate));
-                if (customerId.length > 0) customerId.forEach(function(val) { params.push('customer_id[]=' + encodeURIComponent(val)); });
-                if (region.length > 0) region.forEach(function(val) { params.push('region[]=' + encodeURIComponent(val)); });
-                if (paymentStatus.length > 0) paymentStatus.forEach(function(val) { params.push('payment_status[]=' + encodeURIComponent(val)); });
-                if (customerType.length > 0) customerType.forEach(function(val) { params.push('customer_type[]=' + encodeURIComponent(val)); });
-                if (invoiceNo.length > 0) invoiceNo.forEach(function(val) { params.push('invoice_no[]=' + encodeURIComponent(val)); });
-                if (poNo.length > 0) poNo.forEach(function(val) { params.push('po_no[]=' + encodeURIComponent(val)); });
-                if (appointmentDate.length > 0) appointmentDate.forEach(function(val) { params.push('appointment_date[]=' + encodeURIComponent(val)); });
+                if (customerId.length > 0) customerId.forEach(function(val) {
+                    params.push('customer_id[]=' + encodeURIComponent(val));
+                });
+                if (region.length > 0) region.forEach(function(val) {
+                    params.push('region[]=' + encodeURIComponent(val));
+                });
+                if (paymentStatus.length > 0) paymentStatus.forEach(function(val) {
+                    params.push('payment_status[]=' + encodeURIComponent(val));
+                });
+                if (customerType.length > 0) customerType.forEach(function(val) {
+                    params.push('customer_type[]=' + encodeURIComponent(val));
+                });
+                if (invoiceNo.length > 0) invoiceNo.forEach(function(val) {
+                    params.push('invoice_no[]=' + encodeURIComponent(val));
+                });
+                if (poNo.length > 0) poNo.forEach(function(val) {
+                    params.push('po_no[]=' + encodeURIComponent(val));
+                });
+                if (appointmentDate.length > 0) appointmentDate.forEach(function(val) {
+                    params.push('appointment_date[]=' + encodeURIComponent(val));
+                });
 
                 // Construct download URL with filter parameters
                 var queryString = params.length ? '?' + params.join('&') : '';
@@ -832,26 +908,54 @@
                 // Get current filter values
                 var fromDate = $('#from_date').val();
                 var toDate = $('#to_date').val();
-                var customerId = $('input[name="customer_id[]"]:checked').map(function() { return this.value; }).get();
-                var region = $('input[name="region[]"]:checked').map(function() { return this.value; }).get();
-                var paymentStatus = $('input[name="payment_status[]"]:checked').map(function() { return this.value; }).get();
-                var customerType = $('input[name="customer_type[]"]:checked').map(function() { return this.value; }).get();
-                var invoiceNo = $('input[name="invoice_no[]"]:checked').map(function() { return this.value; }).get();
-                var poNo = $('input[name="po_no[]"]:checked').map(function() { return this.value; }).get();
-                var appointmentDate = $('input[name="appointment_date[]"]:checked').map(function() { return this.value; }).get();
+                var customerId = $('input[name="customer_id[]"]:checked').map(function() {
+                    return this.value;
+                }).get();
+                var region = $('input[name="region[]"]:checked').map(function() {
+                    return this.value;
+                }).get();
+                var paymentStatus = $('input[name="payment_status[]"]:checked').map(function() {
+                    return this.value;
+                }).get();
+                var customerType = $('input[name="customer_type[]"]:checked').map(function() {
+                    return this.value;
+                }).get();
+                var invoiceNo = $('input[name="invoice_no[]"]:checked').map(function() {
+                    return this.value;
+                }).get();
+                var poNo = $('input[name="po_no[]"]:checked').map(function() {
+                    return this.value;
+                }).get();
+                var appointmentDate = $('input[name="appointment_date[]"]:checked').map(function() {
+                    return this.value;
+                }).get();
 
                 // Build query parameters array
                 var params = [];
 
                 if (fromDate) params.push('from_date=' + encodeURIComponent(fromDate));
                 if (toDate) params.push('to_date=' + encodeURIComponent(toDate));
-                if (customerId.length > 0) customerId.forEach(function(val) { params.push('customer_id[]=' + encodeURIComponent(val)); });
-                if (region.length > 0) region.forEach(function(val) { params.push('region[]=' + encodeURIComponent(val)); });
-                if (paymentStatus.length > 0) paymentStatus.forEach(function(val) { params.push('payment_status[]=' + encodeURIComponent(val)); });
-                if (customerType.length > 0) customerType.forEach(function(val) { params.push('customer_type[]=' + encodeURIComponent(val)); });
-                if (invoiceNo.length > 0) invoiceNo.forEach(function(val) { params.push('invoice_no[]=' + encodeURIComponent(val)); });
-                if (poNo.length > 0) poNo.forEach(function(val) { params.push('po_no[]=' + encodeURIComponent(val)); });
-                if (appointmentDate.length > 0) appointmentDate.forEach(function(val) { params.push('appointment_date[]=' + encodeURIComponent(val)); });
+                if (customerId.length > 0) customerId.forEach(function(val) {
+                    params.push('customer_id[]=' + encodeURIComponent(val));
+                });
+                if (region.length > 0) region.forEach(function(val) {
+                    params.push('region[]=' + encodeURIComponent(val));
+                });
+                if (paymentStatus.length > 0) paymentStatus.forEach(function(val) {
+                    params.push('payment_status[]=' + encodeURIComponent(val));
+                });
+                if (customerType.length > 0) customerType.forEach(function(val) {
+                    params.push('customer_type[]=' + encodeURIComponent(val));
+                });
+                if (invoiceNo.length > 0) invoiceNo.forEach(function(val) {
+                    params.push('invoice_no[]=' + encodeURIComponent(val));
+                });
+                if (poNo.length > 0) poNo.forEach(function(val) {
+                    params.push('po_no[]=' + encodeURIComponent(val));
+                });
+                if (appointmentDate.length > 0) appointmentDate.forEach(function(val) {
+                    params.push('appointment_date[]=' + encodeURIComponent(val));
+                });
 
                 // Construct download URL with filter parameters
                 var queryString = params.length ? '?' + params.join('&') : '';
