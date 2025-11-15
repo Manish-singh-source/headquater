@@ -710,18 +710,13 @@ class ReportController extends Controller
     }
 
     /**
-     * Display customer sales history with optional filtering
+     * Display customer sales history with detailed invoice information
      *
-     * Filtering Logic:
-     * - All filters are optional and can be applied independently or in combination
-     * - from_date: Filter invoices from this date onwards (inclusive)
-     * - to_date: Filter invoices up to this date (inclusive)
-     * - customer_id: Filter invoices for a specific customer
-     * - region: Filter by customer billing/shipping state
-     * - payment_status: Filter by payment status (paid/unpaid/partial)
-     * - customer_type: Filter by customer group
-     * - If no filters applied, shows all customer aggregates
-     * - Statistics (total amount, paid, due) are calculated based on filtered results
+     * Shows individual invoices with all required columns:
+     * Customer Group Name, Customer Name, Customer GSTIN, Invoice No, Creator Name,
+     * Customer Phone No, Customer Email, Customer City, Customer State, PO No, PO Date,
+     * Appointment Date, Due Date, Currency, Amount, Tax, Total, Status, Amount Paid,
+     * Balance, Date Of Payment, Payment Mode, CGST, SGST, IGST, Cess
      *
      * @param Request $request
      * @return \Illuminate\View\View
@@ -729,8 +724,16 @@ class ReportController extends Controller
     public function customerSalesHistory(Request $request)
     {
         try {
-            // Build the base query with relationships
-            $query = Invoice::with(['warehouse', 'customer.groupInfo.customerGroup', 'salesOrder', 'payments']);
+            // Build the base query with all necessary relationships
+            $query = Invoice::with([
+                'warehouse',
+                'customer.groupInfo.customerGroup',
+                'salesOrder',
+                'payments',
+                'details',
+                'appointment',
+                'dns'
+            ]);
 
             // Apply date range filter if from_date is provided
             if ($request->filled('from_date')) {
@@ -742,95 +745,124 @@ class ReportController extends Controller
                 $query->where('invoice_date', '<=', $request->to_date);
             }
 
-            // Apply customer filter if customer_id is provided
+            // Apply customer filter (supports single or multiple)
             if ($request->filled('customer_id')) {
-                $query->where('customer_id', $request->customer_id);
-            }
-
-            // Apply region filter
-            if ($request->filled('region')) {
-                $query->whereHas('customer', function ($q) use ($request) {
-                    $q->where('billing_state', $request->region)
-                      ->orWhere('shipping_state', $request->region);
-                });
-            }
-
-            // Apply payment status filter
-            if ($request->filled('payment_status')) {
-                if ($request->payment_status === 'paid') {
-                    $query->whereRaw('(total_amount - COALESCE((SELECT SUM(amount) FROM payments WHERE payments.invoice_id = invoices.id), 0)) <= 0');
-                } elseif ($request->payment_status === 'unpaid') {
-                    $query->whereRaw('(total_amount - COALESCE((SELECT SUM(amount) FROM payments WHERE payments.invoice_id = invoices.id), 0)) = total_amount');
-                } elseif ($request->payment_status === 'partial') {
-                    $query->whereRaw('(total_amount - COALESCE((SELECT SUM(amount) FROM payments WHERE payments.invoice_id = invoices.id), 0)) > 0')
-                          ->whereRaw('(total_amount - COALESCE((SELECT SUM(amount) FROM payments WHERE payments.invoice_id = invoices.id), 0)) < total_amount');
+                $customerIds = $request->input('customer_id');
+                if (is_array($customerIds)) {
+                    $query->whereIn('customer_id', $customerIds);
+                } else {
+                    $query->where('customer_id', $customerIds);
                 }
             }
 
-            // Apply customer type/group filter
-            if ($request->filled('customer_type')) {
-                $query->whereHas('customer.groupInfo.customerGroup', function ($q) use ($request) {
-                    $q->where('id', $request->customer_type);
-                });
+            // Apply region filter (supports single or multiple)
+            if ($request->filled('region')) {
+                $regions = $request->input('region');
+                if (is_array($regions)) {
+                    $query->whereHas('customer', function ($q) use ($regions) {
+                        $q->where(function ($subQ) use ($regions) {
+                            $subQ->whereIn('billing_state', $regions)
+                                 ->orWhereIn('shipping_state', $regions);
+                        });
+                    });
+                } else {
+                    $query->whereHas('customer', function ($q) use ($regions) {
+                        $q->where('billing_state', $regions)
+                          ->orWhere('shipping_state', $regions);
+                    });
+                }
             }
 
-            // Clone query for statistics calculation
-            $statsQuery = clone $query;
-
-            // Get all invoices for aggregation
-            $invoices = $query->get();
-
-            // Aggregate data by customer
-            $customerAggregates = $invoices->groupBy('customer_id')->map(function ($customerInvoices, $customerId) {
-                $customer = $customerInvoices->first()->customer;
-                $totalAmount = $customerInvoices->sum('total_amount');
-                $totalPaid = $customerInvoices->sum(function ($invoice) {
-                    return $invoice->payments->sum('amount');
-                });
-                $totalDue = $totalAmount - $totalPaid;
-                $totalInvoices = $customerInvoices->count();
-                $totalProducts = $customerInvoices->sum(function ($invoice) {
-                    return $invoice->details->sum('quantity');
-                });
-
-                // Payment status counts
-                $paidCount = 0;
-                $unpaidCount = 0;
-                $partialCount = 0;
-
-                foreach ($customerInvoices as $invoice) {
-                    $paid = $invoice->payments->sum('amount');
-                    if ($paid >= $invoice->total_amount) {
-                        $paidCount++;
-                    } elseif ($paid > 0) {
-                        $partialCount++;
-                    } else {
-                        $unpaidCount++;
+            // Apply payment status filter (supports single or multiple)
+            if ($request->filled('payment_status')) {
+                $paymentStatuses = $request->input('payment_status');
+                if (is_array($paymentStatuses)) {
+                    $query->where(function ($q) use ($paymentStatuses) {
+                        foreach ($paymentStatuses as $status) {
+                            if ($status === 'paid') {
+                                $q->orWhereRaw('(total_amount - COALESCE((SELECT SUM(amount) FROM payments WHERE payments.invoice_id = invoices.id), 0)) <= 0');
+                            } elseif ($status === 'unpaid') {
+                                $q->orWhereRaw('(total_amount - COALESCE((SELECT SUM(amount) FROM payments WHERE payments.invoice_id = invoices.id), 0)) = total_amount');
+                            } elseif ($status === 'partial') {
+                                $q->orWhere(function ($subQ) {
+                                    $subQ->whereRaw('(total_amount - COALESCE((SELECT SUM(amount) FROM payments WHERE payments.invoice_id = invoices.id), 0)) > 0')
+                                         ->whereRaw('(total_amount - COALESCE((SELECT SUM(amount) FROM payments WHERE payments.invoice_id = invoices.id), 0)) < total_amount');
+                                });
+                            }
+                        }
+                    });
+                } else {
+                    if ($paymentStatuses === 'paid') {
+                        $query->whereRaw('(total_amount - COALESCE((SELECT SUM(amount) FROM payments WHERE payments.invoice_id = invoices.id), 0)) <= 0');
+                    } elseif ($paymentStatuses === 'unpaid') {
+                        $query->whereRaw('(total_amount - COALESCE((SELECT SUM(amount) FROM payments WHERE payments.invoice_id = invoices.id), 0)) = total_amount');
+                    } elseif ($paymentStatuses === 'partial') {
+                        $query->whereRaw('(total_amount - COALESCE((SELECT SUM(amount) FROM payments WHERE payments.invoice_id = invoices.id), 0)) > 0')
+                              ->whereRaw('(total_amount - COALESCE((SELECT SUM(amount) FROM payments WHERE payments.invoice_id = invoices.id), 0)) < total_amount');
                     }
                 }
+            }
 
-                // Date range
-                $minDate = $customerInvoices->min('invoice_date');
-                $maxDate = $customerInvoices->max('invoice_date');
+            // Apply customer type/group filter (supports single or multiple)
+            if ($request->filled('customer_type')) {
+                $customerTypes = $request->input('customer_type');
+                if (is_array($customerTypes)) {
+                    $query->whereHas('customer.groupInfo.customerGroup', function ($q) use ($customerTypes) {
+                        $q->whereIn('id', $customerTypes);
+                    });
+                } else {
+                    $query->whereHas('customer.groupInfo.customerGroup', function ($q) use ($customerTypes) {
+                        $q->where('id', $customerTypes);
+                    });
+                }
+            }
 
-                return [
-                    'customer' => $customer,
-                    'total_sales_amount' => $totalAmount,
-                    'total_invoices' => $totalInvoices,
-                    'total_products_sold' => $totalProducts,
-                    'paid_invoices' => $paidCount,
-                    'unpaid_invoices' => $unpaidCount,
-                    'partial_invoices' => $partialCount,
-                    'outstanding_balance' => $totalDue,
-                    'date_range_start' => $minDate,
-                    'date_range_end' => $maxDate,
-                ];
-            })->sortByDesc('total_sales_amount')->values();
+            // Apply invoice no filter (supports single or multiple)
+            if ($request->filled('invoice_no')) {
+                $invoiceNos = $request->input('invoice_no');
+                if (is_array($invoiceNos)) {
+                    $query->whereIn('invoice_number', $invoiceNos);
+                } else {
+                    $query->where('invoice_number', $invoiceNos);
+                }
+            }
+
+            // Apply PO no filter (supports single or multiple)
+            if ($request->filled('po_no')) {
+                $poNos = $request->input('po_no');
+                if (is_array($poNos)) {
+                    $query->whereIn('po_number', $poNos);
+                } else {
+                    $query->where('po_number', $poNos);
+                }
+            }
+
+            // Apply appointment date filter (supports single or multiple)
+            if ($request->filled('appointment_date')) {
+                $appointmentDates = $request->input('appointment_date');
+                if (is_array($appointmentDates)) {
+                    $query->whereHas('appointment', function ($q) use ($appointmentDates) {
+                        $q->whereIn('appointment_date', $appointmentDates);
+                    });
+                } else {
+                    $query->whereHas('appointment', function ($q) use ($appointmentDates) {
+                        $q->where('appointment_date', $appointmentDates);
+                    });
+                }
+            }
+
+            // Get paginated invoices
+            $invoices = $query->latest('invoice_date')->paginate(25)->appends($request->all());
 
             // Calculate overall statistics
-            $totalRevenue = $customerAggregates->sum('total_sales_amount');
-            $totalPendingPayments = $customerAggregates->sum('outstanding_balance');
-            $topCustomer = $customerAggregates->first();
+            $statsQuery = clone $query;
+            $allInvoices = $statsQuery->get();
+
+            $totalRevenue = $allInvoices->sum('total_amount');
+            $totalPaid = $allInvoices->sum(function ($invoice) {
+                return $invoice->payments->sum('amount');
+            });
+            $totalPendingPayments = $totalRevenue - $totalPaid;
 
             // Get filter dropdown data
             $customers = Customer::select('id', 'client_name')
@@ -854,15 +886,37 @@ class ReportController extends Controller
 
             $customerGroups = \App\Models\CustomerGroup::active()->select('id', 'name')->get();
 
+            // Get unique invoice numbers for filter dropdown
+            $invoiceNumbers = Invoice::distinct('invoice_number')
+                ->whereNotNull('invoice_number')
+                ->pluck('invoice_number')
+                ->sort()
+                ->values();
+
+            // Get unique PO numbers from invoices
+            $poNumbers = Invoice::distinct('po_number')->whereNotNull('po_number')->pluck('po_number')->sort()->values();
+
+            // Get unique appointment dates
+            $appointmentDates = \App\Models\Appointment::distinct('appointment_date')
+                ->whereNotNull('appointment_date')
+                ->pluck('appointment_date')
+                ->map(function ($date) {
+                    return $date->format('d-m-Y');
+                })
+                ->sort()
+                ->values();
+
             $data = [
-                'title' => 'Customer Sales History',
-                'customerAggregates' => $customerAggregates,
+                'title' => 'Customer Sales Summary',
+                'invoices' => $invoices,
                 'totalRevenue' => $totalRevenue,
                 'totalPendingPayments' => $totalPendingPayments,
-                'topCustomer' => $topCustomer,
                 'customers' => $customers,
                 'regions' => $regions,
                 'customerGroups' => $customerGroups,
+                'invoiceNumbers' => $invoiceNumbers,
+                'poNumbers' => $poNumbers,
+                'appointmentDates' => $appointmentDates,
                 'filters' => [
                     'from_date' => $request->from_date,
                     'to_date' => $request->to_date,
@@ -870,6 +924,9 @@ class ReportController extends Controller
                     'region' => $request->region,
                     'payment_status' => $request->payment_status,
                     'customer_type' => $request->customer_type,
+                    'invoice_no' => $request->input('invoice_no', []),
+                    'po_no' => $request->input('po_no', []),
+                    'appointment_date' => $request->input('appointment_date', []),
                 ],
             ];
 
@@ -900,10 +957,20 @@ class ReportController extends Controller
         $validator = Validator::make($request->all(), [
             'from_date' => 'nullable|date',
             'to_date' => 'nullable|date|after_or_equal:from_date',
-            'customer_id' => 'nullable|integer|exists:customers,id',
-            'region' => 'nullable|string',
-            'payment_status' => 'nullable|in:paid,unpaid,partial',
-            'customer_type' => 'nullable|integer|exists:customer_groups,id',
+            'customer_id' => 'nullable|array',
+            'customer_id.*' => 'integer|exists:customers,id',
+            'region' => 'nullable|array',
+            'region.*' => 'string',
+            'payment_status' => 'nullable|array',
+            'payment_status.*' => 'in:paid,unpaid,partial',
+            'customer_type' => 'nullable|array',
+            'customer_type.*' => 'integer|exists:customer_groups,id',
+            'invoice_no' => 'nullable|array',
+            'invoice_no.*' => 'string',
+            'po_no' => 'nullable|array',
+            'po_no.*' => 'string',
+            'appointment_date' => 'nullable|array',
+            'appointment_date.*' => 'date',
         ]);
 
         if ($validator->fails()) {
@@ -922,29 +989,111 @@ class ReportController extends Controller
             if ($request->filled('to_date')) {
                 $query->where('invoice_date', '<=', $request->to_date);
             }
+
+            // Apply customer filter (supports single or multiple)
             if ($request->filled('customer_id')) {
-                $query->where('customer_id', $request->customer_id);
-            }
-            if ($request->filled('region')) {
-                $query->whereHas('customer', function ($q) use ($request) {
-                    $q->where('billing_state', $request->region)
-                      ->orWhere('shipping_state', $request->region);
-                });
-            }
-            if ($request->filled('payment_status')) {
-                if ($request->payment_status === 'paid') {
-                    $query->whereRaw('(total_amount - COALESCE((SELECT SUM(amount) FROM payments WHERE payments.invoice_id = invoices.id), 0)) <= 0');
-                } elseif ($request->payment_status === 'unpaid') {
-                    $query->whereRaw('(total_amount - COALESCE((SELECT SUM(amount) FROM payments WHERE payments.invoice_id = invoices.id), 0)) = total_amount');
-                } elseif ($request->payment_status === 'partial') {
-                    $query->whereRaw('(total_amount - COALESCE((SELECT SUM(amount) FROM payments WHERE payments.invoice_id = invoices.id), 0)) > 0')
-                          ->whereRaw('(total_amount - COALESCE((SELECT SUM(amount) FROM payments WHERE payments.invoice_id = invoices.id), 0)) < total_amount');
+                $customerIds = $request->input('customer_id');
+                if (is_array($customerIds)) {
+                    $query->whereIn('customer_id', $customerIds);
+                } else {
+                    $query->where('customer_id', $customerIds);
                 }
             }
+
+            // Apply region filter (supports single or multiple)
+            if ($request->filled('region')) {
+                $regions = $request->input('region');
+                if (is_array($regions)) {
+                    $query->whereHas('customer', function ($q) use ($regions) {
+                        $q->where(function ($subQ) use ($regions) {
+                            $subQ->whereIn('billing_state', $regions)
+                                 ->orWhereIn('shipping_state', $regions);
+                        });
+                    });
+                } else {
+                    $query->whereHas('customer', function ($q) use ($regions) {
+                        $q->where('billing_state', $regions)
+                          ->orWhere('shipping_state', $regions);
+                    });
+                }
+            }
+
+            // Apply payment status filter (supports single or multiple)
+            if ($request->filled('payment_status')) {
+                $paymentStatuses = $request->input('payment_status');
+                if (is_array($paymentStatuses)) {
+                    $query->where(function ($q) use ($paymentStatuses) {
+                        foreach ($paymentStatuses as $status) {
+                            if ($status === 'paid') {
+                                $q->orWhereRaw('(total_amount - COALESCE((SELECT SUM(amount) FROM payments WHERE payments.invoice_id = invoices.id), 0)) <= 0');
+                            } elseif ($status === 'unpaid') {
+                                $q->orWhereRaw('(total_amount - COALESCE((SELECT SUM(amount) FROM payments WHERE payments.invoice_id = invoices.id), 0)) = total_amount');
+                            } elseif ($status === 'partial') {
+                                $q->orWhere(function ($subQ) {
+                                    $subQ->whereRaw('(total_amount - COALESCE((SELECT SUM(amount) FROM payments WHERE payments.invoice_id = invoices.id), 0)) > 0')
+                                         ->whereRaw('(total_amount - COALESCE((SELECT SUM(amount) FROM payments WHERE payments.invoice_id = invoices.id), 0)) < total_amount');
+                                });
+                            }
+                        }
+                    });
+                } else {
+                    if ($paymentStatuses === 'paid') {
+                        $query->whereRaw('(total_amount - COALESCE((SELECT SUM(amount) FROM payments WHERE payments.invoice_id = invoices.id), 0)) <= 0');
+                    } elseif ($paymentStatuses === 'unpaid') {
+                        $query->whereRaw('(total_amount - COALESCE((SELECT SUM(amount) FROM payments WHERE payments.invoice_id = invoices.id), 0)) = total_amount');
+                    } elseif ($paymentStatuses === 'partial') {
+                        $query->whereRaw('(total_amount - COALESCE((SELECT SUM(amount) FROM payments WHERE payments.invoice_id = invoices.id), 0)) > 0')
+                              ->whereRaw('(total_amount - COALESCE((SELECT SUM(amount) FROM payments WHERE payments.invoice_id = invoices.id), 0)) < total_amount');
+                    }
+                }
+            }
+
+            // Apply customer type/group filter (supports single or multiple)
             if ($request->filled('customer_type')) {
-                $query->whereHas('customer.groupInfo.customerGroup', function ($q) use ($request) {
-                    $q->where('id', $request->customer_type);
-                });
+                $customerTypes = $request->input('customer_type');
+                if (is_array($customerTypes)) {
+                    $query->whereHas('customer.groupInfo.customerGroup', function ($q) use ($customerTypes) {
+                        $q->whereIn('id', $customerTypes);
+                    });
+                } else {
+                    $query->whereHas('customer.groupInfo.customerGroup', function ($q) use ($customerTypes) {
+                        $q->where('id', $customerTypes);
+                    });
+                }
+            }
+
+            // Apply invoice no filter (supports single or multiple)
+            if ($request->filled('invoice_no')) {
+                $invoiceNos = $request->input('invoice_no');
+                if (is_array($invoiceNos)) {
+                    $query->whereIn('invoice_number', $invoiceNos);
+                } else {
+                    $query->where('invoice_number', $invoiceNos);
+                }
+            }
+
+            // Apply PO no filter (supports single or multiple)
+            if ($request->filled('po_no')) {
+                $poNos = $request->input('po_no');
+                if (is_array($poNos)) {
+                    $query->whereIn('po_number', $poNos);
+                } else {
+                    $query->where('po_number', $poNos);
+                }
+            }
+
+            // Apply appointment date filter (supports single or multiple)
+            if ($request->filled('appointment_date')) {
+                $appointmentDates = $request->input('appointment_date');
+                if (is_array($appointmentDates)) {
+                    $query->whereHas('appointment', function ($q) use ($appointmentDates) {
+                        $q->whereIn('appointment_date', $appointmentDates);
+                    });
+                } else {
+                    $query->whereHas('appointment', function ($q) use ($appointmentDates) {
+                        $q->where('appointment_date', $appointmentDates);
+                    });
+                }
             }
 
             // Get all invoices for aggregation
@@ -954,52 +1103,70 @@ class ReportController extends Controller
                 return redirect()->back()->with('error', 'No customer sales records found for the selected criteria.');
             }
 
-            // Aggregate data by customer (same logic as index)
-            $customerAggregates = $invoices->groupBy('customer_id')->map(function ($customerInvoices, $customerId) {
-                $customer = $customerInvoices->first()->customer;
-                $totalAmount = $customerInvoices->sum('total_amount');
-                $totalPaid = $customerInvoices->sum(function ($invoice) {
-                    return $invoice->payments->sum('amount');
-                });
-                $totalDue = $totalAmount - $totalPaid;
-                $totalInvoices = $customerInvoices->count();
-                $totalProducts = $customerInvoices->sum(function ($invoice) {
-                    return $invoice->details->sum('quantity');
-                });
+            // Process individual invoices for detailed export
+            $invoiceData = $invoices->map(function ($invoice) {
+                $customer = $invoice->customer;
+                $customerGroup = $customer->groupInfo->customerGroup ?? null;
+                $salesOrder = $invoice->salesOrder;
+                $payments = $invoice->payments;
+                $totalPaid = $payments->sum('amount');
+                $balance = $invoice->total_amount - $totalPaid;
+                $appointment = $invoice->appointment;
+                $dns = $invoice->dns;
 
-                $paidCount = 0;
-                $unpaidCount = 0;
-                $partialCount = 0;
+                // Calculate tax breakdown
+                $cgst = 0;
+                $sgst = 0;
+                $igst = 0;
+                $cess = 0;
+                $taxAmount = 0;
 
-                foreach ($customerInvoices as $invoice) {
-                    $paid = $invoice->payments->sum('amount');
-                    if ($paid >= $invoice->total_amount) {
-                        $paidCount++;
-                    } elseif ($paid > 0) {
-                        $partialCount++;
+                foreach ($invoice->details as $detail) {
+                    $gstRate = $detail->tax ?? 0;
+                    $taxAmount += $detail->tax ?? 0;
+                    $cess += $detail->cess ?? 0;
+
+                    // CGST/SGST split for intra-state, IGST for inter-state
+                    if ($customer->billing_state === $customer->shipping_state) {
+                        $cgst += $gstRate / 2;
+                        $sgst += $gstRate / 2;
                     } else {
-                        $unpaidCount++;
+                        $igst += $gstRate;
                     }
                 }
 
-                $minDate = $customerInvoices->min('invoice_date');
-                $maxDate = $customerInvoices->max('invoice_date');
+                // Get latest payment details
+                $latestPayment = $payments->sortByDesc('created_at')->first();
 
                 return [
-                    'customer_name' => $customer->client_name ?? 'N/A',
-                    'customer_group' => $customer->groupInfo->customerGroup->name ?? 'N/A',
-                    'email' => $customer->email ?? '',
-                    'total_sales_amount' => $totalAmount,
-                    'total_invoices' => $totalInvoices,
-                    'total_products_sold' => $totalProducts,
-                    'paid_invoices' => $paidCount,
-                    'unpaid_invoices' => $unpaidCount,
-                    'partial_invoices' => $partialCount,
-                    'outstanding_balance' => $totalDue,
-                    'date_range_start' => $minDate ? $minDate->format('d-m-Y') : 'N/A',
-                    'date_range_end' => $maxDate ? $maxDate->format('d-m-Y') : 'N/A',
+                    'Customer Group Name' => $customerGroup->name ?? 'N/A',
+                    'Customer Name' => $customer->client_name ?? 'N/A',
+                    'Customer GSTIN' => $customer->gstin ?? 'N/A',
+                    'Invoice No' => $invoice->invoice_number,
+                    'Creator Name' => 'System',
+                    'Customer Phone No' => $customer->contact_no ?? 'N/A',
+                    'Customer Email' => $customer->email ?? 'N/A',
+                    'Customer City' => $customer->billing_city ?? $customer->shipping_city ?? 'N/A',
+                    'Customer State' => $customer->billing_state ?? $customer->shipping_state ?? 'N/A',
+                    'PO No' => $invoice->po_number ?? $salesOrder->po_number ?? 'N/A',
+                    'PO Date' => $salesOrder ? $salesOrder->created_at->format('d-m-Y') : 'N/A',
+                    'Appointment Date' => $appointment ? $appointment->appointment_date->format('d-m-Y') : 'N/A',
+                    'Due Date' => 'N/A',
+                    'Currency' => 'INR',
+                    'Amount' => number_format($invoice->subtotal ?? ($invoice->total_amount - $taxAmount), 2, '.', ''),
+                    'Tax' => number_format($taxAmount, 2, '.', ''),
+                    'Total' => number_format($invoice->total_amount, 2, '.', ''),
+                    'Status' => $balance <= 0 ? 'Paid' : ($totalPaid > 0 ? 'Partial' : 'Unpaid'),
+                    'Amount Paid' => number_format($totalPaid, 2, '.', ''),
+                    'Balance' => number_format($balance, 2, '.', ''),
+                    'Date Of Payment' => $latestPayment ? $latestPayment->created_at->format('d-m-Y') : 'N/A',
+                    'Payment Mode' => $latestPayment ? $latestPayment->payment_method : 'N/A',
+                    'CGST' => number_format($cgst, 2, '.', ''),
+                    'SGST' => number_format($sgst, 2, '.', ''),
+                    'IGST' => number_format($igst, 2, '.', ''),
+                    'Cess' => number_format($cess, 2, '.', ''),
                 ];
-            })->sortByDesc('total_sales_amount')->values();
+            });
 
             // Create temporary Excel file
             $tempXlsxPath = storage_path('app/customer_sales_history_' . Str::random(8) . '.xlsx');
@@ -1009,36 +1176,37 @@ class ReportController extends Controller
 
             // Add header row
             $writer->addRow([
+                'Customer Group Name',
                 'Customer Name',
-                'Customer Group',
-                'Email',
-                'Total Sales Amount',
-                'Total Invoices',
-                'Total Products Sold',
-                'Paid Invoices',
-                'Unpaid Invoices',
-                'Partial Invoices',
-                'Outstanding Balance',
-                'Date Range Start',
-                'Date Range End',
+                'Customer GSTIN',
+                'Invoice No',
+                'Creator Name',
+                'Customer Phone No',
+                'Customer Email',
+                'Customer City',
+                'Customer State',
+                'PO No',
+                'PO Date',
+                'Appointment Date',
+                'Due Date',
+                'Currency',
+                'Amount',
+                'Tax',
+                'Total',
+                'Status',
+                'Amount Paid',
+                'Balance',
+                'Date Of Payment',
+                'Payment Mode',
+                'CGST',
+                'SGST',
+                'IGST',
+                'Cess',
             ]);
 
             // Add data rows
-            foreach ($customerAggregates as $aggregate) {
-                $writer->addRow([
-                    $aggregate['customer_name'],
-                    $aggregate['customer_group'],
-                    $aggregate['email'],
-                    number_format($aggregate['total_sales_amount'], 2, '.', ''),
-                    $aggregate['total_invoices'],
-                    $aggregate['total_products_sold'],
-                    $aggregate['paid_invoices'],
-                    $aggregate['unpaid_invoices'],
-                    $aggregate['partial_invoices'],
-                    number_format($aggregate['outstanding_balance'], 2, '.', ''),
-                    $aggregate['date_range_start'],
-                    $aggregate['date_range_end'],
-                ]);
+            foreach ($invoiceData as $invoice) {
+                $writer->addRow($invoice);
             }
 
             $writer->close();
@@ -1053,7 +1221,7 @@ class ReportController extends Controller
                     'region' => $request->region,
                     'payment_status' => $request->payment_status,
                     'customer_type' => $request->customer_type,
-                    'records' => $customerAggregates->count(),
+                    'records' => $invoiceData->count(),
                 ])
                 ->event('excel_report_generated')
                 ->log('Customer sales history Excel report generated');
@@ -1094,10 +1262,20 @@ class ReportController extends Controller
         $validator = Validator::make($request->all(), [
             'from_date' => 'nullable|date',
             'to_date' => 'nullable|date|after_or_equal:from_date',
-            'customer_id' => 'nullable|integer|exists:customers,id',
-            'region' => 'nullable|string',
-            'payment_status' => 'nullable|in:paid,unpaid,partial',
-            'customer_type' => 'nullable|integer|exists:customer_groups,id',
+            'customer_id' => 'nullable|array',
+            'customer_id.*' => 'integer|exists:customers,id',
+            'region' => 'nullable|array',
+            'region.*' => 'string',
+            'payment_status' => 'nullable|array',
+            'payment_status.*' => 'in:paid,unpaid,partial',
+            'customer_type' => 'nullable|array',
+            'customer_type.*' => 'integer|exists:customer_groups,id',
+            'invoice_no' => 'nullable|array',
+            'invoice_no.*' => 'string',
+            'po_no' => 'nullable|array',
+            'po_no.*' => 'string',
+            'appointment_date' => 'nullable|array',
+            'appointment_date.*' => 'date',
         ]);
 
         if ($validator->fails()) {
@@ -1115,29 +1293,111 @@ class ReportController extends Controller
             if ($request->filled('to_date')) {
                 $query->where('invoice_date', '<=', $request->to_date);
             }
+
+            // Apply customer filter (supports single or multiple)
             if ($request->filled('customer_id')) {
-                $query->where('customer_id', $request->customer_id);
-            }
-            if ($request->filled('region')) {
-                $query->whereHas('customer', function ($q) use ($request) {
-                    $q->where('billing_state', $request->region)
-                      ->orWhere('shipping_state', $request->region);
-                });
-            }
-            if ($request->filled('payment_status')) {
-                if ($request->payment_status === 'paid') {
-                    $query->whereRaw('(total_amount - COALESCE((SELECT SUM(amount) FROM payments WHERE payments.invoice_id = invoices.id), 0)) <= 0');
-                } elseif ($request->payment_status === 'unpaid') {
-                    $query->whereRaw('(total_amount - COALESCE((SELECT SUM(amount) FROM payments WHERE payments.invoice_id = invoices.id), 0)) = total_amount');
-                } elseif ($request->payment_status === 'partial') {
-                    $query->whereRaw('(total_amount - COALESCE((SELECT SUM(amount) FROM payments WHERE payments.invoice_id = invoices.id), 0)) > 0')
-                          ->whereRaw('(total_amount - COALESCE((SELECT SUM(amount) FROM payments WHERE payments.invoice_id = invoices.id), 0)) < total_amount');
+                $customerIds = $request->input('customer_id');
+                if (is_array($customerIds)) {
+                    $query->whereIn('customer_id', $customerIds);
+                } else {
+                    $query->where('customer_id', $customerIds);
                 }
             }
+
+            // Apply region filter (supports single or multiple)
+            if ($request->filled('region')) {
+                $regions = $request->input('region');
+                if (is_array($regions)) {
+                    $query->whereHas('customer', function ($q) use ($regions) {
+                        $q->where(function ($subQ) use ($regions) {
+                            $subQ->whereIn('billing_state', $regions)
+                                 ->orWhereIn('shipping_state', $regions);
+                        });
+                    });
+                } else {
+                    $query->whereHas('customer', function ($q) use ($regions) {
+                        $q->where('billing_state', $regions)
+                          ->orWhere('shipping_state', $regions);
+                    });
+                }
+            }
+
+            // Apply payment status filter (supports single or multiple)
+            if ($request->filled('payment_status')) {
+                $paymentStatuses = $request->input('payment_status');
+                if (is_array($paymentStatuses)) {
+                    $query->where(function ($q) use ($paymentStatuses) {
+                        foreach ($paymentStatuses as $status) {
+                            if ($status === 'paid') {
+                                $q->orWhereRaw('(total_amount - COALESCE((SELECT SUM(amount) FROM payments WHERE payments.invoice_id = invoices.id), 0)) <= 0');
+                            } elseif ($status === 'unpaid') {
+                                $q->orWhereRaw('(total_amount - COALESCE((SELECT SUM(amount) FROM payments WHERE payments.invoice_id = invoices.id), 0)) = total_amount');
+                            } elseif ($status === 'partial') {
+                                $q->orWhere(function ($subQ) {
+                                    $subQ->whereRaw('(total_amount - COALESCE((SELECT SUM(amount) FROM payments WHERE payments.invoice_id = invoices.id), 0)) > 0')
+                                         ->whereRaw('(total_amount - COALESCE((SELECT SUM(amount) FROM payments WHERE payments.invoice_id = invoices.id), 0)) < total_amount');
+                                });
+                            }
+                        }
+                    });
+                } else {
+                    if ($paymentStatuses === 'paid') {
+                        $query->whereRaw('(total_amount - COALESCE((SELECT SUM(amount) FROM payments WHERE payments.invoice_id = invoices.id), 0)) <= 0');
+                    } elseif ($paymentStatuses === 'unpaid') {
+                        $query->whereRaw('(total_amount - COALESCE((SELECT SUM(amount) FROM payments WHERE payments.invoice_id = invoices.id), 0)) = total_amount');
+                    } elseif ($paymentStatuses === 'partial') {
+                        $query->whereRaw('(total_amount - COALESCE((SELECT SUM(amount) FROM payments WHERE payments.invoice_id = invoices.id), 0)) > 0')
+                              ->whereRaw('(total_amount - COALESCE((SELECT SUM(amount) FROM payments WHERE payments.invoice_id = invoices.id), 0)) < total_amount');
+                    }
+                }
+            }
+
+            // Apply customer type/group filter (supports single or multiple)
             if ($request->filled('customer_type')) {
-                $query->whereHas('customer.groupInfo.customerGroup', function ($q) use ($request) {
-                    $q->where('id', $request->customer_type);
-                });
+                $customerTypes = $request->input('customer_type');
+                if (is_array($customerTypes)) {
+                    $query->whereHas('customer.groupInfo.customerGroup', function ($q) use ($customerTypes) {
+                        $q->whereIn('id', $customerTypes);
+                    });
+                } else {
+                    $query->whereHas('customer.groupInfo.customerGroup', function ($q) use ($customerTypes) {
+                        $q->where('id', $customerTypes);
+                    });
+                }
+            }
+
+            // Apply invoice no filter (supports single or multiple)
+            if ($request->filled('invoice_no')) {
+                $invoiceNos = $request->input('invoice_no');
+                if (is_array($invoiceNos)) {
+                    $query->whereIn('invoice_number', $invoiceNos);
+                } else {
+                    $query->where('invoice_number', $invoiceNos);
+                }
+            }
+
+            // Apply PO no filter (supports single or multiple)
+            if ($request->filled('po_no')) {
+                $poNos = $request->input('po_no');
+                if (is_array($poNos)) {
+                    $query->whereIn('po_number', $poNos);
+                } else {
+                    $query->where('po_number', $poNos);
+                }
+            }
+
+            // Apply appointment date filter (supports single or multiple)
+            if ($request->filled('appointment_date')) {
+                $appointmentDates = $request->input('appointment_date');
+                if (is_array($appointmentDates)) {
+                    $query->whereHas('appointment', function ($q) use ($appointmentDates) {
+                        $q->whereIn('appointment_date', $appointmentDates);
+                    });
+                } else {
+                    $query->whereHas('appointment', function ($q) use ($appointmentDates) {
+                        $q->where('appointment_date', $appointmentDates);
+                    });
+                }
             }
 
             // Get all invoices for aggregation
@@ -1147,55 +1407,89 @@ class ReportController extends Controller
                 return redirect()->back()->with('error', 'No customer sales records found for the selected criteria.');
             }
 
-            // Aggregate data by customer (same logic as index)
-            $customerAggregates = $invoices->groupBy('customer_id')->map(function ($customerInvoices, $customerId) {
-                $customer = $customerInvoices->first()->customer;
-                $totalAmount = $customerInvoices->sum('total_amount');
-                $totalPaid = $customerInvoices->sum(function ($invoice) {
-                    return $invoice->payments->sum('amount');
-                });
-                $totalDue = $totalAmount - $totalPaid;
-                $totalInvoices = $customerInvoices->count();
-                $totalProducts = $customerInvoices->sum(function ($invoice) {
-                    return $invoice->details->sum('quantity');
+            // Calculate overall statistics
+            $totalRevenue = $invoices->sum('total_amount');
+            $totalPendingPayments = $invoices->sum(function ($invoice) {
+                $totalPaid = $invoice->payments->sum('amount');
+                return $invoice->total_amount - $totalPaid;
+            });
+
+            // Get filter dropdown data
+            $customers = Customer::select('id', 'client_name')
+                ->whereHas('invoices')
+                ->orderBy('client_name')
+                ->get()
+                ->map(function ($customer) {
+                    return [
+                        'id' => $customer->id,
+                        'name' => $customer->client_name ?? 'N/A',
+                    ];
                 });
 
-                $paidCount = 0;
-                $unpaidCount = 0;
-                $partialCount = 0;
+            // Process individual invoices for detailed PDF
+            $invoiceData = $invoices->map(function ($invoice) {
+                $customer = $invoice->customer;
+                $customerGroup = $customer->groupInfo->customerGroup ?? null;
+                $salesOrder = $invoice->salesOrder;
+                $payments = $invoice->payments;
+                $totalPaid = $payments->sum('amount');
+                $balance = $invoice->total_amount - $totalPaid;
+                $appointment = $invoice->appointment;
+                $dns = $invoice->dns;
 
-                foreach ($customerInvoices as $invoice) {
-                    $paid = $invoice->payments->sum('amount');
-                    if ($paid >= $invoice->total_amount) {
-                        $paidCount++;
-                    } elseif ($paid > 0) {
-                        $partialCount++;
+                // Calculate tax breakdown
+                $cgst = 0;
+                $sgst = 0;
+                $igst = 0;
+                $cess = 0;
+                $taxAmount = 0;
+
+                foreach ($invoice->details as $detail) {
+                    $gstRate = $detail->tax ?? 0;
+                    $taxAmount += $detail->tax ?? 0;
+                    $cess += $detail->cess ?? 0;
+
+                    // CGST/SGST split for intra-state, IGST for inter-state
+                    if ($customer->billing_state === $customer->shipping_state) {
+                        $cgst += $gstRate / 2;
+                        $sgst += $gstRate / 2;
                     } else {
-                        $unpaidCount++;
+                        $igst += $gstRate;
                     }
                 }
 
-                $minDate = $customerInvoices->min('invoice_date');
-                $maxDate = $customerInvoices->max('invoice_date');
+                // Get latest payment details
+                $latestPayment = $payments->sortByDesc('created_at')->first();
 
                 return [
-                    'customer' => $customer,
-                    'total_sales_amount' => $totalAmount,
-                    'total_invoices' => $totalInvoices,
-                    'total_products_sold' => $totalProducts,
-                    'paid_invoices' => $paidCount,
-                    'unpaid_invoices' => $unpaidCount,
-                    'partial_invoices' => $partialCount,
-                    'outstanding_balance' => $totalDue,
-                    'date_range_start' => $minDate,
-                    'date_range_end' => $maxDate,
+                    'customer_group_name' => $customerGroup->name ?? 'N/A',
+                    'customer_name' => $customer->client_name ?? 'N/A',
+                    'customer_gstin' => $customer->gstin ?? 'N/A',
+                    'invoice_no' => $invoice->invoice_number,
+                    'creator_name' => 'System',
+                    'customer_phone_no' => $customer->contact_no ?? 'N/A',
+                    'customer_email' => $customer->email ?? 'N/A',
+                    'customer_city' => $customer->billing_city ?? $customer->shipping_city ?? 'N/A',
+                    'customer_state' => $customer->billing_state ?? $customer->shipping_state ?? 'N/A',
+                    'po_no' => $invoice->po_number ?? $salesOrder->po_number ?? 'N/A',
+                    'po_date' => $salesOrder ? $salesOrder->created_at->format('d-m-Y') : 'N/A',
+                    'appointment_date' => $appointment ? $appointment->appointment_date->format('d-m-Y') : 'N/A',
+                    'due_date' => 'N/A',
+                    'currency' => 'INR',
+                    'amount' => $invoice->subtotal ?? ($invoice->total_amount - $taxAmount),
+                    'tax' => $taxAmount,
+                    'total' => $invoice->total_amount,
+                    'status' => $balance <= 0 ? 'Paid' : ($totalPaid > 0 ? 'Partial' : 'Unpaid'),
+                    'amount_paid' => $totalPaid,
+                    'balance' => $balance,
+                    'date_of_payment' => $latestPayment ? $latestPayment->created_at->format('d-m-Y') : 'N/A',
+                    'payment_mode' => $latestPayment ? $latestPayment->payment_method : 'N/A',
+                    'cgst' => $cgst,
+                    'sgst' => $sgst,
+                    'igst' => $igst,
+                    'cess' => $cess,
                 ];
-            })->sortByDesc('total_sales_amount')->values();
-
-            // Calculate overall statistics
-            $totalRevenue = $customerAggregates->sum('total_sales_amount');
-            $totalPendingPayments = $customerAggregates->sum('outstanding_balance');
-            $topCustomer = $customerAggregates->first();
+            });
 
             // Prepare data for PDF
             $pdfData = [
@@ -1210,13 +1504,12 @@ class ReportController extends Controller
                     'customer_type' => $request->customer_type,
                 ],
                 'summary' => [
-                    'total_customers' => $customerAggregates->count(),
+                    'total_invoices' => $invoices->count(),
                     'total_revenue' => $totalRevenue,
                     'total_pending_payments' => $totalPendingPayments,
-                    'top_customer' => $topCustomer ? $topCustomer['customer']->client_name : 'N/A',
-                    'top_customer_amount' => $topCustomer ? $topCustomer['total_sales_amount'] : 0,
+                    'total_customers' => $customers->count(),
                 ],
-                'customerAggregates' => $customerAggregates,
+                'invoices' => $invoiceData,
             ];
 
             // Generate PDF
@@ -1233,7 +1526,7 @@ class ReportController extends Controller
                     'region' => $request->region,
                     'payment_status' => $request->payment_status,
                     'customer_type' => $request->customer_type,
-                    'records' => $customerAggregates->count(),
+                    'records' => $invoiceData->count(),
                 ])
                 ->event('pdf_report_generated')
                 ->log('Customer sales history PDF report generated');
