@@ -373,9 +373,14 @@
                                     <th>Payment&nbsp;Method</th>
                                     <th>Invoice&nbsp;Ref</th>
                                     <th>Invoice&nbsp;Date</th>
+                                    <th>Invoice&nbsp;Amount</th>
+                                    <th>Invioice&nbsp;Uploaded</th>
+                                    <th>GRN&nbsp;Uploaded</th>
                                     <th>Due&nbsp;Date</th>
                                     <th>Shipping&nbsp;Charges</th>
-                                    <th>Status</th>
+                                    <th>PO&nbsp;Created</th>
+                                    <th>PI&nbsp;Received</th>
+                                    <th>Approved</th>
                                     <th>Warehouse</th>
                                     {{-- <th>Remarks</th> --}}
                                 </tr>
@@ -433,7 +438,12 @@
                                         <td>{{ $purchaseInvoice ? ($purchaseInvoice->created_at ? $purchaseInvoice->created_at->format('d-m-Y') : 'N/A') : 'N/A' }}
                                         </td>
                                         <td>N/A</td>
-                                        <td>₹0.00</td>
+                                        <td>N/A</td>
+                                        <td>N/A</td>
+                                        <td>N/A</td>
+                                        <td>N/A</td>
+                                        <td>N/A</td>
+                                        <td>N/A</td>
                                         <td>
                                             <span
                                                 class="badge {{ $order->status == 'completed' ? 'bg-success' : 'bg-secondary' }}">
