@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::table('sales_order_products', function (Blueprint $table) {
             //
-            $table->enum('product_status', ['pending', 'packaging', 'partially_packaged', 'packaged','completed', 'cancelled'])->nullable()->default('pending')->after('invoice_status');
+            $table->enum('product_status', ['pending', 'packaging', 'partially_packaged', 'packaged', 'completed', 'cancelled'])->nullable()->default('pending')->after('invoice_status');
         });
     }
 

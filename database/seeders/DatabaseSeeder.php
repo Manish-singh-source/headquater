@@ -32,8 +32,6 @@ class DatabaseSeeder extends Seeder
 
         User::first()->assignRole('Super Admin');
 
-
-
         $this->call([
             CountrySeeder::class,
             StateSeeder::class,

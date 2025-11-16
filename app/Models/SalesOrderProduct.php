@@ -103,5 +103,4 @@ class SalesOrderProduct extends Model
     {
         return $this->hasMany(InvoiceDetails::class, 'sales_order_product_id', 'id');
     }
-    
 }

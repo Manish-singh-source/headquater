@@ -6,11 +6,7 @@ use App\Models\Appointment;
 use App\Models\Invoice;
 use App\Models\Payment;
 use App\Models\Product;
-use App\Models\PurchaseGrn;
-use App\Models\PurchaseOrder;
-use App\Models\PurchaseOrderProduct;
 use App\Models\SalesOrder;
-use App\Models\SalesOrderProduct;
 use App\Models\VendorPIProduct;
 use App\Models\WarehouseStock;
 use Carbon\Carbon;
@@ -91,7 +87,7 @@ class DashboardController extends Controller
             ->whereNotNull('products.brand')
             ->where('products.brand', '!=', '');
 
-        if (!empty($selectedBrands)) {
+        if (! empty($selectedBrands)) {
             $totalSalesQuery->where('products.brand', $selectedBrands);
         }
 
@@ -112,7 +108,7 @@ class DashboardController extends Controller
                 ->whereNotNull('products.brand')
                 ->where('products.brand', '!=', '');
 
-            if (!empty($selectedBrands)) {
+            if (! empty($selectedBrands)) {
                 $monthlySalesQuery->where('products.brand', $selectedBrands);
             }
 
@@ -123,14 +119,14 @@ class DashboardController extends Controller
 
             $monthlyTrend[] = [
                 'month' => $monthStart->format('M Y'),
-                'data' => $monthlySales
+                'data' => $monthlySales,
             ];
         }
 
         return [
             'total_sales_by_brand' => $totalSalesByBrand,
             'monthly_trend' => $monthlyTrend,
-            'total_sales_overall' => $totalSalesByBrand->sum('total_sales')
+            'total_sales_overall' => $totalSalesByBrand->sum('total_sales'),
         ];
     }
 
@@ -144,7 +140,7 @@ class DashboardController extends Controller
             ->where('vendor_p_i_products.quantity_received', '>', 0)
             ->where('vendor_p_i_products.created_at', '>=', $yearStart);
 
-        if (!empty($selectedBrands)) {
+        if (! empty($selectedBrands)) {
             $totalPurchasesQuery->whereIn('products.brand', $selectedBrands); // use whereIn for multiple brands
         }
 
@@ -158,7 +154,6 @@ class DashboardController extends Controller
 
         $totalPurchasesByBrand = $totalPurchasesQuery->get();
 
-
         // Monthly Purchase Trend (last 3 months + current month)
         $monthlyTrend = [];
         for ($i = 3; $i >= 0; $i--) {
@@ -169,7 +164,7 @@ class DashboardController extends Controller
                 ->where('vendor_p_i_products.quantity_received', '>', 0)
                 ->whereBetween('vendor_p_i_products.created_at', [$monthStart, $monthEnd]);
 
-            if (!empty($selectedBrands)) {
+            if (! empty($selectedBrands)) {
                 $monthlyPurchasesQuery->whereIn('products.brand', $selectedBrands); // use whereIn for multiple brands
             }
 
@@ -185,17 +180,16 @@ class DashboardController extends Controller
 
             $monthlyTrend[] = [
                 'month' => $monthStart->format('M Y'),
-                'data' => $monthlyPurchases
+                'data' => $monthlyPurchases,
             ];
         }
 
         return [
             'total_purchases_by_brand' => $totalPurchasesByBrand,
             'monthly_trend' => $monthlyTrend,
-            'total_amount_overall' => $totalPurchasesByBrand->sum('total_cost')
+            'total_amount_overall' => $totalPurchasesByBrand->sum('total_cost'),
         ];
-        
-        
+
     }
 
     // done
@@ -207,10 +201,9 @@ class DashboardController extends Controller
             ->whereNotNull('products.brand')
             ->where('products.brand', '!=', '');
 
-        if (!empty($selectedBrands)) {
+        if (! empty($selectedBrands)) {
             $ordersQuery->where('products.brand', $selectedBrands);
         }
-
 
         $ordersByBrand = $ordersQuery
             ->select(
@@ -226,7 +219,7 @@ class DashboardController extends Controller
             'orders_by_brand' => $ordersByBrand,
             'total_orders' => $ordersByBrand->sum('total_orders'),
             'total_open' => $ordersByBrand->sum('open_orders'),
-            'total_processed' => $ordersByBrand->sum('processed_orders')
+            'total_processed' => $ordersByBrand->sum('processed_orders'),
         ];
     }
 
@@ -252,9 +245,9 @@ class DashboardController extends Controller
             foreach ($invoices as $invoice) {
                 $appt = $invoice->appointment;
                 if ($appt) {
-                    if (!empty($appt->appointment_date)) {
+                    if (! empty($appt->appointment_date)) {
                         $hasAppointment = true;
-                        if (!empty($appt->grn)) {
+                        if (! empty($appt->grn)) {
                             $hasGrn = true;
                         }
                     }
@@ -262,26 +255,27 @@ class DashboardController extends Controller
                 // For LR Pending logic,
                 // If you have an LR doc/number column (update this logic as needed):
                 if (property_exists($invoice, 'lr_number')) {
-                    if (!empty($invoice->lr_number)) {
+                    if (! empty($invoice->lr_number)) {
                         $hasLR = true;
                     }
                 }
                 // If LR is stored in appointment or invoice with file, update here as well
             }
-            if (!$hasAppointment) {
+            if (! $hasAppointment) {
                 $apptPending++;
-            } else if ($hasAppointment && !$hasGrn) {
+            } elseif ($hasAppointment && ! $hasGrn) {
                 $apptReceivedGrnPending++;
             }
             // LR Pending: if none of the invoices for this order have LR
-            if (!$hasLR) {  
+            if (! $hasLR) {
                 $lrPending++;
             }
         }
+
         return [
             'lr_pending' => $lrPending,
             'appt_received_grn_pending' => $apptReceivedGrnPending,
-            'appt_pending' => $apptPending
+            'appt_pending' => $apptPending,
         ];
     }
 
@@ -289,7 +283,7 @@ class DashboardController extends Controller
     private function getDeliveryData($startDate, $endDate, $selectedBrands)
     {
         // Count POD received from appointments
-        $podReceived = Invoice::whereHas('appointment', function($query) {
+        $podReceived = Invoice::whereHas('appointment', function ($query) {
             $query->whereNotNull('pod');
         })->whereBetween('created_at', [$startDate, $endDate])->count();
 
@@ -300,7 +294,7 @@ class DashboardController extends Controller
 
         return [
             'pod_received' => $podReceived,
-            'pod_not_received' => $podNotReceived
+            'pod_not_received' => $podNotReceived,
         ];
     }
 
@@ -326,7 +320,7 @@ class DashboardController extends Controller
         return [
             'total' => $total,
             'grn_done' => $grnDone,
-            'grn_not_done' => $grnPending
+            'grn_not_done' => $grnPending,
         ];
     }
 
@@ -371,7 +365,7 @@ class DashboardController extends Controller
 
             $monthlyTrend[] = [
                 'month' => $monthStart->format('M Y'),
-                'amount' => $monthlyPayment
+                'amount' => $monthlyPayment,
             ];
         }
 
@@ -379,7 +373,7 @@ class DashboardController extends Controller
             'total_outstanding' => $totalOutstanding,
             'monthly_received' => $monthlyReceived,
             'payment_due_outstanding' => $paymentDueOutstanding,
-            'monthly_trend' => $monthlyTrend
+            'monthly_trend' => $monthlyTrend,
         ];
     }
 
@@ -390,7 +384,7 @@ class DashboardController extends Controller
             ->whereNotNull('products.brand')
             ->where('products.brand', '!=', '');
 
-        if (!empty($selectedBrands)) {
+        if (! empty($selectedBrands)) {
             $warehouseQuery->where('products.brand', $selectedBrands);
         }
 
@@ -408,7 +402,7 @@ class DashboardController extends Controller
             'inventory_by_brand' => $inventoryByBrand,
             'total_units' => $inventoryByBrand->sum('total_units'),
             'total_value' => $inventoryByBrand->sum('total_value'),
-            'total_cost' => $inventoryByBrand->sum('total_cost')
+            'total_cost' => $inventoryByBrand->sum('total_cost'),
         ];
     }
 }

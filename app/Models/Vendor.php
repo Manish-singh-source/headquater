@@ -53,5 +53,4 @@ class Vendor extends Model
     {
         return $this->hasOne(City::class, 'id', 'billing_city');
     }
-
 }

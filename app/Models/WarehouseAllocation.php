@@ -117,4 +117,3 @@ class WarehouseAllocation extends Model
             ->groupBy('sku');
     }
 }
-

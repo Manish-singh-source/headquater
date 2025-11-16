@@ -14,10 +14,10 @@ return new class extends Migration
         Schema::table('sales_orders', function (Blueprint $table) {
             // Drop existing foreign key constraint
             $table->dropForeign(['warehouse_id']);
-            
+
             // Make warehouse_id nullable
             $table->foreignId('warehouse_id')->nullable()->change();
-            
+
             // Re-add foreign key constraint
             $table->foreign('warehouse_id')->references('id')->on('warehouses')->onDelete('set null');
         });
@@ -31,13 +31,12 @@ return new class extends Migration
         Schema::table('sales_orders', function (Blueprint $table) {
             // Drop foreign key
             $table->dropForeign(['warehouse_id']);
-            
+
             // Make warehouse_id NOT NULL again
             $table->foreignId('warehouse_id')->nullable(false)->change();
-            
+
             // Re-add foreign key constraint
             $table->foreign('warehouse_id')->references('id')->on('warehouses')->onDelete('cascade');
         });
     }
 };
-

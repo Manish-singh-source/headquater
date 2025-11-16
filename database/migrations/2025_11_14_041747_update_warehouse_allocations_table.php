@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::table('warehouse_allocations', function (Blueprint $table) {
             //
-            $table->enum('product_status', ['pending', 'packaging', 'partially_packaged', 'approval_pending', 'packaged','completed', 'cancelled'])->nullable()->default('pending')->after('approval_status');
+            $table->enum('product_status', ['pending', 'packaging', 'partially_packaged', 'approval_pending', 'packaged', 'completed', 'cancelled'])->nullable()->default('pending')->after('approval_status');
         });
     }
 

@@ -6,10 +6,9 @@ use App\Models\PermissionGroup;
 use App\Models\User;
 use App\Models\Warehouse;
 use Illuminate\Http\Request;
-use Spatie\Permission\Models\Role;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Spatie\Permission\Models\Role;
 
 class StaffController extends Controller
 {
@@ -18,6 +17,7 @@ class StaffController extends Controller
     {
         // Logic to list staff members
         $staffMembers = User::get(); // Assuming you have a Staff model
+
         return view('staffs.index', compact('staffMembers'));
     }
 
@@ -26,12 +26,13 @@ class StaffController extends Controller
         // Logic to show the form for creating a new staff member
         $roles = Role::all(); // Assuming you have a Role model
         $warehouses = Warehouse::all();
+
         return view('staffs.create', compact('roles', 'warehouses'));
     }
 
     public function store(Request $request)
     {
-        // Logic to store a new staff member        
+        // Logic to store a new staff member
         $validated = Validator::make($request->all(), [
             'warehouse_id' => 'required|unique:users,warehouse_id',
             'role' => 'required',
@@ -66,7 +67,7 @@ class StaffController extends Controller
             'marital' => $request->marital,
             'gender' => $request->gender,
             'email' => $request->email,
-            'current_address'  => $request->current_address,
+            'current_address' => $request->current_address,
             'permanent_address' => $request->permanent_address,
             'country' => $request->country,
             'state' => $request->state,
@@ -80,8 +81,10 @@ class StaffController extends Controller
         if ($staff) {
             // Assign role to staff
             $staff->roles()->attach($request->role);
+
             return redirect()->route('staff.index')->with('success', 'Staff member created successfully.');
         }
+
         return back()->with('error', 'Failed to create staff member.');
     }
 
@@ -90,6 +93,7 @@ class StaffController extends Controller
         // Logic to show the form for editing a staff member
         $staff = User::findOrFail($id);
         $roles = Role::all();
+
         return view('staffs.edit', compact('staff', 'roles'));
     }
 
@@ -110,7 +114,6 @@ class StaffController extends Controller
             return back()->withErrors($validated)->withInput();
         }
 
-
         $staff->update([
             'fname' => $request->fname,
             'lname' => $request->lname,
@@ -119,7 +122,7 @@ class StaffController extends Controller
             'marital' => $request->marital,
             'gender' => $request->gender,
             'email' => $request->email,
-            'current_address'  => $request->current_address,
+            'current_address' => $request->current_address,
             'permanent_address' => $request->permanent_address,
             'city' => $request->city,
             'state' => $request->state,
@@ -135,6 +138,7 @@ class StaffController extends Controller
             // Mail::to($staff->email)->send(new StaffCredentialsMail($staff->email, $request->password));
             return redirect()->route('staff.index')->with('success', 'Staff member updated successfully.');
         }
+
         return back()->with('error', 'Failed to update staff member.');
     }
 
@@ -145,6 +149,7 @@ class StaffController extends Controller
         if ($staff->delete()) {
             return redirect()->route('staff.index')->with('success', 'Staff member deleted successfully.');
         }
+
         return back()->with('error', 'Failed to delete staff member.');
     }
 
@@ -155,9 +160,10 @@ class StaffController extends Controller
         $staffPermissions = $staff->getAllPermissions();
         $permissionGroups = PermissionGroup::with('permissions')->active()->get();
 
-        if (!$staff) {
+        if (! $staff) {
             return redirect()->route('staff.index')->with('error', 'Staff member not found.');
         }
+
         // Assuming you have a view file for displaying staff details
         return view('staffs.view', compact('staff', 'staffPermissions', 'permissionGroups'));
     }

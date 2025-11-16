@@ -4,7 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\PermissionGroup;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\{Auth, DB, Log, Validator};
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
 use Spatie\Permission\Models\Permission;
 
 class PermissionController extends Controller
@@ -15,6 +18,7 @@ class PermissionController extends Controller
     public function index()
     {
         $permissionGroups = PermissionGroup::with('permissions')->latest()->get();
+
         return view('permissions.index', compact('permissionGroups'));
     }
 
@@ -53,7 +57,7 @@ class PermissionController extends Controller
 
             // Create permissions and assign to group
             foreach ($request->permissions as $permissionName) {
-                if (!empty($permissionName)) {
+                if (! empty($permissionName)) {
                     Permission::create([
                         'name' => $permissionName,
                         'guard_name' => 'web',
@@ -71,8 +75,9 @@ class PermissionController extends Controller
             return redirect()->route('permission.index')->with('success', 'Permission group created successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Permission group creation failed: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Error: ' . $e->getMessage())->withInput();
+            Log::error('Permission group creation failed: '.$e->getMessage());
+
+            return redirect()->back()->with('error', 'Error: '.$e->getMessage())->withInput();
         }
     }
 
@@ -82,6 +87,7 @@ class PermissionController extends Controller
     public function edit($id)
     {
         $permissionGroup = PermissionGroup::with('permissions')->findOrFail($id);
+
         return view('permissions.edit', compact('permissionGroup'));
     }
 
@@ -91,7 +97,7 @@ class PermissionController extends Controller
     public function update(Request $request, $id)
     {
         $validator = Validator::make($request->all(), [
-            'group_name' => 'required|string|max:255|unique:permission_groups,name,' . $id,
+            'group_name' => 'required|string|max:255|unique:permission_groups,name,'.$id,
             'description' => 'nullable|string|max:500',
             'permissions' => 'required|array|min:1',
             'permissions.*.id' => 'nullable|exists:permissions,id',
@@ -117,8 +123,8 @@ class PermissionController extends Controller
 
             // Update or create permissions
             foreach ($request->permissions as $permissionData) {
-                if (!empty($permissionData['name'])) {
-                    if (isset($permissionData['id']) && !empty($permissionData['id'])) {
+                if (! empty($permissionData['name'])) {
+                    if (isset($permissionData['id']) && ! empty($permissionData['id'])) {
                         // Update existing permission
                         $permission = Permission::find($permissionData['id']);
                         if ($permission) {
@@ -151,8 +157,9 @@ class PermissionController extends Controller
             return redirect()->route('permission.index')->with('success', 'Permission group updated successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Permission group update failed: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Error: ' . $e->getMessage())->withInput();
+            Log::error('Permission group update failed: '.$e->getMessage());
+
+            return redirect()->back()->with('error', 'Error: '.$e->getMessage())->withInput();
         }
     }
 
@@ -180,8 +187,9 @@ class PermissionController extends Controller
             return redirect()->route('permission.index')->with('success', 'Permission group deleted successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Permission group deletion failed: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Error: ' . $e->getMessage());
+            Log::error('Permission group deletion failed: '.$e->getMessage());
+
+            return redirect()->back()->with('error', 'Error: '.$e->getMessage());
         }
     }
 
@@ -212,7 +220,8 @@ class PermissionController extends Controller
             return response()->json(['success' => true, 'message' => 'Permission deleted successfully']);
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Permission deletion failed: ' . $e->getMessage());
+            Log::error('Permission deletion failed: '.$e->getMessage());
+
             return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }
     }
@@ -247,8 +256,9 @@ class PermissionController extends Controller
             return redirect()->route('permission.index')->with('success', 'Selected permission groups deleted successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Bulk permission group deletion failed: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Error: ' . $e->getMessage());
+            Log::error('Bulk permission group deletion failed: '.$e->getMessage());
+
+            return redirect()->back()->with('error', 'Error: '.$e->getMessage());
         }
     }
 
@@ -281,7 +291,8 @@ class PermissionController extends Controller
             return response()->json(['success' => true]);
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Permission group status toggle failed: ' . $e->getMessage());
+            Log::error('Permission group status toggle failed: '.$e->getMessage());
+
             return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }
     }

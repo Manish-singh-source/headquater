@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Warehouse;
-use App\Models\SalesOrder;
-use App\Models\Product;
 use App\Models\CustomerReturn;
+use App\Models\Product;
+use App\Models\SalesOrder;
+use App\Models\Warehouse;
 use App\Models\WarehouseStock;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -18,7 +18,7 @@ class ProductReturnController extends Controller
     /**
      * Check for duplicate SKU codes in Excel file
      *
-     * @param array $rows
+     * @param  array  $rows
      * @return string|null
      */
     protected function checkDuplicateSkuInExcel($rows)
@@ -33,7 +33,7 @@ class ProductReturnController extends Controller
             $key = strtolower(trim($record['SKU Code']));
 
             if (isset($seen[$key])) {
-                return 'Duplicate SKU found in file: ' . $record['SKU Code'];
+                return 'Duplicate SKU found in file: '.$record['SKU Code'];
             }
 
             $seen[$key] = true;
@@ -56,7 +56,7 @@ class ProductReturnController extends Controller
 
             return view('ReturnProducts.customer-returns', compact('customerReturns'));
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Error retrieving customer returns: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Error retrieving customer returns: '.$e->getMessage());
         }
     }
 
@@ -76,14 +76,13 @@ class ProductReturnController extends Controller
 
             return view('ReturnProducts.create-customer-returns', compact('warehouses', 'salesOrders'));
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Error loading form: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Error loading form: '.$e->getMessage());
         }
     }
 
     /**
      * Store customer return from Excel file
      *
-     * @param Request $request
      * @return \Illuminate\Http\RedirectResponse
      */
     public function storeCustomerReturn(Request $request)
@@ -100,7 +99,7 @@ class ProductReturnController extends Controller
 
         $file = $request->file('excel_file');
 
-        if (!$file) {
+        if (! $file) {
             return redirect()->back()->withErrors(['excel_file' => 'Please upload a valid file.']);
         }
 
@@ -122,8 +121,8 @@ class ProductReturnController extends Controller
             }
 
             $insertCount = 0;
-            $salesOrderId = (int)$request->sales_order_id;
-            $warehouseId = (int)$request->warehouse_id;
+            $salesOrderId = (int) $request->sales_order_id;
+            $warehouseId = (int) $request->warehouse_id;
             $returnReason = trim($request->return_reason);
             $returnDescription = trim($request->return_description ?? '');
 
@@ -136,7 +135,7 @@ class ProductReturnController extends Controller
                 }
 
                 $sku = trim($record['SKU Code']);
-                $returnQuantity = (int)($record['Return Quantity'] ?? 0);
+                $returnQuantity = (int) ($record['Return Quantity'] ?? 0);
 
                 if ($returnQuantity <= 0) {
                     continue;
@@ -144,10 +143,10 @@ class ProductReturnController extends Controller
 
                 // Verify product exists
                 $product = Product::where('sku', $sku)->first();
-                if (!$product) {
+                if (! $product) {
                     DB::rollBack();
 
-                    return redirect()->back()->with(['error' => 'Product with SKU ' . $sku . ' not found.']);
+                    return redirect()->back()->with(['error' => 'Product with SKU '.$sku.' not found.']);
                 }
 
                 // Create customer return record
@@ -167,11 +166,11 @@ class ProductReturnController extends Controller
                     ->where('warehouse_id', $warehouseId)
                     ->first();
 
-                if (!$warehouseStock) {
+                if (! $warehouseStock) {
                     DB::rollBack();
 
                     return redirect()->back()->with([
-                        'error' => 'Warehouse stock record not found for SKU: ' . $sku,
+                        'error' => 'Warehouse stock record not found for SKU: '.$sku,
                     ]);
                 }
 
@@ -196,15 +195,15 @@ class ProductReturnController extends Controller
                 ->causedBy(Auth::user())
                 ->withProperties(['returns_count' => $insertCount])
                 ->event('product_return_created')
-                ->log('Customer product returns created: ' . $insertCount . ' items');
+                ->log('Customer product returns created: '.$insertCount.' items');
 
             return redirect()->route('customer.returns')
-                ->with('success', 'Successfully created ' . $insertCount . ' product return(s).');
+                ->with('success', 'Successfully created '.$insertCount.' product return(s).');
         } catch (\Exception $e) {
             DB::rollBack();
 
             return redirect()->back()
-                ->with('error', 'Error processing returns: ' . $e->getMessage())
+                ->with('error', 'Error processing returns: '.$e->getMessage())
                 ->withInput();
         }
     }
@@ -212,7 +211,7 @@ class ProductReturnController extends Controller
     /**
      * View customer return details
      *
-     * @param int $id
+     * @param  int  $id
      * @return \Illuminate\View\View
      */
     public function viewCustomerReturn($id)
@@ -231,7 +230,7 @@ class ProductReturnController extends Controller
     /**
      * Show edit form for customer return
      *
-     * @param int $id
+     * @param  int  $id
      * @return \Illuminate\View\View
      */
     public function editCustomerReturn($id)
@@ -250,7 +249,6 @@ class ProductReturnController extends Controller
     /**
      * Update customer return record
      *
-     * @param Request $request
      * @return \Illuminate\Http\RedirectResponse
      */
     public function updateCustomerReturn(Request $request)
@@ -301,7 +299,7 @@ class ProductReturnController extends Controller
             DB::rollBack();
 
             return redirect()->back()
-                ->with('error', 'Error updating customer return: ' . $e->getMessage())
+                ->with('error', 'Error updating customer return: '.$e->getMessage())
                 ->withInput();
         }
     }
@@ -309,7 +307,7 @@ class ProductReturnController extends Controller
     /**
      * Delete customer return record
      *
-     * @param int $id
+     * @param  int  $id
      * @return \Illuminate\Http\RedirectResponse
      */
     public function deleteCustomerReturn($id)
@@ -347,14 +345,13 @@ class ProductReturnController extends Controller
             DB::rollBack();
 
             return redirect()->route('customer.returns')
-                ->with('error', 'Error deleting customer return: ' . $e->getMessage());
+                ->with('error', 'Error deleting customer return: '.$e->getMessage());
         }
     }
 
     /**
      * Delete multiple customer returns
      *
-     * @param Request $request
      * @return \Illuminate\Http\RedirectResponse
      */
     public function deleteSelected(Request $request)
@@ -395,14 +392,14 @@ class ProductReturnController extends Controller
                 ->causedBy(Auth::user())
                 ->withProperties(['count' => $deleted, 'ids' => $ids])
                 ->event('bulk_delete')
-                ->log('Customer returns deleted: ' . $deleted . ' records');
+                ->log('Customer returns deleted: '.$deleted.' records');
 
             return redirect()->back()
-                ->with('success', 'Successfully deleted ' . $deleted . ' customer return(s).');
+                ->with('success', 'Successfully deleted '.$deleted.' customer return(s).');
         } catch (\Exception $e) {
             DB::rollBack();
 
-            return redirect()->back()->with('error', 'Error deleting returns: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Error deleting returns: '.$e->getMessage());
         }
     }
 
@@ -424,7 +421,7 @@ class ProductReturnController extends Controller
 
             return redirect()->back()->with('success', 'Customer return status updated successfully.');
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Error updating status: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Error updating status: '.$e->getMessage());
         }
     }
 }

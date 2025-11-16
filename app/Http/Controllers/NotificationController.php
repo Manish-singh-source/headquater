@@ -12,7 +12,6 @@ class NotificationController extends Controller
     /**
      * Get notifications for current user
      *
-     * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
     public function getNotifications(Request $request)
@@ -20,7 +19,7 @@ class NotificationController extends Controller
         try {
             $userId = Auth::id();
 
-            if (!$userId) {
+            if (! $userId) {
                 return response()->json([
                     'success' => false,
                     'message' => 'User not authenticated',
@@ -41,7 +40,7 @@ class NotificationController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error retrieving notifications: ' . $e->getMessage(),
+                'message' => 'Error retrieving notifications: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -49,8 +48,7 @@ class NotificationController extends Controller
     /**
      * Mark notification as read
      *
-     * @param Request $request
-     * @param int $id
+     * @param  int  $id
      * @return \Illuminate\Http\JsonResponse
      */
     public function markAsRead(Request $request, $id)
@@ -70,7 +68,7 @@ class NotificationController extends Controller
         try {
             $notification = NotificationService::markAsRead($id);
 
-            if (!$notification) {
+            if (! $notification) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Notification not found',
@@ -87,7 +85,7 @@ class NotificationController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error marking notification as read: ' . $e->getMessage(),
+                'message' => 'Error marking notification as read: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -95,8 +93,7 @@ class NotificationController extends Controller
     /**
      * Remove notification (permanently delete from database)
      *
-     * @param Request $request
-     * @param int $id
+     * @param  int  $id
      * @return \Illuminate\Http\JsonResponse
      */
     public function removeNotification(Request $request, $id)
@@ -116,7 +113,7 @@ class NotificationController extends Controller
         try {
             $deleted = NotificationService::deleteNotification($id);
 
-            if (!$deleted) {
+            if (! $deleted) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Notification not found or already deleted',
@@ -134,7 +131,7 @@ class NotificationController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error deleting notification: ' . $e->getMessage(),
+                'message' => 'Error deleting notification: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -142,7 +139,6 @@ class NotificationController extends Controller
     /**
      * Mark all notifications as read
      *
-     * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
     public function markAllAsRead(Request $request)
@@ -150,7 +146,7 @@ class NotificationController extends Controller
         try {
             $userId = Auth::id();
 
-            if (!$userId) {
+            if (! $userId) {
                 return response()->json([
                     'success' => false,
                     'message' => 'User not authenticated',
@@ -167,7 +163,7 @@ class NotificationController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error marking all notifications as read: ' . $e->getMessage(),
+                'message' => 'Error marking all notifications as read: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -175,7 +171,7 @@ class NotificationController extends Controller
     /**
      * Build HTML for notifications
      *
-     * @param \Illuminate\Support\Collection $notifications
+     * @param  \Illuminate\Support\Collection  $notifications
      * @return string
      */
     private function buildNotificationsHtml($notifications)
@@ -199,7 +195,7 @@ class NotificationController extends Controller
     /**
      * Build single notification item HTML
      *
-     * @param object $notification
+     * @param  object  $notification
      * @return string
      */
     private function buildNotificationItem($notification)
@@ -208,7 +204,7 @@ class NotificationController extends Controller
         $title = htmlspecialchars($notification->title ?? '', ENT_QUOTES, 'UTF-8');
         $message = htmlspecialchars($notification->message ?? '', ENT_QUOTES, 'UTF-8');
         $timeAgo = htmlspecialchars($notification->time_ago ?? '', ENT_QUOTES, 'UTF-8');
-        $isUnread = (!$notification->is_read) ? 'bg-light' : '';
+        $isUnread = (! $notification->is_read) ? 'bg-light' : '';
 
         $actionUrl = '';
         if ($notification->action_url) {
@@ -237,7 +233,7 @@ class NotificationController extends Controller
     /**
      * Get type color for notification
      *
-     * @param string $type
+     * @param  string  $type
      * @return string
      */
     private function getTypeColor($type)

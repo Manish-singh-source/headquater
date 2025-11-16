@@ -27,7 +27,6 @@ class AppServiceProvider extends ServiceProvider
         //
         // $this->registerPolicies();
 
-
         Gate::before(function ($user, string $ability) {
             return $user->hasRole('Super Admin') ? true : null;
         });

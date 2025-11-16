@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\SalesOrder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 class TrackOrderController extends Controller
@@ -13,13 +12,12 @@ class TrackOrderController extends Controller
     /**
      * Display order tracking search form
      *
-     * @param Request $request
      * @return \Illuminate\View\View|\Illuminate\Http\RedirectResponse
      */
     public function index(Request $request)
     {
         try {
-            if ($request->has('order_id') && !empty($request->order_id)) {
+            if ($request->has('order_id') && ! empty($request->order_id)) {
                 $validator = Validator::make($request->all(), [
                     'order_id' => 'required|integer|exists:sales_orders,id',
                 ]);
@@ -37,7 +35,7 @@ class TrackOrderController extends Controller
                 ])
                     ->find($request->order_id);
 
-                if (!$salesOrder) {
+                if (! $salesOrder) {
                     return view('trackOrder.index')
                         ->with('error', 'Order not found. Please verify the order ID.');
                 }
@@ -47,7 +45,7 @@ class TrackOrderController extends Controller
                     ->causedBy(Auth::user())
                     ->withProperties(['order_id' => $salesOrder->id])
                     ->event('order_tracked')
-                    ->log('Order tracked: #' . $salesOrder->id);
+                    ->log('Order tracked: #'.$salesOrder->id);
 
                 return redirect()->route('trackOrder.view', $salesOrder->id);
             }
@@ -55,14 +53,14 @@ class TrackOrderController extends Controller
             return view('trackOrder.index');
         } catch (\Exception $e) {
             return view('trackOrder.index')
-                ->with('error', 'Error searching for order: ' . $e->getMessage());
+                ->with('error', 'Error searching for order: '.$e->getMessage());
         }
     }
 
     /**
      * View detailed order tracking information
      *
-     * @param int $id
+     * @param  int  $id
      * @return \Illuminate\View\View
      */
     public function view($id)
@@ -91,7 +89,7 @@ class TrackOrderController extends Controller
                 ->withCount('notFoundTempOrderByVendor')
                 ->findOrFail($id);
 
-            if (!$salesOrder) {
+            if (! $salesOrder) {
                 return redirect()->route('trackOrder.index')
                     ->with('error', 'Order not found.');
             }
@@ -107,7 +105,7 @@ class TrackOrderController extends Controller
                 ->performedOn($salesOrder)
                 ->causedBy(Auth::user())
                 ->event('order_viewed')
-                ->log('Order tracking details viewed: #' . $salesOrder->id);
+                ->log('Order tracking details viewed: #'.$salesOrder->id);
 
             return view('trackOrder.view', array_merge(
                 compact('salesOrder', 'uniqueBrands'),
@@ -115,14 +113,14 @@ class TrackOrderController extends Controller
             ));
         } catch (\Exception $e) {
             return redirect()->route('trackOrder.index')
-                ->with('error', 'Error loading order details: ' . $e->getMessage());
+                ->with('error', 'Error loading order details: '.$e->getMessage());
         }
     }
 
     /**
      * Calculate order totals from ordered products
      *
-     * @param \App\Models\SalesOrder $salesOrder
+     * @param  \App\Models\SalesOrder  $salesOrder
      * @return array
      */
     private function calculateOrderTotals($salesOrder)
@@ -136,12 +134,12 @@ class TrackOrderController extends Controller
 
         foreach ($salesOrder->orderedProducts as $product) {
             if ($product->tempOrder) {
-                $blockQuantity += (int)($product->tempOrder->block ?? 0);
-                $vendorPiFulfillmentTotal += (int)($product->tempOrder->vendor_pi_fulfillment_quantity ?? 0);
-                $vendorPiReceivedTotal += (int)($product->tempOrder->vendor_pi_received_quantity ?? 0);
-                $availableQuantity += (int)($product->tempOrder->available_quantity ?? 0);
-                $unavailableQuantity += (int)($product->tempOrder->unavailable_quantity ?? 0);
-                $orderedQuantity += (int)($product->ordered_quantity ?? 0);
+                $blockQuantity += (int) ($product->tempOrder->block ?? 0);
+                $vendorPiFulfillmentTotal += (int) ($product->tempOrder->vendor_pi_fulfillment_quantity ?? 0);
+                $vendorPiReceivedTotal += (int) ($product->tempOrder->vendor_pi_received_quantity ?? 0);
+                $availableQuantity += (int) ($product->tempOrder->available_quantity ?? 0);
+                $unavailableQuantity += (int) ($product->tempOrder->unavailable_quantity ?? 0);
+                $orderedQuantity += (int) ($product->ordered_quantity ?? 0);
             }
         }
 
@@ -177,7 +175,7 @@ class TrackOrderController extends Controller
     /**
      * Get unique brands from ordered products
      *
-     * @param \App\Models\SalesOrder $salesOrder
+     * @param  \App\Models\SalesOrder  $salesOrder
      * @return \Illuminate\Support\Collection
      */
     private function getUniqueBrands($salesOrder)
@@ -185,7 +183,7 @@ class TrackOrderController extends Controller
         return $salesOrder->orderedProducts
             ->pluck('product.brand')
             ->filter(function ($brand) {
-                return !empty($brand);
+                return ! empty($brand);
             })
             ->unique()
             ->values();
@@ -194,7 +192,6 @@ class TrackOrderController extends Controller
     /**
      * Search orders by multiple criteria (API endpoint)
      *
-     * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
     public function search(Request $request)
@@ -227,7 +224,7 @@ class TrackOrderController extends Controller
                 ->map(function ($order) {
                     return [
                         'id' => $order->id,
-                        'order_number' => '#' . $order->id,
+                        'order_number' => '#'.$order->id,
                         'customer_group' => $order->customerGroup?->name ?? 'N/A',
                         'status' => ucfirst($order->status ?? 'pending'),
                         'created_at' => $order->created_at?->format('d-m-Y H:i') ?? 'N/A',
@@ -242,7 +239,7 @@ class TrackOrderController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error searching orders: ' . $e->getMessage(),
+                'message' => 'Error searching orders: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -250,7 +247,7 @@ class TrackOrderController extends Controller
     /**
      * Get order status timeline (API endpoint)
      *
-     * @param int $id
+     * @param  int  $id
      * @return \Illuminate\Http\JsonResponse
      */
     public function timeline($id)
@@ -315,7 +312,7 @@ class TrackOrderController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error retrieving timeline: ' . $e->getMessage(),
+                'message' => 'Error retrieving timeline: '.$e->getMessage(),
             ], 500);
         }
     }

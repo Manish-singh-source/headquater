@@ -24,14 +24,13 @@ class SKUMappingController extends Controller
 
             return view('skuMapping.index', compact('skuMapping'));
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Error retrieving SKU mappings: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Error retrieving SKU mappings: '.$e->getMessage());
         }
     }
 
     /**
      * Store SKU mappings from uploaded Excel file
      *
-     * @param Request $request
      * @return \Illuminate\Http\RedirectResponse
      */
     public function store(Request $request)
@@ -46,7 +45,7 @@ class SKUMappingController extends Controller
 
         $file = $request->file('sku_mapping');
 
-        if (!$file) {
+        if (! $file) {
             return redirect()->back()->withErrors(['sku_mapping' => 'Please upload a valid file.']);
         }
 
@@ -75,10 +74,11 @@ class SKUMappingController extends Controller
                 $customerSku = trim($record['Customer SKU'] ?? '');
 
                 // Check for duplicate in current file
-                $key = strtolower($productSku . '|' . $vendorSku . '|' . $customerSku);
+                $key = strtolower($productSku.'|'.$vendorSku.'|'.$customerSku);
 
                 if (isset($seenSkus[$key])) {
                     $duplicateCount++;
+
                     continue;
                 }
 
@@ -92,6 +92,7 @@ class SKUMappingController extends Controller
 
                 if ($existingMapping) {
                     $duplicateCount++;
+
                     continue;
                 }
 
@@ -105,6 +106,7 @@ class SKUMappingController extends Controller
                     $insertCount++;
                 } catch (\Exception $e) {
                     $errorCount++;
+
                     continue;
                 }
             }
@@ -131,14 +133,14 @@ class SKUMappingController extends Controller
                     'errors' => $errorCount,
                 ])
                 ->event('bulk_import')
-                ->log('SKU mappings imported: ' . $insertCount . ' records');
+                ->log('SKU mappings imported: '.$insertCount.' records');
 
-            $message = 'Successfully imported ' . $insertCount . ' SKU mapping(s).';
+            $message = 'Successfully imported '.$insertCount.' SKU mapping(s).';
             if ($duplicateCount > 0) {
-                $message .= ' (' . $duplicateCount . ' duplicate entries skipped)';
+                $message .= ' ('.$duplicateCount.' duplicate entries skipped)';
             }
             if ($errorCount > 0) {
-                $message .= ' (' . $errorCount . ' errors encountered)';
+                $message .= ' ('.$errorCount.' errors encountered)';
             }
 
             return redirect()->route('sku.mapping')->with('success', $message);
@@ -146,7 +148,7 @@ class SKUMappingController extends Controller
             DB::rollBack();
 
             return redirect()->back()
-                ->with('error', 'Error processing file: ' . $e->getMessage())
+                ->with('error', 'Error processing file: '.$e->getMessage())
                 ->withInput();
         }
     }
@@ -154,7 +156,7 @@ class SKUMappingController extends Controller
     /**
      * Show the form for editing a SKU mapping
      *
-     * @param int $id
+     * @param  int  $id
      * @return \Illuminate\View\View|\Illuminate\Http\RedirectResponse
      */
     public function edit($id)
@@ -173,21 +175,20 @@ class SKUMappingController extends Controller
             return view('skuMapping.edit', compact('skuMapping'));
         } catch (\Exception $e) {
             return redirect()->route('sku.mapping')
-                ->with('error', 'Error loading SKU mapping: ' . $e->getMessage());
+                ->with('error', 'Error loading SKU mapping: '.$e->getMessage());
         }
     }
 
     /**
      * Update the specified SKU mapping
      *
-     * @param Request $request
      * @return \Illuminate\Http\RedirectResponse
      */
     public function update(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'sku_id' => 'required|integer|exists:sku_mappings,id',
-            'product_sku' => 'required|string|max:255|unique:sku_mappings,product_sku,' . $request->sku_id,
+            'product_sku' => 'required|string|max:255|unique:sku_mappings,product_sku,'.$request->sku_id,
             'vendor_sku' => 'nullable|string|max:255',
             'customer_sku' => 'nullable|string|max:255',
         ]);
@@ -201,7 +202,7 @@ class SKUMappingController extends Controller
         try {
             $skuMapping = SkuMapping::findOrFail($request->sku_id);
 
-            if (!$skuMapping) {
+            if (! $skuMapping) {
                 return redirect()->route('sku.mapping')->with('error', 'SKU mapping not found.');
             }
 
@@ -244,7 +245,7 @@ class SKUMappingController extends Controller
             DB::rollBack();
 
             return redirect()->back()
-                ->with('error', 'Error updating SKU mapping: ' . $e->getMessage())
+                ->with('error', 'Error updating SKU mapping: '.$e->getMessage())
                 ->withInput();
         }
     }
@@ -252,7 +253,7 @@ class SKUMappingController extends Controller
     /**
      * Delete a SKU mapping
      *
-     * @param int $id
+     * @param  int  $id
      * @return \Illuminate\Http\RedirectResponse
      */
     public function delete($id)
@@ -270,7 +271,7 @@ class SKUMappingController extends Controller
         try {
             $skuMapping = SkuMapping::findOrFail($id);
 
-            if (!$skuMapping) {
+            if (! $skuMapping) {
                 return redirect()->route('sku.mapping')->with('error', 'SKU mapping not found.');
             }
 
@@ -298,14 +299,13 @@ class SKUMappingController extends Controller
             DB::rollBack();
 
             return redirect()->route('sku.mapping')
-                ->with('error', 'Error deleting SKU mapping: ' . $e->getMessage());
+                ->with('error', 'Error deleting SKU mapping: '.$e->getMessage());
         }
     }
 
     /**
      * Delete multiple SKU mappings
      *
-     * @param Request $request
      * @return \Illuminate\Http\RedirectResponse
      */
     public function deleteSelected(Request $request)
@@ -343,19 +343,18 @@ class SKUMappingController extends Controller
             DB::commit();
 
             return redirect()->back()
-                ->with('success', 'Successfully deleted ' . $deleted . ' SKU mapping(s).');
+                ->with('success', 'Successfully deleted '.$deleted.' SKU mapping(s).');
         } catch (\Exception $e) {
             DB::rollBack();
 
             return redirect()->back()
-                ->with('error', 'Error deleting SKU mappings: ' . $e->getMessage());
+                ->with('error', 'Error deleting SKU mappings: '.$e->getMessage());
         }
     }
 
     /**
      * Search SKU mappings
      *
-     * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
     public function search(Request $request)
@@ -388,7 +387,7 @@ class SKUMappingController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error searching SKU mappings: ' . $e->getMessage(),
+                'message' => 'Error searching SKU mappings: '.$e->getMessage(),
             ], 500);
         }
     }

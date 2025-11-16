@@ -55,5 +55,4 @@ class InvoiceDetails extends Model
     {
         return $this->belongsTo(SalesOrderProduct::class, 'sales_order_product_id', 'id');
     }
-
 }

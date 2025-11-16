@@ -5,7 +5,6 @@ namespace Database\Seeders;
 use App\Models\PermissionGroup;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Permission;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class PermissionsSeeder extends Seeder
 {
@@ -70,8 +69,8 @@ class PermissionsSeeder extends Seeder
         $masterGroup = PermissionGroup::firstOrCreate(
             ['name' => 'Manage Master'],
             ['description' => 'Master data management permissions', 'status' => 1]
-        );  
-        $this->updateOrCreatePermission('View Master', $masterGroup->id);   
+        );
+        $this->updateOrCreatePermission('View Master', $masterGroup->id);
 
         // Manage Customer Groups
         $customerGroupsGroup = PermissionGroup::firstOrCreate(
@@ -86,7 +85,7 @@ class PermissionsSeeder extends Seeder
         $this->updateOrCreatePermission('Multi Select Delete Customer Groups', $customerGroupsGroup->id);
         $this->updateOrCreatePermission('Multi Select Change Customer Group Status', $customerGroupsGroup->id);
 
-        // Manage Customers 
+        // Manage Customers
         $customersInGroupsGroup = PermissionGroup::firstOrCreate(
             ['name' => 'Manage Customers'],
             ['description' => 'Customer management', 'status' => 1]
@@ -216,9 +215,9 @@ class PermissionsSeeder extends Seeder
         );
         $this->updateOrCreatePermission('View Ready to Ship List', $readyToShipGroup->id);
         $this->updateOrCreatePermission('View Ready to Ship Products', $readyToShipGroup->id);
-        $this->updateOrCreatePermission('Change Status to Shipped', $readyToShipGroup->id); 
+        $this->updateOrCreatePermission('Change Status to Shipped', $readyToShipGroup->id);
 
-        // Manage Product Issues 
+        // Manage Product Issues
         $productIssuesGroup = PermissionGroup::firstOrCreate(
             ['name' => 'Manage Product Issues'],
             ['description' => 'Product issues management permissions', 'status' => 1]
@@ -226,7 +225,7 @@ class PermissionsSeeder extends Seeder
         $this->updateOrCreatePermission('View Product Issues', $productIssuesGroup->id);
         $this->updateOrCreatePermission('Accept/Reject Vendor Exceed/Shortage Products', $productIssuesGroup->id);
 
-        // Manage Vendor Return 
+        // Manage Vendor Return
         $vendorReturnGroup = PermissionGroup::firstOrCreate(
             ['name' => 'Manage Vendor Return'],
             ['description' => 'Vendor return management permissions', 'status' => 1]
@@ -234,12 +233,12 @@ class PermissionsSeeder extends Seeder
         $this->updateOrCreatePermission('View Vendor Return Products', $vendorReturnGroup->id);
         $this->updateOrCreatePermission('Change Status to Accept/Return', $vendorReturnGroup->id);
 
-        // Manage Track Order 
+        // Manage Track Order
         $trackOrderGroup = PermissionGroup::firstOrCreate(
             ['name' => 'Manage Track Order'],
             ['description' => 'Track order management permissions', 'status' => 1]
         );
         $this->updateOrCreatePermission('View Track Order', $trackOrderGroup->id);
-        
+
     }
 }

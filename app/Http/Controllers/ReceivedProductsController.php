@@ -9,7 +9,6 @@ use App\Models\VendorPIProduct;
 use App\Models\VendorReturnProduct;
 use App\Services\NotificationService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -34,12 +33,6 @@ class ReceivedProductsController extends Controller
 
             $query = PurchaseOrder::with(['purchaseOrderProducts', 'vendorPI']);
 
-            // if ($status === 'pending') {
-            //     $query->where('status', 'pending');
-            // } elseif ($status === 'completed') {
-            //     $query->where('status', 'completed');
-            // }
-
             $query->withCount('purchaseOrderProducts')
                 ->whereHas('vendorPI', function ($query) use ($userWarehouseId, $status) {
                     if ($status === 'pending') {
@@ -62,14 +55,15 @@ class ReceivedProductsController extends Controller
 
             return view('receivedProducts.index', compact('purchaseOrders', 'status'));
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Error retrieving purchase orders: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Error retrieving purchase orders: '.$e->getMessage());
         }
     }
+
     /**
      * View vendor PI details for a specific purchase order
      *
-     * @param int $id
-     * @param string $vendorCode
+     * @param  int  $id
+     * @param  string  $vendorCode
      * @return \Illuminate\View\View|\Illuminate\Http\RedirectResponse
      */
     public function view($id, $vendorCode)
@@ -92,20 +86,19 @@ class ReceivedProductsController extends Controller
                 ->where('vendor_code', $vendorCode)
                 ->first();
 
-            if (!$vendorPIs) {
+            if (! $vendorPIs) {
                 return redirect()->back()->with('error', 'Vendor PI not found.');
             }
 
             return view('receivedProducts.view', compact('vendorPIs'));
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Error loading vendor PI: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Error loading vendor PI: '.$e->getMessage());
         }
     }
 
     /**
      * Update vendor PI status to approve
      *
-     * @param Request $request
      * @return \Illuminate\Http\RedirectResponse
      */
     public function updateStatus(Request $request)
@@ -123,7 +116,7 @@ class ReceivedProductsController extends Controller
         try {
             $vendorPI = VendorPI::with('products')->find($request->vendor_pi_id);
 
-            if (!$vendorPI) {
+            if (! $vendorPI) {
                 return redirect()->back()->with('error', 'Vendor PI not found.');
             }
 
@@ -159,14 +152,13 @@ class ReceivedProductsController extends Controller
             DB::rollBack();
 
             return redirect()->back()
-                ->with('error', 'Error updating vendor PI status: ' . $e->getMessage());
+                ->with('error', 'Error updating vendor PI status: '.$e->getMessage());
         }
     }
 
     /**
      * Download received products file as Excel
      *
-     * @param Request $request
      * @return \Illuminate\Http\Response|\Illuminate\Http\RedirectResponse
      */
     public function downloadReceivedProductsFile(Request $request)
@@ -181,7 +173,7 @@ class ReceivedProductsController extends Controller
         }
 
         try {
-            $tempXlsxPath = storage_path('app/received_' . Str::random(8) . '.xlsx');
+            $tempXlsxPath = storage_path('app/received_'.Str::random(8).'.xlsx');
             $writer = SimpleExcelWriter::create($tempXlsxPath);
 
             $vendorPI = VendorPI::with('products.product')
@@ -189,7 +181,7 @@ class ReceivedProductsController extends Controller
                 ->where('vendor_code', $request->vendorCode)
                 ->first();
 
-            if (!$vendorPI) {
+            if (! $vendorPI) {
                 return redirect()->back()->with('error', 'Vendor PI not found.');
             }
 
@@ -211,19 +203,18 @@ class ReceivedProductsController extends Controller
 
             $writer->close();
 
-            return response()->download($tempXlsxPath, 'Received-Products-' . $request->vendorCode . '.xlsx', [
+            return response()->download($tempXlsxPath, 'Received-Products-'.$request->vendorCode.'.xlsx', [
                 'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
             ])->deleteFileAfterSend(true);
         } catch (\Exception $e) {
             return redirect()->back()
-                ->with('error', 'Error downloading file: ' . $e->getMessage());
+                ->with('error', 'Error downloading file: '.$e->getMessage());
         }
     }
 
     /**
      * Update purchase order status to completed
      *
-     * @param Request $request
      * @return \Illuminate\Http\RedirectResponse
      */
     public function update(Request $request)
@@ -240,7 +231,7 @@ class ReceivedProductsController extends Controller
 
         try {
             $purchaseOrder = PurchaseOrder::find($request->purchase_order_id);
-            if (!$purchaseOrder) {
+            if (! $purchaseOrder) {
                 return redirect()->back()->with('error', 'Purchase order not found.');
             }
 
@@ -248,7 +239,7 @@ class ReceivedProductsController extends Controller
             $purchaseOrder->status = 'completed';
             $purchaseOrder->save();
 
-            if (!$purchaseOrder) {
+            if (! $purchaseOrder) {
                 return redirect()->back()->with('error', 'Failed to update purchase order status.');
             }
 
@@ -271,14 +262,13 @@ class ReceivedProductsController extends Controller
             DB::rollBack();
 
             return redirect()->back()
-                ->with('error', 'Error updating purchase order: ' . $e->getMessage());
+                ->with('error', 'Error updating purchase order: '.$e->getMessage());
         }
     }
 
     /**
      * Get vendors for a purchase order via AJAX
      *
-     * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
     public function getVendors(Request $request)
@@ -308,7 +298,7 @@ class ReceivedProductsController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error retrieving vendors: ' . $e->getMessage(),
+                'message' => 'Error retrieving vendors: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -316,10 +306,8 @@ class ReceivedProductsController extends Controller
     /**
      * Update received products from Excel file
      *
-     * @param Request $request
      * @return \Illuminate\Http\RedirectResponse
      */
-
     public function updateRecievedProduct(Request $request)
     {
         $validated = Validator::make($request->all(), [
@@ -344,10 +332,9 @@ class ReceivedProductsController extends Controller
 
             $vendorPI = VendorPI::with('products')->find($request->vendor_pi_id);
 
-            if (!$vendorPI) {
+            if (! $vendorPI) {
                 return redirect()->back()->with('error', 'Vendor PI not found.');
             }
-
 
             if ($vendorPI->status !== 'pending' && $vendorPI->status !== 'approve') {
                 DB::rollBack();
@@ -362,7 +349,7 @@ class ReceivedProductsController extends Controller
                 }
 
                 $vendorSkuCode = trim($record['Vendor SKU Code']);
-                $quantityReceived = (int)($record['Quantity Received'] ?? 0);
+                $quantityReceived = (int) ($record['Quantity Received'] ?? 0);
                 $issueUnits = 0;
                 $issueDescription = trim($record['Issue Description'] ?? '');
 
@@ -374,7 +361,7 @@ class ReceivedProductsController extends Controller
                     ->where('vendor_pi_id', $vendorPI->id)
                     ->first();
 
-                if (!$productData) {
+                if (! $productData) {
                     continue;
                 }
 
@@ -420,8 +407,6 @@ class ReceivedProductsController extends Controller
                     }
                 }
 
-
-
                 // Process issue items
                 if ($issueUnits > 0) {
                     $productData->issue_item = $issueUnits;
@@ -451,18 +436,18 @@ class ReceivedProductsController extends Controller
                 ->causedBy(Auth::user())
                 ->withProperties(['records_processed' => $insertCount])
                 ->event('products_received')
-                ->log('Received products updated: ' . $insertCount . ' records');
+                ->log('Received products updated: '.$insertCount.' records');
 
             // Create notification
             NotificationService::productsReceived('purchase', $vendorPI->purchase_order_id, $insertCount);
 
             return redirect()->back()
-                ->with('success', 'Successfully processed ' . $insertCount . ' product(s).');
+                ->with('success', 'Successfully processed '.$insertCount.' product(s).');
         } catch (\Exception $e) {
             DB::rollBack();
 
             return redirect()->back()
-                ->with('error', 'Error processing received products: ' . $e->getMessage())
+                ->with('error', 'Error processing received products: '.$e->getMessage())
                 ->withInput();
         }
     }

@@ -18,11 +18,11 @@ class WarehouseAllocationService
     /**
      * Auto-allocate stock from multiple warehouses for a given SKU and quantity
      *
-     * @param string $sku
-     * @param int $requiredQuantity
-     * @param int $salesOrderId
-     * @param int $salesOrderProductId
-     * @param array $warehouseIds (optional) - specific warehouses to check, otherwise all active warehouses
+     * @param  string  $sku
+     * @param  int  $requiredQuantity
+     * @param  int  $salesOrderId
+     * @param  int  $salesOrderProductId
+     * @param  array  $warehouseIds  (optional) - specific warehouses to check, otherwise all active warehouses
      * @return array
      */
     public function autoAllocateStock($sku, $requiredQuantity, $salesOrderId, $salesOrderProductId, $warehouseIds = null)
@@ -150,7 +150,7 @@ class WarehouseAllocationService
     /**
      * Allocate stock for entire sales order (multiple SKUs)
      *
-     * @param int $salesOrderId
+     * @param  int  $salesOrderId
      * @return array
      */
     public function allocateSalesOrder($salesOrderId)
@@ -229,9 +229,9 @@ class WarehouseAllocationService
     /**
      * Create purchase order for items that need to be purchased
      *
-     * @param int $salesOrderId
-     * @param array $purchaseItems
-     * @param int $vendorId
+     * @param  int  $salesOrderId
+     * @param  array  $purchaseItems
+     * @param  int  $vendorId
      * @return array
      */
     public function createPurchaseOrderForShortage($salesOrderId, $purchaseItems, $vendorId)
@@ -290,7 +290,7 @@ class WarehouseAllocationService
     /**
      * Get allocation breakdown for a sales order
      *
-     * @param int $salesOrderId
+     * @param  int  $salesOrderId
      * @return array
      */
     public function getAllocationBreakdown($salesOrderId)
@@ -323,4 +323,3 @@ class WarehouseAllocationService
         return $breakdown;
     }
 }
-

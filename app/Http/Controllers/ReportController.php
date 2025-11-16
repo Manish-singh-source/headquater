@@ -2,23 +2,23 @@
 
 namespace App\Http\Controllers;
 
-use PDF;
+use App\Models\Customer;
 use App\Models\Invoice;
 use App\Models\Product;
-use App\Models\Customer;
-use App\Models\VendorPI;
-use App\Models\TempOrder;
-use App\Models\Warehouse;
-use App\Models\SalesOrder;
-use Illuminate\Support\Str;
-use Illuminate\Http\Request;
 use App\Models\PurchaseOrder;
+use App\Models\PurchaseOrderProduct;
+use App\Models\SalesOrder;
+use App\Models\TempOrder;
+use App\Models\VendorPI;
+use App\Models\Warehouse;
 use App\Models\WarehouseStock;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use App\Models\PurchaseOrderProduct;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
+use PDF;
 
 class ReportController extends Controller
 {
@@ -33,7 +33,6 @@ class ReportController extends Controller
      * - If no filters applied, shows all completed purchase orders
      * - Statistics (total amount, quantity) are calculated based on filtered results
      *
-     * @param Request $request
      * @return \Illuminate\View\View
      */
     public function vendorPurchaseHistory(Request $request)
@@ -45,7 +44,7 @@ class ReportController extends Controller
                 'purchaseOrderProducts.product',
                 'vendorPI.payments',
                 'purchaseInvoices',
-                'purchaseGrn'
+                'purchaseGrn',
             ]);
 
             // Filter only completed vendorPI OR allow null vendorPI
@@ -98,8 +97,6 @@ class ReportController extends Controller
             // Clone for stats
             $statsQuery = clone $query;
 
-            // dd($statsQuery->get());
-
             // Get paginated purchase orders (15 per page)
             $vendorPIProducts = $query->latest('id')->paginate(15)->appends($request->all());
 
@@ -140,8 +137,9 @@ class ReportController extends Controller
                 'filters'
             ));
         } catch (\Exception $e) {
-            Log::error('Error retrieving vendor purchase history: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Error retrieving vendor purchase history: ' . $e->getMessage());
+            Log::error('Error retrieving vendor purchase history: '.$e->getMessage());
+
+            return redirect()->back()->with('error', 'Error retrieving vendor purchase history: '.$e->getMessage());
         }
     }
 
@@ -159,7 +157,6 @@ class ReportController extends Controller
      *
      * All filters are optional - if none provided, exports all completed records
      *
-     * @param Request $request
      * @return \Symfony\Component\HttpFoundation\BinaryFileResponse|\Illuminate\Http\RedirectResponse
      */
     public function vendorPurchaseHistoryExcel(Request $request)
@@ -173,7 +170,7 @@ class ReportController extends Controller
                 'purchaseOrderProducts.product',
                 'vendorPI.payments',
                 'purchaseInvoices',
-                'purchaseGrn'
+                'purchaseGrn',
             ]);
 
             // Filter only completed orders
@@ -237,11 +234,11 @@ class ReportController extends Controller
             }
 
             // Create temporary CSV file
-            $tempCsvPath = storage_path('app/vendor_purchase_history_' . Str::random(8) . '.csv');
+            $tempCsvPath = storage_path('app/vendor_purchase_history_'.Str::random(8).'.csv');
             $file = fopen($tempCsvPath, 'w');
 
             // Add UTF-8 BOM for proper Excel encoding
-            fprintf($file, chr(0xEF) . chr(0xBB) . chr(0xBF));
+            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
 
             // Add header row
             fputcsv($file, [
@@ -329,17 +326,17 @@ class ReportController extends Controller
             fclose($file);
 
             // Log activity for audit trail
-            // activity()
-            //     ->causedBy(Auth::user())
-            //     ->withProperties([
-            //         'vendor_code' => $request->vendor_code,
-            //         'date_from' => $request->date_from,
-            //         'date_to' => $request->date_to,
-            //         'sku' => $request->sku,
-            //         'records' => $vendorReports->count(),
-            //     ])
-            //     ->event('csv_report_generated')
-            //     ->log('Vendor purchase history CSV report generated');
+            activity()
+                ->causedBy(Auth::user())
+                ->withProperties([
+                    'vendor_code' => $request->vendor_code,
+                    'date_from' => $request->date_from,
+                    'date_to' => $request->date_to,
+                    'sku' => $request->sku,
+                    'records' => $vendorReports->count(),
+                ])
+                ->event('csv_report_generated')
+                ->log('Vendor purchase history CSV report generated');
 
             DB::commit();
 
@@ -357,25 +354,25 @@ class ReportController extends Controller
             }
 
             $fileName = $vendorPart
-                ? 'Vendor-Purchase-History-' . $vendorPart . '-' . date('d-m-Y') . '.csv'
-                : 'Vendor-Purchase-History-' . date('d-m-Y') . '.csv';
+                ? 'Vendor-Purchase-History-'.$vendorPart.'-'.date('d-m-Y').'.csv'
+                : 'Vendor-Purchase-History-'.date('d-m-Y').'.csv';
 
             // Return CSV file as download and delete after sending
             return response()->download($tempCsvPath, $fileName, [
                 'Content-Type' => 'text/csv',
-                'Content-Disposition' => 'attachment; filename="' . $fileName . '"',
+                'Content-Disposition' => 'attachment; filename="'.$fileName.'"',
             ])->deleteFileAfterSend(true);
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error generating vendor purchase CSV report: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Error generating report: ' . $e->getMessage());
+            Log::error('Error generating vendor purchase CSV report: '.$e->getMessage());
+
+            return redirect()->back()->with('error', 'Error generating report: '.$e->getMessage());
         }
     }
 
     /**
      * Display inventory stock history with enhanced filtering
      *
-     * @param Request $request
      * @return \Illuminate\View\View
      */
     public function inventoryStockHistory(Request $request)
@@ -513,8 +510,9 @@ class ReportController extends Controller
                 'outOfStockCount'
             ));
         } catch (\Exception $e) {
-            Log::error('Error retrieving inventory: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Error retrieving inventory: ' . $e->getMessage());
+            Log::error('Error retrieving inventory: '.$e->getMessage());
+
+            return redirect()->back()->with('error', 'Error retrieving inventory: '.$e->getMessage());
         }
     }
 
@@ -536,7 +534,6 @@ class ReportController extends Controller
      * - If both provided: filter records within the date range (inclusive)
      * - If neither provided: export all records
      *
-     * @param Request $request
      * @return \Symfony\Component\HttpFoundation\BinaryFileResponse|\Illuminate\Http\RedirectResponse
      */
     public function inventoryStockHistoryExcel(Request $request)
@@ -653,11 +650,11 @@ class ReportController extends Controller
             }
 
             // Create temporary CSV file
-            $tempCsvPath = storage_path('app/inventory_stock_history_' . Str::random(8) . '.csv');
+            $tempCsvPath = storage_path('app/inventory_stock_history_'.Str::random(8).'.csv');
             $file = fopen($tempCsvPath, 'w');
 
             // Add UTF-8 BOM for proper Excel encoding
-            fprintf($file, chr(0xEF) . chr(0xBB) . chr(0xBF));
+            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
 
             // Add header row
             fputcsv($file, [
@@ -718,17 +715,18 @@ class ReportController extends Controller
             DB::commit();
 
             // Generate filename
-            $fileName = 'Inventory-Stock-History-' . date('d-m-Y') . '.csv';
+            $fileName = 'Inventory-Stock-History-'.date('d-m-Y').'.csv';
 
             // Return CSV file as download and delete after sending
             return response()->download($tempCsvPath, $fileName, [
                 'Content-Type' => 'text/csv',
-                'Content-Disposition' => 'attachment; filename="' . $fileName . '"',
+                'Content-Disposition' => 'attachment; filename="'.$fileName.'"',
             ])->deleteFileAfterSend(true);
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error generating inventory CSV report: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Error generating inventory report: ' . $e->getMessage());
+            Log::error('Error generating inventory CSV report: '.$e->getMessage());
+
+            return redirect()->back()->with('error', 'Error generating inventory report: '.$e->getMessage());
         }
     }
 
@@ -741,7 +739,6 @@ class ReportController extends Controller
      * Appointment Date, Due Date, Currency, Amount, Tax, Total, Status, Amount Paid,
      * Balance, Date Of Payment, Payment Mode, CGST, SGST, IGST, Cess
      *
-     * @param Request $request
      * @return \Illuminate\View\View
      */
     public function customerSalesHistory(Request $request)
@@ -914,7 +911,6 @@ class ReportController extends Controller
                 ->sort()
                 ->values();
 
-
             // Get unique appointment dates (from invoices related to sales orders)
             $appointmentDates = \App\Models\Appointment::distinct('appointment_date')
                 ->whereNotNull('appointment_date')
@@ -957,8 +953,9 @@ class ReportController extends Controller
 
             return view('customer-sales-history', $data);
         } catch (\Exception $e) {
-            Log::error('Error retrieving customer sales history: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Error retrieving sales history: ' . $e->getMessage());
+            Log::error('Error retrieving customer sales history: '.$e->getMessage());
+
+            return redirect()->back()->with('error', 'Error retrieving sales history: '.$e->getMessage());
         }
     }
 
@@ -973,7 +970,6 @@ class ReportController extends Controller
      * 5. Log activity for audit trail
      * 6. Return Excel file as download and delete temp file after sending
      *
-     * @param Request $request
      * @return \Symfony\Component\HttpFoundation\BinaryFileResponse|\Illuminate\Http\RedirectResponse
      */
     public function customerSalesHistoryExcel(Request $request)
@@ -1012,7 +1008,7 @@ class ReportController extends Controller
                 'invoices.payments',
                 'invoices.details',
                 'invoices.appointment',
-                'invoices.dns'
+                'invoices.dns',
             ]);
 
             // Apply filters (same as index method)
@@ -1256,7 +1252,7 @@ class ReportController extends Controller
             }
 
             // Create temporary Excel file
-            $tempXlsxPath = storage_path('app/customer_sales_history_' . Str::random(8) . '.xlsx');
+            $tempXlsxPath = storage_path('app/customer_sales_history_'.Str::random(8).'.xlsx');
 
             // Create writer
             $writer = \Spatie\SimpleExcel\SimpleExcelWriter::create($tempXlsxPath);
@@ -1321,7 +1317,7 @@ class ReportController extends Controller
             DB::commit();
 
             // Generate filename
-            $fileName = 'Customer-Sales-Summary-' . date('d-m-Y') . '.xlsx';
+            $fileName = 'Customer-Sales-Summary-'.date('d-m-Y').'.xlsx';
 
             // Return Excel file as download and delete after sending
             return response()->download($tempXlsxPath, $fileName, [
@@ -1329,8 +1325,9 @@ class ReportController extends Controller
             ])->deleteFileAfterSend(true);
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error generating customer sales Excel report: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Error generating sales report: ' . $e->getMessage());
+            Log::error('Error generating customer sales Excel report: '.$e->getMessage());
+
+            return redirect()->back()->with('error', 'Error generating sales report: '.$e->getMessage());
         }
     }
 
@@ -1345,7 +1342,6 @@ class ReportController extends Controller
      * 5. Log activity for audit trail
      * 6. Return PDF file as download and delete temp file after sending
      *
-     * @param Request $request
      * @return \Symfony\Component\HttpFoundation\BinaryFileResponse|\Illuminate\Http\RedirectResponse
      */
     public function customerSalesHistoryPdf(Request $request)
@@ -1503,6 +1499,7 @@ class ReportController extends Controller
             $totalRevenue = $invoices->sum('total_amount');
             $totalPendingPayments = $invoices->sum(function ($invoice) {
                 $totalPaid = $invoice->payments->sum('amount');
+
                 return $invoice->total_amount - $totalPaid;
             });
 
@@ -1624,13 +1621,14 @@ class ReportController extends Controller
                 ->log('Customer sales history PDF report generated');
 
             // Generate filename
-            $fileName = 'Customer-Sales-Summary-' . date('d-m-Y') . '.pdf';
+            $fileName = 'Customer-Sales-Summary-'.date('d-m-Y').'.pdf';
 
             // Return PDF as download
             return $pdf->download($fileName);
         } catch (\Exception $e) {
-            Log::error('Error generating customer sales PDF report: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Error generating PDF report: ' . $e->getMessage());
+            Log::error('Error generating customer sales PDF report: '.$e->getMessage());
+
+            return redirect()->back()->with('error', 'Error generating PDF report: '.$e->getMessage());
         }
     }
 }

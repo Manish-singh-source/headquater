@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::table('products', function (Blueprint $table) {
             // Drop existing unique index on sku
-            $table->dropUnique('products_sku_unique'); 
+            $table->dropUnique('products_sku_unique');
 
             // Add composite unique index
             $table->unique(['warehouse_id', 'sku'], 'warehouse_sku_unique');

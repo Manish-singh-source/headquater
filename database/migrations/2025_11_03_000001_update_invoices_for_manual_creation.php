@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::table('invoices', function (Blueprint $table) {
             // Make sales_order_id nullable for manual invoices
             $table->foreignId('sales_order_id')->nullable()->change();
-            
+
             // Add payment-related fields
             $table->decimal('subtotal', 10, 2)->default(0)->after('total_amount');
             $table->decimal('tax_amount', 10, 2)->default(0)->after('subtotal');
@@ -44,9 +44,8 @@ return new class extends Migration
                 'payment_mode',
                 'payment_status',
                 'invoice_type',
-                'notes'
+                'notes',
             ]);
         });
     }
 };
-

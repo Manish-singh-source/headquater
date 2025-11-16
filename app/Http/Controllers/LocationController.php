@@ -36,7 +36,7 @@ class LocationController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'status' => false,
-                'message' => 'Error retrieving countries: ' . $e->getMessage(),
+                'message' => 'Error retrieving countries: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -44,7 +44,6 @@ class LocationController extends Controller
     /**
      * Get states by country ID
      *
-     * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
     public function getStates(Request $request)
@@ -80,7 +79,7 @@ class LocationController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'status' => false,
-                'message' => 'Error retrieving states: ' . $e->getMessage(),
+                'message' => 'Error retrieving states: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -88,7 +87,6 @@ class LocationController extends Controller
     /**
      * Get cities by state ID
      *
-     * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
     public function getCities(Request $request)
@@ -124,7 +122,7 @@ class LocationController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'status' => false,
-                'message' => 'Error retrieving cities: ' . $e->getMessage(),
+                'message' => 'Error retrieving cities: '.$e->getMessage(),
             ], 500);
         }
     }

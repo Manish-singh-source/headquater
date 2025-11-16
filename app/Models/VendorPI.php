@@ -34,11 +34,13 @@ class VendorPI extends Model
         return $this->hasMany(VendorPayment::class, 'vendor_pi_id', 'id');
     }
 
-    public function purchaseInvoice() {
+    public function purchaseInvoice()
+    {
         return $this->hasOne(PurchaseInvoice::class, 'purchase_order_id', 'purchase_order_id');
     }
 
-    public function purchaseGrn() {
+    public function purchaseGrn()
+    {
         return $this->hasOne(PurchaseGrn::class, 'purchase_order_id', 'purchase_order_id');
     }
 

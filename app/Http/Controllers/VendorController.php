@@ -13,7 +13,6 @@ class VendorController extends Controller
     /**
      * Display a listing of vendors
      *
-     * @param Request $request
      * @return \Illuminate\View\View
      */
     public function index(Request $request)
@@ -23,8 +22,8 @@ class VendorController extends Controller
 
             $vendors = Vendor::query();
 
-            if (!is_null($status)) {
-                $status = (int)$status;
+            if (! is_null($status)) {
+                $status = (int) $status;
 
                 if ($status === 1) {
                     $vendors->active();
@@ -40,7 +39,7 @@ class VendorController extends Controller
 
             return view('vendor.index', compact('vendors', 'status'));
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Error retrieving vendors: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Error retrieving vendors: '.$e->getMessage());
         }
     }
 
@@ -57,7 +56,6 @@ class VendorController extends Controller
     /**
      * Store a newly created vendor
      *
-     * @param Request $request
      * @return \Illuminate\Http\RedirectResponse
      */
     public function store(Request $request)
@@ -125,15 +123,15 @@ class VendorController extends Controller
                 ->causedBy(Auth::user())
                 ->withProperties(['vendor_code' => $vendor->vendor_code])
                 ->event('created')
-                ->log('Vendor created: ' . $vendor->client_name);
+                ->log('Vendor created: '.$vendor->client_name);
 
             return redirect()->route('vendor.index')
-                ->with('success', 'Vendor "' . $vendor->client_name . '" added successfully.');
+                ->with('success', 'Vendor "'.$vendor->client_name.'" added successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
 
             return redirect()->back()
-                ->with('error', 'Error creating vendor: ' . $e->getMessage())
+                ->with('error', 'Error creating vendor: '.$e->getMessage())
                 ->withInput();
         }
     }
@@ -141,7 +139,7 @@ class VendorController extends Controller
     /**
      * Show the form for editing a vendor
      *
-     * @param int $id
+     * @param  int  $id
      * @return \Illuminate\View\View
      */
     public function edit($id)
@@ -160,25 +158,24 @@ class VendorController extends Controller
             return view('vendor.edit', compact('vendor'));
         } catch (\Exception $e) {
             return redirect()->route('vendor.index')
-                ->with('error', 'Error loading vendor: ' . $e->getMessage());
+                ->with('error', 'Error loading vendor: '.$e->getMessage());
         }
     }
 
     /**
      * Update the specified vendor
      *
-     * @param Request $request
-     * @param int $id
+     * @param  int  $id
      * @return \Illuminate\Http\RedirectResponse
      */
     public function update(Request $request, $id)
     {
         $validator = Validator::make($request->all(), [
-            'vendor_code' => 'required|string|max:255|unique:vendors,vendor_code,' . $id,
+            'vendor_code' => 'required|string|max:255|unique:vendors,vendor_code,'.$id,
             'client_name' => 'required|string|min:3|max:255',
             'contact_name' => 'required|string|min:3|max:255',
             'phone_number' => 'required|regex:/^[0-9]{10,}$/',
-            'email' => 'required|string|email|max:255|unique:vendors,email,' . $id,
+            'email' => 'required|string|email|max:255|unique:vendors,email,'.$id,
             'gst_number' => 'nullable|string|max:15',
             'gst_treatment' => 'nullable|string|max:255',
             'pan_number' => 'nullable|string|max:10',
@@ -208,7 +205,7 @@ class VendorController extends Controller
         try {
             $vendor = Vendor::findOrFail($id);
 
-            if (!$vendor) {
+            if (! $vendor) {
                 return redirect()->route('vendor.index')->with('error', 'Vendor not found.');
             }
 
@@ -247,15 +244,15 @@ class VendorController extends Controller
                     'new' => $vendor->getChanges(),
                 ])
                 ->event('updated')
-                ->log('Vendor updated: ' . $vendor->client_name);
+                ->log('Vendor updated: '.$vendor->client_name);
 
             return redirect()->route('vendor.index')
-                ->with('success', 'Vendor "' . $vendor->client_name . '" updated successfully.');
+                ->with('success', 'Vendor "'.$vendor->client_name.'" updated successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
 
             return redirect()->back()
-                ->with('error', 'Error updating vendor: ' . $e->getMessage())
+                ->with('error', 'Error updating vendor: '.$e->getMessage())
                 ->withInput();
         }
     }
@@ -263,7 +260,7 @@ class VendorController extends Controller
     /**
      * Display the specified vendor
      *
-     * @param int $id
+     * @param  int  $id
      * @return \Illuminate\View\View
      */
     public function view($id)
@@ -285,15 +282,15 @@ class VendorController extends Controller
             return view('vendor.view', compact('vendor'));
         } catch (\Exception $e) {
             return redirect()->route('vendor.index')
-                ->with('error', 'Error loading vendor details: ' . $e->getMessage());
+                ->with('error', 'Error loading vendor details: '.$e->getMessage());
         }
     }
 
     /**
      * View a single vendor order
      *
-     * @param int $purchaseOrderId
-     * @param string $vendorCode
+     * @param  int  $purchaseOrderId
+     * @param  string  $vendorCode
      * @return \Illuminate\View\View
      */
     public function singleVendorOrderView($purchaseOrderId, $vendorCode)
@@ -326,14 +323,14 @@ class VendorController extends Controller
             return view('vendor.single-vendor-order-view', compact('orders', 'vendor'));
         } catch (\Exception $e) {
             return redirect()->back()
-                ->with('error', 'Error loading order: ' . $e->getMessage());
+                ->with('error', 'Error loading order: '.$e->getMessage());
         }
     }
 
     /**
      * Delete a vendor
      *
-     * @param int $id
+     * @param  int  $id
      * @return \Illuminate\Http\RedirectResponse
      */
     public function destroy($id)
@@ -351,7 +348,7 @@ class VendorController extends Controller
         try {
             $vendor = Vendor::findOrFail($id);
 
-            if (!$vendor) {
+            if (! $vendor) {
                 return redirect()->route('vendor.index')->with('error', 'Vendor not found.');
             }
 
@@ -359,7 +356,7 @@ class VendorController extends Controller
             $ordersCount = $vendor->orders()->count();
             if ($ordersCount > 0) {
                 return redirect()->back()
-                    ->with('error', 'Cannot delete vendor with ' . $ordersCount . ' associated order(s).');
+                    ->with('error', 'Cannot delete vendor with '.$ordersCount.' associated order(s).');
             }
 
             $vendorName = $vendor->client_name;
@@ -370,26 +367,25 @@ class VendorController extends Controller
                 ->causedBy(Auth::user())
                 ->withProperties(['vendor_code' => $vendor->vendor_code])
                 ->event('deleted')
-                ->log('Vendor deleted: ' . $vendorName);
+                ->log('Vendor deleted: '.$vendorName);
 
             $vendor->delete();
 
             DB::commit();
 
             return redirect()->route('vendor.index')
-                ->with('success', 'Vendor "' . $vendorName . '" deleted successfully.');
+                ->with('success', 'Vendor "'.$vendorName.'" deleted successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
 
             return redirect()->back()
-                ->with('error', 'Error deleting vendor: ' . $e->getMessage());
+                ->with('error', 'Error deleting vendor: '.$e->getMessage());
         }
     }
 
     /**
      * Delete multiple vendors
      *
-     * @param Request $request
      * @return \Illuminate\Http\RedirectResponse
      */
     public function deleteSelected(Request $request)
@@ -430,6 +426,7 @@ class VendorController extends Controller
 
                 if ($ordersCount > 0) {
                     $skippedCount++;
+
                     continue;
                 }
 
@@ -438,7 +435,7 @@ class VendorController extends Controller
                     ->causedBy(Auth::user())
                     ->withProperties(['vendor_code' => $vendor->vendor_code])
                     ->event('deleted')
-                    ->log('Vendor deleted (bulk): ' . $vendor->client_name);
+                    ->log('Vendor deleted (bulk): '.$vendor->client_name);
 
                 $vendor->delete();
                 $deletedCount++;
@@ -446,9 +443,9 @@ class VendorController extends Controller
 
             DB::commit();
 
-            $message = 'Successfully deleted ' . $deletedCount . ' vendor(s).';
+            $message = 'Successfully deleted '.$deletedCount.' vendor(s).';
             if ($skippedCount > 0) {
-                $message .= ' (' . $skippedCount . ' vendor(s) with orders were skipped)';
+                $message .= ' ('.$skippedCount.' vendor(s) with orders were skipped)';
             }
 
             return redirect()->back()->with('success', $message);
@@ -456,7 +453,7 @@ class VendorController extends Controller
             DB::rollBack();
 
             return redirect()->back()
-                ->with('error', 'Error deleting vendors: ' . $e->getMessage());
+                ->with('error', 'Error deleting vendors: '.$e->getMessage());
         }
     }
 
@@ -465,7 +462,6 @@ class VendorController extends Controller
      *
      * Accepts `ids` as array or comma-separated string and `status` as 0 or 1
      *
-     * @param Request $request
      * @return \Illuminate\Http\RedirectResponse
      */
     public function changeSelectedStatus(Request $request)
@@ -503,7 +499,7 @@ class VendorController extends Controller
 
             foreach ($vendors as $vendor) {
                 $old = $vendor->status;
-                if ((string)$old === (string)$status) {
+                if ((string) $old === (string) $status) {
                     continue;
                 }
                 $vendor->status = $status;
@@ -514,24 +510,24 @@ class VendorController extends Controller
                     ->causedBy(Auth::user())
                     ->withProperties(['old_status' => $old, 'new_status' => $status, 'vendor_code' => $vendor->vendor_code])
                     ->event('status_changed')
-                    ->log('Vendor status changed (bulk): ' . $vendor->client_name);
+                    ->log('Vendor status changed (bulk): '.$vendor->client_name);
 
                 $changed++;
             }
 
             DB::commit();
 
-            return redirect()->back()->with('success', 'Status updated for ' . $changed . ' vendor(s).');
+            return redirect()->back()->with('success', 'Status updated for '.$changed.' vendor(s).');
         } catch (\Exception $e) {
             DB::rollBack();
-            return redirect()->back()->with('error', 'Error updating status: ' . $e->getMessage());
+
+            return redirect()->back()->with('error', 'Error updating status: '.$e->getMessage());
         }
     }
 
     /**
      * Toggle vendor status
      *
-     * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
     public function toggleStatus(Request $request)
@@ -568,7 +564,7 @@ class VendorController extends Controller
                     'new_status' => $vendor->status,
                 ])
                 ->event('status_changed')
-                ->log('Vendor status changed: ' . ($vendor->status === '1' ? 'Active' : 'Inactive'));
+                ->log('Vendor status changed: '.($vendor->status === '1' ? 'Active' : 'Inactive'));
 
             return response()->json([
                 'success' => true,
@@ -579,7 +575,7 @@ class VendorController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => 'Error updating status: ' . $e->getMessage(),
+                'message' => 'Error updating status: '.$e->getMessage(),
             ], 500);
         }
     }

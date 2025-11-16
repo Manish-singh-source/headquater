@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('warehouse_product_issues', function (Blueprint $table) {
             $table->id();
-            
+
             $table->string('customer_id')->nullable();
             $table->string('sales_order_id')->nullable();
             $table->string('sales_order_product_id')->nullable();

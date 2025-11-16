@@ -10,6 +10,6 @@ class Dn extends Model
         'invoice_id',
         'dn_amount',
         'dn_reason',
-        'dn_receipt'
+        'dn_receipt',
     ];
 }

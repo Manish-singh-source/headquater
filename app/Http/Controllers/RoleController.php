@@ -13,6 +13,7 @@ class RoleController extends Controller
     {
         // Logic to list roles
         $roles = Role::latest()->get(); // Assuming you have a Role model
+
         return view('roles.index', compact('roles'));
     }
 
@@ -20,6 +21,7 @@ class RoleController extends Controller
     {
         // Logic to show create role form
         $permissionGroups = PermissionGroup::with('permissions')->active()->get();
+
         return view('roles.create', compact('permissionGroups'));
     }
 
@@ -35,9 +37,10 @@ class RoleController extends Controller
         if ($request->permissions) {
             $role->syncPermissions($request->permissions);
         }
-        if($role) {
+        if ($role) {
             return redirect()->route('role.index')->with('success', 'Role created successfully.');
         }
+
         return redirect()->back()->with('error', 'Failed to create role.');
 
     }
@@ -48,6 +51,7 @@ class RoleController extends Controller
         $role = Role::with('permissions')->findOrFail($id);
         $rolePermissions = $role->permissions->pluck('name')->toArray(); // Get permissions for the role
         $permissionGroups = PermissionGroup::with('permissions')->active()->get();
+
         return view('roles.edit', compact('role', 'permissionGroups', 'rolePermissions'));
     }
 
@@ -55,7 +59,7 @@ class RoleController extends Controller
     {
         // Logic to update a role
         $request->validate([
-            'name' => 'required|unique:roles,name,' . $id,
+            'name' => 'required|unique:roles,name,'.$id,
             'permissions' => 'array',
         ]);
 
@@ -67,9 +71,10 @@ class RoleController extends Controller
             $role->syncPermissions($request->permissions);
         }
 
-        if($role) {
+        if ($role) {
             return redirect()->route('role.index')->with('success', 'Role updated successfully.');
         }
+
         return redirect()->back()->with('error', 'Failed to update role.');
 
     }
@@ -80,9 +85,10 @@ class RoleController extends Controller
         $role = Role::findOrFail($id);
         $role->delete();
 
-        if($role) {
+        if ($role) {
             return redirect()->route('role.index')->with('success', 'Role deleted successfully.');
         }
+
         return redirect()->back()->with('error', 'Failed to delete role.');
     }
 }

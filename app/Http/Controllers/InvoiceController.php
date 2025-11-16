@@ -25,7 +25,7 @@ class InvoiceController extends Controller
     {
         $user = Auth::user();
         $isSuperAdmin = $user->hasRole('Super Admin');
-        $isAdmin = $user->hasRole(['Super Admin', 'Admin']) || !$user->warehouse_id;
+        $isAdmin = $user->hasRole(['Super Admin', 'Admin']) || ! $user->warehouse_id;
         $userWarehouseId = $user->warehouse_id;
 
         // Fetch all invoices with relationships
@@ -33,7 +33,7 @@ class InvoiceController extends Controller
             ->orderBy('created_at', 'desc');
 
         // Filter invoices based on user role
-        if (!$isSuperAdmin && !$isAdmin && $userWarehouseId) {
+        if (! $isSuperAdmin && ! $isAdmin && $userWarehouseId) {
             // Warehouse users can only see invoices for their warehouse
             $query->where('warehouse_id', $userWarehouseId);
         }
@@ -42,9 +42,8 @@ class InvoiceController extends Controller
 
         // Separate manual and sales order invoices
         $manualInvoices = $invoices->where('invoice_type', 'manual');
-        // $salesOrderInvoices = $invoices->where('invoice_type', 'sales_order');
         $salesOrderInvoices = SalesOrder::with(['customerGroup', 'invoices'])->whereHas('invoices')->get();
-        // dd($salesOrderInvoices);
+
         return view('invoice.index', compact('invoices', 'manualInvoices', 'salesOrderInvoices'));
     }
 
@@ -52,7 +51,7 @@ class InvoiceController extends Controller
     {
         $user = Auth::user();
         $isSuperAdmin = $user->hasRole('Super Admin');
-        $isAdmin = $user->hasRole(['Super Admin', 'Admin']) || !$user->warehouse_id;
+        $isAdmin = $user->hasRole(['Super Admin', 'Admin']) || ! $user->warehouse_id;
         $userWarehouseId = $user->warehouse_id;
 
         // Fetch invoices for this sales order
@@ -60,7 +59,7 @@ class InvoiceController extends Controller
             ->where('sales_order_id', $id);
 
         // Filter invoices based on user role
-        if (!$isSuperAdmin && !$isAdmin && $userWarehouseId) {
+        if (! $isSuperAdmin && ! $isAdmin && $userWarehouseId) {
             // Warehouse users can only see invoices for their warehouse
             $query->where('warehouse_id', $userWarehouseId);
         }
@@ -70,7 +69,6 @@ class InvoiceController extends Controller
             'invoices' => $query->get(),
         ];
 
-        // dd($data);
         return view('invoice.invoices', $data);
     }
 
@@ -82,12 +80,12 @@ class InvoiceController extends Controller
             'date' => date('m/d/Y'),
         ];
         $path = public_path('assets/images/logo-icon.png');
-$base64 = base64_encode(file_get_contents($path));
-$base64Image = 'data:image/png;base64,' . $base64;
+        $base64 = base64_encode(file_get_contents($path));
+        $base64Image = 'data:image/png;base64,'.$base64;
 
- $path1 = public_path('assets/images/e-inv.png');
-$base642 = base64_encode(file_get_contents($path1));
-$base643Image = 'data:image/png;base64,' . $base642;
+        $path1 = public_path('assets/images/e-inv.png');
+        $base642 = base64_encode(file_get_contents($path1));
+        $base643Image = 'data:image/png;base64,'.$base642;
         $invoice = Invoice::with(['warehouse', 'customer', 'salesOrder'])->findOrFail($id);
         $invoiceDetails = InvoiceDetails::with('product', 'tempOrder', 'salesOrderProduct')->where('invoice_id', $id)->get();
 
@@ -108,17 +106,6 @@ $base643Image = 'data:image/png;base64,' . $base642;
             $totalBoxCount = $invoiceDetails->sum('box_count');
         }
 
-        // if($invoice->warehouse->state && $invoice->customer->shipping_state) {
-        //     $warehouseState = $invoice->warehouse->state->name;
-        //     $customerState = $invoice->customer->shipping_state;
-        //     // dd($warehouseState, $customerState);
-        //     if($warehouseState == $customerState) {
-        //         $igstStatus = true;
-        //     } else {
-        //         $igstStatus = false;
-        //     }
-        // }
-
         $data = [
             'title' => 'Invoice',
             'invoice' => $invoice,
@@ -129,7 +116,6 @@ $base643Image = 'data:image/png;base64,' . $base642;
             'igstStatus' => $igstStatus,
             'invoiceItemType' => $invoice->invoice_item_type ?? 'product',
         ];
-        // dd($data);
 
         $pdf = \PDF::loadView('invoice/invoice-pdf', ['image' => $base64Image, 'image1' => $base643Image] + $data);
         $pdf->setPaper('a4');
@@ -175,7 +161,7 @@ $base643Image = 'data:image/png;base64,' . $base642;
             if ($request->hasFile('pod')) {
                 $pod = $request->file('pod');
                 $ext = $pod->getClientOriginalExtension();
-                $podName = time() . '_pod.' . $ext;
+                $podName = time().'_pod.'.$ext;
 
                 // Store original image
                 $pod->move(public_path('uploads/pod'), $podName);
@@ -185,7 +171,7 @@ $base643Image = 'data:image/png;base64,' . $base642;
             if ($request->hasFile('grn')) {
                 $grn = $request->file('grn');
                 $ext = $grn->getClientOriginalExtension();
-                $grnName = time() . '_grn.' . $ext;
+                $grnName = time().'_grn.'.$ext;
 
                 // Store original image
                 $grn->move(public_path('uploads/grn'), $grnName);
@@ -194,7 +180,7 @@ $base643Image = 'data:image/png;base64,' . $base642;
 
             $appointment->save();
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Failed to update invoice: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Failed to update invoice: '.$e->getMessage());
         }
 
         return redirect()->back()->with('success', 'Invoice updated successfully.');
@@ -226,7 +212,7 @@ $base643Image = 'data:image/png;base64,' . $base642;
             if ($request->hasFile('dn_receipt')) {
                 $dnReceipt = $request->file('dn_receipt');
                 $ext = $dnReceipt->getClientOriginalExtension();
-                $dnReceiptName = time() . '.' . $ext;
+                $dnReceiptName = time().'.'.$ext;
 
                 // Store original image
                 $dnReceipt->move(public_path('uploads/dn_receipts'), $dnReceiptName);
@@ -235,7 +221,7 @@ $base643Image = 'data:image/png;base64,' . $base642;
 
             $dn->save();
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Failed to update invoice: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Failed to update invoice: '.$e->getMessage());
         }
 
         return redirect()->back()->with('success', 'Invoice updated successfully.');
@@ -266,12 +252,14 @@ $base643Image = 'data:image/png;base64,' . $base642;
             // Validate payment amount
             if ($currentDueAmount <= 0) {
                 DB::rollBack();
+
                 return redirect()->back()->with('error', 'Invoice is already fully paid.')->withInput();
             }
 
             if ($request->input('pay_amount') > $currentDueAmount) {
                 DB::rollBack();
-                return redirect()->back()->with('error', 'Payment amount (₹' . number_format($request->input('pay_amount'), 2) . ') is greater than due amount (₹' . number_format($currentDueAmount, 2) . ').')->withInput();
+
+                return redirect()->back()->with('error', 'Payment amount (₹'.number_format($request->input('pay_amount'), 2).') is greater than due amount (₹'.number_format($currentDueAmount, 2).').')->withInput();
             }
 
             // Create payment record
@@ -303,13 +291,14 @@ $base643Image = 'data:image/png;base64,' . $base642;
             $invoice->save();
 
             DB::commit();
-            activity()->performedOn($invoice)->causedBy(Auth::user())->log('Payment added: ₹' . number_format($request->input('pay_amount'), 2));
+            activity()->performedOn($invoice)->causedBy(Auth::user())->log('Payment added: ₹'.number_format($request->input('pay_amount'), 2));
 
-            return redirect()->back()->with('success', 'Payment added successfully. Paid: ₹' . number_format($newPaidAmount, 2) . ', Due: ₹' . number_format($newBalanceDue, 2));
+            return redirect()->back()->with('success', 'Payment added successfully. Paid: ₹'.number_format($newPaidAmount, 2).', Due: ₹'.number_format($newBalanceDue, 2));
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Invoice Payment Update Error: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Error: ' . $e->getMessage())->withInput();
+            Log::error('Invoice Payment Update Error: '.$e->getMessage());
+
+            return redirect()->back()->with('error', 'Error: '.$e->getMessage())->withInput();
         }
     }
 
@@ -350,7 +339,8 @@ $base643Image = 'data:image/png;base64,' . $base642;
 
             return response()->json(['success' => true, 'products' => $products]);
         } catch (\Exception $e) {
-            Log::error('Get Products Error: ' . $e->getMessage());
+            Log::error('Get Products Error: '.$e->getMessage());
+
             return response()->json(['success' => false, 'message' => 'Failed to fetch products'], 500);
         }
     }
@@ -377,10 +367,11 @@ $base643Image = 'data:image/png;base64,' . $base642;
             return response()->json([
                 'success' => true,
                 'available_quantity' => $availableQty,
-                'product' => $product
+                'product' => $product,
             ]);
         } catch (\Exception $e) {
-            Log::error('Check Stock Error: ' . $e->getMessage());
+            Log::error('Check Stock Error: '.$e->getMessage());
+
             return response()->json(['success' => false, 'message' => 'Failed to check stock'], 500);
         }
     }
@@ -442,7 +433,7 @@ $base643Image = 'data:image/png;base64,' . $base642;
             }
 
             // $invoiceNumber = "INV-{$yearMonth}-{$newNumber}";
-            $invoiceNumber = 'INV-' . $timestamp . '-' . str_pad($newNumber + 1, 4, '0', STR_PAD_LEFT);
+            $invoiceNumber = 'INV-'.$timestamp.'-'.str_pad($newNumber + 1, 4, '0', STR_PAD_LEFT);
 
             // Calculate totals based on invoice type
             $subtotal = 0;
@@ -543,6 +534,7 @@ $base643Image = 'data:image/png;base64,' . $base642;
                     if ($stock) {
                         if ($stock->available_quantity < $item['quantity']) {
                             DB::rollBack();
+
                             return redirect()->back()
                                 ->with('error', "Insufficient stock for product: {$product->product_name}. Available: {$stock->available_quantity}")
                                 ->withInput();
@@ -599,14 +591,15 @@ $base643Image = 'data:image/png;base64,' . $base642;
             return redirect()->route('invoices-details', $invoice->id)->with('success', 'Invoice created successfully!');
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Manual Invoice Creation Error: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Error: ' . $e->getMessage())->withInput();
+            Log::error('Manual Invoice Creation Error: '.$e->getMessage());
+
+            return redirect()->back()->with('error', 'Error: '.$e->getMessage())->withInput();
         }
     }
 
-    // Check PO Number 
-    // if po number is already exists then return cannot use this po number 
-    // if po number is not exists then return you can use this po number 
+    // Check PO Number
+    // if po number is already exists then return cannot use this po number
+    // if po number is not exists then return you can use this po number
     public function checkPoNumber(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -627,7 +620,8 @@ $base643Image = 'data:image/png;base64,' . $base642;
                 return response()->json(['success' => true, 'message' => 'PO Number is available']);
             }
         } catch (\Exception $e) {
-            Log::error('Check PO Number Error: ' . $e->getMessage());
+            Log::error('Check PO Number Error: '.$e->getMessage());
+
             return response()->json(['success' => false, 'message' => 'Failed to check PO Number'], 500);
         }
     }

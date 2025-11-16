@@ -2,16 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Customer;
 use App\Models\Invoice;
 use App\Models\InvoiceDetails;
-use App\Models\Customer;
-use App\Models\SalesOrder;
 use App\Models\ProductIssue;
-use App\Models\CustomerReturn;
-use App\Models\WarehouseStock;
-use App\Models\VendorPIProduct;
+use App\Models\SalesOrder;
 use App\Models\SalesOrderProduct;
 use App\Models\VendorReturnProduct;
+use App\Models\WarehouseStock;
 use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -30,76 +28,34 @@ class ReadyToShip extends Controller
         try {
             $user = Auth::user();
             // Check if user is admin (Super Admin or Admin role, or warehouse_id is null/0)
-            $isAdmin = $user->hasRole(['Super Admin', 'Admin']) || !$user->warehouse_id;
+            $isAdmin = $user->hasRole(['Super Admin', 'Admin']) || ! $user->warehouse_id;
             $userWarehouseId = $user->warehouse_id;
 
             $status = $request->query('status', 'all');
             $orders = SalesOrder::with('customerGroup')->with('orderedProducts.warehouseAllocations', function ($q) use ($isAdmin, $userWarehouseId) {
-                if (!$isAdmin) {
+                if (! $isAdmin) {
                     $q->where('warehouse_id', $userWarehouseId);
                 }
                 $q->where('product_status', 'completed');
             })
                 ->whereHas('orderedProducts.warehouseAllocations', function ($q) use ($isAdmin, $userWarehouseId) {
-                    if (!$isAdmin) {
+                    if (! $isAdmin) {
                         $q->where('warehouse_id', $userWarehouseId);
                     }
                     $q->where('product_status', 'completed');
                 })
                 ->get();
 
-            // dd($orders);
-
-            return view('readyToShip.index', compact('orders'));
-
-
-
-
-
-
-            $query = SalesOrder::where('status', 'ready_to_ship')
-                ->with('customerGroup');
-
-            // For warehouse users, only show orders that have products allocated to their warehouse
-            if (!$isAdmin && $userWarehouseId) {
-                $query->whereHas('orderedProducts', function ($q) use ($userWarehouseId) {
-                    $q->where(function ($subQuery) use ($userWarehouseId) {
-                        // Check for explicit warehouse allocations
-                        $subQuery->whereHas('warehouseAllocations', function ($allocQuery) use ($userWarehouseId) {
-                            $allocQuery->where('warehouse_id', $userWarehouseId);
-                        })
-                            // Or check for warehouse stock with blocked quantity
-                            ->orWhereHas('warehouseStock', function ($stockQuery) use ($userWarehouseId) {
-                                $stockQuery->where('warehouse_id', $userWarehouseId);
-                            })
-                            // Or check for auto-allocated products with blocked quantity in user's warehouse
-                            ->orWhere(function ($autoAllocQuery) use ($userWarehouseId) {
-                                $autoAllocQuery->whereNull('warehouse_stock_id')
-                                    ->where('sku', '!=', '')
-                                    ->whereExists(function ($existsQuery) use ($userWarehouseId) {
-                                        $existsQuery->selectRaw('1')
-                                            ->from('warehouse_stocks')
-                                            ->whereColumn('warehouse_stocks.sku', 'sales_order_products.sku')
-                                            ->where('warehouse_stocks.warehouse_id', $userWarehouseId)
-                                            ->where('warehouse_stocks.block_quantity', '>', 0);
-                                    });
-                            });
-                    });
-                });
-            }
-
-            $orders = $query->latest()->paginate(15);
-
             return view('readyToShip.index', compact('orders'));
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Error retrieving orders: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Error retrieving orders: '.$e->getMessage());
         }
     }
 
     /**
      * View order with customer information
      *
-     * @param int $id
+     * @param  int  $id
      * @return \Illuminate\View\View
      */
     public function view($id, Request $request)
@@ -116,32 +72,32 @@ class ReadyToShip extends Controller
 
             $user = Auth::user();
             // Check if user is admin (Super Admin or Admin role, or warehouse_id is null/0)
-            $isAdmin = $user->hasRole(['Super Admin', 'Admin']) || !$user->warehouse_id;
+            $isAdmin = $user->hasRole(['Super Admin', 'Admin']) || ! $user->warehouse_id;
             $userWarehouseId = $user->warehouse_id;
 
             $status = $request->query('status', 'all');
 
             $order = SalesOrder::with('orderedProducts')
                 ->with('orderedProducts.warehouseAllocations', function ($q) use ($isAdmin, $userWarehouseId) {
-                    if (!$isAdmin) {
+                    if (! $isAdmin) {
                         $q->where('warehouse_id', $userWarehouseId);
                     }
                     $q->where('product_status', 'completed');
                 })
                 ->whereHas('orderedProducts.warehouseAllocations', function ($q) use ($isAdmin, $userWarehouseId) {
-                    if (!$isAdmin) {
+                    if (! $isAdmin) {
                         $q->where('warehouse_id', $userWarehouseId);
                     }
                     $q->where('product_status', 'completed');
                 })
                 ->find($id);
 
-            // count warehouseAllocations 
+            // count warehouseAllocations
             $warehouseAllocationsCount = $order->orderedProducts->sum(function ($product) {
                 return $product->warehouseAllocations->count();
             });
 
-            if (!$order) {
+            if (! $order) {
                 return redirect()->route('ready.to.ship.index')
                     ->with('error', 'Order not found or not ready to ship.');
             }
@@ -164,15 +120,15 @@ class ReadyToShip extends Controller
             return view('readyToShip.view', compact('customerInfo', 'order', 'warehouseAllocationsCount'));
         } catch (\Exception $e) {
             return redirect()->route('readyToShip.index')
-                ->with('error', 'Error loading order: ' . $e->getMessage());
+                ->with('error', 'Error loading order: '.$e->getMessage());
         }
     }
 
     /**
      * View detailed order information for a specific customer
      *
-     * @param int $id
-     * @param int $c_id
+     * @param  int  $id
+     * @param  int  $c_id
      * @return \Illuminate\View\View
      */
     public function viewDetail($id, $c_id)
@@ -193,9 +149,8 @@ class ReadyToShip extends Controller
             $user = Auth::user();
 
             $isSuperAdmin = $user->hasRole('Super Admin');
-            $isAdmin = $user->hasRole(['Super Admin', 'Admin']) || !$user->warehouse_id;
+            $isAdmin = $user->hasRole(['Super Admin', 'Admin']) || ! $user->warehouse_id;
             $userWarehouseId = $user->warehouse_id;
-
 
             $salesOrder = SalesOrder::with([
                 'customerGroup',
@@ -203,7 +158,7 @@ class ReadyToShip extends Controller
                 'orderedProducts' => function ($query) use ($userWarehouseId, $isSuperAdmin) {
                     // Only include orderedProducts that have warehouseAllocations for this warehouse
                     $query->whereHas('warehouseAllocations', function ($q) use ($userWarehouseId, $isSuperAdmin) {
-                        if (!$isSuperAdmin && $userWarehouseId) {
+                        if (! $isSuperAdmin && $userWarehouseId) {
                             $q->where('warehouse_id', $userWarehouseId);
                         }
                     })->with([
@@ -216,7 +171,7 @@ class ReadyToShip extends Controller
                 },
             ])
                 ->whereHas('orderedProducts.warehouseAllocations', function ($query) use ($userWarehouseId, $isSuperAdmin) {
-                    if (!$isSuperAdmin && $userWarehouseId) {
+                    if (! $isSuperAdmin && $userWarehouseId) {
                         $query->where('warehouse_id', $userWarehouseId);
                     }
                 })
@@ -249,230 +204,17 @@ class ReadyToShip extends Controller
             $invoiceQuery = Invoice::where('customer_id', $c_id)
                 ->where('sales_order_id', $id);
 
-            if (!$isSuperAdmin && !$isAdmin && $userWarehouseId) {
+            if (! $isSuperAdmin && ! $isAdmin && $userWarehouseId) {
                 // Warehouse users can only see invoices for their warehouse
                 $invoiceQuery->where('warehouse_id', $userWarehouseId);
             }
 
             $invoice = $invoiceQuery->first();
 
-            // dd($pendingApprovalList);
             return view('readyToShip.view-detail', compact('salesOrder', 'facilityNames', 'isAdmin', 'isSuperAdmin', 'userWarehouseId', 'user', 'pendingApprovalList', 'invoice', 'customerInfo'));
-
-
-
-
-
-
-
-
-
-            $user = Auth::user();
-            // Check if user is admin (Super Admin or Admin role, or warehouse_id is null/0)
-            $isSuperAdmin = $user->hasRole('Super Admin');
-            $isAdmin = $user->hasRole(['Super Admin', 'Admin']) || !$user->warehouse_id;
-            $userWarehouseId = $user->warehouse_id;
-            $salesOrder = SalesOrder::with([
-                'customerGroup',
-                'warehouse',
-                'orderedProducts.product',
-                'orderedProducts.tempOrder',
-                'orderedProducts.customer',
-                'orderedProducts.warehouseAllocations.warehouse',
-            ])
-                // Filter orderedProducts by customer
-                ->with(['orderedProducts' => function ($q) use ($c_id) {
-                    if (!$isAdmin) {
-                        $q->whereHas('warehouseAllocations', function ($allocQuery) use ($userWarehouseId) {
-                            $allocQuery->where('warehouse_id', $userWarehouseId);
-                        });
-                    }
-                    $q->where('customer_id', $c_id);
-                }])
-
-                // Filter warehouse allocations inside orderedProducts
-                ->with(['orderedProducts.warehouseAllocations' => function ($q) use ($isAdmin, $userWarehouseId) {
-                    if (!$isAdmin) {
-                        $q->where('warehouse_id', $userWarehouseId);
-                    }
-                    $q->where('product_status', 'completed');
-                }])
-
-                // Ensure ONLY those orders that actually have allocations are fetched
-                ->whereHas('orderedProducts', function ($q) use ($c_id) {
-                    $q->where('customer_id', $c_id);
-                })
-
-                ->whereHas('orderedProducts.warehouseAllocations', function ($q) use ($isAdmin, $userWarehouseId) {
-                    if (!$isAdmin) {
-                        $q->where('warehouse_id', $userWarehouseId);
-                    }
-                    $q->where('product_status', 'completed');
-                })
-
-                ->findOrFail($id);
-
-
-            // dd($salesOrder);
-
-            if (!$salesOrder) {
-                return redirect()->back()->with('error', 'Order not found.');
-            }
-
-            // Filter products based on user role and warehouse
-            // Skip warehouse filtering for 'ready_to_ship' orders as they are already packaged
-            if (!$isAdmin && $userWarehouseId) {
-                // For warehouse users: Filter products to show only their warehouse's products
-                $filteredProducts = $salesOrder->orderedProducts->filter(function ($product) use ($userWarehouseId, $salesOrder) {
-                    // Check if product has warehouse allocations (auto-allocation)
-                    if ($product->warehouseAllocations && $product->warehouseAllocations->count() > 0) {
-                        // Check if any allocation is from user's warehouse
-                        return $product->warehouseAllocations->contains('warehouse_id', $userWarehouseId);
-                    } else {
-                        // Check warehouse stock for blocked quantity
-                        $warehouseStock = \App\Models\WarehouseStock::where('sku', $product->sku)
-                            ->where('warehouse_id', $userWarehouseId)
-                            ->where('block_quantity', '>', 0)
-                            ->first();
-                        if ($warehouseStock) {
-                            return true;
-                        }
-
-                        // Single warehouse allocation: Check warehouse_stock_id
-                        if ($product->warehouseStock) {
-                            return $product->warehouseStock->warehouse_id == $userWarehouseId;
-                        }
-                        // If warehouseStock is null, check sales order's warehouse_id
-                        elseif ($salesOrder->warehouse_id) {
-                            return $salesOrder->warehouse_id == $userWarehouseId;
-                        }
-                    }
-                    return false;
-                });
-
-                // Replace orderedProducts with filtered collection
-                $salesOrder->setRelation('orderedProducts', $filteredProducts);
-            }
-
-            // Prepare display products with warehouse-wise breakdown
-            $displayProducts = [];
-            if ($isSuperAdmin) {
-                // For super admin, create separate rows for each warehouse allocation
-                foreach ($salesOrder->orderedProducts as $order) {
-                    $hasAllocations = $order->warehouseAllocations && $order->warehouseAllocations->count() > 0;
-
-                    if ($hasAllocations) {
-                        // Has warehouse allocations (both single and multi-warehouse)
-                        foreach ($order->warehouseAllocations as $allocation) {
-                            $displayProducts[] = [
-                                'order' => $order,
-                                'warehouse_name' => $allocation->warehouse->name ?? 'N/A',
-                                'allocated_quantity' => $allocation->allocated_quantity,
-                                'final_dispatched_quantity' => $allocation->final_dispatched_quantity ?? 0,
-                                'allocation_id' => $allocation->id,
-                            ];
-                        }
-                    } else {
-                        // Fallback: No allocation record (legacy data)
-                        $warehouseName = 'N/A';
-
-                        // Try to get warehouse name from warehouseStock relationship
-                        if ($order->warehouseStock && $order->warehouseStock->warehouse) {
-                            $warehouseName = $order->warehouseStock->warehouse->name;
-                        }
-                        // If not found, try to get from warehouse_id in sales_order
-                        elseif ($salesOrder->warehouse) {
-                            $warehouseName = $salesOrder->warehouse->name;
-                        }
-
-                        $allocatedQty = $order->tempOrder->block ?? 0;
-                        $displayProducts[] = [
-                            'order' => $order,
-                            'warehouse_name' => $warehouseName,
-                            'allocated_quantity' => $allocatedQty,
-                            'final_dispatched_quantity' => $order->final_dispatched_quantity ?? 0,
-                            'allocation_id' => null,
-                        ];
-                    }
-                }
-            } else {
-                // For non-super admin (warehouse users and admins)
-                foreach ($salesOrder->orderedProducts as $order) {
-                    $hasAllocations = $order->warehouseAllocations && $order->warehouseAllocations->count() > 0;
-
-                    if ($hasAllocations) {
-                        if (!$isAdmin && $userWarehouseId) {
-                            // Warehouse user: Show only their warehouse's allocations
-                            $userAllocations = $order->warehouseAllocations->filter(function ($allocation) use ($userWarehouseId) {
-                                return $allocation->warehouse_id == $userWarehouseId;
-                            });
-
-                            foreach ($userAllocations as $allocation) {
-                                $displayProducts[] = [
-                                    'order' => $order,
-                                    'warehouse_name' => $allocation->warehouse->name ?? 'N/A',
-                                    'allocated_quantity' => $allocation->allocated_quantity,
-                                    'final_dispatched_quantity' => $allocation->final_dispatched_quantity ?? 0,
-                                    'allocation_id' => $allocation->id,
-                                ];
-                            }
-                        } else {
-                            // Admin: Show all allocations
-                            foreach ($order->warehouseAllocations as $allocation) {
-                                $displayProducts[] = [
-                                    'order' => $order,
-                                    'warehouse_name' => $allocation->warehouse->name ?? 'N/A',
-                                    'allocated_quantity' => $allocation->allocated_quantity,
-                                    'final_dispatched_quantity' => $allocation->final_dispatched_quantity ?? 0,
-                                    'allocation_id' => $allocation->id,
-                                ];
-                            }
-                        }
-                    } else {
-                        // Fallback: No allocation record (legacy data)
-                        $warehouseName = 'N/A';
-
-                        if ($isAdmin) {
-                            $warehouseName = 'All';
-                        } else {
-                            // Try to get warehouse name from warehouseStock relationship
-                            if ($order->warehouseStock && $order->warehouseStock->warehouse) {
-                                $warehouseName = $order->warehouseStock->warehouse->name;
-                            }
-                            // If not found, try to get from warehouse_id in sales_order
-                            elseif ($salesOrder->warehouse) {
-                                $warehouseName = $salesOrder->warehouse->name;
-                            }
-                        }
-
-                        $displayProducts[] = [
-                            'order' => $order,
-                            'warehouse_name' => $warehouseName,
-                            'allocated_quantity' => null,
-                            'final_dispatched_quantity' => $order->final_dispatched_quantity ?? 0,
-                            'allocation_id' => null,
-                        ];
-                    }
-                }
-            }
-
-            $customerInfo = Customer::findOrFail($c_id);
-
-            // Get invoice based on user role
-            $invoiceQuery = Invoice::where('customer_id', $c_id)
-                ->where('sales_order_id', $id);
-
-            if (!$isSuperAdmin && !$isAdmin && $userWarehouseId) {
-                // Warehouse users can only see invoices for their warehouse
-                $invoiceQuery->where('warehouse_id', $userWarehouseId);
-            }
-
-            $invoice = $invoiceQuery->first();
-
-            return view('readyToShip.view-detail', compact('salesOrder', 'customerInfo', 'invoice', 'displayProducts', 'isAdmin', 'isSuperAdmin', 'userWarehouseId'));
         } catch (\Exception $e) {
             return redirect()->back()
-                ->with('error', 'Error loading order details: ' . $e->getMessage());
+                ->with('error', 'Error loading order details: '.$e->getMessage());
         }
     }
 
@@ -491,14 +233,13 @@ class ReadyToShip extends Controller
             return view('exceed-shortage', compact('vendorOrders'));
         } catch (\Exception $e) {
             return redirect()->back()
-                ->with('error', 'Error retrieving product issues: ' . $e->getMessage());
+                ->with('error', 'Error retrieving product issues: '.$e->getMessage());
         }
     }
 
     /**
      * Display vendor product returns with optional status filter
      *
-     * @param Request $request
      * @return \Illuminate\View\View|\Illuminate\Http\JsonResponse
      */
     public function returnAccept(Request $request)
@@ -521,7 +262,7 @@ class ReadyToShip extends Controller
                 // Pass the current status to the partial so action links can preserve the active tab
                 return response()->json([
                     'success' => true,
-                    'html' => view('partials.vendor-return-table', compact('vendorOrders', 'status'))->render()
+                    'html' => view('partials.vendor-return-table', compact('vendorOrders', 'status'))->render(),
                 ]);
             }
 
@@ -530,19 +271,19 @@ class ReadyToShip extends Controller
             if ($request->ajax()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Error retrieving vendor returns: ' . $e->getMessage()
+                    'message' => 'Error retrieving vendor returns: '.$e->getMessage(),
                 ], 500);
             }
 
             return redirect()->back()
-                ->with('error', 'Error retrieving vendor returns: ' . $e->getMessage());
+                ->with('error', 'Error retrieving vendor returns: '.$e->getMessage());
         }
     }
 
     /**
      * Accept vendor returned products and update warehouse stock
      *
-     * @param int $id
+     * @param  int  $id
      * @return \Illuminate\Http\RedirectResponse
      */
     public function acceptVendorProducts($id)
@@ -577,7 +318,7 @@ class ReadyToShip extends Controller
                 ->first();
 
             if ($warehouseStock) {
-                $returnQty = (int)($vendorReturnProduct->return_quantity ?? 0);
+                $returnQty = (int) ($vendorReturnProduct->return_quantity ?? 0);
 
                 $warehouseStock->available_quantity += $returnQty;
                 $warehouseStock->original_quantity += $returnQty;
@@ -598,7 +339,7 @@ class ReadyToShip extends Controller
 
                 // Create notification
                 NotificationService::warehouseProductAdded(
-                    'Vendor Return: ' . $vendorReturnProduct->sku,
+                    'Vendor Return: '.$vendorReturnProduct->sku,
                     $returnQty
                 );
 
@@ -610,20 +351,20 @@ class ReadyToShip extends Controller
                 DB::rollBack();
 
                 return redirect()->route('return.accept', ['status' => request()->get('status', 'all')])
-                    ->with('error', 'Warehouse stock not found for SKU: ' . $vendorReturnProduct->sku);
+                    ->with('error', 'Warehouse stock not found for SKU: '.$vendorReturnProduct->sku);
             }
         } catch (\Exception $e) {
             DB::rollBack();
 
             return redirect()->route('return.accept', ['status' => request()->get('status', 'all')])
-                ->with('error', 'Error accepting vendor products: ' . $e->getMessage());
+                ->with('error', 'Error accepting vendor products: '.$e->getMessage());
         }
     }
 
     /**
      * Return vendor products back to vendor
      *
-     * @param int $id
+     * @param  int  $id
      * @return \Illuminate\Http\RedirectResponse
      */
     public function returnVendorProducts($id)
@@ -671,17 +412,18 @@ class ReadyToShip extends Controller
                 ->with('success', 'Vendor return products marked as returned successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
+
             return redirect()->route('return.accept', ['status' => request()->get('status', 'all')])
-                ->with('error', 'Error returning vendor products: ' . $e->getMessage());
+                ->with('error', 'Error returning vendor products: '.$e->getMessage());
         }
     }
 
     /**
      * Generate warehouse-specific invoice
      *
-     * @param int $orderId
-     * @param int $customerId
-     * @param int $warehouseId
+     * @param  int  $orderId
+     * @param  int  $customerId
+     * @param  int  $warehouseId
      * @return \Illuminate\Http\RedirectResponse
      */
     public function generateWarehouseInvoice($orderId, $customerId, $warehouseId)
@@ -689,10 +431,10 @@ class ReadyToShip extends Controller
         try {
             $user = Auth::user();
             $isSuperAdmin = $user->hasRole('Super Admin');
-            $isAdmin = $user->hasRole(['Super Admin', 'Admin']) || !$user->warehouse_id;
+            $isAdmin = $user->hasRole(['Super Admin', 'Admin']) || ! $user->warehouse_id;
 
             // Validate permissions - Super Admin can generate for any warehouse, warehouse users only for their warehouse
-            if (!$isSuperAdmin && !$isAdmin && $user->warehouse_id != $warehouseId && $warehouseId != 0) {
+            if (! $isSuperAdmin && ! $isAdmin && $user->warehouse_id != $warehouseId && $warehouseId != 0) {
                 return redirect()->back()->with('error', 'You can only generate invoices for your warehouse.');
             }
 
@@ -752,7 +494,7 @@ class ReadyToShip extends Controller
                 $newNumber = '001';
             }
 
-            $invoiceNumber = 'INV-' . $timestamp . '-' . str_pad($newNumber + 1, 4, '0', STR_PAD_LEFT);
+            $invoiceNumber = 'INV-'.$timestamp.'-'.str_pad($newNumber + 1, 4, '0', STR_PAD_LEFT);
 
             // Calculate totals
             $subtotal = 0;
@@ -802,7 +544,7 @@ class ReadyToShip extends Controller
                 'payment_status' => 'unpaid',
                 'invoice_type' => 'sales_order',
                 'invoice_item_type' => 'product',
-                'notes' => "Warehouse-specific invoice for " . \App\Models\Warehouse::find($warehouseId)->name,
+                'notes' => 'Warehouse-specific invoice for '.\App\Models\Warehouse::find($warehouseId)->name,
             ]);
 
             // Create invoice details
@@ -844,14 +586,14 @@ class ReadyToShip extends Controller
             return redirect()->route('invoices.view', $orderId)->with('success', 'Warehouse invoice generated successfully!');
         } catch (\Exception $e) {
             DB::rollBack();
-            return redirect()->back()->with('error', 'Error generating warehouse invoice: ' . $e->getMessage());
+
+            return redirect()->back()->with('error', 'Error generating warehouse invoice: '.$e->getMessage());
         }
     }
 
     /**
      * Bulk accept vendor returns
      *
-     * @param Request $request
      * @return \Illuminate\Http\RedirectResponse
      */
     public function bulkAcceptVendorProducts(Request $request)
@@ -875,8 +617,9 @@ class ReadyToShip extends Controller
             foreach ($ids as $id) {
                 $vendorReturnProduct = VendorReturnProduct::lockForUpdate()->find($id);
 
-                if (!$vendorReturnProduct || $vendorReturnProduct->return_status !== 'pending') {
+                if (! $vendorReturnProduct || $vendorReturnProduct->return_status !== 'pending') {
                     $errorCount++;
+
                     continue;
                 }
 
@@ -886,7 +629,7 @@ class ReadyToShip extends Controller
                 $warehouseStock = WarehouseStock::where('sku', $vendorReturnProduct->sku)->first();
 
                 if ($warehouseStock) {
-                    $returnQty = (int)($vendorReturnProduct->return_quantity ?? 0);
+                    $returnQty = (int) ($vendorReturnProduct->return_quantity ?? 0);
                     $warehouseStock->available_quantity += $returnQty;
                     $warehouseStock->original_quantity += $returnQty;
                     $warehouseStock->save();
@@ -909,7 +652,7 @@ class ReadyToShip extends Controller
             DB::rollBack();
 
             return redirect()->route('return.accept', ['status' => request()->get('status', 'all')])
-                ->with('error', 'Error processing bulk accept: ' . $e->getMessage());
+                ->with('error', 'Error processing bulk accept: '.$e->getMessage());
         }
     }
 }

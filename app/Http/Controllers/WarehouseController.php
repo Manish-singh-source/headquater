@@ -42,7 +42,7 @@ class WarehouseController extends Controller
                 ->causedBy(Auth::user())
                 ->withProperties($attributes)
                 ->event('created')
-                ->log('Warehouse created: ' . $warehouse->name);
+                ->log('Warehouse created: '.$warehouse->name);
 
             return redirect()->route('warehouse.index')->with('success', 'Warehouse created successfully.');
         } catch (\Exception $e) {
@@ -78,7 +78,7 @@ class WarehouseController extends Controller
                     'new' => $warehouse->getChanges(),
                 ])
                 ->event('updated')
-                ->log('Warehouse updated: ' . $warehouse->name);
+                ->log('Warehouse updated: '.$warehouse->name);
 
             return redirect()->route('warehouse.index')->with('success', 'Warehouse updated successfully.');
         } catch (\Exception $e) {
@@ -95,6 +95,7 @@ class WarehouseController extends Controller
             // Optionally check for related products/stock before deletion
             if ($warehouse->warehouseStock()->exists()) {
                 DB::rollBack();
+
                 return redirect()->back()->with('error', 'Warehouse not deleted. Please delete related products/stock first.');
             }
 
@@ -105,13 +106,14 @@ class WarehouseController extends Controller
                 ->performedOn($warehouse)
                 ->causedBy(Auth::user())
                 ->event('deleted')
-                ->log('Warehouse deleted: ' . $warehouse->name);
+                ->log('Warehouse deleted: '.$warehouse->name);
 
             DB::commit();
 
             return redirect()->route('warehouse.index')->with('success', 'Warehouse deleted successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
+
             return redirect()->back()->with('error', 'Something went wrong. Warehouse not deleted. Please delete related Products/Stock first.');
         }
     }
@@ -136,7 +138,7 @@ class WarehouseController extends Controller
             ->causedBy(Auth::user())
             ->withProperties(['old_status' => $oldStatus, 'new_status' => $warehouse->status])
             ->event('status_changed')
-            ->log('Warehouse status changed: ' . $warehouse->name);
+            ->log('Warehouse status changed: '.$warehouse->name);
 
         return response()->json(['success' => true, 'status' => $warehouse->status]);
     }
@@ -159,7 +161,7 @@ class WarehouseController extends Controller
         $ids = array_map('intval', $ids);
         $validator = \Illuminate\Support\Facades\Validator::make(['ids' => $ids], [
             'ids' => 'required|array|min:1',
-            'ids.*' => 'integer|exists:warehouses,id'
+            'ids.*' => 'integer|exists:warehouses,id',
         ]);
 
         if ($validator->fails()) {
@@ -177,6 +179,7 @@ class WarehouseController extends Controller
             foreach ($warehouses as $warehouse) {
                 if ($warehouse->warehouseStock()->exists()) {
                     $skipped[] = $warehouse->name;
+
                     continue;
                 }
 
@@ -186,7 +189,7 @@ class WarehouseController extends Controller
                     ->causedBy(Auth::user())
                     ->withProperties(['id' => $warehouse->id, 'name' => $warehouse->name])
                     ->event('deleted')
-                    ->log('Warehouse deleted in bulk operation: ' . $warehouse->name);
+                    ->log('Warehouse deleted in bulk operation: '.$warehouse->name);
 
                 $warehouse->delete();
                 $deleted++;
@@ -194,14 +197,15 @@ class WarehouseController extends Controller
 
             DB::commit();
 
-            $message = 'Successfully deleted ' . $deleted . ' warehouse(s).';
-            if (!empty($skipped)) {
-                $message .= ' Skipped ' . count($skipped) . ' warehouse(s) with existing stock: ' . implode(', ', $skipped);
+            $message = 'Successfully deleted '.$deleted.' warehouse(s).';
+            if (! empty($skipped)) {
+                $message .= ' Skipped '.count($skipped).' warehouse(s) with existing stock: '.implode(', ', $skipped);
             }
 
             return redirect()->back()->with('success', $message);
         } catch (\Exception $e) {
             DB::rollBack();
+
             return redirect()->back()->with('error', 'Error deleting warehouses. Please ensure warehouses have no stock and try again.');
         }
     }
@@ -209,7 +213,7 @@ class WarehouseController extends Controller
     /**
      * Helper to get warehouse attributes for store and update
      *
-     * @param Request|WarehouseFormRequest $request
+     * @param  Request|WarehouseFormRequest  $request
      * @return array
      */
     private function warehouseAttributes($request)

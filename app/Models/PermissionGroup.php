@@ -53,4 +53,3 @@ class PermissionGroup extends Model
         return $query->where('status', '0');
     }
 }
-

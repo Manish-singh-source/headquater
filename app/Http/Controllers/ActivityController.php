@@ -11,7 +11,6 @@ class ActivityController extends Controller
     {
         $activities = Activity::with('causer', 'subject')->latest()->get();
 
-        // dd($activities);
         return view('activity-logs', compact('activities'));
     }
 }

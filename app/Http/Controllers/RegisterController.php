@@ -36,7 +36,6 @@ class RegisterController extends Controller
     /**
      * Register a new user
      *
-     * @param Request $request
      * @return \Illuminate\Http\RedirectResponse
      */
     public function register(Request $request)
@@ -112,7 +111,6 @@ class RegisterController extends Controller
     /**
      * Handle user login
      *
-     * @param Request $request
      * @return \Illuminate\Http\RedirectResponse
      */
     public function login(Request $request)
@@ -131,7 +129,7 @@ class RegisterController extends Controller
         try {
             $user = User::where('email', strtolower($request->email))->first();
 
-            if (!$user) {
+            if (! $user) {
                 return redirect()->back()
                     ->withErrors(['email' => 'The provided credentials do not match.'])
                     ->withInput();
@@ -168,7 +166,6 @@ class RegisterController extends Controller
     /**
      * Handle user logout
      *
-     * @param Request $request
      * @return \Illuminate\Http\RedirectResponse
      */
     public function logout(Request $request)
@@ -280,14 +277,14 @@ class RegisterController extends Controller
                 'readyToPackageOrdersCount'
             ));
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Error loading dashboard: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Error loading dashboard: '.$e->getMessage());
         }
     }
 
     /**
      * Get sales orders grouped by brand with status summary
      *
-     * @param \Illuminate\Database\Eloquent\Collection $orders
+     * @param  \Illuminate\Database\Eloquent\Collection  $orders
      * @return \Illuminate\Support\Collection
      */
     private function getSalesOrdersByBrand($orders)
@@ -304,7 +301,7 @@ class RegisterController extends Controller
             });
         })
             ->filter(function ($item) {
-                return !empty($item['brand']);
+                return ! empty($item['brand']);
             })
             ->groupBy('brand')
             ->map(function ($items, $brand) {
@@ -325,7 +322,7 @@ class RegisterController extends Controller
     /**
      * Get brand summary from purchase orders
      *
-     * @param \Illuminate\Database\Eloquent\Collection $purchaseOrders
+     * @param  \Illuminate\Database\Eloquent\Collection  $purchaseOrders
      * @return \Illuminate\Support\Collection
      */
     private function getBrandSummary($purchaseOrders)
@@ -344,7 +341,7 @@ class RegisterController extends Controller
             });
         })
             ->filter(function ($item) {
-                return !empty($item['brand']);
+                return ! empty($item['brand']);
             })
             ->groupBy('brand')
             ->map(function ($items, $brand) {
@@ -381,7 +378,7 @@ class RegisterController extends Controller
                 ];
             });
         })
-            ->filter(fn($item) => !empty($item['brand']))
+            ->filter(fn ($item) => ! empty($item['brand']))
             ->groupBy('brand')
             ->map(function ($items, $brand) {
                 return [
@@ -419,7 +416,7 @@ class RegisterController extends Controller
             ];
         })
             ->filter(function ($item) {
-                return !empty($item['brand']);
+                return ! empty($item['brand']);
             })
             ->groupBy('brand')
             ->map(function ($items, $brand) {

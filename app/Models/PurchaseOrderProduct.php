@@ -25,7 +25,8 @@ class PurchaseOrderProduct extends Model
         return $this->hasOne(TempOrder::class, 'sku', 'sku');
     }
 
-    public function tempOrderFetch(): HasOne {
+    public function tempOrderFetch(): HasOne
+    {
         return $this->hasOne(TempOrder::class, 'id', 'temp_order_id');
     }
 
