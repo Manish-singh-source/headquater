@@ -45,6 +45,7 @@ class ReadyToShip extends Controller
                     $q->where('product_status', 'completed');
                 })
                 ->get();
+            // dd($orders);
 
             return view('readyToShip.index', compact('orders'));
         } catch (\Exception $e) {
