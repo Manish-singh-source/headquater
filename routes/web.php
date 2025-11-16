@@ -44,7 +44,6 @@ Route::controller(RegisterController::class)->group(function () {
 
 Route::middleware(['auth'])->group(function () {
     // Dashboard
-    // Route::get('/', [RegisterController::class, 'index'])->name('index');
     Route::get('/', [DashboardController::class, 'index'])->name('index');
 
     // Access Control
@@ -69,9 +68,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/edit-role/{id}', 'edit')->name('role.edit');
         Route::put('/update-role/{id}', 'update')->name('role.update');
         Route::delete('/delete-role/{id}', 'destroy')->name('role.destroy');
-        // Route::get('/view-staff/{id}', 'view')->name('role.view');
         Route::delete('/role/delete-selected', 'deleteSelected')->name('delete.selected.role');
-        // Route::post('/role/toggle-status', 'toggleStatus')->name('role.toggleStatus');
     });
 
     Route::controller(PermissionController::class)->group(function () {
@@ -86,6 +83,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/permission/toggle-status', 'toggleStatus')->name('permission.toggleStatus');
     });
 
+    // Customer Group Routes -- Correct -- Pagination delete/toggle status/selected working need to check
     Route::controller(CustomerGroupController::class)->group(function () {
         Route::get('/customer-groups', 'index')->name('customer.groups.index');
         Route::get('/create-customer-groups', 'create')->name('customer.groups.create');
@@ -101,17 +99,16 @@ Route::middleware(['auth'])->group(function () {
 
     // Customer
     Route::controller(CustomerController::class)->group(function () {
-        Route::get('/customers', 'index')->name('customer.index');
-        Route::get('/customer-create/{g_id}', 'create')->name('customer.create');
-        Route::post('/customers/store', 'store')->name('customer.store');
-        Route::post('/customers/store-individual', 'storeIndividual')->name('customer.store.individual');
-        Route::get('/customers/edit/{id}/{group_id}', 'edit')->name('customer.edit');
-        Route::put('/customer/update/{id}', 'update')->name('customer.update');
-        Route::delete('/customers/delete/{id}', 'delete')->name('customer.delete');
+        Route::get('/customers', 'index')->name('customer.index'); // done
+        Route::get('/customer-create/{g_id?}', 'create')->name('customer.create'); // done
+        Route::post('/customers/store', 'store')->name('customer.store');  // done
+        Route::post('/customers/store-individual', 'storeIndividual')->name('customer.store.individual'); // done
+        Route::get('/customers/edit/{id}/{group_id?}', 'edit')->name('customer.edit');  // done
+        Route::put('/customer/update/{id}', 'update')->name('customer.update');   // done
+        Route::delete('/customers/delete/{id}', 'delete')->name('customer.delete');     // done
         Route::get('/customer-detail/{id}', 'detail')->name('customer.detail');
 
         Route::post('/customer-store-bulk/{g_id}', 'storeBulk')->name('customer.store.bulk');
-        // Route::get('/customers/detail/{id}', 'detail')->name('customers.detail');
         Route::get('/user-profile', 'profile')->name('user-profile');
         Route::put('/user-profile/update/{id}', 'updateuser')->name('user.update');
         Route::delete('/customers/delete-selected', 'deleteSelected')->name('delete.selected.customers');
@@ -128,7 +125,6 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/vendor/{id}', 'update')->name('vendor.update');
         Route::delete('/vendors/{id}', 'destroy')->name('vendor.destroy');
         Route::get('/vendors/view/{id}', 'view')->name('vendor.view');
-        // Route::get('/vendor-order-view/{id}', 'vendorOrderView')->name('vendor-order-view');
         Route::get('/single-vendor-order-view/{purchaseOrderId}/{vendorCode}', 'singleVendorOrderView')->name('single-vendor-order-view');
         Route::post('/vendor/toggle-status', 'toggleStatus')->name('vendor.toggleStatus');
         Route::delete('/vendor/delete-selected', 'deleteSelected')->name('delete.selected.vendor');
@@ -156,13 +152,10 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/products', 'update')->name('products.update');
         Route::get('/products/{id}/edit', 'editProduct')->name('product.edit');
 
-        // Route::get('/products/{id}', 'edit')->name('product.edit');
         Route::get('/download-product-sheet/{id?}', 'downloadProductSheet')->name('download.product.sheet');
         Route::post('/products/update', 'updateProduct')->name('product.update');
 
         Route::delete('/product-order/{id}', 'destroy')->name('product.delete');
-        // Route::delete('/products/{id}', 'destroy')->name('products.destroy');
-        // Route::get('/products/view/{id}', 'view')->name('products.view');
         Route::delete('/products/delete-selected', 'deleteSelected')->name('delete.selected.product');
     });
 
@@ -225,7 +218,6 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/vendor-product-accept/{id}', 'vendorProductAccept')->name('vendor.product.accept');
     });
 
-    // Check code from here
 
     // received products From Vendors PI Order
     Route::controller(ReceivedProductsController::class)->group(function () {
@@ -293,10 +285,6 @@ Route::middleware(['auth'])->group(function () {
     Route::controller(InvoiceController::class)->group(function () {
         Route::get('/invoices', 'index')->name('invoices');
         Route::get('/invoices/{id}', 'view')->name('invoices.view');
-        // Route::get('/create-invoice', 'create')->name('invoice.create');
-        // Route::post('/store-invoice', 'store')->name('invoice.store');
-        // Route::get('/view-invoice/{id}', 'view')->name('invoice.view');
-        // Route::delete('/delete-invoice/{id}', 'destroy')->name('invoice.delete');
         Route::get('/download-invoice-pdf/{id}', 'downloadPdf')->name('invoice.downloadPdf');
 
         Route::get('/create-invoice', function () {
@@ -380,6 +368,3 @@ Route::get('/test-notification-delete', function () {
         }),
     ]);
 })->name('test.notification.delete');
-
-// vendor code in product file so that product fixed for that vendor
-// add vendor code in product

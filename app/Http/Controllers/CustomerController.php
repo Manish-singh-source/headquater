@@ -35,7 +35,6 @@ class CustomerController extends Controller
 
             if (! is_null($status)) {
                 $status = (int) $status;
-
                 if ($status === 1) {
                     $customers->active();
                 } elseif ($status === 0) {
@@ -44,12 +43,15 @@ class CustomerController extends Controller
             }
 
             $customers = $customers->latest()
-                ->with('groupInfo.customerGroup')
-                ->paginate(15);
+                ->get();
 
-            return view('customer.index', compact('customers', 'status'));
+            $totalCustomersCount = Customer::count();
+            $activeCustomersCount = Customer::where('status', 1)->count();
+            $inactiveCustomersCount = Customer::where('status', 0)->count();
+
+            return view('customer.index', compact('customers', 'status', 'totalCustomersCount', 'activeCustomersCount', 'inactiveCustomersCount'));
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Error retrieving customers: '.$e->getMessage());
+            return redirect()->back()->with('error', 'Error retrieving customers: ' . $e->getMessage());
         }
     }
 
@@ -59,14 +61,14 @@ class CustomerController extends Controller
      * @param  int  $g_id  - Customer group ID
      * @return \Illuminate\View\View
      */
-    public function create($g_id)
+    public function create($g_id = null)
     {
         $group_id = $g_id;
         $countries = Country::all();
         $states = State::where('country_id', old('shippingCountry'))->get();
         $cities = City::where('state_id', old('shippingState'))->get();
 
-        return view('customer.create', compact(/* other data */ 'group_id', 'countries', 'states', 'cities'));
+        return view('customer.create', compact(/* other data */'group_id', 'countries', 'states', 'cities'));
     }
 
     /**
@@ -120,7 +122,7 @@ class CustomerController extends Controller
                 DB::rollBack();
                 $availableColumns = implode(', ', array_keys($firstRow));
 
-                return redirect()->back()->with('error', 'Invalid Excel format. The file must have a "Facility Name" column. Found columns: '.($availableColumns ?: 'None'));
+                return redirect()->back()->with('error', 'Invalid Excel format. The file must have a "Facility Name" column. Found columns: ' . ($availableColumns ?: 'None'));
             }
 
             foreach ($allRows as $record) {
@@ -192,7 +194,7 @@ class CustomerController extends Controller
                         $insertCount++;
                     }
                 } catch (\Exception $e) {
-                    $errors[] = "Row {$rowNumber}: ".$e->getMessage();
+                    $errors[] = "Row {$rowNumber}: " . $e->getMessage();
                     $skipCount++;
 
                     continue;
@@ -204,7 +206,7 @@ class CustomerController extends Controller
                 DB::rollBack();
 
                 $errorMessage = ! empty($errors)
-                    ? 'Failed to import customers. Errors: '.implode('; ', array_slice($errors, 0, 5))
+                    ? 'Failed to import customers. Errors: ' . implode('; ', array_slice($errors, 0, 5))
                     : 'No valid data found in the Excel file. Please ensure the file has customer data with at least a "Facility Name" column filled.';
 
                 if ($skipCount > 5) {
@@ -232,17 +234,17 @@ class CustomerController extends Controller
                 $message .= ". First errors: {$errorSummary}";
             }
 
-            activity()->log("Customer Group {$g_id} updated with {$insertCount} customers by ".Auth::user()->name);
+            activity()->log("Customer Group {$g_id} updated with {$insertCount} customers by " . Auth::user()->name);
 
-            return redirect()->route('customer.groups.index')->with('success', $message);
+            return redirect()->back()->with('success', $message);
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('CSV Import Error: '.$e->getMessage(), [
+            Log::error('CSV Import Error: ' . $e->getMessage(), [
                 'group_id' => $g_id,
                 'trace' => $e->getTraceAsString(),
             ]);
 
-            return redirect()->back()->with('error', 'CSV import failed: '.$e->getMessage());
+            return redirect()->back()->with('error', 'CSV import failed: ' . $e->getMessage());
         }
     }
 
@@ -261,7 +263,6 @@ class CustomerController extends Controller
             'contact_no' => 'required|digits:10',
             'gstin' => 'required|min:15',
             'pan' => 'required|min:10',
-            'group_id' => 'required|exists:customer_groups,id',
             'company_name' => 'nullable|min:3|max:100',
             'shipping_address' => 'nullable|min:5|max:255',
             'shipping_country' => 'nullable|min:2|max:100',
@@ -315,10 +316,12 @@ class CustomerController extends Controller
             ]);
 
             // Add to customer group
-            CustomerGroupMember::create([
-                'customer_group_id' => $request->group_id,
-                'customer_id' => $customer->id,
-            ]);
+            if ($request->filled('group_id')) {
+                CustomerGroupMember::create([
+                    'customer_group_id' => $request->group_id,
+                    'customer_id' => $customer->id,
+                ]);
+            }
 
             DB::commit();
 
@@ -336,21 +339,25 @@ class CustomerController extends Controller
                 ]);
             }
 
+            if (! $request->filled('group_id')) {
+                return redirect()->route('customer.index')
+                    ->with('success', 'Customer added successfully.');
+            }
             return redirect()->route('customer.groups.view', $request->group_id)
                 ->with('success', 'Customer added successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Customer Creation Error: '.$e->getMessage());
+            Log::error('Customer Creation Error: ' . $e->getMessage());
 
             // Check if request expects JSON (AJAX request)
             if ($request->expectsJson()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Error: '.$e->getMessage(),
+                    'message' => 'Error: ' . $e->getMessage(),
                 ], 500);
             }
 
-            return back()->with('error', 'Failed to add customer: '.$e->getMessage())->withInput();
+            return back()->with('error', 'Failed to add customer: ' . $e->getMessage())->withInput();
         }
     }
 
@@ -439,11 +446,11 @@ class CustomerController extends Controller
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Individual Customer Creation Error: '.$e->getMessage());
+            Log::error('Individual Customer Creation Error: ' . $e->getMessage());
 
             return response()->json([
                 'success' => false,
-                'message' => 'Error: '.$e->getMessage(),
+                'message' => 'Error: ' . $e->getMessage(),
             ], 500);
         }
     }
@@ -478,7 +485,7 @@ class CustomerController extends Controller
             'facility_name' => 'required|min:3|max:100',
             'client_name' => 'required|min:3|max:100',
             'contact_name' => 'required|min:3|max:100',
-            'email' => 'required|email|unique:customers,email,'.$id,
+            'email' => 'required|email|unique:customers,email,' . $id,
             'contact_no' => 'required|digits:10',
             'gstin' => 'required|min:15',
             'pan' => 'required|min:10',
@@ -531,15 +538,15 @@ class CustomerController extends Controller
 
             DB::commit();
 
-            activity()->log("Customer {$customer->id} ({$customer->facility_name}) updated by ".Auth::user()->name);
+            activity()->log("Customer {$customer->id} ({$customer->facility_name}) updated by " . Auth::user()->name);
 
             return redirect()->route('customer.groups.view', $request->group_id)
                 ->with('success', 'Customer updated successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Customer Update Error: '.$e->getMessage());
+            Log::error('Customer Update Error: ' . $e->getMessage());
 
-            return back()->with('error', 'Failed to update customer: '.$e->getMessage())->withInput();
+            return back()->with('error', 'Failed to update customer: ' . $e->getMessage())->withInput();
         }
     }
 
@@ -565,14 +572,14 @@ class CustomerController extends Controller
 
             DB::commit();
 
-            activity()->log("Customer {$id} ({$facilityName}) deleted by ".Auth::user()->name);
+            activity()->log("Customer {$id} ({$facilityName}) deleted by " . Auth::user()->name);
 
             return redirect()->back()->with('success', 'Customer deleted successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Customer Delete Error: '.$e->getMessage());
+            Log::error('Customer Delete Error: ' . $e->getMessage());
 
-            return redirect()->back()->with('error', 'Failed to delete customer: '.$e->getMessage());
+            return redirect()->back()->with('error', 'Failed to delete customer: ' . $e->getMessage());
         }
     }
 
@@ -665,7 +672,7 @@ class CustomerController extends Controller
                 'customerReturns'
             ));
         } catch (\Exception $e) {
-            Log::error('Customer Detail Error: '.$e->getMessage());
+            Log::error('Customer Detail Error: ' . $e->getMessage());
 
             return redirect()->back()->with('error', 'Customer not found or error loading details.');
         }
@@ -679,7 +686,6 @@ class CustomerController extends Controller
     public function profile()
     {
         $user = Auth::user();
-
         return view('user-profile', compact('user'));
     }
 
@@ -694,7 +700,7 @@ class CustomerController extends Controller
         $validator = Validator::make($request->all(), [
             'fname' => 'required|min:3|max:50',
             'lname' => 'required|min:3|max:50',
-            'email' => 'required|email|unique:users,email,'.$id,
+            'email' => 'required|email|unique:users,email,' . $id,
             'phone' => 'required|digits:10',
             'country' => 'nullable|min:2|max:50',
             'state' => 'nullable|min:2|max:50',
@@ -730,7 +736,7 @@ class CustomerController extends Controller
                 $image = $request->file('profile_image');
 
                 // Generate unique filename with timestamp and unique ID
-                $imageName = time().'_'.uniqid().'.'.$image->getClientOriginalExtension();
+                $imageName = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
 
                 // Create directory if it doesn't exist
                 $uploadPath = public_path('uploads/images/profile');
@@ -745,21 +751,21 @@ class CustomerController extends Controller
 
                 // Move uploaded image
                 $image->move($uploadPath, $imageName);
-                $data['profile_image'] = 'uploads/images/profile/'.$imageName;
+                $data['profile_image'] = 'uploads/images/profile/' . $imageName;
             }
 
             $user->update($data);
 
             DB::commit();
 
-            activity()->log("User {$user->id} ({$user->email}) profile updated by ".Auth::user()->name);
+            activity()->log("User {$user->id} ({$user->email}) profile updated by " . Auth::user()->name);
 
             return redirect()->route('user-profile')->with('success', 'Profile updated successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Profile Update Error: '.$e->getMessage());
+            Log::error('Profile Update Error: ' . $e->getMessage());
 
-            return back()->with('error', 'Failed to update profile: '.$e->getMessage())->withInput();
+            return back()->with('error', 'Failed to update profile: ' . $e->getMessage())->withInput();
         }
     }
 
@@ -785,18 +791,9 @@ class CustomerController extends Controller
             // Parse IDs (handle both array and comma-separated string)
             $ids = is_array($request->ids) ? $request->ids : explode(',', $request->ids);
 
-            // Filter out empty values
-            $ids = array_filter($ids, function ($id) {
-                return ! empty($id) && is_numeric($id);
-            });
-
-            if (empty($ids)) {
-                return redirect()->back()->with('error', 'No valid customers selected.');
-            }
-
             // Delete selected customer group members
             $deletedCount = CustomerGroupMember::where('customer_group_id', $request->groupId)
-                ->whereIn('id', $ids)
+                ->whereIn('customer_id', $ids)
                 ->delete();
 
             DB::commit();
@@ -812,9 +809,9 @@ class CustomerController extends Controller
             return redirect()->back()->with('warning', 'No customers found to delete.');
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error deleting customers: '.$e->getMessage());
+            Log::error('Error deleting customers: ' . $e->getMessage());
 
-            return redirect()->back()->with('error', 'Error: '.$e->getMessage());
+            return redirect()->back()->with('error', 'Error: ' . $e->getMessage());
         }
     }
 
@@ -844,12 +841,12 @@ class CustomerController extends Controller
             activity()
                 ->performedOn($customer)
                 ->causedBy(Auth::user())
-                ->log('Customer status changed to '.($request->status == '1' ? 'Active' : 'Inactive'));
+                ->log('Customer status changed to ' . ($request->status == '1' ? 'Active' : 'Inactive'));
 
             return response()->json(['success' => true]);
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error toggling customer status: '.$e->getMessage());
+            Log::error('Error toggling customer status: ' . $e->getMessage());
 
             return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }
@@ -874,36 +871,24 @@ class CustomerController extends Controller
         try {
             $ids = is_array($request->ids) ? $request->ids : explode(',', $request->ids);
 
-            // Filter out empty values and get customer IDs from group member IDs
-            $ids = array_filter($ids, function ($id) {
-                return ! empty($id) && is_numeric($id);
-            });
-
             if (empty($ids)) {
                 return redirect()->back()->with('error', 'No customers selected.');
             }
 
-            // Get customer IDs from customer_group_members table
-            $customerIds = CustomerGroupMember::whereIn('id', $ids)->pluck('customer_id')->toArray();
-
-            if (empty($customerIds)) {
-                return redirect()->back()->with('error', 'No valid customers found.');
-            }
-
-            $updated = Customer::whereIn('id', $customerIds)->update(['status' => $request->status]);
+            $updated = Customer::whereIn('id', $ids)->update(['status' => $request->status]);
 
             DB::commit();
 
             activity()
                 ->causedBy(Auth::user())
-                ->log('Changed status of '.$updated.' customers to '.($request->status == '1' ? 'Active' : 'Inactive'));
+                ->log('Changed status of ' . $updated . ' customers to ' . ($request->status == '1' ? 'Active' : 'Inactive'));
 
             return redirect()->back()->with('success', "Successfully updated status of {$updated} customer(s).");
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error changing customer status: '.$e->getMessage());
+            Log::error('Error changing customer status: ' . $e->getMessage());
 
-            return redirect()->back()->with('error', 'Error: '.$e->getMessage());
+            return redirect()->back()->with('error', 'Error: ' . $e->getMessage());
         }
     }
 }

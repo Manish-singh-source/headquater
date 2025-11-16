@@ -15,6 +15,17 @@ class Customer extends Model
     /**
      * Relationships
      */
+
+    public function customerGroup()
+    {
+        return $this->belongsToMany(
+            CustomerGroup::class,
+            'customer_group_members',
+            'customer_id',
+            'customer_group_id'
+        );
+    }
+
     public function groupInfo()
     {
         return $this->hasOne(CustomerGroupMember::class, 'customer_id', 'id');

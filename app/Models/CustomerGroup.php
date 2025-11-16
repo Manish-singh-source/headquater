@@ -39,6 +39,11 @@ class CustomerGroup extends Model
         return $this->hasMany(CustomerGroupMember::class);
     }
 
+    public function customers()
+    {
+        return $this->hasManyThrough(Customer::class, CustomerGroupMember::class, 'customer_group_id', 'id', 'id', 'customer_id');
+    }
+
     /**
      * Scopes
      */

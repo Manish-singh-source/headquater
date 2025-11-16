@@ -15,14 +15,21 @@ use Spatie\SimpleExcel\SimpleExcelReader;
 class CustomerGroupController extends Controller
 {
     /**
-     * Display customer groups list with statistics
+     * Display a listing of customer groups with statistics
      */
     public function index(Request $request)
     {
         try {
             $status = $request->get('status', 'all');
 
-            $query = CustomerGroup::with(['customerGroupMembers.customer']);
+            $query = CustomerGroup::with(['customers'])
+                ->withCount('customers')
+                ->withCount(['customers as active_customers_count' => function ($q) {
+                    $q->where('status', '1');
+                }])
+                ->withCount(['customers as inactive_customers_count' => function ($q) {
+                    $q->where('status', '0');
+                }]);
 
             if ($status === 'active') {
                 $query->active();
@@ -31,30 +38,24 @@ class CustomerGroupController extends Controller
             }
 
             $customerGroups = $query->get();
-
-            // Calculate statistics for each group
-            $customerGroups->each(function ($group) {
-                $customers = $group->customerGroupMembers->pluck('customer');
-                $group->total_customers = $customers->count();
-                $group->active_customers = $customers->where('status', '1')->count();
-                $group->inactive_customers = $customers->where('status', '0')->count();
-            });
-
             return view('customerGroups.index', compact('customerGroups', 'status'));
         } catch (\Exception $e) {
-            Log::error('Error loading customer groups: '.$e->getMessage());
+            Log::error('Error loading customer groups: ' . $e->getMessage());
 
-            return redirect()->back()->with('error', 'Error loading customer groups: '.$e->getMessage());
+            return redirect()->back()->with('error', 'Error loading customer groups: ' . $e->getMessage());
         }
     }
 
+    /**
+     * Show form to create a new customer group
+     */
     public function create()
     {
         return view('customerGroups.create');
     }
 
     /**
-     * Store customer group with customers from Excel file
+     * Store a newly created customer group
      */
     public function store(Request $request)
     {
@@ -78,7 +79,6 @@ class CustomerGroupController extends Controller
             // Create the customer group
             $customerGroup = CustomerGroup::create([
                 'name' => $request->name,
-                'status' => '1',
             ]);
 
             $filePath = $file->getPathname();
@@ -88,9 +88,11 @@ class CustomerGroupController extends Controller
 
             $insertCount = 0;
             $existingCount = 0;
+            $notStoredCustomers = [];
 
             foreach ($reader->getRows() as $record) {
                 if (! isset($record['Facility Name']) || empty($record['Facility Name'])) {
+                    $notStoredCustomers[] = $record;
                     continue; // Skip rows without facility name
                 }
 
@@ -119,7 +121,6 @@ class CustomerGroupController extends Controller
                         'shipping_state' => $record['Shipping State'] ?? '',
                         'shipping_city' => $record['Shipping City'] ?? '',
                         'shipping_zip' => $record['Shipping Zip'] ?? '',
-                        'status' => '1',
                     ]);
                 } else {
                     $existingCount++;
@@ -141,7 +142,6 @@ class CustomerGroupController extends Controller
 
             if ($insertCount === 0 && $existingCount === 0) {
                 DB::rollBack();
-
                 return redirect()->back()->with('error', 'No valid data found in the file.')->withInput();
             }
 
@@ -151,7 +151,7 @@ class CustomerGroupController extends Controller
             activity()
                 ->performedOn($customerGroup)
                 ->causedBy(Auth::user())
-                ->log('Customer Group created with '.$insertCount.' customers');
+                ->log('Customer Group created with ' . $insertCount . ' customers');
 
             $message = "Customer group created successfully. Added {$insertCount} customers.";
             if ($existingCount > 0) {
@@ -161,9 +161,9 @@ class CustomerGroupController extends Controller
             return redirect()->route('customer.groups.index')->with('success', $message);
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error creating customer group: '.$e->getMessage());
+            Log::error('Error creating customer group: ' . $e->getMessage());
 
-            return redirect()->back()->with('error', 'Error: '.$e->getMessage())->withInput();
+            return redirect()->back()->with('error', 'Error: ' . $e->getMessage())->withInput();
         }
     }
 
@@ -173,19 +173,30 @@ class CustomerGroupController extends Controller
     public function view($id)
     {
         try {
-            $customerGroup = CustomerGroup::with('customerGroupMembers.customer')->findOrFail($id);
+            $status = request()->get('status', 'all');
 
-            // Calculate statistics
-            $customers = $customerGroup->customerGroupMembers->pluck('customer');
-            $customerGroup->total_customers = $customers->count();
-            $customerGroup->active_customers = $customers->where('status', '1')->count();
-            $customerGroup->inactive_customers = $customers->where('status', '0')->count();
+            $customerGroup = CustomerGroup::
+                with(['customers' => function ($query) use ($status) {
+                    if ($status === 'active') {
+                        $query->where('status', '1');
+                    } elseif ($status === 'inactive') {
+                        $query->where('status', '0');
+                    }
+                }])
+                ->withCount('customers')
+                ->withCount(['customers as active_customers_count' => function ($q) {
+                    $q->where('status', '1');
+                }])
+                ->withCount(['customers as inactive_customers_count' => function ($q) {
+                    $q->where('status', '0');
+                }])
+                ->findOrFail($id);
 
-            return view('customerGroups.view', compact('customerGroup'));
+            return view('customerGroups.view', compact('customerGroup', 'status'));
         } catch (\Exception $e) {
-            Log::error('Error viewing customer group: '.$e->getMessage());
+            Log::error('Error viewing customer group: ' . $e->getMessage());
 
-            return redirect()->route('customer.groups.index')->with('error', 'Error: '.$e->getMessage());
+            return redirect()->route('customer.groups.index')->with('error', 'Error: ' . $e->getMessage());
         }
     }
 
@@ -196,12 +207,10 @@ class CustomerGroupController extends Controller
     {
         try {
             $customerGroup = CustomerGroup::findOrFail($id);
-
             return view('customerGroups.edit', compact('customerGroup'));
         } catch (\Exception $e) {
-            Log::error('Error loading customer group: '.$e->getMessage());
-
-            return redirect()->route('customer.groups.index')->with('error', 'Error: '.$e->getMessage());
+            Log::error('Error loading customer group: ' . $e->getMessage());
+            return redirect()->route('customer.groups.index')->with('error', 'Error: ' . $e->getMessage());
         }
     }
 
@@ -211,7 +220,7 @@ class CustomerGroupController extends Controller
     public function update(Request $request, $id)
     {
         $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255|unique:customer_groups,name,'.$id,
+            'name' => 'required|string|max:255|unique:customer_groups,name,' . $id,
         ]);
 
         if ($validator->fails()) {
@@ -222,7 +231,6 @@ class CustomerGroupController extends Controller
 
         try {
             $customerGroup = CustomerGroup::findOrFail($id);
-
             $customerGroup->name = $request->name;
             $customerGroup->save();
 
@@ -236,9 +244,8 @@ class CustomerGroupController extends Controller
             return redirect()->route('customer.groups.index')->with('success', 'Customer group updated successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error updating customer group: '.$e->getMessage());
-
-            return redirect()->back()->with('error', 'Error: '.$e->getMessage())->withInput();
+            Log::error('Error updating customer group: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Error: ' . $e->getMessage())->withInput();
         }
     }
 
@@ -271,9 +278,9 @@ class CustomerGroupController extends Controller
             return redirect()->route('customer.groups.index')->with('success', 'Customer group deleted successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error deleting customer group: '.$e->getMessage());
+            Log::error('Error deleting customer group: ' . $e->getMessage());
 
-            return redirect()->route('customer.groups.index')->with('error', 'Error: '.$e->getMessage());
+            return redirect()->route('customer.groups.index')->with('error', 'Error: ' . $e->getMessage());
         }
     }
 
@@ -303,12 +310,12 @@ class CustomerGroupController extends Controller
             activity()
                 ->performedOn($group)
                 ->causedBy(Auth::user())
-                ->log('Customer Group status changed to '.($request->status == '1' ? 'Active' : 'Inactive'));
+                ->log('Customer Group status changed to ' . ($request->status == '1' ? 'Active' : 'Inactive'));
 
             return response()->json(['success' => true]);
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error toggling customer group status: '.$e->getMessage());
+            Log::error('Error toggling customer group status: ' . $e->getMessage());
 
             return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }
@@ -342,7 +349,7 @@ class CustomerGroupController extends Controller
 
             activity()
                 ->causedBy(Auth::user())
-                ->log('Deleted '.$deleted.' customer groups');
+                ->log('Deleted ' . $deleted . ' customer groups');
 
             if ($deleted > 0) {
                 return redirect()->back()->with('success', "Successfully deleted {$deleted} customer group(s).");
@@ -351,9 +358,9 @@ class CustomerGroupController extends Controller
             }
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error deleting customer groups: '.$e->getMessage());
+            Log::error('Error deleting customer groups: ' . $e->getMessage());
 
-            return redirect()->back()->with('error', 'Error: '.$e->getMessage());
+            return redirect()->back()->with('error', 'Error: ' . $e->getMessage());
         }
     }
 
@@ -386,14 +393,14 @@ class CustomerGroupController extends Controller
 
             activity()
                 ->causedBy(Auth::user())
-                ->log('Changed status of '.$updated.' customer groups to '.($request->status == '1' ? 'Active' : 'Inactive'));
+                ->log('Changed status of ' . $updated . ' customer groups to ' . ($request->status == '1' ? 'Active' : 'Inactive'));
 
             return redirect()->back()->with('success', "Successfully updated status of {$updated} customer group(s).");
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error changing customer group status: '.$e->getMessage());
+            Log::error('Error changing customer group status: ' . $e->getMessage());
 
-            return redirect()->back()->with('error', 'Error: '.$e->getMessage());
+            return redirect()->back()->with('error', 'Error: ' . $e->getMessage());
         }
     }
 }

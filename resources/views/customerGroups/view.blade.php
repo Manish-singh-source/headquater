@@ -12,8 +12,8 @@
                             </li>
                             <li class="breadcrumb-item"><a href="{{ route('customer.groups.index') }}">Customer Groups</a>
                             </li>
-                            <li class="hidden" style="display:none" id="customerGroupId">{{ $customerGroup->id }}</li>
                             <li class="breadcrumb-item active" aria-current="page">{{ $customerGroup->name }}</li>
+                            <li class="hidden" style="display:none" id="customerGroupId">{{ $customerGroup->id }}</li>
                         </ol>
                     </nav>
                 </div>
@@ -49,8 +49,7 @@
                                                         <i class="bi bi-info-circle me-2"></i>
                                                         <strong>Download Template:</strong>
                                                         <a href="{{ asset('uploads/excel-formats/customers-bulk.xlsx') }}"
-                                                           download="customers-bulk.xlsx"
-                                                           class="alert-link">
+                                                            download="customers-bulk.xlsx" class="alert-link">
                                                             Click here to download the Excel format template
                                                         </a>
                                                     </div>
@@ -59,7 +58,9 @@
                                                             List (XLSX/XLS) <span class="text-danger">*</span></label>
                                                         <input type="file" name="csv_file" id="csv_file"
                                                             class="form-control" accept=".xlsx,.xls" required="">
-                                                        <small class="text-muted">Please upload an Excel file (.xlsx or .xls) with customer data. Make sure the first row contains column headers including "Facility Name".</small>
+                                                        <small class="text-muted">Please upload an Excel file (.xlsx or
+                                                            .xls) with customer data. Make sure the first row contains
+                                                            column headers including "Facility Name".</small>
                                                     </div>
                                                 </div>
                                                 <div class="modal-footer">
@@ -98,30 +99,7 @@
                 </div>
             </div>
 
-            @if ($errors->any())
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    <ul class="mb-0">
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            @endif
-
-            @if (session('success'))
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    {{ session('success') }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            @endif
-
-            @if (session('error'))
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    {{ session('error') }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            @endif
+            @include('layouts.errors')
 
             <!-- Statistics Cards -->
             <div class="row row-cols-1 row-cols-md-3 g-3 mb-4">
@@ -131,7 +109,7 @@
                             <div class="d-flex align-items-center">
                                 <div class="flex-grow-1">
                                     <p class="text-muted mb-1">Total Customers</p>
-                                    <h4 class="mb-0">{{ $customerGroup->total_customers ?? 0 }}</h4>
+                                    <h4 class="mb-0">{{ $customerGroup->customers_count ?? 0 }}</h4>
                                 </div>
                                 <div class="flex-shrink-0">
                                     <div class="avatar-sm">
@@ -150,7 +128,7 @@
                             <div class="d-flex align-items-center">
                                 <div class="flex-grow-1">
                                     <p class="text-muted mb-1">Active Customers</p>
-                                    <h4 class="mb-0 text-success">{{ $customerGroup->active_customers ?? 0 }}</h4>
+                                    <h4 class="mb-0 text-success">{{ $customerGroup->active_customers_count ?? 0 }}</h4>
                                 </div>
                                 <div class="flex-shrink-0">
                                     <div class="avatar-sm">
@@ -169,7 +147,8 @@
                             <div class="d-flex align-items-center">
                                 <div class="flex-grow-1">
                                     <p class="text-muted mb-1">Inactive Customers</p>
-                                    <h4 class="mb-0 text-secondary">{{ $customerGroup->inactive_customers ?? 0 }}</h4>
+                                    <h4 class="mb-0 text-secondary">{{ $customerGroup->inactive_customers_count ?? 0 }}
+                                    </h4>
                                 </div>
                                 <div class="flex-shrink-0">
                                     <div class="avatar-sm">
@@ -187,6 +166,28 @@
 
             <div class="card mt-4">
                 <div class="card-body">
+
+                    <ul class="nav nav-pills mb-3" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <a class="nav-link {{ $status === 'all' ? 'active' : '' }}"
+                                href="{{ route('customer.groups.view', ['status' => 'all', 'id' => $customerGroup->id]) }}">
+                                All Customers
+                            </a>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <a class="nav-link {{ $status === 'active' ? 'active' : '' }}"
+                                href="{{ route('customer.groups.view', ['status' => 'active', 'id' => $customerGroup->id]) }}">
+                                Active
+                            </a>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <a class="nav-link {{ $status === 'inactive' ? 'active' : '' }}"
+                                href="{{ route('customer.groups.view', ['status' => 'inactive', 'id' => $customerGroup->id]) }}">
+                                Inactive
+                            </a>
+                        </li>
+                    </ul>
+
                     <div class="customer-table">
                         <div class="table-responsive white-space-nowrap">
                             <table id="example" class="table table-striped cell-border">
@@ -207,7 +208,7 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @forelse ($customerGroup->customerGroupMembers as $customer)
+                                    @forelse ($customerGroup->customers as $customer)
                                         <tr>
                                             <td>
                                                 <input class="form-check-input row-checkbox" type="checkbox"
@@ -215,32 +216,32 @@
                                             </td>
                                             <td>
                                                 <span class="mb-0 customer-name fw-bold">
-                                                {{ $customer->customer->facility_name }}
+                                                    {{ $customer->facility_name }}
                                                 </span>
                                             </td>
                                             <td>
                                                 <span class="mb-0 customer-name fw-bold">
-                                                    {{ $customer->customer->client_name }}</span>
+                                                    {{ $customer->client_name }}</span>
                                             </td>
                                             <td>
                                                 <a href="javascript:void(0);"
-                                                    class="font-text1">{{ $customer->customer->contact_name }}</a>
+                                                    class="font-text1">{{ $customer->contact_name }}</a>
                                             </td>
-                                            <td>{{ $customer->customer->email }}</td>
-                                            <td>{{ $customer->customer->contact_no }}</td>
-                                            <td>{{ $customer->customer->gstin }}</td>
-                                            <td>{{ $customer->customer->pan }}</td>
+                                            <td>{{ $customer->email }}</td>
+                                            <td>{{ $customer->contact_no }}</td>
+                                            <td>{{ $customer->gstin }}</td>
+                                            <td>{{ $customer->pan }}</td>
                                             <td>
                                                 <div class="form-switch form-check-success">
                                                     <input class="form-check-input customer-status-switch" type="checkbox"
-                                                        role="switch" data-customer-id="{{ $customer->customer->id }}"
-                                                        {{ $customer->customer->status == '1' ? 'checked' : '' }}>
+                                                        role="switch" data-customer-id="{{ $customer->id }}"
+                                                        {{ $customer->status == '1' ? 'checked' : '' }}>
                                                 </div>
                                             </td>
                                             <td>
                                                 <div class="d-flex">
                                                     <a aria-label="anchor"
-                                                        href="{{ route('customer.detail', $customer->customer->id) }}"
+                                                        href="{{ route('customer.detail', $customer->id) }}"
                                                         class="btn btn-icon btn-sm bg-primary-subtle me-1"
                                                         data-bs-toggle="tooltip" data-bs-original-title="View">
                                                         <svg xmlns="http://www.w3.org/2000/svg" width="13"
@@ -254,7 +255,7 @@
                                                     </a>
 
                                                     <a aria-label="anchor"
-                                                        href="{{ route('customer.edit', ['id' => $customer->customer->id, 'group_id' => $customer->customer_group_id]) }}"
+                                                        href="{{ route('customer.edit', ['id' => $customer->id, 'group_id' => $customerGroup->id]) }}"
                                                         class="btn btn-icon btn-sm bg-warning-subtle me-1"
                                                         data-bs-toggle="tooltip" data-bs-original-title="Edit">
                                                         <svg xmlns="http://www.w3.org/2000/svg" width="13"
@@ -271,7 +272,7 @@
                                                         </svg>
                                                     </a>
 
-                                                    <form action="{{ route('customer.delete', $customer->customer->id) }}"
+                                                    <form action="{{ route('customer.delete', $customer->id) }}"
                                                         method="POST" onsubmit="return confirm('Are you sure?')">
                                                         @csrf
                                                         @method('DELETE')
@@ -345,87 +346,94 @@
         });
     </script>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Select All functionality
-            const selectAll = document.getElementById('select-all');
-            const checkboxes = document.querySelectorAll('.row-checkbox');
-            const groupId = document.getElementById('customerGroupId').textContent;
-            selectAll.addEventListener('change', function() {
-                checkboxes.forEach(cb => cb.checked = selectAll.checked);
+        $(document).ready(function() {
+
+            const groupId = $('#customerGroupId').text();
+
+            // Select All
+            $('#select-all').on('change', function() {
+                $('.row-checkbox').prop('checked', this.checked);
             });
 
-            // Activate Selected functionality
-            document.getElementById('activate-selected').addEventListener('click', function() {
-                let selected = [];
-                document.querySelectorAll('.row-checkbox:checked').forEach(cb => {
-                    selected.push(cb.value);
+            // Function to get selected IDs
+            function getSelected() {
+                return $('.row-checkbox:checked').map(function() {
+                    return this.value;
+                }).get();
+            }
+
+            // Function to submit form
+            function submitForm(action, data) {
+                let form = $('<form>', {
+                    method: 'POST',
+                    action: action
                 });
+
+                form.append(`@csrf`);
+                $.each(data, function(key, value) {
+                    form.append($('<input>', {
+                        type: 'hidden',
+                        name: key,
+                        value: value
+                    }));
+                });
+
+                $('body').append(form);
+                form.submit();
+            }
+
+            // Activate Selected
+            $('#activate-selected').on('click', function() {
+                const selected = getSelected();
+
                 if (selected.length === 0) {
                     alert('Please select at least one customer.');
                     return;
                 }
+
                 if (confirm('Are you sure you want to activate selected customers?')) {
-                    let form = document.createElement('form');
-                    form.method = 'POST';
-                    form.action = '{{ route('customer.bulkStatusChange') }}';
-                    form.innerHTML = `
-                        @csrf
-                        <input type="hidden" name="ids" value="${selected.join(',')}">
-                        <input type="hidden" name="status" value="1">
-                    `;
-                    document.body.appendChild(form);
-                    form.submit();
+                    submitForm("{{ route('customer.bulkStatusChange') }}", {
+                        ids: selected.join(','),
+                        status: 1
+                    });
                 }
             });
 
-            // Deactivate Selected functionality
-            document.getElementById('deactivate-selected').addEventListener('click', function() {
-                let selected = [];
-                document.querySelectorAll('.row-checkbox:checked').forEach(cb => {
-                    selected.push(cb.value);
-                });
+            // Deactivate Selected
+            $('#deactivate-selected').on('click', function() {
+                const selected = getSelected();
+
                 if (selected.length === 0) {
                     alert('Please select at least one customer.');
                     return;
                 }
+
                 if (confirm('Are you sure you want to deactivate selected customers?')) {
-                    let form = document.createElement('form');
-                    form.method = 'POST';
-                    form.action = '{{ route('customer.bulkStatusChange') }}';
-                    form.innerHTML = `
-                        @csrf
-                        <input type="hidden" name="ids" value="${selected.join(',')}">
-                        <input type="hidden" name="status" value="0">
-                    `;
-                    document.body.appendChild(form);
-                    form.submit();
+                    submitForm("{{ route('customer.bulkStatusChange') }}", {
+                        ids: selected.join(','),
+                        status: 0
+                    });
                 }
             });
 
-            // Delete Selected functionality
-            document.getElementById('delete-selected').addEventListener('click', function() {
-                let selected = [];
-                document.querySelectorAll('.row-checkbox:checked').forEach(cb => {
-                    selected.push(cb.value);
-                });
+            // Delete Selected
+            $('#delete-selected').on('click', function() {
+                const selected = getSelected();
+
                 if (selected.length === 0) {
                     alert('Please select at least one customer.');
                     return;
                 }
+
                 if (confirm('Are you sure you want to delete selected customers?')) {
-                    let form = document.createElement('form');
-                    form.method = 'POST';
-                    form.action = '{{ route('delete.selected.customers') }}';
-                    form.innerHTML = `
-                        @csrf
-                        <input type="hidden" name="_method" value="DELETE">
-                        <input type="hidden" name="groupId" value="${groupId}">
-                        <input type="hidden" name="ids" value="${selected.join(',')}">
-                    `;
-                    document.body.appendChild(form);
-                    form.submit();
+                    submitForm("{{ route('delete.selected.customers') }}", {
+                        _method: 'DELETE',
+                        ids: selected.join(','),
+                        groupId: groupId
+                    });
                 }
             });
+
         });
     </script>
 @endsection

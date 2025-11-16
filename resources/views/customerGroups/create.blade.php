@@ -3,12 +3,19 @@
     <main class="main-wrapper">
         <div class="main-content">
             <!-- Breadcrumb -->
-            <div class="page-breadcrumb d-none d-sm-flex align-items-center justify-content-between mb-3">
-                <div>
+            
+            <div class="page-header mb-3">
+                <div class="d-flex align-items-center justify-content-between">
                     <nav aria-label="breadcrumb">
-                        <ol class="breadcrumb mb-0 p-0">
-                            <li class="breadcrumb-item"><a href="{{ route('index') }}"><i class="bx bx-home-alt"></i></a></li>
-                            <li class="breadcrumb-item"><a href="{{ route('customer.groups.index') }}">Customer Groups</a>
+                        <ol class="breadcrumb mb-0">
+                            <li class="breadcrumb-item">
+                                <a href="{{ route('index') }}" class="d-inline-flex align-items-center" aria-label="Dashboard">
+                                    <div class="parent-icon"><i class="bi bi-house-fill"></i></div>
+                                    <span>Dashboard</span>
+                                </a>
+                            </li>
+                            <li class="breadcrumb-item">
+                                <a href="{{ route('customer.groups.index') }}">Customer Groups</a>
                             </li>
                             <li class="breadcrumb-item active" aria-current="page">Create Customer Group</li>
                         </ol>
@@ -16,31 +23,7 @@
                 </div>
             </div>
 
-            <!-- Error/Success Messages -->
-            @if ($errors->any())
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    <ul class="mb-0">
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            @endif
-
-            @if (session('success'))
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    {{ session('success') }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            @endif
-
-            @if (session('error'))
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    {{ session('error') }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            @endif
+            @include('layouts.errors')
 
             <!-- Create Form -->
             <div class="row">

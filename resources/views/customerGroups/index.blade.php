@@ -93,17 +93,17 @@
                                             </td>
                                             <td>{{ $key + 1 }}</td>
                                             <td>
-                                                <a class="d-flex align-items-center gap-3" href="#">
+                                                <a class="d-flex align-items-center gap-3" href="{{ route('customer.groups.view', $group->id) }}">
                                                     <p class="mb-0 customer-name fw-bold">
                                                         {{ $group->name }}
                                                     </p>
                                                 </a>
                                             </td>
-                                            <td>{{ $group->total_customers ?? 0 }}</td>
-                                            <td><span class="badge bg-success">{{ $group->active_customers ?? 0 }}</span>
+                                            <td>{{ $group->customers_count ?? 0 }}</td>
+                                            <td><span class="badge bg-success">{{ $group->active_customers_count ?? 0 }}</span>
                                             </td>
                                             <td><span
-                                                    class="badge bg-secondary">{{ $group->inactive_customers ?? 0 }}</span>
+                                                    class="badge bg-secondary">{{ $group->inactive_customers_count ?? 0 }}</span>
                                             </td>
                                             <td>
                                                 {{ $group->created_at->format('d-M-Y') }}
@@ -150,23 +150,6 @@
                                                             </path>
                                                         </svg>
                                                     </a>
-                                                    {{-- <a aria-label="anchor"
-                                                            href="{{ route('customer.edit', ['id' => $customer->customer->id, 'group_id' => $customer->customer_group_id]) }}"
-                                                            class="btn btn-icon btn-sm bg-warning-subtle me-1"
-                                                            data-bs-toggle="tooltip" data-bs-original-title="Edit">
-                                                            <svg xmlns="http://www.w3.org/2000/svg" width="13"
-                                                                height="13" viewBox="0 0 24 24" fill="none"
-                                                                stroke="currentColor" stroke-width="2"
-                                                                stroke-linecap="round" stroke-linejoin="round"
-                                                                class="feather feather-edit text-warning">
-                                                                <path
-                                                                    d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7">
-                                                                </path>
-                                                                <path
-                                                                    d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z">
-                                                                </path>
-                                                            </svg>
-                                                        </a> --}}
 
                                                     <form action="{{ route('customer.groups.destroy', $group->id) }}"
                                                         method="POST" onsubmit="return confirm('Are you sure?')">
