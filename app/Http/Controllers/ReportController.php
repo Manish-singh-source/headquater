@@ -37,7 +37,8 @@ class ReportController extends Controller
      */
     public function vendorPurchaseHistory(Request $request)
     {
-        try { // Build base query with all relations
+        try {
+            // Build base query with all relations
             $query = PurchaseOrder::with([
                 'vendor',
                 'warehouse',
@@ -47,15 +48,12 @@ class ReportController extends Controller
                 'purchaseGrn',
             ]);
 
-            // Filter only completed vendorPI OR allow null vendorPI
-            // $query->where(function ($q) {
-            //     $q->whereHas('vendorPI', function ($p) {
-            //         $p->where('status', 'completed');
-            //     })
-            //         ->orDoesntHave('vendorPI');
-            // });
+            // Filter only completed vendorPI for consistency with dropdowns
+            $query->whereHas('vendorPI', function ($q) {
+                $q->where('status', 'completed');
+            });
 
-            // Date range filter
+            // Date range filter - filter by purchase order created date
             if ($request->filled('from_date')) {
                 $query->whereDate('created_at', '>=', $request->from_date);
             }
@@ -64,37 +62,29 @@ class ReportController extends Controller
                 $query->whereDate('created_at', '<=', $request->to_date);
             }
 
-            // Purchase order filter
+            // Purchase order filter - filter by purchase order ID
             if ($request->filled('purchase_order_no')) {
                 $po = $request->purchase_order_no;
                 $query->whereIn('id', (array) $po);
             }
 
-            // Vendor filter
+            // Vendor filter - filter by vendor code
             if ($request->filled('vendor_code')) {
                 $vc = $request->vendor_code;
-
-                $query->where(function ($q) use ($vc) {
-                    $q->whereHas('vendor', function ($v) use ($vc) {
-                        $v->whereIn('vendor_code', (array) $vc);
-                    })
-                        ->orDoesntHave('vendor'); // allow purchase orders without vendor
+                $query->whereHas('vendor', function ($v) use ($vc) {
+                    $v->whereIn('vendor_code', (array) $vc);
                 });
             }
 
-            // SKU filter
+            // SKU filter - filter by product SKU
             if ($request->filled('sku')) {
                 $sku = $request->sku;
-
-                $query->where(function ($q) use ($sku) {
-                    $q->whereHas('purchaseOrderProducts', function ($p) use ($sku) {
-                        $p->whereIn('sku', (array) $sku);
-                    })
-                        ->orDoesntHave('purchaseOrderProducts'); // allow purchase orders without products
+                $query->whereHas('purchaseOrderProducts', function ($p) use ($sku) {
+                    $p->whereIn('sku', (array) $sku);
                 });
             }
 
-            // Clone for stats
+            // Clone for stats before pagination
             $statsQuery = clone $query;
 
             // Get paginated purchase orders (15 per page)
@@ -110,21 +100,19 @@ class ReportController extends Controller
             // Get unique purchase order IDs from all completed purchase orders for dropdown
             $purchaseOrderNumbers = PurchaseOrder::whereHas('vendorPI', function ($q) {
                 $q->where('status', 'completed');
-            })->distinct('id')->pluck('id');
+            })->distinct('id')->orderBy('id', 'desc')->pluck('id');
 
             // Get unique vendor codes from all completed purchase orders for dropdown
             $purchaseOrdersVendors = PurchaseOrder::whereHas('vendorPI', function ($q) {
                 $q->where('status', 'completed');
-            })->with('vendor')->get()->pluck('vendor.vendor_code')->unique()->filter();
+            })->with('vendor')->get()->pluck('vendor.vendor_code')->unique()->filter()->sort()->values();
 
             // Get unique SKUs from all completed purchase orders for dropdown
             $purchaseOrdersSKUs = PurchaseOrderProduct::whereHas('purchaseOrder.vendorPI', function ($q) {
                 $q->where('status', 'completed');
-            })->distinct('sku')->pluck('sku');
+            })->distinct('sku')->orderBy('sku')->pluck('sku');
 
             $filters = $request->only(['from_date', 'to_date', 'purchase_order_no', 'vendor_code', 'sku']);
-
-            // dd($vendorPIProducts);
 
             return view('vendor-purchase-history', compact(
                 'vendorPIProducts',
@@ -240,9 +228,9 @@ class ReportController extends Controller
             // Add UTF-8 BOM for proper Excel encoding
             fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
 
-            // Add header row
+            // Add header row - matching all table columns
             fputcsv($file, [
-                'Purchse Order No',
+                'Purchase Order No',
                 'Purchase Order Date',
                 'Vendor Name',
                 'GSTIN',
@@ -250,7 +238,7 @@ class ReportController extends Controller
                 'SKU',
                 'HSN/SAC',
                 'Quantity',
-                'UOM',
+                'UoM',
                 'Rate',
                 'Discount',
                 'Taxable Value',
@@ -266,9 +254,16 @@ class ReportController extends Controller
                 'Payment Method',
                 'Invoice Ref',
                 'Invoice Date',
+                'Invoice Amount',
+                'Invoice Due',
+                'Invoice Paid',
+                'Invoice Uploaded',
+                'GRN Uploaded',
                 'Due Date',
                 'Shipping Charges',
-                'Status',
+                'PO Created',
+                'PI Received',
+                'Approved',
                 'Warehouse',
             ]);
 
@@ -278,17 +273,46 @@ class ReportController extends Controller
                 $purchaseInvoice = $purchaseOrder->purchaseInvoices->first() ?? null;
                 $vendorPI = $purchaseOrder->vendorPI->first() ?? null;
                 $payment = $vendorPI ? $vendorPI->payments->first() : null;
+                $purchaseGrn = $purchaseOrder->purchaseGrn ?? null;
 
                 // Loop through each product in the purchase order
                 foreach ($purchaseOrder->purchaseOrderProducts as $product) {
                     $productDetails = $product->product ?? null;
                     $gstRate = floatval($productDetails->gst ?? 0);
-                    $unitCost = floatval($product->unit_cost ?? 0);
+                    $unitCost = floatval($product->product->mrp ?? 0);
                     $quantity = floatval($product->ordered_quantity ?? 0);
                     $taxableValue = $unitCost * $quantity;
                     $gstAmount = ($taxableValue * $gstRate) / 100;
                     $cessRate = 0; // Cess not in purchase_order_products table
                     $cessAmount = 0;
+
+                    // Calculate CGST/SGST/IGST
+                    $cgst = $gstRate / 2;
+                    $sgst = $gstRate / 2;
+                    $igst = $gstRate; // Simplified - should check if interstate
+
+                    // Determine payment status
+                    $paymentStatus = 'Pending';
+                    if ($vendorPI) {
+                        $statusLabels = [
+                            'paid' => 'Paid',
+                            'partial_paid' => 'Partial Paid',
+                            'pending' => 'Pending',
+                        ];
+                        $paymentStatus = $statusLabels[$vendorPI->payment_status] ?? 'Pending';
+                    }
+
+                    // Determine approved status
+                    $approvedStatus = 'N/A';
+                    if ($vendorPI) {
+                        $allocationStatusLabels = [
+                            'pending' => 'Pending',
+                            'approve' => 'Approval Pending',
+                            'reject' => 'Rejected',
+                            'completed' => 'Completed',
+                        ];
+                        $approvedStatus = $allocationStatusLabels[$vendorPI->status] ?? 'N/A';
+                    }
 
                     fputcsv($file, [
                         $purchaseOrder->id ?? 'N/A',
@@ -300,25 +324,32 @@ class ReportController extends Controller
                         $productDetails->hsn ?? 'N/A',
                         $product->ordered_quantity ?? 0,
                         'PCS',
-                        $product->unit_cost ?? 0,
-                        $product->discount_per_unit ?? 0,
-                        $taxableValue,
-                        $gstRate,
-                        $gstRate / 2,
-                        $gstRate / 2,
-                        $gstRate,
-                        $gstAmount,
-                        $cessRate,
-                        $cessAmount,
+                        number_format($product->product->mrp ?? 0, 2),
+                        number_format($product->discount_per_unit ?? 0, 2),
+                        number_format($taxableValue, 2),
+                        $gstRate . '%',
+                        $cgst . '%',
+                        $sgst . '%',
+                        $igst . '%',
+                        number_format($gstAmount, 2),
+                        $cessRate . '%',
+                        number_format($cessAmount, 2),
                         $vendor->pan_number ?? 'N/A',
-                        $payment ? ($payment->payment_status == 'completed' ? 'Paid' : 'Pending') : 'Pending',
-                        $payment ? $payment->payment_method : 'N/A',
+                        $paymentStatus,
+                        $payment->payment_method ?? 'N/A',
                         $purchaseInvoice->invoice_no ?? 'N/A',
                         $purchaseInvoice?->created_at ? $purchaseInvoice->created_at->format('d-m-Y') : 'N/A',
-                        'N/A', // Due Date
-                        0, // Shipping Charges
-                        $vendorPI ? ucfirst($vendorPI->status) : 'N/A',
-                        $purchaseOrder->warehouse->name ?? 'N/A',
+                        $vendorPI->total_amount ?? 'N/A',
+                        $vendorPI->total_due_amount ?? 'N/A',
+                        $vendorPI->total_paid_amount ?? 'N/A',
+                        $purchaseInvoice ? 'Yes' : 'No',
+                        $purchaseGrn ? 'Yes' : 'No',
+                        $vendorPI && $vendorPI->updated_at ? $vendorPI->updated_at->addMonth()->format('d-m-Y') : 'N/A',
+                        'N/A', // Shipping Charges
+                        $purchaseOrder->created_at ? $purchaseOrder->created_at->format('d-m-Y') : 'N/A',
+                        $vendorPI && $vendorPI->updated_at ? $vendorPI->updated_at->format('d-m-Y') : 'N/A',
+                        $approvedStatus,
+                        $vendorPI->warehouse->name ?? 'N/A',
                     ]);
                 }
             }
@@ -333,7 +364,7 @@ class ReportController extends Controller
                     'date_from' => $request->date_from,
                     'date_to' => $request->date_to,
                     'sku' => $request->sku,
-                    'records' => $vendorReports->count(),
+                    'records' => $vendorPIProducts->count(),
                 ])
                 ->event('csv_report_generated')
                 ->log('Vendor purchase history CSV report generated');
