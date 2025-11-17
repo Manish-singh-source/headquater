@@ -364,17 +364,20 @@
                                         </th>
                                         <th>Warehouse</th>
                                         <th>Brand</th>
-                                        <th>Brand Title</th>
+                                        <th>Brand&nbsp;Title</th>
                                         <th>Category</th>
                                         <th>SKU</th>
                                         <th>PCS/Set</th>
                                         <th>Sets/CTN</th>
                                         <th>MRP</th>
-                                        <th>Original Qty</th>
-                                        <th>Available Qty</th>
-                                        <th>Block Qty</th>
-                                        <th>Stock Value</th>
-                                        <th>Status</th>
+                                        <th>Original&nbsp;Qty</th>
+                                        <th>Available&nbsp;Qty</th>
+                                        <th>Hold&nbsp;Qty</th>
+                                        <th>Taxable&nbsp;Value</th>
+                                        <th>GST</th>
+                                        <th>GST&nbsp;Value</th>
+                                        <th>Total&nbsp;Value</th>
+                                        <th>Status</th> 
                                         <th>Date</th>
                                     </tr>
                                 </thead>
@@ -406,6 +409,9 @@
                                             <td>{{ number_format($product->available_quantity ?? 0) }}</td>
                                             <td>{{ number_format($product->block_quantity ?? 0) }}</td>
                                             <td>₹{{ number_format($stockValue, 2) }}</td>
+                                            <td>{{ $product->product->gst ?? 0 }}%</td>
+                                            <td>₹{{ number_format($stockValue * ($product->product->gst ?? 0) / 100, 2) }}</td>
+                                            <td>₹{{ number_format($stockValue + ($stockValue * ($product->product->gst ?? 0) / 100), 2) }}</td>
                                             <td>
                                                 @if($status == 'Out of Stock')
                                                     <span class="badge bg-danger">Out of Stock</span>

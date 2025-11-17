@@ -79,6 +79,9 @@ class ReportController extends Controller
             // SKU filter - filter by product SKU
             if ($request->filled('sku')) {
                 $sku = $request->sku;
+                $query->with(['purchaseOrderProducts' => function ($p) use ($sku) {
+                    $p->whereIn('sku', (array) $sku);
+                }]);
                 $query->whereHas('purchaseOrderProducts', function ($p) use ($sku) {
                     $p->whereIn('sku', (array) $sku);
                 });
@@ -201,17 +204,27 @@ class ReportController extends Controller
             }
 
             // Apply sku filter if sku is provided (supports single or multiple)
+            // if ($request->filled('sku')) {
+            //     $sku = $request->input('sku');
+            //     if (is_array($sku)) {
+            //         $query->whereHas('purchaseOrderProducts', function ($q) use ($sku) {
+            //             $q->whereIn('sku', $sku);
+            //         });
+            //     } else {
+            //         $query->whereHas('purchaseOrderProducts', function ($q) use ($sku) {
+            //             $q->where('sku', $sku);
+            //         });
+            //     }
+            // }
+            // SKU filter - filter by product SKU
             if ($request->filled('sku')) {
-                $sku = $request->input('sku');
-                if (is_array($sku)) {
-                    $query->whereHas('purchaseOrderProducts', function ($q) use ($sku) {
-                        $q->whereIn('sku', $sku);
-                    });
-                } else {
-                    $query->whereHas('purchaseOrderProducts', function ($q) use ($sku) {
-                        $q->where('sku', $sku);
-                    });
-                }
+                $sku = $request->sku;
+                $query->with(['purchaseOrderProducts' => function ($p) use ($sku) {
+                    $p->whereIn('sku', (array) $sku);
+                }]);
+                $query->whereHas('purchaseOrderProducts', function ($p) use ($sku) {
+                    $p->whereIn('sku', (array) $sku);
+                });
             }
 
             // For export we want all matching records (no pagination)
@@ -700,7 +713,10 @@ class ReportController extends Controller
                 'Original Quantity',
                 'Available Quantity',
                 'Hold Qty',
-                'Stock Value',
+                'Taxable Value',
+                'GST',
+                'GST Value',
+                'Total Value',
                 'Date',
             ]);
 
@@ -722,6 +738,9 @@ class ReportController extends Controller
                     $record->available_quantity ?? 0,
                     $record->block_quantity ?? 0,
                     number_format($stockValue, 2, '.', ''),
+                    $product->gst ?? 0,
+                    number_format($stockValue * ($product->gst ?? 0) / 100, 2, '.', ''),
+                    number_format($stockValue + ($stockValue * ($product->gst ?? 0) / 100), 2, '.', ''),
                     $record->created_at?->format('d-m-Y') ?? 'N/A',
                 ]);
             }
@@ -772,9 +791,11 @@ class ReportController extends Controller
      *
      * @return \Illuminate\View\View
      */
-    public function customerSalesHistory(Request $request)
+    public function customerSalesHistory1(Request $request)
     {
         try { // Base Query with all relationships
+
+            // dd($request->all());
             $query = SalesOrder::with([
                 'warehouse',
                 'customer.groupInfo.customerGroup',
@@ -786,9 +807,12 @@ class ReportController extends Controller
                 'orderedProducts',
                 'orderedProducts.tempOrder',
                 'orderedProducts.customer',
+                'orderedProducts.invoiceDetails.invoice',
                 'orderedProducts.invoiceDetails.invoice.appointment',
                 'orderedProducts.warehouseAllocations.warehouse',
             ]);
+
+            // dd($query[0]->orderedProducts[0]->invoiceDetails);
 
             // Date Filters
             if ($request->filled('from_date')) {
@@ -873,15 +897,27 @@ class ReportController extends Controller
             }
 
             // Invoice Number Filter
+            // if ($request->filled('invoice_no')) {
+            //     $invoiceNos = (array) $request->invoice_no;
+            //     $query->where(function ($q) use ($invoiceNos) {
+            //         $q->with('invoices', function ($inv) use ($invoiceNos) {
+            //             $inv->whereIn('invoice_number', $invoiceNos);
+            //         })->whereHas('invoices', function ($inv) use ($invoiceNos) {
+            //             $inv->whereIn('invoice_number', $invoiceNos);
+            //         });
+            //     });
+            // }
+
+            // Invoice Number Filter
             if ($request->filled('invoice_no')) {
                 $invoiceNos = (array) $request->invoice_no;
-                $query->where(function ($q) use ($invoiceNos) {
-                    $q->with('invoices', function ($inv) use ($invoiceNos) {
-                        $inv->whereIn('invoice_number', $invoiceNos);
-                    })->whereHas('invoices', function ($inv) use ($invoiceNos) {
-                        $inv->whereIn('invoice_number', $invoiceNos);
+
+                $query->with('orderedProducts.invoiceDetails.invoice', function ($q) use ($invoiceNos) {
+                    $q->whereIn('invoice_number', $invoiceNos);
+                })
+                    ->whereHas('orderedProducts.invoiceDetails.invoice', function ($q) use ($invoiceNos) {
+                        $q->whereIn('invoice_number', $invoiceNos);
                     });
-                });
             }
 
             // PO Number Filter
@@ -911,10 +947,12 @@ class ReportController extends Controller
                 }, $apptDates);
 
                 $query->where(function ($q) use ($convertedDates) {
+                    $q->with('invoices.appointment', function ($app) use ($convertedDates) {
+                        $app->whereIn('appointment_date', $convertedDates);
+                    });
                     $q->whereHas('invoices.appointment', function ($app) use ($convertedDates) {
                         $app->whereIn('appointment_date', $convertedDates);
-                    })
-                        ->orDoesntHave('invoices'); // keep even if no invoice/appointment
+                    });
                 });
             }
 
@@ -1020,6 +1058,144 @@ class ReportController extends Controller
 
             return redirect()->back()->with('error', 'Error retrieving sales history: ' . $e->getMessage());
         }
+    }
+
+    public function customerSalesHistory(Request $request)
+    {
+
+        $query = SalesOrder::with([
+            'customerGroup',
+            'invoices.payments',
+            'invoices.details.salesOrderProduct',
+            'invoices.appointment',
+            'invoices.customer',
+            'invoices.dns',
+            'invoices.warehouse',
+            'orderedProducts',
+            'orderedProducts.tempOrder',
+        ]);
+
+        // Date Filters
+        if ($request->filled('from_date')) {
+            $query->where('order_date', '>=', $request->from_date);
+        }
+
+        if ($request->filled('to_date')) {
+            $query->where('order_date', '<=', $request->to_date);
+        }
+        if ($request->filled('invoice_no')) {
+            $invoiceNos = (array) $request->invoice_no;
+
+            $query->with([
+                'invoices' => function ($q) use ($invoiceNos) {
+                    $q->whereIn('invoice_number', $invoiceNos);
+                }
+            ]);
+
+            $query->whereHas('invoices', function ($q) use ($invoiceNos) {
+                $q->whereIn('invoice_number', $invoiceNos);
+            });
+        }
+        
+        // 
+        if ($request->filled('appointment_date')) {
+            $appointmentDates = (array) $request->appointment_date;
+
+            $query->with([
+                'invoices.appointment' => function ($q) use ($appointmentDates) {
+                    $q->whereIn('appointment_date', $appointmentDates);
+                }
+            ]);
+
+            $query->whereHas('invoices.appointment', function ($q) use ($appointmentDates) {
+                $q->whereIn('appointment_date', $appointmentDates);
+            });
+        }
+        // Final result
+        $salesOrders = $query->latest('order_date')->get();
+
+        // dd($salesOrders[0]->invoices[0]);
+
+        // Stats
+        $statsQuery = clone $query;
+        $allSalesOrders = $statsQuery->get();
+
+        $totalRevenue = $allSalesOrders->sum('total_amount');
+        $totalPaid = $allSalesOrders->sum(function ($salesOrder) {
+            return $salesOrder->invoices->sum(function ($invoice) {
+                return $invoice->payments->sum('amount');
+            });
+        });
+        $totalPendingPayments = $totalRevenue - $totalPaid;
+
+        // Get filter dropdown data
+        $customers = Customer::select('id', 'client_name')
+            ->whereHas('orders')
+            ->orderBy('client_name')
+            ->get()
+            ->map(function ($customer) {
+                return [
+                    'id' => $customer->id,
+                    'name' => $customer->client_name ?? 'N/A',
+                ];
+            });
+
+        $warehouses = Warehouse::active()->select('id', 'name')->get();
+
+        $regions = Customer::distinct()
+            ->whereNotNull('billing_state')
+            ->pluck('billing_state')
+            ->merge(Customer::distinct()->whereNotNull('shipping_state')->pluck('shipping_state'))
+            ->unique()
+            ->sort()
+            ->values();
+
+        $customerGroups = \App\Models\CustomerGroup::active()->select('id', 'name')->get();
+
+        // Get unique invoice numbers for filter dropdown (from sales orders' invoices)
+        $invoiceNumbers = Invoice::distinct('invoice_number')
+            ->whereNotNull('invoice_number')
+            ->whereNotNull('sales_order_id')
+            ->pluck('invoice_number')
+            ->sort()
+            ->values();
+
+        // Get unique PO numbers from sales orders
+        $poNumbers = TempOrder::whereNotNull('po_number')
+            ->whereHas('orderedProduct.salesOrder')
+            ->distinct()
+            ->pluck('po_number')
+            ->sort()
+            ->values();
+
+        // Get unique appointment dates (from invoices related to sales orders)
+        $appointmentDates = \App\Models\Appointment::distinct('appointment_date')
+            ->whereNotNull('appointment_date')
+            ->whereHas('invoice', function ($q) {
+                $q->whereNotNull('sales_order_id');
+            })
+            ->pluck('appointment_date')
+            ->map(function ($date) {
+                return $date->format('d-m-Y');
+            })
+            ->sort()
+            ->values();
+
+        // Prepare filters array for view
+        $filters = [
+            'from_date' => $request->from_date,
+            'to_date' => $request->to_date,
+            'customer_id' => $request->customer_id,
+            'warehouse_id' => $request->warehouse_id,
+            'region' => $request->region,
+            'payment_status' => $request->payment_status,
+            'customer_type' => $request->customer_type,
+            'invoice_no' => $request->input('invoice_no', []),
+            'po_no' => $request->input('po_no', []),
+            'appointment_date' => $request->input('appointment_date', []),
+        ];
+
+        return view('customer-sales-history', compact('salesOrders', 'customerGroups', 'customers', 'warehouses', 'regions', 'invoiceNumbers', 'poNumbers', 'appointmentDates', 'totalRevenue', 'totalPaid', 'totalPendingPayments', 'filters'));
     }
 
     /**
