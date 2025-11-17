@@ -360,7 +360,7 @@ class SalesOrderController extends Controller
                     'facility_location' => $record['Facility Location'] ?? '',
                     'po_date' => $record['PO Date'] ?? '',
                     'po_expiry_date' => $record['PO Expiry Date'] ?? '',
-                    'hsn' => $record['HSN'] ?? '',
+                    'hsn' => $product->product->hsn ?? $record['HSN'],
                     'gst' => ($record['GST'] < 1 && $record['GST'] > 0)
                         ? intval(round($record['GST'] * 100))  // convert decimals (0.18 -> 18)
                         : intval($record['GST']),              // already integer (e.g., 18)

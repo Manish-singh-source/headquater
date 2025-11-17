@@ -559,7 +559,7 @@
                                     <th>DN&nbsp;Reciept</th>
                                     <th>LR</th>
                                     <th>Currency</th>
-
+                                    <th>Brand</th>
                                     <th>SKU</th>
                                     <th>HSN</th>
                                     <th>Ordered&nbsp;Quantity</th>
@@ -637,6 +637,7 @@
                                                     <td>{{ $salesOrder->appointment?->lr ? 'Yes' : 'No' }}</td>
                                                     <td>{{ $salesOrder->invoices->first()->currency ?? 'INR' }}</td>
 
+                                                    <td>{{ $product->product->brand ?? 'N/A' }}</td>
                                                     <td>{{ $product->tempOrder->sku ?? 'N/A' }}</td>
                                                     <td>{{ $product->tempOrder->hsn ?? 'N/A' }}</td>
                                                     <td>{{ $product->ordered_quantity ?? 'N/A' }}</td>
