@@ -802,13 +802,12 @@ class ReportController extends Controller
             // Warehouse Filter - filter by warehouse allocations, not sales_order warehouse_id
             if ($request->filled('warehouse_id')) {
                 $warehouseIds = (array) $request->warehouse_id;
-
-                $query->where(function ($q) use ($warehouseIds) {
-                    $q->whereHas('orderedProducts.warehouseAllocations', function ($wa) use ($warehouseIds) {
-                        $wa->whereIn('warehouse_id', $warehouseIds);
-                    })
-                        ->orDoesntHave('orderedProducts'); // keep when no orderedProducts
-                });
+                $query->with('orderedProducts.warehouseAllocations', function ($q) use ($warehouseIds) {
+                    $q->whereIn('warehouse_id', $warehouseIds);
+                })
+                    ->whereHas('orderedProducts.warehouseAllocations', function ($q) use ($warehouseIds) {
+                        $q->whereIn('warehouse_id', $warehouseIds);
+                    });
             }
 
             // Customer Filter - filter by product-level customer (orderedProducts.customer)
@@ -816,10 +815,11 @@ class ReportController extends Controller
                 $customerIds = (array) $request->customer_id;
 
                 $query->where(function ($q) use ($customerIds) {
-                    $q->whereHas('orderedProducts.customer', function ($c) use ($customerIds) {
+                    $q->with('orderedProducts.customer', function ($c) use ($customerIds) {
                         $c->whereIn('id', $customerIds);
-                    })
-                        ->orDoesntHave('orderedProducts'); // keep when no orderedProducts
+                    })->whereHas('orderedProducts.customer', function ($c) use ($customerIds) {
+                        $c->whereIn('id', $customerIds);
+                    });
                 });
             }
 
@@ -828,13 +828,17 @@ class ReportController extends Controller
                 $regions = (array) $request->region;
 
                 $query->where(function ($q) use ($regions) {
-                    $q->whereHas('orderedProducts.customer', function ($c) use ($regions) {
+                    $q->with('orderedProducts.customer', function ($c) use ($regions) {
                         $c->where(function ($subQ) use ($regions) {
                             $subQ->whereIn('billing_state', $regions)
                                 ->orWhereIn('shipping_state', $regions);
                         });
-                    })
-                        ->orDoesntHave('orderedProducts'); // keep when no orderedProducts
+                    })->whereHas('orderedProducts.customer', function ($c) use ($regions) {
+                        $c->where(function ($subQ) use ($regions) {
+                            $subQ->whereIn('billing_state', $regions)
+                                ->orWhereIn('shipping_state', $regions);
+                        });
+                    });
                 });
             }
 
@@ -871,25 +875,26 @@ class ReportController extends Controller
             // Invoice Number Filter
             if ($request->filled('invoice_no')) {
                 $invoiceNos = (array) $request->invoice_no;
-
                 $query->where(function ($q) use ($invoiceNos) {
-                    $q->whereHas('invoices', function ($inv) use ($invoiceNos) {
+                    $q->with('invoices', function ($inv) use ($invoiceNos) {
                         $inv->whereIn('invoice_number', $invoiceNos);
-                    })
-                        ->orDoesntHave('invoices');
+                    })->whereHas('invoices', function ($inv) use ($invoiceNos) {
+                        $inv->whereIn('invoice_number', $invoiceNos);
+                    });
                 });
             }
 
             // PO Number Filter
             if ($request->filled('po_no')) {
                 $poNos = (array) $request->po_no;
-
-                $query->where(function ($q) use ($poNos) {
-                    $q->whereHas('orderedProducts.tempOrder', function ($tmp) use ($poNos) {
-                        $tmp->whereIn('po_number', $poNos);
-                    })
-                        ->orDoesntHave('orderedProducts'); // keep when no orderedProducts
-                });
+                $query->with('orderedProducts.tempOrder', function ($tmp) use ($poNos) {
+                    $tmp->whereIn('po_number', $poNos);
+                })
+                    ->where(function ($q) use ($poNos) {
+                        $q->whereHas('orderedProducts.tempOrder', function ($tmp) use ($poNos) {
+                            $tmp->whereIn('po_number', $poNos);
+                        }); // keep when no orderedProducts
+                    });
             }
 
             // Appointment Date Filter
@@ -915,7 +920,6 @@ class ReportController extends Controller
 
             // Final result
             $salesOrders = $query->latest('order_date')->get();
-            // dd($salesOrders[0]->orderedProducts->first()->invoiceDetails);
 
             // Stats
             $statsQuery = clone $query;
@@ -1089,38 +1093,43 @@ class ReportController extends Controller
             if ($request->filled('warehouse_id')) {
                 $warehouseIds = (array) $request->warehouse_id;
 
-                $query->where(function ($q) use ($warehouseIds) {
-                    $q->whereHas('orderedProducts.warehouseAllocations', function ($wa) use ($warehouseIds) {
-                        $wa->whereIn('warehouse_id', $warehouseIds);
-                    })
-                        ->orDoesntHave('orderedProducts'); // keep when no orderedProducts
-                });
+                $query->with('orderedProducts.warehouseAllocations', function ($q) use ($warehouseIds) {
+                    $q->whereIn('warehouse_id', $warehouseIds);
+                })
+                    ->whereHas('orderedProducts.warehouseAllocations', function ($q) use ($warehouseIds) {
+                        $q->whereIn('warehouse_id', $warehouseIds);
+                    });
             }
 
-            // Apply customer filter - filter by product-level customer (orderedProducts.customer)
+            // Customer Filter - filter by product-level customer (orderedProducts.customer)
             if ($request->filled('customer_id')) {
                 $customerIds = (array) $request->customer_id;
 
                 $query->where(function ($q) use ($customerIds) {
-                    $q->whereHas('orderedProducts.customer', function ($c) use ($customerIds) {
+                    $q->with('orderedProducts.customer', function ($c) use ($customerIds) {
                         $c->whereIn('id', $customerIds);
-                    })
-                        ->orDoesntHave('orderedProducts'); // keep when no orderedProducts
+                    })->whereHas('orderedProducts.customer', function ($c) use ($customerIds) {
+                        $c->whereIn('id', $customerIds);
+                    });
                 });
             }
 
-            // Apply region filter - filter by product-level customer's shipping/billing state
+            // Region Filter - filter by product-level customer's shipping/billing state
             if ($request->filled('region')) {
                 $regions = (array) $request->region;
 
                 $query->where(function ($q) use ($regions) {
-                    $q->whereHas('orderedProducts.customer', function ($c) use ($regions) {
+                    $q->with('orderedProducts.customer', function ($c) use ($regions) {
                         $c->where(function ($subQ) use ($regions) {
                             $subQ->whereIn('billing_state', $regions)
                                 ->orWhereIn('shipping_state', $regions);
                         });
-                    })
-                        ->orDoesntHave('orderedProducts'); // keep when no orderedProducts
+                    })->whereHas('orderedProducts.customer', function ($c) use ($regions) {
+                        $c->where(function ($subQ) use ($regions) {
+                            $subQ->whereIn('billing_state', $regions)
+                                ->orWhereIn('shipping_state', $regions);
+                        });
+                    });
                 });
             }
 
@@ -1154,28 +1163,29 @@ class ReportController extends Controller
                 $query->whereIn('customer_group_id', (array) $request->customer_type);
             }
 
-            // Apply invoice no filter
+            // Invoice Number Filter
             if ($request->filled('invoice_no')) {
                 $invoiceNos = (array) $request->invoice_no;
-
                 $query->where(function ($q) use ($invoiceNos) {
-                    $q->whereHas('invoices', function ($inv) use ($invoiceNos) {
+                    $q->with('invoices', function ($inv) use ($invoiceNos) {
                         $inv->whereIn('invoice_number', $invoiceNos);
-                    })
-                        ->orDoesntHave('invoices');
+                    })->whereHas('invoices', function ($inv) use ($invoiceNos) {
+                        $inv->whereIn('invoice_number', $invoiceNos);
+                    });
                 });
             }
 
-            // Apply PO no filter
+            // PO Number Filter
             if ($request->filled('po_no')) {
                 $poNos = (array) $request->po_no;
-
-                $query->where(function ($q) use ($poNos) {
-                    $q->whereHas('orderedProducts.tempOrder', function ($tmp) use ($poNos) {
-                        $tmp->whereIn('po_number', $poNos);
-                    })
-                        ->orDoesntHave('orderedProducts'); // keep when no orderedProducts
-                });
+                $query->with('orderedProducts.tempOrder', function ($tmp) use ($poNos) {
+                    $tmp->whereIn('po_number', $poNos);
+                })
+                    ->where(function ($q) use ($poNos) {
+                        $q->whereHas('orderedProducts.tempOrder', function ($tmp) use ($poNos) {
+                            $tmp->whereIn('po_number', $poNos);
+                        }); // keep when no orderedProducts
+                    });
             }
 
             // Apply appointment date filter

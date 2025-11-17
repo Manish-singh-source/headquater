@@ -328,7 +328,7 @@
                                     <!-- Customer Type Filter -->
                                     <div class="col-md-2">
                                         <div class="mb-3">
-                                            <label class="form-label">Customer Type</label>
+                                            <label class="form-label">Customer Group</label>
                                             <div class="dropdown">
                                                 <button class="btn btn-outline-secondary dropdown-toggle w-100 text-start"
                                                     type="button" id="customerTypeDropdown" data-bs-toggle="dropdown">
@@ -337,7 +337,7 @@
                                                         @if (is_array($filters['customer_type'] ?? null) && count($filters['customer_type']) > 0)
                                                             {{ count($filters['customer_type']) }} selected
                                                         @else
-                                                            Select Type
+                                                            Select Group Name
                                                         @endif
                                                     </span>
                                                 </button>
@@ -679,65 +679,6 @@
                                                     </td> --}}
                                                 </tr>
                                             @endforeach
-                                        @else
-                                            <tr>
-                                                <td>{{ $salesOrder->customerGroup->name ?? 'N/A' }}</td>
-                                                <td>{{ $product->customer->client_name ?? 'N/A' }}</td>
-                                                <td>{{ $product->tempOrder->gst ?? 'N/A' }}</td>
-                                                <td>{{ $salesOrder->invoices->first()->invoice_number ?? 'N/A' }}</td>
-                                                <td>{{ $salesOrder->created_by ?? 'N/A' }}</td>
-                                                <td>{{ $product->customer->contact_no ?? 'N/A' }}</td>
-                                                <td>{{ $product->customer->email ?? 'N/A' }}</td>
-                                                <td>{{ $product->customer->shipping_city ?? 'N/A' }}</td>
-                                                <td>{{ $product->customer->shipping_state ?? 'N/A' }}</td>
-                                                <td>{{ $product->tempOrder->po_number ?? 'N/A' }}</td>
-                                                <td>{{ $product->tempOrder->po_date ?? 'N/A' }}</td>
-
-                                                <td>{{ $product->invoiceDetails->first()?->invoice->appointment->appointment_date->format('d-m-Y') ?? 'N/A' }}
-                                                </td>
-                                                <td>{{ $product->invoiceDetails->first()?->invoice->appointment->appointment_date->addMonth()->format('d-m-Y') ?? 'N/A' }}
-                                                </td>
-
-                                                {{-- <td>{{ $salesOrder->due_date ?? 'N/A' }}</td>   --}}
-                                                <td>{{ $product->invoiceDetails->first()?->invoice->appointment->pod ? 'Yes' : 'No' }}
-                                                </td>
-                                                <td>{{ $product->invoiceDetails->first()?->invoice->appointment->grn ? 'Yes' : 'No' }}
-                                                </td>
-                                                <td>{{ $product->invoiceDetails->first()?->invoice->dns->dn_amount ?? 0 }}
-                                                </td>
-                                                <td>{{ $product->invoiceDetails->first()?->invoice->dns->dn_receipt ? 'Yes' : 'No' }}
-                                                </td>
-                                                <td>{{ $salesOrder->appointment?->lr ? 'Yes' : 'No' }}</td>
-                                                <td>{{ $salesOrder->invoices->first()->currency ?? 'INR' }}</td>
-
-                                                <td>{{ $product->tempOrder->sku ?? 'N/A' }}</td>
-                                                <td>{{ $product->tempOrder->hsn ?? 'N/A' }}</td>
-                                                <td>{{ $product->ordered_quantity ?? 'N/A' }}</td>
-                                                <td>{{ $product->final_dispatched_quantity ?? 'N/A' }}</td>
-                                                <td>{{ $product->box_count ?? 'N/A' }}</td>
-                                                <td>{{ $product->weight ?? 'N/A' }}</td>
-                                                <td>{{ $product->price ?? 'N/A' }}</td>
-                                                <td>{{ $product->subtotal ?? 'N/A' }}</td>
-                                                <td>{{ $product->tempOrder->gst ?? 'N/A' }}</td>
-                                                <td>{{ $product->final_dispatched_quantity * $product->price * (1 + $product->tempOrder->gst / 100) ?? 'N/A' }}
-                                                </td>
-                                                <td>{{ $statuses[$salesOrder->status] ?? 'N/A' }}</td>
-                                                <td>{{ $salesOrder->invoices->first()->amount_paid ?? 'N/A' }}</td>
-                                                <td>{{ $salesOrder->invoices->first()->balance_due ?? 'N/A' }}</td>
-                                                <td>{{ $salesOrder->invoices->first()->payment_date ?? 'N/A' }}</td>
-                                                <td>{{ $salesOrder->invoices->first()->payment_mode ?? 'N/A' }}</td>
-
-                                                <td>{{ $product->tempOrder->gst / 2 ?? 'N/A' }}</td>
-                                                <td>{{ $product->tempOrder->gst / 2 ?? 'N/A' }}</td>
-                                                <td>{{ $product->tempOrder->gst ?? 'N/A' }}</td>
-                                                <td>{{ $salesOrder->invoices->first()->cess ?? 'N/A' }}</td>
-                                                <td>
-                                                    <a href="" class="btn btn-icon btn-sm bg-primary-subtle me-1"
-                                                        data-bs-toggle="tooltip" title="View Sales Order">
-                                                        <i class="bx bx-show text-primary"></i>
-                                                    </a>
-                                                </td>
-                                            </tr>
                                         @endif
                                     @endforeach
                                 @empty
