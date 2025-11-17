@@ -1026,3 +1026,45 @@ custom purchase order products:
 
 11-12 
 
+
+
+
+
+Sales Orders:
+	1. list of all sales orders
+	2. statuses of sales orders:
+		i. blocked
+		ii. ready to package
+		iii. packaging
+		iv. packaged
+		v. ready to ship
+		vi. shipped
+		vii. delivered
+		viii. completed
+
+Packaging List:
+	1. list of all sales orders whose status is ready to package & not ready to ship 
+	2. statuses of all packaging orders:
+		i. packaging
+		ii. partial pending
+		iii. packaged
+		iv. approval pending
+		v. approved (ready to ship)
+
+
+----------------------------------------------------
+	1. Sales order
+		i. ready_to_package
+	2. sales orders products
+		i. packaging
+	3. warehouse allocations
+		i. packaging 
+	
+
+
+Ready To Ship:
+	1. list of all sales orders whose status is approved(ready to ship) 
+	2. statuses of all ready to ship orders:
+		i. ready to ship
+		ii. shipped
+		ii. delivered

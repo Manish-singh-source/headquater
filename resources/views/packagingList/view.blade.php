@@ -62,6 +62,22 @@
                 </div>
             </div>
 
+            @if (!$isAdmin ?? false)
+                @if ($readyToShipAllocations->count() > 0)
+                    <div class="alert alert-info my-2" role="alert">
+                        <i class="bx bx-info-circle me-1"></i> You have
+                        {{ $readyToShipAllocations->count() }} product(s) ready to be marked as "Ready to Ship".
+                    </div>
+                {{-- @else --}}
+                    {{-- <div class="alert alert-secondary my-2" role="alert">
+                        <i class="bx bx-info-circle me-1"></i> No products are ready to be marked as "Ready to Ship".
+                    </div> --}}
+                @endif
+            @endif
+
+            {{-- Display Success or Error Messages --}}
+            @include('layouts.errors')
+
             {{-- Pending Approvals - Individual Warehouse Cards for Admin --}}
             @if ($isAdmin ?? false)
                 @if (count($pendingApprovalList) > 0)
@@ -131,10 +147,11 @@
                             <h6 class="mb-3">Customer PO Table</h6>
                         </div>
                         <!-- Tabs Navigation -->
-                        <div class="d-flex justify-content-end my-3 gap-2">
+                        @if (!$isAdmin ?? false)
+                            <div class="d-flex justify-content-end my-3 gap-2">
 
-                            <!-- Client Name Dropdown -->
-                            <ul class="nav nav-tabs" id="vendorTabs" role="tablist">
+                                <!-- Client Name Dropdown -->
+                                {{-- <ul class="nav nav-tabs" id="vendorTabs" role="tablist">
                                 <select class="form-select border-2 border-primary" id="customerPOTable"
                                     aria-label="Select Client Name">
                                     <option value="" selected> -- Select Client Name --</option>
@@ -142,57 +159,59 @@
                                         <option value="{{ $name }}">{{ $name }}</option>
                                     @endforeach
                                 </select>
-                            </ul>
+                            </ul> --}}
 
-                            <button class="btn btn-sm border-2 border-primary" data-bs-toggle="modal"
-                                data-bs-target="#staticBackdrop1" class="btn btn-sm border-2 border-primary">
-                                Update PO
-                            </button>
+                                <button class="btn btn-sm border-2 border-primary" data-bs-toggle="modal"
+                                    data-bs-target="#staticBackdrop1" class="btn btn-sm border-2 border-primary">
+                                    Update PO
+                                </button>
 
-                            <!-- Modal -->
-                            <div class="modal fade" id="staticBackdrop1" data-bs-backdrop="static" data-bs-keyboard="false"
-                                tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-                                <div class="modal-dialog">
-                                    <div class="modal-content">
-                                        <form action="{{ route('update.packing.products') }}" method="POST"
-                                            enctype="multipart/form-data">
-                                            @csrf
-                                            @method('POST')
-                                            <div class="modal-header">
-                                                <h1 class="modal-title fs-5" id="staticBackdropLabel">Update Customer PO
-                                                </h1>
-                                                <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                                    aria-label="Close"></button>
-                                            </div>
-
-                                            <div class="modal-body">
-                                                <div class="col-12 mb-3">
-                                                    <input type="hidden" name="salesOrderId"
-                                                        value="{{ $salesOrder->id }}">
+                                <!-- Modal -->
+                                <div class="modal fade" id="staticBackdrop1" data-bs-backdrop="static"
+                                    data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel"
+                                    aria-hidden="true">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <form action="{{ route('update.packing.products') }}" method="POST"
+                                                enctype="multipart/form-data">
+                                                @csrf
+                                                @method('POST')
+                                                <div class="modal-header">
+                                                    <h1 class="modal-title fs-5" id="staticBackdropLabel">Update Customer PO
+                                                    </h1>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                        aria-label="Close"></button>
                                                 </div>
 
-                                                <div class="col-12 mb-3">
-                                                    <label for="pi_excel" class="form-label">Updated PO(CSV/ELSX) <span
-                                                            class="text-danger">*</span></label>
-                                                    <input type="file" name="pi_excel" id="pi_excel"
-                                                        class="form-control" value="" required="">
+                                                <div class="modal-body">
+                                                    <div class="col-12 mb-3">
+                                                        <input type="hidden" name="salesOrderId"
+                                                            value="{{ $salesOrder->id }}">
+                                                    </div>
+
+                                                    <div class="col-12 mb-3">
+                                                        <label for="pi_excel" class="form-label">Updated PO(CSV/ELSX) <span
+                                                                class="text-danger">*</span></label>
+                                                        <input type="file" name="pi_excel" id="pi_excel"
+                                                            class="form-control" value="" required="">
+                                                    </div>
                                                 </div>
-                                            </div>
-                                            <div class="modal-footer">
-                                                <button type="button" class="btn btn-secondary"
-                                                    data-bs-dismiss="modal">Close</button>
-                                                <button type="submit" id="holdOrder"
-                                                    class="btn btn-primary">Submit</button>
-                                            </div>
-                                        </form>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary"
+                                                        data-bs-dismiss="modal">Close</button>
+                                                    <button type="submit" id="holdOrder"
+                                                        class="btn btn-primary">Submit</button>
+                                                </div>
+                                            </form>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
 
-                            <button id="exportPackagingProducts" class="btn btn-sm border-2 border-primary">
-                                <i class="fa fa-file-excel-o"></i> Export to Excel
-                            </button>
-                        </div>
+                                <button id="exportPackagingProducts" class="btn btn-sm border-2 border-primary">
+                                    <i class="fa fa-file-excel-o"></i> Export to Excel
+                                </button>
+                            </div>
+                        @endif
                     </div>
 
                     <div class="product-table" id="poTable">
@@ -422,36 +441,41 @@
                     </div>
                 </div>
             </div>
-
-            <div class="d-flex justify-content-end gap-2 my-2">
-                {{-- <div class="text-end">
-                    <a href="#" class="btn btn-success w-sm waves ripple-light">
-                        Download Excel File
-                    </a>
-                </div>
-                <div class="text-end">
-                    <a href="{{ route('invoices-details') }}" class="btn btn-success w-sm waves ripple-light">
-                        Generate Invoice
-                    </a>
-                </div> --}}
-                <div class="text-end">
-                    <form action="{{ route('change.packaging.status.ready.to.ship') }}" method="POST"
-                        onsubmit="return confirm('Are you sure you want to mark your products as ready to ship?')">
-                        @csrf
-                        @method('PUT')
-                        <input type="hidden" name="sales_order_id" value="{{ $salesOrder->id }}">
-                        <input type="hidden" name="warehouse_id" value="{{ $user->warehouse_id }}">
-                        <input type="hidden" name="user_id" value="{{ $user->id }}">
-                        <button class="btn btn-success w-sm waves ripple-light" type="submit">
-                            @if ($isAdmin ?? false)
-                                Mark All Ready to Ship
-                            @else
-                                Mark My Products Ready to Ship
-                            @endif
-                        </button>
-                    </form>
-                </div>
+            {{-- <div class="text-end">
+                <a href="#" class="btn btn-success w-sm waves ripple-light">
+                    Download Excel File
+                </a>
             </div>
+            <div class="text-end">
+                <a href="{{ route('invoices-details') }}" class="btn btn-success w-sm waves ripple-light">
+                    Generate Invoice
+                </a>
+            </div> --}}
+
+            @if (!$isAdmin ?? false)
+
+                @if ($readyToShipAllocations->count() == 0)
+                    <div class="d-flex justify-content-end gap-2 my-2">
+                        <div class="text-end">
+                            <form action="{{ route('change.packaging.status.ready.to.ship') }}" method="POST"
+                                onsubmit="return confirm('Are you sure you want to mark your products as ready to ship?')">
+                                @csrf
+                                @method('PUT')
+                                <input type="hidden" name="sales_order_id" value="{{ $salesOrder->id }}">
+                                <input type="hidden" name="warehouse_id" value="{{ $user->warehouse_id }}">
+                                <input type="hidden" name="user_id" value="{{ $user->id }}">
+                                <button class="btn btn-success w-sm waves ripple-light" type="submit">
+                                    @if ($isAdmin ?? false)
+                                        Mark All Ready to Ship
+                                    @else
+                                        Mark My Products Ready to Ship
+                                    @endif
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                @endif
+            @endif
         </div>
     </main>
 @endsection
@@ -473,15 +497,15 @@
                 });
 
                 // Filter by client name
-                $('#customerPOTable').on('change', function() {
-                    var selected = $(this).val().trim();
-                    customerPOTableList.column(2).search(selected ? '^' + selected + '$' : '', true, false)
-                        .draw();
-                });
+                // $('#customerPOTable').on('change', function() {
+                //     var selected = $(this).val().trim();
+                //     customerPOTableList.column(2).search(selected ? '^' + selected + '$' : '', true, false)
+                //         .draw();
+                // });
             }
 
             $("#exportPackagingProducts").on("click", function() {
-                var customerFacilityName = $("#customerPOTable").val().trim() || '';
+                var customerFacilityName = '';
                 var salesOrderId = $("#salesOrderId").text().trim();
                 console.log("clicked");
                 console.log(customerFacilityName);

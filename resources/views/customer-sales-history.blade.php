@@ -193,7 +193,7 @@
 
                                     <!-- Warehouse Filter -->
                                     <div class="col-md-2">
-                                        <div class="mb-3">  
+                                        <div class="mb-3">
                                             <label class="form-label">Warehouse</label>
                                             <div class="dropdown">
                                                 <button class="btn btn-outline-secondary dropdown-toggle w-100 text-start"
@@ -205,8 +205,8 @@
                                                         @else
                                                             Select Warehouse
                                                         @endif
-                                                    </span> 
-                                                    </button>
+                                                    </span>
+                                                </button>
                                                 <ul class="dropdown-menu w-100" id="warehouseCheckboxList"
                                                     style="max-height: 250px; overflow-y: auto;">
                                                     @foreach ($warehouses as $warehouse)
@@ -362,7 +362,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                
+
 
                                     <!-- Invoice No Filter -->
                                     <div class="col-md-2">
@@ -541,7 +541,7 @@
                                     <th>Customer&nbsp;Group&nbsp;Name</th>
                                     <th>Warehouse&nbsp;Name</th>
                                     <th>Customer&nbsp;Name</th>
-                                    <th>Customer&nbsp;GSTIN</th>
+                                    {{-- <th>Customer&nbsp;GSTIN</th> --}}
                                     <th>Invoice&nbsp;No</th>
                                     {{-- <th>Creator&nbsp;Name</th> --}}
                                     <th>Customer&nbsp;Phone&nbsp;No</th>
@@ -580,7 +580,7 @@
                                     <th>SGST</th>
                                     <th>IGST</th>
                                     <th>Cess</th>
-                                    <th style="width: 100px;">Action</th>
+                                    {{-- <th style="width: 100px;">Action</th> --}}
                                 </tr>
                             </thead>
                             <tbody>
@@ -592,12 +592,20 @@
                                                     <td>{{ $salesOrder->customerGroup->name ?? 'N/A' }}</td>
                                                     <td>{{ $allocation->warehouse->name ?? 'N/A' }}</td>
                                                     <td>{{ $product->customer->client_name ?? 'N/A' }}</td>
-                                                    <td>{{ $product->tempOrder->gst ?? 'N/A' }}</td>
-                                                    @foreach($salesOrder->invoices as $invoice) 
-                                                        @if($invoice->warehouse_id == $allocation->warehouse_id) 
-                                                            <td>{{ $invoice->invoice_number ?? 'N/A' }}</td> 
+                                                    {{-- <td>{{ $product->tempOrder->gst ?? 'N/A' }}</td> --}}
+                                                    <td>
+                                                        @if ($salesOrder->invoices->count() > 0)
+                                                            @foreach ($salesOrder->invoices as $invoice)
+                                                                @if ($invoice->warehouse_id == $allocation->warehouse_id)
+                                                                    <span>{{ $invoice->invoice_number ?? 'N/A' }}</span>
+                                                                @else
+                                                                    <span>N/A</span>
+                                                                @endif
+                                                            @endforeach
+                                                        @else
+                                                            <span>N/A</span>
                                                         @endif
-                                                    @endforeach
+                                                    </td>
                                                     {{-- <td>{{ $salesOrder->invoices->first()->invoice_number ??   'N/A' }}</td> --}}
                                                     {{-- <td>{{ $salesOrder->created_by ?? 'N/A' }}</td> --}}
                                                     <td>{{ $product->customer->contact_no ?? 'N/A' }}</td>
@@ -638,8 +646,8 @@
                                                     </td>
                                                     <td>{{ $statuses[$salesOrder->status] ?? 'N/A' }}</td>
                                                     <td>{{ $product->invoiceDetails->first()?->invoice?->total_amount ?? 'N/A' }}
-                                                    {{-- @if ($loop->first) --}}
-                                                    {{-- <td rowspan="{{ $product->warehouseAllocations->count() }}"> --}}
+                                                        {{-- @if ($loop->first) --}}
+                                                        {{-- <td rowspan="{{ $product->warehouseAllocations->count() }}"> --}}
                                                     <td>
                                                         {{ $product->invoiceDetails->first()?->invoice?->paid_amount ?? 'N/A' }}
                                                     </td>
@@ -656,13 +664,14 @@
                                                     <td>{{ $product->tempOrder->gst ?? 'N/A' }}</td>
                                                     <td>{{ $product->invoiceDetails->first()?->invoice->cess ?? 'N/A' }}
                                                     </td>
+                                                    {{-- 
                                                     <td>
                                                         <a href=""
                                                             class="btn btn-icon btn-sm bg-primary-subtle me-1"
                                                             data-bs-toggle="tooltip" title="View Sales Order">
                                                             <i class="bx bx-show text-primary"></i>
                                                         </a>
-                                                    </td>
+                                                    </td> --}}
                                                 </tr>
                                             @endforeach
                                         @else
@@ -880,6 +889,9 @@
                 var customerId = $('input[name="customer_id[]"]:checked').map(function() {
                     return this.value;
                 }).get();
+                var warehouseId = $('input[name="warehouse_id[]"]:checked').map(function() {
+                    return this.value;
+                }).get();
                 var region = $('input[name="region[]"]:checked').map(function() {
                     return this.value;
                 }).get();
@@ -906,6 +918,9 @@
                 if (toDate) params.push('to_date=' + encodeURIComponent(toDate));
                 if (customerId.length > 0) customerId.forEach(function(val) {
                     params.push('customer_id[]=' + encodeURIComponent(val));
+                });
+                if (warehouseId.length > 0) warehouseId.forEach(function(val) {
+                    params.push('warehouse_id[]=' + encodeURIComponent(val));
                 });
                 if (region.length > 0) region.forEach(function(val) {
                     params.push('region[]=' + encodeURIComponent(val));
