@@ -103,7 +103,7 @@
                                 </div>
                                 <div class="flex-grow-1">
                                     <p class="mb-0 text-secondary">Pending Payments</p>
-                                    <h4 class="mb-0 fw-bold">₹{{ number_format($totalPendingPayments, 2) }}</h4>
+                                    <h4 class="mb-0 fw-bold">₹{{ number_format(abs($totalPendingPayments), 2) }}</h4>
                                 </div>
                             </div>
                         </div>
@@ -594,17 +594,22 @@
                                                     <td>{{ $product->customer->client_name ?? 'N/A' }}</td>
                                                     {{-- <td>{{ $product->tempOrder->gst ?? 'N/A' }}</td> --}}
                                                     <td>
-                                                        @if ($salesOrder->invoices->count() > 0)
-                                                            @foreach ($salesOrder->invoices as $invoice)
-                                                                @if ($invoice->warehouse_id == $allocation->warehouse_id)
-                                                                    <span>{{ $invoice->invoice_number ?? 'N/A' }}</span>
-                                                                @else
-                                                                    <span>N/A</span>
-                                                                @endif
-                                                            @endforeach
-                                                        @else
-                                                            <span>N/A</span>
-                                                        @endif
+                                                        @php
+                                                            $invoiceNumber = 'N/A';
+                                                            if ($salesOrder->invoices->count() > 0) {
+                                                                foreach ($salesOrder->invoices as $invoice) {
+                                                                    if (
+                                                                        $invoice->warehouse_id ==
+                                                                        $allocation->warehouse_id
+                                                                    ) {
+                                                                        $invoiceNumber =
+                                                                            $invoice->invoice_number ?? 'N/A';
+                                                                        break;
+                                                                    }
+                                                                }
+                                                            }
+                                                        @endphp
+                                                        {{ $invoiceNumber }}
                                                     </td>
                                                     {{-- <td>{{ $salesOrder->invoices->first()->invoice_number ??   'N/A' }}</td> --}}
                                                     {{-- <td>{{ $salesOrder->created_by ?? 'N/A' }}</td> --}}
@@ -829,6 +834,11 @@
                     'Select Customer');
             });
 
+            $(document).on('change', '.warehouse-checkbox', function() {
+                updateDropdownText('.warehouse-checkbox', 'warehouseDropdown', 'warehouseDropdownText',
+                    'Select Warehouse');
+            });
+
             $(document).on('change', '.region-checkbox', function() {
                 updateDropdownText('.region-checkbox', 'regionDropdown', 'regionDropdownText',
                     'Select Region');
@@ -868,6 +878,7 @@
                 $('#from_date').val('');
                 $('#to_date').val('');
                 $('.customer-checkbox').prop('checked', false);
+                $('.warehouse-checkbox').prop('checked', false);
                 $('.region-checkbox').prop('checked', false);
                 $('.payment-status-checkbox').prop('checked', false);
                 $('.customer-type-checkbox').prop('checked', false);

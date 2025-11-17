@@ -756,6 +756,7 @@ class ReportController extends Controller
                 'orderedProducts.tempOrder',
                 'orderedProducts.customer',
                 'orderedProducts.invoiceDetails.invoice.appointment',
+                'orderedProducts.warehouseAllocations.warehouse',
             ]);
 
             // Date Filters
@@ -767,25 +768,42 @@ class ReportController extends Controller
                 $query->where('order_date', '<=', $request->to_date);
             }
 
+            // Warehouse Filter - filter by warehouse allocations, not sales_order warehouse_id
             if ($request->filled('warehouse_id')) {
-                $query->whereIn('warehouse_id', (array) $request->warehouse_id);
+                $warehouseIds = (array) $request->warehouse_id;
+
+                $query->where(function ($q) use ($warehouseIds) {
+                    $q->whereHas('orderedProducts.warehouseAllocations', function ($wa) use ($warehouseIds) {
+                        $wa->whereIn('warehouse_id', $warehouseIds);
+                    })
+                        ->orDoesntHave('orderedProducts'); // keep when no orderedProducts
+                });
             }
 
-            // Customer Filter
+            // Customer Filter - filter by product-level customer (orderedProducts.customer)
             if ($request->filled('customer_id')) {
-                $query->whereIn('customer_id', (array) $request->customer_id);
+                $customerIds = (array) $request->customer_id;
+
+                $query->where(function ($q) use ($customerIds) {
+                    $q->whereHas('orderedProducts.customer', function ($c) use ($customerIds) {
+                        $c->whereIn('id', $customerIds);
+                    })
+                        ->orDoesntHave('orderedProducts'); // keep when no orderedProducts
+                });
             }
 
-            // Region Filter
+            // Region Filter - filter by product-level customer's shipping/billing state
             if ($request->filled('region')) {
                 $regions = (array) $request->region;
 
                 $query->where(function ($q) use ($regions) {
-                    $q->whereHas('customer', function ($c) use ($regions) {
-                        $c->whereIn('billing_state', $regions)
-                            ->orWhereIn('shipping_state', $regions);
+                    $q->whereHas('orderedProducts.customer', function ($c) use ($regions) {
+                        $c->where(function ($subQ) use ($regions) {
+                            $subQ->whereIn('billing_state', $regions)
+                                ->orWhereIn('shipping_state', $regions);
+                        });
                     })
-                        ->orDoesntHave('customer'); // keep SalesOrder if customer = null
+                        ->orDoesntHave('orderedProducts'); // keep when no orderedProducts
                 });
             }
 
@@ -847,9 +865,18 @@ class ReportController extends Controller
             if ($request->filled('appointment_date')) {
                 $apptDates = (array) $request->appointment_date;
 
-                $query->where(function ($q) use ($apptDates) {
-                    $q->whereHas('invoices.appointment', function ($app) use ($apptDates) {
-                        $app->whereIn('appointment_date', $apptDates);
+                // Convert dates from d-m-Y to Y-m-d format for database comparison
+                $convertedDates = array_map(function ($date) {
+                    try {
+                        return \Carbon\Carbon::createFromFormat('d-m-Y', $date)->format('Y-m-d');
+                    } catch (\Exception $e) {
+                        return $date; // Return as-is if conversion fails
+                    }
+                }, $apptDates);
+
+                $query->where(function ($q) use ($convertedDates) {
+                    $q->whereHas('invoices.appointment', function ($app) use ($convertedDates) {
+                        $app->whereIn('appointment_date', $convertedDates);
                     })
                         ->orDoesntHave('invoices'); // keep even if no invoice/appointment
                 });
@@ -942,6 +969,7 @@ class ReportController extends Controller
                     'from_date' => $request->from_date,
                     'to_date' => $request->to_date,
                     'customer_id' => $request->customer_id,
+                    'warehouse_id' => $request->warehouse_id,
                     'region' => $request->region,
                     'payment_status' => $request->payment_status,
                     'customer_type' => $request->customer_type,
@@ -1026,26 +1054,42 @@ class ReportController extends Controller
                 $query->where('order_date', '<=', $request->to_date);
             }
 
-            // Apply warehouse filter
+            // Apply warehouse filter - filter by warehouse allocations, not sales_order warehouse_id
             if ($request->filled('warehouse_id')) {
-                $query->whereIn('warehouse_id', (array) $request->warehouse_id);
+                $warehouseIds = (array) $request->warehouse_id;
+
+                $query->where(function ($q) use ($warehouseIds) {
+                    $q->whereHas('orderedProducts.warehouseAllocations', function ($wa) use ($warehouseIds) {
+                        $wa->whereIn('warehouse_id', $warehouseIds);
+                    })
+                        ->orDoesntHave('orderedProducts'); // keep when no orderedProducts
+                });
             }
 
-            // Apply customer filter (supports single or multiple)
+            // Apply customer filter - filter by product-level customer (orderedProducts.customer)
             if ($request->filled('customer_id')) {
-                $query->whereIn('customer_id', (array) $request->customer_id);
+                $customerIds = (array) $request->customer_id;
+
+                $query->where(function ($q) use ($customerIds) {
+                    $q->whereHas('orderedProducts.customer', function ($c) use ($customerIds) {
+                        $c->whereIn('id', $customerIds);
+                    })
+                        ->orDoesntHave('orderedProducts'); // keep when no orderedProducts
+                });
             }
 
-            // Apply region filter
+            // Apply region filter - filter by product-level customer's shipping/billing state
             if ($request->filled('region')) {
                 $regions = (array) $request->region;
 
                 $query->where(function ($q) use ($regions) {
-                    $q->whereHas('customer', function ($c) use ($regions) {
-                        $c->whereIn('billing_state', $regions)
-                            ->orWhereIn('shipping_state', $regions);
+                    $q->whereHas('orderedProducts.customer', function ($c) use ($regions) {
+                        $c->where(function ($subQ) use ($regions) {
+                            $subQ->whereIn('billing_state', $regions)
+                                ->orWhereIn('shipping_state', $regions);
+                        });
                     })
-                        ->orDoesntHave('customer'); // keep SalesOrder if customer = null
+                        ->orDoesntHave('orderedProducts'); // keep when no orderedProducts
                 });
             }
 
@@ -1107,9 +1151,18 @@ class ReportController extends Controller
             if ($request->filled('appointment_date')) {
                 $apptDates = (array) $request->appointment_date;
 
-                $query->where(function ($q) use ($apptDates) {
-                    $q->whereHas('invoices.appointment', function ($app) use ($apptDates) {
-                        $app->whereIn('appointment_date', $apptDates);
+                // Convert dates from d-m-Y to Y-m-d format for database comparison
+                $convertedDates = array_map(function ($date) {
+                    try {
+                        return \Carbon\Carbon::createFromFormat('d-m-Y', $date)->format('Y-m-d');
+                    } catch (\Exception $e) {
+                        return $date; // Return as-is if conversion fails
+                    }
+                }, $apptDates);
+
+                $query->where(function ($q) use ($convertedDates) {
+                    $q->whereHas('invoices.appointment', function ($app) use ($convertedDates) {
+                        $app->whereIn('appointment_date', $convertedDates);
                     })
                         ->orDoesntHave('invoices'); // keep even if no invoice/appointment
                 });
