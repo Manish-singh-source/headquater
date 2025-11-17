@@ -137,9 +137,9 @@ class ReportController extends Controller
                 'filters'
             ));
         } catch (\Exception $e) {
-            Log::error('Error retrieving vendor purchase history: '.$e->getMessage());
+            Log::error('Error retrieving vendor purchase history: ' . $e->getMessage());
 
-            return redirect()->back()->with('error', 'Error retrieving vendor purchase history: '.$e->getMessage());
+            return redirect()->back()->with('error', 'Error retrieving vendor purchase history: ' . $e->getMessage());
         }
     }
 
@@ -234,11 +234,11 @@ class ReportController extends Controller
             }
 
             // Create temporary CSV file
-            $tempCsvPath = storage_path('app/vendor_purchase_history_'.Str::random(8).'.csv');
+            $tempCsvPath = storage_path('app/vendor_purchase_history_' . Str::random(8) . '.csv');
             $file = fopen($tempCsvPath, 'w');
 
             // Add UTF-8 BOM for proper Excel encoding
-            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
+            fprintf($file, chr(0xEF) . chr(0xBB) . chr(0xBF));
 
             // Add header row
             fputcsv($file, [
@@ -354,19 +354,19 @@ class ReportController extends Controller
             }
 
             $fileName = $vendorPart
-                ? 'Vendor-Purchase-History-'.$vendorPart.'-'.date('d-m-Y').'.csv'
-                : 'Vendor-Purchase-History-'.date('d-m-Y').'.csv';
+                ? 'Vendor-Purchase-History-' . $vendorPart . '-' . date('d-m-Y') . '.csv'
+                : 'Vendor-Purchase-History-' . date('d-m-Y') . '.csv';
 
             // Return CSV file as download and delete after sending
             return response()->download($tempCsvPath, $fileName, [
                 'Content-Type' => 'text/csv',
-                'Content-Disposition' => 'attachment; filename="'.$fileName.'"',
+                'Content-Disposition' => 'attachment; filename="' . $fileName . '"',
             ])->deleteFileAfterSend(true);
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error generating vendor purchase CSV report: '.$e->getMessage());
+            Log::error('Error generating vendor purchase CSV report: ' . $e->getMessage());
 
-            return redirect()->back()->with('error', 'Error generating report: '.$e->getMessage());
+            return redirect()->back()->with('error', 'Error generating report: ' . $e->getMessage());
         }
     }
 
@@ -510,9 +510,9 @@ class ReportController extends Controller
                 'outOfStockCount'
             ));
         } catch (\Exception $e) {
-            Log::error('Error retrieving inventory: '.$e->getMessage());
+            Log::error('Error retrieving inventory: ' . $e->getMessage());
 
-            return redirect()->back()->with('error', 'Error retrieving inventory: '.$e->getMessage());
+            return redirect()->back()->with('error', 'Error retrieving inventory: ' . $e->getMessage());
         }
     }
 
@@ -650,11 +650,11 @@ class ReportController extends Controller
             }
 
             // Create temporary CSV file
-            $tempCsvPath = storage_path('app/inventory_stock_history_'.Str::random(8).'.csv');
+            $tempCsvPath = storage_path('app/inventory_stock_history_' . Str::random(8) . '.csv');
             $file = fopen($tempCsvPath, 'w');
 
             // Add UTF-8 BOM for proper Excel encoding
-            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
+            fprintf($file, chr(0xEF) . chr(0xBB) . chr(0xBF));
 
             // Add header row
             fputcsv($file, [
@@ -715,18 +715,18 @@ class ReportController extends Controller
             DB::commit();
 
             // Generate filename
-            $fileName = 'Inventory-Stock-History-'.date('d-m-Y').'.csv';
+            $fileName = 'Inventory-Stock-History-' . date('d-m-Y') . '.csv';
 
             // Return CSV file as download and delete after sending
             return response()->download($tempCsvPath, $fileName, [
                 'Content-Type' => 'text/csv',
-                'Content-Disposition' => 'attachment; filename="'.$fileName.'"',
+                'Content-Disposition' => 'attachment; filename="' . $fileName . '"',
             ])->deleteFileAfterSend(true);
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error generating inventory CSV report: '.$e->getMessage());
+            Log::error('Error generating inventory CSV report: ' . $e->getMessage());
 
-            return redirect()->back()->with('error', 'Error generating inventory report: '.$e->getMessage());
+            return redirect()->back()->with('error', 'Error generating inventory report: ' . $e->getMessage());
         }
     }
 
@@ -953,9 +953,9 @@ class ReportController extends Controller
 
             return view('customer-sales-history', $data);
         } catch (\Exception $e) {
-            Log::error('Error retrieving customer sales history: '.$e->getMessage());
+            Log::error('Error retrieving customer sales history: ' . $e->getMessage());
 
-            return redirect()->back()->with('error', 'Error retrieving sales history: '.$e->getMessage());
+            return redirect()->back()->with('error', 'Error retrieving sales history: ' . $e->getMessage());
         }
     }
 
@@ -980,6 +980,8 @@ class ReportController extends Controller
             'to_date' => 'nullable|date|after_or_equal:from_date',
             'customer_id' => 'nullable|array',
             'customer_id.*' => 'integer|exists:customers,id',
+            'warehouse_id' => 'nullable|array',
+            'warehouse_id.*' => 'integer|exists:warehouses,id',
             'region' => 'nullable|array',
             'region.*' => 'string',
             'payment_status' => 'nullable|array',
@@ -1000,7 +1002,7 @@ class ReportController extends Controller
 
         DB::beginTransaction();
         try {
-            // Use the same aggregation logic as the index method
+            // Use the same query structure as customerSalesHistory method
             $query = SalesOrder::with([
                 'warehouse',
                 'customer.groupInfo.customerGroup',
@@ -1009,9 +1011,14 @@ class ReportController extends Controller
                 'invoices.details',
                 'invoices.appointment',
                 'invoices.dns',
+                'orderedProducts',
+                'orderedProducts.tempOrder',
+                'orderedProducts.customer',
+                'orderedProducts.invoiceDetails.invoice.appointment',
+                'orderedProducts.warehouseAllocations.warehouse',
             ]);
 
-            // Apply filters (same as index method)
+            // Apply filters (same as customerSalesHistory method)
             if ($request->filled('from_date')) {
                 $query->where('order_date', '>=', $request->from_date);
             }
@@ -1019,251 +1026,204 @@ class ReportController extends Controller
                 $query->where('order_date', '<=', $request->to_date);
             }
 
+            // Apply warehouse filter
+            if ($request->filled('warehouse_id')) {
+                $query->whereIn('warehouse_id', (array) $request->warehouse_id);
+            }
+
             // Apply customer filter (supports single or multiple)
             if ($request->filled('customer_id')) {
-                $customerIds = $request->input('customer_id');
-                if (is_array($customerIds)) {
-                    $query->whereIn('customer_id', $customerIds);
-                } else {
-                    $query->where('customer_id', $customerIds);
-                }
+                $query->whereIn('customer_id', (array) $request->customer_id);
             }
 
-            // Apply region filter (supports single or multiple)
+            // Apply region filter
             if ($request->filled('region')) {
-                $regions = $request->input('region');
-                if (is_array($regions)) {
-                    $query->whereHas('customer', function ($q) use ($regions) {
-                        $q->where(function ($subQ) use ($regions) {
-                            $subQ->whereIn('billing_state', $regions)
-                                ->orWhereIn('shipping_state', $regions);
-                        });
-                    });
-                } else {
-                    $query->whereHas('customer', function ($q) use ($regions) {
-                        $q->where('billing_state', $regions)
-                            ->orWhere('shipping_state', $regions);
-                    });
-                }
+                $regions = (array) $request->region;
+
+                $query->where(function ($q) use ($regions) {
+                    $q->whereHas('customer', function ($c) use ($regions) {
+                        $c->whereIn('billing_state', $regions)
+                            ->orWhereIn('shipping_state', $regions);
+                    })
+                        ->orDoesntHave('customer'); // keep SalesOrder if customer = null
+                });
             }
 
-            // Apply payment status filter (supports single or multiple)
+            // Apply payment status filter
             if ($request->filled('payment_status')) {
-                $paymentStatuses = $request->input('payment_status');
-                if (is_array($paymentStatuses)) {
-                    $query->whereHas('invoices', function ($q) use ($paymentStatuses) {
-                        $q->where(function ($subQ) use ($paymentStatuses) {
-                            foreach ($paymentStatuses as $status) {
-                                if ($status === 'paid') {
-                                    $subQ->orWhereRaw('(total_amount - COALESCE((SELECT SUM(amount) FROM payments WHERE payments.invoice_id = invoices.id), 0)) <= 0');
-                                } elseif ($status === 'unpaid') {
-                                    $subQ->orWhereRaw('(total_amount - COALESCE((SELECT SUM(amount) FROM payments WHERE payments.invoice_id = invoices.id), 0)) = total_amount');
-                                } elseif ($status === 'partial') {
-                                    $subQ->orWhere(function ($innerQ) {
-                                        $innerQ->whereRaw('(total_amount - COALESCE((SELECT SUM(amount) FROM payments WHERE payments.invoice_id = invoices.id), 0)) > 0')
-                                            ->whereRaw('(total_amount - COALESCE((SELECT SUM(amount) FROM payments WHERE payments.invoice_id = invoices.id), 0)) < total_amount');
-                                    });
-                                }
+                $statuses = (array) $request->payment_status;
+
+                $query->where(function ($q) use ($statuses) {
+                    $q->whereHas('invoices', function ($inv) use ($statuses) {
+                        foreach ($statuses as $status) {
+                            if ($status === 'paid') {
+                                $inv->orWhereRaw('(total_amount - COALESCE((SELECT SUM(amount) FROM payments WHERE payments.invoice_id = invoices.id),0)) <= 0');
                             }
-                        });
-                    });
-                } else {
-                    $query->whereHas('invoices', function ($q) use ($paymentStatuses) {
-                        if ($paymentStatuses === 'paid') {
-                            $q->whereRaw('(total_amount - COALESCE((SELECT SUM(amount) FROM payments WHERE payments.invoice_id = invoices.id), 0)) <= 0');
-                        } elseif ($paymentStatuses === 'unpaid') {
-                            $q->whereRaw('(total_amount - COALESCE((SELECT SUM(amount) FROM payments WHERE payments.invoice_id = invoices.id), 0)) = total_amount');
-                        } elseif ($paymentStatuses === 'partial') {
-                            $q->whereRaw('(total_amount - COALESCE((SELECT SUM(amount) FROM payments WHERE payments.invoice_id = invoices.id), 0)) > 0')
-                                ->whereRaw('(total_amount - COALESCE((SELECT SUM(amount) FROM payments WHERE payments.invoice_id = invoices.id), 0)) < total_amount');
+                            if ($status === 'unpaid') {
+                                $inv->orWhereRaw('(total_amount - COALESCE((SELECT SUM(amount) FROM payments WHERE payments.invoice_id = invoices.id),0)) = total_amount');
+                            }
+                            if ($status === 'partial') {
+                                $inv->orWhere(function ($p) {
+                                    $p->whereRaw('(total_amount - COALESCE((SELECT SUM(amount) FROM payments WHERE payments.invoice_id = invoices.id),0)) > 0')
+                                        ->whereRaw('(total_amount - COALESCE((SELECT SUM(amount) FROM payments WHERE payments.invoice_id = invoices.id),0)) < total_amount');
+                                });
+                            }
                         }
-                    });
-                }
+                    })
+                        ->orDoesntHave('invoices'); // keep when no invoice
+                });
             }
 
-            // Apply customer type/group filter (supports single or multiple)
+            // Apply customer type/group filter
             if ($request->filled('customer_type')) {
-                $customerTypes = $request->input('customer_type');
-                if (is_array($customerTypes)) {
-                    $query->whereIn('customer_group_id', $customerTypes);
-                } else {
-                    $query->where('customer_group_id', $customerTypes);
-                }
+                $query->whereIn('customer_group_id', (array) $request->customer_type);
             }
 
-            // Apply invoice no filter (supports single or multiple)
+            // Apply invoice no filter
             if ($request->filled('invoice_no')) {
-                $invoiceNos = $request->input('invoice_no');
-                if (is_array($invoiceNos)) {
-                    $query->whereHas('invoices', function ($q) use ($invoiceNos) {
-                        $q->whereIn('invoice_number', $invoiceNos);
-                    });
-                } else {
-                    $query->whereHas('invoices', function ($q) use ($invoiceNos) {
-                        $q->where('invoice_number', $invoiceNos);
-                    });
-                }
+                $invoiceNos = (array) $request->invoice_no;
+
+                $query->where(function ($q) use ($invoiceNos) {
+                    $q->whereHas('invoices', function ($inv) use ($invoiceNos) {
+                        $inv->whereIn('invoice_number', $invoiceNos);
+                    })
+                        ->orDoesntHave('invoices');
+                });
             }
 
-            // Apply PO no filter (supports single or multiple)
+            // Apply PO no filter
             if ($request->filled('po_no')) {
-                $poNos = $request->input('po_no');
-                if (is_array($poNos)) {
-                    $query->whereIn('po_number', $poNos);
-                } else {
-                    $query->where('po_number', $poNos);
-                }
+                $poNos = (array) $request->po_no;
+
+                $query->where(function ($q) use ($poNos) {
+                    $q->whereHas('orderedProducts.tempOrder', function ($tmp) use ($poNos) {
+                        $tmp->whereIn('po_number', $poNos);
+                    })
+                        ->orDoesntHave('orderedProducts'); // keep when no orderedProducts
+                });
             }
 
-            // Apply appointment date filter (supports single or multiple)
+            // Apply appointment date filter
             if ($request->filled('appointment_date')) {
-                $appointmentDates = $request->input('appointment_date');
-                if (is_array($appointmentDates)) {
-                    $query->whereHas('invoices.appointment', function ($q) use ($appointmentDates) {
-                        $q->whereIn('appointment_date', $appointmentDates);
-                    });
-                } else {
-                    $query->whereHas('invoices.appointment', function ($q) use ($appointmentDates) {
-                        $q->where('appointment_date', $appointmentDates);
-                    });
-                }
+                $apptDates = (array) $request->appointment_date;
+
+                $query->where(function ($q) use ($apptDates) {
+                    $q->whereHas('invoices.appointment', function ($app) use ($apptDates) {
+                        $app->whereIn('appointment_date', $apptDates);
+                    })
+                        ->orDoesntHave('invoices'); // keep even if no invoice/appointment
+                });
             }
 
-            // Get all sales orders for aggregation
-            $salesOrders = $query->get();
+            // Get all sales orders
+            $salesOrders = $query->latest('order_date')->get();
 
             if ($salesOrders->isEmpty()) {
                 return redirect()->back()->with('error', 'No customer sales records found for the selected criteria.');
             }
 
-            // Process individual sales orders for detailed export
-            $invoiceData = collect();
+            // Define status mapping (same as view)
+            $statuses = [
+                'pending' => 'Pending',
+                'blocked' => 'Blocked',
+                'shipped' => 'Shipped',
+                'completed' => 'Complete',
+                'ready_to_ship' => 'Ready To Ship',
+                'ready_to_package' => 'Ready To Package',
+            ];
+
+            // Process data exactly like the view: salesOrders -> orderedProducts -> warehouseAllocations
+            $exportData = collect();
 
             foreach ($salesOrders as $salesOrder) {
-                $customer = $salesOrder->customer;
-                $customerGroup = $salesOrder->customerGroup ?? $customer->groupInfo->customerGroup ?? null;
+                $customerGroup = $salesOrder->customerGroup;
 
-                // Get all invoices for this sales order
-                $invoices = $salesOrder->invoices;
+                foreach ($salesOrder->orderedProducts as $product) {
+                    $customer = $product->customer;
 
-                // If no invoices, create a row with sales order data
-                if ($invoices->isEmpty()) {
-                    $invoiceData->push([
-                        'Customer Group Name' => $customerGroup->name ?? 'N/A',
-                        'Customer Name' => $customer->client_name ?? 'N/A',
-                        'Customer GSTIN' => $customer->gstin ?? 'N/A',
-                        'Invoice No' => 'N/A',
-                        'Creator Name' => 'System',
-                        'Customer Phone No' => $customer->contact_no ?? 'N/A',
-                        'Customer Email' => $customer->email ?? 'N/A',
-                        'Customer City' => $customer->billing_city ?? $customer->shipping_city ?? 'N/A',
-                        'Customer State' => $customer->billing_state ?? $customer->shipping_state ?? 'N/A',
-                        'PO No' => $salesOrder->po_number ?? 'N/A',
-                        'PO Date' => $salesOrder->order_date ? $salesOrder->order_date->format('d-m-Y') : 'N/A',
-                        'Appointment Date' => 'N/A',
-                        'Due Date' => 'N/A',
-                        'POD' => 'N/A',
-                        'GRN' => 'N/A',
-                        'DN' => 'N/A',
-                        'DN Receipt' => 'N/A',
-                        'LR' => 'N/A',
-                        'Currency' => 'INR',
-                        'Amount' => number_format($salesOrder->subtotal_amount ?? 0, 2, '.', ''),
-                        'Tax' => number_format($salesOrder->tax_amount ?? 0, 2, '.', ''),
-                        'Total' => number_format($salesOrder->total_amount ?? 0, 2, '.', ''),
-                        'Status' => 'Unpaid',
-                        'Amount Paid' => number_format(0, 2, '.', ''),
-                        'Balance' => number_format($salesOrder->total_amount ?? 0, 2, '.', ''),
-                        'Date Of Payment' => 'N/A',
-                        'Payment Mode' => 'N/A',
-                        'CGST' => number_format(($salesOrder->tax_amount ?? 0) / 2, 2, '.', ''),
-                        'SGST' => number_format(($salesOrder->tax_amount ?? 0) / 2, 2, '.', ''),
-                        'IGST' => number_format(0, 2, '.', ''),
-                        'Cess' => number_format(0, 2, '.', ''),
-                    ]);
-                } else {
-                    // Process each invoice
-                    foreach ($invoices as $invoice) {
-                        $payments = $invoice->payments;
-                        $totalPaid = $payments->sum('amount');
-                        $balance = $invoice->total_amount - $totalPaid;
-                        $appointment = $invoice->appointment;
-                        $dns = $invoice->dns;
-
-                        // Calculate tax breakdown
-                        $cgst = 0;
-                        $sgst = 0;
-                        $igst = 0;
-                        $cess = 0;
-                        $taxAmount = 0;
-
-                        foreach ($invoice->details as $detail) {
-                            $gstRate = $detail->tax ?? 0;
-                            $taxAmount += $detail->tax ?? 0;
-                            $cess += $detail->cess ?? 0;
-
-                            // CGST/SGST split for intra-state, IGST for inter-state
-                            if ($customer->billing_state === $customer->shipping_state) {
-                                $cgst += $gstRate / 2;
-                                $sgst += $gstRate / 2;
-                            } else {
-                                $igst += $gstRate;
+                    if ($product->warehouseAllocations->count() > 0) {
+                        // Loop through warehouse allocations (same as view)
+                        foreach ($product->warehouseAllocations as $allocation) {
+                            // Get invoice number for this warehouse
+                            $invoiceNumber = 'N/A';
+                            if ($salesOrder->invoices->count() > 0) {
+                                foreach ($salesOrder->invoices as $invoice) {
+                                    if ($invoice->warehouse_id == $allocation->warehouse_id) {
+                                        $invoiceNumber = $invoice->invoice_number ?? 'N/A';
+                                        break;
+                                    }
+                                }
                             }
+
+                            // Get invoice details
+                            $invoiceDetail = $product->invoiceDetails->first();
+                            $invoice = $invoiceDetail?->invoice;
+                            $appointment = $invoice?->appointment;
+                            $dns = $invoice?->dns;
+                            $payment = $invoice?->payments?->first();
+
+                            // Calculate subtotal and total for this allocation
+                            $subtotal = $allocation->final_dispatched_quantity * $product->price;
+                            $gstRate = $product->tempOrder->gst ?? 0;
+                            $total = $subtotal * (1 + $gstRate / 100);
+
+                            $exportData->push([
+                                'Customer Group Name' => $customerGroup->name ?? 'N/A',
+                                'Warehouse Name' => $allocation->warehouse->name ?? 'N/A',
+                                'Customer Name' => $customer->client_name ?? 'N/A',
+                                'Invoice No' => $invoiceNumber,
+                                'Customer Phone No' => $customer->contact_no ?? 'N/A',
+                                'Customer Email' => $customer->email ?? 'N/A',
+                                'Customer City' => $customer->shipping_city ?? 'N/A',
+                                'Customer State' => $customer->shipping_state ?? 'N/A',
+                                'PO No' => $product->tempOrder->po_number ?? 'N/A',
+                                'PO Date' => $product->tempOrder->po_date ?? 'N/A',
+                                'Appointment Date' => $appointment?->appointment_date?->format('d-m-Y') ?? 'N/A',
+                                'Due Date' => $appointment?->appointment_date?->addMonth()->format('d-m-Y') ?? 'N/A',
+                                'POD' => $appointment?->pod ? 'Yes' : 'No',
+                                'GRN' => $appointment?->grn ? 'Yes' : 'No',
+                                'DN' => $dns?->dn_amount ?? 0,
+                                'DN Receipt' => $dns?->dn_receipt ? 'Yes' : 'No',
+                                'LR' => $salesOrder->appointment?->lr ? 'Yes' : 'No',
+                                'Currency' => $salesOrder->invoices->first()->currency ?? 'INR',
+                                'SKU' => $product->tempOrder->sku ?? 'N/A',
+                                'HSN' => $product->tempOrder->hsn ?? 'N/A',
+                                'Ordered Quantity' => $product->ordered_quantity ?? 'N/A',
+                                'Dispatched Quantity' => $allocation->final_dispatched_quantity ?? 'N/A',
+                                'Box Count' => $allocation->box_count ?? 'N/A',
+                                'Weight' => $allocation->weight ?? 'N/A',
+                                'Unit Price' => $product->price ?? 'N/A',
+                                'Subtotal' => number_format($subtotal, 2, '.', ''),
+                                'GST' => $gstRate,
+                                'Total' => number_format($total, 2, '.', ''),
+                                'Status' => $statuses[$salesOrder->status] ?? 'N/A',
+                                'Total Amount' => $invoice?->total_amount ?? 'N/A',
+                                'Amount Paid' => $invoice?->paid_amount ?? 'N/A',
+                                'Balance' => $invoice?->balance_due ?? 'N/A',
+                                'Date Of Payment' => $payment?->created_at?->format('d-m-Y') ?? 'N/A',
+                                'Payment Mode' => $payment?->payment_method ?? 'N/A',
+                                'CGST' => $gstRate / 2,
+                                'SGST' => $gstRate / 2,
+                                'IGST' => $gstRate,
+                                'Cess' => $invoice?->cess ?? 'N/A',
+                            ]);
                         }
-
-                        // Get latest payment details
-                        $latestPayment = $payments->sortByDesc('created_at')->first();
-
-                        $invoiceData->push([
-                            'Customer Group Name' => $customerGroup->name ?? 'N/A',
-                            'Customer Name' => $customer->client_name ?? 'N/A',
-                            'Customer GSTIN' => $customer->gstin ?? 'N/A',
-                            'Invoice No' => $invoice->invoice_number,
-                            'Creator Name' => 'System',
-                            'Customer Phone No' => $customer->contact_no ?? 'N/A',
-                            'Customer Email' => $customer->email ?? 'N/A',
-                            'Customer City' => $customer->billing_city ?? $customer->shipping_city ?? 'N/A',
-                            'Customer State' => $customer->billing_state ?? $customer->shipping_state ?? 'N/A',
-                            'PO No' => $salesOrder->po_number ?? $invoice->po_number ?? 'N/A',
-                            'PO Date' => $salesOrder->order_date ? $salesOrder->order_date->format('d-m-Y') : 'N/A',
-                            'Appointment Date' => $appointment ? $appointment->appointment_date->format('d-m-Y') : 'N/A',
-                            'Due Date' => 'N/A',
-                            'POD' => $appointment && $appointment->pod ? $appointment->pod : 'N/A',
-                            'GRN' => $appointment && $appointment->grn ? $appointment->grn : 'N/A',
-                            'DN' => $dns && $dns->dn_amount ? number_format($dns->dn_amount, 2, '.', '') : 'N/A',
-                            'DN Receipt' => $dns && $dns->dn_receipt ? $dns->dn_receipt : 'N/A',
-                            'LR' => 'N/A',
-                            'Currency' => 'INR',
-                            'Amount' => number_format($invoice->subtotal ?? ($invoice->total_amount - $taxAmount), 2, '.', ''),
-                            'Tax' => number_format($taxAmount, 2, '.', ''),
-                            'Total' => number_format($invoice->total_amount, 2, '.', ''),
-                            'Status' => $balance <= 0 ? 'Paid' : ($totalPaid > 0 ? 'Partial' : 'Unpaid'),
-                            'Amount Paid' => number_format($totalPaid, 2, '.', ''),
-                            'Balance' => number_format($balance, 2, '.', ''),
-                            'Date Of Payment' => $latestPayment ? $latestPayment->created_at->format('d-m-Y') : 'N/A',
-                            'Payment Mode' => $latestPayment ? $latestPayment->payment_method : 'N/A',
-                            'CGST' => number_format($cgst, 2, '.', ''),
-                            'SGST' => number_format($sgst, 2, '.', ''),
-                            'IGST' => number_format($igst, 2, '.', ''),
-                            'Cess' => number_format($cess, 2, '.', ''),
-                        ]);
                     }
                 }
             }
 
             // Create temporary Excel file
-            $tempXlsxPath = storage_path('app/customer_sales_history_'.Str::random(8).'.xlsx');
+            $tempXlsxPath = storage_path('app/customer_sales_history_' . Str::random(8) . '.xlsx');
 
             // Create writer
             $writer = \Spatie\SimpleExcel\SimpleExcelWriter::create($tempXlsxPath);
 
-            // Add header row
+            // Add header row (matching view table columns exactly)
             $writer->addRow([
                 'Customer Group Name',
+                'Warehouse Name',
                 'Customer Name',
-                'Customer GSTIN',
                 'Invoice No',
-                'Creator Name',
                 'Customer Phone No',
                 'Customer Email',
                 'Customer City',
@@ -1278,10 +1238,18 @@ class ReportController extends Controller
                 'DN Receipt',
                 'LR',
                 'Currency',
-                'Amount',
-                'Tax',
+                'SKU',
+                'HSN',
+                'Ordered Quantity',
+                'Dispatched Quantity',
+                'Box Count',
+                'Weight',
+                'Unit Price',
+                'Subtotal',
+                'GST',
                 'Total',
                 'Status',
+                'Total Amount',
                 'Amount Paid',
                 'Balance',
                 'Date Of Payment',
@@ -1293,8 +1261,8 @@ class ReportController extends Controller
             ]);
 
             // Add data rows
-            foreach ($invoiceData as $invoice) {
-                $writer->addRow($invoice);
+            foreach ($exportData as $row) {
+                $writer->addRow($row);
             }
 
             $writer->close();
@@ -1306,10 +1274,14 @@ class ReportController extends Controller
                     'from_date' => $request->from_date,
                     'to_date' => $request->to_date,
                     'customer_id' => $request->customer_id,
+                    'warehouse_id' => $request->warehouse_id,
                     'region' => $request->region,
                     'payment_status' => $request->payment_status,
                     'customer_type' => $request->customer_type,
-                    'records' => $invoiceData->count(),
+                    'invoice_no' => $request->invoice_no,
+                    'po_no' => $request->po_no,
+                    'appointment_date' => $request->appointment_date,
+                    'records' => $exportData->count(),
                 ])
                 ->event('excel_report_generated')
                 ->log('Customer sales history Excel report generated');
@@ -1317,7 +1289,7 @@ class ReportController extends Controller
             DB::commit();
 
             // Generate filename
-            $fileName = 'Customer-Sales-Summary-'.date('d-m-Y').'.xlsx';
+            $fileName = 'Customer-Sales-Summary-' . date('d-m-Y') . '.xlsx';
 
             // Return Excel file as download and delete after sending
             return response()->download($tempXlsxPath, $fileName, [
@@ -1325,9 +1297,9 @@ class ReportController extends Controller
             ])->deleteFileAfterSend(true);
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error generating customer sales Excel report: '.$e->getMessage());
+            Log::error('Error generating customer sales Excel report: ' . $e->getMessage());
 
-            return redirect()->back()->with('error', 'Error generating sales report: '.$e->getMessage());
+            return redirect()->back()->with('error', 'Error generating sales report: ' . $e->getMessage());
         }
     }
 
@@ -1621,14 +1593,14 @@ class ReportController extends Controller
                 ->log('Customer sales history PDF report generated');
 
             // Generate filename
-            $fileName = 'Customer-Sales-Summary-'.date('d-m-Y').'.pdf';
+            $fileName = 'Customer-Sales-Summary-' . date('d-m-Y') . '.pdf';
 
             // Return PDF as download
             return $pdf->download($fileName);
         } catch (\Exception $e) {
-            Log::error('Error generating customer sales PDF report: '.$e->getMessage());
+            Log::error('Error generating customer sales PDF report: ' . $e->getMessage());
 
-            return redirect()->back()->with('error', 'Error generating PDF report: '.$e->getMessage());
+            return redirect()->back()->with('error', 'Error generating PDF report: ' . $e->getMessage());
         }
     }
 }
