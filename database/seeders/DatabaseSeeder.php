@@ -16,6 +16,7 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
 
+        
         User::create([
             'warehouse_id' => 0,
             'user_name' => 'superadmin',
@@ -30,7 +31,23 @@ class DatabaseSeeder extends Seeder
             'guard_name' => 'web',
         ]);
 
-        User::first()->assignRole('Super Admin');
+        User::find(1)->assignRole('Super Admin');
+
+         User::create([
+            'warehouse_id' => 0,
+            'user_name' => 'Technofra',
+            'fname' => 'Technofra',
+            'lname' => 'Admin',
+            'email' => 'support@technofra.com',
+            'password' => 'Technofra@1021',
+        ]);
+
+        Role::create([
+            'name' => 'Super Admin 2',
+            'guard_name' => 'web',
+        ]);
+
+        User::find(2)->assignRole('Super Admin 2');
 
         $this->call([
             CountrySeeder::class,
@@ -42,5 +59,12 @@ class DatabaseSeeder extends Seeder
             RolesTableSeeder::class,
             UsersTableSeeder::class,
         ]);
+
+
+
+    
+        User::find(3)->assignRole('Warehouse Person 1');
+        User::find(4)->assignRole('Warehouse Person 2');
+
     }
 }

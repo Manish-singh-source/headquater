@@ -350,215 +350,241 @@
                           </a>
                           <ul>
                               @can('View Customer Groups')
-                              <li><a href="{{ route('customer.groups.index') }}"><i
-                                          class="material-icons-outlined">arrow_right</i>Customers Group</a>
-                              </li>
+                                  <li><a href="{{ route('customer.groups.index') }}"><i
+                                              class="material-icons-outlined">arrow_right</i>Customers Group</a>
+                                  </li>
                               @endcan
 
                               @can('View Customers')
-                              <li><a href="{{ route('customer.index') }}"><i
-                                          class="material-icons-outlined">arrow_right</i>Customers</a>
-                              </li>
+                                  <li><a href="{{ route('customer.index') }}"><i
+                                              class="material-icons-outlined">arrow_right</i>Customers</a>
+                                  </li>
                               @endcan
 
                               @can('View Vendors')
-                              <li><a href="{{ route('vendor.index') }}"><i
-                                          class="material-icons-outlined">arrow_right</i>Vendor</a>
-                              </li>
+                                  <li><a href="{{ route('vendor.index') }}"><i
+                                              class="material-icons-outlined">arrow_right</i>Vendor</a>
+                                  </li>
                               @endcan
 
                               @can('View Products')
-                              <li><a href="{{ route('products.index') }}"><i
-                                          class="material-icons-outlined">arrow_right</i>Products</a>
-                              </li>
+                                  <li><a href="{{ route('products.index') }}"><i
+                                              class="material-icons-outlined">arrow_right</i>Products</a>
+                                  </li>
                               @endcan
 
                               @can('View SKU Mapping')
-                              <li>
-                                  <a href="{{ route('sku.mapping') }}"><i
-                                          class="material-icons-outlined">arrow_right</i>SKU Mapping</a>
-                              </li>
+                                  <li>
+                                      <a href="{{ route('sku.mapping') }}"><i
+                                              class="material-icons-outlined">arrow_right</i>SKU Mapping</a>
+                                  </li>
                               @endcan
 
                               @can('View Warehouses')
-                              <li><a href="{{ route('warehouse.index') }}"><i
-                                          class="material-icons-outlined">arrow_right</i>Warehouses</a>
-                              </li>
+                                  <li><a href="{{ route('warehouse.index') }}"><i
+                                              class="material-icons-outlined">arrow_right</i>Warehouses</a>
+                                  </li>
                               @endcan
                           </ul>
                       </li>
                   @endcan
 
-                  <li>
-                      <a href="javascript:;" class="has-arrow">
-                          <div class="parent-icon"><i class="material-icons-outlined">shopping_cart</i>
-                          </div>
-                          <div class="menu-title">Purchase</div>
-                      </a>
-                      <ul>
-                          <li><a href="{{ route('purchase.order.index') }}"><i
-                                      class="material-icons-outlined">arrow_right</i>Purchase Order
+                  @can('View Purchase Orders List')
+                      <li>
+                          <a href="javascript:;" class="has-arrow">
+                              <div class="parent-icon"><i class="material-icons-outlined">shopping_cart</i>
+                              </div>
+                              <div class="menu-title">Purchase</div>
+                          </a>
+                          <ul>
+                              <li><a href="{{ route('purchase.order.index') }}"><i
+                                          class="material-icons-outlined">arrow_right</i>Purchase Order
                                       @if (isset($purchaseOrderCount) && $purchaseOrderCount > 0)
                                           <span class="badge badge-pill badge-danger">{{ $purchaseOrderCount }}</span>
                                       @endif
                                   </a>
-                          </li>
-                      </ul>
-                  </li>
+                              </li>
+                          </ul>
+                      </li>
+                  @endcan
 
-                  <li>
-                      <a href="javascript:;" class="has-arrow">
-                          <div class="parent-icon"><i class="material-icons-outlined">sell</i>
-                          </div>
-                          <div class="menu-title">Sales</div>
-                      </a>
-                      <ul>
-                          <li><a href="{{ route('sales.order.index') }}"><i
-                                      class="material-icons-outlined">arrow_right</i>Sales Order
+                  @can('View Sales Orders List')
+                      <li>
+                          <a href="javascript:;" class="has-arrow">
+                              <div class="parent-icon"><i class="material-icons-outlined">sell</i>
+                              </div>
+                              <div class="menu-title">Sales</div>
+                          </a>
+                          <ul>
+                              <li><a href="{{ route('sales.order.index') }}"><i
+                                          class="material-icons-outlined">arrow_right</i>Sales Order
                                       @if (isset($salesOrderCount) && $salesOrderCount > 0)
                                           <span class="badge badge-pill badge-danger">{{ $salesOrderCount }}</span>
                                       @endif
                                   </a>
-                          </li>
-                      </ul>
-                  </li>
+                              </li>
+                          </ul>
+                      </li>
+                  @endcan
 
-                  <li>
-                      <a href="{{ route('invoices') }}">
-                          <div class="parent-icon"><i class="material-icons-outlined">receipt_long</i>
-                          </div>
-                          <div class="menu-title">Invoices
-                              @if (isset($invoiceCount) && $invoiceCount > 0)
-                                  <span class="badge badge-pill badge-danger">{{ $invoiceCount }}</span>
-                              @endif
-                          </div>
-                      </a>
-                  </li>
+                  @can('View Invoices')
+                      <li>
+                          <a href="{{ route('invoices') }}">
+                              <div class="parent-icon"><i class="material-icons-outlined">receipt_long</i>
+                              </div>
+                              <div class="menu-title">Invoices
+                                  @if (isset($invoiceCount) && $invoiceCount > 0)
+                                      <span class="badge badge-pill badge-danger">{{ $invoiceCount }}</span>
+                                  @endif
+                              </div>
+                          </a>
+                      </li>
+                  @endcan
 
-                  <li class="menu-label">Warehouse</li>
-                  <li>
-                      <a href="{{ route('received-products.index') }}">
-                          <div class="parent-icon"><i class="material-icons-outlined">inventory_2</i>
-                          </div>
-                          <div class="menu-title">Received Products
-                              @if (isset($receivedProductsCount) && $receivedProductsCount > 0)
-                                  <span class="badge badge-pill badge-danger">{{ $receivedProductsCount }}</span>
-                              @endif
-                          </div>
-                      </a>
-                  </li>
-                  {{-- <li>
-                      <a href="{{ route('received-products.index') }}">
-                          <div class="parent-icon"><i class="material-icons-outlined">move_to_inbox</i>
-                          </div>
-                          <div class="menu-title">Received Products</div>
-                      </a>
-                  </li> --}}
-                  <li>
-                      <a href="{{ route('packaging.list.index') }}">
-                          <div class="parent-icon"><i class="material-icons-outlined">all_inbox</i>
-                          </div>
-                          <div class="menu-title">Packaging List
-                              @if (isset($packagingListCount) && $packagingListCount > 0)
-                                  <span class="badge badge-pill badge-danger">{{ $packagingListCount }}</span>
-                              @endif
-                          </div>
-                      </a>
-                  </li>
-                  {{-- Packaging List moved below with count badge -- removed duplicate entry --}}
-                  {{-- <li>
-                      <a href="{{ route('raise-a-ticket') }}">
-                          <div class="parent-icon"><i class="material-icons-outlined">confirmation_number</i>
-                          </div>
-                          <div class="menu-title">Tickets</div>
-                        </a>
-                    </li> --}}
-                  <li>
-                      <a href="{{ route('readyToShip.index') }}">
-                          <div class="parent-icon"><i class="material-icons-outlined">local_shipping</i>
-                          </div>
-                          <div class="menu-title">Ready To Ship
-                              @if (isset($readyToShipCount) && $readyToShipCount > 0)
-                                  <span class="badge badge-pill badge-danger">{{ $readyToShipCount }}</span>
-                              @endif
-                          </div>
-                      </a>
-                  </li>
+                  @canany([
+                      'View Received Products List',
+                      'View Packaging List',
+                      'View Ready to Ship List',
+                      'View
+                      Product Issues',
+                      'View Vendor Return Products',
+                      'View Customer Return Products',
+                      'View Track Order',
+                      ])
+                      <li class="menu-label">Warehouse</li>
+                  @endcanany
 
-                  <li>
-                      <a href="{{ route('exceed.shortage.products') }}">
-                          <div class="parent-icon"><i class="material-icons-outlined">local_shipping</i>
-                          </div>
-                          <div class="menu-title">Product Issues</div>
-                      </a>
-                  </li>
+                  @can('View Received Products List')
+                      <li>
+                          <a href="{{ route('received-products.index') }}">
+                              <div class="parent-icon"><i class="material-icons-outlined">inventory_2</i>
+                              </div>
+                              <div class="menu-title">Received Products
+                                  @if (isset($receivedProductsCount) && $receivedProductsCount > 0)
+                                      <span class="badge badge-pill badge-danger">{{ $receivedProductsCount }}</span>
+                                  @endif
+                              </div>
+                          </a>
+                      </li>
+                  @endcan
 
-                  <li>
-                      <a href="{{ route('return.accept') }}">
-                          <div class="parent-icon"><i class="material-icons-outlined">local_shipping</i>
-                          </div>
-                          <div class="menu-title">Vendor Return</div>
-                      </a>
-                  </li>
+                  @can('View Packaging List')
+                      <li>
+                          <a href="{{ route('packaging.list.index') }}">
+                              <div class="parent-icon"><i class="material-icons-outlined">all_inbox</i>
+                              </div>
+                              <div class="menu-title">Packaging List
+                                  @if (isset($packagingListCount) && $packagingListCount > 0)
+                                      <span class="badge badge-pill badge-danger">{{ $packagingListCount }}</span>
+                                  @endif
+                              </div>
+                          </a>
+                      </li>
+                  @endcan
 
-                  <li>
-                      <a href="{{ route('customer.returns') }}">
-                          <div class="parent-icon"><i class="material-icons-outlined">local_shipping</i>
-                          </div>
-                          <div class="menu-title">Customer Return</div>
-                      </a>
-                  </li>
+                  @can('View Ready to Ship List')
+                      <li>
+                          <a href="{{ route('readyToShip.index') }}">
+                              <div class="parent-icon"><i class="material-icons-outlined">local_shipping</i>
+                              </div>
+                              <div class="menu-title">Ready To Ship
+                                  @if (isset($readyToShipCount) && $readyToShipCount > 0)
+                                      <span class="badge badge-pill badge-danger">{{ $readyToShipCount }}</span>
+                                  @endif
+                              </div>
+                          </a>
+                      </li>
+                  @endcan
 
-                  <li>
-                      <a href="{{ route('trackOrder.index') }}">
-                          <div class="parent-icon"><i class="material-icons-outlined">search</i>
-                          </div>
-                          <div class="menu-title">Track Order</div>
-                      </a>
-                  </li>
+                  @can('View Product Issues')
+                      <li>
+                          <a href="{{ route('exceed.shortage.products') }}">
+                              <div class="parent-icon"><i class="material-icons-outlined">local_shipping</i>
+                              </div>
+                              <div class="menu-title">Product Issues</div>
+                          </a>
+                      </li>
+                  @endcan
 
-                  <li class="menu-label">Reports</li>
-                  <li>
-                      <a href="{{ route('vendor-purchase-history') }}">
-                          <div class="parent-icon"><i class="material-icons-outlined">store</i>
-                          </div>
-                          <div class="menu-title">Vendor Purchase</div>
-                      </a>
-                  </li>
-                  <li>
-                      <a href="{{ route('inventory-stock-history') }}">
-                          <div class="parent-icon"><i class="material-icons-outlined">inventory_2</i>
-                          </div>
-                          <div class="menu-title">Inventory Stock</div>
-                      </a>
-                  </li>
-                  <li>
-                      <a href="{{ route('customer-sales-history') }}">
-                          <div class="parent-icon"><i class="material-icons-outlined">point_of_sale</i>
-                          </div>
-                          <div class="menu-title">Customer Sales</div>
-                      </a>
-                  </li>
+                  @can('View Vendor Return Products')
+                      <li>
+                          <a href="{{ route('return.accept') }}">
+                              <div class="parent-icon"><i class="material-icons-outlined">local_shipping</i>
+                              </div>
+                              <div class="menu-title">Vendor Return</div>
+                          </a>
+                      </li>
+                  @endcan
 
-                  {{-- 
-                  <li class="menu-label">Activity Logs</li>
-                  <li>
-                      <a href="{{ route('activity.log') }}">
-                          <div class="parent-icon"><i class="material-icons-outlined">store</i>
-                          </div>
-                          <div class="menu-title">Activity Logs</div>
-                      </a>
-                  </li> 
-                  --}}
+                  @can('View Customer Return Products')
+                      <li>
+                          <a href="{{ route('customer.returns') }}">
+                              <div class="parent-icon"><i class="material-icons-outlined">local_shipping</i>
+                              </div>
+                              <div class="menu-title">Customer Return</div>
+                          </a>
+                      </li>
+                  @endcan
 
-                  <li class="menu-label">Excel Formats</li>
-                  <li>
-                      <a href="{{ route('excel-file-formats') }}">
-                          <div class="parent-icon"><i class="material-icons-outlined">store</i>
-                          </div>
-                          <div class="menu-title">Excel Formats</div>
-                      </a>
-                  </li>
+                  @can('View Track Order')
+                      <li>
+                          <a href="{{ route('trackOrder.index') }}">
+                              <div class="parent-icon"><i class="material-icons-outlined">search</i>
+                              </div>
+                              <div class="menu-title">Track Order</div>
+                          </a>
+                      </li>
+                  @endcan
+
+                  @canany([
+                      'View Vendor Purchase History Report',
+                      'View Inventory Stock History Report',
+                      'View Customer
+                      Sales History Report',
+                      ])
+                      <li class="menu-label">Reports</li>
+                  @endcanany
+
+                  @can('View Vendor Purchase History Report')
+                      <li>
+                          <a href="{{ route('vendor-purchase-history') }}">
+                              <div class="parent-icon"><i class="material-icons-outlined">store</i>
+                              </div>
+                              <div class="menu-title">Vendor Purchase</div>
+                          </a>
+                      </li>
+                  @endcan
+
+                  @can('View Inventory Stock History Report')
+                      <li>
+                          <a href="{{ route('inventory-stock-history') }}">
+                              <div class="parent-icon"><i class="material-icons-outlined">inventory_2</i>
+                              </div>
+                              <div class="menu-title">Inventory Stock</div>
+                          </a>
+                      </li>
+                  @endcan
+
+                  @can('View Customer Sales History Report')
+                      <li>
+                          <a href="{{ route('customer-sales-history') }}">
+                              <div class="parent-icon"><i class="material-icons-outlined">point_of_sale</i>
+                              </div>
+                              <div class="menu-title">Customer Sales</div>
+                          </a>
+                      </li>
+                  @endcan
+
+                  @can('View Excel File Formats')
+                      <li class="menu-label">Excel Formats</li>
+                      <li>
+                          <a href="{{ route('excel-file-formats') }}">
+                              <div class="parent-icon"><i class="material-icons-outlined">store</i>
+                              </div>
+                              <div class="menu-title">Excel Formats</div>
+                          </a>
+                      </li>
+                  @endcan
               </ul>
 
               <!--end navigation-->

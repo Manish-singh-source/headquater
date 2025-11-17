@@ -187,6 +187,22 @@ class PermissionsSeeder extends Seeder
         $this->updateOrCreatePermission('Update Customer PO', $salesOrdersGroup->id);
         $this->updateOrCreatePermission('Generate Invoice', $salesOrdersGroup->id);
 
+        // Manage Invoices Group
+        $invoicesGroup = PermissionGroup::firstOrCreate(
+            ['name' => 'Manage Invoices'],
+            ['description' => 'Invoice management permissions', 'status' => 1]
+        );
+        $this->updateOrCreatePermission('View Invoices', $invoicesGroup->id);
+        $this->updateOrCreatePermission('Sales Order Invoices', $invoicesGroup->id);
+        $this->updateOrCreatePermission('Sales Order View Invoice Details', $invoicesGroup->id);
+        
+        $this->updateOrCreatePermission('Manual Invoices', $invoicesGroup->id);
+        $this->updateOrCreatePermission('Manual Invoices View Details', $invoicesGroup->id);
+
+        $this->updateOrCreatePermission('Create Manual Invoices', $invoicesGroup->id);
+
+
+
         // Manage Received Products Group
         $receivedProductsGroup = PermissionGroup::firstOrCreate(
             ['name' => 'Manage Received Products'],
@@ -233,12 +249,47 @@ class PermissionsSeeder extends Seeder
         $this->updateOrCreatePermission('View Vendor Return Products', $vendorReturnGroup->id);
         $this->updateOrCreatePermission('Change Status to Accept/Return', $vendorReturnGroup->id);
 
+        // Manage Customer Return
+        $customerReturnGroup = PermissionGroup::firstOrCreate(
+            ['name' => 'Manage Customer Return'],
+            ['description' => 'Customer return management permissions', 'status' => 1]
+        );
+        $this->updateOrCreatePermission('View Customer Return Products', $customerReturnGroup->id);
+
         // Manage Track Order
         $trackOrderGroup = PermissionGroup::firstOrCreate(
             ['name' => 'Manage Track Order'],
             ['description' => 'Track order management permissions', 'status' => 1]
         );
         $this->updateOrCreatePermission('View Track Order', $trackOrderGroup->id);
+
+        // Manage Vendor Purchase History
+        $vendorPurchaseHistoryGroup = PermissionGroup::firstOrCreate(
+            ['name' => 'Manage Vendor Purchase History'],
+            ['description' => 'Vendor purchase history management permissions', 'status' => 1]
+        );
+        $this->updateOrCreatePermission('View Vendor Purchase History Report', $vendorPurchaseHistoryGroup->id);
+
+        // Manage Inventory Stock History
+        $inventoryStockHistoryGroup = PermissionGroup::firstOrCreate(
+            ['name' => 'Manage Inventory Stock History'],
+            ['description' => 'Inventory stock history management permissions', 'status' => 1]
+        );
+        $this->updateOrCreatePermission('View Inventory Stock History Report', $inventoryStockHistoryGroup->id);
+
+        // Manage Customer Sales History
+        $customerSalesHistoryGroup = PermissionGroup::firstOrCreate(
+            ['name' => 'Manage Customer Sales History'],
+            ['description' => 'Customer sales history management permissions', 'status' => 1]
+        );
+        $this->updateOrCreatePermission('View Customer Sales History Report', $customerSalesHistoryGroup->id);
+
+        // Excel File Formats
+        $excelFileFormatsGroup = PermissionGroup::firstOrCreate(
+            ['name' => 'Excel File Formats'],
+            ['description' => 'Excel file formats management permissions', 'status' => 1]
+        );
+        $this->updateOrCreatePermission('View Excel File Formats', $excelFileFormatsGroup->id);
 
     }
 }
