@@ -14,6 +14,7 @@ use App\Models\SalesOrder;
 use App\Models\SalesOrderProduct;
 use App\Models\SkuMapping;
 use App\Models\TempOrder;
+use App\Models\User;
 use App\Models\Vendor;
 use App\Models\Warehouse;
 use App\Models\WarehouseAllocation;
@@ -1074,9 +1075,129 @@ class SalesOrderController extends Controller
 
     public function changeStatus(Request $request)
     {
+        DB::beginTransaction();
+
         try {
+            // Validate request
+            $validator = Validator::make($request->all(), [
+                'order_id' => 'required|integer|exists:sales_orders,id',
+                'customer_id' => 'required|integer|exists:customers,id',
+                'user_id' => 'required|integer|exists:users,id',
+                'status' => 'required|in:shipped,delivered,completed,ready_to_ship,ready_to_package,pending,blocked',
+            ]);
+
+            if ($validator->fails()) {
+                return redirect()->back()
+                    ->withErrors($validator)
+                    ->withInput()
+                    ->with('error', 'Invalid request data.');
+            }
+
             $salesOrder = SalesOrder::findOrFail($request->order_id);
             $salesOrderDetails = SalesOrderProduct::with('tempOrder')->where('sales_order_id', $salesOrder->id)->get();
+
+            // Get user information for role-based updates
+            $user = User::findOrFail($request->user_id);
+            $isAdmin = $user->hasRole(['Super Admin', 'Admin']) || !$user->warehouse_id;
+            $userWarehouseId = $user->warehouse_id;
+
+            // Handle warehouse-specific status updates for shipped, delivered, completed
+            if (in_array($request->status, ['shipped', 'delivered', 'completed'])) {
+                // Update warehouse allocations based on user role
+                $allocationsQuery = WarehouseAllocation::where('sales_order_id', $request->order_id)
+                    ->whereHas('salesOrderProduct', function($q) use ($request) {
+                        $q->where('customer_id', $request->customer_id);
+                    });
+
+                // If warehouse user, only update their warehouse allocations
+                if (!$isAdmin && $userWarehouseId) {
+                    $allocationsQuery->where('warehouse_id', $userWarehouseId);
+                }
+
+                $allocations = $allocationsQuery->get();
+
+                if ($allocations->isEmpty()) {
+                    DB::rollBack();
+                    return redirect()->back()
+                        ->with('error', 'No warehouse allocations found for this order and customer.');
+                }
+
+                // Update shipping_status for the allocations
+                foreach ($allocations as $allocation) {
+                    $allocation->shipping_status = $request->status;
+                    $allocation->save();
+
+                    activity()
+                        ->performedOn($allocation)
+                        ->causedBy($user)
+                        ->withProperties([
+                            'old_status' => $allocation->getOriginal('shipping_status'),
+                            'new_status' => $request->status,
+                            'warehouse_id' => $allocation->warehouse_id,
+                            'warehouse_name' => $allocation->warehouse->name ?? 'N/A',
+                        ])
+                        ->log('Warehouse allocation shipping status changed');
+                }
+
+                // Update sales order products status
+                $salesOrderProducts = SalesOrderProduct::where('sales_order_id', $request->order_id)
+                    ->where('customer_id', $request->customer_id)
+                    ->get();
+
+                foreach ($salesOrderProducts as $product) {
+                    $product->status = $request->status;
+                    $product->save();
+                }
+
+                // Check if all warehouse allocations for this order have reached the same status
+                // If yes, update the main sales order status
+                if ($isAdmin) {
+                    // Admin updates all, so update main order status immediately
+                    $oldStatus = $salesOrder->status;
+                    $salesOrder->status = $request->status;
+                    $salesOrder->save();
+
+                    NotificationService::statusChanged('sales', $salesOrder->id, $oldStatus, $salesOrder->status);
+
+                    activity()
+                        ->performedOn($salesOrder)
+                        ->causedBy($user)
+                        ->withProperties([
+                            'old_status' => $oldStatus,
+                            'new_status' => $request->status,
+                        ])
+                        ->log('Sales order status changed by Admin');
+                } else {
+                    // Warehouse user: Check if all allocations are at the same status
+                    $allAllocations = WarehouseAllocation::where('sales_order_id', $request->order_id)->get();
+                    $allAtSameStatus = $allAllocations->every(function($allocation) use ($request) {
+                        return $allocation->shipping_status === $request->status;
+                    });
+
+                    if ($allAtSameStatus) {
+                        $oldStatus = $salesOrder->status;
+                        $salesOrder->status = $request->status;
+                        $salesOrder->save();
+
+                        NotificationService::statusChanged('sales', $salesOrder->id, $oldStatus, $salesOrder->status);
+
+                        activity()
+                            ->performedOn($salesOrder)
+                            ->causedBy($user)
+                            ->withProperties([
+                                'old_status' => $oldStatus,
+                                'new_status' => $request->status,
+                            ])
+                            ->log('Sales order status changed (all warehouses at same status)');
+                    }
+                }
+
+                DB::commit();
+
+                $warehouseName = $isAdmin ? 'all warehouses' : ($user->warehouse->name ?? 'your warehouse');
+                return redirect()->back()
+                    ->with('success', "Status updated to '{$request->status}' for {$warehouseName} successfully!");
+            }
 
             if ($request->status == 'ready_to_ship') {
                 // Check if all products are ready_to_ship
@@ -1169,27 +1290,29 @@ class SalesOrderController extends Controller
                 $salesOrderUpdate->save();
 
                 $salesOrder->status = $request->status;
-            } elseif ($request->status == 'shipped') {
-
-                $salesOrderProducts = SalesOrderProduct::where('sales_order_id', $request->order_id)->where('customer_id', $request->customer_id)->get();
-                foreach ($salesOrderProducts as $order) {
-                    $order->status = 'shipped';
-                    $order->save();
-                }
-                $salesOrder->status = $request->status;
-            } elseif ($request->status == 'completed') {
-                $salesOrder->status = $request->status;
             }
 
             $oldStatus = $salesOrder->getOriginal('status');
             $salesOrder->save();
 
             if (! $salesOrder) {
+                DB::rollBack();
                 return redirect()->back()->with('error', 'Status Not Changed. Please Try Again.');
             }
 
             // Create status change notification
             NotificationService::statusChanged('sales', $salesOrder->id, $oldStatus, $salesOrder->status);
+
+            activity()
+                ->performedOn($salesOrder)
+                ->causedBy(Auth::user())
+                ->withProperties([
+                    'old_status' => $oldStatus,
+                    'new_status' => $salesOrder->status,
+                ])
+                ->log('Sales order status changed');
+
+            DB::commit();
 
             if ($salesOrder->status == 'ready_to_package') {
                 return redirect()->route('packing.products.view', $request->order_id)->with('success', 'Order status changed to "Ready to Package" successfully! Order ID: '.$salesOrder->id);
@@ -1203,7 +1326,9 @@ class SalesOrderController extends Controller
                 return redirect()->back()->with('error', 'Status Not Changed. Please Try Again.');
             }
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Status Not Changed. Please Try Again.'.$e->getMessage());
+            DB::rollBack();
+            Log::error('Error changing sales order status: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Status Not Changed. Please Try again. Error: '.$e->getMessage());
         }
     }
 
