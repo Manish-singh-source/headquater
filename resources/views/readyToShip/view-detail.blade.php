@@ -69,6 +69,10 @@
 
                                 <option value="shipped" @if ($salesOrder->status == 'shipped') selected @endif>
                                     Shipped</option>
+                                {{-- <option value="delivered" @if ($salesOrder->status == 'delivered') selected @endif>
+                                    Delivered</option>    
+                                <option value="completed" @if ($salesOrder->status == 'completed') selected @endif>
+                                    Completed</option>     --}}
                             </select>
                         </form>
                     </div>
@@ -123,6 +127,57 @@
                     </div>
                 </div>
             </div>
+
+            {{-- Warehouse Status Section --}}
+            @if(isset($warehouseStatuses) && count($warehouseStatuses) > 0)
+            <div class="row mt-3">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <h6 class="mb-3">Warehouse Shipping Status</h6>
+                            <div class="table-responsive">
+                                <table class="table table-bordered">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Warehouse Name</th>
+                                            <th>Current Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @php
+                                            $statusBadgeColors = [
+                                                'ready_to_ship' => 'bg-success',
+                                                'shipped' => 'bg-primary',
+                                                'delivered' => 'bg-info',
+                                                'completed' => 'bg-dark',
+                                            ];
+                                            $statusLabels = [
+                                                'ready_to_ship' => 'Ready to Ship',
+                                                'shipped' => 'Shipped',
+                                                'delivered' => 'Delivered',
+                                                'completed' => 'Completed',
+                                            ];
+                                        @endphp
+                                        @foreach($warehouseStatuses as $warehouseId => $statusInfo)
+                                            @if($isSuperAdmin || ($userWarehouseId == $warehouseId))
+                                                <tr>
+                                                    <td>{{ $statusInfo['warehouse_name'] }}</td>
+                                                    <td>
+                                                        <span class="badge {{ $statusBadgeColors[$statusInfo['shipping_status']] ?? 'bg-secondary' }}">
+                                                            {{ $statusLabels[$statusInfo['shipping_status']] ?? ucfirst(str_replace('_', ' ', $statusInfo['shipping_status'])) }}
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                            @endif
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            @endif
 
             <div class="row">
                 <div class="col-12">

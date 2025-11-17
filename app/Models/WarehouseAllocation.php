@@ -15,6 +15,7 @@ class WarehouseAllocation extends Model
         'weight' => 'integer',
         'sequence' => 'integer',
         'approved_at' => 'datetime',
+        'shipping_status' => 'string',
     ];
 
     /**

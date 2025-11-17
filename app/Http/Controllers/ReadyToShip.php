@@ -9,6 +9,7 @@ use App\Models\ProductIssue;
 use App\Models\SalesOrder;
 use App\Models\SalesOrderProduct;
 use App\Models\VendorReturnProduct;
+use App\Models\WarehouseAllocation;
 use App\Models\WarehouseStock;
 use App\Services\NotificationService;
 use Illuminate\Http\Request;
@@ -212,7 +213,26 @@ class ReadyToShip extends Controller
 
             $invoice = $invoiceQuery->first();
 
-            return view('readyToShip.view-detail', compact('salesOrder', 'facilityNames', 'isAdmin', 'isSuperAdmin', 'userWarehouseId', 'user', 'pendingApprovalList', 'invoice', 'customerInfo'));
+            // Get warehouse allocation statuses for this customer's products
+            $warehouseStatuses = [];
+            $allocations = WarehouseAllocation::where('sales_order_id', $id)
+                ->whereHas('salesOrderProduct', function($q) use ($c_id) {
+                    $q->where('customer_id', $c_id);
+                })
+                ->with('warehouse')
+                ->get();
+
+            foreach ($allocations as $allocation) {
+                $warehouseId = $allocation->warehouse_id;
+                if (!isset($warehouseStatuses[$warehouseId])) {
+                    $warehouseStatuses[$warehouseId] = [
+                        'warehouse_name' => $allocation->warehouse->name ?? 'N/A',
+                        'shipping_status' => $allocation->shipping_status ?? 'ready_to_ship',
+                    ];
+                }
+            }
+
+            return view('readyToShip.view-detail', compact('salesOrder', 'facilityNames', 'isAdmin', 'isSuperAdmin', 'userWarehouseId', 'user', 'pendingApprovalList', 'invoice', 'customerInfo', 'warehouseStatuses'));
         } catch (\Exception $e) {
             return redirect()->back()
                 ->with('error', 'Error loading order details: '.$e->getMessage());

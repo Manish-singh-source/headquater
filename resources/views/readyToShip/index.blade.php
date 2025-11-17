@@ -60,7 +60,7 @@
                                             <td>{{ $order->created_at->format('d-M-Y') }}</td>
                                             <td>NA</td>
                                             <td>
-                                                {{ $statuses[$order->orderedProducts[0]->status] ?? 'On Hold' }}
+                                                {{ $statuses[$order->status] ?? 'On Hold' }}
                                             </td>
                                             <td>
                                                 <a aria-label="anchor" href="{{ route('readyToShip.view', $order->id) }}"
