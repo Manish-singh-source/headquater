@@ -47,6 +47,30 @@
         ];
     @endphp
 
+    @foreach($salesOrder->orderedProducts as $order) 
+        @if($order->warehouseAllocations->count() >= 1)
+            @php
+                if($isSuperAdmin){
+                    $userWarehouseId = null; // Super Admin can see all warehouses
+                }else {
+                    $userWarehouseId = $user->warehouse_id;
+                }
+                
+                $totalAllocated = $order->warehouseAllocations->where('warehouse_id', $userWarehouseId)->count();
+                // $allocatedCompleted = $order->warehouseAllocations->where('product_status', 'completed')->where('warehouse_id', $userWarehouseId)->count();
+                $allocatedShipped = $order->warehouseAllocations->where('shipping_status', 'shipped')->where('warehouse_id', $userWarehouseId)->count();
+                // if($allocatedCompleted == $totalAllocated) {
+                //     $currentStatus = 'completed';
+                // } else
+                if($allocatedShipped == $totalAllocated) {
+                    $currentStatus = 'shipped';
+                } else {
+                    $currentStatus = 'partially_packaged';
+                }
+            @endphp
+        @endif
+    @endforeach
+
     <!--start main wrapper-->
     <main class="main-wrapper">
         <div class="main-content">
@@ -69,11 +93,11 @@
                                 aria-label="Default select example" name="status">
                                 <option value="" selected disabled>Change Status</option>
 
-                                <option value="shipped" @if ($salesOrder->status == 'shipped') selected @endif>
+                                <option value="shipped" @if ($currentStatus == 'shipped') selected @endif>
                                     Shipped</option>
-                                {{-- <option value="delivered" @if ($salesOrder->status == 'delivered') selected @endif>
+                                {{-- <option value="delivered" @if ($currentStatus == 'delivered') selected @endif>
                                     Delivered</option>    
-                                <option value="completed" @if ($salesOrder->status == 'completed') selected @endif>
+                                <option value="completed" @if ($currentStatus == 'completed') selected @endif>
                                     Completed</option>     --}}
                             </select>
                         </form>
@@ -90,6 +114,11 @@
                                 <span><b>Order Id</b></span>
 
                                 <span>{{ $salesOrder->id }}</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
+                                <span><b>Status</b></span>
+
+                                <span class="badge {{ $statusBadges[$currentStatus] ?? 'bg-secondary' }}">{{ $statusLabels[$currentStatus] ?? 'NA' }}</span>
                             </li>
                             <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                                 <span><b>Customer Group Name</b></span>
@@ -119,12 +148,14 @@
                                 <span><b> Shipping Address</b></span>
                                 <span> {{ $customerInfo->shipping_address ?? 'NA' }}</span>
                             </li>
+                            {{-- 
                             <li class="list-group-item d-flex justify-content-between align-items-center  mb-2 pe-3">
                                 <span><b>Actions</b></span>
                                 <span>
 
                                 </span>
-                            </li>
+                            </li> 
+                            --}}
                         </ul>
                     </div>
                 </div>
