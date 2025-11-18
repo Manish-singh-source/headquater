@@ -13,11 +13,23 @@ use Illuminate\Support\Facades\DB;
 
 class WarehouseController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $warehouses = Warehouse::with('country', 'state', 'cities')->latest()->paginate(15);
+        $status = $request->query('status');
+        $warehouses = Warehouse::query();
+        if (! is_null($status)) {
+            $status = (int) $status;
 
-        return view('warehouse.index', compact('warehouses'));
+            if ($status === 1) {
+                $warehouses->active();
+            } elseif ($status === 0) {
+                $warehouses->inactive();
+            }
+        }
+        $warehouses = $warehouses->with('country', 'state', 'cities')
+            ->latest()->get();
+
+        return view('warehouse.index', compact('warehouses', 'status'));
     }
 
     public function create()
@@ -42,7 +54,7 @@ class WarehouseController extends Controller
                 ->causedBy(Auth::user())
                 ->withProperties($attributes)
                 ->event('created')
-                ->log('Warehouse created: '.$warehouse->name);
+                ->log('Warehouse created: ' . $warehouse->name);
 
             return redirect()->route('warehouse.index')->with('success', 'Warehouse created successfully.');
         } catch (\Exception $e) {
@@ -78,7 +90,7 @@ class WarehouseController extends Controller
                     'new' => $warehouse->getChanges(),
                 ])
                 ->event('updated')
-                ->log('Warehouse updated: '.$warehouse->name);
+                ->log('Warehouse updated: ' . $warehouse->name);
 
             return redirect()->route('warehouse.index')->with('success', 'Warehouse updated successfully.');
         } catch (\Exception $e) {
@@ -106,7 +118,7 @@ class WarehouseController extends Controller
                 ->performedOn($warehouse)
                 ->causedBy(Auth::user())
                 ->event('deleted')
-                ->log('Warehouse deleted: '.$warehouse->name);
+                ->log('Warehouse deleted: ' . $warehouse->name);
 
             DB::commit();
 
@@ -138,7 +150,7 @@ class WarehouseController extends Controller
             ->causedBy(Auth::user())
             ->withProperties(['old_status' => $oldStatus, 'new_status' => $warehouse->status])
             ->event('status_changed')
-            ->log('Warehouse status changed: '.$warehouse->name);
+            ->log('Warehouse status changed: ' . $warehouse->name);
 
         return response()->json(['success' => true, 'status' => $warehouse->status]);
     }
@@ -189,7 +201,7 @@ class WarehouseController extends Controller
                     ->causedBy(Auth::user())
                     ->withProperties(['id' => $warehouse->id, 'name' => $warehouse->name])
                     ->event('deleted')
-                    ->log('Warehouse deleted in bulk operation: '.$warehouse->name);
+                    ->log('Warehouse deleted in bulk operation: ' . $warehouse->name);
 
                 $warehouse->delete();
                 $deleted++;
@@ -197,9 +209,9 @@ class WarehouseController extends Controller
 
             DB::commit();
 
-            $message = 'Successfully deleted '.$deleted.' warehouse(s).';
+            $message = 'Successfully deleted ' . $deleted . ' warehouse(s).';
             if (! empty($skipped)) {
-                $message .= ' Skipped '.count($skipped).' warehouse(s) with existing stock: '.implode(', ', $skipped);
+                $message .= ' Skipped ' . count($skipped) . ' warehouse(s) with existing stock: ' . implode(', ', $skipped);
             }
 
             return redirect()->back()->with('success', $message);

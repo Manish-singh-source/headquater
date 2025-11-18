@@ -37,6 +37,7 @@
         'partially_packaged' => 'bg-warning',
         'approval_pending' => 'bg-secondary',
         'packaged' => 'bg-info',
+        'shipped' => 'bg-dark',
         'completed' => 'bg-success',
         'cancelled' => 'bg-danger',
     ];
@@ -47,6 +48,7 @@
         'partially_packaged' => 'Partially Packaged',
         'approval_pending' => 'Ready to Ship Approval Pending',
         'packaged' => 'Packaged',
+        'shipped' => 'Shipped',
         'completed' => 'Ready to Ship',
         'cancelled' => 'Cancelled',
     ];
@@ -68,10 +70,6 @@
                         <i class="bx bx-info-circle me-1"></i> You have
                         {{ $readyToShipAllocations->count() }} product(s) ready to be marked as "Ready to Ship".
                     </div>
-                {{-- @else --}}
-                    {{-- <div class="alert alert-secondary my-2" role="alert">
-                        <i class="bx bx-info-circle me-1"></i> No products are ready to be marked as "Ready to Ship".
-                    </div> --}}
                 @endif
             @endif
 
@@ -149,18 +147,6 @@
                         <!-- Tabs Navigation -->
                         @if (!$isAdmin ?? false)
                             <div class="d-flex justify-content-end my-3 gap-2">
-
-                                <!-- Client Name Dropdown -->
-                                {{-- <ul class="nav nav-tabs" id="vendorTabs" role="tablist">
-                                <select class="form-select border-2 border-primary" id="customerPOTable"
-                                    aria-label="Select Client Name">
-                                    <option value="" selected> -- Select Client Name --</option>
-                                    @foreach ($facilityNames as $name)
-                                        <option value="{{ $name }}">{{ $name }}</option>
-                                    @endforeach
-                                </select>
-                            </ul> --}}
-
                                 <button class="btn btn-sm border-2 border-primary" data-bs-toggle="modal"
                                     data-bs-target="#staticBackdrop1" class="btn btn-sm border-2 border-primary">
                                     Update PO
@@ -388,6 +374,9 @@
                                                 @else
                                                     @if ($order->warehouseAllocations->count() >= 1)
                                                         @foreach ($order->warehouseAllocations as $allocation)
+                                                            @if ($allocation->shipping_status == 'shipped')
+                                                                @php $allocation->product_status = 'shipped'; @endphp
+                                                            @endif
                                                             @if ($isSuperAdmin ?? false)
                                                                 @if ($allocation->final_dispatched_quantity > 0)
                                                                     <span

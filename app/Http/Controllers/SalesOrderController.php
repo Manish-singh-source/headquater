@@ -78,10 +78,10 @@ class SalesOrderController extends Controller
                 continue;
             }
 
-            $key = strtolower(trim($record['Facility Name'])).'|'.strtolower(trim($record['SKU Code']));
+            $key = strtolower(trim($record['Facility Name'])) . '|' . strtolower(trim($record['SKU Code']));
 
             if (isset($seen[$key])) {
-                return 'Please check excel file: duplicate SKU ('.$record['SKU Code'].') found for same customer ('.$record['Facility Name'].').';
+                return 'Please check excel file: duplicate SKU (' . $record['SKU Code'] . ') found for same customer (' . $record['Facility Name'] . ').';
             }
 
             $seen[$key] = true;
@@ -522,7 +522,7 @@ class SalesOrderController extends Controller
                 DB::rollBack();
                 $uniqueString = implode(', ', array_unique($vendorsNotFound));
 
-                return redirect()->back()->with(['error' => 'No valid data found in the CSV file. Please check Vendor Codes: '.$uniqueString]);
+                return redirect()->back()->with(['error' => 'No valid data found in the CSV file. Please check Vendor Codes: ' . $uniqueString]);
             }
 
             // If auto allocation is selected, trigger warehouse allocation
@@ -543,7 +543,7 @@ class SalesOrderController extends Controller
 
                     // If allocation failed, log it
                     if (! $allocationResult['success']) {
-                        Log::warning('Auto allocation failed for SKU: '.$orderProduct->sku, [
+                        Log::warning('Auto allocation failed for SKU: ' . $orderProduct->sku, [
                             'sales_order_id' => $salesOrder->id,
                             'error' => $allocationResult['error'] ?? 'Unknown error',
                         ]);
@@ -568,7 +568,7 @@ class SalesOrderController extends Controller
             // Create notification
             NotificationService::orderCreated('sales', $salesOrder->id);
 
-            $successMessage = 'Sales Order created successfully! Order ID: '.$salesOrder->id;
+            $successMessage = 'Sales Order created successfully! Order ID: ' . $salesOrder->id;
             if ($isAutoAllocation) {
                 $successMessage .= ' (Stock auto-allocated from multiple warehouses)';
             }
@@ -578,7 +578,7 @@ class SalesOrderController extends Controller
             DB::rollBack();
 
             // dd($e);
-            return redirect()->back()->with(['error' => 'Something went wrong: '.$e->getMessage()]);
+            return redirect()->back()->with(['error' => 'Something went wrong: ' . $e->getMessage()]);
         }
     }
 
@@ -618,13 +618,13 @@ class SalesOrderController extends Controller
                     continue;
                 }
 
-                $key = strtolower(trim($record['Facility Name'])).'|'.strtolower(trim($record['SKU Code']));
+                $key = strtolower(trim($record['Facility Name'])) . '|' . strtolower(trim($record['SKU Code']));
 
                 if (isset($seen[$key])) {
                     DB::rollBack();
 
                     return redirect()->back()->with([
-                        'error' => 'Please check excel file: duplicate SKU ('.$record['SKU Code'].') found for same customer ('.$record['Facility Name'].').',
+                        'error' => 'Please check excel file: duplicate SKU (' . $record['SKU Code'] . ') found for same customer (' . $record['Facility Name'] . ').',
                     ]);
                 }
 
@@ -764,7 +764,7 @@ class SalesOrderController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
 
-            return redirect()->back()->with(['error' => 'Something went wrong: '.$e->getMessage()]);
+            return redirect()->back()->with(['error' => 'Something went wrong: ' . $e->getMessage()]);
         }
     }
 
@@ -846,7 +846,7 @@ class SalesOrderController extends Controller
                             'order' => $order,
                             'warehouse_name' => $allocation->warehouse->name ?? 'N/A',
                             'allocated_quantity' => $allocation->allocated_quantity,
-                            'warehouse_allocation_display' => $allocation->warehouse->name.': '.$allocation->allocated_quantity,
+                            'warehouse_allocation_display' => $allocation->warehouse->name . ': ' . $allocation->allocated_quantity,
                             'allocation_id' => $allocation->id,
                         ];
                         $facilityNames[] = $order->tempOrder->facility_name;
@@ -859,7 +859,7 @@ class SalesOrderController extends Controller
                         'order' => $order,
                         'warehouse_name' => $warehouseName,
                         'allocated_quantity' => $allocatedQty,
-                        'warehouse_allocation_display' => $warehouseName.': '.$allocatedQty,
+                        'warehouse_allocation_display' => $warehouseName . ': ' . $allocatedQty,
                         'allocation_id' => null,
                     ];
                     $facilityNames[] = $order->tempOrder->facility_name;
@@ -874,7 +874,7 @@ class SalesOrderController extends Controller
                     // Build warehouse allocation display string
                     $allocationDisplay = [];
                     foreach ($order->warehouseAllocations as $allocation) {
-                        $allocationDisplay[] = $allocation->warehouse->name.': '.$allocation->allocated_quantity;
+                        $allocationDisplay[] = $allocation->warehouse->name . ': ' . $allocation->allocated_quantity;
                     }
                     $displayProducts[] = [
                         'order' => $order,
@@ -958,7 +958,7 @@ class SalesOrderController extends Controller
             return redirect()->route('sales.order.index')->with('success', 'Order deleted successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error deleting sales order: '.$e->getMessage());
+            Log::error('Error deleting sales order: ' . $e->getMessage());
 
             return redirect()->back()->with('error', 'Something went wrong: Please Try Again.');
         }
@@ -1067,9 +1067,9 @@ class SalesOrderController extends Controller
             return redirect()->back()->with('success', 'Selected products deleted successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error deleting sales order products: '.$e->getMessage());
+            Log::error('Error deleting sales order products: ' . $e->getMessage());
 
-            return redirect()->back()->with('error', 'Something went wrong: '.$e->getMessage());
+            return redirect()->back()->with('error', 'Something went wrong: ' . $e->getMessage());
         }
     }
 
@@ -1081,9 +1081,9 @@ class SalesOrderController extends Controller
             // Validate request
             $validator = Validator::make($request->all(), [
                 'order_id' => 'required|integer|exists:sales_orders,id',
-                'customer_id' => 'required|integer|exists:customers,id',
-                'user_id' => 'required|integer|exists:users,id',
                 'status' => 'required|in:shipped,delivered,completed,ready_to_ship,ready_to_package,pending,blocked',
+                'customer_id' => 'nullable|integer|exists:customers,id',
+                'user_id' => 'nullable|integer|exists:users,id',
             ]);
 
             if ($validator->fails()) {
@@ -1097,18 +1097,19 @@ class SalesOrderController extends Controller
             $salesOrderDetails = SalesOrderProduct::with('tempOrder')->where('sales_order_id', $salesOrder->id)->get();
 
             // Get user information for role-based updates
-            $user = User::findOrFail($request->user_id);
-            $isAdmin = $user->hasRole(['Super Admin', 'Admin']) || !$user->warehouse_id;
-            $userWarehouseId = $user->warehouse_id;
+            if ($request->filled('user_id')) {
+                $user = User::findOrFail($request->user_id);
+                $isAdmin = $user->hasRole(['Super Admin', 'Admin']) || !$user->warehouse_id;
+                $userWarehouseId = $user->warehouse_id;
+            }
 
             // Handle warehouse-specific status updates for shipped, delivered, completed
             if (in_array($request->status, ['shipped', 'delivered', 'completed'])) {
                 // Update warehouse allocations based on user role
                 $allocationsQuery = WarehouseAllocation::where('sales_order_id', $request->order_id)
-                    ->whereHas('salesOrderProduct', function($q) use ($request) {
+                    ->whereHas('salesOrderProduct', function ($q) use ($request) {
                         $q->where('customer_id', $request->customer_id);
                     });
-
                 // If warehouse user, only update their warehouse allocations
                 if (!$isAdmin && $userWarehouseId) {
                     $allocationsQuery->where('warehouse_id', $userWarehouseId);
@@ -1116,6 +1117,7 @@ class SalesOrderController extends Controller
 
                 $allocations = $allocationsQuery->get();
 
+                // dd($allocations);
                 if ($allocations->isEmpty()) {
                     DB::rollBack();
                     return redirect()->back()
@@ -1170,7 +1172,7 @@ class SalesOrderController extends Controller
                 } else {
                     // Warehouse user: Check if all allocations are at the same status
                     $allAllocations = WarehouseAllocation::where('sales_order_id', $request->order_id)->get();
-                    $allAtSameStatus = $allAllocations->every(function($allocation) use ($request) {
+                    $allAtSameStatus = $allAllocations->every(function ($allocation) use ($request) {
                         return $allocation->shipping_status === $request->status;
                     });
 
@@ -1208,7 +1210,7 @@ class SalesOrderController extends Controller
                     $pendingProducts = $totalProducts - $readyToShipProducts;
 
                     return redirect()->back()
-                        ->with('error', 'Cannot change order status to Ready to Ship. '.$pendingProducts.' product(s) are still in packaging. Please ensure all warehouse persons have marked their products as ready to ship.');
+                        ->with('error', 'Cannot change order status to Ready to Ship. ' . $pendingProducts . ' product(s) are still in packaging. Please ensure all warehouse persons have marked their products as ready to ship.');
                 }
 
                 $salesOrderUpdate = SalesOrder::with([
@@ -1253,8 +1255,7 @@ class SalesOrderController extends Controller
                     'orderedProducts.tempOrder',
                     'orderedProducts.warehouseStock',
                 ])
-                    ->findOrFail($request->order_id);
-
+                    ->find($request->order_id);
                 foreach ($salesOrderUpdate->orderedProducts as $order) {
 
                     if ($order->tempOrder?->vendor_pi_received_quantity > 0) {
@@ -1287,9 +1288,8 @@ class SalesOrderController extends Controller
                     }
                     $order->save();
                 }
+                $salesOrderUpdate->status = $request->status;
                 $salesOrderUpdate->save();
-
-                $salesOrder->status = $request->status;
             }
 
             $oldStatus = $salesOrder->getOriginal('status');
@@ -1315,20 +1315,20 @@ class SalesOrderController extends Controller
             DB::commit();
 
             if ($salesOrder->status == 'ready_to_package') {
-                return redirect()->route('packing.products.view', $request->order_id)->with('success', 'Order status changed to "Ready to Package" successfully! Order ID: '.$salesOrder->id);
+                return redirect()->route('packing.products.view', $request->order_id)->with('success', 'Order status changed to "Ready to Package" successfully! Order ID: ' . $salesOrder->id);
             } elseif ($salesOrder->status == 'ready_to_ship') {
-                return redirect()->route('readyToShip.view', $request->order_id)->with('success', 'Order status changed to "Ready to Ship" successfully! Order ID: '.$salesOrder->id);
+                return redirect()->route('readyToShip.view', $request->order_id)->with('success', 'Order status changed to "Ready to Ship" successfully! Order ID: ' . $salesOrder->id);
             } elseif ($salesOrder->status == 'completed') {
-                return redirect()->route('sales.order.index')->with('success', 'Order marked as "Completed" successfully! Order ID: '.$salesOrder->id);
+                return redirect()->route('sales.order.index')->with('success', 'Order marked as "Completed" successfully! Order ID: ' . $salesOrder->id);
             } elseif ($salesOrder->status == 'shipped') {
-                return redirect()->route('sales.order.index')->with('success', 'Order marked as "Shipped" successfully! Order ID: '.$salesOrder->id);
+                return redirect()->route('sales.order.index')->with('success', 'Order marked as "Shipped" successfully! Order ID: ' . $salesOrder->id);
             } else {
                 return redirect()->back()->with('error', 'Status Not Changed. Please Try Again.');
             }
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Error changing sales order status: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Status Not Changed. Please Try again. Error: '.$e->getMessage());
+            return redirect()->back()->with('error', 'Status Not Changed. Please Try again. Error: ' . $e->getMessage());
         }
     }
 
@@ -1399,16 +1399,16 @@ class SalesOrderController extends Controller
                     $warehouseId = $allocation->warehouse_id;
 
                     // Build dynamic grouping key: warehouse_id + po_number + facility_name
-                    $groupKey = $warehouseId.'|'.$poNumber.'|'.$facilityName;
+                    $groupKey = $warehouseId . '|' . $poNumber . '|' . $facilityName;
 
                     if ($request->filled('brand')) {
                         $brand = $detail->product->brand ?? '';
-                        $groupKey .= '|'.$brand;
+                        $groupKey .= '|' . $brand;
                     }
 
                     if ($request->filled('client_name')) {
                         $clientName = $detail->customer->client_name ?? '';
-                        $groupKey .= '|'.$clientName;
+                        $groupKey .= '|' . $clientName;
                     }
 
                     // Store detail with allocation info
@@ -1446,7 +1446,7 @@ class SalesOrderController extends Controller
                 // Create invoice with unique number
                 $invoice = new Invoice;
                 $invoice->warehouse_id = $warehouseId;
-                $invoice->invoice_number = 'INV-'.$timestamp.'-'.str_pad($invoiceCounter, 4, '0', STR_PAD_LEFT);
+                $invoice->invoice_number = 'INV-' . $timestamp . '-' . str_pad($invoiceCounter, 4, '0', STR_PAD_LEFT);
                 $invoice->customer_id = $customerId;
                 $invoice->sales_order_id = $salesOrder->id;
                 $invoice->invoice_date = now();
@@ -1540,14 +1540,14 @@ class SalesOrderController extends Controller
             );
         } catch (\Exception $e) {
             DB::rollBack();
-            \Log::error('Invoice Generation Failed: '.$e->getMessage(), [
+            \Log::error('Invoice Generation Failed: ' . $e->getMessage(), [
                 'order_id' => $request->order_id,
                 'trace' => $e->getTraceAsString(),
             ]);
 
             return redirect()->back()->with(
                 'error',
-                'Invoice generation failed: '.$e->getMessage()
+                'Invoice generation failed: ' . $e->getMessage()
             );
         }
     }
@@ -1751,7 +1751,7 @@ class SalesOrderController extends Controller
 
                         $allocateQty = min($stock->available_quantity, $remainingQty);
                         $currentUnavailable = max(0, $remainingQty - $allocateQty);
-                        $allocations[] = $stock->warehouse->name.' - PO Qty: '.$remainingQty.', Available: '.$allocateQty.', Unavailable: '.$currentUnavailable;
+                        $allocations[] = $stock->warehouse->name . ' - PO Qty: ' . $remainingQty . ', Available: ' . $allocateQty . ', Unavailable: ' . $currentUnavailable;
                         $remainingQty -= $allocateQty;
                     }
 
@@ -1760,7 +1760,7 @@ class SalesOrderController extends Controller
                     }
 
                     if ($remainingQty > 0) {
-                        $warehouseBreakdown .= ($warehouseBreakdown ? '<br>' : '').'PO Required: '.$remainingQty;
+                        $warehouseBreakdown .= ($warehouseBreakdown ? '<br>' : '') . 'PO Required: ' . $remainingQty;
                     }
                 } else {
                     // Single warehouse: show breakdown for selected warehouse
@@ -1772,10 +1772,10 @@ class SalesOrderController extends Controller
                     if ($warehouseStock) {
                         $allocateQty = min($warehouseStock->available_quantity, $poQty);
                         $unavailableQty = max(0, $poQty - $allocateQty);
-                        $warehouseBreakdown = $warehouseStock->warehouse->name.' - PO Qty: '.$poQty.', Available: '.$allocateQty.', Unavailable: '.$unavailableQty;
+                        $warehouseBreakdown = $warehouseStock->warehouse->name . ' - PO Qty: ' . $poQty . ', Available: ' . $allocateQty . ', Unavailable: ' . $unavailableQty;
 
                         if ($unavailableQty > 0) {
-                            $warehouseBreakdown .= '<br>PO Required: '.$unavailableQty;
+                            $warehouseBreakdown .= '<br>PO Required: ' . $unavailableQty;
                         }
                     }
                 }
@@ -1854,7 +1854,7 @@ class SalesOrderController extends Controller
                 return $row;
             });
 
-            $fileName = 'processed_order_'.time().'.csv';
+            $fileName = 'processed_order_' . time() . '.csv';
             $csvPath = public_path("uploads/{$fileName}");
 
             SimpleExcelWriter::create($csvPath)->addRows($filteredRows->toArray());
@@ -1880,7 +1880,7 @@ class SalesOrderController extends Controller
         }
 
         // Create temporary .xlsx file
-        $tempXlsxPath = storage_path('app/blocked_'.Str::random(8).'.xlsx');
+        $tempXlsxPath = storage_path('app/blocked_' . Str::random(8) . '.xlsx');
 
         // Create writer
         $writer = SimpleExcelWriter::create($tempXlsxPath);
@@ -1945,7 +1945,7 @@ class SalesOrderController extends Controller
         }
 
         // Create temporary .xlsx file path
-        $tempXlsxPath = storage_path('app/order_po_update_'.Str::random(8).'.xlsx');
+        $tempXlsxPath = storage_path('app/order_po_update_' . Str::random(8) . '.xlsx');
 
         // Create writer
         $writer = SimpleExcelWriter::create($tempXlsxPath);
@@ -2004,7 +2004,7 @@ class SalesOrderController extends Controller
         }
 
         // Create temporary .xlsx file path
-        $tempXlsxPath = storage_path('app/not_found_sku_'.Str::random(8).'.xlsx');
+        $tempXlsxPath = storage_path('app/not_found_sku_' . Str::random(8) . '.xlsx');
 
         // Create writer
         $writer = SimpleExcelWriter::create($tempXlsxPath);
@@ -2050,7 +2050,7 @@ class SalesOrderController extends Controller
         }
 
         // Create temporary .xlsx file path
-        $tempXlsxPath = storage_path('app/not_found_customer_'.Str::random(8).'.xlsx');
+        $tempXlsxPath = storage_path('app/not_found_customer_' . Str::random(8) . '.xlsx');
 
         // Create writer
         $writer = SimpleExcelWriter::create($tempXlsxPath);
@@ -2096,7 +2096,7 @@ class SalesOrderController extends Controller
         }
 
         // Create temporary .xlsx file path
-        $tempXlsxPath = storage_path('app/not_found_vendor_'.Str::random(8).'.xlsx');
+        $tempXlsxPath = storage_path('app/not_found_vendor_' . Str::random(8) . '.xlsx');
 
         // Create writer
         $writer = SimpleExcelWriter::create($tempXlsxPath);
@@ -2157,7 +2157,7 @@ class SalesOrderController extends Controller
 
                 return response()->json([
                     'success' => false,
-                    'message' => 'Allocation failed: '.$result['error'],
+                    'message' => 'Allocation failed: ' . $result['error'],
                 ], 500);
             }
 
@@ -2194,11 +2194,11 @@ class SalesOrderController extends Controller
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Auto allocation failed: '.$e->getMessage());
+            Log::error('Auto allocation failed: ' . $e->getMessage());
 
             return response()->json([
                 'success' => false,
-                'message' => 'Error: '.$e->getMessage(),
+                'message' => 'Error: ' . $e->getMessage(),
             ], 500);
         }
     }
@@ -2232,11 +2232,11 @@ class SalesOrderController extends Controller
                 'allocations' => $breakdown,
             ]);
         } catch (\Exception $e) {
-            Log::error('Get allocation breakdown failed: '.$e->getMessage());
+            Log::error('Get allocation breakdown failed: ' . $e->getMessage());
 
             return response()->json([
                 'success' => false,
-                'message' => 'Error: '.$e->getMessage(),
+                'message' => 'Error: ' . $e->getMessage(),
             ], 500);
         }
     }
@@ -2326,11 +2326,11 @@ class SalesOrderController extends Controller
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Manual allocation failed: '.$e->getMessage());
+            Log::error('Manual allocation failed: ' . $e->getMessage());
 
             return response()->json([
                 'success' => false,
-                'message' => 'Error: '.$e->getMessage(),
+                'message' => 'Error: ' . $e->getMessage(),
             ], 500);
         }
     }

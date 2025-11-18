@@ -58,8 +58,11 @@ class DashboardController extends Controller
         // 8. WAREHOUSE SECTION
         $warehouseData = $this->getWarehouseData($selectedBrands);
 
+        $user = auth()->user();
+        
         // dd($warehouseData);
         return view('index', compact(
+            'user',
             'allBrands',
             'selectedBrands',
             'startDate',

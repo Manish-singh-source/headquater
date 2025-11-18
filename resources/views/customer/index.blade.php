@@ -45,7 +45,7 @@
                 </div>
             </div>
 
-            @include('layouts.errors')
+            @include('layouts.errors') 
 
             <!-- Statistics Cards -->
             <div class="row row-cols-1 row-cols-md-3 g-3 mb-4">
