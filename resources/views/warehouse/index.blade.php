@@ -37,17 +37,24 @@
             <div class="card mt-4">
                 <div class="card-body">
                     <!-- Tabs -->
-                    <ul class="nav nav-tabs" id="warehouseTabs" role="tablist">
+                    <ul class="nav nav-pills mb-3" role="tablist">
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link active" id="all-warehouses" type="button"
-                                data-status="all">All</button>
+                            <a class="nav-link {{ $status === null ? 'active' : '' }}"
+                                href="{{ route('warehouse.index', ['status' => null]) }}">
+                                All Warehouses
+                            </a>
                         </li>
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link" type="button" id="active-warehouses" data-status="1">Active</button>
+                            <a class="nav-link {{ $status === 1 ? 'active' : '' }}"
+                                href="{{ route('warehouse.index', ['status' => 1]) }}">
+                                Active
+                            </a>
                         </li>
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link" type="button" id="inactive-warehouses"
-                                data-status="0">Inactive</button>
+                            <a class="nav-link {{ $status === 0 ? 'active' : '' }}"
+                                href="{{ route('warehouse.index', ['status' => 0]) }}">
+                                Inactive
+                            </a>
                         </li>
                     </ul>
 

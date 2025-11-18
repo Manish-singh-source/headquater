@@ -35,7 +35,7 @@ class VendorController extends Controller
             $vendors = $vendors->latest()
                 ->withCount('orders')
                 ->with('shippingState', 'shippingCity', 'billingCountry', 'billingState', 'billingCity')
-                ->paginate(15);
+                ->get();
 
             return view('vendor.index', compact('vendors', 'status'));
         } catch (\Exception $e) {

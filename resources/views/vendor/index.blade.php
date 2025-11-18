@@ -42,28 +42,26 @@
 
             <div class="card mt-4">
                 <div class="card-body">
-                    <ul class="nav nav-tabs" id="vendorTabs" role="tablist">
+                    <ul class="nav nav-pills mb-3" role="tablist">
                         <li class="nav-item" role="presentation">
-                            <a href="{{ route('vendor.index') }}" class="nav-link {{ is_null($status) ? 'active' : '' }}">
-                                All
+                            <a class="nav-link {{ $status === null ? 'active' : '' }}"
+                                href="{{ route('vendor.index', ['status' => null]) }}">
+                                All Vendors
                             </a>
                         </li>
-
                         <li class="nav-item" role="presentation">
-                            <a href="{{ route('vendor.index', ['status' => 1]) }}"
-                                class="nav-link {{ $status === '1' ? 'active' : '' }}">
+                            <a class="nav-link {{ $status === 1 ? 'active' : '' }}"
+                                href="{{ route('vendor.index', ['status' => 1]) }}">
                                 Active
                             </a>
                         </li>
-
                         <li class="nav-item" role="presentation">
-                            <a href="{{ route('vendor.index', ['status' => 0]) }}"
-                                class="nav-link {{ $status === '0' ? 'active' : '' }}">
+                            <a class="nav-link {{ $status === 0 ? 'active' : '' }}"
+                                href="{{ route('vendor.index', ['status' => 0]) }}">
                                 Inactive
                             </a>
                         </li>
                     </ul>
-
 
                     <div class="customer-table mt-3">
                         <div class="table-responsive white-space-nowrap">
