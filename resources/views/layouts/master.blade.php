@@ -547,11 +547,21 @@
 
                   @can('View Vendor Purchase History Report')
                       <li>
-                          <a href="{{ route('vendor-purchase-history') }}">
+                          <a href="javascript:;" class="has-arrow">
                               <div class="parent-icon"><i class="material-icons-outlined">store</i>
                               </div>
                               <div class="menu-title">Vendor Purchase</div>
                           </a>
+                          <ul>
+                              <li><a href="{{ route('vendor-purchase-invoices') }}"><i
+                                          class="material-icons-outlined">arrow_right</i>Invoices Level
+                                  </a>
+                              </li>
+                              <li><a href="{{ route('vendor-purchase-sku') }}"><i
+                                          class="material-icons-outlined">arrow_right</i>SKU Level
+                                  </a>
+                              </li>
+                          </ul>
                       </li>
                   @endcan
 
@@ -567,11 +577,21 @@
 
                   @can('View Customer Sales History Report')
                       <li>
-                          <a href="{{ route('customer-sales-history') }}">
+                          <a href="javascript:;" class="has-arrow">
                               <div class="parent-icon"><i class="material-icons-outlined">point_of_sale</i>
                               </div>
                               <div class="menu-title">Customer Sales</div>
                           </a>
+                          <ul>
+                              <li><a href="{{ route('customer-sales-invoices') }}"><i
+                                          class="material-icons-outlined">arrow_right</i>Invoices Level
+                                  </a>
+                              </li>
+                              <li><a href="{{ route('customer-sales-sku') }}"><i
+                                          class="material-icons-outlined">arrow_right</i>SKU Level
+                                  </a>
+                              </li>
+                          </ul>
                       </li>
                   @endcan
 

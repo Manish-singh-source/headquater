@@ -38,7 +38,7 @@
                         <ol class="breadcrumb mb-0 p-0">
                             <li class="breadcrumb-item"><a href="{{ route('index') }}"><i class="bx bx-home-alt"></i></a>
                             </li>
-                            <li class="breadcrumb-item active" aria-current="page">Vendor Purchase Report</li>
+                            <li class="breadcrumb-item active" aria-current="page">Vendor Purchase Invoice Level</li>
                         </ol>
                     </nav>
                 </div>
@@ -153,7 +153,7 @@
             <div class="card">
                 <div class="card-body">
                     <h6 class="mb-3 fw-bold"><i class="bx bx-filter-alt me-2"></i>Filter Options</h6>
-                    <form id="filterForm" method="GET" action="{{ route('vendor-purchase-history') }}">
+                    <form id="filterForm" method="GET" action="{{ route('vendor-purchase-invoices') }}">
                         <div class="row align-items-start">
                             <div class="col-lg-10">
                                 <div class="row">
@@ -366,7 +366,7 @@
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h6 class="mb-0 fw-bold">
-                            <i class="bx bx-list-ul me-2"></i>Vendor Purchase Records
+                            <i class="bx bx-list-ul me-2"></i>Vendor Purchase Invoice Records
                             <span class="badge bg-primary ms-2">{{ $vendorPIProducts->total() }} Total</span>
                         </h6>
                     </div>
@@ -382,14 +382,11 @@
                                         <th>Purchse&nbsp;Order&nbsp;No</th>
                                         <th>Purchase&nbsp;Order&nbsp;Date</th>
                                         <th>Vendor&nbsp;Name</th>
-                                        <th>GSTIN</th>
-                                        <th>Item&nbsp;Name</th>
-                                        <th>SKU</th>
+                                        <th>Invoice&nbsp;Ref</th>
+                                        <th>Invoice&nbsp;Date</th>
+                                        <th>Due&nbsp;Date</th>
                                         <th>HSN/SAC</th>
                                         <th>Quantity</th>
-                                        <th>UoM</th>
-                                        <th>Rate</th>
-                                        <th>Discount</th>
                                         <th>Taxable&nbsp;Value</th>
                                         <th>GST</th>
                                         <th>CGST</th>
@@ -398,22 +395,26 @@
                                         <th>GST&nbsp;Amount</th>
                                         <th>Cess</th>
                                         <th>Cess&nbsp;Amount</th>
-                                        <th>PAN</th>
+                                        <th>Invoice&nbsp;Amount</th>
+                                        <th>Invoice&nbsp;Paid</th>
+                                        <th>Invoice&nbsp;Due</th>
                                         <th>Payment&nbsp;Status</th>
                                         <th>Payment&nbsp;Method</th>
-                                        <th>Invoice&nbsp;Ref</th>
-                                        <th>Invoice&nbsp;Date</th>
-                                        <th>Invoice&nbsp;Amount</th>
-                                        <th>Invoice&nbsp;Due</th>
-                                        <th>Invoice&nbsp;Paid</th>
                                         <th>Invioice&nbsp;Uploaded</th>
                                         <th>GRN&nbsp;Uploaded</th>
-                                        <th>Due&nbsp;Date</th>
                                         <th>Shipping&nbsp;Charges</th>
+                                        <th>Warehouse</th>
+
+                                        {{-- <th>GSTIN</th>
+                                        <th>Item&nbsp;Name</th>
+                                        <th>SKU</th>
+                                        <th>UoM</th>
+                                        <th>Rate</th>
+                                        <th>Discount</th>
+                                        <th>PAN</th>
                                         <th>PO&nbsp;Created</th>
                                         <th>PI&nbsp;Received</th>
-                                        <th>Approved</th>
-                                        <th>Warehouse</th>
+                                        <th>Approved</th> --}}
                                         {{-- <th>Remarks</th> --}}
                                     </tr>
                                 </thead>
@@ -450,14 +451,12 @@
                                                 <td>{{ $purchaseOrder->created_at ? $purchaseOrder->created_at->format('d-m-Y') : 'N/A' }}
                                                 </td>
                                                 <td>{{ $vendor->client_name ?? 'N/A' }}</td>
-                                                <td>{{ $vendor->gst_number ?? 'N/A' }}</td>
-                                                <td>{{ $productDetails->brand_title ?? 'N/A' }}</td>
-                                                <td>{{ $product->sku ?? 'N/A' }}</td>
+                                                <td>{{ $purchaseInvoice->invoice_no ?? 'N/A' }}</td>
+                                                <td>{{ $purchaseInvoice ? ($purchaseInvoice->created_at ? $purchaseInvoice->created_at->format('d-m-Y') : 'N/A') : 'N/A' }}</td>
+                                                <td>{{ $vendorPI && $vendorPI->updated_at ? $vendorPI->updated_at->addMonth()->format('d-m-Y') : 'N/A' }}
+                                                </td>
                                                 <td>{{ $productDetails->hsn ?? 'N/A' }}</td>
                                                 <td>{{ $product->ordered_quantity ?? 0 }}</td>
-                                                <td>PCS</td>
-                                                <td>₹{{ number_format($product->product->mrp ?? 0, 2) }}</td>
-                                                <td>₹{{ number_format($product->discount_per_unit ?? 0, 2) }}</td>
                                                 <td>₹{{ number_format($taxableValue, 2) }}</td>
                                                 <td>{{ $gstRate }}%</td>
                                                 <td>{{ $cgst }}%</td>
@@ -466,7 +465,9 @@
                                                 <td>₹{{ number_format($gstAmount, 2) }}</td>
                                                 <td>0%</td>
                                                 <td>₹0.00</td>
-                                                <td>{{ $vendor->pan_number ?? 'N/A' }}</td>
+                                                <td>{{ $vendorPI->total_amount ?? 'N/A' }}</td>
+                                                <td>{{ $vendorPI->total_paid_amount ?? 'N/A' }}</td>
+                                                <td>{{ $vendorPI->total_due_amount ?? 'N/A' }}</td>
                                                 <td>
                                                     <span
                                                         class="badge {{ $vendorPI && $statusBadges[$vendorPI->payment_status] ? $statusBadges[$vendorPI->payment_status] : 'bg-danger' }}">
@@ -474,21 +475,21 @@
                                                     </span>
                                                 </td>
                                                 <td>{{ $payment->payment_method ?? 'N/A' }}</td>
-                                                <td>{{ $purchaseInvoice->invoice_no ?? 'N/A' }}</td>
-                                                <td>{{ $purchaseInvoice ? ($purchaseInvoice->created_at ? $purchaseInvoice->created_at->format('d-m-Y') : 'N/A') : 'N/A' }}
-                                                </td>
-                                                <td>{{ $vendorPI->total_amount ?? 'N/A' }}</td>
-                                                <td>{{ $vendorPI->total_due_amount ?? 'N/A' }}</td>
-                                                <td>{{ $vendorPI->total_paid_amount ?? 'N/A' }}</td>
                                                 <td>{{ $purchaseInvoice ? 'Yes' : 'No' }}</td>
                                                 <td>{{ $purchaseGrn ? 'Yes' : 'No' }}</td>
-                                                <td>{{ $vendorPI && $vendorPI->updated_at ? $vendorPI->updated_at->addMonth()->format('d-m-Y') : 'N/A' }}
-                                                </td>
                                                 <td>N/A</td>
+                                                <td>{{ $vendorPI->warehouse->name ?? 'N/A' }}</td>
+
+
+                                                {{-- <td>{{ $vendor->gst_number ?? 'N/A' }}</td>
+                                                <td>{{ $productDetails->brand_title ?? 'N/A' }}</td>
+                                                <td>{{ $product->sku ?? 'N/A' }}</td>
+                                                <td>PCS</td>
+                                                <td>₹{{ number_format($product->product->mrp ?? 0, 2) }}</td>
+                                                <td>₹{{ number_format($product->discount_per_unit ?? 0, 2) }}</td>
+                                                <td>{{ $vendor->pan_number ?? 'N/A' }}</td>
                                                 <td>{{ $purchaseOrder->created_at ? $purchaseOrder->created_at->format('d-m-Y') : 'N/A' }}
                                                 </td>
-                                                {{-- <td>{{ $vendorPI && $vendorPI->created_at ? $vendorPI->created_at->format('d-m-Y') : 'N/A' }}
-                                                </td> --}}
                                                 <td>{{ $vendorPI && $vendorPI->updated_at ? $vendorPI->updated_at->format('d-m-Y') : 'N/A' }}
                                                 </td>
                                                 <td>
@@ -496,8 +497,8 @@
                                                         class="badge {{ $vendorPI && $allocationStatusBadges[$vendorPI->status] ? $allocationStatusBadges[$vendorPI->status] : 'bg-secondary' }}">
                                                         {{ $vendorPI ? $allocationStatusLabels[$vendorPI->status] : 'N/A' }}
                                                     </span>
-                                                </td>
-                                                <td>{{ $vendorPI->warehouse->name ?? 'N/A' }}</td>
+                                                </td> --}}
+                                                
                                             </tr>
                                         @empty
                                             <tr>
@@ -637,7 +638,7 @@
                 $('.sku-checkbox').prop('checked', false);
 
                 // Redirect to base URL without filters
-                window.location.href = '{{ route('vendor-purchase-history') }}';
+                window.location.href = '{{ route('vendor-purchase-invoices') }}';
             });
 
             /**
