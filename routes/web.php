@@ -272,12 +272,22 @@ Route::middleware(['auth'])->group(function () {
 
     // Report Details List
     Route::controller(ReportController::class)->group(function () {
-        Route::get('/vendor-purchase-history', 'vendorPurchaseHistory')->name('vendor-purchase-history');
+        Route::get('/vendor-purchase-invoices', 'vendorPurchaseHistory')->name('vendor-purchase-invoices');
+        Route::get('/vendor-purchase-sku', 'vendorPurchaseHistory1')->name('vendor-purchase-sku');
+
         Route::get('/inventory-stock-history', 'inventoryStockHistory')->name('inventory-stock-history');
-        Route::get('/customer-sales-history', 'customerSalesHistory')->name('customer-sales-history');
+
+        Route::get('/customer-sales-invoices', 'customerSalesHistory')->name('customer-sales-invoices');
+        Route::get('/customer-sales-sku', 'customerSalesHistory1')->name('customer-sales-sku');
+
         Route::get('/vendor-purchase-history-excel', 'vendorPurchaseHistoryExcel')->name('vendor.purchase.history.excel');
+        Route::get('/vendor-purchase-history-excel1', 'vendorPurchaseHistoryExcel1')->name('vendor.purchase.history.excel1');
+        
         Route::get('/inventory-stock-history-excel', 'inventoryStockHistoryExcel')->name('inventory.stock.history.excel');
+
         Route::get('/customer-sales-history-excel', 'customerSalesHistoryExcel')->name('customer.sales.history.excel');
+        Route::get('/customer.sales.history.excel1', 'customerSalesHistoryExcel1')->name('customer.sales.history.excel1');
+
         Route::get('/customer-sales-history-pdf', 'customerSalesHistoryPdf')->name('customer.sales.history.pdf');
     });
 

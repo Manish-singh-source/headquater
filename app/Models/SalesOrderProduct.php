@@ -66,7 +66,7 @@ class SalesOrderProduct extends Model
 
     public function vendorPIProduct()
     {
-        return $this->hasOne(VendorPIProduct::class, 'vendor_sku_code', 'sku');
+        return $this->hasOne(VendorPIProduct::class, 'vendor_sku_code', 'sku', '');
     }
 
     public function warehouseStock()

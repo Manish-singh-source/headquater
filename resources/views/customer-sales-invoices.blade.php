@@ -19,45 +19,13 @@
                         <ol class="breadcrumb mb-0 p-0">
                             <li class="breadcrumb-item"><a href="{{ route('index') }}"><i class="bx bx-home-alt"></i></a>
                             </li>
-                            <li class="breadcrumb-item active" aria-current="page">Customer Sales History</li>
+                            <li class="breadcrumb-item active" aria-current="page">Customer Sales Invoices Level</li>
                         </ol>
                     </nav>
                 </div>
             </div>
 
-            <!-- Success/Error Messages -->
-            @if (session('success'))
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    <i class="bx bx-check-circle me-2"></i>{{ session('success') }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            @endif
-
-            @if (session('error'))
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    <i class="bx bx-error-circle me-2"></i>{{ session('error') }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            @endif
-
-            @if (session('info'))
-                <div class="alert alert-info alert-dismissible fade show" role="alert">
-                    <i class="bx bx-info-circle me-2"></i>{{ session('info') }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            @endif
-
-            @if ($errors->any())
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    <i class="bx bx-error-circle me-2"></i>
-                    <ul class="mb-0">
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            @endif
+            @include('layouts.errors')
 
             <!-- Statistics Cards -->
             <div class="row">
@@ -71,7 +39,8 @@
                                 </div>
                                 <div class="flex-grow-1">
                                     <p class="mb-0 text-secondary">Total Invoices</p>
-                                    <h4 class="mb-0 fw-bold">{{ $invoices->count() }}</h4>
+                                    <h4 class="mb-0 fw-bold">
+                                        {{ $salesOrders->sum(function ($order) {return $order->invoices->count();}) }}</h4>
                                 </div>
                             </div>
                         </div>
@@ -87,7 +56,7 @@
                                 </div>
                                 <div class="flex-grow-1">
                                     <p class="mb-0 text-secondary">Total Revenue</p>
-                                    <h4 class="mb-0 fw-bold">₹{{ number_format($totalRevenue, 2) }}</h4>
+                                    <h4 class="mb-0 fw-bold">₹{{ number_format($totalRevenue ?? 0, 2) }}</h4>
                                 </div>
                             </div>
                         </div>
@@ -103,7 +72,7 @@
                                 </div>
                                 <div class="flex-grow-1">
                                     <p class="mb-0 text-secondary">Pending Payments</p>
-                                    <h4 class="mb-0 fw-bold">₹{{ number_format(abs($totalPendingPayments), 2) }}</h4>
+                                    <h4 class="mb-0 fw-bold">₹{{ number_format($totalPendingPayments ?? 0, 2) }}</h4>
                                 </div>
                             </div>
                         </div>
@@ -131,7 +100,7 @@
             <div class="card mt-4">
                 <div class="card-body">
                     <h6 class="mb-3 fw-bold"><i class="bx bx-filter-alt me-2"></i>Filter Options</h6>
-                    <form method="GET" action="{{ route('customer-sales-history') }}" id="filterForm">
+                    <form method="GET" action="{{ route('customer-sales-invoices') }}" id="filterForm">
                         <div class="row align-items-start">
                             <div class="col-lg-10">
                                 <div class="row">
@@ -182,82 +151,6 @@
                                                                 <label class="form-check-label w-100 cursor-pointer"
                                                                     for="customer_{{ $customer['id'] }}">
                                                                     {{ $customer['name'] }}
-                                                                </label>
-                                                            </div>
-                                                        </li>
-                                                    @endforeach
-                                                </ul>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- Warehouse Filter -->
-                                    <div class="col-md-2">
-                                        <div class="mb-3">
-                                            <label class="form-label">Warehouse</label>
-                                            <div class="dropdown">
-                                                <button class="btn btn-outline-secondary dropdown-toggle w-100 text-start"
-                                                    type="button" id="warehouseDropdown" data-bs-toggle="dropdown">
-                                                    <i class="bx bx-filter-alt me-1"></i>
-                                                    <span id="warehouseDropdownText">
-                                                        @if (is_array($filters['warehouse_id'] ?? null) && count($filters['warehouse_id']) > 0)
-                                                            {{ count($filters['warehouse_id']) }} selected
-                                                        @else
-                                                            Select Warehouse
-                                                        @endif
-                                                    </span>
-                                                </button>
-                                                <ul class="dropdown-menu w-100" id="warehouseCheckboxList"
-                                                    style="max-height: 250px; overflow-y: auto;">
-                                                    @foreach ($warehouses as $warehouse)
-                                                        <li class="px-2 py-1">
-                                                            <div class="form-check">
-                                                                <input class="form-check-input warehouse-checkbox"
-                                                                    type="checkbox" name="warehouse_id[]"
-                                                                    value="{{ $warehouse->id }}"
-                                                                    id="warehouse_{{ $warehouse->id }}"
-                                                                    {{ in_array($warehouse->id, (array) ($filters['warehouse_id'] ?? [])) ? 'checked' : '' }}>
-                                                                <label class="form-check-label w-100 cursor-pointer"
-                                                                    for="warehouse_{{ $warehouse->id }}">
-                                                                    {{ $warehouse->name }}
-                                                                </label>
-                                                            </div>
-                                                        </li>
-                                                    @endforeach
-                                                </ul>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- Region Filter -->
-                                    <div class="col-md-2">
-                                        <div class="mb-3">
-                                            <label class="form-label">Region</label>
-                                            <div class="dropdown">
-                                                <button class="btn btn-outline-secondary dropdown-toggle w-100 text-start"
-                                                    type="button" id="regionDropdown" data-bs-toggle="dropdown">
-                                                    <i class="bx bx-filter-alt me-1"></i>
-                                                    <span id="regionDropdownText">
-                                                        @if (is_array($filters['region'] ?? null) && count($filters['region']) > 0)
-                                                            {{ count($filters['region']) }} selected
-                                                        @else
-                                                            Select Region
-                                                        @endif
-                                                    </span>
-                                                </button>
-                                                <ul class="dropdown-menu w-100" id="regionCheckboxList"
-                                                    style="max-height: 250px; overflow-y: auto;">
-                                                    @foreach ($regions as $region)
-                                                        <li class="px-2 py-1">
-                                                            <div class="form-check">
-                                                                <input class="form-check-input region-checkbox"
-                                                                    type="checkbox" name="region[]"
-                                                                    value="{{ $region }}"
-                                                                    id="region_{{ $loop->index }}"
-                                                                    {{ in_array($region, (array) ($filters['region'] ?? [])) ? 'checked' : '' }}>
-                                                                <label class="form-check-label w-100 cursor-pointer"
-                                                                    for="region_{{ $loop->index }}">
-                                                                    {{ $region }}
                                                                 </label>
                                                             </div>
                                                         </li>
@@ -539,11 +432,8 @@
                             <thead class="table-light">
                                 <tr>
                                     <th>Customer&nbsp;Group&nbsp;Name</th>
-                                    <th>Warehouse&nbsp;Name</th>
                                     <th>Customer&nbsp;Name</th>
-                                    {{-- <th>Customer&nbsp;GSTIN</th> --}}
                                     <th>Invoice&nbsp;No</th>
-                                    {{-- <th>Creator&nbsp;Name</th> --}}
                                     <th>Customer&nbsp;Phone&nbsp;No</th>
                                     <th>Customer&nbsp;Email</th>
                                     <th>Customer&nbsp;City</th>
@@ -559,19 +449,16 @@
                                     <th>DN&nbsp;Reciept</th>
                                     <th>LR</th>
                                     <th>Currency</th>
-                                    <th>Brand</th>
-                                    <th>SKU</th>
                                     <th>HSN</th>
                                     <th>Ordered&nbsp;Quantity</th>
                                     <th>Dispatched&nbsp;Quantity</th>
                                     <th>Box&nbsp;Count</th>
                                     <th>Weight</th>
-                                    <th>Unit&nbsp;Price</th>
-                                    <th>Subtotal</th>
+                                    <th>Taxable&nbsp;Value</th>
                                     <th>GST</th>
-                                    <th>Taxable&nbsp;Total</th>
-                                    <th>Status</th>
-                                    <th>Total&nbsp;Amount</th>
+                                    <th>GST&nbsp;Value</th>
+                                    <th>Total</th>
+                                    <th>Invoice&nbsp;Status</th>
                                     <th>Amount&nbsp;Paid</th>
                                     <th>Balance</th>
                                     <th>Date&nbsp;Of&nbsp;Payment</th>
@@ -580,111 +467,111 @@
                                     <th>SGST</th>
                                     <th>IGST</th>
                                     <th>Cess</th>
-                                    {{-- <th style="width: 100px;">Action</th> --}}
                                 </tr>
                             </thead>
                             <tbody>
-                                @forelse ($invoices as $salesOrder)
-                                    @foreach ($salesOrder->orderedProducts as $product)
-                                        @if ($product->warehouseAllocations->count() > 0)
-                                            @foreach ($product->warehouseAllocations as $allocation)
-                                                <tr>
-                                                    <td>{{ $salesOrder->customerGroup->name ?? 'N/A' }}</td>
-                                                    <td>{{ $allocation->warehouse->name ?? 'N/A' }}</td>
-                                                    <td>{{ $product->customer->client_name ?? 'N/A' }}</td>
-                                                    {{-- <td>{{ $product->tempOrder->gst ?? 'N/A' }}</td> --}}
-                                                    <td>
-                                                        @php
-                                                            $invoiceNumber = 'N/A';
-                                                            if ($salesOrder->invoices->count() > 0) {
-                                                                foreach ($salesOrder->invoices as $invoice) {
-                                                                    if (
-                                                                        $invoice->warehouse_id ==
-                                                                        $allocation->warehouse_id
-                                                                    ) {
-                                                                        $invoiceNumber =
-                                                                            $invoice->invoice_number ?? 'N/A';
-                                                                        break;
-                                                                    }
-                                                                }
-                                                            }
-                                                        @endphp
-                                                        {{ $invoiceNumber }}
-                                                    </td>
-                                                    {{-- <td>{{ $salesOrder->invoices->first()->invoice_number ??   'N/A' }}</td> --}}
-                                                    {{-- <td>{{ $salesOrder->created_by ?? 'N/A' }}</td> --}}
-                                                    <td>{{ $product->customer->contact_no ?? 'N/A' }}</td>
-                                                    <td>{{ $product->customer->email ?? 'N/A' }}</td>
-                                                    <td>{{ $product->customer->shipping_city ?? 'N/A' }}</td>
-                                                    <td>{{ $product->customer->shipping_state ?? 'N/A' }}</td>
-                                                    <td>{{ $product->tempOrder->po_number ?? 'N/A' }}</td>
-                                                    <td>{{ $product->tempOrder->po_date ?? 'N/A' }}</td>
+                                @forelse ($salesOrders as $salesOrder)
+                                    @foreach ($salesOrder->invoices as $invoice)
+                                        @php
+                                            // Calculate totals from invoice details and salesOrderProduct
+                                            $totalBoxCount = 0;
+                                            $totalWeight = 0;
+                                            $taxableValue = 0;
+                                            $gstAmount = 0;
+                                            $cgstAmount = 0;
+                                            $sgstAmount = 0;
+                                            $igstAmount = 0;
+                                            $firstGstRate = 0;
 
-                                                    <td>{{ $product->invoiceDetails->first()?->invoice?->appointment?->appointment_date->format('d-m-Y') ?? 'N/A' }}
-                                                    </td>
-                                                    <td>{{ $product->invoiceDetails->first()?->invoice?->appointment?->appointment_date->addMonth()->format('d-m-Y') ?? 'N/A' }}
-                                                    </td>
+                                            foreach ($invoice->details as $detail) {
+                                                // Box count - use invoice_details or fallback to salesOrderProduct
+                                                $totalBoxCount +=
+                                                    $detail->box_count ?? ($detail->salesOrderProduct?->box_count ?? 0);
 
-                                                    {{-- <td>{{ $salesOrder->due_date ?? 'N/A' }}</td>   --}}
-                                                    <td>{{ $product->invoiceDetails->first()?->invoice?->appointment?->pod ? 'Yes' : 'No' }}
-                                                    </td>
-                                                    <td>{{ $product->invoiceDetails->first()?->invoice?->appointment?->grn ? 'Yes' : 'No' }}
-                                                    </td>
-                                                    <td>{{ $product->invoiceDetails->first()?->invoice?->dns?->dn_amount ?? 0 }}
-                                                    </td>
-                                                    <td>{{ $product->invoiceDetails->first()?->invoice?->dns?->dn_receipt ? 'Yes' : 'No' }}
-                                                    </td>
-                                                    <td>{{ $salesOrder->appointment?->lr ? 'Yes' : 'No' }}</td>
-                                                    <td>{{ $salesOrder->invoices->first()->currency ?? 'INR' }}</td>
+                                                // Weight - use invoice_details or fallback to salesOrderProduct
+                                                $totalWeight +=
+                                                    $detail->weight ?? ($detail->salesOrderProduct?->weight ?? 0);
 
-                                                    <td>{{ $product->product->brand ?? 'N/A' }}</td>
-                                                    <td>{{ $product->tempOrder->sku ?? 'N/A' }}</td>
-                                                    <td>{{ $product->tempOrder->hsn ?? 'N/A' }}</td>
-                                                    <td>{{ $product->ordered_quantity ?? 'N/A' }}</td>
-                                                    <td>{{ $allocation->final_dispatched_quantity ?? 'N/A' }}</td>
-                                                    <td>{{ $allocation->box_count ?? 'N/A' }}</td>
-                                                    <td>{{ $allocation->weight ?? 'N/A' }}</td>
-                                                    <td>{{ $product->price ?? 'N/A' }}</td>
-                                                    <td>{{ $allocation->final_dispatched_quantity * $product->price ?? 'N/A' }}
-                                                    </td>
-                                                    <td>{{ $product->tempOrder->gst ?? 'N/A' }}</td>
-                                                    <td>{{ $allocation->final_dispatched_quantity * $product->price * (1 + $product->tempOrder->gst / 100) ?? 'N/A' }}
-                                                    </td>
-                                                    <td>{{ $statuses[$salesOrder->status] ?? 'N/A' }}</td>
-                                                    <td>{{ $product->invoiceDetails->first()?->invoice?->total_amount ?? 'N/A' }}
-                                                        {{-- @if ($loop->first) --}}
-                                                        {{-- <td rowspan="{{ $product->warehouseAllocations->count() }}"> --}}
-                                                    <td>
-                                                        {{ $product->invoiceDetails->first()?->invoice?->paid_amount ?? 'N/A' }}
-                                                    </td>
-                                                    {{-- @endif --}}
-                                                    <td>{{ $product->invoiceDetails->first()?->invoice?->balance_due ?? 'N/A' }}
-                                                    </td>
-                                                    <td>{{ $product->invoiceDetails->first()?->invoice?->payments?->first()?->created_at->format('d-m-Y') ?? 'N/A' }}
-                                                    </td>
-                                                    <td>{{ $product->invoiceDetails->first()?->invoice?->payments?->first()?->payment_method ?? 'N/A' }}
-                                                    </td>
+                                                // Taxable value is the 'amount' field
+                                                $taxableValue += $detail->amount ?? 0;
 
-                                                    <td>{{ $product->tempOrder->gst / 2 ?? 'N/A' }}</td>
-                                                    <td>{{ $product->tempOrder->gst / 2 ?? 'N/A' }}</td>
-                                                    <td>{{ $product->tempOrder->gst ?? 'N/A' }}</td>
-                                                    <td>{{ $product->invoiceDetails->first()?->invoice->cess ?? 'N/A' }}
-                                                    </td>
-                                                    {{-- 
-                                                    <td>
-                                                        <a href=""
-                                                            class="btn btn-icon btn-sm bg-primary-subtle me-1"
-                                                            data-bs-toggle="tooltip" title="View Sales Order">
-                                                            <i class="bx bx-show text-primary"></i>
-                                                        </a>
-                                                    </td> --}}
-                                                </tr>
-                                            @endforeach
-                                        @endif
+                                                // GST amount calculation: (amount * tax) / 100
+                                                $detailGstAmount = ($detail->amount * $detail->tax) / 100;
+                                                $gstAmount += $detailGstAmount;
+
+                                                // Store first GST rate for display
+                                                if ($firstGstRate == 0 && $detail->tax > 0) {
+                                                    $firstGstRate = $detail->tax;
+                                                }
+
+                                                // Calculate CGST/SGST/IGST based on customer state
+                                                // If same state: CGST + SGST, else: IGST
+                                                $customerState =
+                                                    $invoice->customer?->shipping_state ??
+                                                    $invoice->customer?->billing_state;
+                                                $warehouseState = $invoice->warehouse?->state ?? 'Maharashtra'; // Default warehouse state
+
+                                                if (
+                                                    $customerState &&
+                                                    $warehouseState &&
+                                                    strtolower($customerState) === strtolower($warehouseState)
+                                                ) {
+                                                    // Intra-state: CGST + SGST (split GST equally)
+                                                    $cgstAmount += $detailGstAmount / 2;
+                                                    $sgstAmount += $detailGstAmount / 2;
+                                                } else {
+                                                    // Inter-state: IGST
+                                                    // these two are optional
+                                                    $cgstAmount += $detailGstAmount / 2;
+                                                    $sgstAmount += $detailGstAmount / 2;
+                                                    $igstAmount += $detailGstAmount;
+                                                }
+                                            }
+                                        @endphp
+                                        <tr>
+                                            <td>{{ $salesOrder->customerGroup->name ?? 'N/A' }}</td>
+                                            <td>{{ $invoice->customer->client_name ?? 'N/A' }}</td>
+                                            <td>{{ $invoice->invoice_number ?? 'N/A' }}</td>
+                                            <td>{{ $invoice->customer->contact_no ?? 'N/A' }}</td>
+                                            <td>{{ $invoice->customer->email ?? 'N/A' }}</td>
+                                            <td>{{ $invoice->customer->shipping_city ?? 'N/A' }}</td>
+                                            <td>{{ $invoice->customer->shipping_state ?? 'N/A' }}</td>
+                                            <td>{{ $invoice->po_number ?? 'N/A' }}</td>
+                                            <td>{{ $invoice->created_at->format('d-m-Y') ?? 'N/A' }}</td>
+                                            <td>{{ $invoice->appointment?->appointment_date?->format('d-m-Y') ?? 'N/A' }}
+                                            </td>
+                                            <td>{{ $invoice->appointment?->appointment_date?->addMonth()->format('d-m-Y') ?? 'N/A' }}
+                                            </td>
+                                            <td>{{ $invoice->appointment?->pod ? 'Yes' : 'No' }}</td>
+                                            <td>{{ $invoice->appointment?->grn ? 'Yes' : 'No' }}</td>
+                                            <td>{{ $invoice->dns?->first()?->dn_amount ? 'Yes' : 'No' }}</td>
+                                            <td>{{ $invoice->dns?->first()?->dn_amount ? 'Yes' : 'No' }}</td>
+                                            <td>{{ $invoice->lr ? 'Yes' : 'No' }}</td>
+                                            <td>{{ $invoice->currency ?? 'INR' }}</td>
+                                            <td>{{ $invoice->details->first()->hsn ?? 'N/A' }}</td>
+                                            <td>{{ $invoice->details->sum('quantity') ?? 0 }}</td>
+                                            <td>{{ $invoice->details->sum('quantity') ?? 0 }}</td>
+                                            <td>{{ number_format($totalBoxCount, 0) }}</td>
+                                            <td>{{ number_format($totalWeight, 2) }}</td>
+                                            <td>₹{{ number_format($taxableValue, 2) }}</td>
+                                            <td>{{ $firstGstRate }}%</td>
+                                            <td>₹{{ number_format($gstAmount, 2) }}</td>
+                                            <td>₹{{ number_format($gstAmount + $invoice->total_amount ?? 0, 2) }}</td>
+                                            <td>{{ ucfirst($invoice->payment_status ?? 'N/A') }}</td>
+                                            <td>₹{{ number_format($invoice->paid_amount ?? 0, 2) }}</td>
+                                            <td>₹{{ number_format($invoice->balance_due ?? 0, 2) }}</td>
+                                            <td>{{ $invoice->payments?->first()?->created_at?->format('d-m-Y') ?? 'N/A' }}
+                                            </td>
+                                            <td>{{ $invoice->payments->first()->payment_method ?? 'N/A' }}</td>
+                                            <td>₹{{ number_format($cgstAmount, 2) }}</td>
+                                            <td>₹{{ number_format($sgstAmount, 2) }}</td>
+                                            <td>₹{{ number_format($igstAmount, 2) }}</td>
+                                            <td>₹0.00</td>
+                                        </tr>
                                     @endforeach
                                 @empty
                                     <tr>
-                                        <td colspan="32" class="text-center text-muted py-4">
+                                        <td colspan="35" class="text-center text-muted py-4">
                                             <i class="bx bx-info-circle fs-4 d-block mb-2"></i>
                                             No customer sales records found for the selected criteria.
                                         </td>
@@ -776,15 +663,6 @@
                     'Select Customer');
             });
 
-            $(document).on('change', '.warehouse-checkbox', function() {
-                updateDropdownText('.warehouse-checkbox', 'warehouseDropdown', 'warehouseDropdownText',
-                    'Select Warehouse');
-            });
-
-            $(document).on('change', '.region-checkbox', function() {
-                updateDropdownText('.region-checkbox', 'regionDropdown', 'regionDropdownText',
-                    'Select Region');
-            });
 
             $(document).on('change', '.payment-status-checkbox', function() {
                 updateDropdownText('.payment-status-checkbox', 'paymentStatusDropdown',
@@ -820,8 +698,6 @@
                 $('#from_date').val('');
                 $('#to_date').val('');
                 $('.customer-checkbox').prop('checked', false);
-                $('.warehouse-checkbox').prop('checked', false);
-                $('.region-checkbox').prop('checked', false);
                 $('.payment-status-checkbox').prop('checked', false);
                 $('.customer-type-checkbox').prop('checked', false);
                 $('.invoice-no-checkbox').prop('checked', false);
@@ -829,7 +705,7 @@
                 $('.appointment-date-checkbox').prop('checked', false);
 
                 // Redirect to base URL without filters
-                window.location.href = '{{ route('customer-sales-history') }}';
+                window.location.href = '{{ route('customer-sales-invoices') }}';
             });
 
             /**
@@ -840,12 +716,6 @@
                 var fromDate = $('#from_date').val();
                 var toDate = $('#to_date').val();
                 var customerId = $('input[name="customer_id[]"]:checked').map(function() {
-                    return this.value;
-                }).get();
-                var warehouseId = $('input[name="warehouse_id[]"]:checked').map(function() {
-                    return this.value;
-                }).get();
-                var region = $('input[name="region[]"]:checked').map(function() {
                     return this.value;
                 }).get();
                 var paymentStatus = $('input[name="payment_status[]"]:checked').map(function() {
@@ -871,12 +741,6 @@
                 if (toDate) params.push('to_date=' + encodeURIComponent(toDate));
                 if (customerId.length > 0) customerId.forEach(function(val) {
                     params.push('customer_id[]=' + encodeURIComponent(val));
-                });
-                if (warehouseId.length > 0) warehouseId.forEach(function(val) {
-                    params.push('warehouse_id[]=' + encodeURIComponent(val));
-                });
-                if (region.length > 0) region.forEach(function(val) {
-                    params.push('region[]=' + encodeURIComponent(val));
                 });
                 if (paymentStatus.length > 0) paymentStatus.forEach(function(val) {
                     params.push('payment_status[]=' + encodeURIComponent(val));
@@ -923,9 +787,6 @@
                 var customerId = $('input[name="customer_id[]"]:checked').map(function() {
                     return this.value;
                 }).get();
-                var region = $('input[name="region[]"]:checked').map(function() {
-                    return this.value;
-                }).get();
                 var paymentStatus = $('input[name="payment_status[]"]:checked').map(function() {
                     return this.value;
                 }).get();
@@ -949,9 +810,6 @@
                 if (toDate) params.push('to_date=' + encodeURIComponent(toDate));
                 if (customerId.length > 0) customerId.forEach(function(val) {
                     params.push('customer_id[]=' + encodeURIComponent(val));
-                });
-                if (region.length > 0) region.forEach(function(val) {
-                    params.push('region[]=' + encodeURIComponent(val));
                 });
                 if (paymentStatus.length > 0) paymentStatus.forEach(function(val) {
                     params.push('payment_status[]=' + encodeURIComponent(val));
