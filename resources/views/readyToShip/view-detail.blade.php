@@ -7,6 +7,7 @@
             'pending' => 'bg-secondary',
             'packaging' => 'bg-warning',
             'packaged' => 'bg-info',
+            'partially_packaged' => 'bg-warning',
             'ready_to_ship' => 'bg-success',
             'dispatched' => 'bg-primary',
             'shipped' => 'bg-dark',
@@ -17,6 +18,7 @@
             'pending' => 'Pending',
             'packaging' => 'Packaging',
             'packaged' => 'Packaged',
+            'partially_packaged' => 'Partially Packaged',
             'ready_to_ship' => 'Ready to Ship',
             'dispatched' => 'Dispatched',
             'shipped' => 'Shipped',
@@ -47,26 +49,29 @@
         ];
     @endphp
 
-    @foreach($salesOrder->orderedProducts as $order) 
-        @if($order->warehouseAllocations->count() >= 1)
+    @foreach ($salesOrder->orderedProducts as $order)
+        @if ($order->warehouseAllocations->count() >= 1)
             @php
-                if($isSuperAdmin){
+                if ($isSuperAdmin) {
                     $userWarehouseId = null; // Super Admin can see all warehouses
-                }else {
+                } else {
                     $userWarehouseId = $user->warehouse_id;
                 }
-                if($isSuperAdmin){
+                if ($isSuperAdmin) {
                     $totalAllocated = $order->warehouseAllocations->count();
-                }else {
+                } else {
                     $totalAllocated = $order->warehouseAllocations->where('warehouse_id', $userWarehouseId)->count();
                 }
-                
+
                 // $allocatedCompleted = $order->warehouseAllocations->where('product_status', 'completed')->where('warehouse_id', $userWarehouseId)->count();
-                $allocatedShipped = $order->warehouseAllocations->where('shipping_status', 'shipped')->where('warehouse_id', $userWarehouseId)->count();
+                $allocatedShipped = $order->warehouseAllocations
+                    ->where('shipping_status', 'shipped')
+                    ->where('warehouse_id', $userWarehouseId)
+                    ->count();
                 // if($allocatedCompleted == $totalAllocated) {
                 //     $currentStatus = 'completed';
                 // } else
-                if($allocatedShipped == $totalAllocated) {
+                if ($allocatedShipped == $totalAllocated) {
                     $currentStatus = 'shipped';
                 } else {
                     $currentStatus = 'partially_packaged';
@@ -122,7 +127,8 @@
                             <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                                 <span><b>Status</b></span>
 
-                                <span class="badge {{ $statusBadges[$currentStatus] ?? 'bg-secondary' }}">{{ $statusLabels[$currentStatus] ?? 'NA' }}</span>
+                                <span
+                                    class="badge {{ $statusBadges[$currentStatus] ?? 'bg-secondary' }}">{{ $statusLabels[$currentStatus] ?? 'NA' }}</span>
                             </li>
                             <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                                 <span><b>Customer Group Name</b></span>
@@ -167,36 +173,36 @@
 
             {{-- Warehouse Status Section --}}
             @if (isset($warehouseStatuses) && count($warehouseStatuses) > 0)
-                <div class="row mt-3">
-                    <div class="col-12">
-                        <div class="card">
-                            <div class="card-body">
-                                <h6 class="mb-3">Warehouse Shipping Status</h6>
-                                <div class="table-responsive">
-                                    <table class="table table-bordered">
-                                        <thead class="table-light">
-                                            <tr>
-                                                <th>Warehouse Name</th>
-                                                <th>Current Status</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            @php
-                                                $statusBadgeColors = [
-                                                    'ready_to_ship' => 'bg-success',
-                                                    'shipped' => 'bg-primary',
-                                                    'packaging' => 'bg-warning',
-                                                    'completed' => 'bg-success',
-                                                ];
-                                                $statusLabels = [
-                                                    'ready_to_ship' => 'Ready to Ship',
-                                                    'shipped' => 'Shipped',
-                                                    'packaging' => 'Packaging',
-                                                    'completed' => 'Ready to Ship',
-                                                ];
-                                            @endphp
-                                            @foreach ($warehouseStatuses as $warehouseId => $statusInfo)
-                                                @if ($isSuperAdmin || $userWarehouseId == $warehouseId)
+                @if ($isSuperAdmin)
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h6 class="mb-3">Warehouse Shipping Status</h6>
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    <th>Warehouse Name</th>
+                                                    <th>Current Status</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @php
+                                                    $statusBadgeColors = [
+                                                        'ready_to_ship' => 'bg-success',
+                                                        'shipped' => 'bg-primary',
+                                                        'packaging' => 'bg-warning',
+                                                        'completed' => 'bg-success',
+                                                    ];
+                                                    $statusLabels = [
+                                                        'ready_to_ship' => 'Ready to Ship',
+                                                        'shipped' => 'Shipped',
+                                                        'packaging' => 'Packaging',
+                                                        'completed' => 'Ready to Ship',
+                                                    ];
+                                                @endphp
+                                                @foreach ($warehouseStatuses as $warehouseId => $statusInfo)
                                                     <tr>
                                                         <td>{{ $statusInfo['warehouse_name'] }}</td>
                                                         <td>
@@ -206,15 +212,15 @@
                                                             </span>
                                                         </td>
                                                     </tr>
-                                                @endif
-                                            @endforeach
-                                        </tbody>
-                                    </table>
+                                                @endforeach
+                                            </tbody>
+                                        </table>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
+                @endif
             @endif
 
             <div class="row">
@@ -469,6 +475,22 @@
 
 @section('script')
     <script>
+        $(document).ready(function() {
+            var table1 = $('#customerPOTableList').DataTable({
+                "columnDefs": [{
+                        "orderable": false,
+                        //   "targets": [0, -1],
+                    } // Disable sorting for the 4th column (index starts at 0)
+                ],
+                lengthChange: true,
+                // buttons: ['excel', 'pdf', 'print']
+                // buttons: ['excel']
+                buttons: [{
+                    extend: 'excelHtml5',
+                    className: 'd-none', // hide the default button
+                }]
+            });
+        });
         document.getElementById('changeStatus').addEventListener('change', function() {
             if (confirm('Are you sure you want to change status for order?')) {
                 document.getElementById('statusForm').submit();

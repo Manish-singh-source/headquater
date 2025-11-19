@@ -817,45 +817,21 @@
             $('.form-check-label').css('cursor', 'pointer');
 
             // Initialize DataTable for customer sales table with custom sorting
-            $('#customerSalesTable').DataTable({
-                "pageLength": 25,
-                "lengthMenu": [
-                    [10, 25, 50, 100],
-                    [10, 25, 50, 100]
-                ],
-                "ordering": true,
-                "searching": true,
-                "order": [
-                    [10, "desc"]
-                ], // Default sort by Invoice Date descending
-                "language": {
-                    "search": "Search:",
-                    "lengthMenu": "Show _MENU_ entries"
-                },
+            // Initialize DataTable for customer sales table with custom sorting
+            var inventoryStockTable = $('#customerSalesTable').DataTable({
                 "columnDefs": [{
-                        "targets": [14, 15, 16, 19, 23, 24, 25, 26], // Amount columns
-                        "type": "num-fmt",
-                        "render": function(data, type, row) {
-                            if (type === 'sort') {
-                                return parseFloat(data.replace(/[^\d.-]/g, ''));
-                            }
-                            return data;
-                        }
-                    },
-                    {
-                        "targets": [10, 11, 12, 21], // Date columns
-                        "type": "date",
-                        "render": function(data, type, row) {
-                            if (type === 'sort') {
-                                return data ? new Date(data.split('-').reverse().join('-'))
-                                    .getTime() : 0;
-                            }
-                            return data;
-                        }
-                    }
-                ],
-                "paging": false, // Disable DataTables pagination since we're using Laravel pagination
-                "info": false // Disable info since we're using Laravel pagination
+                    "orderable": false,
+                    "targets": [0] // Disable sorting for checkbox column
+                }],
+                lengthChange: true,
+                pageLength: 10,
+                order: [
+                    [10, 'desc']
+                ], // Sort by Date column (index 14) in descending order
+                buttons: [{
+                    extend: 'excelHtml5',
+                    className: 'd-none', // hide the default button
+                }]
             });
 
             /**

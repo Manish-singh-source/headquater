@@ -460,9 +460,9 @@
                     "targets": [0] // Disable sorting for checkbox column
                 }],
                 lengthChange: true,
-                pageLength: 15,
+                pageLength: 10,
                 order: [
-                    [14, 'desc']
+                    [17, 'desc']
                 ], // Sort by Date column (index 14) in descending order
                 buttons: [{
                     extend: 'excelHtml5',

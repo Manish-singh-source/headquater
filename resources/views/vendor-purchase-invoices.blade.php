@@ -200,12 +200,12 @@
                                                             <div class="form-check">
                                                                 <input class="form-check-input vendor-checkbox"
                                                                     type="checkbox" name="vendor_code[]"
-                                                                    value="{{ $purchaseOrdersVendor }}"
+                                                                    value="{{ $purchaseOrdersVendor->vendor->vendor_code }}"
                                                                     id="vendor_{{ $loop->index }}"
-                                                                    {{ in_array($purchaseOrdersVendor, (array) request('vendor_code')) ? 'checked' : '' }}>
+                                                                    {{ in_array($purchaseOrdersVendor->vendor->vendor_code, (array) request('vendor_code')) ? 'checked' : '' }}>
                                                                 <label class="form-check-label w-100 cursor-pointer"
                                                                     for="vendor_{{ $loop->index }}">
-                                                                    {{ $purchaseOrdersVendor }}
+                                                                    {{ $purchaseOrdersVendor->vendor->client_name }}
                                                                 </label>
                                                             </div>
                                                         </li>
@@ -216,6 +216,7 @@
                                     </div>
 
                                     {{-- Sku Filter --}}
+                                    {{-- 
                                     <div class="col-md-2">
                                         <div class="mb-3">
                                             <label class="form-label">SKU</label>
@@ -244,7 +245,8 @@
                                                 </ul>
                                             </div>
                                         </div>
-                                    </div>
+                                    </div> 
+                                    --}}
                                 </div>
                             </div>
 
@@ -334,7 +336,7 @@
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h6 class="mb-0 fw-bold">
                             <i class="bx bx-list-ul me-2"></i>Vendor Purchase Invoice Records
-                            <span class="badge bg-primary ms-2">{{ $vendorPIProducts->total() }} Total</span>
+                            {{-- <span class="badge bg-primary ms-2">{{ $vendorPIProducts->total() }} Total</span> --}}
                         </h6>
                     </div>
 
@@ -381,9 +383,9 @@
                                             $totalTaxableValue = 0;
                                             $totalGstAmount = 0;
                                             foreach ($purchaseOrder->vendorPI[0]->products as $product) {
-                                                $totalTaxableValue +=
-                                                    $product->mrp * $product->quantity_received;
-                                                $totalGstAmount += ($product->mrp * $product->quantity_received) * ($product->gst/100);
+                                                $totalTaxableValue += $product->mrp * $product->quantity_received;
+                                                $totalGstAmount +=
+                                                    $product->mrp * $product->quantity_received * ($product->gst / 100);
                                             }
                                         @endphp
                                         <tr>
@@ -482,7 +484,20 @@
 @section('script')
     <script>
         $(document).ready(function() {
-
+            var table1 = $('#vendor-purchase-history-table').DataTable({
+                "columnDefs": [{
+                        "orderable": false,
+                        //   "targets": [0, -1],
+                    } // Disable sorting for the 4th column (index starts at 0)
+                ],
+                lengthChange: true,
+                // buttons: ['excel', 'pdf', 'print']
+                // buttons: ['excel']
+                buttons: [{
+                    extend: 'excelHtml5',
+                    className: 'd-none', // hide the default button
+                }]
+            });
             /**
              * Prevent dropdown from closing when clicking on checkboxes
              */

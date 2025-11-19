@@ -7,15 +7,16 @@
                 <div>
                     <nav aria-label="breadcrumb">
                         <ol class="breadcrumb mb-0 p-0">
-                            <li class="breadcrumb-item"><a href="{{ route('customer-sales-history') }}"><i class="bx bx-home-alt"></i></a></li>
-                            <li class="breadcrumb-item"><a href="{{ route('customer-sales-history') }}">Customer Sales History</a></li>
+                            <li class="breadcrumb-item"><a href="{{ route('customer-sales-invoices') }}">
+                                <i class="bx bx-home-alt"></i></a></li>
+                            {{-- <li class="breadcrumb-item"><a href="{{ route('customer-sales-invoices') }}">Customer Sales History</a></li> --}}
                             <li class="breadcrumb-item active" aria-current="page">Customer Details</li>
                         </ol>
                     </nav>
                 </div>
                 <div class="ms-auto">
-                    <a href="{{ route('customer-sales-history') }}" class="btn btn-outline-primary">
-                        <i class="bx bx-arrow-back me-1"></i>Back to Sales History
+                    <a href="{{ url()->previous() }}" class="btn btn-outline-primary">
+                        <i class="bx bx-arrow-back me-1"></i>Back
                     </a>
                 </div>
             </div>

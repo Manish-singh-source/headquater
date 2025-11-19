@@ -79,15 +79,15 @@ class ReportController extends Controller
             }
 
             // SKU filter - filter by product SKU
-            if ($request->filled('sku')) {
-                $sku = $request->sku;
-                $query->with(['purchaseOrderProducts' => function ($p) use ($sku) {
-                    $p->whereIn('sku', (array) $sku);
-                }]);
-                $query->whereHas('purchaseOrderProducts', function ($p) use ($sku) {
-                    $p->whereIn('sku', (array) $sku);
-                });
-            }
+            // if ($request->filled('sku')) {
+            //     $sku = $request->sku;
+            //     $query->with(['purchaseOrderProducts' => function ($p) use ($sku) {
+            //         $p->whereIn('sku', (array) $sku);
+            //     }]);
+            //     $query->whereHas('purchaseOrderProducts', function ($p) use ($sku) {
+            //         $p->whereIn('sku', (array) $sku);
+            //     });
+            // }
 
             // Clone for stats before pagination
             $statsQuery = clone $query;
@@ -111,7 +111,10 @@ class ReportController extends Controller
             // Get unique vendor codes from all completed purchase orders for dropdown
             $purchaseOrdersVendors = PurchaseOrder::whereHas('vendorPI', function ($q) {
                 $q->where('status', 'completed');
-            })->with('vendor')->get()->pluck('vendor.vendor_code')->unique()->filter()->sort()->values();
+            })->with('vendor')->get();
+
+            // dd($purchaseOrdersVendors);
+            // ->pluck('vendor.vendor_code')->unique()->filter()->sort()->values();
 
             // Get unique SKUs from all completed purchase orders for dropdown
             $purchaseOrdersSKUs = PurchaseOrderProduct::whereHas('purchaseOrder.vendorPI', function ($q) {

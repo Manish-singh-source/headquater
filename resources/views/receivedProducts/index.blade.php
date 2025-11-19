@@ -87,7 +87,7 @@
                                             </td>
                                             {{-- <td>{{ $order->sales_order_id }}</td> --}}
                                             <td>{{ $order->id }}</td>
-                                            <td>{{ $order->receivedWarehouse->name }}</td>
+                                            <td>{{ $order->receivedWarehouse?->name }}</td>
                                             <td>
                                                 <p class="mb-0 customer-name fw-bold">
                                                     {{ $order->vendor_code ?? 'N/A' }}
