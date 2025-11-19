@@ -333,9 +333,9 @@
                                   </li>
                               @endcan
                               @can('View Permissions')
-                                  <li><a href="{{ route('permission.index') }}"><i
+                                  {{-- <li><a href="{{ route('permission.index') }}"><i
                                               class="material-icons-outlined">arrow_right</i>Permissions</a>
-                                  </li>
+                                  </li> --}}
                               @endcan
                           </ul>
                       </li>
