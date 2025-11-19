@@ -44,6 +44,8 @@ class ReportController extends Controller
                 'warehouse',
                 'purchaseOrderProducts.product',
                 'vendorPI.payments',
+                'vendorPI.products',
+                'vendorPI.warehouse',
                 'purchaseInvoices',
                 'purchaseGrn',
             ]);
@@ -93,6 +95,7 @@ class ReportController extends Controller
             // Get paginated purchase orders (15 per page)
             $vendorPIProducts = $query->latest('id')->paginate(15)->appends($request->all());
 
+            // dd($vendorPIProducts);
             // Calculate statistics based on filtered results
             $purchaseOrdersTotal = $statsQuery->sum('total_amount');
             $purchaseOrdersTotalQuantity = $statsQuery->withCount('purchaseOrderProducts')->get()->sum('purchase_order_products_count');
@@ -117,6 +120,7 @@ class ReportController extends Controller
 
             $filters = $request->only(['from_date', 'to_date', 'purchase_order_no', 'vendor_code', 'sku']);
 
+            // dd($vendorPIProducts);
             return view('vendor-purchase-invoices', compact(
                 'vendorPIProducts',
                 'purchaseOrdersTotal',
@@ -438,12 +442,13 @@ class ReportController extends Controller
                 'vendorPI.payments',
                 'purchaseInvoices',
                 'purchaseGrn',
+                'vendorPI',
             ]);
 
             // Filter only completed vendorPI for consistency with dropdowns
-            $query->whereHas('vendorPI', function ($q) {
-                $q->where('status', 'completed');
-            });
+            // $query->whereHas('vendorPI', function ($q) {
+            //     $q->where('status', 'completed');
+            // });
 
             // Date range filter - filter by purchase order created date
             if ($request->filled('from_date')) {
@@ -484,7 +489,7 @@ class ReportController extends Controller
 
             // Get paginated purchase orders (15 per page)
             $vendorPIProducts = $query->latest('id')->paginate(15)->appends($request->all());
-
+            // dd($vendorPIProducts);
             // Calculate statistics based on filtered results
             $purchaseOrdersTotal = $statsQuery->sum('total_amount');
             $purchaseOrdersTotalQuantity = $statsQuery->withCount('purchaseOrderProducts')->get()->sum('purchase_order_products_count');

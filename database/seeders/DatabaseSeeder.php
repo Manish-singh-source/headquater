@@ -53,18 +53,18 @@ class DatabaseSeeder extends Seeder
             CountrySeeder::class,
             StateSeeder::class,
             CitySeeder::class,
-            // WarehouseSeeder::class,
-            // VendorsSeeder::class,
+            WarehouseSeeder::class,
+            VendorsSeeder::class,
             PermissionsSeeder::class,
-            // RolesTableSeeder::class,
-            // UsersTableSeeder::class,
+            RolesTableSeeder::class,
+            UsersTableSeeder::class,
         ]);
 
 
 
 
-        // User::find(3)->assignRole('Warehouse Person 1');
-        // User::find(4)->assignRole('Warehouse Person 2');
+        User::find(3)->assignRole('Warehouse Person 1');
+        User::find(4)->assignRole('Warehouse Person 2');
 
     }
 }
