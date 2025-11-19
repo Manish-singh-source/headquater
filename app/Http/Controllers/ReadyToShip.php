@@ -228,6 +228,7 @@ class ReadyToShip extends Controller
                     $warehouseStatuses[$warehouseId] = [
                         'warehouse_name' => $allocation->warehouse->name ?? 'N/A',
                         'shipping_status' => $allocation->shipping_status ?? 'ready_to_ship',
+                        'product_status' =>$allocation->product_status ?? 'ready_to_ship',
                     ];
                 }
             }

@@ -1245,7 +1245,9 @@ class SalesOrderController extends Controller
                     $order->save();
                 }
 
-                $salesOrder->status = $request->status;
+                $oldStatus = $salesOrderUpdate->status;
+                $salesOrderUpdate->status = $request->status;
+                $salesOrderUpdate->save();
             } elseif ($request->status == 'ready_to_package') {
                 $salesOrderUpdate = SalesOrder::with([
                     'customerGroup',
@@ -1288,29 +1290,37 @@ class SalesOrderController extends Controller
                     }
                     $order->save();
                 }
+                $oldStatus = $salesOrderUpdate->status;
                 $salesOrderUpdate->status = $request->status;
                 $salesOrderUpdate->save();
+
+
+                if (!$salesOrderUpdate) {
+                    DB::rollBack();
+                    return redirect()->back()->with('error', 'Status Not Changed. Please Try Again.');
+                }
+
+                // Create status change notification
+                NotificationService::statusChanged('sales', $salesOrderUpdate->id, $oldStatus, $salesOrderUpdate->status);
+
+                activity()
+                    ->performedOn($salesOrderUpdate)
+                    ->causedBy(Auth::user())
+                    ->withProperties([
+                        'old_status' => $oldStatus,
+                        'new_status' => $salesOrderUpdate->status,
+                    ])
+                    ->log('Sales order status changed');
+
+                DB::commit();
+
+                if ($salesOrderUpdate->status == 'ready_to_package') {
+                    return redirect()->route('packing.products.view', $request->order_id)->with('success', 'Order status changed to "Ready to Package" successfully! Order ID: ' . $salesOrderUpdate->id);
+                }
             }
 
-            $oldStatus = $salesOrder->getOriginal('status');
-            $salesOrder->save();
-
-            if (! $salesOrder) {
-                DB::rollBack();
-                return redirect()->back()->with('error', 'Status Not Changed. Please Try Again.');
-            }
-
-            // Create status change notification
-            NotificationService::statusChanged('sales', $salesOrder->id, $oldStatus, $salesOrder->status);
-
-            activity()
-                ->performedOn($salesOrder)
-                ->causedBy(Auth::user())
-                ->withProperties([
-                    'old_status' => $oldStatus,
-                    'new_status' => $salesOrder->status,
-                ])
-                ->log('Sales order status changed');
+            // $oldStatus = $salesOrder->getOriginal('status');
+            // $salesOrder->save();
 
             DB::commit();
 
@@ -1322,8 +1332,6 @@ class SalesOrderController extends Controller
                 return redirect()->route('sales.order.index')->with('success', 'Order marked as "Completed" successfully! Order ID: ' . $salesOrder->id);
             } elseif ($salesOrder->status == 'shipped') {
                 return redirect()->route('sales.order.index')->with('success', 'Order marked as "Shipped" successfully! Order ID: ' . $salesOrder->id);
-            } else {
-                return redirect()->back()->with('error', 'Status Not Changed. Please Try Again.');
             }
         } catch (\Exception $e) {
             DB::rollBack();
@@ -1476,6 +1484,7 @@ class SalesOrderController extends Controller
                     $invoiceDetail->quantity = $quantity;
                     $invoiceDetail->unit_price = $unitPrice;
                     $invoiceDetail->discount = 0;
+                    $invoiceDetail->hsn = $detail->hsn;
                     $invoiceDetail->amount = $lineTotal;
                     $invoiceDetail->tax = $detail->product->gst ?? 0;
                     $invoiceDetail->total_price = $lineTotal; // After discount (currently 0)

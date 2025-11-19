@@ -55,8 +55,12 @@
                 }else {
                     $userWarehouseId = $user->warehouse_id;
                 }
+                if($isSuperAdmin){
+                    $totalAllocated = $order->warehouseAllocations->count();
+                }else {
+                    $totalAllocated = $order->warehouseAllocations->where('warehouse_id', $userWarehouseId)->count();
+                }
                 
-                $totalAllocated = $order->warehouseAllocations->where('warehouse_id', $userWarehouseId)->count();
                 // $allocatedCompleted = $order->warehouseAllocations->where('product_status', 'completed')->where('warehouse_id', $userWarehouseId)->count();
                 $allocatedShipped = $order->warehouseAllocations->where('shipping_status', 'shipped')->where('warehouse_id', $userWarehouseId)->count();
                 // if($allocatedCompleted == $totalAllocated) {
@@ -181,14 +185,14 @@
                                                 $statusBadgeColors = [
                                                     'ready_to_ship' => 'bg-success',
                                                     'shipped' => 'bg-primary',
-                                                    'delivered' => 'bg-info',
-                                                    'completed' => 'bg-dark',
+                                                    'packaging' => 'bg-warning',
+                                                    'completed' => 'bg-success',
                                                 ];
                                                 $statusLabels = [
                                                     'ready_to_ship' => 'Ready to Ship',
                                                     'shipped' => 'Shipped',
-                                                    'delivered' => 'Delivered',
-                                                    'completed' => 'Completed',
+                                                    'packaging' => 'Packaging',
+                                                    'completed' => 'Ready to Ship',
                                                 ];
                                             @endphp
                                             @foreach ($warehouseStatuses as $warehouseId => $statusInfo)
@@ -197,8 +201,8 @@
                                                         <td>{{ $statusInfo['warehouse_name'] }}</td>
                                                         <td>
                                                             <span
-                                                                class="badge {{ $statusBadgeColors[$statusInfo['shipping_status']] ?? 'bg-secondary' }}">
-                                                                {{ $statusLabels[$statusInfo['shipping_status']] ?? ucfirst(str_replace('_', ' ', $statusInfo['shipping_status'])) }}
+                                                                class="badge {{ $statusBadgeColors[$statusInfo['product_status']] ?? 'bg-secondary' }}">
+                                                                {{ $statusLabels[$statusInfo['product_status']] ?? ucfirst(str_replace('_', ' ', $statusInfo['product_status'])) }}
                                                             </span>
                                                         </td>
                                                     </tr>
