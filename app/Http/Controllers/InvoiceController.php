@@ -29,7 +29,7 @@ class InvoiceController extends Controller
         $userWarehouseId = $user->warehouse_id;
 
         // Fetch all invoices with relationships
-        $query = Invoice::with(['warehouse', 'customer', 'salesOrder.customerGroup', 'appointment', 'dns', 'payments'])
+        $query = Invoice::with(['warehouse', 'details', 'customer', 'salesOrder.customerGroup', 'appointment', 'dns', 'payments'])
             ->orderBy('created_at', 'desc');
 
         // Filter invoices based on user role
