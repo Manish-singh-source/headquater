@@ -48,4 +48,9 @@ class PurchaseOrder extends Model
     {
         return $this->hasManyThrough(VendorPayment::class, VendorPI::class, 'purchase_order_id', 'vendor_pi_id', 'id', 'id');
     }
+
+    public function receivedWarehouse()
+    {
+        return $this->belongsTo(Warehouse::class, 'received_warehouse_id', 'id');
+    }
 }
