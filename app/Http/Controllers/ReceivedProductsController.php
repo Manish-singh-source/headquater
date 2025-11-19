@@ -31,7 +31,7 @@ class ReceivedProductsController extends Controller
             $userWarehouseId = $user->warehouse_id;
             $status = $request->get('status', 'all');
 
-            $query = PurchaseOrder::with(['purchaseOrderProducts', 'vendorPI']);
+            $query = PurchaseOrder::with(['purchaseOrderProducts', 'vendorPI', 'receivedWarehouse']);
 
             $query->withCount('purchaseOrderProducts')
                 ->whereHas('vendorPI', function ($query) use ($userWarehouseId, $status) {

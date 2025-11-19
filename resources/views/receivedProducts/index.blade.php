@@ -70,6 +70,7 @@
                                         </th>
                                         {{-- <th>Sales Order Id</th> --}}
                                         <th>Purchase Order Id</th>
+                                        <th>Received Warehouse Name</th>
                                         <th>Vendor Code</th>
                                         <th>Order Status</th>
                                         <th>Total Product</th>
@@ -86,6 +87,7 @@
                                             </td>
                                             {{-- <td>{{ $order->sales_order_id }}</td> --}}
                                             <td>{{ $order->id }}</td>
+                                            <td>{{ $order->receivedWarehouse->name }}</td>
                                             <td>
                                                 <p class="mb-0 customer-name fw-bold">
                                                     {{ $order->vendor_code ?? 'N/A' }}
