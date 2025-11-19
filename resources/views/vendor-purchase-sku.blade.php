@@ -334,7 +334,7 @@
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h6 class="mb-0 fw-bold">
                             <i class="bx bx-list-ul me-2"></i>Vendor Purchase SKU Records
-                            <span class="badge bg-primary ms-2">{{ $vendorPIProducts->total() }} Total</span>
+                            {{-- <span class="badge bg-primary ms-2">{{ $vendorPIProducts->total() }} Total</span> --}}
                         </h6>
                     </div>
 
@@ -349,8 +349,8 @@
                                         <th>Purchse&nbsp;Order&nbsp;No</th>
                                         <th>Purchase&nbsp;Order&nbsp;Date</th>
                                         <th>Vendor&nbsp;Name</th>
-                                        <th>Invoice&nbsp;Ref</th>
-                                        <th>Invoice&nbsp;Date</th>
+                                        {{-- <th>Invoice&nbsp;Ref</th>
+                                        <th>Invoice&nbsp;Date</th> --}}
                                         <th>SKU</th>
                                         <th>Item&nbsp;Name</th>
                                         <th>HSN/SAC</th>
@@ -369,7 +369,7 @@
                                         <th>GST&nbsp;Amount</th>
                                         <th>Cess</th>
                                         <th>Cess&nbsp;Amount</th>
-                                        <th>Invoice&nbsp;Amount</th>
+                                        {{-- <th>Invoice&nbsp;Amount</th> --}}
                                         <th>Invioice&nbsp;Uploaded</th>
                                         <th>GRN&nbsp;Uploaded</th>
                                         <th>Shipping&nbsp;Charges</th>
@@ -419,9 +419,11 @@
                                                 <td>{{ $purchaseOrder->created_at ? $purchaseOrder->created_at->format('d-m-Y') : 'N/A' }}
                                                 </td>
                                                 <td>{{ $vendor->client_name ?? 'N/A' }}</td>
+                                                {{-- 
                                                 <td>{{ $purchaseInvoice->invoice_no ?? 'N/A' }}</td>
                                                 <td>{{ $purchaseInvoice ? ($purchaseInvoice->created_at ? $purchaseInvoice->created_at->format('d-m-Y') : 'N/A') : 'N/A' }}
-                                                </td>
+                                                </td> 
+                                                --}}
                                                 <td>{{ $product->sku ?? 'N/A' }}</td>
                                                 <td>{{ $productDetails->brand_title ?? 'N/A' }}</td>
                                                 <td>{{ $productDetails->hsn ?? 'N/A' }}</td>
@@ -442,7 +444,7 @@
                                                 <td>₹{{ number_format($gstAmount, 2) }}</td>
                                                 <td>0%</td>
                                                 <td>₹0.00</td>
-                                                <td>{{ $vendorPI->total_paid_amount ?? 'N/A' }}</td>
+                                                {{-- <td>{{ $vendorPI->total_paid_amount ?? 'N/A' }}</td> --}}
                                                 <td>{{ $purchaseInvoice ? 'Yes' : 'No' }}</td>
                                                 <td>{{ $purchaseGrn ? 'Yes' : 'No' }}</td>
                                                 <td>N/A</td>
@@ -486,6 +488,7 @@
                     </div>
 
                     <!-- Pagination -->
+                    {{-- 
                     <div class="d-flex justify-content-between align-items-center mt-3">
                         <div>
                             Showing {{ $vendorPIProducts->firstItem() ?? 0 }} to {{ $vendorPIProducts->lastItem() ?? 0 }}
@@ -494,7 +497,7 @@
                         <div>
                             {{ $vendorPIProducts->links() }}
                         </div>
-                    </div>
+                    </div> --}}
                 </div>
             </div>
 
@@ -507,6 +510,21 @@
 @section('script')
     <script>
         $(document).ready(function() {
+
+            var table1 = $('#vendor-purchase-history-table').DataTable({
+                "columnDefs": [{
+                        "orderable": false,
+                        //   "targets": [0, -1],
+                    } // Disable sorting for the 4th column (index starts at 0)
+                ],
+                lengthChange: true,
+                // buttons: ['excel', 'pdf', 'print']
+                // buttons: ['excel']
+                buttons: [{
+                    extend: 'excelHtml5',
+                    className: 'd-none', // hide the default button
+                }]
+            });
 
             /**
              * Prevent dropdown from closing when clicking on checkboxes

@@ -667,7 +667,7 @@ class CustomerController extends Controller
                 'customerDetails',
                 'customerMetrics',
                 'customerInvoices',
-                'customerOrders',
+                'customerOrders', 
                 'customerPayments',
                 'customerReturns'
             ));
