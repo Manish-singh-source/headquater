@@ -49,7 +49,9 @@
                                         <th>Customer&nbsp;Name</th>
                                         <th>Warehouse</th>
                                         <th>Due&nbsp;Date</th>
-                                        <th>Amount</th>
+                                        <th>Taxable&nbsp;Amount</th>
+                                        <th>Tax&nbsp;Amount</th>
+                                        <th>Total&nbsp;Amount</th>
                                         <th>Paid&nbsp;Amount</th>
                                         <th>Due&nbsp;Amount</th>
                                         <th>Action</th>
@@ -57,6 +59,16 @@
                                 </thead>
                                 <tbody>
                                     @forelse ($invoices as $invoice)
+                                    {{-- @php
+                                        $taxAmount = 0;
+                                        $totalAmount = 0;
+                                        foreach ($invoice->details as $detail) {
+                                            $taxAmount += (($detail->unit_price * $detail->quantity) * ($detail->tax / 100));
+                                        }
+
+                                        $totalAmount += ($invoice->total_amount + $taxAmount);
+                                        
+                                    @endphp --}}
                                         <tr>
                                             <td><input class="form-check-input" type="checkbox"></td>
                                             <td>#{{ $invoice->sales_order_id }}</td>
@@ -65,7 +77,10 @@
                                             <td>{{ $invoice->customer->client_name ?? 'N/A' }}</td>
                                             <td>{{ $invoice->warehouse->name ?? 'All Warehouses' }}</td>
                                             <td>{{ $invoice->appointment?->appointment_date ?? 'N/A' }}</td>
+                                            <td>₹{{ number_format($invoice->taxable_amount, 2) }}</td>
+                                            <td>₹{{ number_format($invoice->tax_amount, 2) }}</td>
                                             <td>₹{{ number_format($invoice->total_amount, 2) }}</td>
+
                                             <td>₹{{ number_format($invoice->payments->sum('amount'), 2) }}</td>
                                             <td>₹{{ number_format($invoice->total_amount - $invoice->payments->sum('amount'), 2) }}
                                             </td>

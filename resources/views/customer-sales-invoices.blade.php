@@ -556,7 +556,7 @@
                                             <td>₹{{ number_format($taxableValue, 2) }}</td>
                                             <td>{{ $firstGstRate }}%</td>
                                             <td>₹{{ number_format($gstAmount, 2) }}</td>
-                                            <td>₹{{ number_format($gstAmount + $invoice->total_amount ?? 0, 2) }}</td>
+                                            <td>₹{{ number_format($gstAmount + $taxableValue ?? 0, 2) }}</td>
                                             <td>{{ ucfirst($invoice->payment_status ?? 'N/A') }}</td>
                                             <td>₹{{ number_format($invoice->paid_amount ?? 0, 2) }}</td>
                                             <td>₹{{ number_format($invoice->balance_due ?? 0, 2) }}</td>

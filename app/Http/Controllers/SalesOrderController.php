@@ -1459,11 +1459,13 @@ class SalesOrderController extends Controller
                 $invoice->sales_order_id = $salesOrder->id;
                 $invoice->invoice_date = now();
                 $invoice->round_off = 0;
+                $invoice->taxable_amount = 0;
                 $invoice->total_amount = 0; // Will update after calculating
                 $invoice->po_number = $poNumber;
                 $invoice->save();
 
                 // Process invoice details
+                $taxable_amount = 0;
                 foreach ($invoiceData as $item) {
                     $detail = $item['detail'];
                     $allocation = $item['allocation'];
@@ -1487,17 +1489,22 @@ class SalesOrderController extends Controller
                     $invoiceDetail->hsn = $detail->hsn;
                     $invoiceDetail->amount = $lineTotal;
                     $invoiceDetail->tax = $detail->product->gst ?? 0;
-                    $invoiceDetail->total_price = $lineTotal; // After discount (currently 0)
+                    $invoiceDetail->total_price = $lineTotal + (($detail->product->gst / 100) * $lineTotal); // After discount (currently 0)
                     $invoiceDetail->description = $detail->tempOrder->description ?? null;
                     $invoiceDetail->po_number = $detail->tempOrder->po_number ?? null;
                     $invoiceDetail->save();
 
                     // Update sales order product status only if all allocations are processed
                     // We'll handle this separately after all invoices are created
+
+                    $taxable_amount += (($unitPrice * $quantity) * ($detail->product->gst / 100));
+
                 }
 
                 // Update invoice with calculated total
-                $invoice->total_amount = $invoiceTotal;
+                $invoice->taxable_amount = $invoiceTotal;
+                $invoice->tax_amount = $taxable_amount;
+                $invoice->total_amount = $invoiceTotal + $taxable_amount;
                 $invoice->save();
 
                 $generatedInvoices[] = $invoice->id;
