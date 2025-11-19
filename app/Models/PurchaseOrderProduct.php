@@ -41,4 +41,8 @@ class PurchaseOrderProduct extends Model
             'id'                   // PK on ordered_products
         );
     }
+
+    // public function vendorPIProduct() {
+    //     return $this->hasOne(VendorPIProduct::class, '');
+    // }
 }

@@ -44,39 +44,7 @@
                 </div>
             </div>
 
-            <!-- Display Success/Error Messages -->
-            @if (session('success'))
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    <i class="bx bx-check-circle me-2"></i>{{ session('success') }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            @endif
-
-            @if (session('error'))
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    <i class="bx bx-error-circle me-2"></i>{{ session('error') }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            @endif
-
-            @if (session('info'))
-                <div class="alert alert-info alert-dismissible fade show" role="alert">
-                    <i class="bx bx-info-circle me-2"></i>{{ session('info') }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            @endif
-
-            @if ($errors->any())
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    <i class="bx bx-error-circle me-2"></i>
-                    <ul class="mb-0">
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            @endif
+            @include('layouts.errors')
 
             <div class="col">
                 <div class="row">
@@ -162,9 +130,8 @@
                                         <div class="mb-3">
                                             <label class="form-label">From Date</label>
                                             <div class="input-icon-start position-relative">
-                                                <input type="date" class="form-control" id="date-from"
-                                                    name="from_date" value="{{ request('from_date') }}"
-                                                    placeholder="dd/mm/yyyy">
+                                                <input type="date" class="form-control" id="date-from" name="from_date"
+                                                    value="{{ request('from_date') }}" placeholder="dd/mm/yyyy">
                                                 <span class="input-icon-left">
                                                     <i class="ti ti-calendar"></i>
                                                 </span>
@@ -389,7 +356,8 @@
                                         <th>HSN/SAC</th>
                                         <th>PO&nbsp;Created</th>
                                         <th>PI&nbsp;Received</th>
-                                        <th>Quantity</th>
+                                        <th>PO&nbsp;Quantity</th>
+                                        <th>PI&nbsp;Quantity</th>
                                         <th>UoM</th>
                                         <th>Rate</th>
                                         <th>Discount</th>
@@ -462,6 +430,7 @@
                                                 <td>{{ $vendorPI && $vendorPI->updated_at ? $vendorPI->updated_at->format('d-m-Y') : 'N/A' }}
                                                 </td>
                                                 <td>{{ $product->ordered_quantity ?? 0 }}</td>
+                                                <td>{{ $product->ordered_quantity ?? 0 }}</td>
                                                 <td>PCS</td>
                                                 <td>₹{{ number_format($product->product->mrp ?? 0, 2) }}</td>
                                                 <td>₹{{ number_format($product->discount_per_unit ?? 0, 2) }}</td>
@@ -484,7 +453,7 @@
                                                     </span>
                                                 </td>
                                                 <td>{{ $vendorPI->warehouse->name ?? 'N/A' }}</td>
-                                                
+
 
                                                 {{-- <td>{{ $vendor->gst_number ?? 'N/A' }}</td>
                                                 <td>{{ $vendor->pan_number ?? 'N/A' }}</td>
