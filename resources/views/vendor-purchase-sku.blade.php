@@ -585,7 +585,7 @@
                 });
 
                 // Construct download URL with parameters
-                var downloadUrl = '{{ route('vendor.purchase.history.excel') }}';
+                var downloadUrl = '{{ route('vendor.purchase.history.excel1') }}';
                 if (params.length > 0) {
                     downloadUrl += '?' + params.join('&');
                 }
