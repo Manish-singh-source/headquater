@@ -117,7 +117,22 @@ class PurchaseOrderController extends Controller
             }
 
             if (! $request->has('purchaseId')) {
+
+                // add prefix for purchase order 
+                $lastPurchaseOrder = PurchaseOrder::orderBy('id', 'desc')->first();
+                if ($lastPurchaseOrder->order_number) {
+                    $prefix = $lastPurchaseOrder ? 'PO-' . date('Ym', strtotime($lastPurchaseOrder->created_at)) . '-' : 'PO-' . date('Ym') . '-';
+                    $lastPurchaseOrderNumber = $lastPurchaseOrder ? intval(explode('-', $lastPurchaseOrder->order_number)[2]) : 0;
+                } else {
+                    $prefix = 'PO-' . date('Ym') . '-';
+                    $lastPurchaseOrderNumber = 0;
+                }
+                $nextPurchaseOrderNumber = $lastPurchaseOrderNumber + 1;
+                $nextPurchaseOrderNumber = str_pad($nextPurchaseOrderNumber, 4, '0', STR_PAD_LEFT);
+                $nextPurchaseOrderNumber = $prefix . $nextPurchaseOrderNumber;
+
                 $purchaseOrder = new PurchaseOrder;
+                $purchaseOrder->order_number = $nextPurchaseOrderNumber;
                 $purchaseOrder->warehouse_id = $warehouse_id ?? null;
                 $purchaseOrder->vendor_id = $vendor->id ?? null;
                 $purchaseOrder->vendor_code = $vendor->vendor_code ?? null;
