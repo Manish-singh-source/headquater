@@ -230,6 +230,7 @@
                                     </div>
 
                                     <!-- Region Filter -->
+                                    {{-- 
                                     <div class="col-md-2">
                                         <div class="mb-3">
                                             <label class="form-label">Region</label>
@@ -265,7 +266,8 @@
                                                 </ul>
                                             </div>
                                         </div>
-                                    </div>
+                                    </div> 
+                                    --}}
 
                                     <!-- Payment Status Filter -->
                                     <div class="col-md-2">
@@ -365,7 +367,7 @@
 
 
                                     <!-- Invoice No Filter -->
-                                    <div class="col-md-2">
+                                    {{-- <div class="col-md-2">
                                         <div class="mb-3">
                                             <label class="form-label">Invoice No</label>
                                             <div class="dropdown">
@@ -400,7 +402,7 @@
                                                 </ul>
                                             </div>
                                         </div>
-                                    </div>
+                                    </div> --}}
 
                                     <!-- PO No Filter -->
                                     <div class="col-md-2">
@@ -499,12 +501,11 @@
                         <table id="customerSalesTable" class="table table-striped table-hover align-middle">
                             <thead class="table-light">
                                 <tr>
+                                    <th>Sales&nbsp;Order&nbsp;No</th>
                                     <th>Customer&nbsp;Group&nbsp;Name</th>
                                     <th>Warehouse&nbsp;Name</th>
                                     <th>Customer&nbsp;Name</th>
-                                    {{-- <th>Customer&nbsp;GSTIN</th> --}}
                                     <th>Invoice&nbsp;No</th>
-                                    {{-- <th>Creator&nbsp;Name</th> --}}
                                     <th>Customer&nbsp;Phone&nbsp;No</th>
                                     <th>Customer&nbsp;Email</th>
                                     <th>Customer&nbsp;City</th>
@@ -512,7 +513,6 @@
 
                                     <th>PO&nbsp;No</th>
                                     <th>PO&nbsp;SKU</th>
-                                    {{-- <th>PO&nbsp;Date</th> --}}
                                     <th>Title</th>
                                     <th>Brand</th>
                                     <th>HSN</th>
@@ -531,27 +531,6 @@
                                     <th>GST</th>
                                     <th>GST&nbsp;Amount</th>
                                     <th>Total&nbsp;Amount</th>
-
-                                    {{-- <th>Appointment&nbsp;Date</th>
-                                    <th>Due&nbsp;Date</th>
-                                    <th>POD</th>
-                                    <th>GRN</th>
-                                    <th>DN</th>
-                                    <th>DN&nbsp;Reciept</th>
-                                    <th>LR</th>
-                                    <th>Currency</th>
-                                    <th>Box&nbsp;Count</th>
-                                    <th>Weight</th>
-                                    <th>Status</th>
-                                    <th>Amount&nbsp;Paid</th>
-                                    <th>Balance</th>
-                                    <th>Date&nbsp;Of&nbsp;Payment</th>
-                                    <th>Payment&nbsp;Mode</th>
-                                    <th>CGST</th>
-                                    <th>SGST</th>
-                                    <th>IGST</th>
-                                    <th>Cess</th> --}}
-                                    {{-- <th style="width: 100px;">Action</th> --}}
                                 </tr>
                             </thead>
                             <tbody>
@@ -560,6 +539,7 @@
                                         @if ($product->warehouseAllocations->count() > 0)
                                             @foreach ($product->warehouseAllocations as $allocation)
                                                 <tr>
+                                                    <td>{{ $salesOrder->order_number ?? 'N/A' }}</td>
                                                     <td>{{ $salesOrder->customerGroup->name ?? 'N/A' }}</td>
                                                     <td>{{ $allocation->warehouse->name ?? 'N/A' }}</td>
                                                     <td>{{ $product->customer->client_name ?? 'N/A' }}</td>
@@ -614,58 +594,6 @@
                                                     <td>
                                                         {{ $subtotal + $gstAmount }}
                                                     </td>
-
-
-                                                    {{-- <td>{{ $product->tempOrder->po_date ?? 'N/A' }}</td>
-
-                                                    <td>{{ $product->invoiceDetails->first()?->invoice?->appointment?->appointment_date->format('d-m-Y') ?? 'N/A' }}
-                                                    </td>
-                                                    <td>{{ $product->invoiceDetails->first()?->invoice?->appointment?->appointment_date->addMonth()->format('d-m-Y') ?? 'N/A' }}
-                                                    </td>
-
-                                                    <td>{{ $salesOrder->due_date ?? 'N/A' }}</td>  
-                                                    <td>{{ $product->invoiceDetails->first()?->invoice?->appointment?->pod ? 'Yes' : 'No' }}
-                                                    </td>
-                                                    <td>{{ $product->invoiceDetails->first()?->invoice?->appointment?->grn ? 'Yes' : 'No' }}
-                                                    </td>
-                                                    <td>{{ $product->invoiceDetails->first()?->invoice?->dns?->dn_amount ?? 0 }}
-                                                    </td>
-                                                    <td>{{ $product->invoiceDetails->first()?->invoice?->dns?->dn_receipt ? 'Yes' : 'No' }}
-                                                    </td>
-                                                    <td>{{ $salesOrder->appointment?->lr ? 'Yes' : 'No' }}</td>
-                                                    <td>{{ $salesOrder->invoices->first()->currency ?? 'INR' }}</td>
-                                                    
-                                                    
-                                                    </td>
-                                                    <td>{{ $statuses[$salesOrder->status] ?? 'N/A' }}</td>
-                                                    <td>{{ $product->invoiceDetails->first()?->invoice?->total_amount ?? 'N/A' }}
-                                                        @if ($loop->first)
-                                                        <td rowspan="{{ $product->warehouseAllocations->count() }}">
-                                                    <td>
-                                                        {{ $product->invoiceDetails->first()?->invoice?->paid_amount ?? 'N/A' }}
-                                                    </td>
-                                                    @endif
-                                                    <td>{{ $product->invoiceDetails->first()?->invoice?->balance_due ?? 'N/A' }}
-                                                    </td>
-                                                    <td>{{ $product->invoiceDetails->first()?->invoice?->payments?->first()?->created_at->format('d-m-Y') ?? 'N/A' }}
-                                                    </td>
-                                                    <td>{{ $product->invoiceDetails->first()?->invoice?->payments?->first()?->payment_method ?? 'N/A' }}
-                                                    </td>
-
-                                                    <td>{{ $product->tempOrder->gst / 2 ?? 'N/A' }}</td>
-                                                    <td>{{ $product->tempOrder->gst / 2 ?? 'N/A' }}</td>
-                                                    <td>{{ $product->tempOrder->gst ?? 'N/A' }}</td>
-                                                    <td>{{ $product->invoiceDetails->first()?->invoice->cess ?? 'N/A' }}
-                                                    </td> --}}
-
-                                                    {{-- 
-                                                    <td>
-                                                        <a href=""
-                                                            class="btn btn-icon btn-sm bg-primary-subtle me-1"
-                                                            data-bs-toggle="tooltip" title="View Sales Order">
-                                                            <i class="bx bx-show text-primary"></i>
-                                                        </a>
-                                                    </td> --}}
                                                 </tr>
                                             @endforeach
                                         @endif
@@ -857,10 +785,10 @@
                     'Select Warehouse');
             });
 
-            $(document).on('change', '.region-checkbox', function() {
-                updateDropdownText('.region-checkbox', 'regionDropdown', 'regionDropdownText',
-                    'Select Region');
-            });
+            // $(document).on('change', '.region-checkbox', function() {
+            //     updateDropdownText('.region-checkbox', 'regionDropdown', 'regionDropdownText',
+            //         'Select Region');
+            // });
 
             $(document).on('change', '.payment-status-checkbox', function() {
                 updateDropdownText('.payment-status-checkbox', 'paymentStatusDropdown',
@@ -897,7 +825,7 @@
                 $('#to_date').val('');
                 $('.customer-checkbox').prop('checked', false);
                 $('.warehouse-checkbox').prop('checked', false);
-                $('.region-checkbox').prop('checked', false);
+                // $('.region-checkbox').prop('checked', false);
                 $('.payment-status-checkbox').prop('checked', false);
                 $('.customer-type-checkbox').prop('checked', false);
                 $('.invoice-no-checkbox').prop('checked', false);
@@ -921,18 +849,18 @@
                 var warehouseId = $('input[name="warehouse_id[]"]:checked').map(function() {
                     return this.value;
                 }).get();
-                var region = $('input[name="region[]"]:checked').map(function() {
-                    return this.value;
-                }).get();
+                // var region = $('input[name="region[]"]:checked').map(function() {
+                //     return this.value;
+                // }).get();
                 var paymentStatus = $('input[name="payment_status[]"]:checked').map(function() {
                     return this.value;
                 }).get();
                 var customerType = $('input[name="customer_type[]"]:checked').map(function() {
                     return this.value;
                 }).get();
-                var invoiceNo = $('input[name="invoice_no[]"]:checked').map(function() {
-                    return this.value;
-                }).get();
+                // var invoiceNo = $('input[name="invoice_no[]"]:checked').map(function() {
+                //     return this.value;
+                // }).get();
                 var poNo = $('input[name="po_no[]"]:checked').map(function() {
                     return this.value;
                 }).get();
@@ -951,18 +879,18 @@
                 if (warehouseId.length > 0) warehouseId.forEach(function(val) {
                     params.push('warehouse_id[]=' + encodeURIComponent(val));
                 });
-                if (region.length > 0) region.forEach(function(val) {
-                    params.push('region[]=' + encodeURIComponent(val));
-                });
+                // if (region.length > 0) region.forEach(function(val) {
+                //     params.push('region[]=' + encodeURIComponent(val));
+                // });
                 if (paymentStatus.length > 0) paymentStatus.forEach(function(val) {
                     params.push('payment_status[]=' + encodeURIComponent(val));
                 });
                 if (customerType.length > 0) customerType.forEach(function(val) {
                     params.push('customer_type[]=' + encodeURIComponent(val));
                 });
-                if (invoiceNo.length > 0) invoiceNo.forEach(function(val) {
-                    params.push('invoice_no[]=' + encodeURIComponent(val));
-                });
+                // if (invoiceNo.length > 0) invoiceNo.forEach(function(val) {
+                //     params.push('invoice_no[]=' + encodeURIComponent(val));
+                // });
                 if (poNo.length > 0) poNo.forEach(function(val) {
                     params.push('po_no[]=' + encodeURIComponent(val));
                 });
@@ -999,18 +927,18 @@
                 var customerId = $('input[name="customer_id[]"]:checked').map(function() {
                     return this.value;
                 }).get();
-                var region = $('input[name="region[]"]:checked').map(function() {
-                    return this.value;
-                }).get();
+                // var region = $('input[name="region[]"]:checked').map(function() {
+                //     return this.value;
+                // }).get();
                 var paymentStatus = $('input[name="payment_status[]"]:checked').map(function() {
                     return this.value;
                 }).get();
                 var customerType = $('input[name="customer_type[]"]:checked').map(function() {
                     return this.value;
                 }).get();
-                var invoiceNo = $('input[name="invoice_no[]"]:checked').map(function() {
-                    return this.value;
-                }).get();
+                // var invoiceNo = $('input[name="invoice_no[]"]:checked').map(function() {
+                //     return this.value;
+                // }).get();
                 var poNo = $('input[name="po_no[]"]:checked').map(function() {
                     return this.value;
                 }).get();
@@ -1026,18 +954,18 @@
                 if (customerId.length > 0) customerId.forEach(function(val) {
                     params.push('customer_id[]=' + encodeURIComponent(val));
                 });
-                if (region.length > 0) region.forEach(function(val) {
-                    params.push('region[]=' + encodeURIComponent(val));
-                });
+                // if (region.length > 0) region.forEach(function(val) {
+                //     params.push('region[]=' + encodeURIComponent(val));
+                // });
                 if (paymentStatus.length > 0) paymentStatus.forEach(function(val) {
                     params.push('payment_status[]=' + encodeURIComponent(val));
                 });
                 if (customerType.length > 0) customerType.forEach(function(val) {
                     params.push('customer_type[]=' + encodeURIComponent(val));
                 });
-                if (invoiceNo.length > 0) invoiceNo.forEach(function(val) {
-                    params.push('invoice_no[]=' + encodeURIComponent(val));
-                });
+                // if (invoiceNo.length > 0) invoiceNo.forEach(function(val) {
+                //     params.push('invoice_no[]=' + encodeURIComponent(val));
+                // });
                 if (poNo.length > 0) poNo.forEach(function(val) {
                     params.push('po_no[]=' + encodeURIComponent(val));
                 });

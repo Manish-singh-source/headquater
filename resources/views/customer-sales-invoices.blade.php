@@ -161,6 +161,7 @@
                                     </div>
 
                                     <!-- Payment Status Filter -->
+                                    {{-- 
                                     <div class="col-md-2">
                                         <div class="mb-3">
                                             <label class="form-label">Payment Status</label>
@@ -216,7 +217,8 @@
                                                 </ul>
                                             </div>
                                         </div>
-                                    </div>
+                                    </div> 
+                                    --}}
 
                                     <!-- Customer Type Filter -->
                                     <div class="col-md-2">
@@ -639,10 +641,10 @@
             });
 
 
-            $(document).on('change', '.payment-status-checkbox', function() {
-                updateDropdownText('.payment-status-checkbox', 'paymentStatusDropdown',
-                    'paymentStatusDropdownText', 'Select Status');
-            });
+            // $(document).on('change', '.payment-status-checkbox', function() {
+            //     updateDropdownText('.payment-status-checkbox', 'paymentStatusDropdown',
+            //         'paymentStatusDropdownText', 'Select Status');
+            // });
 
             $(document).on('change', '.customer-type-checkbox', function() {
                 updateDropdownText('.customer-type-checkbox', 'customerTypeDropdown',
@@ -673,7 +675,7 @@
                 $('#from_date').val('');
                 $('#to_date').val('');
                 $('.customer-checkbox').prop('checked', false);
-                $('.payment-status-checkbox').prop('checked', false);
+                //$('.payment-status-checkbox').prop('checked', false);
                 $('.customer-type-checkbox').prop('checked', false);
                 $('.invoice-no-checkbox').prop('checked', false);
                 $('.po-no-checkbox').prop('checked', false);
@@ -693,9 +695,9 @@
                 var customerId = $('input[name="customer_id[]"]:checked').map(function() {
                     return this.value;
                 }).get();
-                var paymentStatus = $('input[name="payment_status[]"]:checked').map(function() {
-                    return this.value;
-                }).get();
+                // var paymentStatus = $('input[name="payment_status[]"]:checked').map(function() {
+                //     return this.value;
+                // }).get();
                 var customerType = $('input[name="customer_type[]"]:checked').map(function() {
                     return this.value;
                 }).get();
@@ -717,9 +719,9 @@
                 if (customerId.length > 0) customerId.forEach(function(val) {
                     params.push('customer_id[]=' + encodeURIComponent(val));
                 });
-                if (paymentStatus.length > 0) paymentStatus.forEach(function(val) {
-                    params.push('payment_status[]=' + encodeURIComponent(val));
-                });
+                // if (paymentStatus.length > 0) paymentStatus.forEach(function(val) {
+                //     params.push('payment_status[]=' + encodeURIComponent(val));
+                // });
                 if (customerType.length > 0) customerType.forEach(function(val) {
                     params.push('customer_type[]=' + encodeURIComponent(val));
                 });
@@ -762,9 +764,9 @@
                 var customerId = $('input[name="customer_id[]"]:checked').map(function() {
                     return this.value;
                 }).get();
-                var paymentStatus = $('input[name="payment_status[]"]:checked').map(function() {
-                    return this.value;
-                }).get();
+                // var paymentStatus = $('input[name="payment_status[]"]:checked').map(function() {
+                //     return this.value;
+                // }).get();
                 var customerType = $('input[name="customer_type[]"]:checked').map(function() {
                     return this.value;
                 }).get();
@@ -786,9 +788,9 @@
                 if (customerId.length > 0) customerId.forEach(function(val) {
                     params.push('customer_id[]=' + encodeURIComponent(val));
                 });
-                if (paymentStatus.length > 0) paymentStatus.forEach(function(val) {
-                    params.push('payment_status[]=' + encodeURIComponent(val));
-                });
+                // if (paymentStatus.length > 0) paymentStatus.forEach(function(val) {
+                //     params.push('payment_status[]=' + encodeURIComponent(val));
+                // });
                 if (customerType.length > 0) customerType.forEach(function(val) {
                     params.push('customer_type[]=' + encodeURIComponent(val));
                 });

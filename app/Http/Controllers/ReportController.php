@@ -626,7 +626,7 @@ class ReportController extends Controller
                 $payment = $vendorPI ? $vendorPI->payments->first() : null;
                 $purchaseGrn = $purchaseOrder->purchaseGrn ?? null;
 
-                foreach($purchaseOrder->purchaseOrderProducts as $product) { 
+                foreach ($purchaseOrder->purchaseOrderProducts as $product) {
                     $productDetails = $product->product ?? null;
                     $gstRate = floatval($productDetails->gst ?? 0);
                     $unitCost = floatval($product->unit_cost ?? 0);
@@ -637,7 +637,7 @@ class ReportController extends Controller
                     // Calculate CGST/SGST/IGST based on state (simplified)
                     $cgst = $gstRate / 2;
                     $sgst = $gstRate / 2;
-                    $igst = 0; 
+                    $igst = 0;
 
 
                     fputcsv($file, [
@@ -1216,11 +1216,11 @@ class ReportController extends Controller
             if ($request->filled('invoice_no')) {
                 $invoiceNos = (array) $request->invoice_no;
 
-                $query->with('orderedProducts.invoiceDetails.invoice', function ($q) use ($invoiceNos) {
+                $query->whereHas('invoices', function ($q) use ($invoiceNos) {
                     $q->whereIn('invoice_number', $invoiceNos);
                 })
-                    ->whereHas('orderedProducts.invoiceDetails.invoice', function ($q) use ($invoiceNos) {
-                        $q->whereIn('invoice_number', $invoiceNos);
+                    ->whereHas('orderedProducts.warehouseAllocations', function ($q) {
+                        $q->whereNotNull('id'); // ensures allocation exists
                     });
             }
 
@@ -1262,6 +1262,8 @@ class ReportController extends Controller
 
             // Final result
             $salesOrders = $query->latest('order_date')->get();
+
+            // dd($salesOrders);
 
             // Stats
             $statsQuery = clone $query;
@@ -1605,6 +1607,7 @@ class ReportController extends Controller
                             $total = $subtotal * (1 + $gstRate / 100);
 
                             $exportData->push([
+                                'Sales Order No' => $salesOrder->order_number ?? 'N/A',
                                 'Customer Group Name' => $customerGroup->name ?? 'N/A',
                                 'Warehouse Name' => $allocation->warehouse->name ?? 'N/A',
                                 'Customer Name' => $customer->client_name ?? 'N/A',
@@ -1648,38 +1651,6 @@ class ReportController extends Controller
 
                                 // Total Purchase Amount
                                 'Total Amount' => $subtotal + $gstAmount,
-
-
-                                // 'PO Date' => $product->tempOrder->po_date ?? 'N/A',
-                                // 'Appointment Date' => $appointment?->appointment_date?->format('d-m-Y') ?? 'N/A',
-                                // 'Due Date' => $appointment?->appointment_date?->addMonth()->format('d-m-Y') ?? 'N/A',
-                                // 'POD' => $appointment?->pod ? 'Yes' : 'No',
-                                // 'GRN' => $appointment?->grn ? 'Yes' : 'No',
-                                // 'DN' => $dns?->dn_amount ?? 0,
-                                // 'DN Receipt' => $dns?->dn_receipt ? 'Yes' : 'No',
-                                // 'LR' => $salesOrder->appointment?->lr ? 'Yes' : 'No',
-                                // 'Currency' => $salesOrder->invoices->first()->currency ?? 'INR',
-                                // 'Brand' => $product->product->brand ?? 'N/A',
-                                // 'SKU' => $product->tempOrder->sku ?? 'N/A',
-                                // 'HSN' => $product->tempOrder->hsn ?? 'N/A',
-                                // 'Ordered Quantity' => $product->ordered_quantity ?? 'N/A',
-                                // 'Dispatched Quantity' => $allocation->final_dispatched_quantity ?? 'N/A',
-                                // 'Box Count' => $allocation->box_count ?? 'N/A',
-                                // 'Weight' => $allocation->weight ?? 'N/A',
-                                // 'Unit Price' => $product->price ?? 'N/A',
-                                // 'Subtotal' => number_format($subtotal, 2, '.', ''),
-                                // 'GST' => $gstRate,
-                                // 'Total' => number_format($total, 2, '.', ''),
-                                // 'Status' => $statuses[$salesOrder->status] ?? 'N/A',
-                                // 'Total Amount' => $invoice?->total_amount ?? 'N/A',
-                                // 'Amount Paid' => $invoice?->paid_amount ?? 'N/A',
-                                // 'Balance' => $invoice?->balance_due ?? 'N/A',
-                                // 'Date Of Payment' => $payment?->created_at?->format('d-m-Y') ?? 'N/A',
-                                // 'Payment Mode' => $payment?->payment_method ?? 'N/A',
-                                // 'CGST' => $gstRate / 2,
-                                // 'SGST' => $gstRate / 2,
-                                // 'IGST' => $gstRate,
-                                // 'Cess' => $invoice?->cess ?? 'N/A',
                             ]);
                         }
                     }
@@ -1696,6 +1667,7 @@ class ReportController extends Controller
 
             // Add header row (matching view table columns exactly)
             $writer->addRow([
+                'Sales Order No',
                 'Customer Group Name',
                 'Warehouse Name',
                 'Customer Name',
@@ -1725,36 +1697,6 @@ class ReportController extends Controller
                 'GST Amount',
                 'Total Amount',
 
-                // 'PO Date',
-                // 'Appointment Date',
-                // 'Due Date',
-                // 'POD',
-                // 'GRN',
-                // 'DN',
-                // 'DN Receipt',
-                // 'LR',
-                // 'Currency',
-                // 'Brand',
-                // 'SKU',
-                // 'HSN',
-                // 'Ordered Quantity',
-                // 'Dispatched Quantity',
-                // 'Box Count',
-                // 'Weight',
-                // 'Unit Price',
-                // 'Subtotal',
-                // 'GST',
-                // 'Total',
-                // 'Status',
-                // 'Total Amount',
-                // 'Amount Paid',
-                // 'Balance',
-                // 'Date Of Payment',
-                // 'Payment Mode',
-                // 'CGST',
-                // 'SGST',
-                // 'IGST',
-                // 'Cess',
             ]);
 
             // Add data rows
@@ -1851,6 +1793,67 @@ class ReportController extends Controller
                 $q->whereIn('appointment_date', $appointmentDates);
             });
         }
+
+        if ($request->filled('po_no')) {
+            $poNos = (array) $request->po_no;
+
+            $query->with([
+                'orderedProducts.tempOrder' => function ($q) use ($poNos) {
+                    $q->whereIn('po_number', $poNos);
+                }
+            ]);
+
+            $query->whereHas('orderedProducts.tempOrder', function ($q) use ($poNos) {
+                $q->whereIn('po_number', $poNos);
+            });
+        }
+
+        // Customer Filter
+        if ($request->filled('customer_id')) {
+            $customerIds = (array) $request->customer_id;
+
+            $query->with([
+                'orderedProducts.customer' => function ($q) use ($customerIds) {
+                    $q->whereIn('id', $customerIds);
+                }
+            ]);
+
+            $query->whereHas('orderedProducts.customer', function ($q) use ($customerIds) {
+                $q->whereIn('id', $customerIds);
+            });
+        }
+
+        // Warehouse Filter
+        if ($request->filled('warehouse_id')) {
+            $warehouseIds = (array) $request->warehouse_id;
+
+            $query->with([
+                'orderedProducts.warehouseAllocations' => function ($q) use ($warehouseIds) {
+                    $q->whereIn('warehouse_id', $warehouseIds);
+                }
+            ]);
+
+            $query->whereHas('orderedProducts.warehouseAllocations', function ($q) use ($warehouseIds) {
+                $q->whereIn('warehouse_id', $warehouseIds);
+            });
+        }
+
+
+        // Customer Group Filter
+        if ($request->filled('customer_type')) {
+            $customerTypes = (array) $request->customer_type;
+
+            $query->with([
+                'customerGroup' => function ($q) use ($customerTypes) {
+                    $q->whereIn('id', $customerTypes);
+                }
+            ]);
+
+            $query->whereHas('customerGroup', function ($q) use ($customerTypes) {
+                $q->whereIn('id', $customerTypes);
+            });
+        }
+
         // Final result
         $salesOrders = $query->latest('order_date')->get();
 
@@ -1953,184 +1956,184 @@ class ReportController extends Controller
      */
     public function customerSalesHistoryExcel(Request $request)
     {
-        // Validate optional filters
-        $validator = Validator::make($request->all(), [
-            'from_date' => 'nullable|date',
-            'to_date' => 'nullable|date|after_or_equal:from_date',
-            'customer_id' => 'nullable|array',
-            'customer_id.*' => 'integer|exists:customers,id',
-            'warehouse_id' => 'nullable|array',
-            'warehouse_id.*' => 'integer|exists:warehouses,id',
-            'region' => 'nullable|array',
-            'region.*' => 'string',
-            'payment_status' => 'nullable|array',
-            'payment_status.*' => 'in:paid,unpaid,partial',
-            'customer_type' => 'nullable|array',
-            'customer_type.*' => 'integer|exists:customer_groups,id',
-            'invoice_no' => 'nullable|array',
-            'invoice_no.*' => 'string',
-            'po_no' => 'nullable|array',
-            'po_no.*' => 'string',
-            'appointment_date' => 'nullable|array',
-            'appointment_date.*' => 'date',
-        ]);
 
-        if ($validator->fails()) {
-            return redirect()->back()->withErrors($validator)->withInput();
-        }
-
-        DB::beginTransaction();
         try {
-            // Use the same query structure as customerSalesHistory method
             $query = SalesOrder::with([
-                'warehouse',
-                'customer.groupInfo.customerGroup',
                 'customerGroup',
                 'invoices.payments',
-                'invoices.details',
+                'invoices.details.salesOrderProduct',
                 'invoices.appointment',
+                'invoices.customer',
                 'invoices.dns',
+                'invoices.warehouse',
                 'orderedProducts',
                 'orderedProducts.tempOrder',
-                'orderedProducts.customer',
-                'orderedProducts.invoiceDetails.invoice.appointment',
-                'orderedProducts.warehouseAllocations.warehouse',
             ]);
 
-            // Apply filters (same as customerSalesHistory method)
+            // Date Filters
             if ($request->filled('from_date')) {
                 $query->where('order_date', '>=', $request->from_date);
             }
+
             if ($request->filled('to_date')) {
                 $query->where('order_date', '<=', $request->to_date);
             }
+            if ($request->filled('invoice_no')) {
+                $invoiceNos = (array) $request->invoice_no;
 
-            // Apply warehouse filter - filter by warehouse allocations, not sales_order warehouse_id
-            if ($request->filled('warehouse_id')) {
-                $warehouseIds = (array) $request->warehouse_id;
+                $query->with([
+                    'invoices' => function ($q) use ($invoiceNos) {
+                        $q->whereIn('invoice_number', $invoiceNos);
+                    }
+                ]);
 
-                $query->with('orderedProducts.warehouseAllocations', function ($q) use ($warehouseIds) {
-                    $q->whereIn('warehouse_id', $warehouseIds);
-                })
-                    ->whereHas('orderedProducts.warehouseAllocations', function ($q) use ($warehouseIds) {
-                        $q->whereIn('warehouse_id', $warehouseIds);
-                    });
+                $query->whereHas('invoices', function ($q) use ($invoiceNos) {
+                    $q->whereIn('invoice_number', $invoiceNos);
+                });
             }
 
-            // Customer Filter - filter by product-level customer (orderedProducts.customer)
+            // 
+            if ($request->filled('appointment_date')) {
+                $appointmentDates = (array) $request->appointment_date;
+
+                $query->with([
+                    'invoices.appointment' => function ($q) use ($appointmentDates) {
+                        $q->whereIn('appointment_date', $appointmentDates);
+                    }
+                ]);
+
+                $query->whereHas('invoices.appointment', function ($q) use ($appointmentDates) {
+                    $q->whereIn('appointment_date', $appointmentDates);
+                });
+            }
+
+            if ($request->filled('po_no')) {
+                $poNos = (array) $request->po_no;
+
+                $query->with([
+                    'orderedProducts.tempOrder' => function ($q) use ($poNos) {
+                        $q->whereIn('po_number', $poNos);
+                    }
+                ]);
+
+                $query->whereHas('orderedProducts.tempOrder', function ($q) use ($poNos) {
+                    $q->whereIn('po_number', $poNos);
+                });
+            }
+
+            // Customer Filter
             if ($request->filled('customer_id')) {
                 $customerIds = (array) $request->customer_id;
 
-                $query->where(function ($q) use ($customerIds) {
-                    $q->with('orderedProducts.customer', function ($c) use ($customerIds) {
-                        $c->whereIn('id', $customerIds);
-                    })->whereHas('orderedProducts.customer', function ($c) use ($customerIds) {
-                        $c->whereIn('id', $customerIds);
-                    });
-                });
-            }
-
-            // Region Filter - filter by product-level customer's shipping/billing state
-            if ($request->filled('region')) {
-                $regions = (array) $request->region;
-
-                $query->where(function ($q) use ($regions) {
-                    $q->with('orderedProducts.customer', function ($c) use ($regions) {
-                        $c->where(function ($subQ) use ($regions) {
-                            $subQ->whereIn('billing_state', $regions)
-                                ->orWhereIn('shipping_state', $regions);
-                        });
-                    })->whereHas('orderedProducts.customer', function ($c) use ($regions) {
-                        $c->where(function ($subQ) use ($regions) {
-                            $subQ->whereIn('billing_state', $regions)
-                                ->orWhereIn('shipping_state', $regions);
-                        });
-                    });
-                });
-            }
-
-            // Apply payment status filter
-            if ($request->filled('payment_status')) {
-                $statuses = (array) $request->payment_status;
-
-                $query->where(function ($q) use ($statuses) {
-                    $q->whereHas('invoices', function ($inv) use ($statuses) {
-                        foreach ($statuses as $status) {
-                            if ($status === 'paid') {
-                                $inv->orWhereRaw('(total_amount - COALESCE((SELECT SUM(amount) FROM payments WHERE payments.invoice_id = invoices.id),0)) <= 0');
-                            }
-                            if ($status === 'unpaid') {
-                                $inv->orWhereRaw('(total_amount - COALESCE((SELECT SUM(amount) FROM payments WHERE payments.invoice_id = invoices.id),0)) = total_amount');
-                            }
-                            if ($status === 'partial') {
-                                $inv->orWhere(function ($p) {
-                                    $p->whereRaw('(total_amount - COALESCE((SELECT SUM(amount) FROM payments WHERE payments.invoice_id = invoices.id),0)) > 0')
-                                        ->whereRaw('(total_amount - COALESCE((SELECT SUM(amount) FROM payments WHERE payments.invoice_id = invoices.id),0)) < total_amount');
-                                });
-                            }
-                        }
-                    })
-                        ->orDoesntHave('invoices'); // keep when no invoice
-                });
-            }
-
-            // Apply customer type/group filter
-            if ($request->filled('customer_type')) {
-                $query->whereIn('customer_group_id', (array) $request->customer_type);
-            }
-
-            // Invoice Number Filter
-            if ($request->filled('invoice_no')) {
-                $invoiceNos = (array) $request->invoice_no;
-                $query->where(function ($q) use ($invoiceNos) {
-                    $q->with('invoices', function ($inv) use ($invoiceNos) {
-                        $inv->whereIn('invoice_number', $invoiceNos);
-                    })->whereHas('invoices', function ($inv) use ($invoiceNos) {
-                        $inv->whereIn('invoice_number', $invoiceNos);
-                    });
-                });
-            }
-
-            // PO Number Filter
-            if ($request->filled('po_no')) {
-                $poNos = (array) $request->po_no;
-                $query->with('orderedProducts.tempOrder', function ($tmp) use ($poNos) {
-                    $tmp->whereIn('po_number', $poNos);
-                })
-                    ->where(function ($q) use ($poNos) {
-                        $q->whereHas('orderedProducts.tempOrder', function ($tmp) use ($poNos) {
-                            $tmp->whereIn('po_number', $poNos);
-                        }); // keep when no orderedProducts
-                    });
-            }
-
-            // Apply appointment date filter
-            if ($request->filled('appointment_date')) {
-                $apptDates = (array) $request->appointment_date;
-
-                // Convert dates from d-m-Y to Y-m-d format for database comparison
-                $convertedDates = array_map(function ($date) {
-                    try {
-                        return \Carbon\Carbon::createFromFormat('d-m-Y', $date)->format('Y-m-d');
-                    } catch (\Exception $e) {
-                        return $date; // Return as-is if conversion fails
+                $query->with([
+                    'orderedProducts.customer' => function ($q) use ($customerIds) {
+                        $q->whereIn('id', $customerIds);
                     }
-                }, $apptDates);
+                ]);
 
-                $query->where(function ($q) use ($convertedDates) {
-                    $q->whereHas('invoices.appointment', function ($app) use ($convertedDates) {
-                        $app->whereIn('appointment_date', $convertedDates);
-                    })
-                        ->orDoesntHave('invoices'); // keep even if no invoice/appointment
+                $query->whereHas('orderedProducts.customer', function ($q) use ($customerIds) {
+                    $q->whereIn('id', $customerIds);
                 });
             }
 
-            // Get all sales orders
+            // Warehouse Filter
+            if ($request->filled('warehouse_id')) {
+                $warehouseIds = (array) $request->warehouse_id;
+
+                $query->with([
+                    'orderedProducts.warehouseAllocations' => function ($q) use ($warehouseIds) {
+                        $q->whereIn('warehouse_id', $warehouseIds);
+                    }
+                ]);
+
+                $query->whereHas('orderedProducts.warehouseAllocations', function ($q) use ($warehouseIds) {
+                    $q->whereIn('warehouse_id', $warehouseIds);
+                });
+            }
+
+            // Customer Group Filter
+            if ($request->filled('customer_type')) {
+                $customerTypes = (array) $request->customer_type;
+
+                $query->with([
+                    'customerGroup' => function ($q) use ($customerTypes) {
+                        $q->whereIn('id', $customerTypes);
+                    }
+                ]);
+
+                $query->whereHas('customerGroup', function ($q) use ($customerTypes) {
+                    $q->whereIn('id', $customerTypes);
+                });
+            }
+            // Final result
             $salesOrders = $query->latest('order_date')->get();
 
-            if ($salesOrders->isEmpty()) {
-                return redirect()->back()->with('error', 'No customer sales records found for the selected criteria.');
-            }
+            // dd($salesOrders[0]->invoices[0]);
+
+            // Stats
+            $statsQuery = clone $query;
+            $allSalesOrders = $statsQuery->get();
+
+            $totalRevenue = $allSalesOrders->sum('total_amount');
+            $totalPaid = $allSalesOrders->sum(function ($salesOrder) {
+                return $salesOrder->invoices->sum(function ($invoice) {
+                    return $invoice->payments->sum('amount');
+                });
+            });
+            $totalPendingPayments = $totalRevenue - $totalPaid;
+
+            // Get filter dropdown data
+            $customers = Customer::select('id', 'client_name')
+                ->whereHas('orders')
+                ->orderBy('client_name')
+                ->get()
+                ->map(function ($customer) {
+                    return [
+                        'id' => $customer->id,
+                        'name' => $customer->client_name ?? 'N/A',
+                    ];
+                });
+
+            $warehouses = Warehouse::active()->select('id', 'name')->get();
+
+            $regions = Customer::distinct()
+                ->whereNotNull('billing_state')
+                ->pluck('billing_state')
+                ->merge(Customer::distinct()->whereNotNull('shipping_state')->pluck('shipping_state'))
+                ->unique()
+                ->sort()
+                ->values();
+
+            $customerGroups = \App\Models\CustomerGroup::active()->select('id', 'name')->get();
+
+            // Get unique invoice numbers for filter dropdown (from sales orders' invoices)
+            $invoiceNumbers = Invoice::distinct('invoice_number')
+                ->whereNotNull('invoice_number')
+                ->whereNotNull('sales_order_id')
+                ->pluck('invoice_number')
+                ->sort()
+                ->values();
+
+            // Get unique PO numbers from sales orders
+            $poNumbers = TempOrder::whereNotNull('po_number')
+                ->whereHas('orderedProduct.salesOrder')
+                ->distinct()
+                ->pluck('po_number')
+                ->sort()
+                ->values();
+
+            // Get unique appointment dates (from invoices related to sales orders)
+            $appointmentDates = \App\Models\Appointment::distinct('appointment_date')
+                ->whereNotNull('appointment_date')
+                ->whereHas('invoice', function ($q) {
+                    $q->whereNotNull('sales_order_id');
+                })
+                ->pluck('appointment_date')
+                ->map(function ($date) {
+                    return $date->format('d-m-Y');
+                })
+                ->sort()
+                ->values();
 
             // Define status mapping (same as view)
             $statuses = [
@@ -2146,80 +2149,100 @@ class ReportController extends Controller
             $exportData = collect();
 
             foreach ($salesOrders as $salesOrder) {
-                $customerGroup = $salesOrder->customerGroup;
+                foreach ($salesOrder->invoices as $invoice) {
+                    // Calculate totals from invoice details and salesOrderProduct
+                    $totalBoxCount = 0;
+                    $totalWeight = 0;
+                    $taxableValue = 0;
+                    $gstAmount = 0;
+                    $cgstAmount = 0;
+                    $sgstAmount = 0;
+                    $igstAmount = 0;
+                    $firstGstRate = 0;
 
-                foreach ($salesOrder->orderedProducts as $product) {
-                    $customer = $product->customer;
+                    foreach ($invoice->details as $detail) {
+                        // Box count - use invoice_details or fallback to salesOrderProduct
+                        $totalBoxCount +=
+                            $detail->box_count ?? ($detail->salesOrderProduct?->box_count ?? 0);
 
-                    if ($product->warehouseAllocations->count() > 0) {
-                        // Loop through warehouse allocations (same as view)
-                        foreach ($product->warehouseAllocations as $allocation) {
-                            // Get invoice number for this warehouse
-                            $invoiceNumber = 'N/A';
-                            if ($salesOrder->invoices->count() > 0) {
-                                foreach ($salesOrder->invoices as $invoice) {
-                                    if ($invoice->warehouse_id == $allocation->warehouse_id) {
-                                        $invoiceNumber = $invoice->invoice_number ?? 'N/A';
-                                        break;
-                                    }
-                                }
-                            }
+                        // Weight - use invoice_details or fallback to salesOrderProduct
+                        $totalWeight +=
+                            $detail->weight ?? ($detail->salesOrderProduct?->weight ?? 0);
 
-                            // Get invoice details
-                            $invoiceDetail = $product->invoiceDetails->first();
-                            $invoice = $invoiceDetail?->invoice;
-                            $appointment = $invoice?->appointment;
-                            $dns = $invoice?->dns;
-                            $payment = $invoice?->payments?->first();
+                        // Taxable value is the 'amount' field
+                        $taxableValue += $detail->amount ?? 0;
 
-                            // Calculate subtotal and total for this allocation
-                            $subtotal = $allocation->final_dispatched_quantity * $product->price;
-                            $gstRate = $product->tempOrder->gst ?? 0;
-                            $total = $subtotal * (1 + $gstRate / 100);
+                        // GST amount calculation: (amount * tax) / 100
+                        $detailGstAmount = ($detail->amount * $detail->tax) / 100;
+                        $gstAmount += $detailGstAmount;
 
-                            $exportData->push([
-                                'Customer Group Name' => $customerGroup->name ?? 'N/A',
-                                'Warehouse Name' => $allocation->warehouse->name ?? 'N/A',
-                                'Customer Name' => $customer->client_name ?? 'N/A',
-                                'Invoice No' => $invoiceNumber,
-                                'Customer Phone No' => $customer->contact_no ?? 'N/A',
-                                'Customer Email' => $customer->email ?? 'N/A',
-                                'Customer City' => $customer->shipping_city ?? 'N/A',
-                                'Customer State' => $customer->shipping_state ?? 'N/A',
-                                'PO No' => $product->tempOrder->po_number ?? 'N/A',
-                                'PO Date' => $product->tempOrder->po_date ?? 'N/A',
-                                'Appointment Date' => $appointment?->appointment_date?->format('d-m-Y') ?? 'N/A',
-                                'Due Date' => $appointment?->appointment_date?->addMonth()->format('d-m-Y') ?? 'N/A',
-                                'POD' => $appointment?->pod ? 'Yes' : 'No',
-                                'GRN' => $appointment?->grn ? 'Yes' : 'No',
-                                'DN' => $dns?->dn_amount ?? 0,
-                                'DN Receipt' => $dns?->dn_receipt ? 'Yes' : 'No',
-                                'LR' => $salesOrder->appointment?->lr ? 'Yes' : 'No',
-                                'Currency' => $salesOrder->invoices->first()->currency ?? 'INR',
-                                'Brand' => $product->product->brand ?? 'N/A',
-                                'SKU' => $product->tempOrder->sku ?? 'N/A',
-                                'HSN' => $product->tempOrder->hsn ?? 'N/A',
-                                'Ordered Quantity' => $product->ordered_quantity ?? 'N/A',
-                                'Dispatched Quantity' => $allocation->final_dispatched_quantity ?? 'N/A',
-                                'Box Count' => $allocation->box_count ?? 'N/A',
-                                'Weight' => $allocation->weight ?? 'N/A',
-                                'Unit Price' => $product->price ?? 'N/A',
-                                'Subtotal' => number_format($subtotal, 2, '.', ''),
-                                'GST' => $gstRate,
-                                'Total' => number_format($total, 2, '.', ''),
-                                'Status' => $statuses[$salesOrder->status] ?? 'N/A',
-                                'Total Amount' => $invoice?->total_amount ?? 'N/A',
-                                'Amount Paid' => $invoice?->paid_amount ?? 'N/A',
-                                'Balance' => $invoice?->balance_due ?? 'N/A',
-                                'Date Of Payment' => $payment?->created_at?->format('d-m-Y') ?? 'N/A',
-                                'Payment Mode' => $payment?->payment_method ?? 'N/A',
-                                'CGST' => $gstRate / 2,
-                                'SGST' => $gstRate / 2,
-                                'IGST' => $gstRate,
-                                'Cess' => $invoice?->cess ?? 'N/A',
-                            ]);
+                        // Store first GST rate for display
+                        if ($firstGstRate == 0 && $detail->tax > 0) {
+                            $firstGstRate = $detail->tax;
+                        }
+
+                        // Calculate CGST/SGST/IGST based on customer state
+                        // If same state: CGST + SGST, else: IGST
+                        $customerState =
+                            $invoice->customer?->shipping_state ??
+                            $invoice->customer?->billing_state;
+                        $warehouseState = $invoice->warehouse?->state ?? 'Maharashtra'; // Default warehouse state
+
+                        if (
+                            $customerState &&
+                            $warehouseState &&
+                            strtolower($customerState) === strtolower($warehouseState)
+                        ) {
+                            // Intra-state: CGST + SGST (split GST equally)
+                            $cgstAmount += $detailGstAmount / 2;
+                            $sgstAmount += $detailGstAmount / 2;
+                        } else {
+                            // Inter-state: IGST
+                            // these two are optional
+                            $cgstAmount += $detailGstAmount / 2;
+                            $sgstAmount += $detailGstAmount / 2;
+                            $igstAmount += $detailGstAmount;
                         }
                     }
+
+                    $exportData->push([
+                        'Customer Group Name' => $salesOrder->customerGroup->name ?? 'N/A',
+                        'Warehouse Name' => $allocation->warehouse->name ?? 'N/A',
+                        'Customer Name' => $invoice->customer->client_name ?? 'N/A',
+                        'Invoice No' => $invoice->invoice_number,
+                        'Customer Phone No' => $invoice->customer->contact_no ?? 'N/A',
+                        'Customer Email' => $invoice->customer->email ?? 'N/A',
+                        'Customer City' => $invoice->customer->shipping_city ?? 'N/A',
+                        'Customer State' => $invoice->customer->shipping_state ?? 'N/A',
+                        'PO No' => $invoice->po_number ?? 'N/A',
+                        'PO Date' => $invoice->created_at->format('d-m-Y') ?? 'N/A',
+                        'Appointment Date' => $invoice->appointment?->appointment_date?->format('d-m-Y') ?? 'N/A',
+                        'Due Date' => $invoice->appointment?->appointment_date?->addMonth()->format('d-m-Y') ?? 'N/A',
+                        'POD' => $invoice->appointment?->pod ? 'Yes' : 'No',
+                        'GRN' => $invoice->appointment?->grn ? 'Yes' : 'No',
+                        'DN Amount' => $invoice->dns?->first()?->dn_amount ? $invoice->dns?->first()?->dn_amount : 0,
+                        'DN Receipt' => $invoice->dns?->first()?->dn_receipt ? 'Yes' : 'No',
+                        'LR' => $invoice->lr ? 'Yes' : 'No',
+                        'Currency' => $invoice->currency ?? 'INR',
+                        'HSN' => $invoice->details->first()->hsn ?? 'N/A',
+                        'Ordered Quantity' => $invoice->details->sum('quantity') ?? 'N/A',
+                        'Dispatched Quantity' => $invoice->details->sum('quantity') ?? 'N/A',
+                        'Box Count' => number_format($totalBoxCount, 0) ?? 'N/A',
+                        'Weight' => number_format($totalWeight, 2) ?? 'N/A',
+                        'Taxable Value' => number_format($taxableValue, 2) ?? 'N/A',
+                        'GST' => $firstGstRate,
+                        'GST Value' => number_format($gstAmount, 2),
+                        'Total' => number_format($gstAmount + $taxableValue ?? 0, 2),
+                        'Invoice Status' => ucfirst($invoice->payment_status ?? 'N/A') ?? 'N/A',
+                        'Amount Paid' => number_format($invoice->paid_amount ?? 0, 2) ?? 'N/A',
+                        'Balance' => number_format($invoice->balance_due ?? 0, 2) ?? 'N/A',
+                        'Date Of Payment' => $invoice->payments?->first()?->created_at?->format('d-m-Y') ?? 'N/A',
+                        'Payment Mode' => $invoice->payments->first()->payment_method ?? 'N/A',
+                        'CGST' => number_format($cgstAmount, 2),
+                        'SGST' => number_format($sgstAmount, 2),
+                        'IGST' => number_format($igstAmount, 2),
+                        'Cess' => 0.00 ?? 'N/A',
+                    ]);
                 }
             }
 
@@ -2245,22 +2268,21 @@ class ReportController extends Controller
                 'Due Date',
                 'POD',
                 'GRN',
-                'DN',
+                'DN Amount',
                 'DN Receipt',
                 'LR',
                 'Currency',
-                'Brand',
-                'SKU',
                 'HSN',
                 'Ordered Quantity',
                 'Dispatched Quantity',
                 'Box Count',
                 'Weight',
-                'Unit Price',
+                'Taxable Value',
                 'Subtotal',
                 'GST',
+                'GST Value',
                 'Total',
-                'Status',
+                'Invoice Status',
                 'Total Amount',
                 'Amount Paid',
                 'Balance',
