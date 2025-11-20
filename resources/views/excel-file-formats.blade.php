@@ -65,11 +65,21 @@
                                         </a>
                                     </span>
                                 </li>
-                                
+
                                 <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                                     <span><b>SKU Mapping</b></span>
                                     <span>
                                         <a href="{{ asset('uploads/excel-formats/sku-mapping.xlsx') }}"
+                                            download="sku-mapping.xlsx" class="btn btn-sm border-2 border-primary">
+                                            <i class="fas fa-file-excel me-1"></i> Download
+                                        </a>
+                                    </span>
+                                </li>
+
+                                <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
+                                    <span><b>Custom Customer PO</b></span>
+                                    <span>
+                                        <a href="{{ asset('uploads/excel-formats/custom-purchase-order.xlsx') }}"
                                             download="sku-mapping.xlsx" class="btn btn-sm border-2 border-primary">
                                             <i class="fas fa-file-excel me-1"></i> Download
                                         </a>
@@ -84,7 +94,17 @@
                                             <i class="fas fa-file-excel me-1"></i> Download
                                         </a>
                                     </span>
-                                </li>   
+                                </li>
+
+                                <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
+                                    <span><b>Customer Return</b></span>
+                                    <span>
+                                        <a href="{{ asset('uploads/excel-formats/customer-return.xlsx') }}"
+                                            download="customers-po.xlsx" class="btn btn-sm border-2 border-primary">
+                                            <i class="fas fa-file-excel me-1"></i> Download
+                                        </a>
+                                    </span>
+                                </li>
 
                                 {{-- 
                                 <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
@@ -95,14 +115,28 @@
                                             <i class="fas fa-file-excel me-1"></i> Download
                                         </a>
                                     </span>
-                                </li> 
-                                --}}
-                                
+                                </li> --}}
+
+                                {{-- <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
+                                    <span><b>Update Vendor Received Products</b></span>
+                                    <span>
+                                        <a href="{{ asset('uploads/excel-formats/customers-group.xlsx') }}"
+                                            download="customers-group.xlsx" class="btn btn-sm border-2 border-primary">
+                                            <i class="fas fa-file-excel me-1"></i> Download
+                                        </a>
+                                    </span>
+                                </li> --}}
+
+                            </ul>
+                        </div>
+                        <div class="card w-100 d-flex  flex-sm-row flex-col">
+                            <ul class="col-12 list-group list-group-flush">
                                 <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                                     <span><b>Customer PO Block Quantity</b></span>
                                     <span>
                                         <a href="{{ asset('uploads/excel-formats/customer-po-block-quantity.xlsx') }}"
-                                            download="customer-po-block-quantity.xlsx" class="btn btn-sm border-2 border-primary">
+                                            download="customer-po-block-quantity.xlsx"
+                                            class="btn btn-sm border-2 border-primary">
                                             <i class="fas fa-file-excel me-1"></i> Download
                                         </a>
                                     </span>
@@ -125,15 +159,6 @@
                                         </a>
                                     </span>
                                 </li>
-                                {{-- <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
-                                    <span><b>Update Vendor Received Products</b></span>
-                                    <span>
-                                        <a href="{{ asset('uploads/excel-formats/customers-group.xlsx') }}"
-                                            download="customers-group.xlsx" class="btn btn-sm border-2 border-primary">
-                                            <i class="fas fa-file-excel me-1"></i> Download
-                                        </a>
-                                    </span>
-                                </li> --}}
 
                             </ul>
                         </div>
