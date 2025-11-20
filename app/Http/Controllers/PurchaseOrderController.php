@@ -120,7 +120,7 @@ class PurchaseOrderController extends Controller
 
                 // add prefix for purchase order 
                 $lastPurchaseOrder = PurchaseOrder::orderBy('id', 'desc')->first();
-                if ($lastPurchaseOrder->order_number) {
+                if ($lastPurchaseOrder && $lastPurchaseOrder->order_number) {
                     $prefix = $lastPurchaseOrder ? 'PO-' . date('Ym', strtotime($lastPurchaseOrder->created_at)) . '-' : 'PO-' . date('Ym') . '-';
                     $lastPurchaseOrderNumber = $lastPurchaseOrder ? intval(explode('-', $lastPurchaseOrder->order_number)[2]) : 0;
                 } else {
