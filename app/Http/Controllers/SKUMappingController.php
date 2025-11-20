@@ -19,8 +19,8 @@ class SKUMappingController extends Controller
     public function index()
     {
         try {
-            $skuMapping = SkuMapping::latest()
-                ->paginate(15);
+            $skuMapping = SkuMapping::orderBy('created_at', 'desc')
+                ->get();
 
             return view('skuMapping.index', compact('skuMapping'));
         } catch (\Exception $e) {

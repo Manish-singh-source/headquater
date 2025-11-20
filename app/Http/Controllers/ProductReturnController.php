@@ -51,8 +51,8 @@ class ProductReturnController extends Controller
     {
         try {
             $customerReturns = CustomerReturn::with('salesOrder', 'product')
-                ->latest()
-                ->paginate(15);
+                ->orderBy('created_at', 'desc')
+                ->get();
 
             return view('ReturnProducts.customer-returns', compact('customerReturns'));
         } catch (\Exception $e) {
