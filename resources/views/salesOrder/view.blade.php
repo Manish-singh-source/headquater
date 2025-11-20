@@ -69,8 +69,8 @@
                                 <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                                     <span><b>Order Id</b></span>
 
-                                    <span>#
-                                        <span id="orderId">{{ $salesOrder->id }}</span>
+                                    <span>
+                                        <span id="orderId">{{ $salesOrder->order_number }}</span>
                                     </span>
                                 </li>
                                 <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">

@@ -423,17 +423,17 @@ class InvoiceController extends Controller
                 ->orderBy('id', 'desc')
                 ->first();
 
-            $timestamp = time();
+            $timestamp =  date('Ym');
 
             if ($lastInvoice) {
-                $lastNumber = (int) substr($lastInvoice->invoice_number, -3);
-                $newNumber = str_pad($lastNumber + 1, 3, '0', STR_PAD_LEFT);
+                $lastNumber = (int) substr($lastInvoice->invoice_number, -4);
+                $newNumber = str_pad($lastNumber + 1, 4, '0', STR_PAD_LEFT);
             } else {
-                $newNumber = '001';
+                $newNumber = '0001';
             }
 
             // $invoiceNumber = "INV-{$yearMonth}-{$newNumber}";
-            $invoiceNumber = 'INV-'.$timestamp.'-'.str_pad($newNumber + 1, 4, '0', STR_PAD_LEFT);
+            $invoiceNumber = 'INV-'.$timestamp.'-'.$newNumber;
 
             // Calculate totals based on invoice type
             $subtotal = 0;
@@ -487,6 +487,7 @@ class InvoiceController extends Controller
                 'po_number' => $request->po_number,
                 'po_date' => $request->po_date,
                 'subtotal' => $subtotal,
+                'taxable_amount' => $subtotal,
                 'tax_amount' => $totalTax,
                 'discount_amount' => $totalDiscount,
                 'round_off' => 0,
@@ -498,6 +499,7 @@ class InvoiceController extends Controller
                 'invoice_type' => 'manual',
                 'invoice_item_type' => $request->invoice_item_type,
                 'notes' => $request->notes,
+                
             ]);
 
             // Create invoice details based on type

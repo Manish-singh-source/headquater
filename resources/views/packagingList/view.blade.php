@@ -60,7 +60,10 @@
         <div class="main-content">
             <div class="div d-flex my-2">
                 <div class="col">
-                    <h5 class="mb-3">Packaging List: <span id="salesOrderId">{{ $salesOrder->id }}</span></h5>
+                    <h5 class="mb-3">Packaging List: 
+                        <span id="salesOrderId" class="d-none">{{ $salesOrder->id }}</span>
+                        <span>{{ $salesOrder->order_number }}</span>
+                    </h5>
                 </div>
             </div>
 

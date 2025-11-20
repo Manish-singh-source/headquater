@@ -16,6 +16,7 @@ class Invoice extends Model
         'round_off',
         'total_amount',
         'subtotal',
+        'taxable_amount',
         'tax_amount',
         'discount_amount',
         'paid_amount',

@@ -9,7 +9,7 @@
                     <div class="row g-4 align-items-center">
                         <div class="col-sm">
                             <h5 class="card-title mb-0">
-                                Track Order
+                                Track Sales Order
                             </h5>
                         </div>
                     </div>
@@ -21,10 +21,10 @@
                         @method('POST')
                         <div class="d-flex gap-3 justify-content-start align-items-end">
                             <div class="col-9 ">
-                                <label for="order_id" class="form-label">Track Order Id<span
+                                <label for="order_number" class="form-label">Track Order Id<span
                                         class="text-danger">*</span></label>
-                                <input type="text" name="order_id" id="order_id" class="form-control"
-                                    value="{{ request('order_id') ?? '' }}" placeholder="Enter Track Order Id">
+                                <input type="text" name="order_number" id="order_number" class="form-control"
+                                    value="{{ request('order_number') ?? '' }}" placeholder="Enter Track Sales Order Id">
                             </div>
                             <div class="col-2">
                                 <button type="submit" id="track-order"
@@ -47,7 +47,7 @@
                                         <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                                             <span><b>Order Id</b></span>
 
-                                            <span>{{ $salesOrder->id }}</span>
+                                            <span>{{ $salesOrder->order_number }}</span>
                                         </li>
                                         <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                                             <span><b>Customer Group Name</b></span>

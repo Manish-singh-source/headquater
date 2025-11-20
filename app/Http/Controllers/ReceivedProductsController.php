@@ -189,7 +189,7 @@ class ReceivedProductsController extends Controller
             foreach ($vendorPI->products as $product) {
                 $writer->addRow([
                     // 'Order No' => $vendorPI->id ?? '',
-                    'Purchase Order No' => $vendorPI->purchase_order_id ?? '',
+                    'Purchase Order No' => $vendorPI->purchaseOrder->order_number ?? '',
                     'Vendor SKU Code' => $product->vendor_sku_code ?? '',
                     'Title' => $product->product?->brand_title ?? '',
                     'MRP' => $product->mrp ?? '',

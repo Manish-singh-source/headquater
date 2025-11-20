@@ -22,7 +22,7 @@
         @forelse($vendorOrders as $order)
             <tr>
                 <td><a
-                        href="{{ route('purchase.order.view', $order->vendorPIProduct->purchase_order_id ?? 0) }}">{{ $order->vendorPIProduct->purchase_order_id ?? 0 }}</a>
+                        href="{{ route('purchase.order.view', $order->vendorPIProduct->purchaseOrder ?? 0) }}">{{ $order->vendorPIProduct->purchaseOrder->order_number ?? 0 }}</a>
                 </td>
                 <td>{{ $order->vendorPIProduct->product->brand_title ?? 'NA' }}</td>
                 <td>{{ $order->vendorPIProduct->vendor_sku_code }}</td>

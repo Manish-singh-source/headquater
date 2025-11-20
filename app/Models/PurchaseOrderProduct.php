@@ -15,6 +15,11 @@ class PurchaseOrderProduct extends Model
         return $this->belongsTo(PurchaseOrder::class, 'purchase_order_id', 'id');
     }
 
+    public function salesOrder()
+    {
+        return $this->hasOne(SalesOrder::class, 'id', 'sales_order_id');
+    }
+
     public function product(): HasOne
     {
         return $this->hasOne(Product::class, 'sku', 'sku');

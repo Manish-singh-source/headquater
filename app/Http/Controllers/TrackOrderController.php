@@ -17,14 +17,14 @@ class TrackOrderController extends Controller
     public function index(Request $request)
     {
         try {
-            if ($request->has('order_id') && ! empty($request->order_id)) {
+            if ($request->has('order_number') && ! empty($request->order_number)) {
                 $validator = Validator::make($request->all(), [
-                    'order_id' => 'required|integer|exists:sales_orders,id',
+                    'order_number' => 'required',
                 ]);
 
                 if ($validator->fails()) {
                     return view('trackOrder.index')
-                        ->with('error', 'Invalid order ID. Please check and try again.');
+                        ->with('error', 'Invalid Sales Order Number. Please check and try again.');
                 }
 
                 $salesOrder = SalesOrder::with([
@@ -32,8 +32,8 @@ class TrackOrderController extends Controller
                     'warehouse',
                     'orderedProducts.product',
                     'orderedProducts.tempOrder',
-                ])
-                    ->find($request->order_id);
+                ])->where('order_number', $request->order_number)
+                    ->first();
 
                 if (! $salesOrder) {
                     return view('trackOrder.index')
@@ -43,9 +43,9 @@ class TrackOrderController extends Controller
                 // Log tracking access
                 activity()
                     ->causedBy(Auth::user())
-                    ->withProperties(['order_id' => $salesOrder->id])
+                    ->withProperties(['order_number' => $salesOrder->order_number])
                     ->event('order_tracked')
-                    ->log('Order tracked: #'.$salesOrder->id);
+                    ->log('Order tracked: #'.$salesOrder->order_number);
 
                 return redirect()->route('trackOrder.view', $salesOrder->id);
             }

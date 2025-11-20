@@ -69,7 +69,7 @@
                                     <thead class="table-light">
                                         <tr>
                                             <th style="width:40px;"><input class="form-check-input" type="checkbox" id="selectAllSales"></th>
-                                            <th>Order&nbsp;ID</th>
+                                            <th>Sales&nbsp;Order&nbsp;ID</th>
                                             <th>Customer&nbsp;Group&nbsp;Name</th>
                                             <th>Ordered&nbsp;Date</th>
                                             <th>Status</th>
@@ -80,7 +80,7 @@
                                         @forelse ($salesOrderInvoices as $invoice)
                                             <tr>
                                                 <td><input class="form-check-input" type="checkbox"></td>
-                                                <td>#{{ $invoice->id }}</td>
+                                                <td>{{ $invoice->order_number }}</td>
                                                 <td>{{ $invoice->customerGroup?->name ?? 'N/A' }}</td>
                                                 <td>{{ $invoice->created_at ? $invoice->created_at->format('d-M-Y') : 'N/A' }}</td>
                                                 <td>

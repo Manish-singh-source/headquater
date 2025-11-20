@@ -120,9 +120,9 @@
                     <div class="card w-100 d-flex  flex-sm-row flex-col">
                         <ul class="col-12 list-group list-group-flush">
                             <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
-                                <span><b>Order Id</b></span>
+                                <span><b>Sales Order Id</b></span>
 
-                                <span>{{ $salesOrder->id }}</span>
+                                <span>{{ $salesOrder->order_number }}</span>
                             </li>
                             <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                                 <span><b>Status</b></span>

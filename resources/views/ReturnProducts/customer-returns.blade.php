@@ -56,7 +56,7 @@
                                             @forelse($customerReturns as $order)
                                                 <tr>
                                                     <td><a
-                                                            href="{{ route('sales.order.view', $order->salesOrder->id) }}">{{ $order->salesOrder->id }}</a>
+                                                            href="{{ route('sales.order.view', $order->salesOrder->id) }}">{{ $order->salesOrder->order_number }}</a>
                                                     </td>
                                                     <td>{{ $order->product->brand_title ?? 'NA' }}</td>
                                                     <td>{{ $order->product->sku ?? 'NA' }}</td>
