@@ -32,7 +32,7 @@
                                                         <option selected="" disabled="" value="">-- Select --
                                                         </option>
                                                         @foreach ($salesOrders as $salesOrder)
-                                                            <option value="{{ $salesOrder->id }}">{{ $salesOrder->id }}
+                                                            <option value="{{ $salesOrder->id }}">{{ $salesOrder->order_number }}
                                                             </option>
                                                         @endforeach
                                                     </select>

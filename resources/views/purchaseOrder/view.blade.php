@@ -91,13 +91,15 @@
                         <div class="card w-100 d-flex  flex-sm-row flex-col">
                             <ul class="col-12 list-group list-group-flush">
                                 <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
-                                    <span><b>Order Id</b></span>
-                                    <span id="purchase-order-id">{{ $purchaseOrder->id }}</span>
+                                    <span><b>Purchase Order Id</b></span>
+                                    <span id="purchase-order-id" class="d-none">{{ $purchaseOrder->id }}</span>
+                                    <span>{{ $purchaseOrder->order_number }}</span>
                                 </li>
                                 @isset($purchaseOrder->sales_order_id)
                                     <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                                         <span><b>Sales Order Id</b></span>
-                                        <span id="sales-order-id">{{ $purchaseOrder->sales_order_id }}</span>
+                                        <span id="sales-order-id" class="d-none">{{ $purchaseOrder->sales_order_id }}</span>
+                                        <span>{{ $purchaseOrder->salesOrder->order_number }}</span>
                                     </li>
                                 @endisset
                                 <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
@@ -114,7 +116,7 @@
                                 <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                                     <span><b>Vendor Client Name</b></span>
                                     <span>
-                                        <b class="d-inline-block text-truncate" style="max-width: 150px;" id="vendor-code">
+                                        <b class="d-inline-block text-truncate" style="max-width: 450px;" id="vendor-code">
                                             {{ $purchaseOrder->vendor->client_name ?? 'NA' }}
                                         </b>
                                     </span>
@@ -131,7 +133,7 @@
                                     <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                                         <span><b>Total Amount</b></span>
                                         <span class="fw-bold"
-                                            id="sales-order-id">{{ $purchaseOrder->vendorPI[0]->total_amount ?? 0 }}
+                                            >{{ $purchaseOrder->vendorPI[0]->total_amount ?? 0 }}
                                             Rs.</span>
                                     </li>
                                 @endif
@@ -140,7 +142,7 @@
                                     <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                                         <span><b>Total Paid Amount</b></span>
                                         <span class="fw-bold"
-                                            id="sales-order-id">{{ $purchaseOrder->vendorPI[0]->total_paid_amount ?? 0 }}
+                                            >{{ $purchaseOrder->vendorPI[0]->total_paid_amount ?? 0 }}
                                             Rs.</span>
                                     </li>
                                 @endif
@@ -149,7 +151,7 @@
                                     <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                                         <span><b>Total Due Amount</b></span>
                                         <span class="fw-bold"
-                                            id="sales-order-id">{{ $purchaseOrder->vendorPI[0]->total_due_amount ?? 0 }}
+                                            >{{ $purchaseOrder->vendorPI[0]->total_due_amount ?? 0 }}
                                             Rs.</span>
                                     </li>
                                 @endif
@@ -158,7 +160,7 @@
                                     <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                                         <span><b>Payment Status</b></span>
                                         <span class="fw-bold"
-                                            id="sales-order-id">{{ $payment_statuses[$purchaseOrder->vendorPI[0]->payment_status] }}</span>
+                                            >{{ $payment_statuses[$purchaseOrder->vendorPI[0]->payment_status] }}</span>
                                     </li>
                                 @endif
 
@@ -600,9 +602,9 @@
                                                     name="ids[]" value="{{ $order->id }}">
                                             </td>
                                             @isset($order->sales_order_id)
-                                                <td>{{ $order->sales_order_id }}</td>
+                                                <td>{{ $purchaseOrder->salesOrder->order_number }}</td>
                                             @endisset
-                                            <td>{{ $order->purchase_order_id }}</td>
+                                            <td>{{ $purchaseOrder->order_number }}</td>
                                             <td>{{ $order->vendor_code }}</td>
                                             <td>{{ $order->tempOrder->item_code ?? 'NA' }}</td>
                                             <td>{{ $order->tempOrder->sku ?? 'NA' }}</td>
@@ -692,9 +694,9 @@
                                         @foreach ($vendorPI->products as $product)
                                             <tr>
                                                 @isset($vendorPI->sales_order_id)
-                                                    <td>{{ $vendorPI->sales_order_id }}</td>
+                                                    <td>{{ $vendorPI->salesOrder->order_number }}</td>
                                                 @endisset
-                                                <td>{{ $vendorPI->purchase_order_id }}</td>
+                                                <td>{{ $vendorPI->purchaseOrder->order_number }}</td>
                                                 <td>{{ $vendorPI->vendor_code }}</td>
                                                 <td>{{ $product->vendor_sku_code }}</td>
                                                 <td>{{ $product->title ?? 'N/A' }}</td>
@@ -892,11 +894,13 @@
 <script>
     $(document).on('click', '#exportData', function() {
         var purchaseOrderId = $("#purchase-order-id").text().trim();
+        var salesOrderId = $("#sales-order-id").text().trim();
         var vendorCode = $("#vendor-code").text().trim();
 
         // Construct download URL with parameters
         var downloadUrl = '{{ route('download.vendor.po.excel') }}' +
             '?purchaseOrderId=' + encodeURIComponent(purchaseOrderId) +
+            '&salesOrderId=' + encodeURIComponent(salesOrderId) +
             '&vendorCode=' + encodeURIComponent(vendorCode);
 
         // Trigger browser download

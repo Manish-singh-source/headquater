@@ -86,7 +86,7 @@
                                                     value="{{ $order->id }}">
                                             </td>
                                             {{-- <td>{{ $order->sales_order_id }}</td> --}}
-                                            <td>{{ $order->id }}</td>
+                                            <td>{{ $order->order_number }}</td>
                                             <td>{{ $order->receivedWarehouse?->name }}</td>
                                             <td>
                                                 <p class="mb-0 customer-name fw-bold">

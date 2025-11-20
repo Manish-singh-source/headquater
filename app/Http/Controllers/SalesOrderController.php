@@ -160,7 +160,7 @@ class SalesOrderController extends Controller
 
             // prefix for sales order using last order  
             $lastSalesOrder = SalesOrder::orderBy('id', 'desc')->first();
-            if ($lastSalesOrder->order_number) {
+            if ($lastSalesOrder && $lastSalesOrder->order_number) {
                 $prefix = $lastSalesOrder ? 'SO-' . date('Ym', strtotime($lastSalesOrder->created_at)) . '-' : 'SO-' . date('Ym') . '-';
                 $lastSalesOrderNumber = $lastSalesOrder ? intval(explode('-', $lastSalesOrder->order_number)[2]) : 0;
             } else {
@@ -480,10 +480,10 @@ class SalesOrderController extends Controller
 
                         // handle if null 
                         $lastPurchaseOrder = PurchaseOrder::orderBy('id', 'desc')->first();
-                        if ($lastPurchaseOrder->order_number) {
+                        if ($lastPurchaseOrder && $lastPurchaseOrder->order_number) {
                             $prefix = $lastPurchaseOrder ? 'PO-' . date('Ym', strtotime($lastPurchaseOrder->created_at)) . '-' : 'PO-' . date('Ym') . '-';
                             $lastPurchaseOrderNumber = $lastPurchaseOrder ? intval(explode('-', $lastPurchaseOrder->order_number)[2]) : 0;
-                        }else {
+                        } else {
                             $prefix = 'PO-' . date('Ym') . '-';
                             $lastPurchaseOrderNumber = 0;
                         }
@@ -1479,10 +1479,27 @@ class SalesOrderController extends Controller
                 $customerId = $firstItem['detail']->customer_id;
                 $poNumber = $firstItem['detail']->tempOrder->po_number ?? '';
 
+                $yearMonth = date('Ym');
+                $lastInvoice = Invoice::where('invoice_number', 'LIKE', "INV-{$yearMonth}-%")
+                    ->orderBy('id', 'desc')
+                    ->first();
+
+                $timestamp =  date('Ym');
+
+                if ($lastInvoice) {
+                    $lastNumber = (int) substr($lastInvoice->invoice_number, -4);
+                    $newNumber = str_pad($lastNumber + 1, 4, '0', STR_PAD_LEFT);
+                } else {
+                    $newNumber = '0001';
+                }
+
+                // $invoiceNumber = "INV-{$yearMonth}-{$newNumber}";
+                $invoiceNumber = 'INV-' . $timestamp . '-' . $newNumber;
+
                 // Create invoice with unique number
                 $invoice = new Invoice;
                 $invoice->warehouse_id = $warehouseId;
-                $invoice->invoice_number = 'INV-' . $timestamp . '-' . str_pad($invoiceCounter, 4, '0', STR_PAD_LEFT);
+                $invoice->invoice_number = $invoiceNumber;
                 $invoice->customer_id = $customerId;
                 $invoice->sales_order_id = $salesOrder->id;
                 $invoice->invoice_date = now();

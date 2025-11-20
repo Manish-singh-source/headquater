@@ -65,7 +65,7 @@
                             <ul class="col-12 list-group list-group-flush">
                                 <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                                     <span><b>Sales Order Id</b></span>
-                                    <span>{{ $customerReturn->salesOrder->id ?? 'NA' }}</span>
+                                    <span>{{ $customerReturn->salesOrder->order_number ?? 'NA' }}</span>
                                 </li>
 
                                 <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">

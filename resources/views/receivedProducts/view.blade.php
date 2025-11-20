@@ -34,8 +34,12 @@
                             <ul class="col-12 list-group list-group-flush">
                                 <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                                     <span><b>Purchase Order Id</b></span>
-                                    <span> <b><span
-                                                id="purchase-order-id">{{ $vendorPIs->purchase_order_id }}</span></b></span>
+                                    <span>
+                                        <b>
+                                            <span id="purchase-order-id" class="d-none">{{ $vendorPIs->purchase_order_id }}</span>
+                                            <span>{{ $vendorPIs->purchaseOrder->order_number }}</span>
+                                        </b>
+                                    </span>
                                 </li>
                                 <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                                     <span><b>Vendor Code</b></span>
@@ -165,7 +169,7 @@
                                                     <tbody>
                                                         @foreach ($vendorPIs->products as $product)
                                                             <tr>
-                                                                <td>{{ $vendorPIs->purchase_order_id }}</td>
+                                                                <td>{{ $vendorPIs->purchaseOrder->order_number }}</td>
                                                                 <td>{{ $vendorPIs->vendor_code }}</td>
                                                                 <td>{{ $product->vendor_sku_code }}</td>
                                                                 <td>{{ $product->product?->brand_title ?? 'NA' }}</td>
@@ -198,9 +202,8 @@
                                     @if ($vendorPIs->products[0]->quantity_received > 0)
                                         <div class="col-lg-12">
                                             <div class="row justify-content-between mb-3">
-                                                <form class="col-12 text-end"
-                                                    action="{{ route('received.products.status') }}" method="POST"
-                                                    onsubmit="return confirm('Are you sure?')">
+                                                <form class="col-12 text-end" action="{{ route('received.products.status') }}"
+                                                    method="POST" onsubmit="return confirm('Are you sure?')">
                                                     @csrf
                                                     @method('POST')
                                                     <input type="hidden" name="vendor_pi_id" value="{{ $vendorPIs->id }}">

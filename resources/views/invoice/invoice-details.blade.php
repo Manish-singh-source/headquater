@@ -9,8 +9,8 @@
                             <ul class="col-12 list-group list-group-flush">
                                 <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                                     <span><b>Invoice Id</b></span>
-                                    <span>#
-                                        <span id="orderId">{{ $invoiceDetails->id }}</span>
+                                    <span>
+                                        <span id="orderId">{{ $invoiceDetails->invoice_number }}</span>
                                     </span>
                                 </li>
                                 <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
@@ -32,36 +32,34 @@
                         </div>
 
                         @if ($invoiceDetails->appointment)
-    <div class="card w-100 d-flex  flex-sm-row flex-col">
-        <ul class="col-12 list-group list-group-flush">
-            @if ($invoiceDetails->appointment->appointment_date)
-                <li
-                    class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
-                    <span><b>Appointment Date</b></span>
-                    <span>{{ $invoiceDetails->appointment->appointment_date }}</span>
-                </li>
-            @endif
-            @if ($invoiceDetails->appointment->pod)
-                <li
-                    class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
-                    <span><b>POD</b></span>
-                    <a href="{{ asset('uploads/pod/' . $invoiceDetails->appointment->pod) }}"
-                        target="_blank"
-                        class="btn btn-icon btn-sm bg-primary-subtle me-1">View </a>
-                </li>
-            @endif
-            @if ($invoiceDetails->appointment->grn)
-                <li
-                    class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
-                    <span><b>GRN</b></span>
-                    <a href="{{ asset('uploads/grn/' . $invoiceDetails->appointment->grn) }}"
-                        target="_blank"
-                        class="btn btn-icon btn-sm bg-primary-subtle me-1">View </a>
-                </li>
-            @endif
-        </ul>
-    </div>
-@endif
+                            <div class="card w-100 d-flex  flex-sm-row flex-col">
+                                <ul class="col-12 list-group list-group-flush">
+                                    @if ($invoiceDetails->appointment->appointment_date)
+                                        <li
+                                            class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
+                                            <span><b>Appointment Date</b></span>
+                                            <span>{{ $invoiceDetails->appointment->appointment_date }}</span>
+                                        </li>
+                                    @endif
+                                    @if ($invoiceDetails->appointment->pod)
+                                        <li
+                                            class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
+                                            <span><b>POD</b></span>
+                                            <a href="{{ asset('uploads/pod/' . $invoiceDetails->appointment->pod) }}"
+                                                target="_blank" class="btn btn-icon btn-sm bg-primary-subtle me-1">View </a>
+                                        </li>
+                                    @endif
+                                    @if ($invoiceDetails->appointment->grn)
+                                        <li
+                                            class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
+                                            <span><b>GRN</b></span>
+                                            <a href="{{ asset('uploads/grn/' . $invoiceDetails->appointment->grn) }}"
+                                                target="_blank" class="btn btn-icon btn-sm bg-primary-subtle me-1">View </a>
+                                        </li>
+                                    @endif
+                                </ul>
+                            </div>
+                        @endif
                         @if (!empty($invoiceDetails->dns) && $invoiceDetails->dns->count() > 0)
                             <div class="card w-100 d-flex  flex-sm-row flex-col">
                                 <ul class="col-12 list-group list-group-flush">

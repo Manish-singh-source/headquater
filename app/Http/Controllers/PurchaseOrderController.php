@@ -328,9 +328,9 @@ class PurchaseOrderController extends Controller
 
     public function index()
     {
-        $purchaseOrders = PurchaseOrder::with('purchaseOrderProducts', 'vendorPI')
-            ->withSum('purchaseOrderProducts', 'ordered_quantity')
-            ->withCount('purchaseOrderProducts')->get();
+        $purchaseOrders = PurchaseOrder::with(['purchaseOrderProducts', 'vendorPI', 'salesOrder'])
+        ->withSum('purchaseOrderProducts', 'ordered_quantity')
+        ->withCount('purchaseOrderProducts')->get();
 
         return view('purchaseOrder.index', compact('purchaseOrders'));
     }
@@ -486,7 +486,7 @@ class PurchaseOrderController extends Controller
 
     public function view($id)
     {
-        $purchaseOrder = PurchaseOrder::with('vendor', 'purchaseOrderProducts.tempOrder', 'vendorPI.products.purchaseOrder.purchaseOrderProducts.tempOrder', 'vendorPI.products.product', 'vendorPI.products.tempOrder')
+        $purchaseOrder = PurchaseOrder::with('vendor', 'purchaseOrderProducts.tempOrder', 'vendorPI.products.purchaseOrder.purchaseOrderProducts.tempOrder', 'vendorPI.products.product', 'vendorPI.products.tempOrder',  'vendorPI.purchaseOrder', 'vendorPI.salesOrder')
             ->withCount('purchaseOrderProducts')
             ->findOrFail($id);
 
@@ -904,7 +904,7 @@ class PurchaseOrderController extends Controller
     public function downloadVendorPO(Request $request)
     {
         $validated = Validator::make($request->all(), [
-            'purchaseOrderId' => 'required',
+            'purchaseOrderId' => 'required|integer|exists:purchase_orders,id',
         ]);
 
         if ($validated->failed()) {
@@ -918,20 +918,21 @@ class PurchaseOrderController extends Controller
         $writer = SimpleExcelWriter::create($tempXlsxPath);
 
         // Fetch data with relationships
-        $purchaseOrderProducts = PurchaseOrderProduct::with('product')->where('purchase_order_id', $request->purchaseOrderId)
+        $purchaseOrderProducts = PurchaseOrderProduct::with('product', 'salesOrder')->where('purchase_order_id', $request->purchaseOrderId)
             ->where('vendor_code', $request->vendorCode)
             ->with('tempOrderFetch')->get();
+            // dd($purchaseOrderProducts);
 
         // Add rows
         foreach ($purchaseOrderProducts as $order) {
             if ($order->ordered_quantity > 0) {
                 $rowsData = [];
                 if ($order->sales_order_id) {
-                    $rowsData['Sales Order No'] = $order->sales_order_id;
+                    $rowsData['Sales Order No'] = $order->salesOrder->order_number ?? '';
                 }
                 $writer->addRow(
                     array_merge($rowsData, [
-                        'Purchase Order No' => $order->purchase_order_id ?? '',
+                        'Purchase Order No' => $order->purchaseOrder->order_number ?? '',
                         'Vendor Code' => $order->vendor_code ?? '',
                         'Portal Code' => $order->tempOrderFetch->item_code ?? '',
                         'Vendor SKU Code' => $order->tempOrderFetch->sku ?? '',

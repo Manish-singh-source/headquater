@@ -61,7 +61,7 @@
                                             {{-- <td>
                                                 <input class="form-check-input row-checkbox" type="checkbox" name="ids[]" value="{{ $order->id }}">
                                             </td> --}}
-                                            <td>{{ $order->id }}</td>
+                                            <td>{{ $order->order_number }}</td>
                                             <td>
                                                 <p class="mb-0 customer-name fw-bold">
                                                     {{ $order->customerGroup->name }}

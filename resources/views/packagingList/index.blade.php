@@ -59,7 +59,7 @@
                                         <th>
                                             <input class="form-check-input" type="checkbox">
                                         </th>
-                                        <th>Order Id</th>
+                                        <th>Sales Order Id</th>
                                         <th>Group Name</th>
                                         <th>Ordered Date</th>
                                         <th>Status</th>
@@ -84,7 +84,7 @@
                                             <td>
                                                 <input class="form-check-input" type="checkbox">
                                             </td>
-                                            <td>{{ $order->id }}</td>
+                                            <td>{{ $order->order_number }}</td>
                                             <td>
                                                 <p class="mb-0 customer-name fw-bold">
                                                     {{ $order->customerGroup->name }}
