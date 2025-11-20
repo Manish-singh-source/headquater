@@ -158,8 +158,22 @@ class SalesOrderController extends Controller
             // Not Found Temp Order
             $vendorsNotFound = [];
 
+            // prefix for sales order using last order  
+            $lastSalesOrder = SalesOrder::orderBy('id', 'desc')->first();
+            if ($lastSalesOrder->order_number) {
+                $prefix = $lastSalesOrder ? 'SO-' . date('Ym', strtotime($lastSalesOrder->created_at)) . '-' : 'SO-' . date('Ym') . '-';
+                $lastSalesOrderNumber = $lastSalesOrder ? intval(explode('-', $lastSalesOrder->order_number)[2]) : 0;
+            } else {
+                $prefix = 'SO-' . date('Ym') . '-';
+                $lastSalesOrderNumber = 0;
+            }
+            $nextSalesOrderNumber = $lastSalesOrderNumber + 1;
+            $nextSalesOrderNumber = str_pad($nextSalesOrderNumber, 4, '0', STR_PAD_LEFT);
+            $nextSalesOrderNumber = $prefix . $nextSalesOrderNumber;
+
             // Creating a new Sales order for customer
             $salesOrder = new SalesOrder;
+            $salesOrder->order_number = $nextSalesOrderNumber;
             $salesOrder->warehouse_id = $isAutoAllocation ? null : $warehouse_id;
             $salesOrder->customer_group_id = $customer_group_id;
             $salesOrder->order_date = now();
@@ -464,8 +478,22 @@ class SalesOrderController extends Controller
                             'vendor_code' => $vendorCode,
                         ];
 
+                        // handle if null 
+                        $lastPurchaseOrder = PurchaseOrder::orderBy('id', 'desc')->first();
+                        if ($lastPurchaseOrder->order_number) {
+                            $prefix = $lastPurchaseOrder ? 'PO-' . date('Ym', strtotime($lastPurchaseOrder->created_at)) . '-' : 'PO-' . date('Ym') . '-';
+                            $lastPurchaseOrderNumber = $lastPurchaseOrder ? intval(explode('-', $lastPurchaseOrder->order_number)[2]) : 0;
+                        }else {
+                            $prefix = 'PO-' . date('Ym') . '-';
+                            $lastPurchaseOrderNumber = 0;
+                        }
+                        $nextPurchaseOrderNumber = $lastPurchaseOrderNumber + 1;
+                        $nextPurchaseOrderNumber = str_pad($nextPurchaseOrderNumber, 4, '0', STR_PAD_LEFT);
+                        $nextPurchaseOrderNumber = $prefix . $nextPurchaseOrderNumber;
+
                         // Create a new purchase order for the vendor if not already created
                         $purchaseOrder = new PurchaseOrder;
+                        $purchaseOrder->order_number = $nextPurchaseOrderNumber;
                         $purchaseOrder->sales_order_id = $salesOrder->id;
                         $purchaseOrder->warehouse_id = $warehouse_id;
                         $purchaseOrder->customer_group_id = $customer_group_id;
@@ -1498,7 +1526,6 @@ class SalesOrderController extends Controller
                     // We'll handle this separately after all invoices are created
 
                     $taxable_amount += (($unitPrice * $quantity) * ($detail->product->gst / 100));
-
                 }
 
                 // Update invoice with calculated total
