@@ -249,8 +249,8 @@ class ReadyToShip extends Controller
     {
         try {
             $vendorOrders = ProductIssue::with(['order', 'product', 'purchaseOrder', 'tempOrder'])
-                ->latest()
-                ->paginate(15);
+                ->orderBy('created_at', 'desc')
+                ->get();
 
             return view('exceed-shortage', compact('vendorOrders'));
         } catch (\Exception $e) {
@@ -277,7 +277,7 @@ class ReadyToShip extends Controller
                 $query->where('return_status', $status);
             }
 
-            $vendorOrders = $query->latest()->get();
+            $vendorOrders = $query->orderBy('created_at', 'desc')->get();
 
             // If AJAX request, return only the table HTML
             if ($request->ajax()) {
