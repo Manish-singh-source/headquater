@@ -667,7 +667,7 @@ class CustomerController extends Controller
                 'customerDetails',
                 'customerMetrics',
                 'customerInvoices',
-                'customerOrders', 
+                'customerOrders',
                 'customerPayments',
                 'customerReturns'
             ));
@@ -778,7 +778,7 @@ class CustomerController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'ids' => 'required',
-            'groupId' => 'required|exists:customer_groups,id',
+            'groupId' => 'nullable|exists:customer_groups,id',
         ]);
 
         if ($validator->fails()) {
@@ -792,9 +792,13 @@ class CustomerController extends Controller
             $ids = is_array($request->ids) ? $request->ids : explode(',', $request->ids);
 
             // Delete selected customer group members
-            $deletedCount = CustomerGroupMember::where('customer_group_id', $request->groupId)
-                ->whereIn('customer_id', $ids)
-                ->delete();
+            if ($request->filled('groupId')) {
+                $deletedCount = CustomerGroupMember::where('customer_group_id', $request->groupId)
+                    ->whereIn('customer_id', $ids)
+                    ->delete();
+            } else {
+                $deletedCount = Customer::destroy($ids);
+            }
 
             DB::commit();
 

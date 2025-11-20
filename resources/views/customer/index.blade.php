@@ -375,7 +375,6 @@
                     submitForm("{{ route('delete.selected.customers') }}", {
                         _method: 'DELETE',
                         ids: selected.join(','),
-                        groupId: groupId
                     });
                 }
             });
