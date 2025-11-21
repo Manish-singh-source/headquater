@@ -151,7 +151,7 @@
                             <div class="ms-2">
                                 <p class="text-dark mb-1">Total Purchase Order Quantity</p>
                                 <div class="d-inline-flex align-items-center flex-wrap gap-2">
-                                    <h4 class="mb-0 fw-bold">{{ $totalPurchaseOrderQuantity }}</h4>
+                                    <h4 class="mb-0 fw-bold"><span class="" id="summary-total-po-quantity">0</span></h4>
                                 </div>
                             </div>
                         </div>
@@ -167,7 +167,7 @@
                             <div class="ms-2">
                                 <p class="text-dark mb-1">Total Purchase Order Amount</p>
                                 <div class="d-inline-flex align-items-center flex-wrap gap-2">
-                                    <h4 class="mb-0 fw-bold">₹{{ number_format($totalPurchaseOrderAmount, 2) }}</h4>
+                                    <h4 class="mb-0 fw-bold"><span class="" id="summary-total-po-amount">₹0.00</span></h4>
                                 </div>
                             </div>
                         </div>
@@ -518,17 +518,11 @@
                                     <!-- Action Buttons -->
                                     <div class="col-md-12">
                                         <div class="mb-2">
-                                            {{-- <label class="form-label">&nbsp;</label> --}}
                                             <div class="d-flex gap-2">
-                                                <!-- Generate Excel Report Button -->
                                                 <button type="button" id="generateExcelReport"
-                                                    class="btn btn-success flex-fill">
-                                                    <i class="bx bx-download me-1"></i>Export Excel
+                                                    class="btn btn-danger w-100">
+                                                    <i class="bx bx-download me-1"></i>Generate Report
                                                 </button>
-                                                <!-- Generate PDF Report Button -->
-                                                {{-- <button type="button" id="generatePdfReport" class="btn btn-danger flex-fill">
-                                                    <i class="bx bx-file-pdf me-1"></i>Export PDF
-                                                </button> --}}
                                             </div>
                                         </div>
                                     </div>
@@ -769,28 +763,6 @@
                             </tbody>
                         </table>
                     </div>
-
-                    <!-- Summary Section -->
-                    <div class="card mt-3 bg-light">
-                        <div class="card-body">
-                            <h6 class="mb-3 fw-bold"><i class="bx bx-calculator me-2"></i>Summary (Filtered Data)</h6>
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <div class="d-flex justify-content-between align-items-center p-2 bg-white rounded mb-2">
-                                        <span class="fw-semibold">Total Purchase Order Quantity:</span>
-                                        <span class="text-primary fw-bold" id="summary-total-po-quantity">0</span>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="d-flex justify-content-between align-items-center p-2 bg-white rounded mb-2">
-                                        <span class="fw-semibold">Total Purchase Order Amount:</span>
-                                        <span class="text-primary fw-bold" id="summary-total-po-amount">₹0.00</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
                 </div>
             </div>
 
