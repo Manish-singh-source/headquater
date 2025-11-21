@@ -234,7 +234,6 @@ class InvoiceController extends Controller
             'utr_no' => 'required|unique:payments,payment_utr_no',
             'pay_amount' => 'required|numeric|min:0.01',
             'payment_method' => 'required|string',
-            'payment_status' => 'required|string',
         ]);
 
         if ($validator->fails()) {

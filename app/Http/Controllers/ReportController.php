@@ -103,6 +103,28 @@ class ReportController extends Controller
             // Count total orders
             $totalOrders = $statsQuery->count();
 
+            // Calculate taxable amount, invoice amount, paid amount, and due amount
+            $allPurchaseOrders = $statsQuery->get();
+            $totalTaxableAmount = 0;
+            $totalInvoiceAmount = 0;
+            $totalPaidInvoiceAmount = 0;
+            $totalDueInvoiceAmount = 0;
+
+            foreach ($allPurchaseOrders as $po) {
+                $vendorPI = $po->vendorPI->first();
+                if ($vendorPI) {
+                    // Calculate taxable amount from products
+                    foreach ($vendorPI->products as $product) {
+                        $totalTaxableAmount += $product->mrp * $product->quantity_received;
+                    }
+
+                    // Invoice amount, paid amount, and due amount
+                    $totalInvoiceAmount += $vendorPI->total_amount ?? 0;
+                    $totalPaidInvoiceAmount += $vendorPI->total_paid_amount ?? 0;
+                    $totalDueInvoiceAmount += $vendorPI->total_due_amount ?? 0;
+                }
+            }
+
             // Get unique purchase order IDs from all completed purchase orders for dropdown
             $purchaseOrderNumbers = PurchaseOrder::whereHas('vendorPI', function ($q) {
                 $q->where('status', 'completed');
@@ -132,7 +154,11 @@ class ReportController extends Controller
                 'purchaseOrderNumbers',
                 'purchaseOrdersVendors',
                 'purchaseOrdersSKUs',
-                'filters'
+                'filters',
+                'totalTaxableAmount',
+                'totalInvoiceAmount',
+                'totalPaidInvoiceAmount',
+                'totalDueInvoiceAmount'
             ));
         } catch (\Exception $e) {
             Log::error('Error retrieving vendor purchase history: ' . $e->getMessage());
@@ -309,7 +335,7 @@ class ReportController extends Controller
                 }
 
                 fputcsv($file, [
-                    $purchaseOrder->id ?? 'N/A',
+                    $purchaseOrder->order_number ?? 'N/A',
                     $purchaseOrder->created_at ? $purchaseOrder->created_at->format('d-m-Y') : 'N/A',
                     $purchaseOrder->vendor->client_name ?? 'N/A',
                     $invoiceNo ?? 'N/A',
@@ -369,8 +395,8 @@ class ReportController extends Controller
             }
 
             $fileName = $vendorPart
-                ? 'Vendor-Purchase-History-' . $vendorPart . '-' . date('d-m-Y') . '.csv'
-                : 'Vendor-Purchase-History-' . date('d-m-Y') . '.csv';
+                ? 'Vendor-Purchase-Invoices-' . $vendorPart . '-' . date('d-m-Y') . '.csv'
+                : 'Vendor-Purchase-Invoices-' . date('d-m-Y') . '.csv';
 
             // Return CSV file as download and delete after sending
             return response()->download($tempCsvPath, $fileName, [
@@ -464,6 +490,37 @@ class ReportController extends Controller
             // Count total orders
             $totalOrders = $statsQuery->count();
 
+            // Calculate SKU-level statistics
+            $allPurchaseOrders = $statsQuery->get();
+            $totalSKU = 0;
+            $totalPOQuantity = 0;
+            $totalPIQuantity = 0;
+            $totalPIReceivedQuantity = 0;
+            $totalTaxableAmount = 0;
+            $skuSet = [];
+
+            foreach ($allPurchaseOrders as $po) {
+                // Count unique SKUs
+                foreach ($po->purchaseOrderProducts as $product) {
+                    if (!in_array($product->sku, $skuSet)) {
+                        $skuSet[] = $product->sku;
+                    }
+                    $totalPOQuantity += $product->ordered_quantity ?? 0;
+                }
+
+                // Calculate PI quantity and taxable amount from vendorPI products
+                $vendorPI = $po->vendorPI->first();
+                if ($vendorPI) {
+                    foreach ($vendorPI->products as $product) {
+                        $totalPIQuantity += $product->available_quantity ?? 0;
+                        $totalPIReceivedQuantity += $product->quantity_received ?? 0;
+                        $totalTaxableAmount += ($product->mrp ?? 0) * ($product->quantity_received ?? 0);
+                    }
+                }
+            }
+
+            $totalSKU = count($skuSet);
+
             // Get unique purchase order IDs from all completed purchase orders for dropdown
             $purchaseOrderNumbers = PurchaseOrder::whereHas('vendorPI', function ($q) {
                 $q->where('status', 'completed');
@@ -489,7 +546,12 @@ class ReportController extends Controller
                 'purchaseOrderNumbers',
                 'purchaseOrdersVendors',
                 'purchaseOrdersSKUs',
-                'filters'
+                'filters',
+                'totalSKU',
+                'totalPOQuantity',
+                'totalPIQuantity',
+                'totalPIReceivedQuantity',
+                'totalTaxableAmount'
             ));
         } catch (\Exception $e) {
             Log::error('Error retrieving vendor purchase history: ' . $e->getMessage());
@@ -599,6 +661,7 @@ class ReportController extends Controller
                 'PI Received',
                 'PO Quantity',
                 'PI Quantity',
+                'PI Received Quantity',
                 'UoM',
                 'Rate',
                 'Discount',
@@ -608,6 +671,7 @@ class ReportController extends Controller
                 'SGST',
                 'IGST',
                 'GST Amount',
+                'Total Amount',
                 'Cess',
                 'Cess Amount',
                 'Invioice Uploaded',
@@ -633,6 +697,7 @@ class ReportController extends Controller
                     $quantity = floatval($product->ordered_quantity ?? 0);
                     $taxableValue = $product->product->mrp * $quantity;
                     $gstAmount = ($taxableValue * $gstRate) / 100;
+                    $totalAmount = $taxableValue + $gstAmount;
 
                     // Calculate CGST/SGST/IGST based on state (simplified)
                     $cgst = $gstRate / 2;
@@ -641,7 +706,7 @@ class ReportController extends Controller
 
 
                     fputcsv($file, [
-                        $purchaseOrder->id ?? 'N/A',
+                        $purchaseOrder->order_number ?? 'N/A',
                         $purchaseOrder->created_at ? $purchaseOrder->created_at->format('d-m-Y') : 'N/A',
                         $vendor->client_name ?? 'N/A',
                         $product->sku ?? 'N/A',
@@ -649,6 +714,7 @@ class ReportController extends Controller
                         $productDetails->hsn ?? 'N/A',
                         $purchaseOrder->created_at ? $purchaseOrder->created_at : 'N/A',
                         $vendorPI->updated_at ? $vendorPI->updated_at->addMonth()->format('d-m-Y') : 'N/A',
+                        $product->ordered_quantity ?? 'N/A',
                         $product->ordered_quantity ?? 'N/A',
                         $product->ordered_quantity ?? 'N/A',
                         'PCS',
@@ -660,6 +726,7 @@ class ReportController extends Controller
                         $sgst ?? 'N/A',
                         $gstRate ?? 'N/A',
                         $gstAmount ?? 'N/A',
+                        $totalAmount ?? 'N/A',
                         0 ?? 'N/A',
                         0 ?? 'N/A',
                         $purchaseInvoice ? 'Yes' : 'No',
@@ -701,8 +768,8 @@ class ReportController extends Controller
             }
 
             $fileName = $vendorPart
-                ? 'Vendor-Purchase-History-' . $vendorPart . '-' . date('d-m-Y') . '.csv'
-                : 'Vendor-Purchase-History-' . date('d-m-Y') . '.csv';
+                ? 'Vendor-Purchase-SKU-' . $vendorPart . '-' . date('d-m-Y') . '.csv'
+                : 'Vendor-Purchase-SKU-' . date('d-m-Y') . '.csv';
 
             // Return CSV file as download and delete after sending
             return response()->download($tempCsvPath, $fileName, [
@@ -835,13 +902,15 @@ class ReportController extends Controller
             $brands = Product::distinct('brand')->whereNotNull('brand')->pluck('brand');
             $skus = Product::distinct('sku')->whereNotNull('sku')->pluck('sku');
 
-            // Low stock alerts (available_quantity <= 10)
-            $lowStockCount = WarehouseStock::where('available_quantity', '<=', 10)
+            // Low stock alerts (available_quantity <= 10) - based on filtered results
+            $lowStockQuery = clone $statsQuery;
+            $lowStockCount = $lowStockQuery->where('available_quantity', '<=', 10)
                 ->where('available_quantity', '>', 0)
                 ->count();
 
-            // Out of stock count
-            $outOfStockCount = WarehouseStock::where('available_quantity', 0)->count();
+            // Out of stock count - based on filtered results
+            $outOfStockQuery = clone $statsQuery;
+            $outOfStockCount = $outOfStockQuery->where('available_quantity', 0)->count();
 
             return view('inventory-stock-history', compact(
                 'products',
@@ -1269,7 +1338,35 @@ class ReportController extends Controller
             $statsQuery = clone $query;
             $allSalesOrders = $statsQuery->get();
 
-            $totalRevenue = $allSalesOrders->sum('total_amount');
+            // Calculate all required statistics for SKU level
+            $totalInvoices = 0;
+            $totalTaxableAmount = 0;
+            $totalInvoiceAmount = 0;
+            $totalPurchaseOrder = 0;
+            $totalPurchaseOrderAmount = 0;
+            $uniqueCustomers = [];
+
+            foreach ($allSalesOrders as $salesOrder) {
+                // Count purchase orders
+                $totalPurchaseOrder++;
+                $totalPurchaseOrderAmount += $salesOrder->total_amount ?? 0;
+
+                foreach ($salesOrder->invoices as $invoice) {
+                    $totalInvoices++;
+                    $totalTaxableAmount += $invoice->taxable_amount ?? 0;
+                    $totalInvoiceAmount += $invoice->total_amount ?? 0;
+
+                    // Track unique customers
+                    if ($invoice->customer_id && !in_array($invoice->customer_id, $uniqueCustomers)) {
+                        $uniqueCustomers[] = $invoice->customer_id;
+                    }
+                }
+            }
+
+            $totalCustomers = count($uniqueCustomers);
+
+            // Legacy variables for backward compatibility
+            $totalRevenue = $totalInvoiceAmount;
             $totalPaid = $allSalesOrders->sum(function ($salesOrder) {
                 return $salesOrder->invoices->sum(function ($invoice) {
                     return $invoice->payments->sum('amount');
@@ -1344,6 +1441,12 @@ class ReportController extends Controller
                 'invoiceNumbers' => $invoiceNumbers,
                 'poNumbers' => $poNumbers,
                 'appointmentDates' => $appointmentDates,
+                'totalInvoices' => $totalInvoices,
+                'totalCustomers' => $totalCustomers,
+                'totalTaxableAmount' => $totalTaxableAmount,
+                'totalInvoiceAmount' => $totalInvoiceAmount,
+                'totalPurchaseOrder' => $totalPurchaseOrder,
+                'totalPurchaseOrderAmount' => $totalPurchaseOrderAmount,
                 'filters' => [
                     'from_date' => $request->from_date,
                     'to_date' => $request->to_date,
@@ -1728,7 +1831,7 @@ class ReportController extends Controller
             DB::commit();
 
             // Generate filename
-            $fileName = 'Customer-Sales-Summary-' . date('d-m-Y') . '.xlsx';
+            $fileName = 'Customer-Sales-SKU-' . date('d-m-Y') . '.xlsx';
 
             // Return Excel file as download and delete after sending
             return response()->download($tempXlsxPath, $fileName, [
@@ -1863,13 +1966,35 @@ class ReportController extends Controller
         $statsQuery = clone $query;
         $allSalesOrders = $statsQuery->get();
 
-        $totalRevenue = $allSalesOrders->sum('total_amount');
-        $totalPaid = $allSalesOrders->sum(function ($salesOrder) {
-            return $salesOrder->invoices->sum(function ($invoice) {
-                return $invoice->payments->sum('amount');
-            });
-        });
-        $totalPendingPayments = $totalRevenue - $totalPaid;
+        // Calculate all required statistics
+        $totalInvoices = 0;
+        $totalTaxableAmount = 0;
+        $totalAmount = 0;
+        $totalAmountPaid = 0;
+        $totalBalanceAmount = 0;
+        $uniqueCustomers = [];
+
+        foreach ($allSalesOrders as $salesOrder) {
+            foreach ($salesOrder->invoices as $invoice) {
+                $totalInvoices++;
+                $totalTaxableAmount += $invoice->taxable_amount ?? 0;
+                $totalAmount += $invoice->total_amount ?? 0;
+                $totalAmountPaid += $invoice->paid_amount ?? 0;
+                $totalBalanceAmount += $invoice->balance_due ?? 0;
+
+                // Track unique customers
+                if ($invoice->customer_id && !in_array($invoice->customer_id, $uniqueCustomers)) {
+                    $uniqueCustomers[] = $invoice->customer_id;
+                }
+            }
+        }
+
+        $totalCustomers = count($uniqueCustomers);
+
+        // Legacy variables for backward compatibility
+        $totalRevenue = $totalAmount;
+        $totalPaid = $totalAmountPaid;
+        $totalPendingPayments = $totalBalanceAmount;
 
         // Get filter dropdown data
         $customers = Customer::select('id', 'client_name')
@@ -1938,7 +2063,26 @@ class ReportController extends Controller
             'appointment_date' => $request->input('appointment_date', []),
         ];
 
-        return view('customer-sales-invoices', compact('salesOrders', 'customerGroups', 'customers', 'warehouses', 'regions', 'invoiceNumbers', 'poNumbers', 'appointmentDates', 'totalRevenue', 'totalPaid', 'totalPendingPayments', 'filters'));
+        return view('customer-sales-invoices', compact(
+            'salesOrders',
+            'customerGroups',
+            'customers',
+            'warehouses',
+            'regions',
+            'invoiceNumbers',
+            'poNumbers',
+            'appointmentDates',
+            'totalRevenue',
+            'totalPaid',
+            'totalPendingPayments',
+            'filters',
+            'totalInvoices',
+            'totalTaxableAmount',
+            'totalAmount',
+            'totalAmountPaid',
+            'totalBalanceAmount',
+            'totalCustomers'
+        ));
     }
 
     /**
@@ -2206,8 +2350,8 @@ class ReportController extends Controller
                     }
 
                     $exportData->push([
+                        'Sales Order No' => $salesOrder->order_number ?? 'N/A',
                         'Customer Group Name' => $salesOrder->customerGroup->name ?? 'N/A',
-                        'Warehouse Name' => $allocation->warehouse->name ?? 'N/A',
                         'Customer Name' => $invoice->customer->client_name ?? 'N/A',
                         'Invoice No' => $invoice->invoice_number,
                         'Customer Phone No' => $invoice->customer->contact_no ?? 'N/A',
@@ -2252,10 +2396,12 @@ class ReportController extends Controller
             // Create writer
             $writer = \Spatie\SimpleExcel\SimpleExcelWriter::create($tempXlsxPath);
 
+            $writer->noHeaderRow();
+
             // Add header row (matching view table columns exactly)
             $writer->addRow([
+                'Sales Order No',
                 'Customer Group Name',
-                'Warehouse Name',
                 'Customer Name',
                 'Invoice No',
                 'Customer Phone No',
@@ -2278,12 +2424,10 @@ class ReportController extends Controller
                 'Box Count',
                 'Weight',
                 'Taxable Value',
-                'Subtotal',
                 'GST',
                 'GST Value',
                 'Total',
                 'Invoice Status',
-                'Total Amount',
                 'Amount Paid',
                 'Balance',
                 'Date Of Payment',
@@ -2323,7 +2467,7 @@ class ReportController extends Controller
             DB::commit();
 
             // Generate filename
-            $fileName = 'Customer-Sales-Summary-' . date('d-m-Y') . '.xlsx';
+            $fileName = 'Customer-Sales-Invoices-' . date('d-m-Y') . '.xlsx';
 
             // Return Excel file as download and delete after sending
             return response()->download($tempXlsxPath, $fileName, [

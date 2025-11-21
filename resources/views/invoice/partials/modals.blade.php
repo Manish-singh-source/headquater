@@ -143,11 +143,11 @@
                     </div>
                     <div class="col-12 mb-3">
                         <label for="payment_status_{{ $invoice->id }}" class="form-label">Payment Status<span class="text-danger">*</span></label>
-                        <select id="payment_status_{{ $invoice->id }}" name="payment_status" class="form-select @error('payment_status') is-invalid @enderror" required>
+                        <select disabled id="payment_status_{{ $invoice->id }}" name="payment_status" class="form-select @error('payment_status') is-invalid @enderror">
                             <option value="" selected disabled>Select Payment Status</option>
                             <option value="pending" {{ old('payment_status') == 'pending' ? 'selected' : '' }}>Pending</option>
                             <option value="rejected" {{ old('payment_status') == 'rejected' ? 'selected' : '' }}>Rejected</option>
-                            <option value="completed" {{ old('payment_status') == 'completed' ? 'selected' : '' }}>Completed</option>
+                            <option selected value="completed" {{ old('payment_status') == 'completed' ? 'selected' : '' }}>Completed</option>
                         </select>
                         @error('payment_status')
                             <div class="invalid-feedback">{{ $message }}</div>

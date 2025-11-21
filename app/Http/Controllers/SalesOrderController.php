@@ -1549,6 +1549,7 @@ class SalesOrderController extends Controller
                 $invoice->taxable_amount = $invoiceTotal;
                 $invoice->tax_amount = $taxable_amount;
                 $invoice->total_amount = $invoiceTotal + $taxable_amount;
+                $invoice->balance_due =  $invoiceTotal + $taxable_amount;
                 $invoice->save();
 
                 $generatedInvoices[] = $invoice->id;
