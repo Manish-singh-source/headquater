@@ -14,8 +14,10 @@
                 </div>
             </div>
 
+            {{-- Total Records  --}}
             <div class="col">
                 <div class="row">
+                    {{-- Total Stock --}}
                     <div class="col-xl-2 col-sm-6 col-12 d-flex">
                         <div class="card bg-white sale-widget flex-fill">
                             <div class="card-body d-flex align-items-center">
@@ -31,7 +33,7 @@
                             </div>
                         </div>
                     </div>
-
+                    {{-- Total Available  --}}
                     <div class="col-xl-2 col-sm-6 col-12 d-flex">
                         <div class="card bg-white sale-widget flex-fill">
                             <div class="card-body d-flex align-items-center">
@@ -39,15 +41,15 @@
                                     <i class="ti ti-check-circle fs-24"></i>
                                 </span>
                                 <div class="ms-2">
-                                    <p class="text-dark mb-1">Available</p>
+                                    <p class="text-dark mb-1">Total Available Stock</p>
                                     <div class="d-inline-flex align-items-center flex-wrap gap-2">
-                                        <h4 class="text-dark">{{ number_format($availableProductsSum/2) }}</h4>
+                                        <h4 class="text-dark">{{ number_format(($productsSum-$blockProductsSum)/2) }}</h4>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-
+                    {{-- Total Blocked  --}}
                     <div class="col-xl-2 col-sm-6 col-12 d-flex">
                         <div class="card bg-white sale-widget flex-fill">
                             <div class="card-body d-flex align-items-center">
@@ -55,7 +57,7 @@
                                     <i class="ti ti-clock-pause fs-24"></i>
                                 </span>
                                 <div class="ms-2">
-                                    <p class="text-dark mb-1">Blocked</p>
+                                    <p class="text-dark mb-1">Total Blocked Stock</p>
                                     <div class="d-inline-flex align-items-center flex-wrap gap-2">
                                         <h4 class="text-dark">{{ number_format($blockProductsSum/2) }}</h4>
                                     </div>
@@ -63,7 +65,7 @@
                             </div>
                         </div>
                     </div>
-
+                    {{-- Total Stock Value  --}}
                     <div class="col-xl-3 col-sm-6 col-12 d-flex">
                         <div class="card bg-white sale-widget flex-fill">
                             <div class="card-body d-flex align-items-center">
@@ -71,7 +73,7 @@
                                     <i class="ti ti-currency-rupee fs-24"></i>
                                 </span>
                                 <div class="ms-2">
-                                    <p class="text-dark mb-1">Stock Value</p>
+                                    <p class="text-dark mb-1">Total Stock Value</p>
                                     <div class="d-inline-flex align-items-center flex-wrap gap-2">
                                         <h4 class="text-dark">₹{{ number_format($totalStockValue/2, 2) }}</h4>
                                     </div>
@@ -79,7 +81,7 @@
                             </div>
                         </div>
                     </div>
-
+                    {{-- Low Stock  --}}
                     <div class="col-xl-1 col-sm-6 col-12 d-flex">
                         <div class="card bg-white sale-widget flex-fill">
                             <div class="card-body d-flex align-items-center">
@@ -89,13 +91,13 @@
                                 <div class="ms-2">
                                     <p class="text-dark mb-1">Low Stock</p>
                                     <div class="d-inline-flex align-items-center flex-wrap gap-2">
-                                        <h4 class="text-dark">{{ $lowStockCount }}</h4>
+                                        <h4 class="text-dark">{{ $lowStockCount/2 }}</h4>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-
+                    {{-- Out of Stock  --}}
                     <div class="col-xl-2 col-sm-6 col-12 d-flex">
                         <div class="card bg-white sale-widget flex-fill">
                             <div class="card-body d-flex align-items-center">
@@ -105,7 +107,7 @@
                                 <div class="ms-2">
                                     <p class="text-dark mb-1">Out of Stock</p>
                                     <div class="d-inline-flex align-items-center flex-wrap gap-2">
-                                        <h4 class="text-dark">{{ $outOfStockCount }}</h4>
+                                        <h4 class="text-dark">{{ $outOfStockCount/2 }}</h4>
                                     </div>
                                 </div>
                             </div>

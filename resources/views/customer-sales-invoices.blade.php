@@ -27,68 +27,99 @@
 
             @include('layouts.errors')
 
-            <!-- Statistics Cards -->
+            {{-- Total Records  --}}
             <div class="row">
-                <div class="col-xl-3 col-sm-6 col-12">
-                    <div class="card rounded-4 border-0 shadow-sm">
-                        <div class="card-body">
-                            <div class="d-flex align-items-center gap-3">
-                                <div class="icon-box bg-primary-subtle text-primary rounded-circle d-flex align-items-center justify-content-center"
-                                    style="width: 48px; height: 48px;">
-                                    <i class="bx bx-file fs-4"></i>
+                {{-- Total Ivoices --}}
+                <div class="col-xl-2 col-sm-6 col-12 d-flex">
+                    <div class="card bg-white sale-widget flex-fill">
+                        <div class="card-body d-flex align-items-center">
+                            <span class="sale-icon bg-white text-primary">
+                                <i class="ti ti-package fs-24"></i>
+                            </span>
+                            <div class="ms-2">
+                                <p class="text-dark mb-1">Total Invoices</p>
+                                <div class="d-inline-flex align-items-center flex-wrap gap-2">
+                                    <h4 class="text-dark">{{ $totalInvoices }}</h4>
                                 </div>
-                                <div class="flex-grow-1">
-                                    <p class="mb-0 text-secondary">Total Invoices</p>
-                                    <h4 class="mb-0 fw-bold">
-                                        {{ $salesOrders->sum(function ($order) {return $order->invoices->count();}) }}</h4>
+                            </div>    
+                        </div>
+                    </div>
+                </div>
+                {{-- Total Taxable Amount --}}
+                <div class="col-xl-2 col-sm-6 col-12 d-flex">
+                    <div class="card bg-white sale-widget flex-fill">
+                        <div class="card-body d-flex align-items-center">
+                            <span class="sale-icon bg-white text-primary">
+                                <i class="ti ti-file-text fs-24"></i>
+                            </span>
+                            <div class="ms-2">
+                                <p class="text-dark mb-1">Total Taxable Amount</p>
+                                <div class="d-inline-flex align-items-center flex-wrap gap-2">
+                                    <h4 class="text-dark">₹{{ number_format($totalTaxableAmount, 2) }}</h4>
+                                </div>
+                            </div>    
+                        </div>
+                    </div>
+                </div>
+                {{-- Total Amount  --}}
+                <div class="col-xl-2 col-sm-6 col-12 d-flex">
+                    <div class="card bg-white sale-widget flex-fill">
+                        <div class="card-body d-flex align-items-center">
+                            <span class="sale-icon bg-white text-primary">  
+                                <i class="ti ti-file-text fs-24"></i>
+                            </span>
+                            <div class="ms-2">
+                                <p class="text-dark mb-1">Total Amount</p>
+                                <div class="d-inline-flex align-items-center flex-wrap gap-2">
+                                    <h4 class="text-dark">₹{{ number_format($totalAmount, 2) }}</h4>
+                                </div>
+                            </div>    
+                        </div>
+                    </div>
+                </div>
+                {{-- Total Amount Paid --}}
+                <div class="col-xl-2 col-sm-6 col-12 d-flex">
+                    <div class="card bg-white sale-widget flex-fill">
+                        <div class="card-body d-flex align-items-center">   
+                            <span class="sale-icon bg-white text-primary">  
+                                <i class="ti ti-file-text fs-24"></i>   
+                            </span>
+                            <div class="ms-2">
+                                <p class="text-dark mb-1">Total Amount Paid</p>
+                                <div class="d-inline-flex align-items-center flex-wrap gap-2">
+                                    <h4 class="text-dark">₹{{ number_format($totalAmountPaid, 2) }}</h4>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="col-xl-3 col-sm-6 col-12">
-                    <div class="card rounded-4 border-0 shadow-sm">
-                        <div class="card-body">
-                            <div class="d-flex align-items-center gap-3">
-                                <div class="icon-box bg-success-subtle text-success rounded-circle d-flex align-items-center justify-content-center"
-                                    style="width: 48px; height: 48px;">
-                                    <i class="bx bx-dollar-circle fs-4"></i>
-                                </div>
-                                <div class="flex-grow-1">
-                                    <p class="mb-0 text-secondary">Total Revenue</p>
-                                    <h4 class="mb-0 fw-bold">₹{{ number_format($totalRevenue ?? 0, 2) }}</h4>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-xl-3 col-sm-6 col-12">
-                    <div class="card rounded-4 border-0 shadow-sm">
-                        <div class="card-body">
-                            <div class="d-flex align-items-center gap-3">
-                                <div class="icon-box bg-warning-subtle text-warning rounded-circle d-flex align-items-center justify-content-center"
-                                    style="width: 48px; height: 48px;">
-                                    <i class="bx bx-time-five fs-4"></i>
-                                </div>
-                                <div class="flex-grow-1">
-                                    <p class="mb-0 text-secondary">Pending Payments</p>
-                                    <h4 class="mb-0 fw-bold">₹{{ number_format($totalPendingPayments ?? 0, 2) }}</h4>
+                {{-- Total Balance Amount --}}
+                <div class="col-xl-2 col-sm-6 col-12 d-flex">
+                    <div class="card bg-white sale-widget flex-fill">
+                        <div class="card-body d-flex align-items-center">   
+                            <span class="sale-icon bg-white text-primary">  
+                                <i class="ti ti-file-text fs-24"></i>   
+                            </span>
+                            <div class="ms-2"> 
+                                <p class="text-dark mb-1">Total Balance Amount</p>
+                                <div class="d-inline-flex align-items-center flex-wrap gap-2">
+                                    <h4 class="text-dark">₹{{ number_format($totalBalanceAmount, 2) }}</h4>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="col-xl-3 col-sm-6 col-12">
-                    <div class="card rounded-4 border-0 shadow-sm">
-                        <div class="card-body">
-                            <div class="d-flex align-items-center gap-3">
-                                <div class="icon-box bg-info-subtle text-info rounded-circle d-flex align-items-center justify-content-center"
-                                    style="width: 48px; height: 48px;">
-                                    <i class="bx bx-user fs-4"></i>
-                                </div>
-                                <div class="flex-grow-1">
-                                    <p class="mb-0 text-secondary">Total Customers</p>
-                                    <h4 class="mb-0 fw-bold">{{ $customers->count() }}</h4>
+                {{-- Total Customer --}}
+                <div class="col-xl-2 col-sm-6 col-12 d-flex">
+                    <div class="card bg-white sale-widget flex-fill">
+                        <div class="card-body d-flex align-items-center">   
+                            <span class="sale-icon bg-white text-primary">  
+                                <i class="ti ti-file-text fs-24"></i>   
+                            </span> 
+                            <div class="ms-2">
+                                <p class="text-dark mb-1">Total Customers</p>
+                                <div class="d-inline-flex align-items-center flex-wrap gap-2">
+                                    <h4 class="text-dark">{{ $totalCustomers }}</h4>
                                 </div>
                             </div>
                         </div>
@@ -433,6 +464,7 @@
                         <table id="customerSalesTable" class="table table-striped table-hover align-middle">
                             <thead class="table-light">
                                 <tr>
+                                    <th>Sales&nbsp;Order&nbsp;No</th>
                                     <th>Customer&nbsp;Group&nbsp;Name</th>
                                     <th>Customer&nbsp;Name</th>
                                     <th>Invoice&nbsp;No</th>
@@ -531,6 +563,7 @@
                                             }
                                         @endphp
                                         <tr>
+                                            <td>{{ $salesOrder->order_number ?? 'N/A' }}</td>
                                             <td>{{ $salesOrder->customerGroup->name ?? 'N/A' }}</td>
                                             <td>{{ $invoice->customer->client_name ?? 'N/A' }}</td>
                                             <td>{{ $invoice->invoice_number ?? 'N/A' }}</td>

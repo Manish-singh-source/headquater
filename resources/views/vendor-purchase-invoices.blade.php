@@ -46,8 +46,10 @@
 
             @include('layouts.errors')
 
+            {{-- Total Records --}}
             <div class="col">
                 <div class="row">
+                    {{-- Total Vendor Orders --}}
                     <div class="col-xl-3 col-sm-6 col-12 d-flex">
                         <div class="card bg-white sale-widget flex-fill">
                             <div class="card-body d-flex align-items-center">
@@ -58,12 +60,29 @@
                                     <p class="text-dark mb-1">Total Vendor Orders</p>
                                     <div class="d-inline-flex align-items-center flex-wrap gap-2">
                                         <h4 class="text-dark">{{ $totalOrders }}</h4>
-                                        <!-- <span class="badge badge-soft-primary text-dark"><i class="ti ti-arrow-up me-1"></i>+22%</span> -->
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
+                    {{-- Total Taxable Amount  --}}
+                    <div class="col-xl-3 col-sm-6 col-12 d-flex">
+                        <div class="card bg-white sale-widget flex-fill">
+                            <div class="card-body d-flex align-items-center">
+                                <span class="sale-icon bg-white text-primary">
+                                    <i class="ti ti-file-text fs-24"></i>
+                                </span>
+                                <div class="ms-2">
+                                    <p class="text-dark mb-1">Total Taxable Amount</p>
+                                    <div class="d-inline-flex align-items-center flex-wrap gap-2">
+                                        <h4 class="text-dark">
+                                            ₹{{ number_format($totalTaxableAmount, 2) }}</h4>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {{-- Total Amount  --}}
                     <div class="col-xl-3 col-sm-6 col-12 d-flex">
                         <div class="card bg-white sale-widget flex-fill">
                             <div class="card-body d-flex align-items-center">
@@ -75,12 +94,12 @@
                                     <div class="d-inline-flex align-items-center flex-wrap gap-2">
                                         <h4 class="text-dark">
                                             ₹{{ number_format($purchaseOrdersTotal, 2) }}</h4>
-                                        <!-- <span class="badge badge-soft-primary text-dark"><i class="ti ti-arrow-up me-1"></i>+22%</span> -->
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
+                    {{-- Total Invoice Amount --}}
                     <div class="col-xl-3 col-sm-6 col-12 d-flex">
                         <div class="card bg-white sale-widget flex-fill">
                             <div class="card-body d-flex align-items-center">
@@ -88,15 +107,16 @@
                                     <i class="ti ti-file-text fs-24"></i>
                                 </span>
                                 <div class="ms-2">
-                                    <p class="text-dark mb-1">Total Quantity</p>
+                                    <p class="text-dark mb-1">Total Invoice Amount</p>
                                     <div class="d-inline-flex align-items-center flex-wrap gap-2">
-                                        <h4 class="text-dark">{{ number_format($purchaseOrdersTotalQuantity) }}</h4>
-                                        <!-- <span class="badge badge-soft-primary text-dark"><i class="ti ti-arrow-up me-1"></i>+22%</span> -->
+                                        <h4 class="text-dark">
+                                            ₹{{ number_format($totalInvoiceAmount, 2) }}</h4>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
+                    {{-- Total Paid Invoice Amount --}}
                     <div class="col-xl-3 col-sm-6 col-12 d-flex">
                         <div class="card bg-white sale-widget flex-fill">
                             <div class="card-body d-flex align-items-center">
@@ -104,10 +124,27 @@
                                     <i class="ti ti-file-text fs-24"></i>
                                 </span>
                                 <div class="ms-2">
-                                    <p class="text-dark mb-1">Total Products</p>
+                                    <p class="text-dark mb-1">Total Paid Invoice Amount</p>
                                     <div class="d-inline-flex align-items-center flex-wrap gap-2">
-                                        <h4 class="text-dark">{{ $vendorPIProducts->total() }}</h4>
-                                        <!-- <span class="badge badge-soft-primary text-dark"><i class="ti ti-arrow-up me-1"></i>+22%</span> -->
+                                        <h4 class="text-dark">
+                                            ₹{{ number_format($totalPaidInvoiceAmount, 2) }}</h4>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {{-- Total Due Invoice Amount --}}
+                    <div class="col-xl-3 col-sm-6 col-12 d-flex">
+                        <div class="card bg-white sale-widget flex-fill">
+                            <div class="card-body d-flex align-items-center">
+                                <span class="sale-icon bg-white text-primary">
+                                    <i class="ti ti-file-text fs-24"></i>
+                                </span>
+                                <div class="ms-2">
+                                    <p class="text-dark mb-1">Total Due Invoice Amount</p>
+                                    <div class="d-inline-flex align-items-center flex-wrap gap-2">
+                                        <h4 class="text-dark">
+                                            ₹{{ number_format($totalDueInvoiceAmount, 2) }}</h4>
                                     </div>
                                 </div>
                             </div>
@@ -393,7 +430,7 @@
                                                 <input class="form-check-input item-checkbox" type="checkbox"
                                                     name="ids[]" value="{{ $purchaseOrder->id }}">
                                             </td>
-                                            <td>{{ $purchaseOrder->id ?? 'N/A' }}</td>
+                                            <td>{{ $purchaseOrder->order_number ?? 'N/A' }}</td>
                                             <td>{{ $purchaseOrder->created_at ? $purchaseOrder->created_at->format('d-m-Y') : 'N/A' }}
                                             </td>
                                             <td>{{ $purchaseOrder->vendor->client_name ?? 'N/A' }}</td>

@@ -59,8 +59,9 @@
                 </div>
             @endif
 
-            <!-- Statistics Cards -->
+            {{-- Total Records  --}}
             <div class="row">
+                {{-- Total Invoices --}}
                 <div class="col-xl-3 col-sm-6 col-12">
                     <div class="card rounded-4 border-0 shadow-sm">
                         <div class="card-body">
@@ -71,44 +72,13 @@
                                 </div>
                                 <div class="flex-grow-1">
                                     <p class="mb-0 text-secondary">Total Invoices</p>
-                                    <h4 class="mb-0 fw-bold">{{ $invoices->count() }}</h4>
+                                    <h4 class="mb-0 fw-bold">{{ $totalInvoices }}</h4>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="col-xl-3 col-sm-6 col-12">
-                    <div class="card rounded-4 border-0 shadow-sm">
-                        <div class="card-body">
-                            <div class="d-flex align-items-center gap-3">
-                                <div class="icon-box bg-success-subtle text-success rounded-circle d-flex align-items-center justify-content-center"
-                                    style="width: 48px; height: 48px;">
-                                    <i class="bx bx-dollar-circle fs-4"></i>
-                                </div>
-                                <div class="flex-grow-1">
-                                    <p class="mb-0 text-secondary">Total Revenue</p>
-                                    <h4 class="mb-0 fw-bold">₹{{ number_format($totalRevenue, 2) }}</h4>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-xl-3 col-sm-6 col-12">
-                    <div class="card rounded-4 border-0 shadow-sm">
-                        <div class="card-body">
-                            <div class="d-flex align-items-center gap-3">
-                                <div class="icon-box bg-warning-subtle text-warning rounded-circle d-flex align-items-center justify-content-center"
-                                    style="width: 48px; height: 48px;">
-                                    <i class="bx bx-time-five fs-4"></i>
-                                </div>
-                                <div class="flex-grow-1">
-                                    <p class="mb-0 text-secondary">Pending Payments</p>
-                                    <h4 class="mb-0 fw-bold">₹{{ number_format(abs($totalPendingPayments), 2) }}</h4>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                {{-- Total Customer --}}
                 <div class="col-xl-3 col-sm-6 col-12">
                     <div class="card rounded-4 border-0 shadow-sm">
                         <div class="card-body">
@@ -119,7 +89,75 @@
                                 </div>
                                 <div class="flex-grow-1">
                                     <p class="mb-0 text-secondary">Total Customers</p>
-                                    <h4 class="mb-0 fw-bold">{{ $customers->count() }}</h4>
+                                    <h4 class="mb-0 fw-bold">{{ $totalCustomers }}</h4>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {{-- Total Taxable Amount --}}
+                <div class="col-xl-3 col-sm-6 col-12">
+                    <div class="card rounded-4 border-0 shadow-sm">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="icon-box bg-success-subtle text-success rounded-circle d-flex align-items-center justify-content-center"
+                                    style="width: 48px; height: 48px;">
+                                    <i class="bx bx-dollar-circle fs-4"></i>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <p class="mb-0 text-secondary">Total Taxable Amount</p>
+                                    <h4 class="mb-0 fw-bold">₹{{ number_format($totalTaxableAmount, 2) }}</h4>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {{-- Total Invoice Amount --}}
+                <div class="col-xl-3 col-sm-6 col-12">
+                    <div class="card rounded-4 border-0 shadow-sm">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="icon-box bg-success-subtle text-success rounded-circle d-flex align-items-center justify-content-center"
+                                    style="width: 48px; height: 48px;">
+                                    <i class="bx bx-dollar-circle fs-4"></i>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <p class="mb-0 text-secondary">Total Invoice Amount</p> 
+                                    <h4 class="mb-0 fw-bold">₹{{ number_format($totalInvoiceAmount, 2) }}</h4>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {{-- Total Purchase Order --}}
+                <div class="col-xl-3 col-sm-6 col-12">
+                    <div class="card rounded-4 border-0 shadow-sm">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="icon-box bg-success-subtle text-success rounded-circle d-flex align-items-center justify-content-center"
+                                    style="width: 48px; height: 48px;">
+                                    <i class="bx bx-package fs-4"></i>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <p class="mb-0 text-secondary">Total Purchase Order</p>
+                                    <h4 class="mb-0 fw-bold">{{ $totalPurchaseOrder }}</h4>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {{-- Total Purchase Order Amount --}}
+                <div class="col-xl-3 col-sm-6 col-12">
+                    <div class="card rounded-4 border-0 shadow-sm">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="icon-box bg-success-subtle text-success rounded-circle d-flex align-items-center justify-content-center"
+                                    style="width: 48px; height: 48px;">
+                                    <i class="bx bx-dollar-circle fs-4"></i>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <p class="mb-0 text-secondary">Total Purchase Order Amount</p>
+                                    <h4 class="mb-0 fw-bold">₹{{ number_format($totalPurchaseOrderAmount, 2) }}</h4>
                                 </div>
                             </div>
                         </div>
