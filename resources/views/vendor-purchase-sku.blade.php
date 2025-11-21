@@ -451,10 +451,17 @@
 
                                         @forelse($purchaseOrder->purchaseOrderProducts as $product)
                                             @php
+                                                
+                                                // Get matching VendorPIProduct for this SKU
+                                                $vendorPIProduct = null;
+                                                if ($vendorPI) {
+                                                    $vendorPIProduct = $vendorPI->products->firstWhere('vendor_sku_code', $product->sku);
+                                                }
+
                                                 $productDetails = $product->product ?? null;
                                                 $gstRate = floatval($productDetails->gst ?? 0);
                                                 $unitCost = floatval($product->unit_cost ?? 0);
-                                                $quantity = floatval($product->ordered_quantity ?? 0);
+                                                $quantity = floatval($vendorPIProduct->quantity_received ?? 0);
                                                 $taxableValue = $product->product->mrp * $quantity;
                                                 $gstAmount = ($taxableValue * $gstRate) / 100;
 
@@ -462,6 +469,7 @@
                                                 $cgst = $gstRate / 2;
                                                 $sgst = $gstRate / 2;
                                                 $igst = 0; // Set to $gstRate if interstate
+
                                             @endphp
                                             <tr>
                                                 <td>
@@ -484,9 +492,9 @@
                                                 </td>
                                                 <td>{{ $vendorPI && $vendorPI->updated_at ? $vendorPI->updated_at->format('d-m-Y') : 'N/A' }}
                                                 </td>
-                                                <td>{{ $product->ordered_quantity ?? 0 }}</td>
-                                                <td>{{ $product->ordered_quantity ?? 0 }}</td>
-                                                <td>{{ $product->ordered_quantity ?? 0 }}</td>
+                                                <td>{{ $vendorPIProduct->quantity_requirement ?? 0 }}</td>
+                                                <td>{{ $vendorPIProduct->available_quantity ?? 0 }}</td>
+                                                <td>{{ $vendorPIProduct->quantity_received ?? 0 }}</td>
                                                 <td>PCS</td>
                                                 <td>₹{{ number_format($product->product->mrp ?? 0, 2) }}</td>
                                                 <td>₹{{ number_format($product->discount_per_unit ?? 0, 2) }}</td>
