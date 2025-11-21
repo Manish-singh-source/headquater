@@ -141,6 +141,22 @@
                         </div>
                     </div>
                 </div>
+                {{-- Total Purchase Order Quantity --}}
+                <div class="col-xl-3 col-sm-6 col-12 d-flex">
+                    <div class="card bg-white sale-widget flex-fill">
+                        <div class="card-body d-flex align-items-center">
+                            <span class="sale-icon bg-white text-primary">
+                                <i class="ti ti-package fs-24"></i>
+                            </span>
+                            <div class="ms-2">
+                                <p class="text-dark mb-1">Total Purchase Order Quantity</p>
+                                <div class="d-inline-flex align-items-center flex-wrap gap-2">
+                                    <h4 class="mb-0 fw-bold">{{ $totalPurchaseOrderQuantity }}</h4>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 {{-- Total Purchase Order Amount --}}
                 <div class="col-xl-3 col-sm-6 col-12 d-flex">
                     <div class="card bg-white sale-widget flex-fill">
@@ -557,7 +573,7 @@
                                     <th>GST</th>
                                     <th>GST&nbsp;Amount</th>
                                     <th>Invoice&nbsp;Amount</th>
-                                    <th>Purchase&nbsp;Order&nbsp;No</th>
+                                    <th>Purchase&nbsp;Order&nbsp;Quantity</th>
                                     <th>Purchase&nbsp;Rate</th>
                                     <th>Subtotal</th>
                                     <th>GST</th>
@@ -752,6 +768,27 @@
                                 @endforelse
                             </tbody>
                         </table>
+                    </div>
+
+                    <!-- Summary Section -->
+                    <div class="card mt-3 bg-light">
+                        <div class="card-body">
+                            <h6 class="mb-3 fw-bold"><i class="bx bx-calculator me-2"></i>Summary (Filtered Data)</h6>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="d-flex justify-content-between align-items-center p-2 bg-white rounded mb-2">
+                                        <span class="fw-semibold">Total Purchase Order Quantity:</span>
+                                        <span class="text-primary fw-bold" id="summary-total-po-quantity">0</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="d-flex justify-content-between align-items-center p-2 bg-white rounded mb-2">
+                                        <span class="fw-semibold">Total Purchase Order Amount:</span>
+                                        <span class="text-primary fw-bold" id="summary-total-po-amount">₹0.00</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                 </div>
@@ -1031,6 +1068,44 @@
             var tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {
                 return new bootstrap.Tooltip(tooltipTriggerEl);
             });
+
+            /**
+             * Calculate and update summary totals from filtered table data
+             */
+            function updateSummary() {
+                var totalPOQuantity = 0;
+                var totalPOAmount = 0;
+
+                // Get all visible rows from the DataTable (respects current filter/search)
+                inventoryStockTable.rows({ search: 'applied' }).every(function() {
+                    var data = this.data();
+
+                    // Column index 23 is "Purchase Order Quantity"
+                    var poQuantityText = $(data[23]).text() || data[23];
+                    var poQuantity = parseFloat(poQuantityText.replace(/[,]/g, '')) || 0;
+                    totalPOQuantity += poQuantity;
+
+                    // Column index 28 is "Total Amount" (Purchase Order Amount)
+                    var poAmountText = $(data[28]).text() || data[28];
+                    var poAmount = parseFloat(poAmountText.replace(/[₹,]/g, '')) || 0;
+                    totalPOAmount += poAmount;
+                });
+
+                // Update the summary display
+                $('#summary-total-po-quantity').text(totalPOQuantity.toLocaleString('en-IN'));
+                $('#summary-total-po-amount').text('₹' + totalPOAmount.toLocaleString('en-IN', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                }));
+            }
+
+            // Update summary on table draw (filter, search, sort, paginate)
+            inventoryStockTable.on('draw.dt', function() {
+                updateSummary();
+            });
+
+            // Initial calculation
+            updateSummary();
         });
 
         /**
