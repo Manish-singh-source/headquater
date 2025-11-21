@@ -62,16 +62,15 @@
             {{-- Total Records  --}}
             <div class="row">
                 {{-- Total Invoices --}}
-                <div class="col-xl-3 col-sm-6 col-12">
-                    <div class="card rounded-4 border-0 shadow-sm">
-                        <div class="card-body">
-                            <div class="d-flex align-items-center gap-3">
-                                <div class="icon-box bg-primary-subtle text-primary rounded-circle d-flex align-items-center justify-content-center"
-                                    style="width: 48px; height: 48px;">
-                                    <i class="bx bx-file fs-4"></i>
-                                </div>
-                                <div class="flex-grow-1">
-                                    <p class="mb-0 text-secondary">Total Invoices</p>
+                <div class="col-xl-3 col-sm-6 col-12 d-flex">
+                    <div class="card bg-white sale-widget flex-fill">
+                        <div class="card-body d-flex align-items-center">
+                            <span class="sale-icon bg-white text-primary">
+                                <i class="ti ti-package fs-24"></i>
+                            </span>
+                            <div class="ms-2">
+                                <p class="text-dark mb-1">Total Invoices</p>
+                                <div class="d-inline-flex align-items-center flex-wrap gap-2">
                                     <h4 class="mb-0 fw-bold">{{ $totalInvoices }}</h4>
                                 </div>
                             </div>
@@ -79,16 +78,15 @@
                     </div>
                 </div>
                 {{-- Total Customer --}}
-                <div class="col-xl-3 col-sm-6 col-12">
-                    <div class="card rounded-4 border-0 shadow-sm">
-                        <div class="card-body">
-                            <div class="d-flex align-items-center gap-3">
-                                <div class="icon-box bg-info-subtle text-info rounded-circle d-flex align-items-center justify-content-center"
-                                    style="width: 48px; height: 48px;">
-                                    <i class="bx bx-user fs-4"></i>
-                                </div>
-                                <div class="flex-grow-1">
-                                    <p class="mb-0 text-secondary">Total Customers</p>
+                <div class="col-xl-3 col-sm-6 col-12 d-flex">
+                    <div class="card bg-white sale-widget flex-fill">
+                        <div class="card-body d-flex align-items-center">
+                            <span class="sale-icon bg-white text-primary">
+                                <i class="ti ti-package fs-24"></i>
+                            </span>
+                            <div class="ms-2">
+                                <p class="text-dark mb-1">Total Customers</p>
+                                <div class="d-inline-flex align-items-center flex-wrap gap-2">
                                     <h4 class="mb-0 fw-bold">{{ $totalCustomers }}</h4>
                                 </div>
                             </div>
@@ -96,16 +94,15 @@
                     </div>
                 </div>
                 {{-- Total Taxable Amount --}}
-                <div class="col-xl-3 col-sm-6 col-12">
-                    <div class="card rounded-4 border-0 shadow-sm">
-                        <div class="card-body">
-                            <div class="d-flex align-items-center gap-3">
-                                <div class="icon-box bg-success-subtle text-success rounded-circle d-flex align-items-center justify-content-center"
-                                    style="width: 48px; height: 48px;">
-                                    <i class="bx bx-dollar-circle fs-4"></i>
-                                </div>
-                                <div class="flex-grow-1">
-                                    <p class="mb-0 text-secondary">Total Taxable Amount</p>
+                <div class="col-xl-3 col-sm-6 col-12 d-flex">
+                    <div class="card bg-white sale-widget flex-fill">
+                        <div class="card-body d-flex align-items-center">
+                            <span class="sale-icon bg-white text-primary">
+                                <i class="ti ti-package fs-24"></i>
+                            </span>
+                            <div class="ms-2">
+                                <p class="text-dark mb-1">Total Taxable Amount</p>
+                                <div class="d-inline-flex align-items-center flex-wrap gap-2">
                                     <h4 class="mb-0 fw-bold">₹{{ number_format($totalTaxableAmount, 2) }}</h4>
                                 </div>
                             </div>
@@ -113,16 +110,15 @@
                     </div>
                 </div>
                 {{-- Total Invoice Amount --}}
-                <div class="col-xl-3 col-sm-6 col-12">
-                    <div class="card rounded-4 border-0 shadow-sm">
-                        <div class="card-body">
-                            <div class="d-flex align-items-center gap-3">
-                                <div class="icon-box bg-success-subtle text-success rounded-circle d-flex align-items-center justify-content-center"
-                                    style="width: 48px; height: 48px;">
-                                    <i class="bx bx-dollar-circle fs-4"></i>
-                                </div>
-                                <div class="flex-grow-1">
-                                    <p class="mb-0 text-secondary">Total Invoice Amount</p> 
+                <div class="col-xl-3 col-sm-6 col-12 d-flex">
+                    <div class="card bg-white sale-widget flex-fill">
+                        <div class="card-body d-flex align-items-center">
+                            <span class="sale-icon bg-white text-primary">
+                                <i class="ti ti-package fs-24"></i>
+                            </span>
+                            <div class="ms-2">
+                                <p class="text-dark mb-1">Total Invoice Amount</p>
+                                <div class="d-inline-flex align-items-center flex-wrap gap-2">
                                     <h4 class="mb-0 fw-bold">₹{{ number_format($totalInvoiceAmount, 2) }}</h4>
                                 </div>
                             </div>
@@ -130,16 +126,15 @@
                     </div>
                 </div>
                 {{-- Total Purchase Order --}}
-                <div class="col-xl-3 col-sm-6 col-12">
-                    <div class="card rounded-4 border-0 shadow-sm">
-                        <div class="card-body">
-                            <div class="d-flex align-items-center gap-3">
-                                <div class="icon-box bg-success-subtle text-success rounded-circle d-flex align-items-center justify-content-center"
-                                    style="width: 48px; height: 48px;">
-                                    <i class="bx bx-package fs-4"></i>
-                                </div>
-                                <div class="flex-grow-1">
-                                    <p class="mb-0 text-secondary">Total Purchase Order</p>
+                <div class="col-xl-3 col-sm-6 col-12 d-flex">
+                    <div class="card bg-white sale-widget flex-fill">
+                        <div class="card-body d-flex align-items-center">
+                            <span class="sale-icon bg-white text-primary">
+                                <i class="ti ti-package fs-24"></i>
+                            </span>
+                            <div class="ms-2">
+                                <p class="text-dark mb-1">Total Purchase Order</p>
+                                <div class="d-inline-flex align-items-center flex-wrap gap-2">
                                     <h4 class="mb-0 fw-bold">{{ $totalPurchaseOrder }}</h4>
                                 </div>
                             </div>
@@ -147,16 +142,15 @@
                     </div>
                 </div>
                 {{-- Total Purchase Order Amount --}}
-                <div class="col-xl-3 col-sm-6 col-12">
-                    <div class="card rounded-4 border-0 shadow-sm">
-                        <div class="card-body">
-                            <div class="d-flex align-items-center gap-3">
-                                <div class="icon-box bg-success-subtle text-success rounded-circle d-flex align-items-center justify-content-center"
-                                    style="width: 48px; height: 48px;">
-                                    <i class="bx bx-dollar-circle fs-4"></i>
-                                </div>
-                                <div class="flex-grow-1">
-                                    <p class="mb-0 text-secondary">Total Purchase Order Amount</p>
+                <div class="col-xl-3 col-sm-6 col-12 d-flex">
+                    <div class="card bg-white sale-widget flex-fill">
+                        <div class="card-body d-flex align-items-center">
+                            <span class="sale-icon bg-white text-primary">
+                                <i class="ti ti-package fs-24"></i>
+                            </span>
+                            <div class="ms-2">
+                                <p class="text-dark mb-1">Total Purchase Order Amount</p>
+                                <div class="d-inline-flex align-items-center flex-wrap gap-2">
                                     <h4 class="mb-0 fw-bold">₹{{ number_format($totalPurchaseOrderAmount, 2) }}</h4>
                                 </div>
                             </div>
@@ -166,7 +160,7 @@
             </div>
 
             <!-- Filter Section -->
-            <div class="card mt-4">
+            <div class="card">
                 <div class="card-body">
                     <h6 class="mb-3 fw-bold"><i class="bx bx-filter-alt me-2"></i>Filter Options</h6>
                     <form method="GET" action="{{ route('customer-sales-sku') }}" id="filterForm">

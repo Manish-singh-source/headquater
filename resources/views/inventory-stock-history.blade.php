@@ -18,7 +18,7 @@
             <div class="col">
                 <div class="row">
                     {{-- Total Stock --}}
-                    <div class="col-xl-2 col-sm-6 col-12 d-flex">
+                    <div class="col-xl-3 col-sm-6 col-12 d-flex">
                         <div class="card bg-white sale-widget flex-fill">
                             <div class="card-body d-flex align-items-center">
                                 <span class="sale-icon bg-white text-primary">
@@ -34,7 +34,7 @@
                         </div>
                     </div>
                     {{-- Total Available  --}}
-                    <div class="col-xl-2 col-sm-6 col-12 d-flex">
+                    <div class="col-xl-3 col-sm-6 col-12 d-flex">
                         <div class="card bg-white sale-widget flex-fill">
                             <div class="card-body d-flex align-items-center">
                                 <span class="sale-icon bg-white text-success">
@@ -50,7 +50,7 @@
                         </div>
                     </div>
                     {{-- Total Blocked  --}}
-                    <div class="col-xl-2 col-sm-6 col-12 d-flex">
+                    <div class="col-xl-3 col-sm-6 col-12 d-flex">
                         <div class="card bg-white sale-widget flex-fill">
                             <div class="card-body d-flex align-items-center">
                                 <span class="sale-icon bg-white text-warning">
@@ -82,7 +82,7 @@
                         </div>
                     </div>
                     {{-- Low Stock  --}}
-                    <div class="col-xl-1 col-sm-6 col-12 d-flex">
+                    <div class="col-xl-3 col-sm-6 col-12 d-flex">
                         <div class="card bg-white sale-widget flex-fill">
                             <div class="card-body d-flex align-items-center">
                                 <span class="sale-icon bg-white text-danger">
@@ -98,7 +98,7 @@
                         </div>
                     </div>
                     {{-- Out of Stock  --}}
-                    <div class="col-xl-2 col-sm-6 col-12 d-flex">
+                    <div class="col-xl-3 col-sm-6 col-12 d-flex">
                         <div class="card bg-white sale-widget flex-fill">
                             <div class="card-body d-flex align-items-center">
                                 <span class="sale-icon bg-white text-secondary">

@@ -30,7 +30,7 @@
             {{-- Total Records  --}}
             <div class="row">
                 {{-- Total Ivoices --}}
-                <div class="col-xl-2 col-sm-6 col-12 d-flex">
+                <div class="col-xl-3 col-sm-6 col-12 d-flex">
                     <div class="card bg-white sale-widget flex-fill">
                         <div class="card-body d-flex align-items-center">
                             <span class="sale-icon bg-white text-primary">
@@ -46,7 +46,7 @@
                     </div>
                 </div>
                 {{-- Total Taxable Amount --}}
-                <div class="col-xl-2 col-sm-6 col-12 d-flex">
+                <div class="col-xl-3 col-sm-6 col-12 d-flex">
                     <div class="card bg-white sale-widget flex-fill">
                         <div class="card-body d-flex align-items-center">
                             <span class="sale-icon bg-white text-primary">
@@ -62,7 +62,7 @@
                     </div>
                 </div>
                 {{-- Total Amount  --}}
-                <div class="col-xl-2 col-sm-6 col-12 d-flex">
+                <div class="col-xl-3 col-sm-6 col-12 d-flex">
                     <div class="card bg-white sale-widget flex-fill">
                         <div class="card-body d-flex align-items-center">
                             <span class="sale-icon bg-white text-primary">  
@@ -78,7 +78,7 @@
                     </div>
                 </div>
                 {{-- Total Amount Paid --}}
-                <div class="col-xl-2 col-sm-6 col-12 d-flex">
+                <div class="col-xl-3 col-sm-6 col-12 d-flex">
                     <div class="card bg-white sale-widget flex-fill">
                         <div class="card-body d-flex align-items-center">   
                             <span class="sale-icon bg-white text-primary">  
@@ -94,7 +94,7 @@
                     </div>
                 </div>
                 {{-- Total Balance Amount --}}
-                <div class="col-xl-2 col-sm-6 col-12 d-flex">
+                <div class="col-xl-3 col-sm-6 col-12 d-flex">
                     <div class="card bg-white sale-widget flex-fill">
                         <div class="card-body d-flex align-items-center">   
                             <span class="sale-icon bg-white text-primary">  
@@ -110,7 +110,7 @@
                     </div>
                 </div>
                 {{-- Total Customer --}}
-                <div class="col-xl-2 col-sm-6 col-12 d-flex">
+                <div class="col-xl-3 col-sm-6 col-12 d-flex">
                     <div class="card bg-white sale-widget flex-fill">
                         <div class="card-body d-flex align-items-center">   
                             <span class="sale-icon bg-white text-primary">  
@@ -128,7 +128,7 @@
             </div>
 
             <!-- Filter Section -->
-            <div class="card mt-4">
+            <div class="card">
                 <div class="card-body">
                     <h6 class="mb-3 fw-bold"><i class="bx bx-filter-alt me-2"></i>Filter Options</h6>
                     <form method="GET" action="{{ route('customer-sales-invoices') }}" id="filterForm">
