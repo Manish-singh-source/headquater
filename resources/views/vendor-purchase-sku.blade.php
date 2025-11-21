@@ -157,7 +157,7 @@
                                     <p class="text-dark mb-1">Total Amount</p>
                                     <div class="d-inline-flex align-items-center flex-wrap gap-2">
                                         <h4 class="text-dark">
-                                            ₹{{ number_format($purchaseOrdersTotal, 2) }}</h4>
+                                            <span class="" id="summary-total-amount">₹0.00</span></h4>
                                     </div>
                                 </div>
                             </div>
@@ -543,7 +543,7 @@
                     </div>
 
                     <!-- Pagination -->
-                    {{-- 
+                    {{--
                     <div class="d-flex justify-content-between align-items-center mt-3">
                         <div>
                             Showing {{ $vendorPIProducts->firstItem() ?? 0 }} to {{ $vendorPIProducts->lastItem() ?? 0 }}
@@ -713,6 +713,37 @@
             setTimeout(function() {
                 $('.alert').fadeOut('slow');
             }, 5000);
+
+            /**
+             * Calculate and update summary totals from filtered table data
+             */
+            function updateSummary() {
+                var totalAmount = 0;
+
+                // Get all visible rows from the DataTable (respects current filter/search)
+                table1.rows({ search: 'applied' }).every(function() {
+                    var data = this.data();
+                    // Column index 21 is "Total Amount"
+                    var amountText = $(data[21]).text() || data[21];
+                    // Remove currency symbol and commas, then parse
+                    var amount = parseFloat(amountText.replace(/[₹,]/g, '')) || 0;
+                    totalAmount += amount;
+                });
+
+                // Update the summary display
+                $('#summary-total-amount').text('₹' + totalAmount.toLocaleString('en-IN', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                }));
+            }
+
+            // Update summary on table draw (filter, search, sort, paginate)
+            table1.on('draw.dt', function() {
+                updateSummary();
+            });
+
+            // Initial calculation
+            updateSummary();
 
         });
     </script>
