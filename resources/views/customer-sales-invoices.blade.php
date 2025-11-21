@@ -433,17 +433,11 @@
                                     <!-- Action Buttons -->
                                     <div class="col-md-12">
                                         <div class="mb-2">
-                                            {{-- <label class="form-label">&nbsp;</label> --}}
                                             <div class="d-flex gap-2">
-                                                <!-- Generate Excel Report Button -->
                                                 <button type="button" id="generateExcelReport"
-                                                    class="btn btn-success flex-fill">
-                                                    <i class="bx bx-download me-1"></i>Export Excel
+                                                    class="btn btn-danger w-100">
+                                                    <i class="bx bx-download me-1"></i>Generate Report
                                                 </button>
-                                                <!-- Generate PDF Report Button -->
-                                                {{-- <button type="button" id="generatePdfReport" class="btn btn-danger flex-fill">
-                                                    <i class="bx bx-file-pdf me-1"></i>Export PDF
-                                                </button> --}}
                                             </div>
                                         </div>
                                     </div>
