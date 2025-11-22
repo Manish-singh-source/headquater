@@ -12,6 +12,8 @@
             'dispatched' => 'bg-primary',
             'shipped' => 'bg-dark',
             'approval_pending' => 'bg-secondary',
+            'cancelled' => 'bg-danger',
+            'delivered' => 'bg-dark',
             'completed' => 'bg-success',
         ];
         $statusLabels = [
@@ -22,6 +24,8 @@
             'ready_to_ship' => 'Ready to Ship',
             'dispatched' => 'Dispatched',
             'shipped' => 'Shipped',
+            'delivered' => 'Delivered',
+            'cancelled' => 'Cancelled',
             'approval_pending' => 'Ready to Ship Approval Pending',
             'completed' => 'Completed',
         ];
@@ -33,6 +37,7 @@
             'approval_pending' => 'bg-secondary',
             'packaged' => 'bg-info',
             'shipped' => 'bg-dark',
+            'delivered' => 'bg-dark',
             'completed' => 'bg-success',
             'cancelled' => 'bg-danger',
         ];
@@ -44,6 +49,7 @@
             'approval_pending' => 'Ready to Ship Approval Pending',
             'packaged' => 'Packaged',
             'shipped' => 'Shipped',
+            'delivered' => 'Delivered',
             'completed' => 'Ready to Ship',
             'cancelled' => 'Cancelled',
         ];
@@ -102,12 +108,12 @@
                                 aria-label="Default select example" name="status">
                                 <option value="" selected disabled>Change Status</option>
 
-                                <option value="shipped" @if ($currentStatus == 'shipped') selected @endif>
+                                <option value="shipped" @if ($order->status == 'shipped') selected @endif>
                                     Shipped</option>
-                                {{-- <option value="delivered" @if ($currentStatus == 'delivered') selected @endif>
-                                    Delivered</option>    
-                                <option value="completed" @if ($currentStatus == 'completed') selected @endif>
-                                    Completed</option>     --}}
+                                <option value="delivered" @if ($order->status == 'delivered') selected @endif>
+                                    Delivered</option>
+                                <option value="completed" @if ($order->status == 'completed') selected @endif>
+                                    Completed</option>
                             </select>
                         </form>
                     </div>
@@ -128,7 +134,7 @@
                                 <span><b>Status</b></span>
 
                                 <span
-                                    class="badge {{ $statusBadges[$currentStatus] ?? 'bg-secondary' }}">{{ $statusLabels[$currentStatus] ?? 'NA' }}</span>
+                                    class="badge {{ $statusBadges[$order->status] ?? 'bg-secondary' }}">{{ $statusLabels[$order->status] ?? 'NA' }}</span>
                             </li>
                             <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                                 <span><b>Customer Group Name</b></span>
@@ -172,6 +178,7 @@
             </div>
 
             {{-- Warehouse Status Section --}}
+            {{-- 
             @if (isset($warehouseStatuses) && count($warehouseStatuses) > 0)
                 @if ($isSuperAdmin)
                     <div class="row mt-3">
@@ -221,7 +228,8 @@
                         </div>
                     </div>
                 @endif
-            @endif
+            @endif 
+            --}}
 
             <div class="row">
                 <div class="col-12">
@@ -407,38 +415,17 @@
                                                             @if ($order->warehouseAllocations->count() >= 1)
                                                                 @foreach ($order->warehouseAllocations as $allocation)
                                                                     @if ($isSuperAdmin ?? false)
-                                                                        @if ($allocation->shipping_status == 'shipped')
-                                                                            @php $allocation->product_status = 'shipped'; @endphp
-                                                                        @endif
-                                                                        @if ($allocation->final_dispatched_quantity > 0)
-                                                                            <span
-                                                                                class="badge {{ $allocationStatusBadges[$allocation->product_status] ?? 'bg-secondary' }}">
-                                                                                {{ $allocation->warehouse->name }}:
-                                                                                {{ $allocationStatusLabels[$allocation->product_status] ?? 'Unknown' }}
-                                                                            </span>
-                                                                        @else
-                                                                            <span
-                                                                                class="badge {{ $allocationStatusBadges[$allocation->product_status] ?? 'bg-secondary' }}">
-                                                                                {{ $allocation->warehouse->name }}:
-                                                                                {{ $allocationStatusLabels[$allocation->product_status] ?? 'Unknown' }}
-                                                                            </span>
-                                                                        @endif
+                                                                        <span
+                                                                            class="badge {{ $allocationStatusBadges[$allocation->status] ?? 'bg-secondary' }}">
+                                                                            {{ $allocation->warehouse->name }}:
+                                                                            {{ $allocationStatusLabels[$allocation->status] ?? 'Unknown' }}
+                                                                        </span>
                                                                     @else
                                                                         @if ($user->warehouse_id == $allocation->warehouse_id)
-                                                                            @if ($allocation->shipping_status == 'shipped')
-                                                                                @php $allocation->product_status = 'shipped'; @endphp
-                                                                            @endif
-                                                                            @if ($allocation->final_dispatched_quantity > 0)
-                                                                                <span
-                                                                                    class="badge {{ $allocationStatusBadges[$allocation->product_status] ?? 'bg-secondary' }}">
-                                                                                    {{ $allocationStatusLabels[$allocation->product_status] ?? 'Unknown' }}
-                                                                                </span>
-                                                                            @else
-                                                                                <span
-                                                                                    class="badge {{ $allocationStatusBadges[$allocation->product_status] ?? 'bg-secondary' }}">
-                                                                                    {{ $allocationStatusLabels[$allocation->product_status] ?? 'Unknown' }}
-                                                                                </span>
-                                                                            @endif
+                                                                            <span
+                                                                                class="badge {{ $allocationStatusBadges[$allocation->status] ?? 'bg-secondary' }}">
+                                                                                {{ $allocationStatusLabels[$allocation->status] ?? 'Unknown' }}
+                                                                            </span>
                                                                         @endif
                                                                     @endif
                                                                 @endforeach

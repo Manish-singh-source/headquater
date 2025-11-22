@@ -36,19 +36,92 @@ class PackagingController extends Controller
         $status = $request->query('status', 'all');
         $orders = SalesOrder::with('customerGroup');
         if ($status === 'all') {
-            $orders->whereIn('status', ['ready_to_package', 'ready_to_ship']);
+            $orders->whereIn('status', ['ready_to_package', 'partial_packaged', 'all_packaged', 'packaged']);
         } elseif ($status === 'ready_to_package') {
             $orders->where('status', 'ready_to_package');
-        } elseif ($status === 'ready_to_ship') {
-            $orders->where('status', 'ready_to_ship');
+        } elseif ($status === 'partial_packaged') {
+            $orders->where('status', 'partial_packaged');
+        } elseif ($status === 'all_packaged') {
+            $orders->where('status', 'all_packaged');
         }
+
         $orders->with('orderedProducts.warehouseAllocations', function ($query) use ($userWarehouseId, $isAdmin) {
             if (! $isAdmin) {
                 $query->where('warehouse_id', $userWarehouseId);
             }
         });
+        
+        $orders->withCount([
+            'orderedProducts as packaged_warehouse_alloc_count' => function ($q) use ($userWarehouseId, $isAdmin) {
+                if (! $isAdmin) {
+                    $q->join('warehouse_allocations', 'sales_order_products.id', '=', 'warehouse_allocations.sales_order_product_id')
+                        ->where('warehouse_allocations.status', 'packaged')->where('warehouse_allocations.warehouse_id', $userWarehouseId);
+                } else {
+                    $q->join('warehouse_allocations', 'sales_order_products.id', '=', 'warehouse_allocations.sales_order_product_id')
+                        ->where('warehouse_allocations.status', 'packaged');
+                }
+            },
+            'orderedProducts as approval_pending_warehouse_alloc_count' => function ($q) use ($userWarehouseId, $isAdmin) {
+                if (! $isAdmin) {
+                    $q->join('warehouse_allocations', 'sales_order_products.id', '=', 'warehouse_allocations.sales_order_product_id')
+                        ->where('warehouse_allocations.status', 'approval_pending')->where('warehouse_allocations.warehouse_id', $userWarehouseId);
+                } else {
+                    $q->join('warehouse_allocations', 'sales_order_products.id', '=', 'warehouse_allocations.sales_order_product_id')
+                        ->where('warehouse_allocations.status', 'approval_pending');
+                }
+            },
+            'orderedProducts as partially_shipped_warehouse_alloc_count' => function ($q) use ($userWarehouseId, $isAdmin) {
+                if (! $isAdmin) {
+                    $q->join('warehouse_allocations', 'sales_order_products.id', '=', 'warehouse_allocations.sales_order_product_id')
+                        ->where('warehouse_allocations.status', 'ready_to_ship')->where('warehouse_allocations.warehouse_id', $userWarehouseId);
+                } else {
+                    $q->join('warehouse_allocations', 'sales_order_products.id', '=', 'warehouse_allocations.sales_order_product_id')
+                        ->where('warehouse_allocations.status', 'ready_to_ship');
+                }
+            },
+        ]);
+
+        $orders->withCount([
+            'orderedProducts as warehouse_alloc_count' => function ($q) use ($userWarehouseId, $isAdmin) {
+                if (! $isAdmin) {
+                    $q->join('warehouse_allocations', 'sales_order_products.id', '=', 'warehouse_allocations.sales_order_product_id')
+                        ->where('warehouse_allocations.warehouse_id', $userWarehouseId);
+                } else {
+                    $q->join('warehouse_allocations', 'sales_order_products.id', '=', 'warehouse_allocations.sales_order_product_id');
+                }
+            },
+        ]);
         $orders = $orders->get();
 
+        foreach ($orders as $order) {
+            if (!$isAdmin) {
+                if ($order->approval_pending_warehouse_alloc_count > 0) {
+                    $order->status = 'approval_pending';
+                } else {
+                    if ($order->warehouse_alloc_count == $order->packaged_warehouse_alloc_count) {
+                        // just update result not original record
+                        $order->status = 'all_packaged';
+                    }
+                }
+            } else {
+                if ($order->partially_shipped_warehouse_alloc_count > 0 && $order->order->warehouse_alloc_count == $order->partially_shipped_warehouse_alloc_count) {
+                    $order->status = 'ready_to_ship';
+                } else {
+                    if ($order->partially_shipped_warehouse_alloc_count > 0) {
+                        $order->status = 'partially_shipped';
+                    }
+                }
+                if ($order->warehouse_alloc_count == $order->packaged_warehouse_alloc_count) {
+                    // just update result not original record
+                    $order->status = 'all_packaged';
+                    $order->save();
+                } elseif ($order->packaged_warehouse_alloc_count > 0 && $order->warehouse_alloc_count != $order->packaged_warehouse_alloc_count) {
+                    $order->status = 'partial_packaged';
+                    $order->save();
+                }
+            }
+        }
+        // dd($orders);
         return view('packagingList.index', compact('orders', 'status'));
     }
 
@@ -456,6 +529,42 @@ class PackagingController extends Controller
                 $insertCount++;
             }
 
+            // update sales order status as partially packaged if any product is partially packaged
+            $salesOrder = SalesOrder::with([
+                'orderedProducts.warehouseAllocations'
+            ])
+                ->withCount('orderedProducts')
+
+                // total warehouse allocations
+                ->withCount([
+                    'orderedProducts as warehouse_alloc_count' => function ($q) {
+                        $q->join('warehouse_allocations', 'sales_order_products.id', '=', 'warehouse_allocations.sales_order_product_id');
+                    }
+                ])
+
+                // packaged ordered products
+                ->withCount([
+                    'orderedProducts as packaged_product_count' => function ($q) {
+                        $q->where('status', 'packaged');
+                    }
+                ])
+
+                // packaged warehouse allocations
+                ->withCount([
+                    'orderedProducts as packaged_warehouse_alloc_count' => function ($q) {
+                        $q->join('warehouse_allocations', 'sales_order_products.id', '=', 'warehouse_allocations.sales_order_product_id')
+                            ->where('warehouse_allocations.status', 'packaged');
+                    }
+                ])
+
+                ->findOrFail($request->salesOrderId);
+
+            if ($salesOrder->packaged_warehouse_alloc_count > 0 && $salesOrder->warehouse_alloc_count != $salesOrder->packaged_warehouse_alloc_count) {
+                $salesOrder->status = 'partial_packaged';
+            }
+            $salesOrder->save();
+
+
             if ($insertCount === 0) {
                 DB::rollBack();
 
@@ -526,6 +635,7 @@ class PackagingController extends Controller
                         $allocation->box_count = (int) ($boxCount * $proportion);
                         $allocation->weight = (int) ($weight * $proportion);
                         $allocation->product_status = 'packaged';
+                        $allocation->status = 'packaged';
                     } else {
                         $allocation->final_dispatched_quantity = 0;
                         $allocation->box_count = 0;
@@ -544,6 +654,7 @@ class PackagingController extends Controller
                     $userAllocation->box_count = $boxCount;
                     $userAllocation->weight = $weight;
                     $userAllocation->product_status = 'packaged';
+                    $userAllocation->status = 'packaged';
                     $userAllocation->save();
                 }
             }
@@ -645,9 +756,9 @@ class PackagingController extends Controller
                 'orderedProducts.warehouseStock',
             ])->findOrFail($request->sales_order_id);
 
-            if ($salesOrder->status !== 'ready_to_package') {
+            if ($salesOrder->status === 'ready_to_ship') {
                 return redirect()->back()
-                    ->with('error', 'Order is not in ready_to_package status.');
+                    ->with('error', 'Order is already in ready_to_ship status.');
             }
 
             if (! $isAdmin) {
@@ -666,6 +777,7 @@ class PackagingController extends Controller
                             if ($allocation->final_dispatched_quantity > 0 && $allocation->approval_status === 'draft') {
                                 $allocation->approval_status = 'pending';
                                 $allocation->product_status = 'approval_pending';
+                                $allocation->status = 'approval_pending';
                                 $allocation->save();
                                 $allocationsUpdated++;
 
@@ -710,11 +822,12 @@ class PackagingController extends Controller
                             }
 
                             // Only approve if status is 'pending' (warehouse has requested approval)
-                            if ($allocation->final_dispatched_quantity > 0 && $allocation->approval_status === 'pending') {
+                            if ($allocation->final_dispatched_quantity > 0 && $allocation->status === 'approval_pending') {
                                 // Approve this allocation
                                 // $allocation->status = 'ready_to_ship';
                                 $allocation->approval_status = 'approved';
                                 $allocation->product_status = 'completed';
+                                $allocation->status = 'ready_to_ship';
                                 $allocation->approved_by = $user->id;
                                 $allocation->approved_at = now();
                                 $allocation->save();
@@ -766,6 +879,7 @@ class PackagingController extends Controller
                         }
                     }
                     $product->product_status = 'completed';
+                    $product->status = 'ready_to_ship';
                     $product->save();
                 }
 

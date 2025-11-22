@@ -422,7 +422,6 @@ class PurchaseOrderController extends Controller
                                 'sku' => $newSku,
                                 'allocated_quantity' => $salesOrderFulfillment[$newSku]['quantity'],
                                 'sequence' => 1,
-                                'status' => 'allocated',
                                 'notes' => "Allocated from warehouse {$request->warehouse_id}",
                             ]);
                             $salesOrderFulfillment[$newSku]['quantity'] = 0;
@@ -438,7 +437,6 @@ class PurchaseOrderController extends Controller
                                 'sku' => $newSku,
                                 'allocated_quantity' => $tempProduct->po_qty,
                                 'sequence' => 1,
-                                'status' => 'allocated',
                                 'notes' => "Allocated from warehouse {$request->warehouse_id}",
                             ]);
                             $salesOrderFulfillment[$newSku]['quantity'] = $salesOrderFulfillment[$newSku]['quantity'] - $tempProduct->po_qty;

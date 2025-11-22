@@ -142,3 +142,63 @@ You may include:
 ---
 
 Would you like me to format this into a **database table structure**, **workflow diagram**, or **status dropdown system for your UI**?
+
+
+Task 1: use following logics for sales order status i want to make this statuses changes when my sales order going throw it's flow. 
+refer:
+Route::get('/view-order/{id}', 'view')->name('sales.order.view'); 
+This will opens my 
+
+visible only in packaging list: 
+
+sales order: ready to package 
+    sales order products: packaging
+    warehouse allocations: packaging
+
+sales order: partial packaged
+    sales order products: packaging
+    warehouse allocations: packaged
+
+sales order: packaged
+    sales order products: packaged
+    warehouse allocations: packaged
+
+
+
+sales order: approval pending
+    sales order products: approval pending
+    warehouse allocations: approval pending
+
+
+
+sales order: ready to ship
+    sales order products: ready to ship
+    warehouse allocations: ready to ship
+
+sales order: partial shipped
+    sales order products: ready to ship
+    warehouse allocations: shipped
+
+
+
+
+sales order: shipped
+    sales order products: shipped
+    warehouse allocations: shipped
+
+
+sales order: partial delivered
+    sales order products: shipped
+    warehouse allocations: delivered
+
+
+
+
+sales order: delivered
+    sales order products: delivered
+    warehouse allocations: delivered 
+
+
+sales order: completed
+    sales order products: completed
+    warehouse allocations: completed

@@ -18,6 +18,10 @@
         'dispatched' => 'bg-primary',
         'shipped' => 'bg-dark',
         'approval_pending' => 'bg-secondary',
+        'cancelled' => 'bg-danger',
+        'delivered' => 'bg-dark',
+        'partially_packaged' => 'bg-warning',
+        'partial_packaged' => 'bg-warning',
         'completed' => 'bg-success',
     ];
     $statusLabels = [
@@ -27,6 +31,9 @@
         'ready_to_ship' => 'Ready to Ship',
         'dispatched' => 'Dispatched',
         'shipped' => 'Shipped',
+        'cancelled' => 'Cancelled',
+        'delivered' => 'Delivered',
+        'partially_packaged' => 'Partially Packaged',
         'approval_pending' => 'Ready to Ship Approval Pending',
         'completed' => 'Completed',
     ];
@@ -38,6 +45,9 @@
         'approval_pending' => 'bg-secondary',
         'packaged' => 'bg-info',
         'shipped' => 'bg-dark',
+        'partial_packaged' => 'bg-warning',
+        'all_packaged' => 'bg-success',
+        'ready_to_ship' => 'bg-success',
         'completed' => 'bg-success',
         'cancelled' => 'bg-danger',
     ];
@@ -50,6 +60,9 @@
         'packaged' => 'Packaged',
         'shipped' => 'Shipped',
         'completed' => 'Ready to Ship',
+        'partial_packaged' => 'Partial Packaged',
+        'all_packaged' => 'All Packaged',
+        'ready_to_ship' => 'Ready to Ship',
         'cancelled' => 'Cancelled',
     ];
 @endphp
@@ -60,7 +73,7 @@
         <div class="main-content">
             <div class="div d-flex my-2">
                 <div class="col">
-                    <h5 class="mb-3">Packaging List: 
+                    <h5 class="mb-3">Packaging List:
                         <span id="salesOrderId" class="d-none">{{ $salesOrder->id }}</span>
                         <span>{{ $salesOrder->order_number }}</span>
                     </h5>
@@ -361,52 +374,21 @@
                                                 @endif
                                             </td>
                                             <td>
-                                                @if ($order->status == 'ready_to_ship')
-                                                    @if ($isSuperAdmin ?? false)
-                                                        <span
-                                                            class="badge {{ $statusBadges[$order->status] ?? 'bg-secondary' }}">
-                                                            {{-- {{ $user->warehouse->name }}: --}}
-                                                            {{ $statusLabels[$order->status] ?? 'Ready to Ship' }}
-                                                        </span>
-                                                    @else
-                                                        <span
-                                                            class="badge {{ $statusBadges[$order->status] ?? 'bg-secondary' }}">
-                                                            {{ $statusLabels[$order->status] ?? 'Ready to Ship' }}
-                                                        </span>
-                                                    @endif
-                                                @else
+                                                {{-- @if ($order->status == 'ready_to_ship') --}}
                                                     @if ($order->warehouseAllocations->count() >= 1)
                                                         @foreach ($order->warehouseAllocations as $allocation)
-                                                            @if ($allocation->shipping_status == 'shipped')
-                                                                @php $allocation->product_status = 'shipped'; @endphp
-                                                            @endif
                                                             @if ($isSuperAdmin ?? false)
-                                                                @if ($allocation->final_dispatched_quantity > 0)
-                                                                    <span
-                                                                        class="badge {{ $allocationStatusBadges[$allocation->product_status] ?? 'bg-secondary' }}">
-                                                                        {{ $allocation->warehouse->name }}:
-                                                                        {{ $allocationStatusLabels[$allocation->product_status] ?? 'Unknown' }}
-                                                                    </span>
-                                                                @else
-                                                                    <span
-                                                                        class="badge {{ $allocationStatusBadges[$allocation->product_status] ?? 'bg-secondary' }}">
-                                                                        {{ $allocation->warehouse->name }}:
-                                                                        {{ $allocationStatusLabels[$allocation->product_status] ?? 'Unknown' }}
-                                                                    </span>
-                                                                @endif
+                                                                <span
+                                                                    class="badge {{ $allocationStatusBadges[$allocation->status] ?? 'bg-secondary' }}">
+                                                                    {{ $allocation->warehouse->name }}:
+                                                                    {{ $allocationStatusLabels[$allocation->status] ?? 'Unknown' }}
+                                                                </span>
                                                             @else
                                                                 @if ($user->warehouse_id == $allocation->warehouse_id)
-                                                                    @if ($allocation->final_dispatched_quantity > 0)
-                                                                        <span
-                                                                            class="badge {{ $allocationStatusBadges[$allocation->product_status] ?? 'bg-secondary' }}">
-                                                                            {{ $allocationStatusLabels[$allocation->product_status] ?? 'Unknown' }}
-                                                                        </span>
-                                                                    @else
-                                                                        <span
-                                                                            class="badge {{ $allocationStatusBadges[$allocation->product_status] ?? 'bg-secondary' }}">
-                                                                            {{ $allocationStatusLabels[$allocation->product_status] ?? 'Unknown' }}
-                                                                        </span>
-                                                                    @endif
+                                                                    <span
+                                                                        class="badge {{ $allocationStatusBadges[$allocation->status] ?? 'bg-secondary' }}">
+                                                                        {{ $allocationStatusLabels[$allocation->status] ?? 'Unknown' }}
+                                                                    </span>
                                                                 @endif
                                                             @endif
                                                         @endforeach
@@ -417,7 +399,7 @@
                                                             {{ $statusLabels[$order->status] ?? 'Unknown' }}
                                                         </span>
                                                     @endif
-                                                @endif
+                                                {{-- @endif --}}
                                             </td>
                                         </tr>
                                     @empty

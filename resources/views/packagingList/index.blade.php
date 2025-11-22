@@ -43,6 +43,18 @@
                             </a>
                         </li>
                         <li class="nav-item" role="presentation">
+                            <a class="nav-link {{ $status === 'partial_packaged' ? 'active' : '' }}"
+                                href="{{ route('packaging.list.index', ['status' => 'partial_packaged']) }}">
+                                Partial Packaged
+                            </a>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <a class="nav-link {{ $status === 'all_packaged' ? 'active' : '' }}"
+                                href="{{ route('packaging.list.index', ['status' => 'all_packaged']) }}">
+                                All Packaged
+                            </a>
+                        </li>
+                        <li class="nav-item" role="presentation">
                             <a class="nav-link {{ $status === 'ready_to_ship' ? 'active' : '' }}"
                                 href="{{ route('packaging.list.index', ['status' => 'ready_to_ship']) }}">
                                 Ready To Ship
@@ -73,9 +85,13 @@
                                             'blocked' => 'Blocked',
                                             'completed' => 'Completed',
                                             'packaging' => 'Packaging',
+                                            'partial_packaged' => 'Partial Packaged',
+                                            'all_packaged' => 'All Packaged',
                                             'packaged' => 'Packaged',
                                             'shipped' => 'Shipped',
+                                            'approval_pending' => 'Approval Pending',
                                             'ready_to_ship' => 'Ready To Ship',
+                                            'partially_shipped' => 'Partially Shipped',
                                             'ready_to_package' => 'Ready To Package',
                                         ];
                                     @endphp

@@ -454,7 +454,6 @@ class SalesOrderController extends Controller
                             'sku' => $sku,
                             'allocated_quantity' => $allocatedQty,
                             'sequence' => 1,
-                            'status' => 'allocated',
                             'notes' => "Allocated from warehouse {$product->warehouse->name}",
                         ]);
 
@@ -1154,7 +1153,7 @@ class SalesOrderController extends Controller
 
                 // Update shipping_status for the allocations
                 foreach ($allocations as $allocation) {
-                    $allocation->shipping_status = $request->status;
+                    $allocation->status = $request->status;
                     $allocation->save();
 
                     activity()
@@ -1312,6 +1311,7 @@ class SalesOrderController extends Controller
 
                     if ($order->warehouseAllocations->count() > 0) {
                         foreach ($order->warehouseAllocations as $allocation) {
+                            $allocation->status = 'packaging';
                             $allocation->product_status = 'packaging';
                             $allocation->save();
                         }

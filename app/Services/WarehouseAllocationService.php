@@ -82,7 +82,6 @@ class WarehouseAllocationService
                         'sku' => $sku,
                         'allocated_quantity' => $allocateQty,
                         'sequence' => $sequence,
-                        'status' => 'allocated',
                         'notes' => "Auto-allocated {$allocateQty} units from warehouse {$warehouseStock->warehouse->name}",
                     ]);
 
@@ -109,7 +108,6 @@ class WarehouseAllocationService
                         'warehouse_name' => $warehouseStock->warehouse->name,
                         'allocated_quantity' => $allocateQty,
                         'sequence' => $sequence,
-                        'status' => 'allocated',
                     ];
 
                     $totalAllocated += $allocateQty;
