@@ -74,14 +74,14 @@ class SalesOrderController extends Controller
         $seen = [];
 
         foreach ($rows as $record) {
-            if (empty($record['SKU Code']) || empty($record['Facility Name'])) {
+            if (empty($record['SKU Code']) || empty($record['PO Number'])) {
                 continue;
             }
 
-            $key = strtolower(trim($record['Facility Name'])) . '|' . strtolower(trim($record['SKU Code']));
+            $key = strtolower(trim($record['PO Number'])) . '|' . strtolower(trim($record['SKU Code']));
 
             if (isset($seen[$key])) {
-                return 'Please check excel file: duplicate SKU (' . $record['SKU Code'] . ') found for same customer (' . $record['Facility Name'] . ').';
+                return 'Please check excel file: duplicate SKU (' . $record['SKU Code'] . ') found for same customer (' . $record['PO Number'] . ').';
             }
 
             $seen[$key] = true;
@@ -99,7 +99,6 @@ class SalesOrderController extends Controller
     public function index()
     {
         $orders = SalesOrder::with('customerGroup')->get();
-
         return view('salesOrder.index', compact('orders'));
     }
 
