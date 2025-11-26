@@ -462,7 +462,7 @@ class CustomerController extends Controller
      * @param  int  $group_id  - Customer group ID
      * @return \Illuminate\View\View
      */
-    public function edit($id, $group_id)
+    public function edit($id, $group_id = null)
     {
         $customer = Customer::findOrFail($id);
         $countries = Country::all();
@@ -481,7 +481,7 @@ class CustomerController extends Controller
     public function update(Request $request, $id)
     {
         $validator = Validator::make($request->all(), [
-            'group_id' => 'required|exists:customer_groups,id',
+            'group_id' => 'nullable|exists:customer_groups,id',
             'facility_name' => 'required|min:3|max:100',
             'client_name' => 'required|min:3|max:100',
             'contact_name' => 'required|min:3|max:100',
@@ -504,7 +504,7 @@ class CustomerController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return back()->with('errors', $validator->errors())->withInput();
+            return redirect()->back()->with('errors', $validator->errors())->withInput();
         }
 
         try {
@@ -540,7 +540,11 @@ class CustomerController extends Controller
 
             activity()->log("Customer {$customer->id} ({$customer->facility_name}) updated by " . Auth::user()->name);
 
-            return redirect()->route('customer.groups.view', $request->group_id)
+            if($request->filled('group_id')){
+                return redirect()->route('customer.groups.view', $request->group_id)
+                    ->with('success', 'Customer updated successfully.');
+            }
+            return redirect()->route('customer.index')
                 ->with('success', 'Customer updated successfully.');
         } catch (\Exception $e) {
             DB::rollBack();

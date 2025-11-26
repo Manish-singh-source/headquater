@@ -18,6 +18,8 @@
             </div>
             <!--end breadcrumb-->
 
+            @include('layouts.errors')
+
             <div class="row">
                 <div class="col-12">
                     <div class="card">
@@ -27,7 +29,7 @@
                                 @csrf
                                 @method('PUT')
 
-                                <input type="hidden" name="group_id" value="{{ $group_id }}">
+                                <input type="hidden" name="group_id" value="{{ $group_id ?? '' }}">
 
                                 <div class="col-md-6">
                                     <label for="facility_name" class="form-label">Facility Name</label>
