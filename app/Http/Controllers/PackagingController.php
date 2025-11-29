@@ -438,6 +438,12 @@ class PackagingController extends Controller
                     ->where('customer_id', $customer->id)
                     ->where('sales_order_id', $request->salesOrderId)
                     ->where('sku', $record['SKU Code'])
+                    ->with(['tempOrder' => function ($query) use ($record) {
+                        $query->where('po_number', $record['Purchase Order No']);
+                    }])
+                    ->whereHas('tempOrder', function ($query) use ($record) {
+                        $query->where('po_number', $record['Purchase Order No']);
+                    })
                     ->first();
 
                 if (! $order) {

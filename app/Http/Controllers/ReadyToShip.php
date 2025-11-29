@@ -94,10 +94,6 @@ class ReadyToShip extends Controller
                 })
                 ->find($id);
 
-            // count warehouseAllocations
-            $warehouseAllocationsCount = $order->orderedProducts->sum(function ($product) {
-                return $product->warehouseAllocations->count();
-            });
 
             if (! $order) {
                 return redirect()->route('ready.to.ship.index')
@@ -116,10 +112,16 @@ class ReadyToShip extends Controller
 
             $customerInfo = Customer::with('groupInfo.customerGroup')
                 ->withCount('orders')
+                // fetch status from 
+                ->with('orders', function($query) use ($id) {
+                    $query->where('sales_order_id', $id);
+                })
                 ->whereIn('id', $customerIds)
                 ->get();
+            // unique customers array created for view
+            // dd($customerInfo);
 
-            return view('readyToShip.view', compact('customerInfo', 'order', 'warehouseAllocationsCount'));
+            return view('readyToShip.view', compact('customerInfo', 'order'));
         } catch (\Exception $e) {
             return redirect()->route('readyToShip.index')
                 ->with('error', 'Error loading order: '.$e->getMessage());
@@ -157,8 +159,9 @@ class ReadyToShip extends Controller
             $salesOrder = SalesOrder::with([
                 'customerGroup',
                 'warehouse',
-                'orderedProducts' => function ($query) use ($userWarehouseId, $isSuperAdmin) {
+                'orderedProducts' => function ($query) use ($userWarehouseId, $isSuperAdmin, $c_id) {
                     // Only include orderedProducts that have warehouseAllocations for this warehouse
+                    $query->where('customer_id', $c_id);
                     $query->whereHas('warehouseAllocations', function ($q) use ($userWarehouseId, $isSuperAdmin) {
                         if (! $isSuperAdmin && $userWarehouseId) {
                             $q->where('warehouse_id', $userWarehouseId);

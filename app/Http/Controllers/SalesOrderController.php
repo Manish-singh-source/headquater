@@ -1102,6 +1102,7 @@ class SalesOrderController extends Controller
 
     public function changeStatus(Request $request)
     {
+        // dd($request->all());
         DB::beginTransaction();
 
         try {

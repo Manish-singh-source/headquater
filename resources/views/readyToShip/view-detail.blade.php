@@ -58,23 +58,39 @@
                     $userWarehouseId = $user->warehouse_id;
                 }
                 if ($isSuperAdmin) {
-                    $totalAllocated = $order->warehouseAllocations->count();
+                    $totalAllocated = $order
+                        ->where('customer_id', $customerInfo->id)
+                        ->whereIn('status', ['ready_to_ship', 'shipped'])
+                        ->count();
                 } else {
-                    $totalAllocated = $order->warehouseAllocations->where('warehouse_id', $userWarehouseId)->count();
+                    $totalAllocated = $order
+                        // ->where('warehouse_id', $userWarehouseId)
+                        ->where('customer_id', $customerInfo->id)
+                        ->whereIn('status', ['ready_to_ship', 'shipped'])
+                        ->count();
                 }
 
-                // $allocatedCompleted = $order->warehouseAllocations->where('product_status', 'completed')->where('warehouse_id', $userWarehouseId)->count();
-                $allocatedShipped = $order->warehouseAllocations
-                    ->where('shipping_status', 'shipped')
-                    ->where('warehouse_id', $userWarehouseId)
-                    ->count();
+                // $allocatedCompleted = $order->where('product_status', 'completed')->where('warehouse_id', $userWarehouseId)->count();
+                if ($isSuperAdmin) {
+                    $allocatedShipped = $order
+                        ->where('status', 'shipped')
+                        ->where('customer_id', $customerInfo->id)
+                        ->count();
+                } else {
+                    $allocatedShipped = $order
+                        ->where('status', 'shipped')
+                        // ->where('warehouse_id', $userWarehouseId)
+                        ->where('customer_id', $customerInfo->id)
+                        ->count();
+                }
                 // if($allocatedCompleted == $totalAllocated) {
                 //     $currentStatus = 'completed';
                 // } else
                 if ($allocatedShipped == $totalAllocated) {
                     $currentStatus = 'shipped';
                 } else {
-                    $currentStatus = 'partially_packaged';
+                    // $currentStatus = 'partially_packaged';
+                    $currentStatus = 'ready_to_ship';
                 }
             @endphp
         @endif
@@ -190,16 +206,26 @@
                                             <tbody>
                                                 @php
                                                     $statusBadgeColors = [
-                                                        'ready_to_ship' => 'bg-success',
-                                                        'shipped' => 'bg-primary',
+                                                        'pending' => 'bg-secondary',
                                                         'packaging' => 'bg-warning',
+                                                        'packaged' => 'bg-info',
+                                                        'partially_packaged' => 'bg-warning',
+                                                        'ready_to_ship' => 'bg-success',
+                                                        'dispatched' => 'bg-primary',
+                                                        'shipped' => 'bg-dark',
+                                                        'approval_pending' => 'bg-secondary',
                                                         'completed' => 'bg-success',
                                                     ];
                                                     $statusLabels = [
-                                                        'ready_to_ship' => 'Ready to Ship',
-                                                        'shipped' => 'Shipped',
+                                                        'pending' => 'Pending',
                                                         'packaging' => 'Packaging',
-                                                        'completed' => 'Ready to Ship',
+                                                        'packaged' => 'Packaged',
+                                                        'partially_packaged' => 'Partially Packaged',
+                                                        'ready_to_ship' => 'Ready to Ship',
+                                                        'dispatched' => 'Dispatched',
+                                                        'shipped' => 'Shipped',
+                                                        'approval_pending' => 'Ready to Ship Approval Pending',
+                                                        'completed' => 'Completed',
                                                     ];
                                                 @endphp
                                                 @foreach ($warehouseStatuses as $warehouseId => $statusInfo)
@@ -207,8 +233,8 @@
                                                         <td>{{ $statusInfo['warehouse_name'] }}</td>
                                                         <td>
                                                             <span
-                                                                class="badge {{ $statusBadgeColors[$statusInfo['product_status']] ?? 'bg-secondary' }}">
-                                                                {{ $statusLabels[$statusInfo['product_status']] ?? ucfirst(str_replace('_', ' ', $statusInfo['product_status'])) }}
+                                                                class="badge {{ $statusBadgeColors[$statusInfo['shipping_status']] ?? 'bg-secondary' }}">
+                                                                {{ $statusLabels[$statusInfo['shipping_status']] ?? ucfirst(str_replace('_', ' ', $statusInfo['shipping_status'])) }}
                                                             </span>
                                                         </td>
                                                     </tr>

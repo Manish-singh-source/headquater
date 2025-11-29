@@ -32,7 +32,7 @@
                                         <th>Client&nbsp;Name</th>
                                         <th>Contact&nbsp;Name</th>
                                         <th>Products</th>
-                                        {{-- <th>Status</th> --}}
+                                        <th>Status</th>
                                         <th>Action</th>
                                     </tr>
                                 </thead>
@@ -42,8 +42,17 @@
                                             'pending' => 'Pending',
                                             'blocked' => 'Blocked',
                                             'completed' => 'Completed',
+                                            'approval_pending' => 'Ready to Ship Approval Pending',
+                                            'packaging' => 'Packaging',
+                                            'packaged' => 'Packaged',
+                                            'partially_packaged' => 'Partially Packaged',
+                                            'approved' => 'Approved',
+                                            'cancelled' => 'Cancelled',
                                             'ready_to_ship' => 'Ready To Ship',
                                             'ready_to_package' => 'Ready To Package',
+                                            'shipped' => 'Shipped',
+                                            'delivered' => 'Delivered',
+                                            'cancelled' => 'Cancelled',
                                         ];
                                     @endphp
                                     @forelse ($customerInfo as $customerOrders)
@@ -62,13 +71,11 @@
                                                 {{ $customerOrders->contact_name }}
                                             </td>
                                             <td>
-                                                {{ $warehouseAllocationsCount }}
-                                            </td>
-                                            {{-- 
-                                            <td>
                                                 {{ $customerOrders->orders_count }}
-                                            </td> 
-                                            --}}
+                                            </td>
+                                            <td>
+                                                {{ $statuses[$customerOrders->orders[0]->status] }}
+                                            </td>
                                             <td>
                                                 <a aria-label="anchor"
                                                     href="{{ route('readyToShip.view.detail', ['id' => $order->id, 'c_id' => $customerOrders->id]) }}"
