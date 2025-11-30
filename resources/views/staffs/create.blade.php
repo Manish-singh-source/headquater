@@ -142,7 +142,7 @@
                                                         class="text-danger">*</span></label>
                                                 <input type="password" name="password" id="password"
                                                     class="form-control @error('password') is-invalid @enderror" value=""
-                                                    placeholder="Enter password id">
+                                                    placeholder="Enter Password">
                                                 @error('password')
                                                     <div class="invalid-feedback">
                                                         {{ $message }}

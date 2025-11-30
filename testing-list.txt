@@ -1,0 +1,295 @@
+
+1. Dashboard: 
+
+=================================== 
+1. Access Control: 
+    - Only authorized personnel should have access to the view, edit, delete, and download functionalities.
+    
+    Staffs: 
+    - View: view All staff members 
+        - view in detail staff member 
+        - view staff member's related permissions
+    - Edit: edit staff member details 
+    - Delete: delete staff member
+    - Update Status: update status of staff member 
+    - multi delete: delete multiple staff members at once
+    - multi update status: update status of multiple staff members at once 
+    - add new staff member: add a new staff member to the system 
+    - Download: download staff member details in excel format 
+
+    Add Staff Rules: 
+    - role and warehouse are required fields
+    - email must be unique and in a valid email format
+    - password must meet security requirements (e.g., minimum length, complexity) 
+    - phone number must be in a valid format
+
+
+2. Roles: 
+
+3. Warehouses:
+    - View: view All warehouses 
+        - view in detail warehouse 
+    - Edit: edit warehouse details 
+    - Delete: delete warehouse
+    - Update Status: update status of warehouse
+    - multi delete: delete multiple warehouses at once
+    - multi update status: update status of multiple warehouses at once only status of non-default warehouses can be updated
+    - add new warehouse: add a new warehouse to the system
+    - Download: download warehouse details in excel format
+
+    Note: 
+        - one warehouse is default warehouse and cannot be deleted or deactivated. 
+        - warehouse name must be unique when adding or editing a warehouse. 
+        - use soft delete for deleting a warehouse. 
+        
+
+4. SKU Mapping: 
+    - View: view All SKU mappings 
+    - edit: edit SKU mapping details 
+    - delete: delete SKU mapping
+
+5. Vendors:  
+    - Add new vendor: add a new vendor to the system
+    - View: view All vendors 
+        - view in detail vendor 
+    - Edit: edit vendor details 
+    - Delete: delete vendor
+    - Update Status: update status of vendor
+    - multi delete: delete multiple vendors at once
+    - multi update status: update status of multiple vendors at once
+    - Download: download vendor details in excel format
+
+    Note: 
+        - vendor code must be unique when adding or editing a vendor. 
+        - use soft delete for deleting a vendor.
+
+
+6. Products: 
+    - Add new products (Bulk): add a new product to the system 
+    - View: view All products 
+    - Edit: edit product details
+    - Delete: delete product
+    - Update (Bulk): update multiple products at once 
+    - multi delete: delete multiple products at once 
+    - Export Products: export product details in excel format 
+    
+    Note: 
+        - product SKU must be unique when adding or editing a product. 
+        - use soft delete for deleting a product.
+
+
+7. Customer Groups: 
+    - Add new customer group(Bulk): add a new customer group to the system
+    - View: view All customer groups 
+        - view in detail customer group 
+        - view customer group’s related customers 
+        - view customer details 
+        - edit customer details
+        - delete customer 
+        - update status of customer 
+        - multi delete customers at once 
+        - multi update status of customers at once
+        - add new customer to customer group
+        - add new customers to customer group in bulk
+
+    - Edit: edit customer group details
+    - Delete: delete customer group
+    - Update Status: update status of customer group
+    - multi delete: delete multiple customer groups at once
+    - multi update status: update status of multiple customer groups at once
+
+    Note: 
+        - customer group name must be unique when adding or editing a customer group. 
+        - use soft delete for deleting a customer group. 
+        - before deleting a customer group, give a popup confirmation.
+        - before deleting a customer group, check if any customers are associated with it. If so, prevent deletion and notify the user.
+
+
+8. Customers: 
+    - Add new customer: add a new customer to the system
+    - View: view All customers 
+        - view in detail customer 
+    - Edit: edit customer details
+    - Delete: delete customer
+    - Update Status: update status of customer
+    - multi delete: delete multiple customers at once
+    - multi update status: update status of multiple customers at once
+    - Download: download customer details in excel format
+
+    Note: 
+        - customer email must be unique when adding or editing a customer. 
+        - use soft delete for deleting a customer.
+
+===================================
+
+1. Sales Orders: 
+    - Check Availability: check product availability in stock before creating a sales order
+        - Rules: 
+            - only show active warehouses in dropdown 
+            - only show active customer groups in dropdown
+            - Upload excel file with specified format containing: 
+                - columns list: Product SKU, Quantity
+            - First: check all columns are present 
+            - Second: check customer (facility name same as customer facility name) exists in file & system  
+            - Third: check product SKUs exist in file & system 
+            - Then proceed to check stock availability for each product SKU
+            - check required quantity is available in stock for each product SKU 
+            - generate report with results: 
+                - excel file with columns: Product SKU, Requested Quantity, Available Quantity, Status (Available/Not Available) 
+
+    Note: 
+        - For creating Sales Order: add block quantity in excel file format to hold quantity for creating sales order
+
+    - Create Sales Order: create a new sales order in the system
+        - Rules: 
+            - every thing as check availability
+            - check if vendor exists in system 
+            - generate sales order 
+            - generate purchase order if any product is not available in stock 
+
+    - Sales Order List: 
+        - list of All sales orders 
+            - tab switching for: 
+                - All Sales Orders
+                - Blocked Sales Orders
+                - Completed Sales Orders 
+                - Ready to Package Sales Orders
+                - Ready to Ship Sales Orders 
+                - Shipped Sales Orders
+                - Delivered Sales Orders
+                - Cancelled Sales Orders
+        - delete sales order
+        - view sales order details        
+                - tab switching: 
+                    - all products in sales order
+                    - packaging products in sales order 
+                    - packaged products in sales order 
+                    - shipped products in sales order
+                    - delivered products in sales order
+                    - cancelled products in sales order 
+
+                - sales order products list 
+                - delete selected sales order product
+                - download sales order products in excel format
+                - update sales order products using downloaded excel format 
+            - update sales order status 
+            - generate invoice for sales order 
+
+2. Purchase Orders: 
+    - Rules: 
+        - when generating purchase order from sales order, group products by vendor 
+        - generate separate purchase order for each vendor 
+        
+    - Purchase Order List: 
+        - list of All purchase orders 
+            - tab switching for: 
+                - All Purchase Orders
+                - Pending Purchase Orders
+                - Received Purchase Orders
+                - Cancelled Purchase Orders
+        - create purchase order manually 
+        - delete purchase order 
+        - delete multiple purchase orders at once 
+
+        - view purchase order details        
+            - tab switching: 
+                - all products in purchase order
+                - received products in purchase order 
+                - pending products in purchase order 
+            - purchase order products list 
+            - delete purchase order product 
+            - multi delete purchase order products
+            - download purchase order products in excel format 
+            - update purchase order products using downloaded excel format 
+            - update purchase order product 
+        - add vendor pi 
+            - display vendor pi products 
+            - add vendor pi product 
+            - update vendor pi product 
+            - delete vendor pi product  
+    - add vendor grn 
+        - display vendor grn 
+        - update vendor grn 
+        - delete vendor grn
+    - add vendor invoice
+        - display vendor invoice 
+        - update vendor invoice 
+        - delete vendor invoice
+    - add vendor payment 
+        - display vendor payment 
+        - update vendor payment 
+        - delete vendor payment
+    - change purchase order status 
+
+    - Approve or Reject Received Purchase Orders: 
+        - approve received purchase order 
+        - reject received purchase order 
+        - after approval, update stock quantity in warehouse 
+        - after rejection, do not update stock quantity in warehouse
+
+3. Received Orders: 
+    - tab switching for: 
+        - All Received Orders
+        - Pending Received Orders
+        - Completed Received Orders
+        - sent for approval Received Orders 
+        - approved Received Orders  
+        - rejected Received Orders 
+
+    - View: view All received orders 
+        - display received order products 
+        - export received order products in excel format 
+        - update received order products using downloaded excel format 
+        - sent for approval received order (submit received order for approval) 
+        - afer sending for approval, 
+            - hide update and submit functionality 
+
+4. Packaging Orders: 
+
+5. Ready to Ship Orders: 
+
+7. Product Issues: 
+    - Vendor Order Issues: (shortage, damaged, wrong item etc.)
+        - View All vendor order issues
+    - Warehouse Order Issues: (shortage, damaged, wrong item etc.)
+        - View All customer order issues 
+
+8. Return Orders: 
+    - Vendor Return Orders: (exceed quantity, damaged, wrong item etc.)
+        - View All vendor return orders 
+        - update vendor return order status (pending, accept, return to vendor)
+        - after acceptance, update stock quantity in warehouse 
+        - after return to vendor, do not update stock quantity in warehouse 
+    - Customer Return Orders: (manual return orders from customers)
+        - View All customer return orders 
+        - update customer return order status (pending, approved, rejected) 
+        - after approval, update stock quantity in warehouse 
+        - after rejection, do not update stock quantity in warehouse 
+
+9. Track Orders: 
+    - Track sales orders by order number 
+    - Track purchase orders by order number 
+
+10. Reports: 
+    - Sales Reports 
+    - Inventory Reports 
+    - Purchase Reports 
+
+===================================
+
+1. Excel Formats: 
+    - Staff Excel Format 
+    - Warehouse Excel Format 
+    - SKU Mapping Excel Format 
+    - Vendor Excel Format 
+    - Product Excel Format 
+    - Customer Group Excel Format 
+    - Customer Excel Format 
+    - Sales Order Check Availability Excel Format 
+    - Sales Order Create Excel Format 
+    - Purchase Order Create Excel Format
+    - Received Order Excel Format
+    - Packaging Order Excel Format
+    - Ready to Ship Order Excel Format
+    - Product Issue Excel Format
+    - Return Order Excel Format

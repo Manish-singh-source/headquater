@@ -20,7 +20,7 @@
                 <div class="col-12">
                     <div class="card">
                         <div class="card-header">
-                            <h5>Address Details</h5>
+                            <h5>Vendor Details</h5>
                         </div>
                         <div class="card-body">
                             <ul class="col-12 list-group list-group-flush">
