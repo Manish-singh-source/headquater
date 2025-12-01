@@ -142,6 +142,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/warehouses/view/{id}', 'view')->name('warehouse.view');
         Route::post('/warehouse/toggle-status', 'toggleStatus')->name('warehouse.toggleStatus');
         Route::delete('/warehouse/delete-selected', 'deleteSelected')->name('delete.selected.warehouse');
+        Route::post('/warehouse/bulk-status-change', 'bulkStatusChange')->name('warehouse.bulkStatusChange');
     });
 
     // Product controller

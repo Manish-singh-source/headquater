@@ -25,7 +25,11 @@
                                         data-bs-toggle="dropdown"> <span class="visually-hidden">Toggle Dropdown</span>
                                     </button>
                                     <div class="dropdown-menu dropdown-menu-right dropdown-menu-lg-end">
-                                        <a class="dropdown-item cursor-pointer" id="delete-selected">Delete All</a>
+                                        <a class="dropdown-item cursor-pointer" id="activate-selected">Activate
+                                            Selected</a>
+                                        <a class="dropdown-item cursor-pointer" id="deactivate-selected">Deactivate
+                                            Selected</a>
+                                        <a class="dropdown-item cursor-pointer" id="delete-selected">Delete Selected</a>
                                     </div>
                                 </div>
                             </div>
@@ -250,51 +254,108 @@
     </script>
     <script>
         $(document).ready(function() {
-            var warehouseTable = $('#warehouseTable').DataTable({
-                "columnDefs": [{
-                        "orderable": false,
-                        "targets": -1
-                    } // last column not orderable
-                ],
-                lengthChange: true,
-                buttons: [{
-                        extend: 'excelHtml5',
-                        className: 'd-none'
-                    } // hide default button
-                ]
+            const table = $('#warehouseTable').DataTable({
+                "order": [],
+                'columnDefs': [{
+                    'orderable': false,
+                    'targets': [0, 9] // Disable ordering on the first and last columns
+                }]
             });
 
-            // Function to filter table based on status
-            function filterWarehouse(status) {
-                warehouseTable.rows().every(function() {
-                    var $checkbox = $(this.node()).find('.status-switch2');
-                    // var isChecked = $checkbox.prop('checked') ? 1 : 0;
-                    var isChecked = $checkbox.is(':checked') ? '1' :
-                    '0'; // Convert to string for comparison
-                    console.log('Filtering warehouse:', status, isChecked);
+            // Select All
+            $('#select-all').on('change', function() {
+                // $('.row-checkbox').prop('checked', this.checked);
+                table.rows().every(function() {
+                    var row = this.node();
+                    var checkbox = $(row).find('.row-checkbox');
+                    checkbox.prop('checked', $('#select-all').is(':checked'));
+                });
+            });
 
-                    if (status === 'all') {
-                        $(this.node()).show();
-                    } else if (isChecked == status) {
-                        $(this.node()).show();
-                    } else {
-                        $(this.node()).hide();
+            // Function to get selected IDs
+            function getSelected() {
+                let selected = [];
+                table.rows().every(function() {
+                    var row = this.node();
+                    var checkbox = $(row).find('.row-checkbox');
+                    if (checkbox.is(':checked')) {
+                        selected.push(checkbox.val());
                     }
                 });
+                return selected;
             }
 
-            // Tab click event
-            $('#warehouseTabs button').on('click', function() {
-                $('#warehouseTabs button').removeClass('active');
-                $(this).addClass('active');
+            // Function to submit form
+            function submitForm(action, data) {
+                let form = $('<form>', {
+                    method: 'POST',
+                    action: action
+                });
 
-                console.log('Tab clicked:', $(this).data('status')); // Debugging line
-                var status = $(this).data('status'); // all / 1 / 0
-                filterWarehouse(status);
+                form.append(`@csrf`);
+                $.each(data, function(key, value) {
+                    form.append($('<input>', {
+                        type: 'hidden',
+                        name: key,
+                        value: value
+                    }));
+                });
+
+                $('body').append(form);
+                form.submit();
+            }
+
+            // Activate Selected
+            $('#activate-selected').on('click', function() {
+                const selected = getSelected();
+
+                if (selected.length === 0) {
+                    alert('Please select at least one warehouse.');
+                    return;
+                }
+
+                if (confirm('Are you sure you want to activate selected warehouses?')) {
+                    submitForm("{{ route('warehouse.bulkStatusChange') }}", {
+                        ids: selected.join(','),
+                        status: 1
+                    });
+                }
             });
 
-            // Initial load: show all
-            filterWarehouse('all');
+            // Deactivate Selected
+            $('#deactivate-selected').on('click', function() {
+                const selected = getSelected();
+
+                if (selected.length === 0) {
+                    alert('Please select at least one warehouse.');
+                    return;
+                }
+
+                if (confirm('Are you sure you want to deactivate selected warehouses?')) {
+                    submitForm("{{ route('warehouse.bulkStatusChange') }}", {
+                        ids: selected.join(','),
+                        status: 0
+                    });
+                }
+            });
+
+            // Delete Selected
+            $('#delete-selected').on('click', function() {
+                const selected = getSelected();
+
+                if (selected.length === 0) {
+                    alert('Please select at least one warehouse.');
+                    return;
+                }
+
+                if (confirm('Are you sure you want to delete selected warehouses?')) {
+                    submitForm("{{ route('delete.selected.warehouse') }}", {
+                        _method: 'DELETE',
+                        ids: selected.join(','),
+                    });
+                }
+            });
+
         });
     </script>
 @endsection

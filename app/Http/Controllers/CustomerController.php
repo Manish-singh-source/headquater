@@ -46,8 +46,9 @@ class CustomerController extends Controller
                 ->get();
 
             $totalCustomersCount = Customer::count();
-            $activeCustomersCount = Customer::where('status', 1)->count();
-            $inactiveCustomersCount = Customer::where('status', 0)->count();
+            $activeCustomersCount = Customer::where('status', '1')->count();
+            $inactiveCustomersCount = Customer::where('status', '0')->count();
+            // dd($customers, $totalCustomersCount, $activeCustomersCount, $inactiveCustomersCount);
 
             return view('customer.index', compact('customers', 'status', 'totalCustomersCount', 'activeCustomersCount', 'inactiveCustomersCount'));
         } catch (\Exception $e) {

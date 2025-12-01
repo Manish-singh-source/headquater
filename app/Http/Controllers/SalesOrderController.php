@@ -109,7 +109,7 @@ class SalesOrderController extends Controller
      */
     public function create()
     {
-        $customerGroup = CustomerGroup::all();
+        $customerGroup = CustomerGroup::active()->get();
         $warehouses = Warehouse::where('status', '1')->get();
 
         return view('salesOrder.create', ['customerGroup' => $customerGroup, 'warehouses' => $warehouses]);

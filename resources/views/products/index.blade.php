@@ -127,8 +127,10 @@
                                     @forelse ($products as $product)
                                         <tr>
                                             <td>
-                                                <input class="form-check-input row-checkbox" type="checkbox" name="ids[]"
-                                                    value="{{ $product->id }}">
+                                                @if (optional($product->product)->id)
+                                                    <input class="form-check-input row-checkbox" type="checkbox"
+                                                        name="ids[]" value="{{ $product->product->id }}">
+                                                @endif
                                             </td>
                                             <td>{{ $product->warehouse->name ?? 'NA' }}</td>
                                             <td>{{ $product->product->sku ?? 'NA' }}</td>
@@ -261,7 +263,7 @@
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label for="sku" class="form-label">SKU Code</label>
-                                <input type="text" name="sku" id="sku" class="form-control" readonly>
+                                <input type="text" name="sku" id="sku" class="form-control" style="cursor: not-allowed" readonly>
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label for="ean_code" class="form-label">EAN Code</label>
@@ -294,7 +296,7 @@
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label for="basic_rate" class="form-label">Basic Rate</label>
-                                <input type="number" step="0.01" name="basic_rate" id="basic_rate"
+                                <input type="text" name="basic_rate" id="basic_rate"
                                     class="form-control">
                             </div>
                             <div class="col-md-6 mb-3">
@@ -304,7 +306,7 @@
                             <div class="col-md-6 mb-3">
                                 <label for="original_quantity" class="form-label">Original Quantity</label>
                                 <input type="number" name="original_quantity" id="original_quantity"
-                                    class="form-control">
+                                    class="form-control" style="cursor: not-allowed" readonly>
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label for="available_quantity" class="form-label">Available Quantity</label>
@@ -341,7 +343,7 @@
                 } else {
                     // Fallback if DataTable not initialized
                     document.querySelectorAll('.row-checkbox').forEach(cb => cb.checked = selectAll
-                    .checked);
+                        .checked);
                 }
             });
 
@@ -424,7 +426,7 @@
                     if (ws) {
                         $('#original_quantity').val(ws.original_quantity ?? ws.originalQuantity ?? 0);
                         $('#available_quantity').val(ws.available_quantity ?? ws.availableQuantity ??
-                        0);
+                            0);
                     } else {
                         $('#original_quantity').val(0);
                         $('#available_quantity').val(0);

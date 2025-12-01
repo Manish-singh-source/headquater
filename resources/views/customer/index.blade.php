@@ -136,7 +136,7 @@
 
                     <div class="customer-table">
                         <div class="table-responsive white-space-nowrap">
-                            <table id="example" class="table table-striped cell-border">
+                            <table id="customerTable" class="table table-striped cell-border">
                                 <thead class="table-light">
                                     <tr>
                                         <th>
@@ -295,17 +295,35 @@
         $(document).ready(function() {
 
             const groupId = $('#customerGroupId').text();
-
+            const table = $('#customerTable').DataTable({
+                "order": [],
+                'columnDefs': [{
+                    'orderable': false,
+                    'targets': [0, 9] // Disable ordering on the first and last columns
+                }]
+            });
+            
             // Select All
             $('#select-all').on('change', function() {
-                $('.row-checkbox').prop('checked', this.checked);
+                // $('.row-checkbox').prop('checked', this.checked);
+                table.rows().every(function() {
+                    var row = this.node();
+                    var checkbox = $(row).find('.row-checkbox');
+                    checkbox.prop('checked', $('#select-all').is(':checked'));
+                });
             });
 
             // Function to get selected IDs
             function getSelected() {
-                return $('.row-checkbox:checked').map(function() {
-                    return this.value;
-                }).get();
+                let selected = [];
+                table.rows().every(function() {
+                    var row = this.node();
+                    var checkbox = $(row).find('.row-checkbox');
+                    if (checkbox.is(':checked')) {
+                        selected.push(checkbox.val());
+                    }
+                });
+                return selected;
             }
 
             // Function to submit form

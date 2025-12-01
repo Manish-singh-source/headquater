@@ -10,6 +10,7 @@ use App\Models\Warehouse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 
 class WarehouseController extends Controller
 {
@@ -250,5 +251,41 @@ class WarehouseController extends Controller
             'pincode' => trim($request->pincode),
             'status' => $request->status,
         ];
+    }
+
+    public function bulkStatusChange(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'ids' => 'required|string',
+            'status' => 'required|in:0,1',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()->with('error', 'Invalid data provided.');
+        }
+
+        DB::beginTransaction();
+
+        try {
+            $ids = is_array($request->ids) ? $request->ids : explode(',', $request->ids);
+
+            if (empty($ids)) {
+                return redirect()->back()->with('error', 'No warehouses selected.');
+            }
+
+            $updated = Warehouse::whereIn('id', $ids)->update(['status' => $request->status]);
+
+            DB::commit();
+
+            activity()
+                ->causedBy(Auth::user())
+                ->log('Changed status of ' . $updated . ' warehouses to ' . ($request->status == '1' ? 'Active' : 'Inactive'));
+
+            return redirect()->back()->with('success', "Successfully updated status of {$updated} warehouse(s).");
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return redirect()->back()->with('error', 'An error occurred while updating warehouse statuses.');
+        }
     }
 }
