@@ -1127,20 +1127,30 @@ class SalesOrderController extends Controller
             // Get user information for role-based updates
             if ($request->filled('user_id')) {
                 $user = User::findOrFail($request->user_id);
-                $isAdmin = $user->hasRole(['Super Admin', 'Admin']) || !$user->warehouse_id;
-                $userWarehouseId = $user->warehouse_id;
+            } else {
+                $user = Auth::user();
             }
+            $isAdmin = $user->hasRole(['Super Admin', 'Admin']) || !$user->warehouse_id;
+            $userWarehouseId = $user->warehouse_id;
 
             // Handle warehouse-specific status updates for shipped, delivered, completed
             if (in_array($request->status, ['shipped', 'delivered', 'completed'])) {
                 // Update warehouse allocations based on user role
-                $allocationsQuery = WarehouseAllocation::where('sales_order_id', $request->order_id)
-                    ->whereHas('salesOrderProduct', function ($q) use ($request) {
+                $allocationsQuery = WarehouseAllocation::where('sales_order_id', $request->order_id);
+                // If warehouse user, only update their warehouse allocations
+                if ($request->status == 'delivered') {
+                    if (!$isAdmin && $userWarehouseId) {
+                        $allocationsQuery->whereHas('salesOrderProduct', function ($q) use ($request) {
+                            $q->where('customer_id', $request->customer_id);
+                        });
+                    }
+                } else {
+                    $allocationsQuery->whereHas('salesOrderProduct', function ($q) use ($request) {
                         $q->where('customer_id', $request->customer_id);
                     });
-                // If warehouse user, only update their warehouse allocations
-                if (!$isAdmin && $userWarehouseId) {
-                    $allocationsQuery->where('warehouse_id', $userWarehouseId);
+                    if (!$isAdmin && $userWarehouseId) {
+                        $allocationsQuery->where('warehouse_id', $userWarehouseId);
+                    }
                 }
 
                 $allocations = $allocationsQuery->get();

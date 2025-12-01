@@ -50,7 +50,7 @@
                                             <option value="shipped" @if ($salesOrder->status == 'shipped') selected @endif
                                                 @if (in_array($salesOrder->status, ['completed'])) disabled @endif>Shipped</option>
                                             <option value="completed" @if ($salesOrder->status == 'completed') selected @endif>
-                                                Delivered</option>
+                                                Completed</option>
                                         </select>
                                     </form>
                                 </ul>
