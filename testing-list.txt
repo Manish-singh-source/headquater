@@ -245,8 +245,48 @@
             - hide update and submit functionality 
 
 4. Packaging Orders: 
+    - tab switching for: 
+        - All Packaging Orders
+        - Pending Packaged Orders
+        - Packaged Orders
+        - Ready to Ship Orders
+        - Cancelled Orders (mostly not required) 
+    - pagination 
+    - View: view All packaging orders 
+        - Warehouse personnel: 
+            - display packaging order products 
+            - export packaging order products in excel format 
+            - update packaging order products using downloaded excel format (only final dispatch quantity, box count, weight is editable)
+            - mark products as ready to ship (only warehouse user can request, admin can approve) 
+
+        - Admin: 
+            - Approve ready to ship request (approve warehouse allocation) 
+            - has filter to check products warehouse wise 
+            - export packaging order products in excel format 
+            - after approval, update order status to ready to ship 
 
 5. Ready to Ship Orders: 
+    - tab switching for: 
+        - All Ready to Ship Orders
+        - Pending Ready to Ship Orders
+        - Shipped Orders
+        - Delivered Orders
+        - Cancelled Orders (mostly not required) 
+    - pagination 
+    - list of all ready to ship orders 
+    - View: 
+        - tab switching for: 
+            - All customers products status 
+            - ready to ship customers products status 
+            - shipped customers products status 
+            - delivered customers products status 
+            - cancelled customers products status 
+
+        - list of all customers with products quantity 
+        - change status to shipped  
+        - change status to delivered 
+        - change status to cancelled 
+        
 
 7. Product Issues: 
     - Vendor Order Issues: (shortage, damaged, wrong item etc.)
