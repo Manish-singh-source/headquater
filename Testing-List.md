@@ -27,75 +27,75 @@
 
 ## Warehouse management
 
-- [ ] Implement warehouse list with detail view.[1]
-- [ ] Implement edit warehouse details.[1]
-- [ ] Implement delete warehouse using soft delete.[1]
-- [ ] Implement single warehouse status update.[1]
-- [ ] Implement multi-delete for warehouses (soft delete).[1]
+- [x] Implement warehouse list with detail view.[1]
+- [x] Implement edit warehouse details.[1]
+- [x] Implement delete warehouse using soft delete.[1]
+- [x] Implement single warehouse status update.[1]
+- [x] Implement multi-delete for warehouses (soft delete).[1]
 - [ ] Implement multi-status update for warehouses (exclude default).[1]
-- [ ] Implement add new warehouse flow.[1]
+- [x] Implement add new warehouse flow.[1]
 - [ ] Implement Excel download for warehouses.[1]
 - [ ] Configure one default warehouse that cannot be deleted or deactivated.[1]
 - [ ] Enforce unique warehouse name on add/edit.[1]
 
 ## SKU mapping
 
-- [ ] Implement list of all SKU mappings.[1]
-- [ ] Implement edit SKU mapping.[1]
-- [ ] Implement delete SKU mapping.[1]
+- [x] Implement list of all SKU mappings.[1]
+- [x] Implement edit SKU mapping.[1]
+- [x] Implement delete SKU mapping.[1]
 
 ## Vendor management
 
-- [ ] Implement add new vendor flow.[1]
-- [ ] Implement vendor list with detail view.[1]
-- [ ] Implement edit vendor details.[1]
-- [ ] Implement delete vendor using soft delete.[1]
-- [ ] Implement vendor status update.[1]
-- [ ] Implement multi-delete for vendors.[1]
-- [ ] Implement multi-status update for vendors.[1]
+- [x] Implement add new vendor flow.[1]
+- [x] Implement vendor list with detail view.[1]
+- [x] Implement edit vendor details.[1]
+- [x] Implement delete vendor using soft delete.[1]
+- [x] Implement vendor status update.[1]
+- [x] Implement multi-delete for vendors.[1]
+- [x] Implement multi-status update for vendors.[1]
 - [ ] Implement Excel download for vendors.[1]
 - [ ] Enforce unique vendor code on add/edit.[1]
 
 ## Product management
 
-- [ ] Implement bulk add products (file or UI).[1]
-- [ ] Implement product list view.[1]
+- [x] Implement bulk add products (file upload).[1]
+- [x] Implement product list view.[1]
 - [ ] Implement edit product details.[1]
-- [ ] Implement delete product using soft delete.[1]
-- [ ] Implement bulk update of products.[1]
-- [ ] Implement multi-delete for products.[1]
-- [ ] Implement Excel export for products.[1]
-- [ ] Enforce unique product SKU on add/edit.[1]
+- [x] Implement delete product using soft delete.[1]
+- [x] Implement bulk update of products.[1]
+- [x] Implement multi-delete for products.[1]
+- [x] Implement Excel export for products.[1]
+- [x] Enforce unique product SKU on add/edit.[1]
 
 ## Customer and group management
 
-- [ ] Implement bulk add customer groups.[1]
-- [ ] Implement customer group list with detail view.[1]
-- [ ] Implement view of customers under each customer group.[1]
-- [ ] Implement customer detail view inside group.[1]
-- [ ] Implement edit customer details inside group.[1]
-- [ ] Implement delete customer inside group.[1]
-- [ ] Implement status update for customers inside group.[1]
+- [x] Implement bulk add customer groups.[1]
+- [x] Implement customer group list with detail view.[1]
+- [x] Implement view of customers under each customer group.[1]
+- [x] Implement customer detail view inside group.[1]
+- [x] Implement edit customer details inside group.[1]
+- [x] Implement delete customer inside group.[1]
+- [x] Implement status update for customers inside group.[1] 
 - [ ] Implement multi-delete for customers inside group.[1]
-- [ ] Implement multi-status update for customers inside group.[1]
-- [ ] Implement add single customer to a group.[1]
-- [ ] Implement bulk add customers to a group.[1]
-- [ ] Implement edit customer group details.[1]
-- [ ] Implement delete customer group using soft delete.[1]
-- [ ] Implement status update for customer groups.[1]
-- [ ] Implement multi-delete for customer groups.[1]
-- [ ] Implement multi-status update for customer groups.[1]
+- [ ] Implement multi-status update for customers inside group.[1] Not working properly
+- [x] Implement add single customer to a group.[1]
+- [x] Implement bulk add customers to a group.[1]
+- [x] Implement edit customer group details.[1]
+- [x] Implement delete customer group using soft delete.[1]
+- [x] Implement status update for customer groups.[1]
+- [x] Implement multi-delete for customer groups.[1]
+- [x] Implement multi-status update for customer groups.[1]
 - [ ] Enforce unique customer group name on add/edit.[1]
 - [ ] Show confirmation popup before deleting customer group.[1]
 - [ ] Block deletion if customers are associated and show message.[1]
 
-- [ ] Implement add new customer flow.[1]
-- [ ] Implement customer list with detail view.[1]
-- [ ] Implement edit customer details.[1]
-- [ ] Implement delete customer using soft delete.[1]
-- [ ] Implement customer status update.[1]
-- [ ] Implement multi-delete for customers.[1]
-- [ ] Implement multi-status update for customers.[1]
+- [x] Implement add new customer flow.[1]
+- [x] Implement customer list with detail view.[1]
+- [x] Implement edit customer details.[1]
+- [x] Implement delete customer using soft delete.[1] Soft delete not working
+- [x] Implement customer status update.[1]
+- [ ] Implement multi-delete for customers.[1] Not working properly
+- [ ] Implement multi-status update for customers.[1] Not working properly
 - [ ] Implement Excel download for customers.[1]
 - [ ] Enforce unique customer email on add/edit.[1]
 
@@ -251,3 +251,19 @@
 - [ ] Define/document Ready to Ship Order Excel format.[2]
 - [ ] Define/document Product Issue Excel format.[2]
 - [ ] Define/document Return Order Excel format.[2]
+
+
+
+
+
+
+
+
+## Soft Delete 
+
+1. Vendor 
+2. Product 
+3. SKU Mapping 
+4. Customer Group 
+5. Customer 
+6. 

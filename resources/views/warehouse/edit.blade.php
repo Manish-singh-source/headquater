@@ -16,6 +16,7 @@
                 </div>
             </div>
 
+            @include('layouts.errors')
 
             <div class="row">
                 <div class="col-12">
