@@ -153,7 +153,6 @@ class SalesOrderController extends Controller
             $insertedRows = [];
             $skuNotFoundRows = [];
             $insertCount = 0;
-            $insertedPurchaseOrders = 0;
 
             // Not Found Temp Order
             $vendorsNotFound = [];
@@ -541,19 +540,17 @@ class SalesOrderController extends Controller
                         }
                         $purchaseOrderProduct->save();
                     }
-
-                    $insertedPurchaseOrders++;
                 }
 
                 $insertCount++;
             }
 
-            // if ($insertCount === 0 && $insertedPurchaseOrders === 0) {
-            //     DB::rollBack();
-            //     $uniqueString = implode(', ', array_unique($vendorsNotFound));
+            if ($insertCount === 0) {
+                DB::rollBack();
+                $uniqueString = implode(', ', array_unique($vendorsNotFound));
 
-            //     return redirect()->back()->with(['error' => 'No valid data found in the CSV file. Please check Vendor Codes: ' . $uniqueString]);
-            // }
+                return redirect()->back()->with(['error' => 'No valid data found in the CSV file. Please check Vendor Codes: ' . $uniqueString]);
+            }
 
             // If auto allocation is selected, trigger warehouse allocation
             if ($isAutoAllocation) {
