@@ -471,6 +471,7 @@ class SalesOrderController extends Controller
                 }
 
                 // Make a purchase order if one or more than one products have less quantity in warehouse
+                $insertedPurchaseOrders = 0;
                 if ($shortQty > 0) {
                     if (! isset($productStockCache[$vendorCode])) {
                         $productStockCache[$vendorCode] = [
@@ -540,12 +541,14 @@ class SalesOrderController extends Controller
                         }
                         $purchaseOrderProduct->save();
                     }
+
+                    $insertedPurchaseOrders++;
                 }
 
                 $insertCount++;
             }
 
-            if ($insertCount === 0) {
+            if ($insertCount === 0 && $insertedPurchaseOrders === 0) {
                 DB::rollBack();
                 $uniqueString = implode(', ', array_unique($vendorsNotFound));
 
