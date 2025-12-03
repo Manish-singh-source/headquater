@@ -547,7 +547,7 @@ class SalesOrderController extends Controller
             }
 
             if ($insertCount === 0) {
-                // DB::rollBack();
+                DB::rollBack();
                 $uniqueString = implode(', ', array_unique($vendorsNotFound));
 
                 return redirect()->back()->with(['error' => 'No valid data found in the CSV file. Please check Vendor Codes: ' . $uniqueString]);
