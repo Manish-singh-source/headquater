@@ -186,7 +186,8 @@ class SalesOrderController extends Controller
                 $poQty = (int) $record['PO Quantity'];
                 $purchaseQty = (int) $record['Purchase Order Quantity'];
                 $warehouseId = $request->warehouse_id;
-                $vendorCode = $record['Vendor Code'];
+                // $vendorCode = $record['Vendor Code'];
+                $vendorCode = trim($record['Vendor Code']);
 
                 // Default fallback
                 $availableQty = 0;
