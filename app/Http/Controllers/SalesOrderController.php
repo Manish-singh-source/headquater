@@ -153,6 +153,7 @@ class SalesOrderController extends Controller
             $insertedRows = [];
             $skuNotFoundRows = [];
             $insertCount = 0;
+            $insertedPurchaseOrders = 0;
 
             // Not Found Temp Order
             $vendorsNotFound = [];
@@ -471,7 +472,6 @@ class SalesOrderController extends Controller
                 }
 
                 // Make a purchase order if one or more than one products have less quantity in warehouse
-                $insertedPurchaseOrders = 0;
                 if ($shortQty > 0) {
                     if (! isset($productStockCache[$vendorCode])) {
                         $productStockCache[$vendorCode] = [
