@@ -285,6 +285,7 @@
                                                 <th>Purchase&nbsp;Order&nbsp;No</th>
                                                 <th>Total&nbsp;Dispatch&nbsp;Qty</th>
                                                 <th>Final&nbsp;Dispatch&nbsp;Qty</th>
+                                                <th>Case&nbsp;Pack&nbsp;Quantity</th>
                                                 <th>Box&nbsp;Count</th>
                                                 <th>Weight</th>
                                                 <th>Status</th>
@@ -375,6 +376,7 @@
                                                             {{ $order->final_dispatched_quantity ?? 0 }}
                                                         @endif
                                                     </td>
+                                                    <td>{{ $order->tempOrder->case_pack_quantity }}</td>
                                                     <td>
                                                         @if ($order->warehouseAllocations->count() >= 1)
                                                             @foreach ($order->warehouseAllocations as $allocation)

@@ -230,6 +230,7 @@
                                         <th>Purchase&nbsp;Order&nbsp;No</th>
                                         <th>Total&nbsp;Dispatch&nbsp;Qty</th>
                                         <th>Final&nbsp;Dispatch&nbsp;Qty</th>
+                                        <th>Case&nbsp;Pack&nbsp;Quantity</th>
                                         <th>Box&nbsp;Count</th>
                                         <th>Weight</th>
                                         <th>Status</th>
@@ -320,24 +321,25 @@
                                                     {{ $order->final_dispatched_quantity ?? 0 }}
                                                 @endif
                                             </td>
+                                            <td>{{ $order->tempOrder->case_pack_quantity }}</td>
                                             <td>
                                                 @if ($order->warehouseAllocations->count() >= 1)
                                                     @foreach ($order->warehouseAllocations as $allocation)
                                                         @if ($isSuperAdmin ?? false)
                                                             <div>
                                                                 {{ $allocation->warehouse->name }}:
-                                                                {{ $allocation->box_count ?? 0 }}
+                                                                {{ floatval($allocation->box_count ?? 0) }}
                                                             </div>
                                                         @else
                                                             @if ($user->warehouse_id == $allocation->warehouse_id)
                                                                 <div>
-                                                                    {{ $allocation->box_count ?? 0 }}
+                                                                    {{ floatval($allocation->box_count ?? 0) }}
                                                                 </div>
                                                             @endif
                                                         @endif
                                                     @endforeach
                                                 @else
-                                                    {{ $order->box_count ?? 0 }}
+                                                    {{ floatval($order->box_count ?? 0) }}
                                                 @endif
                                             </td>
                                             <td>
