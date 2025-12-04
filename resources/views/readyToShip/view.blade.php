@@ -45,6 +45,7 @@
                                             'approval_pending' => 'Ready to Ship Approval Pending',
                                             'packaging' => 'Packaging',
                                             'packaged' => 'Packaged',
+                                            'dispatched' => 'Dispatched',
                                             'partially_packaged' => 'Partially Packaged',
                                             'approved' => 'Approved',
                                             'cancelled' => 'Cancelled',
