@@ -152,6 +152,17 @@
 
                         <!-- Tabs Navigation -->
                         <div class="div d-flex justify-content-end my-3 gap-2">
+                            
+                            <div>
+                                <select class="form-select border-2 border-primary" id="selectBrand"
+                                    aria-label="Default select example" name="status">
+                                    <option value="" selected>Select Brand</option>
+                                    @foreach ($uniqueBrands as $brand)
+                                        <option value="{{ $brand }}">{{ $brand }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            
                             <div>
                                 <select class="form-select border-2 border-primary" id="selectPONumber"
                                     aria-label="Default select example" name="status">
