@@ -522,7 +522,7 @@
                     selected = '';
                 }
                 // Use regex for exact match
-                brandSelection.column(-1).search(selected ? '^' + selected + '$' : '', true, false).draw();
+                brandSelection.column(-2).search(selected ? '^' + selected + '$' : '', true, false).draw();
             });
 
 
