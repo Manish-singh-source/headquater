@@ -438,6 +438,7 @@ class SalesOrderController extends Controller
                 $saveOrderProduct->price = $record['Basic Rate'] ?? null;
                 // what is exactly subtotal ??
                 // basic rate * po quantity(customers quantity) or basic rate * purchase order quantity(vendors quantity)
+                $saveOrderProduct->box_count = ($record['PO Quantity'] ?? 0) / ($casePackQty ?? 1);
                 $saveOrderProduct->subtotal = ($record['Basic Rate'] ?? 0) * ($record['PO Quantity'] ?? 0);
                 $saveOrderProduct->save();
 
@@ -454,6 +455,7 @@ class SalesOrderController extends Controller
                             'sku' => $sku,
                             'allocated_quantity' => $allocatedQty,
                             'sequence' => 1,
+                            'box_count' => $saveOrderProduct->box_count,
                             'status' => 'allocated',
                             'notes' => "Allocated from warehouse {$product->warehouse->name}",
                         ]);
