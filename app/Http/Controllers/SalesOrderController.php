@@ -644,17 +644,17 @@ class SalesOrderController extends Controller
             $seen = [];
 
             foreach ($rows as $record) {
-                if (empty($record['SKU Code']) || empty($record['Facility Name'])) {
+                if (empty($record['SKU Code']) || empty($record['PO Number'])) {
                     continue;
                 }
 
-                $key = strtolower(trim($record['Facility Name'])) . '|' . strtolower(trim($record['SKU Code']));
+                $key = strtolower(trim($record['PO Number'])) . '|' . strtolower(trim($record['SKU Code']));
 
                 if (isset($seen[$key])) {
                     DB::rollBack();
 
                     return redirect()->back()->with([
-                        'error' => 'Please check excel file: duplicate SKU (' . $record['SKU Code'] . ') found for same customer (' . $record['Facility Name'] . ').',
+                        'error' => 'Please check excel file: duplicate SKU (' . $record['SKU Code'] . ') found for same customer (' . $record['PO Number'] . ').',
                     ]);
                 }
 
@@ -682,6 +682,9 @@ class SalesOrderController extends Controller
                     ->where('sku', $record['SKU Code'])
                     ->where('sales_order_id', $request->sales_order_id)
                     ->where('customer_id', $customerInfo->id)
+                    ->whereHas('tempOrder', function ($query) use ($record) {
+                        $query->where('po_number', $record['PO Number']);
+                    })
                     ->first();
 
                 if (! $salesOrderProductUpdate) {
@@ -689,20 +692,49 @@ class SalesOrderController extends Controller
                 }
 
                 // 3. Build products array for TempOrder::upsert()
+                // Quantity Fullfilled	Warehouse Allocation
+
+
+                // item_code   = Item Code
+                // po_date
+                // po_expiry_date
+                // basic_rate  = Basic Rate
+                // product_basic_rate  = Product Basic Rate
+                // rate_confirmation  = Basic Rate Confirmation
+                // net_landing_rate  = Net Landing Rate
+                // product_net_landing_rate  = Product Net Landing Rate
+                // net_landing_rate_confirmation  = Net Landing Rate Confirmation
+                // mrp  = PO MRP
+                // product_mrp  = Product MRP
+                // mrp_confirmation  = MRP Confirmation
+                // po_qty  = PO Quantity
+                // available_quantity  = 
+                // unavailable_quantity  = 
+                // block  = Block Quantity
+                // case_pack_quantity  = 
+                // purchase_order_quantity  = Purchase Order Quantity
+
                 $products[] = [
                     'id' => $salesOrderProductUpdate->temp_order_id,
                     'item_code' => Arr::get($record, 'Item Code', ''),
                     'description' => Arr::get($record, 'Title', ''),
                     'basic_rate' => Arr::get($record, 'Basic Rate', 0),
+                    'product_basic_rate' => Arr::get($record, 'Product Basic Rate', 0),
+                    'rate_confirmation' => ($record['Basic Rate'] == ($salesOrderProductUpdate->product->basic_rate ?? 0)) ? 'Correct' : 'Incorrect',
                     'net_landing_rate' => Arr::get($record, 'Net Landing Rate', 0),
-                    'mrp' => Arr::get($record, 'MRP', 0),
-                    'rate_confirmation' => ($record['MRP'] == ($salesOrderProductUpdate->product->mrp ?? 0)) ? 'Correct' : 'Incorrect',
-                    'created_at' => now(),
+                    'product_net_landing_rate' => Arr::get($record, 'Product Net Landing Rate', 0),
+                    'net_landing_rate_confirmation' => ($record['Net Landing Rate'] == ($salesOrderProductUpdate->product->net_landing_rate ?? 0)) ? 'Correct' : 'Incorrect',
+                    'mrp' => Arr::get($record, 'PO MRP', 0),
+                    'product_mrp' => Arr::get($record, 'Product MRP', 0),
+                    'mrp_confirmation' => ($record['PO MRP'] == ($salesOrderProductUpdate->product->mrp ?? 0)) ? 'Correct' : 'Incorrect',
+                    'po_qty' => Arr::get($record, 'PO Quantity', 0),
+                    'block' => Arr::get($record, 'Block Quantity', 0),
+                    'purchase_order_quantity' => Arr::get($record, 'Purchase Order Quantity', 0),
                     'updated_at' => now(),
                 ];
 
                 // 4. Update SalesOrderProduct
-                $salesOrderProductUpdate->price = $record['MRP'] ?? 0;
+                $salesOrderProductUpdate->price = $record['PO MRP'] ?? 0;
                 $salesOrderProductUpdate->subtotal = ($record['Basic Rate'] ?? 0) * ($record['PO Quantity'] ?? 0);
                 $salesOrderProductUpdate->ordered_quantity = $record['PO Quantity'] ?? 0;
                 $salesOrderProductUpdate->purchase_ordered_quantity = $record['Purchase Order Quantity'] ?? 0;
@@ -778,7 +810,7 @@ class SalesOrderController extends Controller
                 TempOrder::upsert(
                     $products,
                     ['id'],
-                    ['item_code', 'description', 'basic_rate', 'net_landing_rate', 'mrp', 'rate_confirmation', 'updated_at']
+                    ['item_code', 'description', 'basic_rate', 'product_basic_rate', 'rate_confirmation', 'net_landing_rate', 'product_net_landing_rate', 'net_landing_rate_confirmation', 'mrp', 'product_mrp', 'mrp_confirmation', 'po_qty', 'block', 'purchase_order_quantity', 'updated_at',]
                 );
             }
 
@@ -2089,9 +2121,9 @@ class SalesOrderController extends Controller
                 if ($order->warehouseAllocations->count() > 0) {
                     $iteration = 0;
                     foreach ($order->warehouseAllocations->sortBy('sequence') as $allocation) {
-                        if($iteration > 0){
+                        if ($iteration > 0) {
                             $warehouseAllocation .= ', ' . ($allocation->warehouse->name ?? 'N/A') . ': ' .  $allocation->allocated_quantity;
-                        }else {
+                        } else {
                             $warehouseAllocation .= ($allocation->warehouse->name ?? 'N/A') . ': ' .  $allocation->allocated_quantity;
                             $iteration++;
                         }
