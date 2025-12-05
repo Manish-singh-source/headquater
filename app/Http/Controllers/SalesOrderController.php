@@ -472,7 +472,7 @@ class SalesOrderController extends Controller
                             ->log("Stock allocated from warehouse {$product->warehouse->name}");
                     }
                 }
-                
+
                 // Make a purchase order if one or more than one products have less quantity in warehouse
                 if ($shortQty > 0) {
                     if (! isset($productStockCache[$vendorCode])) {
@@ -2033,7 +2033,7 @@ class SalesOrderController extends Controller
             'orderedProducts.warehouseStock',
         ])
             ->withSum('orderedProducts', 'ordered_quantity')
-            ->findOrFail($request->salesOrderId);
+            ->find($request->salesOrderId);
 
         foreach ($salesOrder->orderedProducts as $order) {
             $fulfilledQuantity = 0;
@@ -2045,7 +2045,7 @@ class SalesOrderController extends Controller
             }
 
             $writer->addRow([
-                'Order No' => $salesOrder->id,
+                'Order No' => $salesOrder->order_number,
                 'Customer Name' => $order->tempOrder->customer_name,
                 'Facility Name' => $order->tempOrder->facility_name,
                 'Facility Location' => $order->tempOrder->facility_location,

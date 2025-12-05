@@ -74,7 +74,8 @@
                                     <span><b>Order Id</b></span>
 
                                     <span>
-                                        <span id="orderId">{{ $salesOrder->order_number }}</span>
+                                        <span>{{ $salesOrder->order_number }}</span>
+                                        <span id="orderId" class="d-none">{{ $salesOrder->id }}</span>
                                     </span>
                                 </li>
                                 <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
@@ -200,7 +201,7 @@
                                                 <i class="fa fa-file-excel-o"></i> Generate Invoice
                                             </button>
                                         @endif
-                                        @if (in_array($salesOrder->status, ['pending', 'blocked']))
+                                        {{-- @if (in_array($salesOrder->status, ['pending', 'blocked'])) --}}
                                             <button type="button" class="dropdown-item cursor-pointer" id="exportData">
                                                 <i class="fa fa-file-excel-o"></i> Export(Excel)
                                             </button>
@@ -208,7 +209,7 @@
                                                 data-bs-target="#staticBackdrop1">
                                                 Update PO
                                             </button>
-                                        @endif
+                                        {{-- @endif --}}
                                     </div>
                                 </div>
                             </div>
