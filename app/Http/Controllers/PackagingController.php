@@ -2,19 +2,20 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
+use App\Models\Product;
 use App\Models\Customer;
 use App\Models\SalesOrder;
+use Illuminate\Support\Str;
+use Illuminate\Http\Request;
 use App\Models\SalesOrderProduct;
-use App\Models\User;
+use Illuminate\Support\Facades\DB;
 use App\Models\WarehouseAllocation;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 use App\Models\WarehouseProductIssue;
 use App\Services\NotificationService;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Str;
 use Spatie\SimpleExcel\SimpleExcelReader;
 use Spatie\SimpleExcel\SimpleExcelWriter;
 
@@ -499,8 +500,8 @@ class PackagingController extends Controller
     private function updateSalesOrderProduct($order, $record, $salesOrderId, $isAdmin, $userWarehouseId)
     {
         $finalDispatchQty = (int) ($record['Final Dispatch Qty'] ?? $order->dispatched_quantity);
-        $boxCount = (int) ($record['Box Count'] ?? 0);
-        $weight = (int) ($record['Weight'] ?? 0);
+        $boxCount = (float) ($record['Box Count'] ?? 0);
+        $weight = (float) ($record['Weight'] ?? 0);
         $issueUnits = (int) ($record['Issue Units'] ?? 0);
         $issueReason = $record['Issue Reason'] ?? '';
 
@@ -525,12 +526,17 @@ class PackagingController extends Controller
                     $totalAllocated = $order->warehouseAllocations->first()->allocated_quantity;
                 }
                 foreach ($order->warehouseAllocations as $allocation) {
+
                     if ($totalAllocated > 0) {
+                        $productInfo = Product::where('sku', $allocation->sku)->first();
+                        $casePackQuantity = $productInfo->case_pack_quantity ?? 1;
+
                         // Distribute final dispatch quantity proportionally
                         $proportion = $allocation->allocated_quantity / $totalAllocated;
                         $allocation->final_dispatched_quantity = (int) ($finalDispatchQty * $proportion);
-                        $allocation->box_count = (int) ($boxCount * $proportion);
-                        $allocation->weight = (int) ($weight * $proportion);
+                        // $allocation->box_count = (int) ($boxCount * $proportion);
+                        $allocation->box_count = (float) ($allocation->final_dispatched_quantity / $casePackQuantity);
+                        $allocation->weight = (float) ($weight * $proportion);
                         $allocation->product_status = 'packaged';
                     } else {
                         $allocation->final_dispatched_quantity = 0;
@@ -544,10 +550,11 @@ class PackagingController extends Controller
                 $userAllocation = $order->warehouseAllocations
                     ->where('warehouse_id', $userWarehouseId)
                     ->first();
-
                 if ($userAllocation) {
+                    $productInfo = Product::where('sku', $userAllocation->sku)->first();
                     $userAllocation->final_dispatched_quantity = $finalDispatchQty;
-                    $userAllocation->box_count = $boxCount;
+                    // $userAllocation->box_count = $boxCount;
+                    $userAllocation->box_count = (float) ($finalDispatchQty / $productInfo->case_pack_quantity);
                     $userAllocation->weight = $weight;
                     $userAllocation->product_status = 'packaged';
                     $userAllocation->save();

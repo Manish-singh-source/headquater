@@ -2,16 +2,17 @@
 
 namespace App\Services;
 
-use App\Models\PurchaseOrder;
-use App\Models\PurchaseOrderProduct;
-use App\Models\SalesOrder;
-use App\Models\SalesOrderProduct;
+use App\Models\Product;
 use App\Models\Warehouse;
-use App\Models\WarehouseAllocation;
+use App\Models\SalesOrder;
+use App\Models\PurchaseOrder;
 use App\Models\WarehouseStock;
-use Illuminate\Support\Facades\Auth;
+use App\Models\SalesOrderProduct;
 use Illuminate\Support\Facades\DB;
+use App\Models\WarehouseAllocation;
 use Illuminate\Support\Facades\Log;
+use App\Models\PurchaseOrderProduct;
+use Illuminate\Support\Facades\Auth;
 
 class WarehouseAllocationService
 {
@@ -74,6 +75,7 @@ class WarehouseAllocationService
                     // $salesOrderProduct = SalesOrderProduct::find($salesOrderProductId);
                     // $salesOrderProduct->warehouse_stock_id = $warehouseStock->warehouse_id;
                     // $salesOrderProduct->save();
+                    $productInfo = Product::where('sku', $sku)->first();
 
                     $allocation = WarehouseAllocation::create([
                         'sales_order_id' => $salesOrderId,
@@ -81,6 +83,7 @@ class WarehouseAllocationService
                         'warehouse_id' => $warehouseStock->warehouse_id,
                         'sku' => $sku,
                         'allocated_quantity' => $allocateQty,
+                        'box_count' => $allocateQty / $productInfo->case_pack_quantity,
                         'sequence' => $sequence,
                         'status' => 'allocated',
                         'notes' => "Auto-allocated {$allocateQty} units from warehouse {$warehouseStock->warehouse->name}",
