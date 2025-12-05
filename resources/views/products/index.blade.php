@@ -104,6 +104,7 @@
                                         <th>Category</th>
                                         <th>PCS/Set </th>
                                         <th>Sets/CTN</th>
+                                        <th>Weight&nbsp;(Single&nbsp;Box)</th>
                                         <th>Basic&nbsp;Rate</th>
                                         <th>Net&nbsp;Landing&nbsp;Rate</th>
                                         <th>Case&nbsp;Pack&nbsp;Quantity</th>
@@ -148,6 +149,7 @@
                                             <td>{{ $product->product->category ?? 'NA' }}</td>
                                             <td>{{ $product->product->pcs_set ?? 'NA' }}</td>
                                             <td>{{ $product->product->sets_ctn ?? 'NA' }}</td>
+                                            <td>{{ $product->product->weight ?? 'NA' }}</td>
                                             <td>{{ $product->product->basic_rate ?? 'NA' }}</td>
                                             <td>{{ $product->product->net_landing_rate ?? 'NA' }}</td>
                                             <td>{{ $product->product->case_pack_quantity ?? 'NA' }}</td>

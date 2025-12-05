@@ -167,6 +167,7 @@ class ProductController extends Controller
                         'category' => $record['Category'] ?? '',
                         'pcs_set' => $record['PCS/Set'] ?? '',
                         'sets_ctn' => $record['Sets/CTN'] ?? '',
+                        'weight' => $record['Weight (Single Box)'] ?? '',
                         'gst' => $record['GST'] ?? '',
                         'hsn' => $record['HSN'] ?? '',
                         'basic_rate' => isset($record['Basic Rate']) ? intval($record['Basic Rate']) : '',
@@ -274,6 +275,7 @@ class ProductController extends Controller
                     'category' => Arr::get($record, 'Category') ?? '',
                     'pcs_set' => Arr::get($record, 'PCS/Set') ?? '',
                     'sets_ctn' => Arr::get($record, 'Sets/CTN') ?? '',
+                    'weight' => Arr::get($record, 'Weight (Single Box)') ?? '',
                     'gst' => Arr::get($record, 'GST') ?? '',
                     'hsn' => Arr::get($record, 'HSN') ?? '',
 
@@ -376,6 +378,7 @@ class ProductController extends Controller
             'category' => 'nullable|string|max:255',
             'pcs_set' => 'nullable|integer|min:0',
             'sets_ctn' => 'nullable|integer|min:0',
+            'weight' => 'nullable|numeric|min:0',
             'basic_rate' => 'nullable|numeric|min:0',
             'hsn' => 'nullable|string|max:50',
             'original_quantity' => 'nullable|integer|min:0',
@@ -404,6 +407,7 @@ class ProductController extends Controller
                 'category' => $request->category,
                 'pcs_set' => (int) ($request->pcs_set ?? 0),
                 'sets_ctn' => (int) ($request->sets_ctn ?? 0),
+                'weight' => $request->weight,
                 'hsn' => $request->hsn,
             ];
 
@@ -593,6 +597,7 @@ class ProductController extends Controller
                     'Category' => $stock->product?->category ?? '',
                     'PCS/Set' => $stock->product?->pcs_set ?? '',
                     'Sets/CTN' => $stock->product?->sets_ctn ?? '',
+                    'Weight (Single Box)' => $stock->product?->weight ?? '',
                     'Basic Rate' => $stock->product?->basic_rate ?? '',
                     'Net Landing Rate' => $stock->product?->net_landing_rate ?? '',
                     'Vendor Code' => $stock->product?->vendor_code ?? '',
