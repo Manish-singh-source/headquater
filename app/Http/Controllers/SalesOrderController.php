@@ -2026,14 +2026,25 @@ class SalesOrderController extends Controller
         // Create writer
         $writer = SimpleExcelWriter::create($tempXlsxPath);
 
+        // $salesOrder = SalesOrder::with([
+        //     'customerGroup',
+        //     'warehouse',
+        //     'orderedProducts.tempOrder',
+        //     'orderedProducts.warehouseStock',
+        // ])
+        //     ->withSum('orderedProducts', 'ordered_quantity')
+        //     ->find($request->salesOrderId);
         $salesOrder = SalesOrder::with([
             'customerGroup',
             'warehouse',
-            'orderedProducts.tempOrder',
+            'orderedProducts.tempOrder.vendorPIProduct',
             'orderedProducts.warehouseStock',
+            'warehouseAllocations.warehouse',
+            'warehouseAllocations.product',
         ])
+            ->withSum('orderedProducts', 'purchase_ordered_quantity')
             ->withSum('orderedProducts', 'ordered_quantity')
-            ->find($request->salesOrderId);
+            ->findOrFail($request->salesOrderId);
 
         foreach ($salesOrder->orderedProducts as $order) {
             $fulfilledQuantity = 0;
@@ -2044,9 +2055,78 @@ class SalesOrderController extends Controller
                 $fulfilledQuantity = ($order->tempOrder->available_quantity ?? 0) + ($order->tempOrder->vendor_pi_fulfillment_quantity ?? 0);
             }
 
+            $qtyFullfilled = 0;
+
+            if ($order->tempOrder?->vendor_pi_received_quantity > 0) {
+                if ($order->tempOrder->po_qty <= ($order->tempOrder?->block ?? 0)) {
+                    $qtyFullfilled = $order->tempOrder->po_qty ?? 0;
+                } else {
+                    $qtyFullfilled = $order->tempOrder?->block ?? 0;
+                }
+            } elseif ($order->tempOrder?->vendor_pi_fulfillment_quantity > 0) {
+                if (
+                    $order->tempOrder->po_qty <=
+                    ($order->tempOrder?->block ?? 0) + ($order->tempOrder?->vendor_pi_fulfillment_quantity ?? 0)
+                ) {
+                    $qtyFullfilled = $order->tempOrder->po_qty;
+                } else {
+                    $qtyFullfilled = ($order->tempOrder?->block ?? 0) + ($order->tempOrder?->vendor_pi_fulfillment_quantity ?? 0);
+                }
+            } else {
+                if ($order->tempOrder->po_qty <= ($order->tempOrder?->block ?? 0)) {
+                    $qtyFullfilled = $order->tempOrder->po_qty;
+                } else {
+                    $qtyFullfilled = $order->tempOrder?->block ?? 0;
+                }
+            }
+
+            $warehouseAllocation = '';
+
+            // Check if product has warehouse allocations (auto-allocation)
+            $hasAllocations = $order->warehouseAllocations && $order->warehouseAllocations->count() > 0;
+
+            if ($hasAllocations) {
+                if ($order->warehouseAllocations->count() > 0) {
+                    $iteration = 0;
+                    foreach ($order->warehouseAllocations->sortBy('sequence') as $allocation) {
+                        if($iteration > 0){
+                            $warehouseAllocation .= ', ' . ($allocation->warehouse->name ?? 'N/A') . ': ' .  $allocation->allocated_quantity;
+                        }else {
+                            $warehouseAllocation .= ($allocation->warehouse->name ?? 'N/A') . ': ' .  $allocation->allocated_quantity;
+                            $iteration++;
+                        }
+                    }
+                } else {
+                    $warehouseAllocation = 'N/A';
+                }
+            } else {
+
+                if ($order->warehouseStock) {
+                    $warehouseAllocation = ($order->warehouseStock->warehouse->name ?? 'N/A') . ': ' . ($order->tempOrder->block ?? 0);
+                } elseif ($order->tempOrder && $order->tempOrder->block > 0) {
+                    $fallbackWarehouseName = 'N/A';
+                    $fallbackQuantity = $order->tempOrder->block ?? 0;
+                    $warehouseStock = \App\Models\WarehouseStock::where(
+                        'sku',
+                        $order->sku,
+                    )
+                        ->where('block_quantity', '>', 0)
+                        ->first();
+                    if ($warehouseStock) {
+                        $fallbackWarehouseName = $warehouseStock->warehouse->name ?? 'N/A';
+                    } else {
+                        if ($salesOrder->warehouse) {
+                            $fallbackWarehouseName = $salesOrder->warehouse->name;
+                        }
+                    }
+                    $warehouseAllocation = $fallbackWarehouseName . ': ' . $fallbackQuantity;
+                } else {
+                    $warehouseAllocation = 'N/A';
+                }
+            }
+
             $writer->addRow([
                 'Order No' => $salesOrder->order_number,
-                'PO No' => $order->tempOrder->po_number,
                 'Customer Name' => $order->tempOrder->customer_name,
                 'Facility Name' => $order->tempOrder->facility_name,
                 'Facility Location' => $order->tempOrder->facility_location,
@@ -2054,15 +2134,23 @@ class SalesOrderController extends Controller
                 'GST' => $order->tempOrder->gst,
                 'Item Code' => $order->tempOrder->item_code,
                 'SKU Code' => $order->tempOrder->sku,
+                'Brand' => $order->product->brand,
                 'Title' => $order->tempOrder->description,
                 'Basic Rate' => $order->tempOrder->basic_rate,
+                'Product Basic Rate' => $order->tempOrder->product_basic_rate,
+                'Basic Rate Confirmation' => $order->tempOrder->rate_confirmation ?? 'Incorrect',
                 'Net Landing Rate' => $order->tempOrder->net_landing_rate,
-                'MRP' => $order->tempOrder->mrp,
+                'Product Net Landing Rate' => $order->tempOrder->product_net_landing_rate,
+                'Net Landing Rate Confirmation' => $order->tempOrder->net_landing_rate_confirmation ?? 'Incorrect',
+                'PO MRP' => $order->tempOrder->mrp,
                 'Product MRP' => $order->tempOrder->product_mrp,
-                'Rate Confirmation' => $order->tempOrder->rate_confirmation ?? 'Incorrect',
+                'MRP Confirmation' => $order->tempOrder->mrp_confirmation ?? 'Incorrect',
+                'PO Number' => $order->tempOrder->po_number,
                 'PO Quantity' => $order->ordered_quantity,
-                'Purchase Order Quantity' => $order->purchase_ordered_quantity,
-                'Qty Fullfilled' => $fulfilledQuantity,
+                'Purchase Order Quantity' => $order->tempOrder?->purchase_ordered_quantity ?? 0,
+                'Block Quantity' => $order->tempOrder?->block,
+                'Quantity Fullfilled' => $qtyFullfilled,
+                'Warehouse Allocation' => $warehouseAllocation,
             ]);
         }
 

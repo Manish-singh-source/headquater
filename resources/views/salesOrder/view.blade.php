@@ -363,7 +363,7 @@
                                                             </div>
                                                         @endforeach
                                                     @else
-                                                        <span class="text-muted">No allocations</span>
+                                                        <span class="text-muted">N/A</span>
                                                     @endif
                                                 @else
                                                     {{-- Single warehouse allocation or legacy data --}}
