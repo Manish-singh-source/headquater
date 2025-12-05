@@ -2046,6 +2046,7 @@ class SalesOrderController extends Controller
 
             $writer->addRow([
                 'Order No' => $salesOrder->order_number,
+                'PO No' => $order->tempOrder->po_number,
                 'Customer Name' => $order->tempOrder->customer_name,
                 'Facility Name' => $order->tempOrder->facility_name,
                 'Facility Location' => $order->tempOrder->facility_location,
