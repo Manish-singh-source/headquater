@@ -424,7 +424,7 @@
                                                     @endforeach
                                                 @else
                                                     @php
-                                                        if ($allocation->product_status == 'completed') {
+                                                        if (isset($allocation->product_status) && $allocation->product_status == 'completed') {
                                                             $allocation->product_status = $allocation->shipping_status;
                                                         }
                                                     @endphp
