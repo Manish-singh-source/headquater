@@ -8,6 +8,10 @@
             'completed' => 'Complete',
             'ready_to_ship' => 'Ready To Ship',
             'ready_to_package' => 'Ready To Package',
+            'packaging' => 'Packaging',
+            'packaged' => 'Packaged',
+            'cancelled' => 'Cancelled',
+            'approval_pending' => 'Ready to Ship Approval Pending',
         ];
     @endphp
 
@@ -152,7 +156,16 @@
 
                         <!-- Tabs Navigation -->
                         <div class="div d-flex justify-content-end my-3 gap-2">
-                            
+
+                            <div>
+                                <select class="form-select border-2 border-primary" id="selectProductStatusFilter"
+                                    aria-label="Default select example" name="selectProductStatusFilter">
+                                    <option value="" selected>Select Product Status</option>
+                                    {{-- <option value="Ready To Ship">Ready To Ship</option> --}}
+                                    <option value="Shipped">Shipped</option>
+                                </select>
+                            </div>
+
                             <div>
                                 <select class="form-select border-2 border-primary" id="selectBrand"
                                     aria-label="Default select example" name="status">
@@ -162,7 +175,7 @@
                                     @endforeach
                                 </select>
                             </div>
-                            
+
                             <div>
                                 <select class="form-select border-2 border-primary" id="selectPONumber"
                                     aria-label="Default select example" name="status">
@@ -264,9 +277,14 @@
                                         $statuses = [
                                             'pending' => 'Pending',
                                             'blocked' => 'Blocked',
-                                            'completed' => 'Delivered',
-                                            'ready_to_ship' => 'Ready To Ship',
                                             'shipped' => 'Shipped',
+                                            'completed' => 'Complete',
+                                            'ready_to_ship' => 'Ready To Ship',
+                                            'ready_to_package' => 'Ready To Package',
+                                            'packaging' => 'Packaging',
+                                            'packaged' => 'Packaged',
+                                            'cancelled' => 'Cancelled',
+                                            'approval_pending' => 'Ready to Ship Approval Pending',
                                         ];
                                     @endphp
                                     @forelse($salesOrder->orderedProducts as $order)
@@ -329,15 +347,18 @@
                                             <td>
                                                 @php
                                                     // Check if product has warehouse allocations (auto-allocation)
-                                                    $hasAllocations = $order->warehouseAllocations && $order->warehouseAllocations->count() > 0;
+                                                    $hasAllocations =
+                                                        $order->warehouseAllocations &&
+                                                        $order->warehouseAllocations->count() > 0;
                                                 @endphp
 
-                                                @if($hasAllocations)
+                                                @if ($hasAllocations)
                                                     {{-- Auto-allocation: Show warehouse-wise breakdown --}}
-                                                    @if($order->warehouseAllocations->count() > 0)
-                                                        @foreach($order->warehouseAllocations->sortBy('sequence') as $allocation)
+                                                    @if ($order->warehouseAllocations->count() > 0)
+                                                        @foreach ($order->warehouseAllocations->sortBy('sequence') as $allocation)
                                                             <div class="mb-1">
-                                                                <strong>{{ $allocation->warehouse->name ?? 'N/A' }}</strong>: {{ $allocation->allocated_quantity }}
+                                                                <strong>{{ $allocation->warehouse->name ?? 'N/A' }}</strong>:
+                                                                {{ $allocation->allocated_quantity }}
                                                             </div>
                                                         @endforeach
                                                     @else
@@ -345,9 +366,10 @@
                                                     @endif
                                                 @else
                                                     {{-- Single warehouse allocation or legacy data --}}
-                                                    @if($order->warehouseStock)
+                                                    @if ($order->warehouseStock)
                                                         <div>
-                                                            <strong>{{ $order->warehouseStock->warehouse->name ?? 'N/A' }}</strong>: {{ $order->tempOrder->block ?? 0 }}
+                                                            <strong>{{ $order->warehouseStock->warehouse->name ?? 'N/A' }}</strong>:
+                                                            {{ $order->tempOrder->block ?? 0 }}
                                                         </div>
                                                     @elseif($order->tempOrder && $order->tempOrder->block > 0)
                                                         {{-- Fallback: Try to find warehouse from warehouse stock --}}
@@ -356,22 +378,28 @@
                                                             $fallbackQuantity = $order->tempOrder->block ?? 0;
 
                                                             // First, try to get from warehouse stock for this SKU with block quantity
-                                                            $warehouseStock = \App\Models\WarehouseStock::where('sku', $order->sku)
+                                                            $warehouseStock = \App\Models\WarehouseStock::where(
+                                                                'sku',
+                                                                $order->sku,
+                                                            )
                                                                 ->where('block_quantity', '>', 0)
                                                                 ->first();
 
                                                             if ($warehouseStock) {
-                                                                $fallbackWarehouseName = $warehouseStock->warehouse->name ?? 'N/A';
+                                                                $fallbackWarehouseName =
+                                                                    $warehouseStock->warehouse->name ?? 'N/A';
                                                             } else {
                                                                 // If no warehouse stock found, try to get from sales order warehouse
                                                                 if ($salesOrder->warehouse) {
-                                                                    $fallbackWarehouseName = $salesOrder->warehouse->name;
+                                                                    $fallbackWarehouseName =
+                                                                        $salesOrder->warehouse->name;
                                                                 }
                                                             }
                                                         @endphp
 
                                                         <div>
-                                                            <strong>{{ $fallbackWarehouseName }}</strong>: {{ $fallbackQuantity }}
+                                                            <strong>{{ $fallbackWarehouseName }}</strong>:
+                                                            {{ $fallbackQuantity }}
                                                         </div>
                                                     @else
                                                         <span class="text-muted">N/A</span>
@@ -380,15 +408,27 @@
                                             </td>
                                             <td>{{ ucfirst($order->invoice_status) }}</td>
                                             <td>
-                                                @if($order->warehouseAllocations->count() > 0)
-                                                    @foreach($order->warehouseAllocations->sortBy('sequence') as $allocation)
+                                                @if ($order->warehouseAllocations->count() > 0)
+                                                    @foreach ($order->warehouseAllocations->sortBy('sequence') as $allocation)
                                                         <div class="mb-1">
-                                                            <strong>{{ $allocation->warehouse->name ?? 'N/A' }}</strong>: {{ ucfirst($allocation->product_status) }}
+                                                            <strong>{{ $allocation->warehouse->name ?? 'N/A' }}</strong>:
+                                                            @php
+                                                                if ($allocation->product_status == 'completed') {
+                                                                    $allocation->product_status =
+                                                                        $allocation->shipping_status;
+                                                                }
+                                                            @endphp
+                                                            {{ $statuses[$allocation->product_status] ?? 'Unknown' }}
                                                         </div>
                                                     @endforeach
-                                                @else 
-                                                    {{ ucfirst($order->product_status) }}
-                                                @endif 
+                                                @else
+                                                    @php
+                                                        if ($allocation->product_status == 'completed') {
+                                                            $allocation->product_status = $allocation->shipping_status;
+                                                        }
+                                                    @endphp
+                                                    {{ $statuses[$order->product_status] ?? 'Unknown' }}
+                                                @endif
                                             </td>
                                         </tr>
                                     @empty
@@ -536,6 +576,13 @@
                 brandSelection.column(-2).search(selected ? '^' + selected + '$' : '', true, false).draw();
             });
 
+            $('#selectProductStatusFilter').on('change', function() {
+                var selected = $(this).val().trim();
+                // selected = 'Shipped'
+                // in my column 'Baroda Warehouse 1: Shipped'
+                // brandSelection.column(-1).search(selected ? '^' + selected + '$' : '', true, false).draw();
+                brandSelection.column(-1).search(selected, true, false).draw();
+            });
 
             $(document).on('click', '#exportData', function() {
                 var purchaseOrderId = $("#orderId").text().trim();

@@ -313,7 +313,7 @@
                 {{ $totalAmount = $igstAmount + $detail->amount }}
                 {{ $totalAmountSum = $totalAmount + $totalAmountSum }}
                 {{ $totalIgstSum = $igstAmount + $totalIgstSum }}
-                {{ $totalBoxCount += $detail->box_count ? $detail->box_count : $detail->salesOrderProduct?->box_count }}
+                {{ $totalBoxCount += $detail->box_count ? ceil($detail->box_count) : $detail->salesOrderProduct?->box_count }}
                 {{ $totalWeight += $detail->weight ? $detail->weight : $detail->salesOrderProduct?->weight }}
 
                 <td class="text-center">{{ $index + 1 }}</td>
@@ -325,7 +325,7 @@
                     <td>{{ $detail->campaign_name }}</td>
                     <td class="right-align">{{ $detail->quantity }}</td>
                     <td>{{ $detail->unit_type }}</td>
-                    <td class="right-align">{{ $detail->box_count ?? 0 }}</td>
+                    <td class="right-align">{{ ceil($detail->box_count) ?? 0 }}</td>
                     <td class="right-align">{{ $detail->weight ?? 0 }}</td>
                 @else
                     <td>

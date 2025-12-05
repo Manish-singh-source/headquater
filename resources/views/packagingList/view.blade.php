@@ -328,18 +328,18 @@
                                                         @if ($isSuperAdmin ?? false)
                                                             <div>
                                                                 {{ $allocation->warehouse->name }}:
-                                                                {{ floatval($allocation->box_count ?? 0) }}
+                                                                {{ ceil($allocation->box_count ?? 0) }}
                                                             </div>
                                                         @else
                                                             @if ($user->warehouse_id == $allocation->warehouse_id)
                                                                 <div>
-                                                                    {{ floatval($allocation->box_count ?? 0) }}
+                                                                    {{ ceil($allocation->box_count ?? 0) }}
                                                                 </div>
                                                             @endif
                                                         @endif
                                                     @endforeach
                                                 @else
-                                                    {{ floatval($order->box_count ?? 0) }}
+                                                    {{ ceil($order->box_count ?? 0) }}
                                                 @endif
                                             </td>
                                             <td>

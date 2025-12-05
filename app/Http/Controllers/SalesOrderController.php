@@ -472,7 +472,7 @@ class SalesOrderController extends Controller
                             ->log("Stock allocated from warehouse {$product->warehouse->name}");
                     }
                 }
-
+                
                 // Make a purchase order if one or more than one products have less quantity in warehouse
                 if ($shortQty > 0) {
                     if (! isset($productStockCache[$vendorCode])) {
@@ -1543,6 +1543,8 @@ class SalesOrderController extends Controller
                     $invoiceDetail->warehouse_id = $warehouseId;
                     $invoiceDetail->quantity = $quantity;
                     $invoiceDetail->unit_price = $unitPrice;
+                    $invoiceDetail->box_count = ceil($allocation->box_count);
+                    $invoiceDetail->weight = ceil($allocation->weight);
                     $invoiceDetail->discount = 0;
                     $invoiceDetail->hsn = $detail->hsn;
                     $invoiceDetail->amount = $lineTotal;

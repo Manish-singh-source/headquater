@@ -116,7 +116,7 @@ class InvoiceController extends Controller
             'igstStatus' => $igstStatus,
             'invoiceItemType' => $invoice->invoice_item_type ?? 'product',
         ];
-
+        // dd($data);
         $pdf = \PDF::loadView('invoice/invoice-pdf', ['image' => $base64Image, 'image1' => $base643Image] + $data);
         $pdf->setPaper('a4');
 

@@ -120,6 +120,7 @@ class PackagingController extends Controller
                     $query->where('warehouse_id', $userWarehouseId);
                 })
                 ->get();
+            // dd($salesOrder->orderedProducts);
 
             return view('packagingList.view', compact('salesOrder', 'facilityNames', 'isAdmin', 'isSuperAdmin', 'userWarehouseId', 'user', 'pendingApprovalList', 'readyToShipAllocations'));
         } catch (\Exception $e) {
@@ -372,8 +373,8 @@ class PackagingController extends Controller
                 'Purchase Order No' => $order->tempOrder->po_number ?? '',
                 'Total Dispatch Qty' => $totalDispatchQty,
                 'Final Dispatch Qty' => $finalDispatchQty,
-                'Box Count' => $boxCount,
-                'Weight' => $weight,
+                'Box Count' => ceil($boxCount),
+                'Weight' => ceil($weight),
                 'Issue Units' => '',
                 'Issue Reason' => '',
             ]);
