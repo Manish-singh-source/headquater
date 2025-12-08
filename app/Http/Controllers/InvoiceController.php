@@ -16,6 +16,7 @@ use App\Models\WarehouseStock;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
@@ -624,6 +625,205 @@ class InvoiceController extends Controller
             Log::error('Check PO Number Error: '.$e->getMessage());
 
             return response()->json(['success' => false, 'message' => 'Failed to check PO Number'], 500);
+        }
+    }
+
+    public function generateEInvoice($id)
+    {
+        try {
+            $invoice = Invoice::with(['customer', 'warehouse', 'details.product'])->findOrFail($id);
+
+            // Check if e-invoice already generated
+            if ($invoice->irn) {
+                return redirect()->back()->with('error', 'E-Invoice already generated for this invoice.');
+            }
+
+            // Validate required data
+            if (!$invoice->warehouse || !$invoice->warehouse->gst_number) {
+                return redirect()->back()->with('error', 'Warehouse GSTIN is required for e-invoice generation.');
+            }
+
+            if (!$invoice->customer || !$invoice->customer->gstin) {
+                return redirect()->back()->with('error', 'Customer GSTIN is required for e-invoice generation.');
+            }
+
+            if ($invoice->details->isEmpty()) {
+                return redirect()->back()->with('error', 'Invoice must have at least one item for e-invoice generation.');
+            }
+
+            // Get JWT token
+            $token = $this->getEInvoiceToken();
+            if (!$token) {
+                return redirect()->back()->with('error', 'Failed to authenticate with e-invoice API.');
+            }
+
+            // Prepare API request data
+            $requestData = $this->prepareEInvoiceData($invoice);
+
+            // Make API call
+            $response = $this->callEInvoiceAPI($token, $requestData);
+
+            if ($response && isset($response['results'])) {
+                $results = $response['results'];
+
+                if (isset($results['status']) && $results['status'] === 'Success' && isset($results['message'])) {
+                    $message = $results['message'];
+
+                    // Update invoice with e-invoice details
+                    $invoice->update([
+                        'irn' => $message['Irn'] ?? null,
+                        'ack_no' => $message['AckNo'] ?? null,
+                        'ack_dt' => isset($message['AckDt']) ? date('Y-m-d H:i:s', strtotime($message['AckDt'])) : null,
+                        'signed_invoice' => $message['SignedInvoice'] ?? null,
+                        'signed_qr_code' => $message['SignedQRCode'] ?? null,
+                        'ewb_no' => $message['EwbNo'] ?? null,
+                        'ewb_dt' => isset($message['EwbDt']) ? date('Y-m-d H:i:s', strtotime($message['EwbDt'])) : null,
+                        'ewb_valid_till' => isset($message['EwbValidTill']) ? date('Y-m-d H:i:s', strtotime($message['EwbValidTill'])) : null,
+                        'einvoice_pdf' => $message['EinvoicePdf'] ?? null,
+                        'ewaybill_pdf' => $message['EwaybillPdf'] ?? null,
+                        'qr_code_url' => $message['QRCodeUrl'] ?? null,
+                        'einvoice_status' => $message['Status'] ?? null,
+                    ]);
+
+                    $irn = $message['Irn'] ?? 'N/A';
+                    return redirect()->back()->with('success', 'E-Invoice generated successfully. IRN: ' . $irn);
+                } else {
+                    $errorMessage = $results['errorMessage'] ?? $results['InfoDtls'] ?? 'Unknown error occurred';
+                    $status = $results['status'] ?? 'Unknown';
+                    Log::error('E-Invoice API Error Response: ' . json_encode($response));
+
+                    // For debugging, show the raw response
+                    $debugInfo = 'API Response: ' . json_encode($response);
+                    return redirect()->back()->with('error', 'Failed to generate e-invoice (Status: ' . $status . '): ' . $errorMessage . ' | Debug: ' . substr($debugInfo, 0, 200));
+                }
+            } else {
+                Log::error('E-Invoice API Invalid Response: ' . json_encode($response));
+                return redirect()->back()->with('error', 'Invalid response from e-invoice API');
+            }
+
+        } catch (\Exception $e) {
+            Log::error('E-Invoice Generation Error: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'An error occurred while generating e-invoice: ' . $e->getMessage());
+        }
+    }
+
+    private function getEInvoiceToken()
+    {
+        try {
+            $response = Http::post('https://sandb-api.mastersindia.co/api/v1/token-auth/', [
+                'username' => 'support@technofra.com',
+                'password' => 'Masters@12345'
+            ]);
+
+            $data = $response->json();
+            return $data['token'] ?? null;
+        } catch (\Exception $e) {
+            Log::error('E-Invoice Token Error: ' . $e->getMessage());
+            return null;
+        }
+    }
+
+    private function prepareEInvoiceData($invoice)
+    {
+        $warehouse = $invoice->warehouse;
+        $customer = $invoice->customer;
+
+        // Use test GSTINs for sandbox environment (mapped to support@technofra.com account)
+        $sellerGstin = '05AAAPG7885R002'; // Uttarakhand
+        $buyerGstin = '09AAAPG7885R002';  // Uttar Pradesh
+
+        // Extract state codes from GSTINs
+        $sellerStateCode = '05'; // Uttarakhand
+        $buyerStateCode = '09';  // Uttar Pradesh
+
+        // Use test pincodes that match the state codes for sandbox
+        $sellerTestPincode = '263001'; // Haldwani, Uttarakhand
+        $buyerTestPincode = '201301'; // Noida, Uttar Pradesh
+
+        $itemList = [];
+        foreach ($invoice->details as $index => $detail) {
+            $gstRate = 5; // Default GST rate
+            $assessableValue = $detail->amount - $detail->discount;
+            $igstAmount = round(($assessableValue * $gstRate) / 100, 2);
+            $totalItemValue = $assessableValue + $igstAmount;
+            $itemList[] = [
+                'item_serial_number' => $index + 1,
+                'product_description' => $detail->product->product_name ?? $detail->description ?? 'Product',
+                'is_service' => $invoice->invoice_item_type === 'service' ? 'Y' : 'N',
+                'hsn_code' => $detail->hsn ?? $detail->product->hsn_code ?? '1001',
+                'quantity' => $detail->quantity,
+                'unit' => 'PCS', // Default unit
+                'unit_price' => $detail->unit_price,
+                'total_amount' => $detail->amount,
+                'assessable_value' => $assessableValue,
+                'gst_rate' => $gstRate,
+                'igst_amount' => $igstAmount,
+                'cgst_amount' => 0,
+                'sgst_amount' => 0,
+                'total_item_value' => $totalItemValue,
+            ];
+        }
+
+
+        return [
+            'user_gstin' => $sellerGstin,
+            'data_source' => 'erp',
+            'transaction_details' => [
+                'supply_type' => 'B2B',
+                'charge_type' => 'N',
+                'igst_on_intra' => 'N',
+            ],
+            'document_details' => [
+                'document_type' => 'INV',
+                'document_number' => 'I' . str_pad(rand(1, 999999), 6, '0', STR_PAD_LEFT) . rand(1, 9), // Format: IXXXXXXY
+                'document_date' => $invoice->invoice_date->format('d/m/Y'),
+            ],
+            'seller_details' => [
+                'gstin' => $sellerGstin,
+                'legal_name' => $warehouse->name,
+                'address1' => $warehouse->address_line_1,
+                'address2' => $warehouse->address_line_2 ?? '',
+                'location' => 'Haldwani', // Test location for Uttarakhand
+                'pincode' => $sellerTestPincode,
+                'state_code' => $sellerStateCode,
+            ],
+            'buyer_details' => [
+                'gstin' => $buyerGstin,
+                'legal_name' => $customer->client_name,
+                'address1' => $customer->billing_address ?? 'Test Address',
+                'location' => 'Noida', // Test location for Uttar Pradesh
+                'pincode' => $buyerTestPincode,
+                'place_of_supply' => $buyerStateCode,
+                'state_code' => $buyerStateCode,
+            ],
+            'value_details' => [
+                'total_assessable_value' => collect($itemList)->sum('assessable_value'),
+                'total_cgst_value' => 0,
+                'total_sgst_value' => 0,
+                'total_igst_value' => collect($itemList)->sum('igst_amount'),
+                'total_cess_value' => 0,
+                'total_cess_value_of_state' => 0,
+                'total_discount' => $invoice->discount_amount ?? 0,
+                'total_other_charge' => 0,
+                'total_invoice_value' => collect($itemList)->sum('assessable_value') + collect($itemList)->sum('igst_amount') - ($invoice->discount_amount ?? 0) + ($invoice->round_off ?? 0),
+                'round_off_amount' => $invoice->round_off ?? 0,
+            ],
+            'item_list' => $itemList,
+        ];
+    }
+
+    private function callEInvoiceAPI($token, $data)
+    {
+        try {
+            $response = Http::withHeaders([
+                'Authorization' => 'JWT ' . $token,
+                'Content-Type' => 'application/json',
+            ])->post('https://sandb-api.mastersindia.co/api/v1/einvoice/', $data);
+
+            return $response->json();
+        } catch (\Exception $e) {
+            Log::error('E-Invoice API Call Error: ' . $e->getMessage());
+            return null;
         }
     }
 }

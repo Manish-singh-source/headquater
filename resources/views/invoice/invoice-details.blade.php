@@ -18,8 +18,34 @@
                                     <span>
                                         <a href="{{ route('invoice.downloadPdf', $invoiceDetails->id) }}"
                                             class="btn btn-icon btn-sm bg-primary-subtle me-1">Download</a>
+                                        @if(!$invoiceDetails->irn)
+                                            <form action="{{ route('invoice.generateEInvoice', $invoiceDetails->id) }}" method="POST" style="display: inline;">
+                                                @csrf
+                                                <button type="submit" class="btn btn-icon btn-sm bg-success-subtle me-1">Generate E-Invoice</button>
+                                            </form>
+                                        @endif
                                     </span>
                                 </li>
+                                @if($invoiceDetails->irn)
+                                <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
+                                    <span><b>IRN</b></span>
+                                    <span>{{ $invoiceDetails->irn }}</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
+                                    <span><b>Ack No</b></span>
+                                    <span>{{ $invoiceDetails->ack_no }}</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
+                                    <span><b>E-Invoice Status</b></span>
+                                    <span>{{ $invoiceDetails->einvoice_status }}</span>
+                                </li>
+                                @if($invoiceDetails->einvoice_pdf)
+                                <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
+                                    <span><b>E-Invoice PDF</b></span>
+                                    <span><a href="{{ $invoiceDetails->einvoice_pdf }}" target="_blank" class="btn btn-icon btn-sm bg-primary-subtle me-1">View</a></span>
+                                </li>
+                                @endif
+                                @endif
                                 <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                                     <span><b>Client Name</b></span>
                                     <span>{{ $invoiceDetails->customer->client_name }}</span>

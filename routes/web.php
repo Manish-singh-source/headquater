@@ -314,6 +314,9 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/invoice-dn-update/{id}', 'invoiceDnUpdate')->name('invoice.dn.update');
         Route::post('/invoice-payment-update/{id}', 'invoicePaymentUpdate')->name('invoice.payment.update');
 
+        // Generate E-Invoice
+        Route::post('/generate-e-invoice/{id}', 'generateEInvoice')->name('invoice.generateEInvoice');
+
         // Check PO Number
         Route::post('/check-po-number', 'checkPoNumber')->name('check.po.number');
     });
