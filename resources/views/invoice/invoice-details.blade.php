@@ -37,13 +37,33 @@
                                 </li>
                                 <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                                     <span><b>E-Invoice Status</b></span>
-                                    <span>{{ $invoiceDetails->einvoice_status }}</span>
+                                    <span>
+                                        @if($invoiceDetails->einvoice_status === 'ACT')
+                                            <span class="badge bg-success">Active</span>
+                                        @elseif($invoiceDetails->einvoice_status === 'CAN')
+                                            <span class="badge bg-danger">Cancelled</span>
+                                        @else
+                                            {{ $invoiceDetails->einvoice_status }}
+                                        @endif
+                                    </span>
                                 </li>
-                                @if($invoiceDetails->einvoice_pdf)
+                                @if($invoiceDetails->irn)
                                 <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                                     <span><b>E-Invoice PDF</b></span>
-                                    <span><a href="{{ $invoiceDetails->einvoice_pdf }}" target="_blank" class="btn btn-icon btn-sm bg-primary-subtle me-1">View</a></span>
+                                    <span><a href="{{ route('invoice.downloadEInvoicePdf', $invoiceDetails->id) }}" target="_blank" class="btn btn-icon btn-sm bg-primary-subtle me-1">Download</a></span>
                                 </li>
+                                @if($invoiceDetails->einvoice_status === 'ACT' && (!$invoiceDetails->ewb_no || $invoiceDetails->ewb_valid_till < now()))
+                                <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
+                                    <span><b>Cancel E-Invoice</b></span>
+                                    <span>
+                                        <form action="{{ route('invoice.cancelEInvoice', $invoiceDetails->id) }}" method="POST" style="display: inline;" onsubmit="return confirm('Are you sure you want to cancel this E-Invoice? This action cannot be undone.')">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-icon btn-sm bg-danger-subtle me-1">Cancel E-Invoice</button>
+                                        </form>
+                                    </span>
+                                </li>
+                                @endif
                                 @endif
                                 @endif
                                 <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">

@@ -19,6 +19,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
+use Endroid\QrCode\QrCode;
+use Endroid\QrCode\Writer\PngWriter;
 
 class InvoiceController extends Controller
 {
@@ -122,6 +124,64 @@ class InvoiceController extends Controller
         $pdf->setPaper('a4');
 
         return $pdf->stream('invoice.pdf');
+    }
+
+    public function downloadEInvoicePdf($id)
+    {
+        $igstStatus = false;
+        $data = [
+            'title' => 'E-Invoice',
+            'date' => date('m/d/Y'),
+        ];
+        $path = public_path('assets/images/logo-icon.png');
+        $base64 = base64_encode(file_get_contents($path));
+        $base64Image = 'data:image/png;base64,'.$base64;
+
+        $path1 = public_path('assets/images/e-inv.png');
+        $base642 = base64_encode(file_get_contents($path1));
+        $base643Image = 'data:image/png;base64,'.$base642;
+        $invoice = Invoice::with(['warehouse', 'customer', 'salesOrder'])->findOrFail($id);
+        $invoiceDetails = InvoiceDetails::with('product', 'tempOrder', 'salesOrderProduct')->where('invoice_id', $id)->get();
+
+        // Check if it's a sales order invoice or manual invoice
+        if ($invoice->sales_order_id) {
+            // Sales Order Invoice - get ALL products for this sales order and customer
+            $salesOrderProducts = SalesOrderProduct::with('product', 'tempOrder', 'warehouseAllocations.warehouse')
+                ->where('sales_order_id', $invoice->sales_order_id)
+                ->where('customer_id', $invoice->customer_id)
+                ->get();
+
+            $totalWeight = $salesOrderProducts->sum('weight');
+            $totalBoxCount = $salesOrderProducts->sum('box_count');
+        } else {
+            // Manual Invoice - get totals from invoice_details
+            $salesOrderProducts = collect();
+            $totalWeight = $invoiceDetails->sum('weight');
+            $totalBoxCount = $invoiceDetails->sum('box_count');
+        }
+
+        // Generate QR code from IRN if available
+        $qrCodeImage = null;
+        if ($invoice->signed_qr_code) {
+            $qrCodeImage = $this->generateQRCode($invoice->signed_qr_code);
+        }
+
+        $data = [
+            'title' => 'E-Invoice',
+            'invoice' => $invoice,
+            'invoiceDetails' => $invoiceDetails,
+            'salesOrderProducts' => $salesOrderProducts,
+            'TotalWeight' => $totalWeight,
+            'TotalBoxCount' => $totalBoxCount,
+            'igstStatus' => $igstStatus,
+            'invoiceItemType' => $invoice->invoice_item_type ?? 'product',
+            'qrCodeImage' => $qrCodeImage,
+        ];
+        // dd($data);
+        $pdf = \PDF::loadView('invoice/einvoice-pdf', ['image' => $base64Image, 'image1' => $base643Image] + $data);
+        $pdf->setPaper('a4');
+
+        return $pdf->stream('e-invoice.pdf');
     }
 
     public function invoiceAppointmentUpdate(Request $request, $id)
@@ -826,4 +886,94 @@ class InvoiceController extends Controller
             return null;
         }
     }
+
+    public function cancelEInvoice($id)
+    {
+        try {
+            $invoice = Invoice::findOrFail($id);
+
+            // Check if e-invoice exists
+            if (!$invoice->irn) {
+                return redirect()->back()->with('error', 'No E-Invoice found for this invoice.');
+            }
+
+            // Check if already cancelled
+            if ($invoice->einvoice_status === 'CAN') {
+                return redirect()->back()->with('error', 'E-Invoice is already cancelled.');
+            }
+
+            // Check if there's an active E-waybill
+            if ($invoice->ewb_no && $invoice->ewb_valid_till && $invoice->ewb_valid_till > now()) {
+                return redirect()->back()->with('error', 'Cannot cancel E-Invoice with active E-waybill. Cancel the E-waybill first.');
+            }
+
+            // Get JWT token
+            $token = $this->getEInvoiceToken();
+            if (!$token) {
+                return redirect()->back()->with('error', 'Failed to authenticate with e-invoice API.');
+            }
+
+            // Prepare API request data
+            $requestData = [
+                'user_gstin' => '05AAAPG7885R002', // Using test GSTIN
+                'irn' => $invoice->irn,
+                'cancel_reason' => '1', // Default reason: Wrong entry
+                'cancel_remarks' => 'Cancelled by user',
+                'ewaybill_cancel' => '' // Not cancelling ewaybill
+            ];
+
+            // Make API call
+            $response = Http::withHeaders([
+                'Authorization' => 'JWT ' . $token,
+                'Content-Type' => 'application/json',
+            ])->post('https://sandb-api.mastersindia.co/api/v1/cancel-einvoice/', $requestData);
+
+            $data = $response->json();
+
+            if ($response->successful() && isset($data['results'])) {
+                $results = $data['results'];
+
+                if (isset($results['status']) && $results['status'] === 'Success' && isset($results['message'])) {
+                    $message = $results['message'];
+
+                    // Update invoice with cancellation details
+                    $invoice->update([
+                        'einvoice_status' => 'CAN', // Cancelled
+                        // Keep other fields as they are, or clear them if needed
+                    ]);
+
+                    activity()->performedOn($invoice)->causedBy(Auth::user())->log('E-Invoice cancelled: IRN ' . $invoice->irn);
+
+                    return redirect()->back()->with('success', 'E-Invoice cancelled successfully.');
+                } else {
+                    $errorMessage = $results['errorMessage'] ?? $results['InfoDtls'] ?? 'Unknown error occurred';
+                    Log::error('E-Invoice Cancel API Error Response: ' . json_encode($data));
+                    return redirect()->back()->with('error', 'Failed to cancel e-invoice: ' . $errorMessage);
+                }
+            } else {
+                Log::error('E-Invoice Cancel API Invalid Response: ' . json_encode($data));
+                return redirect()->back()->with('error', 'Invalid response from e-invoice API');
+            }
+
+        } catch (\Exception $e) {
+            Log::error('E-Invoice Cancellation Error: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'An error occurred while cancelling e-invoice: ' . $e->getMessage());
+        }
+    }
+
+    private function generateQRCode($data)
+    {
+        try {
+            $qrCode = new QrCode($data);
+            $writer = new PngWriter();
+            $result = $writer->write($qrCode);
+
+            // Return as base64 encoded data URL
+            return 'data:image/png;base64,' . base64_encode($result->getString());
+        } catch (\Exception $e) {
+            Log::error('QR Code Generation Error: ' . $e->getMessage());
+            return null;
+        }
+    }
+
 }

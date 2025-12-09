@@ -297,6 +297,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/invoices', 'index')->name('invoices');
         Route::get('/invoices/{id}', 'view')->name('invoices.view');
         Route::get('/download-invoice-pdf/{id}', 'downloadPdf')->name('invoice.downloadPdf');
+        Route::get('/download-einvoice-pdf/{id}', 'downloadEInvoicePdf')->name('invoice.downloadEInvoicePdf');
 
         Route::get('/create-invoice', function () {
             return view('create-invoice');
@@ -316,6 +317,9 @@ Route::middleware(['auth'])->group(function () {
 
         // Generate E-Invoice
         Route::post('/generate-e-invoice/{id}', 'generateEInvoice')->name('invoice.generateEInvoice');
+
+        // Cancel E-Invoice
+        Route::delete('/cancel-e-invoice/{id}', 'cancelEInvoice')->name('invoice.cancelEInvoice');
 
         // Check PO Number
         Route::post('/check-po-number', 'checkPoNumber')->name('check.po.number');
