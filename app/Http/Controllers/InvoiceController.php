@@ -699,7 +699,8 @@ class InvoiceController extends Controller
             }
 
             // Validate required data
-            if (!$invoice->warehouse || !$invoice->warehouse->gst_number) {
+            // For manual invoices (warehouse_id = 0), skip warehouse GSTIN validation as test GSTINs are used
+            if ($invoice->warehouse_id != 0 && (!$invoice->warehouse || !$invoice->warehouse->gst_number)) {
                 return redirect()->back()->with('error', 'Warehouse GSTIN is required for e-invoice generation.');
             }
 
@@ -786,6 +787,7 @@ class InvoiceController extends Controller
     private function prepareEInvoiceData($invoice)
     {
         $warehouse = $invoice->warehouse;
+        // For manual invoices, warehouse might be null, but we use test data anyway
         $customer = $invoice->customer;
 
         // Use test GSTINs for sandbox environment (mapped to support@technofra.com account)
@@ -797,8 +799,8 @@ class InvoiceController extends Controller
         $buyerStateCode = '09';  // Uttar Pradesh
 
         // Use test pincodes that match the state codes for sandbox
-        $sellerTestPincode = '263001'; // Haldwani, Uttarakhand
-        $buyerTestPincode = '201301'; // Noida, Uttar Pradesh
+        $sellerPincode = '263001'; // Haldwani, Uttarakhand
+        $buyerPincode = '201301'; // Noida, Uttar Pradesh
 
         $itemList = [];
         foreach ($invoice->details as $index => $detail) {
@@ -810,7 +812,7 @@ class InvoiceController extends Controller
                 'item_serial_number' => $index + 1,
                 'product_description' => $detail->product->product_name ?? $detail->description ?? 'Product',
                 'is_service' => $invoice->invoice_item_type === 'service' ? 'Y' : 'N',
-                'hsn_code' => $detail->hsn ?? $detail->product->hsn_code ?? '1001',
+                'hsn_code' => preg_replace('/[^0-9]/', '', $detail->hsn ?? $detail->product->hsn_code ?? '1001') ?: '1001',
                 'quantity' => $detail->quantity,
                 'unit' => 'PCS', // Default unit
                 'unit_price' => $detail->unit_price,
@@ -840,19 +842,19 @@ class InvoiceController extends Controller
             ],
             'seller_details' => [
                 'gstin' => $sellerGstin,
-                'legal_name' => $warehouse->name,
-                'address1' => $warehouse->address_line_1,
-                'address2' => $warehouse->address_line_2 ?? '',
+                'legal_name' => $warehouse ? $warehouse->name : 'Test Warehouse',
+                'address1' => $warehouse ? $warehouse->address_line_1 : 'Test Address',
+                'address2' => $warehouse ? ($warehouse->address_line_2 ?? '') : '',
                 'location' => 'Haldwani', // Test location for Uttarakhand
-                'pincode' => $sellerTestPincode,
+                'pincode' => $sellerPincode,
                 'state_code' => $sellerStateCode,
             ],
             'buyer_details' => [
                 'gstin' => $buyerGstin,
                 'legal_name' => $customer->client_name,
                 'address1' => $customer->billing_address ?? 'Test Address',
-                'location' => 'Noida', // Test location for Uttar Pradesh
-                'pincode' => $buyerTestPincode,
+                'location' => 'Test Location',
+                'pincode' => $buyerPincode,
                 'place_of_supply' => $buyerStateCode,
                 'state_code' => $buyerStateCode,
             ],
