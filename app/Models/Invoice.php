@@ -28,11 +28,26 @@ class Invoice extends Model
         'notes',
         'po_number',
         'po_date',
+        'irn',
+        'ack_no',
+        'ack_dt',
+        'signed_invoice',
+        'signed_qr_code',
+        'ewb_no',
+        'ewb_dt',
+        'ewb_valid_till',
+        'einvoice_pdf',
+        'ewaybill_pdf',
+        'qr_code_url',
+        'einvoice_status',
     ];
 
     protected $casts = [
         'invoice_date' => 'date',
         'po_date' => 'date',
+        'ack_dt' => 'datetime',
+        'ewb_dt' => 'datetime',
+        'ewb_valid_till' => 'datetime',
     ];
 
     public function warehouse()

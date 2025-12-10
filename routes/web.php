@@ -297,6 +297,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/invoices', 'index')->name('invoices');
         Route::get('/invoices/{id}', 'view')->name('invoices.view');
         Route::get('/download-invoice-pdf/{id}', 'downloadPdf')->name('invoice.downloadPdf');
+        Route::get('/download-einvoice-pdf/{id}', 'downloadEInvoicePdf')->name('invoice.downloadEInvoicePdf');
 
         Route::get('/create-invoice', function () {
             return view('create-invoice');
@@ -313,6 +314,15 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/invoice-appointment-update/{id}', 'invoiceAppointmentUpdate')->name('invoices.appointment.update');
         Route::post('/invoice-dn-update/{id}', 'invoiceDnUpdate')->name('invoice.dn.update');
         Route::post('/invoice-payment-update/{id}', 'invoicePaymentUpdate')->name('invoice.payment.update');
+
+        // Generate E-Invoice
+        Route::post('/generate-e-invoice/{id}', 'generateEInvoice')->name('invoice.generateEInvoice');
+
+        // Generate E-Way Bill
+        Route::post('/generate-e-way-bill/{id}', 'generateEWayBill')->name('invoice.generateEWayBill');
+
+        // Cancel E-Invoice
+        Route::delete('/cancel-e-invoice/{id}', 'cancelEInvoice')->name('invoice.cancelEInvoice');
 
         // Check PO Number
         Route::post('/check-po-number', 'checkPoNumber')->name('check.po.number');
