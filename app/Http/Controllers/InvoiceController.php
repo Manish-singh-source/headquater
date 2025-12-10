@@ -475,6 +475,33 @@ class InvoiceController extends Controller
             return redirect()->back()->withErrors($validator)->withInput();
         }
 
+        // Additional validation: Ensure either customer_id or customer_group_id is provided
+        $customerId = $request->input('customer_id');
+        $customerGroupId = $request->input('customer_group_id');
+
+        if (!$customerId && !$customerGroupId) {
+            return redirect()->back()->withErrors(['customer_selection' => 'Either Customer or Customer Group must be selected.'])->withInput();
+        }
+
+        if ($customerId && $customerGroupId) {
+            return redirect()->back()->withErrors(['customer_selection' => 'Please select either Customer or Customer Group, not both.'])->withInput();
+        }
+
+        // Validate that the selected customer/group exists and is active
+        if ($customerId) {
+            $customer = Customer::active()->find($customerId);
+            if (!$customer) {
+                return redirect()->back()->withErrors(['customer_id' => 'Selected customer is not available.'])->withInput();
+            }
+        }
+
+        if ($customerGroupId) {
+            $customerGroup = \App\Models\CustomerGroup::active()->find($customerGroupId);
+            if (!$customerGroup) {
+                return redirect()->back()->withErrors(['customer_group_id' => 'Selected customer group is not available.'])->withInput();
+            }
+        }
+
         DB::beginTransaction();
         try {
             // Generate invoice number
@@ -536,12 +563,19 @@ class InvoiceController extends Controller
                 $paymentStatus = 'unpaid';
             }
 
+            // Determine customer type and ID
+            $customerId = $request->customer_id;
+            $customerGroupId = $request->customer_group_id;
+            $customerType = $customerId ? 'customer' : 'group';
+
             // Create invoice with warehouse_id = 0 (meaning "All Warehouses")
             // Individual warehouse info is stored in invoice_details table
             $invoice = Invoice::create([
                 'warehouse_id' => 0,
                 'invoice_number' => $invoiceNumber,
-                'customer_id' => $request->customer_id,
+                'customer_id' => $customerId,
+                'customer_group_id' => $customerGroupId,
+                'customer_type' => $customerType,
                 'sales_order_id' => null,
                 'invoice_date' => $request->invoice_date,
                 'po_number' => $request->po_number,
@@ -559,7 +593,7 @@ class InvoiceController extends Controller
                 'invoice_type' => 'manual',
                 'invoice_item_type' => $request->invoice_item_type,
                 'notes' => $request->notes,
-                
+
             ]);
 
             // Create invoice details based on type
@@ -960,6 +994,84 @@ class InvoiceController extends Controller
         } catch (\Exception $e) {
             Log::error('E-Invoice Cancellation Error: ' . $e->getMessage());
             return redirect()->back()->with('error', 'An error occurred while cancelling e-invoice: ' . $e->getMessage());
+        }
+    }
+
+    public function generateEWayBill($id)
+    {
+        try {
+            $invoice = Invoice::findOrFail($id);
+
+            // Check if e-invoice exists
+            if (!$invoice->irn) {
+                return redirect()->back()->with('error', 'E-Invoice must be generated first before creating E-Way Bill.');
+            }
+
+            // Check if e-waybill already generated and still valid
+            if ($invoice->ewb_no && $invoice->ewb_valid_till && $invoice->ewb_valid_till > now()) {
+                return redirect()->back()->with('error', 'E-Way Bill already exists and is still valid.');
+            }
+
+            // Get JWT token
+            $token = $this->getEInvoiceToken();
+            if (!$token) {
+                return redirect()->back()->with('error', 'Failed to authenticate with e-invoice API.');
+            }
+
+            // Prepare API request data for E-Way Bill generation
+            $requestData = [
+                'user_gstin' => '05AAAPG7885R002', // Using test GSTIN
+                'irn' => $invoice->irn,
+                'transporter_id' => '05AAABB0639G1Z8', // Test transporter ID
+                'transportation_mode' => '1', // Road transport
+                'distance' => 280, // Distance between Haldwani (263001) and Noida (201301) is ~280 km
+                'vehicle_number' => 'KA01AB1234', // Test vehicle number
+                'vehicle_type' => 'R', // Regular vehicle
+                'transporter_name' => 'Test Transporter',
+                'data_source' => 'erp',
+                'transporter_document_number' => 'DOC' . time(),
+                'transporter_document_date' => date('d/m/Y'),
+            ];
+
+            // Make API call
+            $response = Http::withHeaders([
+                'Authorization' => 'JWT ' . $token,
+                'Content-Type' => 'application/json',
+            ])->post('https://sandb-api.mastersindia.co/api/v1/gen-ewb-by-irn/', $requestData);
+
+            $data = $response->json();
+
+            if ($response->successful() && isset($data['results'])) {
+                $results = $data['results'];
+
+                if (isset($results['status']) && $results['status'] === 'Success' && isset($results['message'])) {
+                    $message = $results['message'];
+
+                    // Update invoice with e-waybill details
+                    $invoice->update([
+                        'ewb_no' => $message['EwbNo'] ?? null,
+                        'ewb_dt' => isset($message['EwbDt']) ? date('Y-m-d H:i:s', strtotime($message['EwbDt'])) : null,
+                        'ewb_valid_till' => isset($message['EwbValidTill']) ? date('Y-m-d H:i:s', strtotime($message['EwbValidTill'])) : null,
+                        'ewaybill_pdf' => $message['EwaybillPdf'] ?? null,
+                    ]);
+
+                    $ewbNo = $message['EwbNo'] ?? 'N/A';
+                    activity()->performedOn($invoice)->causedBy(Auth::user())->log('E-Way Bill generated: ' . $ewbNo);
+
+                    return redirect()->back()->with('success', 'E-Way Bill generated successfully. EWB No: ' . $ewbNo);
+                } else {
+                    $errorMessage = $results['errorMessage'] ?? $results['InfoDtls'] ?? 'Unknown error occurred';
+                    Log::error('E-Way Bill API Error Response: ' . json_encode($data));
+                    return redirect()->back()->with('error', 'Failed to generate e-way bill: ' . $errorMessage);
+                }
+            } else {
+                Log::error('E-Way Bill API Invalid Response: ' . json_encode($data));
+                return redirect()->back()->with('error', 'Invalid response from e-way bill API');
+            }
+
+        } catch (\Exception $e) {
+            Log::error('E-Way Bill Generation Error: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'An error occurred while generating e-way bill: ' . $e->getMessage());
         }
     }
 

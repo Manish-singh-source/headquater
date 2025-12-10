@@ -65,6 +65,43 @@
                                 </li>
                                 @endif
                                 @endif
+
+                                @if($invoiceDetails->irn)
+                                <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
+                                    <span><b>E-Way Bill</b></span>
+                                    <span>
+                                        @if($invoiceDetails->ewb_no && $invoiceDetails->ewb_valid_till > now())
+                                            <span class="badge bg-success me-2">Active</span>
+                                            <a href="{{ $invoiceDetails->ewaybill_pdf }}" target="_blank" class="btn btn-icon btn-sm bg-primary-subtle me-1">Download PDF</a>
+                                        @elseif($invoiceDetails->ewb_no && $invoiceDetails->ewb_valid_till <= now())
+                                            <span class="badge bg-warning me-2">Expired</span>
+                                            <form action="{{ route('invoice.generateEWayBill', $invoiceDetails->id) }}" method="POST" style="display: inline;">
+                                                @csrf
+                                                <button type="submit" class="btn btn-icon btn-sm bg-info-subtle me-1">Generate New</button>
+                                            </form>
+                                        @else
+                                            <form action="{{ route('invoice.generateEWayBill', $invoiceDetails->id) }}" method="POST" style="display: inline;">
+                                                @csrf
+                                                <button type="submit" class="btn btn-icon btn-sm bg-success-subtle me-1">Generate E-Way Bill</button>
+                                            </form>
+                                        @endif
+                                    </span>
+                                </li>
+                                @if($invoiceDetails->ewb_no)
+                                <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
+                                    <span><b>E-Way Bill No</b></span>
+                                    <span>{{ $invoiceDetails->ewb_no }}</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
+                                    <span><b>E-Way Bill Date</b></span>
+                                    <span>{{ $invoiceDetails->ewb_dt ? \Carbon\Carbon::parse($invoiceDetails->ewb_dt)->format('d/m/Y H:i') : 'N/A' }}</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
+                                    <span><b>Valid Till</b></span>
+                                    <span>{{ $invoiceDetails->ewb_valid_till ? \Carbon\Carbon::parse($invoiceDetails->ewb_valid_till)->format('d/m/Y H:i') : 'N/A' }}</span>
+                                </li>
+                                @endif
+                                @endif
                                 @endif
                                 <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                                     <span><b>Client Name</b></span>

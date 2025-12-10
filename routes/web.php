@@ -318,6 +318,9 @@ Route::middleware(['auth'])->group(function () {
         // Generate E-Invoice
         Route::post('/generate-e-invoice/{id}', 'generateEInvoice')->name('invoice.generateEInvoice');
 
+        // Generate E-Way Bill
+        Route::post('/generate-e-way-bill/{id}', 'generateEWayBill')->name('invoice.generateEWayBill');
+
         // Cancel E-Invoice
         Route::delete('/cancel-e-invoice/{id}', 'cancelEInvoice')->name('invoice.cancelEInvoice');
 
