@@ -1001,7 +1001,7 @@ class InvoiceController extends Controller
         }
     }
 
-    public function generateEWayBill($id)
+    public function generateEWayBill(Request $request, $id)
     {
         try {
             $invoice = Invoice::findOrFail($id);
@@ -1016,6 +1016,30 @@ class InvoiceController extends Controller
                 return redirect()->back()->with('error', 'E-Way Bill already exists and is still valid.');
             }
 
+            // Validate request data
+            $validated = $request->validate([
+                'update_mode' => 'required|string',
+                'vehicle_number' => 'required|string',
+                'place_of_consignor' => 'required|string',
+                'state_of_consignor' => 'required|string',
+                'tripshtNo' => 'nullable|integer',
+                'userGstin' => 'required|string',
+                'vehicle_number_update_date' => 'required|string',
+                'transportation_mode' => 'required|string',
+                'transporter_document_number' => 'required|string',
+                'transporter_document_date' => 'required|string',
+                'group_number' => 'nullable|string',
+            ]);
+
+            // Map transportation mode to API values
+            $transportationModeMap = [
+                'Road' => '1',
+                'Rail' => '2',
+                'Air' => '3',
+                'Ship' => '4',
+            ];
+            $transportationMode = $transportationModeMap[$validated['transportation_mode']] ?? '1';
+
             // Get JWT token
             $token = $this->getEInvoiceToken();
             if (!$token) {
@@ -1024,17 +1048,19 @@ class InvoiceController extends Controller
 
             // Prepare API request data for E-Way Bill generation
             $requestData = [
-                'user_gstin' => '05AAAPG7885R002', // Using test GSTIN
+                'user_gstin' => $validated['userGstin'],
                 'irn' => $invoice->irn,
                 'transporter_id' => '05AAABB0639G1Z8', // Test transporter ID
-                'transportation_mode' => '1', // Road transport
+                'transportation_mode' => $transportationMode,
                 'distance' => 280, // Distance between Haldwani (263001) and Noida (201301) is ~280 km
-                'vehicle_number' => 'KA01AB1234', // Test vehicle number
+                'vehicle_number' => $validated['vehicle_number'],
                 'vehicle_type' => 'R', // Regular vehicle
                 'transporter_name' => 'Test Transporter',
                 'data_source' => 'erp',
-                'transporter_document_number' => 'DOC' . time(),
-                'transporter_document_date' => date('d/m/Y'),
+                'transporter_document_number' => $validated['transporter_document_number'],
+                'transporter_document_date' => $validated['transporter_document_date'],
+                'place_of_consignor' => $validated['place_of_consignor'],
+                'state_of_consignor' => $validated['state_of_consignor'],
             ];
 
             // Make API call
@@ -1076,6 +1102,179 @@ class InvoiceController extends Controller
         } catch (\Exception $e) {
             Log::error('E-Way Bill Generation Error: ' . $e->getMessage());
             return redirect()->back()->with('error', 'An error occurred while generating e-way bill: ' . $e->getMessage());
+        }
+    }
+
+    public function cancelEWayBill($id)
+    {
+        $validator = Validator::make(['id' => $id], [
+            'id' => 'required|exists:invoices,id',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()->with('error', $validator->errors()->first());
+        }
+
+        DB::beginTransaction();
+        try {
+            $invoice = Invoice::findOrFail($id);
+
+            // Check if e-waybill exists
+            if (!$invoice->ewb_no) {
+                return redirect()->back()->with('error', 'No E-Way Bill found for this invoice.');
+            }
+
+            // Check if already cancelled or expired
+            if ($invoice->ewb_valid_till && $invoice->ewb_valid_till <= now()) {
+                return redirect()->back()->with('error', 'E-Way Bill is already expired.');
+            }
+
+            // Get JWT token
+            $token = $this->getEInvoiceToken();
+            if (!$token) {
+                return redirect()->back()->with('error', 'Failed to authenticate with e-invoice API.');
+            }
+
+            // Prepare API request data
+            $requestData = [
+                'user_gstin' => '05AAAPG7885R002', // Using test GSTIN
+                'ewb_no' => $invoice->ewb_no,
+                'cancel_reason' => '1', // Default reason: Wrong entry
+                'cancel_remarks' => 'Cancelled by user',
+            ];
+
+            // Make API call
+            $response = Http::withHeaders([
+                'Authorization' => 'JWT ' . $token,
+                'Content-Type' => 'application/json',
+            ])->post('https://sandb-api.mastersindia.co/api/v1/cancel-ewaybill/', $requestData);
+
+            $data = $response->json();
+
+            // Check for different response structures
+            if (isset($data['success']) && $data['success'] === false) {
+                // Handle error response with 'success' field
+                $errorMessage = $data['message'] ?? 'Invalid response from e-way bill API';
+                Log::error('E-Way Bill Cancel API Invalid Response: ' . json_encode($data));
+                DB::rollBack();
+                return redirect()->back()->with('error', 'Failed to cancel e-way bill: ' . $errorMessage);
+            }
+
+            if ($response->successful() && isset($data['results'])) {
+                $results = $data['results'];
+
+                if (isset($results['status']) && $results['status'] === 'Success' && isset($results['message'])) {
+                    $message = $results['message'];
+
+                    // Update invoice with cancellation details
+                    $invoice->update([
+                        'ewb_valid_till' => null, // Clear valid till to indicate cancelled
+                        // Keep other fields as they are, or clear them if needed
+                    ]);
+
+                    DB::commit();
+                    activity()->performedOn($invoice)->causedBy(Auth::user())->log('E-Way Bill cancelled: ' . $invoice->ewb_no);
+
+                    return redirect()->back()->with('success', 'E-Way Bill cancelled successfully.');
+                } else {
+                    $errorMessage = $results['errorMessage'] ?? $results['InfoDtls'] ?? 'Unknown error occurred';
+                    Log::error('E-Way Bill Cancel API Error Response: ' . json_encode($data));
+                    DB::rollBack();
+                    return redirect()->back()->with('error', 'Failed to cancel e-way bill: ' . $errorMessage);
+                }
+            } else {
+                Log::error('E-Way Bill Cancel API Invalid Response: ' . json_encode($data));
+                DB::rollBack();
+                return redirect()->back()->with('error', 'Invalid response from e-way bill API');
+            }
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('E-Way Bill Cancellation Error: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'An error occurred while cancelling e-way bill: ' . $e->getMessage());
+        }
+    }
+
+    public function checkAndUpdateEWayBill($id)
+    {
+        $validator = Validator::make(['id' => $id], [
+            'id' => 'required|exists:invoices,id',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()->with('error', $validator->errors()->first());
+        }
+
+        DB::beginTransaction();
+        try {
+            $invoice = Invoice::findOrFail($id);
+
+            // Check if e-waybill exists
+            if (!$invoice->ewb_no) {
+                return redirect()->back()->with('error', 'No E-Way Bill found for this invoice.');
+            }
+
+            // Get JWT token
+            $token = $this->getEInvoiceToken();
+            if (!$token) {
+                return redirect()->back()->with('error', 'Failed to authenticate with e-invoice API.');
+            }
+
+            // Prepare API request data
+            $requestData = [
+                'user_gstin' => '05AAAPG7885R002', // Using test GSTIN
+                'ewb_no' => $invoice->ewb_no,
+            ];
+
+            // Make API call to get ewaybill details
+            $response = Http::withHeaders([
+                'Authorization' => 'JWT ' . $token,
+            ])->get('https://sandb-api.mastersindia.co/api/v1/get-ewaybill-details/', $requestData);
+
+            $data = $response->json();
+
+            // Check for different response structures
+            if (isset($data['success']) && $data['success'] === false) {
+                // Handle error response with 'success' field
+                $errorMessage = $data['message'] ?? 'Invalid response from e-way bill API';
+                Log::error('E-Way Bill Check API Invalid Response: ' . json_encode($data));
+                DB::rollBack();
+                return redirect()->back()->with('error', 'Failed to check e-way bill status: ' . $errorMessage);
+            }
+
+            if ($response->successful() && isset($data['results'])) {
+                $results = $data['results'];
+
+                if (isset($results['status']) && $results['status'] === 'Success' && isset($results['message'])) {
+                    $message = $results['message'];
+
+                    // Update invoice with latest ewaybill details
+                    $invoice->update([
+                        'ewb_valid_till' => isset($message['EwbValidTill']) ? date('Y-m-d H:i:s', strtotime($message['EwbValidTill'])) : $invoice->ewb_valid_till,
+                        'ewaybill_pdf' => $message['EwaybillPdf'] ?? $invoice->ewaybill_pdf,
+                        // Update other fields if available
+                    ]);
+
+                    DB::commit();
+                    activity()->performedOn($invoice)->causedBy(Auth::user())->log('E-Way Bill status updated: ' . $invoice->ewb_no);
+
+                    return redirect()->back()->with('success', 'E-Way Bill status updated successfully.');
+                } else {
+                    $errorMessage = $results['errorMessage'] ?? $results['InfoDtls'] ?? 'Unknown error occurred';
+                    Log::error('E-Way Bill Check API Error Response: ' . json_encode($data));
+                    DB::rollBack();
+                    return redirect()->back()->with('error', 'Failed to check e-way bill status: ' . $errorMessage);
+                }
+            } else {
+                Log::error('E-Way Bill Check API Invalid Response: ' . json_encode($data));
+                DB::rollBack();
+                return redirect()->back()->with('error', 'Invalid response from e-way bill API');
+            }
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('E-Way Bill Check/Update Error: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'An error occurred while checking e-way bill status: ' . $e->getMessage());
         }
     }
 

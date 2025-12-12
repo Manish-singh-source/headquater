@@ -324,6 +324,12 @@ Route::middleware(['auth'])->group(function () {
         // Cancel E-Invoice
         Route::delete('/cancel-e-invoice/{id}', 'cancelEInvoice')->name('invoice.cancelEInvoice');
 
+        // Cancel E-Way Bill
+        Route::delete('/cancel-e-way-bill/{id}', 'cancelEWayBill')->name('invoice.cancelEWayBill');
+
+        // Check and Update E-Way Bill
+        Route::post('/check-and-update-e-way-bill/{id}', 'checkAndUpdateEWayBill')->name('invoice.checkAndUpdateEWayBill');
+
         // Check PO Number
         Route::post('/check-po-number', 'checkPoNumber')->name('check.po.number');
     });
