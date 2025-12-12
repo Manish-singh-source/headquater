@@ -77,7 +77,6 @@ class InvoiceController extends Controller
 
     public function downloadPdf($id)
     {
-        $igstStatus = false;
         $data = [
             'title' => 'Welcome to Headquaters',
             'date' => date('m/d/Y'),
@@ -91,6 +90,9 @@ class InvoiceController extends Controller
         $base643Image = 'data:image/png;base64,'.$base642;
         $invoice = Invoice::with(['warehouse', 'customer', 'salesOrder'])->findOrFail($id);
         $invoiceDetails = InvoiceDetails::with('product', 'tempOrder', 'salesOrderProduct')->where('invoice_id', $id)->get();
+
+        // Determine GST type: IGST if inter-state, CGST/SGST if intra-state
+        $igstStatus = ($invoice->customer->shipping_state !== 'Maharashtra');
 
         // Check if it's a sales order invoice or manual invoice
         if ($invoice->sales_order_id) {
@@ -128,7 +130,6 @@ class InvoiceController extends Controller
 
     public function downloadEInvoicePdf($id)
     {
-        $igstStatus = false;
         $data = [
             'title' => 'E-Invoice',
             'date' => date('m/d/Y'),
@@ -142,6 +143,9 @@ class InvoiceController extends Controller
         $base643Image = 'data:image/png;base64,'.$base642;
         $invoice = Invoice::with(['warehouse', 'customer', 'salesOrder'])->findOrFail($id);
         $invoiceDetails = InvoiceDetails::with('product', 'tempOrder', 'salesOrderProduct')->where('invoice_id', $id)->get();
+
+        // Determine GST type: IGST if inter-state, CGST/SGST if intra-state
+        $igstStatus = ($invoice->customer->shipping_state !== 'Maharashtra');
 
         // Check if it's a sales order invoice or manual invoice
         if ($invoice->sales_order_id) {

@@ -412,7 +412,7 @@
             @else
                 <td colspan="3" class="section-title">Total</td>
                 <td class="right-align">{{ $invoiceDetails->sum('quantity') }}</td>
-                <td class="right-align">{{ $TotalBoxCount }}</td>
+                <td class="right-align">{{ $totalBoxCount ?? ($TotalBoxCount ?? 0) }}</td>
             @endif
             <td class="right-align">{{ $invoiceDetails->sum('unit_price') }}</td>
             <td class="right-align">{{ $invoiceDetails->sum('amount') }}</td>
