@@ -31,12 +31,6 @@
                 </div>
             @endif
 
-            @if ($errors->has('customer_selection'))
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    {{ $errors->first('customer_selection') }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            @endif
 
             <form action="{{ route('invoices.manual.store') }}" method="POST" id="manualInvoiceForm">
                 @csrf
@@ -55,62 +49,24 @@
                                     </button>
                                 </div>
 
-                                <!-- Bootstrap Tabs -->
-                                <ul class="nav nav-tabs" id="customerTabs" role="tablist">
-                                    <li class="nav-item" role="presentation">
-                                        <button class="nav-link active" id="customer-tab" data-bs-toggle="tab" data-bs-target="#customerTab" type="button" role="tab" aria-controls="customerTab" aria-selected="true">Customer</button>
-                                    </li>
-                                    <li class="nav-item" role="presentation">
-                                        <button class="nav-link" id="customer-group-tab" data-bs-toggle="tab" data-bs-target="#customerGroupTab" type="button" role="tab" aria-controls="customerGroupTab" aria-selected="false">Customer Group</button>
-                                    </li>
-                                </ul>
-                                <div class="tab-content mt-3" id="customerTabsContent">
-                                    <!-- Customer Tab -->
-                                    <div class="tab-pane fade show active" id="customerTab" role="tabpanel" aria-labelledby="customer-tab">
-                                        <div class="row mb-3">
-                                            <div class="col-md-12">
-                                                <label class="form-label">Customer <span class="text-danger">*</span></label>
-                                                <div class="input-group">
-                                                    <select name="customer_id" id="customer_id"
-                                                        class="form-select @error('customer_id') is-invalid @enderror">
-                                                        <option value="">Select Customer</option>
-                                                        @foreach ($customers as $customer)
-                                                            <option value="{{ $customer->id }}"
-                                                                {{ old('customer_id') == $customer->id ? 'selected' : '' }}>
-                                                                {{ $customer->client_name }} - {{ $customer->facility_name }}
-                                                            </option>
-                                                        @endforeach
-                                                    </select>
-                                                </div>
-                                                @error('customer_id')
-                                                    <div class="invalid-feedback">{{ $message }}</div>
-                                                @enderror
-                                            </div>
-                                        </div>
+                                <!-- Customer Selection -->
+                                <div class="mb-3">
+                                    <label class="form-label">Customer <span class="text-danger">*</span></label>
+                                    <div class="input-group">
+                                        <select name="customer_id" id="customer_id"
+                                            class="form-select @error('customer_id') is-invalid @enderror">
+                                            <option value="">Select Customer</option>
+                                            @foreach ($customers as $customer)
+                                                <option value="{{ $customer->id }}"
+                                                    {{ old('customer_id') == $customer->id ? 'selected' : '' }}>
+                                                    {{ $customer->client_name }} - {{ $customer->facility_name }}
+                                                </option>
+                                            @endforeach
+                                        </select>
                                     </div>
-                                    <!-- Customer Group Tab -->
-                                    <div class="tab-pane fade" id="customerGroupTab" role="tabpanel" aria-labelledby="customer-group-tab">
-                                        <div class="row mb-3">
-                                            <div class="col-md-12">
-                                                <label class="form-label">Customer Group <span class="text-danger">*</span></label>
-                                                <div class="input-group">
-                                                    <select name="customer_group_id" id="customer_group_id"
-                                                        class="form-select @error('customer_group_id') is-invalid @enderror">
-                                                        <option value="">Select Customer Group</option>
-                                                        @foreach ($customerGroups as $group)
-                                                            <option value="{{ $group->id }}"
-                                                                {{ old('customer_group_id') == $group->id ? 'selected' : '' }}>
-                                                                {{ $group->name }}
-                                                            </option>
-                                                        @endforeach
-                                                    </select>
-                                                </div>
-                                                @error('customer_group_id')
-                                                    <div class="invalid-feedback">{{ $message }}</div>
-                                                @enderror
-                                            </div>
-                                        </div>
-                                    </div>
+                                    @error('customer_id')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
                                 </div>
 
                                 <div class="row mb-3">
@@ -528,27 +484,8 @@
                 });
             });
 
-            // Customer tab change handler
-            document.querySelectorAll('#customerTabs .nav-link').forEach(tab => {
-                tab.addEventListener('shown.bs.tab', function (e) {
-                    const targetTab = e.target.getAttribute('data-bs-target');
-                    if (targetTab === '#customerTab') {
-                        // Clear customer group selection
-                        document.getElementById('customer_group_id').value = '';
-                        document.getElementById('customer_group_id').required = false;
-                        document.getElementById('customer_id').required = true;
-                    } else if (targetTab === '#customerGroupTab') {
-                        // Clear customer selection
-                        document.getElementById('customer_id').value = '';
-                        document.getElementById('customer_id').required = false;
-                        document.getElementById('customer_group_id').required = true;
-                    }
-                });
-            });
-
             // Set initial required state
             document.getElementById('customer_id').required = true;
-            document.getElementById('customer_group_id').required = false;
         });
 
         function toggleInvoiceType(type) {
