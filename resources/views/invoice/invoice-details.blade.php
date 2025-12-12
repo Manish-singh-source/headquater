@@ -80,10 +80,7 @@
                                                 <button type="submit" class="btn btn-icon btn-sm bg-info-subtle me-1">Generate New</button>
                                             </form>
                                         @else
-                                            <form action="{{ route('invoice.generateEWayBill', $invoiceDetails->id) }}" method="POST" style="display: inline;">
-                                                @csrf
-                                                <button type="submit" class="btn btn-icon btn-sm bg-success-subtle me-1">Generate E-Way Bill</button>
-                                            </form>
+                                            <button type="button" class="btn btn-icon btn-sm bg-success-subtle me-1" data-bs-toggle="modal" data-bs-target="#ewayBillModal">Generate E-Way Bill</button>
                                         @endif
                                     </span>
                                 </li>
@@ -100,6 +97,18 @@
                                     <span><b>Valid Till</b></span>
                                     <span>{{ $invoiceDetails->ewb_valid_till ? \Carbon\Carbon::parse($invoiceDetails->ewb_valid_till)->format('d/m/Y H:i') : 'N/A' }}</span>
                                 </li>
+                                @if($invoiceDetails->ewb_no && $invoiceDetails->ewb_valid_till > now())
+                                <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
+                                    <span><b>Cancel E-Way Bill</b></span>
+                                    <span>
+                                        <form action="{{ route('invoice.cancelEWayBill', $invoiceDetails->id) }}" method="POST" style="display: inline;" onsubmit="return confirm('Are you sure you want to cancel this E-Way Bill? This action cannot be undone.')">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-icon btn-sm bg-danger-subtle me-1">Cancel E-Way Bill</button>
+                                        </form>
+                                    </span>
+                                </li>
+                                @endif
                                 @endif
                                 @endif
                                 @endif
@@ -201,4 +210,108 @@
         </div>
         </div>
     </main>
+
+    <!-- E-Way Bill Modal -->
+    <div class="modal fade" id="ewayBillModal" tabindex="-1" aria-labelledby="ewayBillModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="ewayBillModalLabel">Generate E-Way Bill</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form action="{{ route('invoice.generateEWayBill', $invoiceDetails->id) }}" method="POST">
+                    @csrf
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="update_mode" class="form-label">Update Mode</label>
+                                    <input type="text" class="form-control" id="update_mode" name="update_mode" value="API" readonly>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="vehicle_number" class="form-label">Vehicle Number</label>
+                                    <input type="text" class="form-control" id="vehicle_number" name="vehicle_number" placeholder="KA01AB1234" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="place_of_consignor" class="form-label">Place of Consignor</label>
+                                    <input type="text" class="form-control" id="place_of_consignor" name="place_of_consignor" placeholder="Haldwani" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="state_of_consignor" class="form-label">State of Consignor</label>
+                                    <input type="text" class="form-control" id="state_of_consignor" name="state_of_consignor" placeholder="UTTARAKHAND" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="tripshtNo" class="form-label">Trip Sheet No</label>
+                                    <input type="number" class="form-control" id="tripshtNo" name="tripshtNo" value="0">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="userGstin" class="form-label">User GSTIN</label>
+                                    <input type="text" class="form-control" id="userGstin" name="userGstin" placeholder="05AAAPG7885R002" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="vehicle_number_update_date" class="form-label">Vehicle Number Update Date</label>
+                                    <input type="text" class="form-control" id="vehicle_number_update_date" name="vehicle_number_update_date" placeholder="12/12/2025 11:38:00 AM" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="transportation_mode" class="form-label">Transportation Mode</label>
+                                    <select class="form-control" id="transportation_mode" name="transportation_mode" required>
+                                        <option value="Road" selected>Road</option>
+                                        <option value="Rail">Rail</option>
+                                        <option value="Air">Air</option>
+                                        <option value="Ship">Ship</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="transporter_document_number" class="form-label">Transporter Document Number</label>
+                                    <input type="text" class="form-control" id="transporter_document_number" name="transporter_document_number" placeholder="DOC1765519669" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="transporter_document_date" class="form-label">Transporter Document Date</label>
+                                    <input type="text" class="form-control" id="transporter_document_date" name="transporter_document_date" placeholder="12/12/2025" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="group_number" class="form-label">Group Number</label>
+                                    <input type="text" class="form-control" id="group_number" name="group_number" value="0">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-success">Generate E-Way Bill</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 @endsection
