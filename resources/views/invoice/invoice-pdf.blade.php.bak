@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>E-Invoice</title>
+    <title>Tax Invoice</title>
     {{-- <style>
         body {
             font-family: Arial, sans-serif;
@@ -173,22 +173,6 @@
         .invoice-table td {
             background-color: #e8f07f0e;
         }
-
-        .einvoice-info {
-            
-            border: 2px solid #daa520;
-            margin: 10px 0;
-        }
-
-        .einvoice-header {
-            background-color: #ffffcc;
-            font-weight: bold;
-            text-align: center;
-            font-size: 18px;
-            padding: 10px;
-            border: 2px solid #daa520;
-            margin: 10px 0;
-        }
     </style>
 </head>
 
@@ -198,13 +182,7 @@
         <tr>
             <td width="20%" rowspan="4" style="text-align:left;"> <img src="{{ $image }}" alt="Logo" style="height: 100px; width: auto;"> </td>
             <td class="header" colspan="2">INOVIZIDEAS PVT. LTD.</td>
-            <td width="20%" rowspan="4" style="text-align:right; vertical-align: center;">
-                @if($qrCodeImage)
-                    <img src="{{ $qrCodeImage }}" alt="E-Invoice QR Code" style="height: 90px; width: auto;">
-                @else
-                    <img src="{{ $image1 }}" alt="E-Invoice" style="height: 90px; width: auto;">
-                @endif
-            </td>
+            <td width="20%" rowspan="4" style="text-align:right; vertical-align: center;">  </td>
         </tr>
         <tr>
             <td colspan="2" style="text-align:center;">
@@ -221,32 +199,6 @@
             <td style="text-align:center; ">GSTIN: 27AAGCI3319H1ZM</td>
         </tr>
     </table>
-
-
-    <!-- E-Invoice Information -->
-    @if($invoice->irn)
-    <table class="einvoice-info">
-        <tr>
-           <td colspan="4" class="title">E-Invoice</td>
-        </tr>
-        <tr class="invoice-table">
-            <td><b>IRN:</b></td>
-            <td colspan="3">{{ $invoice->irn }}</td>
-        </tr>
-        <tr class="invoice-table">
-            <td><b>Ack No:</b></td>
-            <td>{{ $invoice->ack_no }}</td>
-            <td><b>Ack Date:</b></td>
-            <td>{{ $invoice->ack_dt ? date('d-m-Y H:i:s', strtotime($invoice->ack_dt)) : '' }}</td>
-        </tr>
-        {{-- <tr class="invoice-table">
-            <td><b>Status:</b></td>
-            <td>{{ $invoice->einvoice_status }}</td>
-            <td><b>E-Way Bill No:</b></td>
-            <td>{{ $invoice->ewb_no }}</td>
-        </tr> --}}
-    </table>
-    @endif
 
     <table>
         <tr>
@@ -412,7 +364,7 @@
             @else
                 <td colspan="3" class="section-title">Total</td>
                 <td class="right-align">{{ $invoiceDetails->sum('quantity') }}</td>
-                <td class="right-align">{{ $TotalBoxCount }}</td>
+                <td class="right-align">{{ $totalBoxCount ?? ($TotalBoxCount ?? 0 ) }}</td>
             @endif
             <td class="right-align">{{ $invoiceDetails->sum('unit_price') }}</td>
             <td class="right-align">{{ $invoiceDetails->sum('amount') }}</td>
@@ -433,7 +385,7 @@
         <tr class="invoice-table">
             <td>Total&nbsp;Invoice&nbsp;amount&nbsp;in&nbsp;words:</td>
             {{-- <td colspan="3">{{ ucfirst(numberToWords(floor($totalAmountSum))) }} Rupees Only</td> --}}
-            <td colspan="3" class="right-align"> {{ ucfirst(numberToWords(floor($totalAmountSum))) }} Rupees Only</td>
+            <td colspan="3" class="right-align">{{ $totalAmountSum }}</td>
         </tr>
     </table>
 

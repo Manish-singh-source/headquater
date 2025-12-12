@@ -182,7 +182,7 @@
         <tr>
             <td width="20%" rowspan="4" style="text-align:left;"> <img src="{{ $image }}" alt="Logo" style="height: 100px; width: auto;"> </td>
             <td class="header" colspan="2">INOVIZIDEAS PVT. LTD.</td>
-            <td width="20%" rowspan="4" style="text-align:right; vertical-align: center;"> <img src="{{ $image1 }}" alt="Original for Recipient" style="height: 90px; width: auto;"> </td>
+            <td width="20%" rowspan="4" style="text-align:right; vertical-align: center;">  </td>
         </tr>
         <tr>
             <td colspan="2" style="text-align:center;">
@@ -364,7 +364,7 @@
             @else
                 <td colspan="3" class="section-title">Total</td>
                 <td class="right-align">{{ $invoiceDetails->sum('quantity') }}</td>
-                <td class="right-align">{{ $TotalBoxCount }}</td>
+                <td class="right-align">{{ $totalBoxCount ?? ($TotalBoxCount ?? 0 ) }}</td>
             @endif
             <td class="right-align">{{ $invoiceDetails->sum('unit_price') }}</td>
             <td class="right-align">{{ $invoiceDetails->sum('amount') }}</td>
@@ -385,7 +385,7 @@
         <tr class="invoice-table">
             <td>Total&nbsp;Invoice&nbsp;amount&nbsp;in&nbsp;words:</td>
             {{-- <td colspan="3">{{ ucfirst(numberToWords(floor($totalAmountSum))) }} Rupees Only</td> --}}
-            <td colspan="3" class="right-align">{{ $totalAmountSum }}</td>
+            <td colspan="3" class="right-align">  {{ ucfirst(numberToWords(floor($totalAmountSum))) }} Rupees Only</td>
         </tr>
     </table>
 
