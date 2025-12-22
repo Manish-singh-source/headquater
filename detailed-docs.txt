@@ -1068,3 +1068,497 @@ Ready To Ship:
 		i. ready to ship
 		ii. shipped
 		ii. delivered
+
+
+
+
+1. Auth Token 
+2. Generate Einvoice / IRN:  
+3. Cancel Einvoice / IRN: 
+4. Generate Ewaybill By IRN: 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+E-Invoice APIs
+
+Common: 
+
+1. Auth Token  - working
+
+
+2. Generate Einvoice / IRN:  
+    - use: To generate e-invoice/IRN 
+    - 
+    - link: https://sandb-api.mastersindia.co/api/v1/einvoice/  
+
+    - Note: 
+        - 1. Document Number needs to be unique. 
+        - 2. IRN can be generated for a maximum of 1000 documents at a time. 
+        - 3. IRN can be generated for a maximum of 1000 documents at a time. 
+
+3. Cancel Einvoice / IRN: 
+    - use: To cancel e-invoice/IRN 
+    - method: POST 
+    - link: https://sandb-api.mastersindia.co/api/v1/cancel-einvoice/
+
+    - Note: 
+        - 1. IRN can be cancel within 24 hours of IRN generation. 
+        - 2. IRN cannot be cancel, if the Valid/Active E-way Bill exists for the same. 
+        - 3. Cancellation can be done by active or suspended taxpayers.
+
+4. Generate Ewaybill By IRN: 
+    - for this we need to check distance first. 
+
+    - use: To generate e-waybill using IRN 
+    - method: POST 
+    - link:  https://sandb-api.mastersindia.co/api/v1/gen-ewb-by-irn/
+
+    - Note: 
+        - 1. Distance is mandatory. 
+        - 2. at least one item has hsn code. 
+
+5. Get Einvoice Details By IRN:  
+    - use: To get e-invoice details using IRN 
+    - method: GET 
+    - link: https://sandb-api.mastersindia.co/api/v1/get-einvoice 
+
+    - Note: 
+        - 1. IRN can be retrieved using this API within three days from the date of generation of IRN.
+
+
+10. Generate E-invoice in Bulk: 
+    - use: To generate e-invoice/IRN in bulk 
+    - method: POST 
+    - link: https://sandb-api.mastersindia.co/api/v1/einvoiceGenerateInBulk/ 
+
+    - Note: 
+        - 1. This will generate E-Invoice in bulk. and gives request id for tracking.
+
+10 A. Get Bulk E-invoice Response 
+    - use: To get bulk e-invoice response 
+    - method: GET 
+    - link: https://sandb-api.mastersindia.co/api/v1/getBulkEinvoiceResponse?request_id=edoc_1766215265_ccbbc4fe29fa
+
+    - Note: 
+        - 1. Above request id is used in this API for getting response.
+
+
+
+E-Way Bill 
+
+2. Generate Ewaybill                                      - not working
+3. Cancel ewaybill                                        - not working
+
+4. EWB part B update- Update vehicle number               - not working
+5. Extend Validity of E-Way Bill                          - not working
+
+6. Update Transporter ID 
+
+7. GET EWBDetails 
+8. Reject E-Way Bill 
+
+10. Multi Vehicle- Initiate Multi Vehicle 
+10A. Multi Vehicle- Add Multi Vehicles 
+10B- Multi Vehicle- Change Multi Vehicles 
+
+23. Distance API - To check Distance between 2 pincodes       - working
+
+24. Return Status (Blocked and Unblocked)
+
+25. Generate E-Way Bill In Bulk
+25A. Get Bulk E-Way Bill Response
+
+26. Generate E-Way Request in Bulk- Generate/ Update/ Extend
+26A. Get E-Way Response in Bulk
+
+
+
+{
+  "user_gstin": "09AAAPG7885R002",
+  "data_source": "erp",
+  "transaction_details": {
+    "supply_type": "B2B",
+    "charge_type": "Y",
+    "igst_on_intra": "N",
+    "ecommerce_gstin": ""
+  },
+  "document_details": {
+    "document_type": "INV",
+    "document_number": "Baroda/00003",
+    "document_date": "06/12/2025"
+  },
+  "seller_details": {
+    "gstin": "09AAAPG7885R002",
+    "legal_name": "MastersIndia UP",
+    "trade_name": "123",
+    "address1": "45",
+    "address2": "l45",
+    "location": "1279",
+    "pincode": 201301,
+    "state_code": "09",
+    "phone_number": 9876543231,
+    "email": ""
+  },
+  "buyer_details": {
+    "gstin": "05AAAPG7885R002",
+    "legal_name": "ewewewehyriu32y8ru",
+    "trade_name": "122",
+    "address1": "9",
+    "address2": "17843",
+    "location": "12321u",
+    "pincode": 263001,
+    "place_of_supply": "13",
+    "state_code": "05",
+    "phone_number": "123233",
+    "email": ""
+  },
+  "dispatch_details": {
+    "company_name": "dqfefkewl",
+    "address1": "Vila",
+    "address2": "Vila",
+    "location": "Noida",
+    "pincode": 201301,
+    "state_code": "09"
+  },
+  "ship_details": {
+    "gstin": "05AAAPG7885R002",
+    "legal_name": "123",
+    "trade_name": "232",
+    "address1": "1",
+    "address2": "",
+    "location": "221",
+    "pincode": 263001,
+    "state_code": "5"
+  },
+  "export_details": {
+    "ship_bill_number": "",
+    "ship_bill_date": "",
+    "country_code": "IN",
+    "foreign_currency": "inr",
+    "refund_claim": "N",
+    "port_code": "12",
+    "export_duty": "90.9"
+  },
+  "payment_details": {
+    "bank_account_number": "Account Details",
+    "paid_balance_amount": "100.2",
+    "credit_days": 2,
+    "credit_transfer": "Credit Transfer",
+    "direct_debit": "Direct Debit",
+    "branch_or_ifsc": "KKK000180",
+    "payment_mode": "CASH",
+    "payee_name": "Payee Name",
+    "outstanding_amount": "1.9",
+    "payment_instruction": "Payment Instruction",
+    "payment_term": "Terms of Payment"
+  },
+  "reference_details": {
+    "invoice_remarks": "Invoice Remarks",
+    "document_period_details": {
+      "invoice_period_start_date": "06/12/2026",
+      "invoice_period_end_date": "06/12/2026"
+    },
+    "preceding_document_details": [
+      {
+        "reference_of_original_invoice": "CFRT/0006",
+        "preceding_invoice_date": "06/12/2026",
+        "other_reference": "2334"
+      }
+    ],
+    "contract_details": [
+      {
+        "receipt_advice_number": "aaa",
+        "receipt_advice_date": "06/12/2026",
+        "batch_reference_number": "2334",
+        "contract_reference_number": "2334",
+        "other_reference": "2334",
+        "project_reference_number": "2334",
+        "vendor_po_reference_number": "233433454545",
+        "vendor_po_reference_date": "06/12/2026"
+      }
+    ]
+  },
+  "additional_document_details": [
+    {
+      "supporting_document_url": "asafsd",
+      "supporting_document": "india",
+      "additional_information": "india"
+    }
+  ],
+  "ewaybill_details": {
+    "transporter_id": "05AAABB0639G1Z8",
+    "transporter_name": "Jay Trans",
+    "transportation_mode": "1",
+    "transportation_distance": 296,
+    "transporter_document_number": "12301",
+    "transporter_document_date": "06/12/2025",
+    "vehicle_number": "PQR1234",
+    "vehicle_type": "R"
+  },
+  "value_details": {
+    "total_assessable_value": 4,
+    "total_cgst_value": "",
+    "total_sgst_value": 0,
+    "total_igst_value": 0.2,
+    "total_cess_value": 0,
+    "total_cess_value_of_state": 0,
+    "total_discount": 0,
+    "total_other_charge": 0,
+    "total_invoice_value": 4.2,
+    "round_off_amount": 0,
+    "total_invoice_value_additional_currency": 0
+  },
+  "item_list": [
+    {
+      "item_serial_number": "501",
+      "product_description": "Wheat desc",
+      "is_service": "N",
+      "hsn_code": "1001",
+      "bar_code": "1212",
+      "quantity": 25,
+      "free_quantity": 0,
+      "unit": "KGS",
+      "unit_price": 4,
+      "total_amount": 4,
+      "pre_tax_value": 0,
+      "discount": 0,
+      "other_charge": 0,
+      "assessable_value": 4,
+      "gst_rate": 5,
+      "igst_amount": 0.2,
+      "cgst_amount": 0,
+      "sgst_amount": 0,
+      "cess_rate": 0,
+      "cess_amount": 0,
+      "cess_nonadvol_amount": 0,
+      "state_cess_rate": 0,
+      "state_cess_amount": 0,
+      "state_cess_nonadvol_amount": 0,
+      "total_item_value": 4.2,
+      "country_origin": "",
+      "order_line_reference": "",
+      "product_serial_number": "",
+      "batch_details": {
+        "name": "aaa",
+        "expiry_date": "06/12/2026",
+        "warranty_date": "06/12/2026"
+      },
+      "attribute_details": [
+        {
+          "item_attribute_details": "aaa",
+          "item_attribute_value": "147852"
+        }
+      ]
+    }
+  ]
+}
+
+
+
+
+
+
+
+
+
+
+`invoices`: 
+
+id
+warehouse_id
+invoice_number
+customer_id
+sales_order_id
+invoice_date
+round_off
+taxable_amount
+total_amount
+subtotal
+tax_amount
+discount_amount
+paid_amount
+balance_due
+payment_mode
+payment_status
+invoice_type
+invoice_item_type
+notes
+po_number
+po_date
+created_at
+updated_at
+
+irn
+ack_no
+ack_dt
+signed_invoice
+signed_qr_code
+ewb_no
+ewb_dt
+ewb_valid_till
+einvoice_pdf
+ewaybill_pdf
+qr_code_url
+einvoice_status
+
+
+`invoice_details`: 
+
+id
+invoice_id
+warehouse_id
+product_id
+hsn
+temp_order_id
+sales_order_product_id
+quantity
+box_count
+weight
+unit_price
+discount
+amount
+tax
+total_price
+description
+po_number
+service_title
+service_category
+service_description
+campaign_name
+unit_type
+created_at
+updated_at
+
+
+
+
+
+
+
+
+
+
+
+Warehouse: 
+    - legal name 
+    - Address: country, state, city, pincode
+    - GSTIN 
+
+Customer: 
+    - legal name 
+    - Address: 
+        - Billing: country, state, city, pincode
+        - Shipping: country, state, city, pincode
+    - GSTIN  
+
+Check Intra/Inter state: 
+    - IntraState: Warehouse state == Customer billing/shipping state
+    - InterState: Warehouse state != Customer billing/shipping state
+
+
+Products: 
+    - HSN 
+    - Tax
+    - assessableValue
+    - gstAmount
+    - totalItemValue
+    - cgstAmount
+    - sgstAmount
+    - igstAmount
+
+
+
+
+
+
+supply_type 
+charge type 
+igst_on_intra
+ecommerce_gstin
+
+document_number - invoice number (unique, store in database table)
+document_date - invoice generation date 
+
+seller_details: (Supplier GSTIN) 
+
+
+buyer_details:
+    place_of_supply  - if outside country then it will need to edit 
+
+
+
+{
+  "user_gstin": "09AAAPG7885R002",
+  'data_source' => 'erp',
+  "transaction_details": {
+    "supply_type": "B2B",
+    "charge_type": "Y",
+    "igst_on_intra": "N",
+    "ecommerce_gstin": ""
+  },
+  "document_details": {
+    "document_type": "INV",
+    "document_number": "TATA/99024",
+    "document_date": "14/09/2023"
+  },
+  "seller_details": {
+    "gstin": "09AAAPG7885R002",
+    "legal_name": "MastersIndia UP",
+    "trade_name": "123",
+    "address1": "45",
+    "location": "1279",
+    "pincode": 201301,
+    "state_code": "09"
+  },
+  "buyer_details": {
+    "gstin": "05AAAPG7885R002",
+    "legal_name": "Masters India UK",
+    "trade_name": "122",
+    "address1": "9",
+    "location": "12321u",
+    "pincode": 263001,
+    "place_of_supply": "13",
+    "state_code": "05"
+  },
+  "value_details": {
+    "total_assessable_value": 4,
+    "total_cgst_value": 0,
+    "total_sgst_value": 0,
+    "total_igst_value": 0.2,
+    "total_invoice_value": 4.2
+  },
+  "item_list": [
+    {
+      "item_serial_number": "501",
+      "product_description": "Wheat desc",
+      "is_service": "N",
+      "hsn_code": "1001",
+      "quantity": 1,
+      "unit": "KGS",
+      "unit_price": 4,
+      "total_amount": 4,
+      "assessable_value": 4,
+      "gst_rate": 5,
+      "igst_amount": 0.2,
+      "cgst_amount": 0,
+      "sgst_amount": 0,
+      "total_item_value": 4.2
+    }
+  ]
+}

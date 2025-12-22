@@ -23,7 +23,7 @@ class StateSeeder extends Seeder
             'HP' => '02', // Himachal Pradesh
             'PB' => '03', // Punjab
             'CH' => '04', // Chandigarh
-            'UT' => '05', // Uttarakhand
+            'UK' => '05', // Uttarakhand
             'HR' => '06', // Haryana
             'DL' => '07', // Delhi
             'RJ' => '08', // Rajasthan
@@ -43,7 +43,7 @@ class StateSeeder extends Seeder
             'CT' => '22', // Chhattisgarh
             'MP' => '23', // Madhya Pradesh
             'GJ' => '24', // Gujarat
-            'DD' => '25', // Daman and Diu
+            'DH' => '25', // Daman and Diu
             'DN' => '26', // Dadra and Nagar Haveli
             'MH' => '27', // Maharashtra
             'AP' => '28', // Andhra Pradesh
@@ -56,6 +56,7 @@ class StateSeeder extends Seeder
             'AN' => '35', // Andaman and Nicobar Islands
             'TG' => '36', // Telangana
             'AD' => '37', // Andaman and Nicobar Islands (duplicate?)
+            'LA' => '38', // Ladakh
         ];
 
         foreach ($states as $state) {
