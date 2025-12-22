@@ -52,7 +52,7 @@
                                     <span><b>E-Invoice PDF</b></span>
                                     <span><a href="{{ route('invoice.downloadEInvoicePdf', $invoiceDetails->id) }}" target="_blank" class="btn btn-icon btn-sm bg-primary-subtle me-1">Download</a></span>
                                 </li>
-                                @if($invoiceDetails->einvoice_status === 'ACT' && (!$invoiceDetails->ewb_no || $invoiceDetails->ewb_valid_till < now()))
+                                @if($invoiceDetails->einvoice_status === 'ACT' && (!$invoiceDetails->ewb_no || $invoiceDetails->ewb_valid_till <= now()))
                                 <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                                     <span><b>Cancel E-Invoice</b></span>
                                     <span>
@@ -253,14 +253,22 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label for="tripshtNo" class="form-label">Trip Sheet No</label>
-                                    <input type="number" class="form-control" id="tripshtNo" name="tripshtNo" value="0">
+                                    <label for="distance" class="form-label">Distance (km)</label>
+                                    <input type="number" class="form-control" id="distance" name="distance" placeholder="280" required>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label for="userGstin" class="form-label">User GSTIN</label>
                                     <input type="text" class="form-control" id="userGstin" name="userGstin" placeholder="05AAAPG7885R002" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="tripshtNo" class="form-label">Trip Sheet No</label>
+                                    <input type="number" class="form-control" id="tripshtNo" name="tripshtNo" value="0">
                                 </div>
                             </div>
                         </div>

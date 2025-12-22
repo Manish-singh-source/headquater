@@ -737,13 +737,14 @@ class InvoiceController extends Controller
             }
 
             // Validate required data
-            // For manual invoices (warehouse_id = 0), skip warehouse GSTIN validation as test GSTINs are used
-            if ($invoice->warehouse_id != 0 && (!$invoice->warehouse || !$invoice->warehouse->gst_number)) {
-                return redirect()->back()->with('error', 'Warehouse GSTIN is required for e-invoice generation.');
-            }
-
             if (!$invoice->customer || !$invoice->customer->gstin) {
                 return redirect()->back()->with('error', 'Customer GSTIN is required for e-invoice generation.');
+            }
+
+            // For manual invoices (warehouse_id = 0), we can proceed with default company data
+            // But if warehouse exists, check for GSTIN
+            if ($invoice->warehouse_id != 0 && (!$invoice->warehouse || !$invoice->warehouse->gst_number)) {
+                return redirect()->back()->with('error', 'Warehouse GSTIN is required for e-invoice generation.');
             }
 
             if ($invoice->details->isEmpty()) {
@@ -825,20 +826,19 @@ class InvoiceController extends Controller
     private function prepareEInvoiceData($invoice)
     {
         $warehouse = $invoice->warehouse;
-        // For manual invoices, warehouse might be null, but we use test data anyway
         $customer = $invoice->customer;
 
-        // Use test GSTINs for sandbox environment (mapped to support@technofra.com account)
-        $sellerGstin = '05AAAPG7885R002'; // Uttarakhand
-        $buyerGstin = '09AAAPG7885R002';  // Uttar Pradesh
+        // Use the provided test GSTINs
+        $sellerGstin = '05AAAPG7885R002'; // Test GSTIN for seller
+        $buyerGstin = '09AAAPG7885R002'; // Test GSTIN for buyer
 
-        // Extract state codes from GSTINs
-        $sellerStateCode = '05'; // Uttarakhand
-        $buyerStateCode = '09';  // Uttar Pradesh
+        // Extract state codes from GSTINs (first 2 digits)
+        $sellerStateCode = substr($sellerGstin, 0, 2);
+        $buyerStateCode = substr($buyerGstin, 0, 2);
 
-        // Use test pincodes that match the state codes for sandbox
-        $sellerPincode = '263001'; // Haldwani, Uttarakhand
-        $buyerPincode = '201301'; // Noida, Uttar Pradesh
+        // Use pincodes that match the test GSTIN states
+        $sellerPincode = '263001'; // Uttarakhand pincode
+        $buyerPincode = '201301'; // Uttar Pradesh pincode
 
         $itemList = [];
         foreach ($invoice->details as $index => $detail) {
@@ -880,20 +880,35 @@ class InvoiceController extends Controller
             ],
             'seller_details' => [
                 'gstin' => $sellerGstin,
-                'legal_name' => $warehouse ? $warehouse->name : 'Test Warehouse',
-                'address1' => $warehouse ? $warehouse->address_line_1 : 'Test Address',
+                'legal_name' => $warehouse ? $warehouse->name : 'Default Company',
+                'address1' => $warehouse ? $warehouse->address_line_1 : 'Default Address',
                 'address2' => $warehouse ? ($warehouse->address_line_2 ?? '') : '',
-                'location' => 'Haldwani', // Test location for Uttarakhand
+                'location' => $warehouse ? $warehouse->cities->name ?? 'Default City' : 'Default City',
                 'pincode' => $sellerPincode,
                 'state_code' => $sellerStateCode,
             ],
             'buyer_details' => [
                 'gstin' => $buyerGstin,
                 'legal_name' => $customer->client_name,
-                'address1' => $customer->billing_address ?? 'Test Address',
-                'location' => 'Test Location',
+                'address1' => $customer->billing_address ?? $customer->shipping_address ?? 'Default Address',
+                'location' => $customer->billing_city ?? $customer->shipping_city ?? 'Default City',
                 'pincode' => $buyerPincode,
                 'place_of_supply' => $buyerStateCode,
+                'state_code' => $buyerStateCode,
+            ],
+            'dispatch_details' => [
+                'company_name' => $warehouse ? $warehouse->name : 'Default Company',
+                'address1' => $warehouse ? $warehouse->address_line_1 : 'Default Address',
+                'location' => $warehouse ? $warehouse->cities->name ?? 'Default City' : 'Default City',
+                'pincode' => $sellerPincode,
+                'state_code' => $sellerStateCode,
+            ],
+            'ship_details' => [
+                'gstin' => $buyerGstin,
+                'legal_name' => $customer->client_name,
+                'address1' => $customer->shipping_address ?? $customer->billing_address ?? 'Default Address',
+                'location' => $customer->shipping_city ?? $customer->billing_city ?? 'Default City',
+                'pincode' => $buyerPincode,
                 'state_code' => $buyerStateCode,
             ],
             'value_details' => [
@@ -1022,6 +1037,7 @@ class InvoiceController extends Controller
                 'vehicle_number' => 'required|string',
                 'place_of_consignor' => 'required|string',
                 'state_of_consignor' => 'required|string',
+                'distance' => 'required|integer|min:1',
                 'tripshtNo' => 'nullable|integer',
                 'userGstin' => 'required|string',
                 'vehicle_number_update_date' => 'required|string',
@@ -1047,20 +1063,29 @@ class InvoiceController extends Controller
             }
 
             // Prepare API request data for E-Way Bill generation
+            $sellerGstin = $invoice->warehouse ? $invoice->warehouse->gst_number : '05AAABC0181E1ZE'; // Test GSTIN for e-waybill consignor
+
+            // For test GSTIN 05AAAPG7885R002, state is Uttarakhand
+            $stateOfConsignor = (substr($sellerGstin, 0, 2) === '05') ? 'Uttarakhand' : $validated['state_of_consignor'];
+
+            // Convert dates from dd/mm/yyyy to yyyy-mm-dd
+            $vehicleUpdateDate = date('Y-m-d', strtotime(str_replace('/', '-', $validated['vehicle_number_update_date'])));
+            $transporterDocDate = date('Y-m-d', strtotime(str_replace('/', '-', $validated['transporter_document_date'])));
+
             $requestData = [
-                'user_gstin' => $validated['userGstin'],
+                'user_gstin' => $sellerGstin,
                 'irn' => $invoice->irn,
-                'transporter_id' => '05AAABB0639G1Z8', // Test transporter ID
+                'transporter_id' => '05AAABB0639G1Z8', // Test transporter ID - keep as is for now
                 'transportation_mode' => $transportationMode,
-                'distance' => 280, // Distance between Haldwani (263001) and Noida (201301) is ~280 km
+                'distance' => $validated['distance'] ?? 280, // Use provided distance or default
                 'vehicle_number' => $validated['vehicle_number'],
                 'vehicle_type' => 'R', // Regular vehicle
-                'transporter_name' => 'Test Transporter',
+                'transporter_name' => 'Test Transporter', // Keep as is
                 'data_source' => 'erp',
                 'transporter_document_number' => $validated['transporter_document_number'],
-                'transporter_document_date' => $validated['transporter_document_date'],
+                'transporter_document_date' => $transporterDocDate,
                 'place_of_consignor' => $validated['place_of_consignor'],
-                'state_of_consignor' => $validated['state_of_consignor'],
+                'state_of_consignor' => $stateOfConsignor,
             ];
 
             // Make API call
@@ -1092,7 +1117,9 @@ class InvoiceController extends Controller
                 } else {
                     $errorMessage = $results['errorMessage'] ?? $results['InfoDtls'] ?? 'Unknown error occurred';
                     Log::error('E-Way Bill API Error Response: ' . json_encode($data));
-                    return redirect()->back()->with('error', 'Failed to generate e-way bill: ' . $errorMessage);
+                    // Show detailed error for debugging
+                    $debugInfo = isset($results['errorMessage']) ? $results['errorMessage'] : (isset($results['InfoDtls']) ? $results['InfoDtls'] : json_encode($results));
+                    return redirect()->back()->with('error', 'Failed to generate e-way bill: ' . $debugInfo);
                 }
             } else {
                 Log::error('E-Way Bill API Invalid Response: ' . json_encode($data));
@@ -1137,7 +1164,7 @@ class InvoiceController extends Controller
 
             // Prepare API request data
             $requestData = [
-                'user_gstin' => '05AAAPG7885R002', // Using test GSTIN
+                'user_gstin' => '09AAAPG7885R002', // Using test GSTIN
                 'ewb_no' => $invoice->ewb_no,
                 'cancel_reason' => '1', // Default reason: Wrong entry
                 'cancel_remarks' => 'Cancelled by user',
@@ -1222,14 +1249,15 @@ class InvoiceController extends Controller
 
             // Prepare API request data
             $requestData = [
-                'user_gstin' => '05AAAPG7885R002', // Using test GSTIN
+                'user_gstin' => '09AAAPG7885R002', // Using test GSTIN
                 'ewb_no' => $invoice->ewb_no,
             ];
 
             // Make API call to get ewaybill details
             $response = Http::withHeaders([
                 'Authorization' => 'JWT ' . $token,
-            ])->get('https://sandb-api.mastersindia.co/api/v1/get-ewaybill-details/', $requestData);
+                'Content-Type' => 'application/json',
+            ])->post('https://sandb-api.mastersindia.co/api/v1/getEwayBillData/', $requestData);
 
             $data = $response->json();
 
@@ -1291,6 +1319,12 @@ class InvoiceController extends Controller
             Log::error('QR Code Generation Error: ' . $e->getMessage());
             return null;
         }
+    }
+
+    private function getStateCode($stateName)
+    {
+        $state = \App\Models\State::where('name', $stateName)->first();
+        return $state ? $state->code : '05'; // Default to 05 if not found
     }
 
 }
