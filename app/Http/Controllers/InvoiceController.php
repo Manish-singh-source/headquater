@@ -8,6 +8,8 @@ use App\Models\Invoice;
 use App\Models\Payment;
 use App\Models\Product;
 use App\Models\Customer;
+use App\Models\EInvoice;
+use App\Models\Ewaybill;
 use App\Models\Warehouse;
 use App\Models\SalesOrder;
 use Endroid\QrCode\QrCode;
@@ -131,6 +133,9 @@ class InvoiceController extends Controller
 
     public function downloadEInvoicePdf($id)
     {
+        $eInvoice = EInvoice::find($id);
+        $id = $eInvoice->invoice_id;
+
         $data = [
             'title' => 'E-Invoice',
             'date' => date('m/d/Y'),
@@ -369,9 +374,13 @@ class InvoiceController extends Controller
 
     public function invoiceDetails($id)
     {
-        $invoiceDetails = Invoice::with(['appointment', 'dns', 'payments', 'customer', 'warehouse'])->findOrFail($id);
+        $invoiceDetails = Invoice::with(['appointment', 'dns', 'payments', 'customer', 'warehouse', 'einvoices.ewaybills', 'ewaybills'])->find($id);
+        // dd($invoiceDetails);
+        // count total active einvoices
+        $total_einvoices = $invoiceDetails->einvoices->where('einvoice_status', 'ACT')->count();
+        $total_ewaybills = $invoiceDetails->ewaybills->count();
 
-        return view('invoice.invoice-details', compact('invoiceDetails'));
+        return view('invoice.invoice-details', compact('invoiceDetails', 'total_einvoices', 'total_ewaybills'));
     }
 
     // Manual Invoice Methods
@@ -771,19 +780,17 @@ class InvoiceController extends Controller
                     $message = $results['message'];
 
                     // Update invoice with e-invoice details
-                    $invoice->update([
+                    EInvoice::create([
+                        'invoice_id' => $invoice->id,
                         'irn' => $message['Irn'] ?? null,
                         'ack_no' => $message['AckNo'] ?? null,
                         'ack_dt' => isset($message['AckDt']) ? date('Y-m-d H:i:s', strtotime($message['AckDt'])) : null,
                         'signed_invoice' => $message['SignedInvoice'] ?? null,
                         'signed_qr_code' => $message['SignedQRCode'] ?? null,
-                        'ewb_no' => $message['EwbNo'] ?? null,
-                        'ewb_dt' => isset($message['EwbDt']) ? date('Y-m-d H:i:s', strtotime($message['EwbDt'])) : null,
-                        'ewb_valid_till' => isset($message['EwbValidTill']) ? date('Y-m-d H:i:s', strtotime($message['EwbValidTill'])) : null,
                         'einvoice_pdf' => $message['EinvoicePdf'] ?? null,
-                        'ewaybill_pdf' => $message['EwaybillPdf'] ?? null,
                         'qr_code_url' => $message['QRCodeUrl'] ?? null,
                         'einvoice_status' => $message['Status'] ?? null,
+                        'created_by' => Auth::id(),
                     ]);
 
                     $irn = $message['Irn'] ?? 'N/A';
@@ -807,21 +814,6 @@ class InvoiceController extends Controller
         }
     }
 
-    private function getEInvoiceToken()
-    {
-        try {
-            $response = Http::post('https://sandb-api.mastersindia.co/api/v1/token-auth/', [
-                'username' => env('EINVOICE_API_USERNAME'),
-                'password' => env('EINVOICE_API_PASSWORD'),
-            ]);
-
-            $data = $response->json();
-            return $data['token'] ?? null;
-        } catch (\Exception $e) {
-            Log::error('E-Invoice Token Error: ' . $e->getMessage());
-            return null;
-        }
-    }
 
     private function prepareEInvoiceData($invoice)
     {
@@ -961,13 +953,13 @@ class InvoiceController extends Controller
         }
     }
 
-    public function cancelEInvoice($id)
+    public function cancelEInvoice($id, Request $request)
     {
         try {
-            $invoice = Invoice::findOrFail($id);
+            $invoice = EInvoice::find($id);
 
             // Check if e-invoice exists
-            if (!$invoice->irn) {
+            if (!$invoice) {
                 return redirect()->back()->with('error', 'No E-Invoice found for this invoice.');
             }
 
@@ -992,8 +984,7 @@ class InvoiceController extends Controller
                 'user_gstin' => '05AAAPG7885R002', // Using test GSTIN
                 'irn' => $invoice->irn,
                 'cancel_reason' => '1', // Default reason: Wrong entry
-                'cancel_remarks' => 'Cancelled by user',
-                'ewaybill_cancel' => '' // Not cancelling ewaybill
+                'cancel_remarks' => $request->cancel_reason,
             ];
 
             // Make API call
@@ -1013,6 +1004,7 @@ class InvoiceController extends Controller
                     // Update invoice with cancellation details
                     $invoice->update([
                         'einvoice_status' => 'CAN', // Cancelled
+                        'cancel_remarks' => $request->cancel_reason,
                         // Keep other fields as they are, or clear them if needed
                     ]);
 
@@ -1037,15 +1029,30 @@ class InvoiceController extends Controller
     public function generateEWayBill(Request $request, $id)
     {
         try {
-            $invoice = Invoice::findOrFail($id);
+
+            // Get JWT token
+            $token = $this->getEInvoiceToken();
+            if (!$token) {
+                return redirect()->back()->with('error', 'Failed to authenticate with e-invoice API.');
+            }
+
+            $invoice = Invoice::with('customer', 'warehouse', 'ewaybills')->find($request->invoice_id);
+            $einvoice = EInvoice::find($request->einvoice_id);
+
+            // Warehouse Details 
+            $warehouse = $invoice->warehouse;
+            // Customer Details 
+            $customer = $invoice->customer;
+            // Fetch Distance from Warehouse to Customer
+            $distance = $this->getDistance($warehouse->pincode, $customer->shipping_zip ?? $customer->billing_zip, $token);
 
             // Check if e-invoice exists
-            if (!$invoice->irn) {
+            if (!$einvoice->irn) {
                 return redirect()->back()->with('error', 'E-Invoice must be generated first before creating E-Way Bill.');
             }
 
             // Check if e-waybill already generated and still valid
-            if ($invoice->ewb_no && $invoice->ewb_valid_till && $invoice->ewb_valid_till > now()) {
+            if ($einvoice->ewb_no && $einvoice->ewb_valid_till && $einvoice->ewb_valid_till > now()) {
                 return redirect()->back()->with('error', 'E-Way Bill already exists and is still valid.');
             }
 
@@ -1055,7 +1062,6 @@ class InvoiceController extends Controller
                 'vehicle_number' => 'required|string',
                 'place_of_consignor' => 'required|string',
                 'state_of_consignor' => 'required|string',
-                'distance' => 'required|integer|min:1',
                 'tripshtNo' => 'nullable|integer',
                 'userGstin' => 'required|string',
                 'vehicle_number_update_date' => 'required|string',
@@ -1092,10 +1098,10 @@ class InvoiceController extends Controller
 
             $requestData = [
                 'user_gstin' => $sellerGstin,
-                'irn' => $invoice->irn,
+                'irn' => $einvoice->irn,
                 'transporter_id' => '05AAABB0639G1Z8', // Test transporter ID - keep as is for now
                 'transportation_mode' => $transportationMode,
-                'distance' => $validated['distance'] ?? 280, // Use provided distance or default
+                'distance' => $distance ?? 0, // Use provided distance or default
                 'vehicle_number' => $validated['vehicle_number'],
                 'vehicle_type' => 'R', // Regular vehicle
                 'transporter_name' => 'Test Transporter', // Keep as is
@@ -1121,7 +1127,9 @@ class InvoiceController extends Controller
                     $message = $results['message'];
 
                     // Update invoice with e-waybill details
-                    $invoice->update([
+                    Ewaybill::create([
+                        'invoice_id' => $invoice->id,
+                        'einvoice_id' => $einvoice->id,
                         'ewb_no' => $message['EwbNo'] ?? null,
                         'ewb_dt' => isset($message['EwbDt']) ? date('Y-m-d H:i:s', strtotime($message['EwbDt'])) : null,
                         'ewb_valid_till' => isset($message['EwbValidTill']) ? date('Y-m-d H:i:s', strtotime($message['EwbValidTill'])) : null,
@@ -1152,7 +1160,7 @@ class InvoiceController extends Controller
     public function cancelEWayBill($id)
     {
         $validator = Validator::make(['id' => $id], [
-            'id' => 'required|exists:invoices,id',
+            'id' => 'required|exists:ewaybills,id',
         ]);
 
         if ($validator->fails()) {
@@ -1161,7 +1169,11 @@ class InvoiceController extends Controller
 
         DB::beginTransaction();
         try {
-            $invoice = Invoice::findOrFail($id);
+            // $invoice = Invoice::findOrFail($id);
+            $invoice = Ewaybill::with('invoice.customer', 'invoice.warehouse')->find($id);
+
+            $sellerGstin = $invoice->invoice->warehouse ? $invoice->invoice->warehouse->gst_number : '05AAABC0181E1ZE'; // Test GSTIN for e-waybill consignor
+            $customerGstin = $invoice->invoice->customer->gst_number ?? '05AAAPG7885R002'; // Test GSTIN for e-waybill consignee
 
             // Check if e-waybill exists
             if (!$invoice->ewb_no) {
@@ -1174,24 +1186,25 @@ class InvoiceController extends Controller
             }
 
             // Get JWT token
-            $token = $this->getEInvoiceToken();
+            $token = $this->getEInvoiceToken(); 
             if (!$token) {
                 return redirect()->back()->with('error', 'Failed to authenticate with e-invoice API.');
             }
 
             // Prepare API request data
             $requestData = [
-                'user_gstin' => '09AAAPG7885R002', // Using test GSTIN
-                'ewb_no' => $invoice->ewb_no,
-                'cancel_reason' => '1', // Default reason: Wrong entry
-                'cancel_remarks' => 'Cancelled by user',
+                'userGstin' => $sellerGstin, // Using test GSTIN
+                'eway_bill_number' => $invoice->ewb_no,
+                'reason_of_cancel' => 1, // Default reason: Wrong entry
+                'cancel_remark' => 'Cancelled by user',
+                "data_source" => 'erp'
             ];
 
             // Make API call
             $response = Http::withHeaders([
                 'Authorization' => 'JWT ' . $token,
                 'Content-Type' => 'application/json',
-            ])->post('https://sandb-api.mastersindia.co/api/v1/cancel-ewaybill/', $requestData);
+            ])->post('https://sandb-api.mastersindia.co/api/v1/ewayBillCancel/', $requestData);
 
             $data = $response->json();
 
@@ -1340,5 +1353,37 @@ class InvoiceController extends Controller
     {
         $state = State::where('name', $stateName)->first();
         return $state ? $state->code : null;
+    }
+
+    private function getDistance($source, $destination, $token)
+    {
+        try {
+            $response = Http::withHeaders([
+                'Authorization' => 'JWT ' . $token,
+                'Content-Type' => 'application/json',
+            ])->get('https://sandb-api.mastersindia.co/api/v1/distance/?fromPincode=' . $source . '&toPincode=' . $destination);
+
+            return $response->json();
+        } catch (\Exception $e) {
+            Log::error('E-Invoice API Call Error: ' . $e->getMessage());
+            return null;
+        }
+    }
+
+
+    private function getEInvoiceToken()
+    {
+        try {
+            $response = Http::post('https://sandb-api.mastersindia.co/api/v1/token-auth/', [
+                'username' => env('EINVOICE_API_USERNAME'),
+                'password' => env('EINVOICE_API_PASSWORD'),
+            ]);
+
+            $data = $response->json();
+            return $data['token'] ?? null;
+        } catch (\Exception $e) {
+            Log::error('E-Invoice Token Error: ' . $e->getMessage());
+            return null;
+        }
     }
 }

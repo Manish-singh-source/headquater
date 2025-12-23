@@ -1562,3 +1562,21 @@ buyer_details:
     }
   ]
 }
+
+
+
+Method: POST
+URL: https://sandb-api.mastersindia.co/api/v1/ewayBillCancel/
+
+--header 'Authorization: JWT
+eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjo2NDYsInVzZXJuYW1lIjoiYW1hbkBtYXN0ZXJza
+W5kaWEuY28iLCJleHAiOjE2OTQ4MzU1NjQsImVtYWlsIjoiYW1hbkBtYXN0ZXJzaW5kaWEuY28iLCJvcmln
+X2lhdCI6MTY5NDc0OTE2NH0.4GlIszMi44lQfrJJ3Mv00DSN2ZKdJo7n0aAUh-oBh5U' 
+
+--data '{
+    "userGstin":"05AAABB0639G1Z8",
+    "eway_bill_number": 301009218802,
+    "reason_of_cancel": "Others",
+    "cancel_remark": "Cancelled the order",
+    "data_source":"erp"
+}'
