@@ -25,11 +25,20 @@ class EInvoice extends Model
         'ewaybill_pdf',
         'qr_code_url',
         'einvoice_status',
+        'cancel_reason',
         'cancel_remarks',
         'created_by',
     ];
 
+    public function invoice() {
+        return $this->belongsTo(Invoice::class, 'invoice_id', 'id');
+    }
+
     public function ewaybills() {
         return $this->hasMany(EWaybill::class, 'einvoice_id', 'id');
+    }
+
+    public function isActive() {
+        return $this->einvoice_status == 'ACT';
     }
 }

@@ -14,6 +14,7 @@ use App\Models\Warehouse;
 use App\Models\SalesOrder;
 use Endroid\QrCode\QrCode;
 use App\Models\Appointment;
+use App\Models\EwayTransportDetail;
 use Illuminate\Http\Request;
 use App\Models\InvoiceDetails;
 use App\Models\WarehouseStock;
@@ -739,10 +740,11 @@ class InvoiceController extends Controller
     public function generateEInvoice($id)
     {
         try {
-            $invoice = Invoice::with(['customer', 'warehouse', 'details.product'])->findOrFail($id);
+            $invoice = Invoice::with(['customer', 'warehouse', 'details.product', 'einvoices'])->findOrFail($id);
+            $einvoice = EInvoice::where('invoice_id', $id)->where('einvoice_status', 'ACT')->first();
 
             // Check if e-invoice already generated
-            if ($invoice->irn) {
+            if ($einvoice && $einvoice->irn) {
                 return redirect()->back()->with('error', 'E-Invoice already generated for this invoice.');
             }
 
@@ -956,7 +958,7 @@ class InvoiceController extends Controller
     public function cancelEInvoice($id, Request $request)
     {
         try {
-            $invoice = EInvoice::find($id);
+            $invoice = EInvoice::with('invoice.warehouse')->find($id);
 
             // Check if e-invoice exists
             if (!$invoice) {
@@ -981,10 +983,10 @@ class InvoiceController extends Controller
 
             // Prepare API request data
             $requestData = [
-                'user_gstin' => '05AAAPG7885R002', // Using test GSTIN
+                'user_gstin' => $invoice->invoice->warehouse->gst_number, // Using test GSTIN same gstin who created invoice
                 'irn' => $invoice->irn,
-                'cancel_reason' => '1', // Default reason: Wrong entry
-                'cancel_remarks' => $request->cancel_reason,
+                'cancel_reason' => $request->cancel_reason, // Default reason: Wrong entry
+                'cancel_remarks' => $request->cancel_remark ?? '',
             ];
 
             // Make API call
@@ -1004,7 +1006,8 @@ class InvoiceController extends Controller
                     // Update invoice with cancellation details
                     $invoice->update([
                         'einvoice_status' => 'CAN', // Cancelled
-                        'cancel_remarks' => $request->cancel_reason,
+                        'cancel_reason' => $request->cancel_reason,
+                        'cancel_remarks' => $request->cancel_remark ?? '',
                         // Keep other fields as they are, or clear them if needed
                     ]);
 
@@ -1039,13 +1042,6 @@ class InvoiceController extends Controller
             $invoice = Invoice::with('customer', 'warehouse', 'ewaybills')->find($request->invoice_id);
             $einvoice = EInvoice::find($request->einvoice_id);
 
-            // Warehouse Details 
-            $warehouse = $invoice->warehouse;
-            // Customer Details 
-            $customer = $invoice->customer;
-            // Fetch Distance from Warehouse to Customer
-            $distance = $this->getDistance($warehouse->pincode, $customer->shipping_zip ?? $customer->billing_zip, $token);
-
             // Check if e-invoice exists
             if (!$einvoice->irn) {
                 return redirect()->back()->with('error', 'E-Invoice must be generated first before creating E-Way Bill.');
@@ -1062,14 +1058,12 @@ class InvoiceController extends Controller
                 'vehicle_number' => 'required|string',
                 'place_of_consignor' => 'required|string',
                 'state_of_consignor' => 'required|string',
-                'tripshtNo' => 'nullable|integer',
-                'userGstin' => 'required|string',
-                'vehicle_number_update_date' => 'required|string',
+                'transporter_name' => 'required|string',
                 'transportation_mode' => 'required|string',
                 'transporter_document_number' => 'required|string',
                 'transporter_document_date' => 'required|string',
-                'group_number' => 'nullable|string',
             ]);
+            // validations 
 
             // Map transportation mode to API values
             $transportationModeMap = [
@@ -1090,26 +1084,35 @@ class InvoiceController extends Controller
             $sellerGstin = $invoice->warehouse ? $invoice->warehouse->gst_number : '05AAABC0181E1ZE'; // Test GSTIN for e-waybill consignor
 
             // For test GSTIN 05AAAPG7885R002, state is Uttarakhand
-            $stateOfConsignor = (substr($sellerGstin, 0, 2) === '05') ? 'Uttarakhand' : $validated['state_of_consignor'];
+            $stateOfConsignor = $validated['state_of_consignor'];
+            // dd($stateOfConsignor);
 
             // Convert dates from dd/mm/yyyy to yyyy-mm-dd
-            $vehicleUpdateDate = date('Y-m-d', strtotime(str_replace('/', '-', $validated['vehicle_number_update_date'])));
+            // $vehicleUpdateDate = date('Y-m-d', strtotime(str_replace('/', '-', $validated['vehicle_number_update_date'])));
             $transporterDocDate = date('Y-m-d', strtotime(str_replace('/', '-', $validated['transporter_document_date'])));
 
+
+            // Warehouse Details 
+            $warehouse = $invoice->warehouse;
+            // Customer Details 
+            $customer = $invoice->customer;
+            // Fetch Distance from Warehouse to Customer
+            $distance = $this->getDistance($warehouse->pincode, $customer->shipping_zip ?? $customer->billing_zip, $token);
+
             $requestData = [
-                'user_gstin' => $sellerGstin,
+                'user_gstin' => $invoice->warehouse->gst_number,
                 'irn' => $einvoice->irn,
-                'transporter_id' => '05AAABB0639G1Z8', // Test transporter ID - keep as is for now
+                'transporter_id' => $validated['transporter_id'] ?? '05AAABB0639G1Z8', // Test transporter ID - keep as is for now
                 'transportation_mode' => $transportationMode,
                 'distance' => $distance ?? 0, // Use provided distance or default
                 'vehicle_number' => $validated['vehicle_number'],
                 'vehicle_type' => 'R', // Regular vehicle
-                'transporter_name' => 'Test Transporter', // Keep as is
-                'data_source' => 'erp',
+                'transporter_name' => $validated['transporter_name'], // Keep as is
                 'transporter_document_number' => $validated['transporter_document_number'],
                 'transporter_document_date' => $transporterDocDate,
                 'place_of_consignor' => $validated['place_of_consignor'],
                 'state_of_consignor' => $stateOfConsignor,
+                'data_source' => 'erp',
             ];
 
             // Make API call
@@ -1126,8 +1129,10 @@ class InvoiceController extends Controller
                 if (isset($results['status']) && $results['status'] === 'Success' && isset($results['message'])) {
                     $message = $results['message'];
 
+                    DB::beginTransaction();
                     // Update invoice with e-waybill details
-                    Ewaybill::create([
+
+                    $ewaybill = Ewaybill::create([
                         'invoice_id' => $invoice->id,
                         'einvoice_id' => $einvoice->id,
                         'ewb_no' => $message['EwbNo'] ?? null,
@@ -1135,6 +1140,29 @@ class InvoiceController extends Controller
                         'ewb_valid_till' => isset($message['EwbValidTill']) ? date('Y-m-d H:i:s', strtotime($message['EwbValidTill'])) : null,
                         'ewaybill_pdf' => $message['EwaybillPdf'] ?? null,
                     ]);
+
+                    if(!$ewaybill){
+                        DB::rollBack();
+                        return redirect()->back()->with('error', 'Failed to generate e-way bill.');
+                    }
+
+                    $transportDetail = EwayTransportDetail::create([
+                        'ewaybill_id' => $einvoice->id,
+                        'transportation_mode' => $validated['transportation_mode'],
+                        'vehicle_number' => $validated['vehicle_number'],
+                        'transporter_name' => $validated['transporter_name'],
+                        'transporter_document_number' => $validated['transporter_document_number'],
+                        'transporter_document_date' => $transporterDocDate,
+                        'place_of_consignor' => $validated['place_of_consignor'],
+                        'state_of_consignor' => $stateOfConsignor,
+                    ]);
+
+                    if(!$transportDetail){
+                        DB::rollBack();
+                        return redirect()->back()->with('error', 'Failed to generate e-way bill.');
+                    }
+
+                    DB::commit();
 
                     $ewbNo = $message['EwbNo'] ?? 'N/A';
                     activity()->performedOn($invoice)->causedBy(Auth::user())->log('E-Way Bill generated: ' . $ewbNo);
@@ -1186,7 +1214,7 @@ class InvoiceController extends Controller
             }
 
             // Get JWT token
-            $token = $this->getEInvoiceToken(); 
+            $token = $this->getEInvoiceToken();
             if (!$token) {
                 return redirect()->back()->with('error', 'Failed to authenticate with e-invoice API.');
             }

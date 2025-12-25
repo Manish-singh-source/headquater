@@ -22,6 +22,7 @@ return new class extends Migration
             $table->string('einvoice_pdf')->nullable();
             $table->string('qr_code_url')->nullable();
             $table->string('einvoice_status')->nullable();
+            $table->string('cancel_reason')->nullable();
             $table->string('cancel_remarks')->nullable();
             $table->foreignId('created_by')->constrained('users')->cascadeOnDelete();
             $table->timestamps();

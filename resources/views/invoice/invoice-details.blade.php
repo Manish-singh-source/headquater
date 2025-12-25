@@ -180,16 +180,20 @@
                                                         {{ $ewaybill->created_at->addDays(1)->format('d/m/Y H:i') }}</span>
                                                 </td>
                                                 <td>
-                                                    <form
-                                                        action="{{ route('invoice.cancelEWayBill', $ewaybill->id) }}"
-                                                        method="POST" style="display: inline;"
-                                                        onsubmit="return confirm('Are you sure you want to cancel this E-Way Bill? This action cannot be undone.')">
-                                                        @csrf
-                                                        @method('DELETE')
-                                                        <button type="submit"
-                                                            class="btn btn-icon btn-sm bg-danger-subtle me-1">Cancel E-Way
-                                                            Bill</button>
-                                                    </form>
+                                                    @if ($ewaybill->created_at->addDays(1) > now())
+                                                        <form action="{{ route('invoice.cancelEWayBill', $ewaybill->id) }}"
+                                                            method="POST" style="display: inline;"
+                                                            onsubmit="return confirm('Are you sure you want to cancel this E-Way Bill? This action cannot be undone.')">
+                                                            @csrf
+                                                            @method('DELETE')
+                                                            <button type="submit"
+                                                                class="btn btn-icon btn-sm bg-danger-subtle me-1">Cancel
+                                                                E-Way
+                                                                Bill</button>
+                                                        </form>
+                                                    @else
+                                                        <span class="badge bg-success me-2">Cannot Cancel</span>
+                                                    @endif
                                                 </td>
                                             </tr>
                                         @endforeach
@@ -308,8 +312,21 @@
                             <p class="text-danger">Are you sure you want
                                 to cancel this E-Invoice? This action
                                 cannot be undone.</p>
-                            <input type="text" name="cancel_reason" class="form-control" placeholder="Cancel Reason"
-                                required>
+                            <div class="mb-3">
+                                <label for="cancel_reason">Cancel Reason</label>
+                                <select name="cancel_reason" id="cancel_reason" class="form-control" required>
+                                    <option value="" selected disabled>Select Cancel Reason</option>
+                                    <option value="1">Duplicate IRN</option>
+                                    <option value="2">Data entry mistake</option>
+                                    <option value="3">Order cancelled</option>
+                                    <option value="4">Others</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="cancel_reason">Cancel Remark</label>
+                                <input type="text" name="cancel_remark" class="form-control"
+                                    placeholder="Cancel Remark" required>
+                            </div>
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -337,23 +354,17 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label for="update_mode" class="form-label">Update Mode</label>
-                                    <input type="text" class="form-control" id="update_mode" name="update_mode"
+                                    <input type="hidden" class="form-control" id="update_mode" name="update_mode"
                                         value="API" readonly>
                                     <input type="hidden" name="einvoice_irn" value="" id="einvoice_irn">
                                     <input type="hidden" name="invoice_id" value="" id="invoice_id">
                                     <input type="hidden" name="einvoice_id" value="" id="einvoice_id">
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
                                     <label for="vehicle_number" class="form-label">Vehicle Number</label>
                                     <input type="text" class="form-control" id="vehicle_number" name="vehicle_number"
                                         placeholder="KA01AB1234" required>
                                 </div>
                             </div>
-                        </div>
-                        <div class="row">
+                            
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label for="place_of_consignor" class="form-label">Place of Consignor</label>
@@ -368,8 +379,7 @@
                                         name="state_of_consignor" placeholder="UTTARAKHAND" required>
                                 </div>
                             </div>
-                        </div>
-                        <div class="row">
+                            
                             {{-- 
                             <div class="col-md-6">
                                 <div class="mb-3">
@@ -379,15 +389,16 @@
                                 </div>
                             </div> 
                             --}}
-                            <div class="col-md-6">
+                            {{-- <div class="col-md-6">
                                 <div class="mb-3">
                                     <label for="userGstin" class="form-label">User GSTIN</label>
                                     <input type="text" class="form-control" id="userGstin" name="userGstin"
                                         placeholder="05AAAPG7885R002" required>
                                 </div>
-                            </div>
-                        </div>
-                        <div class="row">
+                            </div> --}}
+                            
+                        {{-- 
+                        
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label for="tripshtNo" class="form-label">Trip Sheet No</label>
@@ -395,14 +406,28 @@
                                         value="0">
                                 </div>
                             </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6">
+                            --}}
+                        
+                            {{-- <div class="col-md-6">
                                 <div class="mb-3">
                                     <label for="vehicle_number_update_date" class="form-label">Vehicle Number Update
                                         Date</label>
                                     <input type="text" class="form-control" id="vehicle_number_update_date"
                                         name="vehicle_number_update_date" placeholder="12/12/2025 11:38:00 AM" required>
+                                </div>
+                            </div> --}}
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="transporter_name" class="form-label">Transporter Name</label>
+                                    <input type="text" class="form-control" id="transporter_name"
+                                        name="transporter_name" placeholder="Test Transporter" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="transporter_id" class="form-label">Transporter Name</label>
+                                    <input type="text" class="form-control" id="transporter_id"
+                                        name="transporter_id" placeholder="05AAABB0639G1Z8" value="05AAABB0639G1Z8" required>
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -417,8 +442,7 @@
                                     </select>
                                 </div>
                             </div>
-                        </div>
-                        <div class="row">
+                            
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label for="transporter_document_number" class="form-label">Transporter Document
@@ -435,15 +459,14 @@
                                         name="transporter_document_date" placeholder="12/12/2025" required>
                                 </div>
                             </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6">
+                            
+                            {{-- <div class="col-md-6">
                                 <div class="mb-3">
                                     <label for="group_number" class="form-label">Group Number</label>
                                     <input type="text" class="form-control" id="group_number" name="group_number"
                                         value="0">
                                 </div>
-                            </div>
+                            </div> --}}
                         </div>
                     </div>
                     <div class="modal-footer">
