@@ -1,0 +1,109 @@
+# Einvoice APIs List
+
+## 1. AuthToken
+- **Method:** POST
+- **URL:** https://sandb-api.mastersindia.co/api/v1/token-auth/
+- **Mandatory Fields:**
+  - username (Text(15), GSTIN of API User, Alphanum, Y)
+  - password (Text, Y)
+
+## 2. Generate Einvoice/IRN
+- **Method:** POST
+- **URL:** https://sandb-api.mastersindia.co/api/v1/einvoice/
+- **Mandatory Fields:**
+  - user_gstin (Text(15), GSTIN of API User, Alphanum, Y)
+  - transaction_details:
+    - supply_type (String(3-10), Type of Supply: B2B, SEZWP, SEZWOP, EXPWP, EXPWOP, DEXP, Y)
+  - document_details:
+    - document_type (String(3-11), Document Type: INV, CRN, DBN, Y)
+    - document_number (String(max 1-16), Document Number, Y)
+    - document_date (String(10), Document Date (DD/MM/YYYY), Y)
+  - seller_details:
+    - gstin (String(15), GSTIN, Y)
+    - legal_name (String(3-100), Legal Name, Y)
+    - address1 (String(3-100), Building/Flat no, Road/Street, Y)
+    - location (String(3-50), Location, Y)
+    - pincode (Number(6), Pincode, Y)
+    - state_code (String(3-50), State Name, Y)
+  - buyer_details:
+    - gstin (String(15), GSTIN of Buyer, PRO for Exporting ow, Y)
+    - legal_name (String(3-100), Legal Name, Y)
+    - place_of_supply (String(1-2), State code of Place of supply, Y)
+    - address1 (String(3-100), Address1 of the Buyer, Y)
+    - location (String(3-100), Location, Y)
+    - pincode (Number(6), Pincode, Y)
+    - state_code (String(3-50), State Name, Y)
+  - dispatch_details:
+    - company_name (String(3-60), Name of the company From The Goods are dispatched, Y)
+    - address1 (String(3-100), Address1 From Which entity of the Goods are dispatched, Y)
+    - location (String(3-100), Location, Y)
+    - pincode (Number(6), Pincode, Y)
+    - state_code (String(1-2), State code, Y)
+  - ship_details:
+    - legal_name (String(3-60), Legal Name, Y)
+    - address1 (String(3-100), Address1 of the entity to whom supplies are shipped to, Y)
+    - location (String(3-100), Place (City, Town, Village) entity to whom the supplies are shipped to, Y)
+    - pincode (Number(6), Pincode, Y)
+    - state_code (String(1-2), State Code to Which supplies are shipped to, Y)
+  - value_details:
+    - total_assessable_value (Number(0-9999999999999.99), Total Assessable value of items for, Y)
+    - total_invoice_value (Number(0-9999999999999.99), Final Invoice value, Y)
+  - item_list:
+    - item_serial_number (Number(1-6), Serial No. of Item, Y)
+    - is_service (String(1), Y-if Service (Supply type), N-If Goods (Supply Type), Y)
+    - hsn_code (String(4-8), HSN Code, Y)
+    - unit_price (Number(0-99,999,999.99), Unit Price - Rate, Y)
+    - total_amount (Number(0-99,999,999.99), Gross Amount (Unit Price * Quantity), Y)
+    - assessable_value (Number(0-9999999999999.99), Taxable Value (Total Amount - Discount), Y)
+    - gst_rate (Number(0-999.999), The GST rate, as represented Percentage That applied to the invoiced item. The Will IGST - only rate, Y)
+    - total_item_value (Number(0-99,999,999.99), Total Item Value = Assessable Amount *[1+(CGST Rate+SGST Rate+Cess Rate+State Cess Rate)] + Cess Non Advol Amount + State Ces Amt + + State Ces Non Advl Amt Other chrg, Y)
+
+## 3. Cancel Einvoice/IRN
+- **Method:** POST
+- **URL:** https://sandb-api.mastersindia.co/api/v1/cancel-einvoice/
+- **Mandatory Fields:**
+  - irn (String, IRN number)
+  - cancel_reason (String, Cancel reason)
+  - cancel_remarks (String, Cancel Remarks)
+
+## 4. Generate e-Way Bill by IRN
+- **Method:** POST
+- **URL:** https://sandb-api.mastersindia.co/api/v1/gen-ewb-by-irn/
+- **Mandatory Fields:**
+  - irn (String, IRN number)
+  - transportation_mode (String, Mode of transport (Road-1, Rail-2, Air-3, Ship-4))
+
+## 5. Get Einvoice Details By IRN
+- **Method:** GET
+- **URL:** https://sandb-api.mastersindia.co/api/v1/get-einvoice?gstin={gstin}&irn={irn}
+- **Mandatory Fields:** None (parameters in URL)
+
+## 6. Get Einvoice Details By Doc Details
+- **Method:** GET
+- **URL:** https://sandb-api.mastersindia.co/api/v1/get-einvoice-bydoc?user_gstin={user_gstin}&document_type={document_type}&document_number={document_number}&document_date={document_date}
+- **Mandatory Fields:** None (parameters in URL)
+
+## 7. Get e-Waybill Details by IRN
+- **Method:** GET
+- **URL:** https://sandb-api.mastersindia.co/api/v1/get-ewb-byirn?user_gstin={user_gstin}&irn={irn}
+- **Mandatory Fields:** None (parameters in URL)
+
+## 8. Get GSTIN Details
+- **Method:** GET
+- **URL:** https://sandb-api.mastersindia.co/api/v1/get-gstin-details?user_gstin={user_gstin}&gstin={gstin}
+- **Mandatory Fields:** None (parameters in URL)
+
+## 9. Sync GSTIN Details from CP
+- **Method:** GET
+- **URL:** https://sandb-api.mastersindia.co/api/v1/sync-gstin?user_gstin={user_gstin}&gstin={gstin}
+- **Mandatory Fields:** None (parameters in URL)
+
+## 10. Generate E-Invoice in Bulk
+- **Method:** POST
+- **URL:** https://sandb-api.mastersindia.co/api/v1/einvoiceGenerateInBulk/
+- **Mandatory Fields:** einvoice_list (array of einvoice objects, each with mandatory fields as in #2)
+
+## 10A. Get Bulk E-Invoice Response
+- **Method:** GET
+- **URL:** https://sandb-api.mastersindia.co/api/v1/getBulkEinvoiceResponse?request_id={request_id}
+- **Mandatory Fields:** None (parameter in URL)

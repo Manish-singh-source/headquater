@@ -1,0 +1,131 @@
+# E-Invoice and E-Way Bill Integration Process
+
+## Overview
+This document outlines the process for integrating E-Invoice and E-Way Bill functionality into the existing software. The software already includes Product Master, Warehouse Master, Customer Masters, Sales Order, Purchase Order, and Invoice PDF Generation. E-Invoice and E-Way Bill will be added as post-invoice operations.
+
+## Prerequisites
+- Company Master: Must include GSTIN, legal name, address, location, pincode, state code.
+- Customer Master: GSTIN, legal name, address, location, pincode, state code, place of supply.
+- Product Master: HSN code, GST rate, unit price, etc.
+- Invoice Module: Generates invoice with document number, date, items, totals.
+
+## Data Mapping
+- Seller Details: From Company Master.
+- Buyer Details: From Customer Master.
+- Item List: From Product Master and invoice items.
+- Document Details: From invoice (number, date, type).
+- Dispatch/Ship Details: Use buyer address or add fields for custom dispatch/ship addresses.
+- Value Details: From invoice totals.
+- Transportation Details: New fields for e-way bill.
+
+## UI Elements
+
+### Invoice View Page
+- Display E-Invoice Status: Not Generated / Generated (with IRN) / Cancelled
+- Display E-Way Bill Status: Not Generated / Generated (with EWB Number) / Cancelled
+- Buttons:
+  - Generate E-Invoice (enabled if not generated)
+  - Cancel E-Invoice (enabled if generated)
+  - Generate E-Way Bill (enabled if e-invoice generated and not cancelled)
+  - Cancel E-Way Bill (enabled if generated)
+  - Update Vehicle (for e-way bill)
+  - Extend Validity (for e-way bill)
+
+### E-Invoice Generation Form
+- Pre-filled Fields:
+  - User GSTIN: From warehouse
+  - Supply Type: Dropdown (B2B, etc.)
+
+  - Document Type: INV
+  - Document Number: From invoice
+  - Document Date: From invoice
+  
+  - Seller Details: GSTIN, Legal Name, Address1, Location, Pincode, State Code (from company)
+  - Buyer Details: GSTIN, Legal Name, Place of Supply, Address1, Location, Pincode, State Code (from customer)
+  - Dispatch Details: Company Name, Address1, Location, Pincode, State Code (from company or custom)
+  - Ship Details: Legal Name, Address1, Location, Pincode, State Code (from buyer or custom)
+  - Value Details: Total Assessable Value, Total Invoice Value (from invoice)
+  - Item List: Serial Number, Is Service, HSN Code, Unit Price, Total Amount, Assessable Value, GST Rate, Total Item Value (from invoice items)
+- Additional Fields: If any missing, allow input.
+- Button: Generate E-Invoice
+
+### E-Way Bill Generation Form
+- Pre-filled Fields:
+  - IRN: From generated e-invoice
+  - Transportation Mode: Dropdown (Road-1, Rail-2, etc.)
+  - Transportation Distance: Input
+  - Transporter ID: Input
+  - Vehicle Number: Input
+  - Other details from e-invoice data
+- Button: Generate E-Way Bill
+
+### Cancel Forms
+- For E-Invoice: IRN, Cancel Reason, Cancel Remarks
+- For E-Way Bill: EWB Number, Cancel Reason, Cancel Remarks
+
+## Step-by-Step Process
+
+### 1. Invoice Creation
+- User creates sales order.
+- Converts sales order to invoice.
+- Generates PDF.
+- Saves invoice record.
+
+### 2. E-Invoice Generation
+- On invoice page, status shows "E-Invoice: Not Generated".
+- User clicks "Generate E-Invoice".
+- System opens E-Invoice Form with pre-filled data.
+- User reviews and edits if necessary.
+- Clicks "Generate E-Invoice".
+- System validates fields.
+- Calls API: POST /api/v1/einvoice/ with payload.
+- If success: Receives IRN, updates invoice record with IRN and status "Generated".
+- Shows success message with IRN.
+- Enables "Cancel E-Invoice" and "Generate E-Way Bill" buttons.
+- If error: Shows error message, allows retry.
+
+### 3. E-Way Bill Generation
+- If e-invoice generated, status shows "E-Way Bill: Not Generated".
+- User clicks "Generate E-Way Bill".
+- System opens E-Way Bill Form with IRN pre-filled.
+- User inputs transportation details.
+- Clicks "Generate E-Way Bill".
+- System calls API: POST /api/v1/gen-ewb-by-irn/ or /api/v1/ewayBillsGenerate/.
+- If success: Receives EWB Number, updates record.
+- Shows success message.
+- Enables cancel and update buttons.
+- If error: Shows error, retry.
+
+### 4. Cancellation
+- For E-Invoice: Click "Cancel E-Invoice", fill reason/remarks, call API /cancel-einvoice/.
+- Update status to Cancelled, disable other buttons.
+- For E-Way Bill: Similar, API /ewayBillCancel/.
+
+### 5. Get Details
+- Click "Get E-Invoice Details": Call GET /get-einvoice?gstin=...&irn=..., display response.
+- Click "Get E-Way Bill Details": Call GET /getEwayBillData/?action=GetEwayBill&gstin=...&eway_bill_number=..., display.
+
+### 6. Updates for E-Way Bill
+- Update Vehicle: Form for new vehicle details, call /updateVehicleNumber/.
+- Extend Validity: Form for extension details, call /ewayBillValidityExtend/.
+
+### 7. Bulk Operations
+- For multiple invoices: Select invoices, "Bulk Generate E-Invoices" button.
+- System collects data for each, calls bulk API /einvoiceGenerateInBulk/.
+- Poll for response with request_id.
+- Similar for e-way bills.
+
+## Error Handling
+- Validate all mandatory fields before API call.
+- If API returns error, display message (e.g., invalid GSTIN).
+- Log errors for debugging.
+- Allow retry after fixing issues.
+
+## Status Tracking
+- Invoice table: Add columns for E-Invoice Status, IRN, E-Way Bill Status, EWB Number.
+- Update statuses after each operation.
+
+## Additional Features
+- Sync GSTIN Details: Button to sync from API.
+- Distance Calculation: Use API /distance/ for auto-fill distance.
+- Reports: Add reports for generated e-invoices and e-way bills.

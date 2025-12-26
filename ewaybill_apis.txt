@@ -1,0 +1,215 @@
+EWayBill and EInvoice APIs List with Mandatory Fields
+
+EWayBill APIs:
+
+API #1: AuthToken
+Method: POST
+URL: https://sandb-api.mastersindia.co/api/v1/token-auth/
+Mandatory Fields: username, password
+
+API #2: GenerateEwaybill
+Method: POST
+URL: https://sandb-api.mastersindia.co/api/v1/ewayBillsGenerate/
+Mandatory Fields: userGstin, supply_type, sub_supply_type, document_type, document_number, document_date, gstin_of_consignor, pincode_of_consignor, state_of_consignor, gstin_of_consignee, place_of_consignee, pincode_of_consignee, state_of_supply, taxable_amount, transportation_mode, transportation_distance, transporter_id, vehicle_number, product_name, hsn_code, quantity, unit_of_product, taxable_amount (item level), cgst_rate, sgst_rate, igst_rate
+
+API #3: CancelEwaybill
+Method: POST
+URL: https://sandb-api.mastersindia.co/api/v1/ewayBillCancel/
+Mandatory Fields: userGstin, eway_bill_number, reason_of_cancel, cancel_remark, data_source
+
+API #4: EWBpartBupdate-Updatevehiclenumber
+Method: POST
+URL: https://sandb-api.mastersindia.co/api/v1/updateVehicleNumber/
+Mandatory Fields: userGstin, eway_bill_number, vehicle_number, vehicle_type, place_of_consignor, state_of_consignor, reason_code_for_vehicle_updation, reason_for_vehicle_updation, transporter_document_number, transporter_document_date, mode_of_transport, data_source
+
+API #5: ExtendValidityofE-WayBill
+Method: POST
+URL: https://sandb-api.mastersindia.co/api/v1/ewayBillValidityExtend/
+Mandatory Fields: userGstin, eway_bill_number, vehicle_number, place_of_consignor, state_of_consignor, remaining_distance, transporter_document_number, transporter_document_date, mode_of_transport, extend_validity_reason, extend_remarks, consignment_status, from_pincode, transit_type, address_line1, address_line2, address_line3
+
+API #6: UpdateTransporterID
+Method: POST
+URL: https://sandb-api.mastersindia.co/api/v1/transporterIdUpdate/
+Mandatory Fields: userGstin, eway_bill_number, transporter_id, transporter_name
+
+API #7: GETEWBDetails
+Method: GET
+URL: https://sandb-api.mastersindia.co/api/v1/getEwayBillData/?action=GetEwayBill&gstin={gstin}&eway_bill_number={eway_bill_number}
+Mandatory Fields: gstin, eway_bill_number
+
+API #8: RejectE-WayBill
+Method: POST
+URL: https://sandb-api.mastersindia.co/api/v1/ewayBillReject/
+Mandatory Fields: userGstin, eway_bill_number, data_source
+
+API #9: GenerateConsolidateEWayBill
+Method: POST
+URL: https://sandb-api.mastersindia.co/api/v1/consolidatedEwayBillsGenerate/
+Mandatory Fields: userGstin, place_of_consignor, state_of_consignor, vehicle_number, mode_of_transport, transporter_document_number, transporter_document_date, data_source, list_of_eway_bills (with eway_bill_number)
+
+API #9A: RegenerateConsolidateEWayBill
+Method: POST
+URL: https://sandb-api.mastersindia.co/api/v1/consolidatedEwayBillsRegenerate/
+Mandatory Fields: userGstin, consolidated_eway_bill_number, place_of_consignor, state_of_consignor, vehicle_number, mode_of_transport, transporter_document_number, transporter_document_date, reason_of_cancel, reason_for_updation
+
+API #10: MultiVehicle-InitiateMultiVehicle
+Method: POST
+URL: https://sandb-api.mastersindia.co/api/v1/multiVehicleMovement/
+Mandatory Fields: userGstin, eway_bill_number, reason_code_for_vehicle_updation, reason_for_vehicle_updation, place_of_consignor, state_of_consignor, place_of_consignee, state_of_consignee, mode_of_transport, total_quantity, unit_code, data_source
+
+API #10A: MultiVehicle-AddMultiVehicles
+Method: POST
+URL: https://sandb-api.mastersindia.co/api/v1/addvehiclesDetailsforMultiVehicle/
+Mandatory Fields: userGstin, eway_bill_number, group_number, vehicle_number, transporter_document_number, transporter_document_date, quantity, data_source
+
+API #10B: MultiVehicle-ChangeMultiVehicles
+Method: POST
+URL: https://sandb-api.mastersindia.co/api/v1/changeVehiclesDetailsforMultiVehicle/
+Mandatory Fields: userGstin, eway_bill_number, group_number, old_vehicle_number, new_vehicle_number, old_transporter_document_number, new_transporter_document_number, place_of_consignor, state_of_consignor, reason_code_for_vehicle_updation, reason_for_vehicle_updation, data_source
+
+API #11: GetOtherPartyEWB
+Method: GET
+URL: https://sandb-api.mastersindia.co/api/v1/getEwayBillData/?action=GetEwayBillsofOtherParty&gstin={gstin}&generated_date={date}
+Mandatory Fields: gstin, generated_date
+
+API #12: GetConsolidatedEWB
+Method: GET
+URL: https://sandb-api.mastersindia.co/api/v1/getEwayBillData/?action=GetTripSheet&gstin={gstin}&consolidated_eway_bill_number={number}
+Mandatory Fields: gstin, consolidated_eway_bill_number
+
+API #13: GetGSTINDetails
+Method: GET
+URL: https://sandb-api.mastersindia.co/api/v1/getEwayBillData/?action=GetGSTINDetails&userGstin={userGstin}&gstin={gstin}
+Mandatory Fields: userGstin, gstin
+
+API #14: GetTransporterDetails
+Method: GET
+URL: https://sandb-api.mastersindia.co/api/v1/getEwayBillData/?action=GetGSTINDetails&userGstin={userGstin}&gstin={gstin}
+Mandatory Fields: userGstin, gstin
+
+API #15: GETHSNDetails
+Method: GET
+URL: https://sandb-api.mastersindia.co/api/v1/getEwayBillData/?action=GetHsnDetailsByHsnCode&gstin={gstin}&hsncode={hsncode}
+Mandatory Fields: gstin, hsncode
+
+API #16: GetEWBByConsignor
+Method: GET
+URL: https://sandb-api.mastersindia.co/api/v1/getEwayBillData/?action=GetEwayBillGeneratedByConsigner&gstin={gstin}&document_number={doc_number}&document_type={doc_type}
+Mandatory Fields: gstin, document_number, document_type
+
+API #17: GetEWBByDate
+Method: GET
+URL: https://sandb-api.mastersindia.co/api/v1/getEwayBillData/?action=GetEwayBillsByDate&gstin={gstin}&generated_date={date}
+Mandatory Fields: gstin, generated_date
+
+API #18: GetEwayBillsRejectedByOthers
+Method: GET
+URL: https://sandb-api.mastersindia.co/api/v1/getEwayBillData/?action=GetEwayBillsRejectedByOthers&gstin={gstin}&generated_date={date}
+Mandatory Fields: gstin, generated_date
+
+API #19: GetEWBByTransporter1-bydateandstatecode
+Method: GET
+URL: https://sandb-api.mastersindia.co/api/v1/getEwayBillData/?action=GetEwayBillsForTransporterByState&gstin={gstin}&generated_date={date}&state_code={code}
+Mandatory Fields: gstin, generated_date, state_code
+
+API #20: GetEWBByTransporter2-bytransportationwithinstate&date
+Method: GET
+URL: https://sandb-api.mastersindia.co/api/v1/getEwayBillData/?action=GetEwayBillsForTransporter&gstin={gstin}&generated_date={date}
+Mandatory Fields: gstin, generated_date
+
+API #21: GetEWBByTransporter3-BysupplierGSTIN&date
+Method: GET
+URL: https://sandb-api.mastersindia.co/api/v1/getEwayBillData/?action=GetEwayBillsForTransporterByGstin&gstin={gstin}&eway_bill_generator_gstin={generator_gstin}&generated_date={date}
+Mandatory Fields: gstin, eway_bill_generator_gstin, generated_date
+
+API #22: GetEWBByTransporter4-BydateofassignmentofEWayBillandstatecode
+Method: GET
+URL: https://sandb-api.mastersindia.co/api/v1/getEwayBillData/?action=GetEwayBillReportByTransporterassignedDate&gstin={gstin}&assigned_date={date}&state_code={code}
+Mandatory Fields: gstin, assigned_date, state_code
+
+API #23: DistanceAPI
+Method: GET
+URL: https://sandb-api.mastersindia.co/api/v1/distance/?fromPincode={from}&toPincode={to}
+Mandatory Fields: fromPincode, toPincode
+
+API #24: ReturnStatus(BlockedandUnblocked)
+Method: POST
+URL: https://sandb-api.mastersindia.co/api/v1/returnStatus/
+Mandatory Fields: user_gstin, GSTIN_Status, gstin_list (with gstin)
+
+API #25: GenerateE-WayBillInBulk
+Method: POST
+URL: https://sandb-api.mastersindia.co/api/v1/ewayBillsGenerateInBulk/
+Mandatory Fields: ewayBillList (array of ewaybill objects with fields similar to #2)
+
+API #25A: GetBulkE-WayBillResponse
+Method: GET
+URL: https://sandb-api.mastersindia.co/api/v1/getBulkEwayBillsResponse/?request_id={id}
+Mandatory Fields: request_id
+
+API #26: GenerateE-WayRequestinBulk-Generate/Update/Extend
+Method: POST
+URL: https://sandb-api.mastersindia.co/api/v1/bulkEwayApiRequest/
+Mandatory Fields: action, list (array of requests)
+
+API #26A: GetE-WayResponseinBulk
+Method: GET
+URL: https://sandb-api.mastersindia.co/api/v1/bulkEwayApiResponse?request_id={id}
+Mandatory Fields: request_id
+
+EInvoice APIs:
+
+API #1: AuthToken
+Method: POST
+URL: https://sandb-api.mastersindia.co/api/v1/token-auth/
+Mandatory Fields: username, password
+
+API #2: GenerateEinvoice/IRN
+Method: POST
+URL: https://sandb-api.mastersindia.co/api/v1/einvoice/
+Mandatory Fields: user_gstin, transaction_details.supply_type, document_details.document_type, document_details.document_number, document_details.document_date, seller_details.gstin, seller_details.legal_name, seller_details.address1, seller_details.location, seller_details.pincode, seller_details.state_code, buyer_details.gstin, buyer_details.legal_name, buyer_details.place_of_supply, buyer_details.address1, buyer_details.location, buyer_details.pincode, buyer_details.state_code, dispatch_details.company_name, dispatch_details.address1, dispatch_details.location, dispatch_details.pincode, dispatch_details.state_code, ship_details.legal_name, ship_details.address1, ship_details.location, ship_details.pincode, ship_details.state_code, export_details.country_code, reference_details.document_period_details.invoice_period_start_date, reference_details.document_period_details.invoice_period_end_date, ewaybill_details.transportation_mode, ewaybill_details.transportation_distance, value_details.total_assessable_value, value_details.total_invoice_value, item_list.item_serial_number, item_list.is_service, item_list.hsn_code, item_list.unit_price, item_list.total_amount, item_list.assessable_value, item_list.gst_rate, item_list.total_item_value
+
+API #3: CancelEinvoice/IRN
+Method: POST
+URL: https://sandb-api.mastersindia.co/api/v1/cancel-einvoice/
+Mandatory Fields: user_gstin, irn, cancel_reason, cancel_remarks
+
+API #4: Generatee-WayBillbyIRN
+Method: POST
+URL: https://sandb-api.mastersindia.co/api/v1/gen-ewb-by-irn/
+Mandatory Fields: user_gstin, irn, transporter_id, transportation_mode, distance
+
+API #5: GetEinvoiceDetailsByIRN
+Method: GET
+URL: https://sandb-api.mastersindia.co/api/v1/get-einvoice?gstin={gstin}&irn={irn}
+Mandatory Fields: gstin, irn
+
+API #6: GetEinvoiceDetailsByDocDetails
+Method: GET
+URL: https://sandb-api.mastersindia.co/api/v1/get-einvoice-bydoc?user_gstin={user_gstin}&document_type={type}&document_number={number}&document_date={date}
+Mandatory Fields: user_gstin, document_type, document_number, document_date
+
+API #7: Gete-WaybillDetailsbyIRN
+Method: GET
+URL: https://sandb-api.mastersindia.co/api/v1/get-ewb-byirn?user_gstin={user_gstin}&irn={irn}
+Mandatory Fields: user_gstin, irn
+
+API #8: GetGSTINDetails
+Method: GET
+URL: https://sandb-api.mastersindia.co/api/v1/get-gstin-details?user_gstin={user_gstin}&gstin={gstin}
+Mandatory Fields: user_gstin, gstin
+
+API #9: SyncGSTINDetailsfromCP
+Method: GET
+URL: https://sandb-api.mastersindia.co/api/v1/sync-gstin?user_gstin={user_gstin}&gstin={gstin}
+Mandatory Fields: user_gstin, gstin
+
+API #10: GenerateE-InvoiceinBulk
+Method: POST
+URL: https://sandb-api.mastersindia.co/api/v1/einvoiceGenerateInBulk/
+Mandatory Fields: einvoice_list (array of einvoice objects with fields similar to #2)
+
+API #10A: GetBulkE-InvoiceResponse
+Method: GET
+URL: https://sandb-api.mastersindia.co/api/v1/getBulkEinvoiceResponse?request_id={id}
+Mandatory Fields: request_id
