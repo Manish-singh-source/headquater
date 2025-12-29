@@ -173,13 +173,14 @@ class InvoiceController extends Controller
 
         // Generate QR code from IRN if available
         $qrCodeImage = null;
-        if ($invoice->signed_qr_code) {
-            $qrCodeImage = $this->generateQRCode($invoice->signed_qr_code);
+        if ($eInvoice->signed_qr_code) {
+            $qrCodeImage = $this->generateQRCode($eInvoice->signed_qr_code);
         }
 
         $data = [
             'title' => 'E-Invoice',
             'invoice' => $invoice,
+            'eInvoice' => $eInvoice,
             'invoiceDetails' => $invoiceDetails,
             'salesOrderProducts' => $salesOrderProducts,
             'TotalWeight' => $totalWeight,
@@ -188,8 +189,7 @@ class InvoiceController extends Controller
             'invoiceItemType' => $invoice->invoice_item_type ?? 'product',
             'qrCodeImage' => $qrCodeImage,
         ];
-        // dd($data);
-        $pdf = \PDF::loadView('invoice/einvoice-pdf', ['image' => $base64Image, 'image1' => $base643Image] + $data);
+    $pdf = \PDF::loadView('invoice/einvoice-pdf', ['image' => $base64Image, 'image1' => $base643Image] + $data);
         $pdf->setPaper('a4');
 
         return $pdf->stream('e-invoice.pdf');
@@ -873,7 +873,7 @@ class InvoiceController extends Controller
                 'cgst_amount' => $cgstAmount,
                 'sgst_amount' => $sgstAmount,
                 'igst_amount' => $igstAmount,
-                'total_item_value' => $totalItemValue,
+                'total_item_value' => number_format($totalItemValue, 2, '.', ''),
             ];
         }
 
@@ -925,15 +925,16 @@ class InvoiceController extends Controller
                 'state_code' => $buyerStateCode,
             ],
             'value_details' => [
-                'total_assessable_value' => collect($itemList)->sum('assessable_value'),
-                'total_cgst_value' => collect($itemList)->sum('cgst_amount'),
-                'total_sgst_value' => collect($itemList)->sum('sgst_amount'),
-                'total_igst_value' => collect($itemList)->sum('igst_amount'),
+                'total_assessable_value' => number_format(collect($itemList)->sum('assessable_value'), 2, '.', ''),
+                'total_cgst_value' => number_format(collect($itemList)->sum('cgst_amount'), 2, '.', ''),
+                'total_sgst_value' => number_format(collect($itemList)->sum('sgst_amount'), 2, '.', ''),
+                // Ensure total IGST is formatted to two decimals so it matches /^\d+\.?\d{0,2}$/
+                'total_igst_value' => number_format(collect($itemList)->sum('igst_amount'), 2, '.', ''),
                 'total_cess_value' => 0,
                 'total_cess_value_of_state' => 0,
                 'total_discount' => $invoice->discount_amount ?? 0,
                 'total_other_charge' => 0,
-                'total_invoice_value' => collect($itemList)->sum('assessable_value') + collect($itemList)->sum('igst_amount') - ($invoice->discount_amount ?? 0) + ($invoice->round_off ?? 0),
+                'total_invoice_value' => number_format(collect($itemList)->sum('assessable_value') + collect($itemList)->sum('igst_amount') - ($invoice->discount_amount ?? 0) + ($invoice->round_off ?? 0), 2, '.', '' ),
                 'round_off_amount' => $invoice->round_off ?? 0,
             ],
             'item_list' => $itemList,
@@ -1141,7 +1142,7 @@ class InvoiceController extends Controller
                         'ewaybill_pdf' => $message['EwaybillPdf'] ?? null,
                     ]);
 
-                    if(!$ewaybill){
+                    if (!$ewaybill) {
                         DB::rollBack();
                         return redirect()->back()->with('error', 'Failed to generate e-way bill.');
                     }
@@ -1157,7 +1158,7 @@ class InvoiceController extends Controller
                         'state_of_consignor' => $stateOfConsignor,
                     ]);
 
-                    if(!$transportDetail){
+                    if (!$transportDetail) {
                         DB::rollBack();
                         return redirect()->back()->with('error', 'Failed to generate e-way bill.');
                     }

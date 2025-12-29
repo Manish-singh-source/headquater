@@ -425,7 +425,7 @@
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label for="transporter_id" class="form-label">Transporter Name</label>
+                                    <label for="transporter_id" class="form-label">Transporter ID(GSTIN)</label>
                                     <input type="text" class="form-control" id="transporter_id"
                                         name="transporter_id" placeholder="05AAABB0639G1Z8" value="05AAABB0639G1Z8" required>
                                 </div>
@@ -455,7 +455,7 @@
                                 <div class="mb-3">
                                     <label for="transporter_document_date" class="form-label">Transporter Document
                                         Date</label>
-                                    <input type="text" class="form-control" id="transporter_document_date"
+                                    <input type="date" class="form-control" id="transporter_document_date"
                                         name="transporter_document_date" placeholder="12/12/2025" required>
                                 </div>
                             </div>

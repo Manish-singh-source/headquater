@@ -224,20 +224,20 @@
 
 
     <!-- E-Invoice Information -->
-    @if($invoice->irn)
+    @if($eInvoice->irn)
     <table class="einvoice-info">
         <tr>
            <td colspan="4" class="title">E-Invoice</td>
         </tr>
         <tr class="invoice-table">
             <td><b>IRN:</b></td>
-            <td colspan="3">{{ $invoice->irn }}</td>
+            <td colspan="3">{{ $eInvoice->irn }}</td>
         </tr>
         <tr class="invoice-table">
             <td><b>Ack No:</b></td>
-            <td>{{ $invoice->ack_no }}</td>
+            <td>{{ $eInvoice->ack_no }}</td>
             <td><b>Ack Date:</b></td>
-            <td>{{ $invoice->ack_dt ? date('d-m-Y H:i:s', strtotime($invoice->ack_dt)) : '' }}</td>
+            <td>{{ $eInvoice->ack_dt ? date('d-m-Y H:i:s', strtotime($eInvoice->ack_dt)) : '' }}</td>
         </tr>
         {{-- <tr class="invoice-table">
             <td><b>Status:</b></td>
