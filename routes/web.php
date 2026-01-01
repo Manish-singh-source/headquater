@@ -267,7 +267,7 @@ Route::middleware(['auth'])->group(function () {
     // Track order
     Route::controller(TrackOrderController::class)->group(function () {
         Route::get('/track-order', 'index')->name('trackOrder.index');
-        Route::post('/track-order', 'index')->name('trackOrder.index');
+        Route::post('/track-order', 'index')->name('trackOrder.search');
         Route::get('/track-order/{id}', 'view')->name('trackOrder.view');
     });
 

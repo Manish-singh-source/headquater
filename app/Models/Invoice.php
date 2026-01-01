@@ -91,7 +91,7 @@ class Invoice extends Model
     }
 
     public function einvoices() {
-        return $this->hasMany(Einvoice::class);
+        return $this->hasMany(EInvoice::class);
     }
 
     public function ewaybills() {

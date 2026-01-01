@@ -16,7 +16,7 @@
                 </div>
 
                 <div class="card-body">
-                    <form action="{{ route('trackOrder.index') }}" method="POST">
+                    <form action="{{ route('trackOrder.search') }}" method="POST">
                         @csrf
                         @method('POST')
                         <div class="d-flex gap-3 justify-content-start align-items-end">
