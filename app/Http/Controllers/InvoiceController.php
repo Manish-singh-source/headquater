@@ -1403,7 +1403,7 @@ class InvoiceController extends Controller
     private function getEInvoiceToken()
     {
         try {
-            $response = Http::post('https://sandb-api.mastersindia.co/api/v1/token-auth/', [
+            $response = Http::post('https://sandb-api.mastersindia.co/api/v1/token-auth', [
                 'username' => env('EINVOICE_API_USERNAME'),
                 'password' => env('EINVOICE_API_PASSWORD'),
             ]);

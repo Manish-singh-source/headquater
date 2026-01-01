@@ -35,7 +35,7 @@ class EInvoice extends Model
     }
 
     public function ewaybills() {
-        return $this->hasMany(EWaybill::class, 'einvoice_id', 'id');
+        return $this->hasMany(Ewaybill::class, 'einvoice_id', 'id');
     }
 
     public function isActive() {
