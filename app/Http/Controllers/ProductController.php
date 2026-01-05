@@ -150,6 +150,11 @@ class ProductController extends Controller
                 $netLandingRate = $this->calculateNetLandingRate($basicRate, $gst);
                 $casePackQuantity = ((int) ($record['PCS/Set'] ?? 0)) * ((int) ($record['Sets/CTN'] ?? 0));
 
+                // Ensure weight is always a float (default 0 if empty or not numeric)
+                $weight = isset($record['Weight (Single Box)']) && is_numeric($record['Weight (Single Box)'])
+                    ? (float) $record['Weight (Single Box)']
+                    : 0;
+
                 $existingProduct = Product::where('sku', $sku)->where('warehouse_id', $request->warehouse_id)->first();
 
                 if ($existingProduct) {
@@ -167,7 +172,7 @@ class ProductController extends Controller
                         'category' => $record['Category'] ?? '',
                         'pcs_set' => $record['PCS/Set'] ?? '',
                         'sets_ctn' => $record['Sets/CTN'] ?? '',
-                        'weight' => $record['Weight (Single Box)'] ?? '',
+                        'weight' => $weight,
                         'gst' => $record['GST'] ?? '',
                         'hsn' => $record['HSN'] ?? '',
                         'basic_rate' => isset($record['Basic Rate']) ? intval($record['Basic Rate']) : '',
@@ -265,6 +270,11 @@ class ProductController extends Controller
                 $netLandingRate = $this->calculateNetLandingRate($basicRate, $gst);
                 $casePackQuantity = ((int) ($record['PCS/Set'] ?? 0)) * ((int) ($record['Sets/CTN'] ?? 0));
 
+                // Ensure weight is always a float (default 0 if empty or not numeric)
+                $weight = isset($record['Weight (Single Box)']) && is_numeric($record['Weight (Single Box)'])
+                    ? (float) $record['Weight (Single Box)']
+                    : 0;
+
                 $products[] = [
                     'warehouse_id' => Arr::get($record, 'Warehouse Id') ?? '',
                     'sku' => Arr::get($record, 'SKU Code') ?? '',
@@ -275,7 +285,7 @@ class ProductController extends Controller
                     'category' => Arr::get($record, 'Category') ?? '',
                     'pcs_set' => Arr::get($record, 'PCS/Set') ?? '',
                     'sets_ctn' => Arr::get($record, 'Sets/CTN') ?? '',
-                    'weight' => Arr::get($record, 'Weight (Single Box)') ?? '',
+                    'weight' => $weight,
                     'gst' => Arr::get($record, 'GST') ?? '',
                     'hsn' => Arr::get($record, 'HSN') ?? '',
 
