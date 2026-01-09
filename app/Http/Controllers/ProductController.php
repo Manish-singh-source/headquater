@@ -545,16 +545,18 @@ class ProductController extends Controller
         DB::beginTransaction();
 
         try {
-            $skus = Product::whereIn('id', $ids)->pluck('sku')->toArray();
+            $products = Product::whereIn('id', $ids)
+                ->select('sku', 'warehouse_id')
+                ->get();
 
-            // Delete related warehouse stocks
-            if (! empty($skus)) {
-                WarehouseStock::whereIn('sku', $skus)->delete();
+            // Delete EXACT matches only
+            foreach ($products as $product) {
+                WarehouseStock::where('sku', $product->sku)
+                    ->where('warehouse_id', $product->warehouse_id)
+                    ->delete();
             }
 
-            // Delete products
             $deleted = Product::destroy($ids);
-
             DB::commit();
 
             // Log activity
