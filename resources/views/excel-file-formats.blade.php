@@ -80,7 +80,7 @@
                                     <span><b>Custom Customer PO</b></span>
                                     <span>
                                         <a href="{{ asset('uploads/excel-formats/custom-purchase-order.xlsx') }}"
-                                            download="sku-mapping.xlsx" class="btn btn-sm border-2 border-primary">
+                                            download="custom-purchase-order.xlsx" class="btn btn-sm border-2 border-primary">
                                             <i class="fas fa-file-excel me-1"></i> Download
                                         </a>
                                     </span>
@@ -100,7 +100,7 @@
                                     <span><b>Customer Return</b></span>
                                     <span>
                                         <a href="{{ asset('uploads/excel-formats/customer-return.xlsx') }}"
-                                            download="customers-po.xlsx" class="btn btn-sm border-2 border-primary">
+                                            download="customers-return.xlsx" class="btn btn-sm border-2 border-primary">
                                             <i class="fas fa-file-excel me-1"></i> Download
                                         </a>
                                     </span>
