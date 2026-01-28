@@ -438,7 +438,11 @@ class SalesOrderController extends Controller
                 $saveOrderProduct->price = $record['Basic Rate'] ?? null;
                 // what is exactly subtotal ??
                 // basic rate * po quantity(customers quantity) or basic rate * purchase order quantity(vendors quantity)
-                $saveOrderProduct->box_count = ($record['PO Quantity'] ?? 0) / ($casePackQty ?? 1);
+                if ($casePackQty > 0) {
+                    $saveOrderProduct->box_count = ceil($poQty / $casePackQty);
+                } else {
+                    $saveOrderProduct->box_count = 0;
+                }
                 $saveOrderProduct->subtotal = ($record['Basic Rate'] ?? 0) * ($record['PO Quantity'] ?? 0);
                 $saveOrderProduct->save();
 
