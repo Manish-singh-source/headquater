@@ -536,7 +536,11 @@ class PackagingController extends Controller
                         $proportion = $allocation->allocated_quantity / $totalAllocated;
                         $allocation->final_dispatched_quantity = (int) ($finalDispatchQty * $proportion);
                         // $allocation->box_count = (int) ($boxCount * $proportion);
-                        $allocation->box_count = (float) ($allocation->final_dispatched_quantity / $casePackQuantity);
+                        if ($casePackQuantity > 0) {
+                            $allocation->box_count = ceil($$allocation->final_dispatched_quantity / $casePackQuantity);
+                        } else {
+                            $allocation->box_count = 0;
+                        }
                         $allocation->weight = (float) ($weight * $proportion);
                         $allocation->product_status = 'packaged';
                     } else {
@@ -555,7 +559,11 @@ class PackagingController extends Controller
                     $productInfo = Product::where('sku', $userAllocation->sku)->first();
                     $userAllocation->final_dispatched_quantity = $finalDispatchQty;
                     // $userAllocation->box_count = $boxCount;
-                    $userAllocation->box_count = (float) ($finalDispatchQty / $productInfo->case_pack_quantity);
+                    if ($productInfo->case_pack_quantity > 0) {
+                        $userAllocation->box_count = ceil($$finalDispatchQty / $productInfo->case_pack_quantity);
+                    } else {
+                        $userAllocation->box_count = 0;
+                    }
                     $userAllocation->weight = $weight;
                     $userAllocation->product_status = 'packaged';
                     $userAllocation->save();

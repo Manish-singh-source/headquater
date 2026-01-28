@@ -942,7 +942,7 @@ class PurchaseOrderController extends Controller
                         'HSN' => $order->tempOrderFetch->hsn ?? '',
                         'PO Quantity' => $order->ordered_quantity ?? '',
                         'PI Quantity' => '',
-                        'Purchase Rate Basic' => $order->product->vendor_purchase_rate ?? '',
+                        'Purchase Rate Basic' => round((float) ($order->product->vendor_purchase_rate ?? 0), 2),
                     ])
                 );
             }
