@@ -1899,24 +1899,48 @@ class SalesOrderController extends Controller
                     $productStockCache[$sku]['available'] = 0;
                 }
 
+
                 if ($stockEntry) {
-                    $casePackQty = (int) $stockEntry->product->pcs_set * (int) $stockEntry->product->sets_ctn;
-
-                    $gst = ($record['GST'] < 1 && $record['GST'] > 0)
-                        ? intval(round($record['GST'] * 100))  // convert decimals (0.18 -> 18)
-                        : intval($record['GST']);
-                    $netLandingRate = $record['Basic Rate'] + ($record['Basic Rate'] * $gst / 100);
-                    $netLandingRate = number_format($netLandingRate, 2, '.', '');
-
-                    $tolerance = 0.5; // define how close is acceptable
-                    $isNearlyEqual = abs(intval($record['Basic Rate']) - intval($stockEntry->product->basic_rate)) <= $tolerance;
-                    $rateConfirmation = ($isNearlyEqual) ? 'Correct' : 'Incorrect';
-                    $netLandingRateConfirmation = ($isNearlyEqual) ? 'Correct' : 'Incorrect';
-
-                    // $rateConfirmation = ($record['Basic Rate'] == $stockEntry->product->basic_rate) ? 'Correct' : 'Incorrect';
-                    // $netLandingRateConfirmation = ($netLandingRate == $stockEntry->product->net_landing_rate) ? 'Correct' : 'Incorrect';
-                    $mrpConfirmation = abs(intval($record['MRP']) - intval($stockEntry->product->mrp)) <= $tolerance ? 'Correct' : 'Incorrect';
+                    $productObj = $stockEntry->product;
+                } else {
+                    $productObj = $product->product;
                 }
+
+                // Case pack quantity
+                $casePackQty = (int)$productObj->pcs_set * (int)$productObj->sets_ctn;
+
+                // GST handling (0.18 → 18, 18 → 18)
+                $gst = ($record['GST'] > 0 && $record['GST'] < 1)
+                    ? (int) round($record['GST'] * 100)
+                    : (int) $record['GST'];
+
+                // Net landing rate calculation
+                $basicRate = floatval($record['Basic Rate']);
+                $netLandingRate = $basicRate + ($basicRate * $gst / 100);
+                $netLandingRate = round($netLandingRate, 2);
+
+                // Tolerance for comparison
+                $tolerance = 0.5;
+
+                // Basic Rate confirmation
+                $isBasicRateCorrect = abs(
+                    $basicRate - floatval($productObj->basic_rate)
+                ) <= $tolerance;
+
+                $rateConfirmation = $isBasicRateCorrect ? 'Correct' : 'Incorrect';
+
+                // Net Landing Rate confirmation
+                $isNetLandingRateCorrect = abs(
+                    $netLandingRate - floatval($productObj->net_landing_rate)
+                ) <= $tolerance;
+
+                $netLandingRateConfirmation = $isNetLandingRateCorrect ? 'Correct' : 'Incorrect';
+
+                // MRP confirmation
+                $mrpConfirmation = abs(
+                    floatval($record['MRP']) - floatval($productObj->mrp)
+                ) <= $tolerance ? 'Correct' : 'Incorrect';
+
 
                 $insertedRows[] = [
                     'Customer Name' => $record['Customer Name'] ?? '',
@@ -1932,15 +1956,15 @@ class SalesOrderController extends Controller
                     'GST' => $gst ?? 0,
 
                     'Basic Rate' => $record['Basic Rate'] ?? 0,
-                    'Product Basic Rate' => isset($stockEntry->product->basic_rate) ? intval($stockEntry->product->basic_rate) : 0,
+                    'Product Basic Rate' => $productObj->basic_rate ?? 0,
                     'Basic Rate Confirmation' => $rateConfirmation ?? 'Incorrect',
 
                     'Net Landing Rate' => $netLandingRate ?? 0,
-                    'Product Net Landing Rate' => $stockEntry->product->net_landing_rate ?? 0,
+                    'Product Net Landing Rate' => $productObj->net_landing_rate ?? 0,
                     'Net Landing Rate Confirmation' => $netLandingRateConfirmation ?? 'Incorrect',
 
                     'MRP' => $record['MRP'] ?? 0,
-                    'Product MRP' => $stockEntry->product->mrp ?? 0,
+                    'Product MRP' => $productObj->mrp ?? 0,
                     'MRP Confirmation' => $mrpConfirmation ?? 'Incorrect',
 
                     'Case Pack Quantity' => $casePackQty ?? 0,
