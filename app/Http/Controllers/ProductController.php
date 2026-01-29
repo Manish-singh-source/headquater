@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
+use App\Models\ProductMapping;
 use App\Models\Warehouse;
 use App\Models\WarehouseStock;
 use App\Services\NotificationService;
@@ -119,11 +120,11 @@ class ProductController extends Controller
             // Check for duplicates
             $seen = [];
             foreach ($rows as $record) {
-                if (empty($record['SKU Code'] ?? null) || empty($request->warehouse_id ?? null)) {
+                if (empty($record['SKU Code'] ?? null) || empty($request->warehouse_id ?? null) || empty($record['Item Code'] ?? null)) {
                     continue;
                 }
 
-                $key = strtolower(trim($record['SKU Code'] ?? '') . '|' . strtolower(trim($request->warehouse_id ?? '')));
+                $key = strtolower(trim($record['SKU Code'] ?? '') . '|' . strtolower(trim($request->warehouse_id ?? '')) . '|' . trim($record['Item Code'] ?? ''));
 
                 if (isset($seen[$key])) {
                     DB::rollBack();
@@ -157,12 +158,12 @@ class ProductController extends Controller
 
                 $existingProduct = Product::where('sku', $sku)->where('warehouse_id', $request->warehouse_id)->first();
 
-                if ($existingProduct) {
+                if (!$existingProduct) {
                     // Update existing product
-                    $duplicatesInDb[] = $sku;
-                } else {
+                    // $duplicatesInDb[] = $sku;
+                    // } else {
                     // Create new product
-                    Product::create([
+                    Product::firstOrCreate([
                         'warehouse_id' => $request->warehouse_id,
                         'sku' => $sku,
                         'ean_code' => $record['EAN Code'] ?? '',
@@ -175,18 +176,22 @@ class ProductController extends Controller
                         'weight' => $weight,
                         'gst' => $record['GST'] ?? '',
                         'hsn' => $record['HSN'] ?? '',
-                        'basic_rate' => isset($record['Basic Rate']) ? intval($record['Basic Rate']) : '',
-                        'net_landing_rate' => $netLandingRate,
+                        // 'basic_rate' => isset($record['Basic Rate']) ? intval($record['Basic Rate']) : '',
+                        // 'net_landing_rate' => $netLandingRate,
                         'case_pack_quantity' => $casePackQuantity,
                         'vendor_code' => $record['Vendor Code'] ?? '',
                         'vendor_name' => $record['Vendor Name'] ?? '',
                         'vendor_purchase_rate' => $record['Vendor Purchase Rate'] ?? '',
                         'vendor_net_landing' => $record['Vendor Net Landing'] ?? '',
                     ]);
+                }
 
-                    // Create warehouse stock entry
-                    $stock = (int) ($record['Stock'] ?? 0);
+                // Create warehouse stock entry
+                $stock = (int) ($record['Stock'] ?? 0);
 
+                $existingStockDetails = WarehouseStock::where('sku', $sku)->where('warehouse_id', $request->warehouse_id)->first();
+
+                if (!$existingStockDetails) {
                     WarehouseStock::create([
                         'warehouse_id' => $request->warehouse_id,
                         'sku' => $sku,
@@ -194,6 +199,18 @@ class ProductController extends Controller
                         'available_quantity' => $stock,
                     ]);
                 }
+
+                $productMapping = ProductMapping::updateOrCreate([
+                    'sku' => $sku,
+                    'portal_code' => $record['Portal Code'] ?? '',
+                    'item_code' => $record['Item Code'] ?? '',
+                ], [
+                    'portal_code' => $record['Portal Code'] ?? '',
+                    'item_code' => $record['Item Code'] ?? '',
+                    'basic_rate' => isset($record['Basic Rate']) ? intval($record['Basic Rate']) : '',
+                    'net_landing_rate' => $netLandingRate,
+                ]);
+                // }
 
                 $insertCount++;
             }
@@ -610,8 +627,8 @@ class ProductController extends Controller
                     'PCS/Set' => $stock->product?->pcs_set ?? '',
                     'Sets/CTN' => $stock->product?->sets_ctn ?? '',
                     'Weight (Single Box)' => $stock->product?->weight ?? '',
-                    'Basic Rate' => $stock->product?->basic_rate ?? '',
-                    'Net Landing Rate' => $stock->product?->net_landing_rate ?? '',
+                    // 'Basic Rate' => $stock->product?->basic_rate ?? '',
+                    // 'Net Landing Rate' => $stock->product?->net_landing_rate ?? '',
                     'Vendor Code' => $stock->product?->vendor_code ?? '',
                     'Vendor Name' => $stock->product?->vendor_name ?? '',
                     'Vendor Purchase Rate' => $stock->product?->vendor_purchase_rate ?? '',

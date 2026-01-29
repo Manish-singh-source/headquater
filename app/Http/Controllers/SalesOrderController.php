@@ -2,36 +2,37 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Customer;
-use App\Models\CustomerGroup;
-use App\Models\Invoice;
-use App\Models\InvoiceDetails;
-use App\Models\NotFoundTempOrder;
-use App\Models\Product;
-use App\Models\PurchaseOrder;
-use App\Models\PurchaseOrderProduct;
-use App\Models\SalesOrder;
-use App\Models\SalesOrderProduct;
-use App\Models\SkuMapping;
-use App\Models\TempOrder;
 use App\Models\User;
 use App\Models\Vendor;
+use App\Models\Invoice;
+use App\Models\Product;
+use App\Models\Customer;
+use App\Models\TempOrder;
 use App\Models\Warehouse;
-use App\Models\WarehouseAllocation;
-use App\Models\WarehouseStock;
-use App\Models\WarehouseStockLog;
-use App\Services\NotificationService;
-use App\Services\WarehouseAllocationService;
-use Illuminate\Http\Request;
+use App\Models\SalesOrder;
+use App\Models\SkuMapping;
 use Illuminate\Support\Arr;
-use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
+use Illuminate\Http\Request;
+use App\Models\CustomerGroup;
+use App\Models\PurchaseOrder;
+use App\Models\InvoiceDetails;
+use App\Models\ProductMapping;
+use App\Models\WarehouseStock;
+use Illuminate\Support\Carbon;
+use App\Models\NotFoundTempOrder;
+use App\Models\SalesOrderProduct;
+use App\Models\WarehouseStockLog;
+use Illuminate\Support\Facades\DB;
+use App\Models\WarehouseAllocation;
+use Illuminate\Support\Facades\Log;
+use App\Models\PurchaseOrderProduct;
+use Illuminate\Support\Facades\Auth;
+use App\Services\NotificationService;
+use Illuminate\Support\Facades\Validator;
 use Spatie\SimpleExcel\SimpleExcelReader;
 use Spatie\SimpleExcel\SimpleExcelWriter;
+use App\Services\WarehouseAllocationService;
 
 class SalesOrderController extends Controller
 {
@@ -74,11 +75,11 @@ class SalesOrderController extends Controller
         $seen = [];
 
         foreach ($rows as $record) {
-            if (empty($record['SKU Code']) || empty($record['PO Number'])) {
+            if (empty($record['SKU Code']) || empty($record['PO Number']) || empty($record['Item Code'])) {
                 continue;
             }
 
-            $key = strtolower(trim($record['PO Number'])) . '|' . strtolower(trim($record['SKU Code']));
+            $key = strtolower(trim($record['PO Number'])) . '|' . strtolower(trim($record['SKU Code'])) . '|' . strtolower(trim($record['Item Code']));
 
             if (isset($seen[$key])) {
                 return 'Please check excel file: duplicate SKU (' . $record['SKU Code'] . ') found for same customer (' . $record['PO Number'] . ').';
@@ -272,6 +273,7 @@ class SalesOrderController extends Controller
                             ? intval(round($record['GST'] * 100))  // convert decimals (0.18 -> 18)
                             : intval($record['GST']),              // already integer (e.g., 18)
 
+                        'portal_code' => $record['Portal Code'] ?? '',
                         'item_code' => $record['Item Code'] ?? '',
                         'description' => $record['Description'] ?? '',
 
@@ -379,6 +381,7 @@ class SalesOrderController extends Controller
                     'gst' => ($record['GST'] < 1 && $record['GST'] > 0)
                         ? intval(round($record['GST'] * 100))  // convert decimals (0.18 -> 18)
                         : intval($record['GST']),              // already integer (e.g., 18)
+                    'portal_code' => $record['Portal Code'] ?? '',
                     'item_code' => $record['Item Code'] ?? '',
                     'description' => $record['Description'] ?? '',
 
@@ -682,7 +685,7 @@ class SalesOrderController extends Controller
                 }
 
                 // Find sales order product
-                $salesOrderProductUpdate = SalesOrderProduct::with('product', 'tempOrder.purchaseOrderProduct')
+                $salesOrderProductUpdate = SalesOrderProduct::with('product', 'productMapping', 'tempOrder.purchaseOrderProduct')
                     ->where('sku', $record['SKU Code'])
                     ->where('sales_order_id', $request->sales_order_id)
                     ->where('customer_id', $customerInfo->id)
@@ -724,10 +727,10 @@ class SalesOrderController extends Controller
                     'description' => Arr::get($record, 'Title', ''),
                     'basic_rate' => Arr::get($record, 'Basic Rate', 0),
                     'product_basic_rate' => Arr::get($record, 'Product Basic Rate', 0),
-                    'rate_confirmation' => ($record['Basic Rate'] == ($salesOrderProductUpdate->product->basic_rate ?? 0)) ? 'Correct' : 'Incorrect',
+                    'rate_confirmation' => ($record['Basic Rate'] == ($salesOrderProductUpdate->productMapping->basic_rate ?? 0)) ? 'Correct' : 'Incorrect',
                     'net_landing_rate' => Arr::get($record, 'Net Landing Rate', 0),
                     'product_net_landing_rate' => Arr::get($record, 'Product Net Landing Rate', 0),
-                    'net_landing_rate_confirmation' => ($record['Net Landing Rate'] == ($salesOrderProductUpdate->product->net_landing_rate ?? 0)) ? 'Correct' : 'Incorrect',
+                    'net_landing_rate_confirmation' => ($record['Net Landing Rate'] == ($salesOrderProductUpdate->productMapping->net_landing_rate ?? 0)) ? 'Correct' : 'Incorrect',
                     'mrp' => Arr::get($record, 'PO MRP', 0),
                     'product_mrp' => Arr::get($record, 'Product MRP', 0),
                     'mrp_confirmation' => ($record['PO MRP'] == ($salesOrderProductUpdate->product->mrp ?? 0)) ? 'Correct' : 'Incorrect',
@@ -814,7 +817,7 @@ class SalesOrderController extends Controller
                 TempOrder::upsert(
                     $products,
                     ['id'],
-                    ['item_code', 'description', 'basic_rate', 'product_basic_rate', 'rate_confirmation', 'net_landing_rate', 'product_net_landing_rate', 'net_landing_rate_confirmation', 'mrp', 'product_mrp', 'mrp_confirmation', 'po_qty', 'block', 'purchase_order_quantity', 'updated_at',]
+                    ['portal_code', 'item_code', 'description', 'basic_rate', 'product_basic_rate', 'rate_confirmation', 'net_landing_rate', 'product_net_landing_rate', 'net_landing_rate_confirmation', 'mrp', 'product_mrp', 'mrp_confirmation', 'po_qty', 'block', 'purchase_order_quantity', 'updated_at',]
                 );
             }
 
@@ -1666,7 +1669,6 @@ class SalesOrderController extends Controller
 
     public function checkProductsStock(Request $request)
     {
-
         $file = $request->file('csv_file');
         if (! $file) {
             return redirect()->back()->with(['csv_file' => 'Please upload a CSV file.']);
@@ -1754,6 +1756,8 @@ class SalesOrderController extends Controller
                 }
 
                 if ($reason != '') {
+                    $productMapping = ProductMapping::where('sku', $sku)->where('item_code', $record['Item Code'])->first();
+                    // dd($productMapping);
                     $gst = ($record['GST'] < 1 && $record['GST'] > 0)
                         ? intval(round($record['GST'] * 100))  // convert decimals (0.18 -> 18)
                         : intval($record['GST']);
@@ -1769,16 +1773,17 @@ class SalesOrderController extends Controller
                         'PO Date' => Carbon::parse($record['PO Date'])->format('d-m-Y'),
                         'PO Expiry Date' => Carbon::parse($record['PO Expiry Date'])->format('d-m-Y'),
                         'HSN' => $record['HSN'] ?? '',
+                        'Portal Code' => $record['Portal Code'] ?? '',
                         'Item Code' => $record['Item Code'] ?? '',
                         'Description' => $record['Description'] ?? '',
                         'GST' => $gst,
 
                         'Basic Rate' => $record['Basic Rate'] ?? 0,
-                        'Product Basic Rate' => 0,
+                        'Product Basic Rate' => $productMapping->basic_rate ?? 0,
                         'Basic Rate Confirmation' => 'Incorrect',
 
                         'Net Landing Rate' => $netLandingRate ?? 0,
-                        'Product Net Landing Rate' => 0,
+                        'Product Net Landing Rate' =>  $productMapping->net_landing_rate ?? 0,
                         'Net Landing Rate Confirmation' => 'Incorrect',
 
                         'MRP' => $record['MRP'] ?? 0,
@@ -1903,13 +1908,16 @@ class SalesOrderController extends Controller
                     $productStockCache[$sku]['available'] = 0;
                 }
 
-
                 if ($stockEntry) {
                     $productObj = $stockEntry->product;
                 } else {
                     $productObj = $product->product;
                 }
 
+                // dd($sku);
+                $productMapping = ProductMapping::where('sku', $sku)->where('item_code', $record['Item Code'])->first();
+
+                // dd($productMapping);
                 // Case pack quantity
                 $casePackQty = (int)$productObj->pcs_set * (int)$productObj->sets_ctn;
 
@@ -1928,14 +1936,14 @@ class SalesOrderController extends Controller
 
                 // Basic Rate confirmation
                 $isBasicRateCorrect = abs(
-                    $basicRate - floatval($productObj->basic_rate)
+                    $basicRate - floatval($productMapping->basic_rate ?? $productObj->basic_rate)
                 ) <= $tolerance;
 
                 $rateConfirmation = $isBasicRateCorrect ? 'Correct' : 'Incorrect';
 
                 // Net Landing Rate confirmation
                 $isNetLandingRateCorrect = abs(
-                    $netLandingRate - floatval($productObj->net_landing_rate)
+                    $netLandingRate - floatval($productMapping->net_landing_rate ?? $productObj->net_landing_rate)
                 ) <= $tolerance;
 
                 $netLandingRateConfirmation = $isNetLandingRateCorrect ? 'Correct' : 'Incorrect';
@@ -1955,16 +1963,17 @@ class SalesOrderController extends Controller
                     'PO Date' => Carbon::parse($record['PO Date'])->format('d-m-Y') ?? '',
                     'PO Expiry Date' => Carbon::parse($record['PO Expiry Date'])->format('d-m-Y') ?? '',
                     'HSN' => $record['HSN'] ?? '',
+                    'Portal Code' => $productMapping->portal_code ?? $record['Portal Code'] ?? '',
                     'Item Code' => $record['Item Code'] ?? '',
                     'Description' => $record['Description'] ?? '',
                     'GST' => $gst ?? 0,
 
                     'Basic Rate' => $record['Basic Rate'] ?? 0,
-                    'Product Basic Rate' => $productObj->basic_rate ?? 0,
+                    'Product Basic Rate' => $productMapping->basic_rate ?? $productObj->basic_rate ?? 0,
                     'Basic Rate Confirmation' => $rateConfirmation ?? 'Incorrect',
 
                     'Net Landing Rate' => $netLandingRate ?? 0,
-                    'Product Net Landing Rate' => $productObj->net_landing_rate ?? 0,
+                    'Product Net Landing Rate' => $productMapping->net_landing_rate ?? $productObj->net_landing_rate ?? 0,
                     'Net Landing Rate Confirmation' => $netLandingRateConfirmation ?? 'Incorrect',
 
                     'MRP' => $record['MRP'] ?? 0,
@@ -2035,6 +2044,7 @@ class SalesOrderController extends Controller
                 'PO Expiry Date' => $row['PO Expiry Date'] ?? '',
                 'HSN' => $row['HSN'] ?? '',
                 'GST' => $row['GST'] ?? '',
+                'Portal Code' => $row['Portal Code'] ?? '',
                 'Item Code' => $row['Item Code'] ?? '',
                 'Description' => $row['Description'] ?? '',
 

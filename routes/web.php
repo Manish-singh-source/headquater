@@ -23,6 +23,7 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\CustomerGroupController;
 use App\Http\Controllers\ProductReturnController;
 use App\Http\Controllers\PurchaseOrderController;
+use App\Http\Controllers\ProductMappingController;
 use App\Http\Controllers\ReceivedProductsController;
 
 Route::controller(LocationController::class)->group(function () {
@@ -160,13 +161,24 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/products/delete-selected', 'deleteSelected')->name('delete.selected.product');
     });
 
-    Route::controller(SKUMappingController::class)->group(function () {
+    // For Product Mapping
+    Route::controller(ProductMappingController::class)->group(function () {
         Route::get('/sku-mapping', 'index')->name('sku.mapping');
         Route::post('/sku-mapping', 'store')->name('sku.mapping.store');
         Route::get('/sku-mapping-edit/{id}', 'edit')->name('sku.mapping.edit');
         Route::put('/sku-mapping-update', 'update')->name('sku.mapping.update');
         Route::delete('/sku-mapping-destroy/{id}', 'delete')->name('sku.mapping.destroy');
     });
+    
+    // For SKU Mapping
+    // Route::controller(SKUMappingController::class)->group(function () {
+    //     Route::get('/sku-mapping', 'index')->name('sku.mapping');
+    //     Route::post('/sku-mapping', 'store')->name('sku.mapping.store');
+    //     Route::get('/sku-mapping-edit/{id}', 'edit')->name('sku.mapping.edit');
+    //     Route::put('/sku-mapping-update', 'update')->name('sku.mapping.update');
+    //     Route::delete('/sku-mapping-destroy/{id}', 'delete')->name('sku.mapping.destroy');
+    // });
+
 
     // All Order page
     Route::controller(SalesOrderController::class)->group(function () {

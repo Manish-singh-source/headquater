@@ -13,6 +13,43 @@
                         </ol>
                     </nav>
                 </div>
+                <div class="justify-end">
+                    <a type="button" class="btn btn-primary px-4" data-bs-toggle="modal" data-bs-target="#skuMapping"><i
+                            class="bi bi-plus-lg me-2"></i>Map SKUs</a>
+
+                    <!-- Modal -->
+                    <div class="modal fade" id="skuMapping" data-bs-backdrop="static" data-bs-keyboard="false"
+                        tabindex="-1" aria-labelledby="skuMappingLabel" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <form action="{{ route('sku.mapping.store') }}" method="POST"
+                                    enctype="multipart/form-data">
+                                    @csrf
+                                    @method('POST')
+                                    <div class="modal-header">
+                                        <h1 class="modal-title fs-5" id="skuMappingLabel">Map SKU's
+                                        </h1>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                            aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="col-12 mb-3">
+                                            <label for="document_image" class="form-label">Upload SKU Mapping(CSV/XLSX)
+                                                <span class="text-danger">*</span></label>
+                                            <input type="file" name="sku_mapping" id="sku_mapping" class="form-control"
+                                                value="" required="" placeholder="Upload ID Document" multiple>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary"
+                                            data-bs-dismiss="modal">Close</button>
+                                        <button type="submit" id="holdOrder" class="btn btn-primary">Submit</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
             <div class="card mt-4">
                 <div class="card-body">
@@ -24,39 +61,31 @@
                                         <th>
                                             <input class="form-check-input" type="checkbox" id="select-all">
                                         </th>
-                                        <th>SKU</th>
-                                        <th>Portal Code</th>
-                                        <th>Item Code</th>
-                                        <th>Basic Rate</th>
-                                        <th>Net Landing Rate</th>
+                                        <th>Product SKU</th>
+                                        <th>Customer SKU</th>
+                                        <th>Vendor SKU</th>
                                         <th>Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @forelse($productMapping as $product)
+                                    @forelse($skuMapping as $skus)
                                         <tr>
                                             <td>
                                                 <input class="form-check-input row-checkbox" type="checkbox" name="ids[]"
-                                                    value="{{ $product->id }}">
+                                                    value="{{ $skus->id }}">
                                             </td>
                                             <td>
-                                                {{ $product->sku }}
+                                                {{ $skus->product_sku }}
                                             </td>
                                             <td>
-                                                {{ $product->portal_code }}
+                                                {{ $skus->customer_sku }}
                                             </td>
                                             <td>
-                                                {{ $product->item_code }}
-                                            </td>
-                                            <td>
-                                                {{ $product->basic_rate }}
-                                            </td>
-                                            <td>
-                                                {{ $product->net_landing_rate }}
+                                                {{ $skus->vendor_sku }}
                                             </td>
                                             <td>
                                                 <div class="d-flex">
-                                                    <a aria-label="anchor" href="{{ route('sku.mapping.edit', $product->id) }}"
+                                                    <a aria-label="anchor" href="{{ route('sku.mapping.edit', $skus->id) }}"
                                                         class="btn btn-icon btn-sm bg-warning-subtle me-1"
                                                         data-bs-toggle="tooltip" data-bs-original-title="Edit">
                                                         <svg xmlns="http://www.w3.org/2000/svg" width="13"
@@ -72,7 +101,7 @@
                                                             </path>
                                                         </svg>
                                                     </a>
-                                                    <form action="{{ route('sku.mapping.destroy', $product->id) }}"
+                                                    <form action="{{ route('sku.mapping.destroy', $skus->id) }}"
                                                         method="POST" onsubmit="return confirm('Are you sure?')">
                                                         @csrf
                                                         @method('DELETE')
@@ -99,7 +128,7 @@
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td class="text-center" colspan="7">None SKU Mapping Found</td>
+                                            <td class="text-center" colspan="5">None SKU Mapping Found</td>
                                         </tr>
                                     @endforelse
                                 </tbody>

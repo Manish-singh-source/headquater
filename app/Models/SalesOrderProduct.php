@@ -53,6 +53,11 @@ class SalesOrderProduct extends Model
     {
         return $this->hasOne(Product::class, 'sku', 'sku');
     }
+    
+    public function productMapping()
+    {
+        return $this->hasOne(ProductMapping::class, 'sku', 'sku');
+    }
 
     public function tempOrder()
     {

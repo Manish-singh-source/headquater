@@ -239,7 +239,7 @@
                                 <tbody>
                                     @forelse($salesOrder->orderedProducts as $order)
                                         <tr>
-                                            <td>{{ $order->customer->contact_name }}</td>
+                                            <td>{{ $order->tempOrder->customer_name }}</td>
                                             <td>{{ $order->tempOrder->sku }}</td>
                                             <td>{{ $order->tempOrder->facility_name }}</td>
                                             <td>{{ $order->tempOrder->facility_location }}</td>

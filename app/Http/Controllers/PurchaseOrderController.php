@@ -934,7 +934,8 @@ class PurchaseOrderController extends Controller
                     array_merge($rowsData, [
                         'Purchase Order No' => $order->purchaseOrder->order_number ?? '',
                         'Vendor Code' => $order->vendor_code ?? '',
-                        'Portal Code' => $order->tempOrderFetch->item_code ?? '',
+                        'Portal Code' => $order->tempOrderFetch->portal_code ?? '',
+                        'Item Code' => $order->tempOrderFetch->item_code ?? '',
                         'Vendor SKU Code' => $order->tempOrderFetch->sku ?? '',
                         'Title' => $order->tempOrderFetch->description ?? '',
                         'MRP' => $order->tempOrderFetch->mrp ?? '',

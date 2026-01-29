@@ -1,0 +1,73 @@
+﻿"Customer Name","PO Number","SKU Code","Facility Name","Facility Location","PO Date","PO Expiry Date",HSN,"Item Code",Description,GST,"Basic Rate","Product Basic Rate","Basic Rate Confirmation","Net Landing Rate","Product Net Landing Rate","Net Landing Rate Confirmation",MRP,"Product MRP","MRP Confirmation","Case Pack Quantity","PO Quantity","Available Quantity","Unavailable Quantity","Warehouse Allocation",Reason
+"PJTJ TECHNOLOGIES PRIVATE LIMITED",LKOPO150848,1003430_PB,saurabh-banglore,"PJTJ TECHNOLOGIES PRIVATE LIMITED
+KH NO-543.544,537,540 VILL NATKUR
+BIJNOR ROAD, SAROJINI NAGAR
+Lucknow, Uttar Pradesh - 226008, India",16-01-2026,17-02-2026,70133700,37032,"Ocean White Wine Glasses (195ml, Transparent, Pack of 6) 6.0 pieces",18,595.53,968,Incorrect,702.73,968,Incorrect,1152,750,Incorrect,16,180,45,135,"Baroda Warehouse 1 - PO Qty: 180, Available: 45, Unavailable: 135<br>PO Required: 135",
+"PJTJ TECHNOLOGIES PRIVATE LIMITED",LKOPO150848,1003430_PB,saurabh-banglore,"PJTJ TECHNOLOGIES PRIVATE LIMITED
+KH NO-543.544,537,540 VILL NATKUR
+BIJNOR ROAD, SAROJINI NAGAR
+Lucknow, Uttar Pradesh - 226008, India",16-01-2026,17-02-2026,70133700,57142,"Sanjeev Kapoor Infinity Red Wine Glass (230ml, Transparent, Pack of 6) 6.0 pieces",18,403.75,968,Incorrect,476.43,968,Incorrect,1045,750,Incorrect,16,104,0,104,"Baroda Warehouse 1 - PO Qty: 104, Available: 45, Unavailable: 59<br>PO Required: 59",
+"PJTJ TECHNOLOGIES PRIVATE LIMITED",LKOPO150848,1003512_PB,saurabh-banglore,"PJTJ TECHNOLOGIES PRIVATE LIMITED
+KH NO-543.544,537,540 VILL NATKUR
+BIJNOR ROAD, SAROJINI NAGAR
+Lucknow, Uttar Pradesh - 226008, India",16-01-2026,17-02-2026,70133700,93306,"Sanjeev Kapoor Infinity White Wine Glass (195ml, Transparent, Pack of 6) 6.0 pieces",18,384.47,96,Incorrect,453.67,96,Incorrect,995,650,Incorrect,24,64,45,19,"Baroda Warehouse 1 - PO Qty: 64, Available: 45, Unavailable: 19<br>PO Required: 19",
+"MOKSH ENTERPRISES PRIVATE LIMITED",MBIPO332991,1003512_PB,saurabh-banglore,"MOKSH ENTERPRISES PRIVATE LIMITED
+Survey no 95/2 and 4/1
+Anugondanahalli village
+Bangalore, Karnataka - 562114, India",16-01-2026,15-02-2026,70133700,225817,"Ocean Sante Flute Champagne (210ml, Set of 2, Ideal for White or Red Wine, Flat Bottom, Crystal) 2.0 pieces",18,349.15,96,Incorrect,412,96,Incorrect,635,650,Incorrect,24,120,0,120,"Baroda Warehouse 1 - PO Qty: 120, Available: 45, Unavailable: 75<br>PO Required: 75",
+"MOKSH ENTERPRISES PRIVATE LIMITED",MBIPO332991,1004077_PB,saurabh-banglore,"MOKSH ENTERPRISES PRIVATE LIMITED
+Survey no 95/2 and 4/1
+Anugondanahalli village
+Bangalore, Karnataka - 562114, India",16-01-2026,15-02-2026,70133700,37032,"Ocean White Wine Glasses (195ml, Transparent, Pack of 6) 6.0 pieces",18,595.53,96,Incorrect,702.73,96,Incorrect,1152,1296,Incorrect,32,264,45,219,"Baroda Warehouse 1 - PO Qty: 264, Available: 45, Unavailable: 219<br>PO Required: 219",
+"MOKSH ENTERPRISES PRIVATE LIMITED",MBIPO332991,1004077_PB,saurabh-banglore,"MOKSH ENTERPRISES PRIVATE LIMITED
+Survey no 95/2 and 4/1
+Anugondanahalli village
+Bangalore, Karnataka - 562114, India",16-01-2026,15-02-2026,70139900,384591,"Pasabahce Allegra Stem Glass (195ml, Set of 2, Transparent, Elegant & Durable Wine & Champagne Flute Glassware) 2.0 pieces",18,356.72,96,Incorrect,420.93,96,Incorrect,732,1296,Incorrect,32,132,0,132,"Baroda Warehouse 1 - PO Qty: 132, Available: 45, Unavailable: 87<br>PO Required: 87",
+"MOKSH ENTERPRISES PRIVATE LIMITED",MBIPO332991,1004089_PB,saurabh-banglore,"MOKSH ENTERPRISES PRIVATE LIMITED
+Survey no 95/2 and 4/1
+Anugondanahalli village
+Bangalore, Karnataka - 562114, India",16-01-2026,15-02-2026,70133700,460559,"Ocean Sante Red Wine Glasses (420ml, Set of 2, Lead Free, Shatter Resistant, Clear) 2.0 pieces",18,349.15,936,Incorrect,412,936,Incorrect,635,2820,Incorrect,40,150,45,105,"Baroda Warehouse 1 - PO Qty: 150, Available: 45, Unavailable: 105<br>PO Required: 105",
+"MOKSH ENTERPRISES PRIVATE LIMITED",MBIPO332991,1004089_PB,saurabh-banglore,"MOKSH ENTERPRISES PRIVATE LIMITED
+Survey no 95/2 and 4/1
+Anugondanahalli village
+Bangalore, Karnataka - 562114, India",16-01-2026,15-02-2026,70133700,57142,"Sanjeev Kapoor Infinity Red Wine Glass (230ml, Transparent, Pack of 6) 6.0 pieces",18,403.75,936,Incorrect,476.43,936,Incorrect,1045,2820,Incorrect,40,160,0,160,"Baroda Warehouse 1 - PO Qty: 160, Available: 45, Unavailable: 115<br>PO Required: 115",
+"MOKSH ENTERPRISES PRIVATE LIMITED",MBIPO332991,1004505_PB,saurabh-banglore,"MOKSH ENTERPRISES PRIVATE LIMITED
+Survey no 95/2 and 4/1
+Anugondanahalli village
+Bangalore, Karnataka - 562114, India",16-01-2026,15-02-2026,70133700,73683,"Ocean Madison Bordeaux Glass (600ml, Transparent, Pack of 6) 6.0 pieces",18,1030.05,91,Incorrect,1215.46,91,Incorrect,2099,930,Incorrect,48,44,44,0,"Baroda Warehouse 1 - PO Qty: 44, Available: 44, Unavailable: 0",
+"MOKSH ENTERPRISES PRIVATE LIMITED",MBIPO332991,1004505_PB,saurabh-banglore,"MOKSH ENTERPRISES PRIVATE LIMITED
+Survey no 95/2 and 4/1
+Anugondanahalli village
+Bangalore, Karnataka - 562114, India",16-01-2026,15-02-2026,70139900,943114,"Pasabahce Allegra Stem Glass (350ml, Set of 2, Clear, Durable Wine & Champagne Flute Glassware) 2.0 pieces",18,356.72,91,Incorrect,420.93,91,Incorrect,732,930,Incorrect,48,144,1,143,"Baroda Warehouse 1 - PO Qty: 144, Available: 45, Unavailable: 99<br>PO Required: 99",
+"MOKSH ENTERPRISES PRIVATE LIMITED",MBIPO332991,1004507_PB,saurabh-banglore,"MOKSH ENTERPRISES PRIVATE LIMITED
+Survey no 95/2 and 4/1
+Anugondanahalli village
+Bangalore, Karnataka - 562114, India",16-01-2026,15-02-2026,70133700,943306,"Sanjeev Kapoor White Wine Goblet (230ml, Set of 2) 2.0 pieces",18,172.91,89,Incorrect,204.03,89,Incorrect,372,510,Incorrect,56,18,18,0,"Baroda Warehouse 1 - PO Qty: 18, Available: 18, Unavailable: 0",
+"MOKSH ENTERPRISES PRIVATE LIMITED",MBLPO357199,1004507_PB,saurabh-banglore,"MOKSH ENTERPRISES PRIVATE LIMITED, ECOM EXPRESS LIMITED
+2/3, 3/1, 3/2, 21/1, 21/3, Ekarajapura Village,
+Bangalore, Karnataka - 560067, India",15-01-2026,14-02-2026,82159900,485709,"Neelam Stainless Steel Soup or Curry Ladle (30cm, Silver) 1.0 Piece",18,45.19,89,Incorrect,53.32,89,Incorrect,100,510,Incorrect,56,324,27,297,"Baroda Warehouse 1 - PO Qty: 324, Available: 45, Unavailable: 279<br>PO Required: 279",
+"MOKSH ENTERPRISES PRIVATE LIMITED",MBLPO357199,1004510_PB,saurabh-banglore,"MOKSH ENTERPRISES PRIVATE LIMITED, ECOM EXPRESS LIMITED
+2/3, 3/1, 3/2, 21/1, 21/3, Ekarajapura Village,
+Bangalore, Karnataka - 560067, India",15-01-2026,14-02-2026,73239390,864949,"Neelam Stainless Steel Flat Bottom Tope (Silver) 1.0 Piece",5,111.81,83,Incorrect,117.4,83,Incorrect,209,630,Incorrect,64,528,45,483,"Baroda Warehouse 1 - PO Qty: 528, Available: 45, Unavailable: 483<br>PO Required: 483",
+"MOKSH ENTERPRISES PRIVATE LIMITED",MBLPO357199,1004510_PB,saurabh-banglore,"MOKSH ENTERPRISES PRIVATE LIMITED, ECOM EXPRESS LIMITED
+2/3, 3/1, 3/2, 21/1, 21/3, Ekarajapura Village,
+Bangalore, Karnataka - 560067, India",15-01-2026,14-02-2026,70133700,93306,"Sanjeev Kapoor Infinity White Wine Glass (195ml, Transparent, Pack of 6) 6.0 pieces",18,384.47,83,Incorrect,453.67,83,Incorrect,995,630,Incorrect,64,72,0,72,"Baroda Warehouse 1 - PO Qty: 72, Available: 45, Unavailable: 27<br>PO Required: 27",
+"MOKSH ENTERPRISES PRIVATE LIMITED",MBLPO357199,1004522_PB,saurabh-banglore,"MOKSH ENTERPRISES PRIVATE LIMITED, ECOM EXPRESS LIMITED
+2/3, 3/1, 3/2, 21/1, 21/3, Ekarajapura Village,
+Bangalore, Karnataka - 560067, India",15-01-2026,14-02-2026,82159900,997890,"Neelam Stainless Steel Slotted Palta (32cm, Silver) 1.0 Piece",18,45.19,807,Incorrect,53.32,807,Incorrect,100,1080,Incorrect,72,180,45,135,"Baroda Warehouse 1 - PO Qty: 180, Available: 45, Unavailable: 135<br>PO Required: 135",
+"CLOUDSTORE RETAIL PRIVATE LIMITED",CMFPO282922,1004522_PB,saurabh-banglore,"CLOUDSTORE RETAIL PRIVATE LIMITED
+Survey No.26,27,28 C1 Building, Savad Naka Road, Global Logistics Company,
+village Janval-Lonad, Bhiwandi, Thane
+Bhiwandi, Maharashtra - 421302, India",15-01-2026,14-02-2026,82159900,485709,"Neelam Stainless Steel Soup or Curry Ladle (30cm, Silver) 1.0 Piece",18,45.19,807,Incorrect,53.32,807,Incorrect,100,1080,Incorrect,72,72,0,72,"Baroda Warehouse 1 - PO Qty: 72, Available: 45, Unavailable: 27<br>PO Required: 27",
+"CLOUDSTORE RETAIL PRIVATE LIMITED",CMFPO282922,1004526_PB,saurabh-banglore,"CLOUDSTORE RETAIL PRIVATE LIMITED
+Survey No.26,27,28 C1 Building, Savad Naka Road, Global Logistics Company,
+village Janval-Lonad, Bhiwandi, Thane
+Bhiwandi, Maharashtra - 421302, India",15-01-2026,14-02-2026,73239390,864949,"Neelam Stainless Steel Flat Bottom Tope (Silver) 1.0 Piece",5,111.81,800,Incorrect,117.4,800,Incorrect,176,996,Incorrect,80,384,45,339,"Baroda Warehouse 1 - PO Qty: 384, Available: 45, Unavailable: 339<br>PO Required: 339",
+"CLOUDSTORE RETAIL PRIVATE LIMITED",CMFPO282922,1004526_PB,saurabh-banglore,"CLOUDSTORE RETAIL PRIVATE LIMITED
+Survey No.26,27,28 C1 Building, Savad Naka Road, Global Logistics Company,
+village Janval-Lonad, Bhiwandi, Thane
+Bhiwandi, Maharashtra - 421302, India",15-01-2026,14-02-2026,82159900,997890,"Neelam Stainless Steel Slotted Palta (32cm, Silver) 1.0 Piece",18,45.19,800,Incorrect,53.32,800,Incorrect,100,996,Incorrect,80,36,0,36,"Baroda Warehouse 1 - PO Qty: 36, Available: 36, Unavailable: 0",
+"MOKSH ENTERPRISES PRIVATE LIMITED",MBIPO332527,1004534_PB,saurabh-banglore,"MOKSH ENTERPRISES PRIVATE LIMITED
+Survey no 95/2 and 4/1
+Anugondanahalli village
+Bangalore, Karnataka - 562114, India",15-01-2026,14-02-2026,82159900,485709,"Neelam Stainless Steel Soup or Curry Ladle (30cm, Silver) 1.0 Piece",18,45.19,77,Incorrect,53.32,77,Incorrect,100,600,Incorrect,88,216,45,171,"Baroda Warehouse 1 - PO Qty: 216, Available: 45, Unavailable: 171<br>PO Required: 171",

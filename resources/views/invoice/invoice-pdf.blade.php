@@ -329,11 +329,12 @@
                     <td class="right-align">{{ $detail->weight ?? 0 }}</td>
                 @else
                     <td>
-                        <strong style="color: #000000;"> {{ $detail->product?->ean_code }} </strong>
+                        {{-- <strong style="color: #000000;"> {{ $detail->product?->ean_code }} </strong> --}}
+                        <strong style="color: #000000;"> {{ $detail->tempOrder?->item_code }} </strong>
                         <br>
                         {{ $detail->product?->sku }}
                         <br>
-                        {{ $detail->product?->brand_title }}
+                        {{ $detail->tempOrder?->description }}
                     </td>
                     <td class="right-align">{{ $detail->hsn ?? $detail->tempOrder?->hsn }}</td>
                     <td class="right-align">{{ $detail->quantity }}</td>

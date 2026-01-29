@@ -105,8 +105,10 @@
                                         <th>PCS/Set </th>
                                         <th>Sets/CTN</th>
                                         <th>Weight&nbsp;(Single&nbsp;Box)</th>
+                                        {{-- 
                                         <th>Basic&nbsp;Rate</th>
-                                        <th>Net&nbsp;Landing&nbsp;Rate</th>
+                                        <th>Net&nbsp;Landing&nbsp;Rate</th> 
+                                        --}}
                                         <th>Case&nbsp;Pack&nbsp;Quantity</th>
                                         <th>Vendor&nbsp;Code</th>
                                         <th>Vendor&nbsp;Name</th>
@@ -150,8 +152,10 @@
                                             <td>{{ $product->product->pcs_set ?? 'NA' }}</td>
                                             <td>{{ $product->product->sets_ctn ?? 'NA' }}</td>
                                             <td>{{ $product->product->weight ?? 'NA' }}</td>
-                                            <td>{{ $product->product->basic_rate ?? 'NA' }}</td>
-                                            <td>{{ $product->product->net_landing_rate ?? 'NA' }}</td>
+                                            {{-- 
+                                            <td>{{ $product->product->basic_rate ?? 'NA' }}</td> 
+                                            <td>{{ $product->product->net_landing_rate ?? 'NA' }}</td> 
+                                            --}}
                                             <td>{{ $product->product->case_pack_quantity ?? 'NA' }}</td>
                                             <td>{{ $product->product->vendor_code ?? 'NA' }}</td>
                                             <td>{{ $product->product->vendor_name ?? 'NA' }}</td>
@@ -265,7 +269,8 @@
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label for="sku" class="form-label">SKU Code</label>
-                                <input type="text" name="sku" id="sku" class="form-control" style="cursor: not-allowed" readonly>
+                                <input type="text" name="sku" id="sku" class="form-control"
+                                    style="cursor: not-allowed" readonly>
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label for="ean_code" class="form-label">EAN Code</label>
@@ -298,8 +303,7 @@
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label for="basic_rate" class="form-label">Basic Rate</label>
-                                <input type="text" name="basic_rate" id="basic_rate"
-                                    class="form-control">
+                                <input type="text" name="basic_rate" id="basic_rate" class="form-control">
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label for="hsn" class="form-label">HSN</label>

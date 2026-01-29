@@ -22,19 +22,31 @@
                 <div class="col-12">
                     <div class="card">
                         <div class="card-body p-4">
-                            <h5 class="mb-4">SKU details</h5>
+                            <h5 class="mb-4">SKU Mapping details</h5>
                             <form class="row g-3" action="{{ route('sku.mapping.update') }}" method="POST">
                                 @csrf
                                 @method('PUT')
 
-                                <input type="hidden" name="sku_id" value="{{ $skuMapping->id }}">
+                                <input type="hidden" name="sku_id" value="{{ $productMapping->id }}">
 
                                 <div class="col-md-6">
-                                    <label for="product_sku" class="form-label">Product SKU</label>
-                                    <input type="text" class="form-control @error('product_sku') is-invalid @enderror"
-                                        value="{{ old('product_sku', $skuMapping->product_sku) }}" id="product_sku" name="product_sku"
+                                    <label for="sku" class="form-label">SKU</label>
+                                    <input type="text" class="form-control @error('sku') is-invalid @enderror"
+                                        value="{{ old('sku', $productMapping->sku) }}" id="sku" name="sku"
+                                        placeholder="Enter Product SKU" readonly>
+                                    @error('sku')
+                                        <div class="invalid-feedback">
+                                            {{ $message }}
+                                        </div>
+                                    @enderror
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <label for="portal_code" class="form-label">Portal Code</label>
+                                    <input type="text" class="form-control @error('portal_code') is-invalid @enderror"
+                                        value="{{ old('portal_code', $productMapping->portal_code) }}" id="portal_code" name="portal_code"
                                         placeholder="Enter Product SKU">
-                                    @error('product_sku')
+                                    @error('portal_code')
                                         <div class="invalid-feedback">
                                             {{ $message }}
                                         </div>
@@ -42,11 +54,11 @@
                                 </div>
 
                                 <div class="col-md-6">
-                                    <label for="customer_sku" class="form-label">Customer SKU</label>
-                                    <input type="text" class="form-control  @error('customer_sku') is-invalid @enderror"
-                                        value="{{ old('customer_sku', $skuMapping->customer_sku) }}" id="customer_sku" placeholder="Enter Customer SKU"
-                                        name="customer_sku">
-                                    @error('customer_sku')
+                                    <label for="item_code" class="form-label">Item Code</label>
+                                    <input type="text" class="form-control  @error('item_code') is-invalid @enderror"
+                                        value="{{ old('item_code', $productMapping->item_code) }}" id="item_code" placeholder="Enter Customer SKU"
+                                        name="item_code">
+                                    @error('item_code')
                                         <div class="invalid-feedback">
                                             {{ $message }}
                                         </div>
@@ -54,10 +66,21 @@
                                 </div>
 
                                 <div class="col-md-6">
-                                    <label for="vendor_sku" class="form-label">Vendor SKU</label>
-                                    <input type="vendor_sku" class="form-control  @error('vendor_sku') is-invalid @enderror"
-                                        value="{{ old('vendor_sku', $skuMapping->vendor_sku) }}" id="vendor_sku" placeholder="Enter Vendor SKU" name="vendor_sku">
-                                    @error('vendor_sku')
+                                    <label for="basic_rate" class="form-label">Basic Rate</label>
+                                    <input type="basic_rate" class="form-control  @error('basic_rate') is-invalid @enderror"
+                                        value="{{ old('basic_rate', $productMapping->basic_rate) }}" id="basic_rate" placeholder="Enter Vendor SKU" name="basic_rate">
+                                    @error('basic_rate')
+                                        <div class="invalid-feedback">
+                                            {{ $message }}
+                                        </div>
+                                    @enderror
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label for="net_landing_rate" class="form-label">Net Landing Rate</label>
+                                    <input type="net_landing_rate" class="form-control  @error('net_landing_rate') is-invalid @enderror"
+                                        value="{{ old('net_landing_rate', $productMapping->net_landing_rate) }}" id="net_landing_rate" placeholder="Enter Vendor SKU" name="net_landing_rate">
+                                    @error('net_landing_rate')
                                         <div class="invalid-feedback">
                                             {{ $message }}
                                         </div>

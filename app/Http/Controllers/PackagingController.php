@@ -353,7 +353,7 @@ class PackagingController extends Controller
 
             $writer->addRow([
                 'Warehouse Name' => $order->warehouseStock ? $order->warehouseStock->warehouse->name : 'N/A',
-                'Customer Name' => $order->customer->contact_name ?? '',
+                'Customer Name' => $order->tempOrder->customer_name ?? '',
                 'SKU Code' => $order->tempOrder->sku ?? '',
                 'Facility Name' => $order->tempOrder->facility_name ?? '',
                 'Facility Location' => $order->tempOrder->facility_location ?? '',
@@ -537,7 +537,7 @@ class PackagingController extends Controller
                         $allocation->final_dispatched_quantity = (int) ($finalDispatchQty * $proportion);
                         // $allocation->box_count = (int) ($boxCount * $proportion);
                         if ($casePackQuantity > 0) {
-                            $allocation->box_count = ceil($$allocation->final_dispatched_quantity / $casePackQuantity);
+                            $allocation->box_count = ceil($allocation->final_dispatched_quantity / $casePackQuantity);
                         } else {
                             $allocation->box_count = 0;
                         }
@@ -560,7 +560,7 @@ class PackagingController extends Controller
                     $userAllocation->final_dispatched_quantity = $finalDispatchQty;
                     // $userAllocation->box_count = $boxCount;
                     if ($productInfo->case_pack_quantity > 0) {
-                        $userAllocation->box_count = ceil($$finalDispatchQty / $productInfo->case_pack_quantity);
+                        $userAllocation->box_count = ceil($finalDispatchQty / $productInfo->case_pack_quantity);
                     } else {
                         $userAllocation->box_count = 0;
                     }

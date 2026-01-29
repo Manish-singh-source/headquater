@@ -69,7 +69,7 @@
                                             </td>
                                             <td>{{ $customerOrders->client_name }}</td>
                                             <td>
-                                                {{ $customerOrders->contact_name }}
+                                                {{ $customerOrders->facility_name }}
                                             </td>
                                             <td>
                                                 {{ $customerOrders->orders_count }}

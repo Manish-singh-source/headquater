@@ -583,6 +583,7 @@
                                         <th>Purchase&nbsp;Order&nbsp;No</th>
                                         <th>Vendor&nbsp;Code</th>
                                         <th>Portal&nbsp;Code</th>
+                                        <th>Item&nbsp;Code</th>
                                         <th>SKU&nbsp;Code</th>
                                         <th>Title</th>
                                         <th>MRP</th>
@@ -606,6 +607,7 @@
                                             @endisset
                                             <td>{{ $purchaseOrder->order_number }}</td>
                                             <td>{{ $order->vendor_code }}</td>
+                                            <td>{{ $order->tempOrder->portal_code ?? 'NA' }}</td>
                                             <td>{{ $order->tempOrder->item_code ?? 'NA' }}</td>
                                             <td>{{ $order->tempOrder->sku ?? 'NA' }}</td>
                                             <td>{{ $order->tempOrder->description ?? 'NA' }}</td>
