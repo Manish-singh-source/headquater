@@ -13,6 +13,43 @@
                         </ol>
                     </nav>
                 </div>
+                <div class="d-flex align-items-center gap-2">
+                    <a href="{{ route('download.sku.mapping.excel') }}" class="btn btn-outline-primary">
+                        <i class="bi bi-download me-2"></i>Download Excel
+                    </a>
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal"
+                        data-bs-target="#skuMappingUpload">
+                        <i class="bi bi-upload me-2"></i>Upload Excel
+                    </button>
+                </div>
+            </div>
+            <div class="modal fade" id="skuMappingUpload" data-bs-backdrop="static" data-bs-keyboard="false"
+                tabindex="-1" aria-labelledby="skuMappingUploadLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <form action="{{ route('upload.sku.mapping.excel') }}" method="POST" enctype="multipart/form-data">
+                            @csrf
+                            @method('POST')
+                            <div class="modal-header">
+                                <h1 class="modal-title fs-5" id="skuMappingUploadLabel">Upload SKU Mapping Excel</h1>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                    aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="col-12 mb-3">
+                                    <label for="sku_mapping_excel" class="form-label">Upload Excel (CSV/XLSX)
+                                        <span class="text-danger">*</span></label>
+                                    <input type="file" name="sku_mapping_excel" id="sku_mapping_excel"
+                                        class="form-control" required>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                <button type="submit" class="btn btn-primary">Submit</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
             </div>
             <div class="card mt-4">
                 <div class="card-body">

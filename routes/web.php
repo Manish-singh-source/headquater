@@ -1,30 +1,30 @@
 <?php
 
-use App\Http\Controllers\ReadyToShip;
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\RoleController;
-use App\Http\Controllers\StaffController;
-use App\Http\Controllers\ReportController;
-use App\Http\Controllers\VendorController;
-use App\Http\Controllers\InvoiceController;
-use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ActivityController;
 use App\Http\Controllers\CustomerController;
-use App\Http\Controllers\LocationController;
-use App\Http\Controllers\RegisterController;
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\PackagingController;
-use App\Http\Controllers\WarehouseController;
-use App\Http\Controllers\PermissionController;
-use App\Http\Controllers\SalesOrderController;
-use App\Http\Controllers\SKUMappingController;
-use App\Http\Controllers\TrackOrderController;
-use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\CustomerGroupController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\LocationController;
+use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\PackagingController;
+use App\Http\Controllers\PermissionController;
+use App\Http\Controllers\ProductController;
+use App\Http\Controllers\ProductMappingController;
 use App\Http\Controllers\ProductReturnController;
 use App\Http\Controllers\PurchaseOrderController;
-use App\Http\Controllers\ProductMappingController;
+use App\Http\Controllers\ReadyToShip;
 use App\Http\Controllers\ReceivedProductsController;
+use App\Http\Controllers\RegisterController;
+use App\Http\Controllers\ReportController;
+use App\Http\Controllers\RoleController;
+use App\Http\Controllers\SalesOrderController;
+use App\Http\Controllers\SKUMappingController;
+use App\Http\Controllers\StaffController;
+use App\Http\Controllers\TrackOrderController;
+use App\Http\Controllers\VendorController;
+use App\Http\Controllers\WarehouseController;
+use Illuminate\Support\Facades\Route;
 
 Route::controller(LocationController::class)->group(function () {
     Route::get('/countries', 'getCountries');
@@ -168,8 +168,12 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/sku-mapping-edit/{id}', 'edit')->name('sku.mapping.edit');
         Route::put('/sku-mapping-update', 'update')->name('sku.mapping.update');
         Route::delete('/sku-mapping-destroy/{id}', 'delete')->name('sku.mapping.destroy');
+
+        // download excel file
+        Route::get('/download-sku-mapping-excel', 'downloadSkuMappingExcel')->name('download.sku.mapping.excel');
+        Route::post('/upload-sku-mapping-excel', 'uploadSkuMappingExcel')->name('upload.sku.mapping.excel');
     });
-    
+
     // For SKU Mapping
     // Route::controller(SKUMappingController::class)->group(function () {
     //     Route::get('/sku-mapping', 'index')->name('sku.mapping');
@@ -178,7 +182,6 @@ Route::middleware(['auth'])->group(function () {
     //     Route::put('/sku-mapping-update', 'update')->name('sku.mapping.update');
     //     Route::delete('/sku-mapping-destroy/{id}', 'delete')->name('sku.mapping.destroy');
     // });
-
 
     // All Order page
     Route::controller(SalesOrderController::class)->group(function () {
@@ -230,7 +233,6 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/vendor-product-return/{id}', 'vendorProductReturn')->name('vendor.product.return');
         Route::get('/vendor-product-accept/{id}', 'vendorProductAccept')->name('vendor.product.accept');
     });
-
 
     // received products From Vendors PI Order
     Route::controller(ReceivedProductsController::class)->group(function () {
@@ -295,7 +297,7 @@ Route::middleware(['auth'])->group(function () {
 
         Route::get('/vendor-purchase-history-excel', 'vendorPurchaseHistoryExcel')->name('vendor.purchase.history.excel');
         Route::get('/vendor-purchase-history-excel1', 'vendorPurchaseHistoryExcel1')->name('vendor.purchase.history.excel1');
-        
+
         Route::get('/inventory-stock-history-excel', 'inventoryStockHistoryExcel')->name('inventory.stock.history.excel');
 
         Route::get('/customer-sales-history-excel', 'customerSalesHistoryExcel')->name('customer.sales.history.excel');

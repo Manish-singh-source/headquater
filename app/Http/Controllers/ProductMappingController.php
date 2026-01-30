@@ -8,12 +8,12 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 use Spatie\SimpleExcel\SimpleExcelReader;
-
+use Spatie\SimpleExcel\SimpleExcelWriter;
 
 class ProductMappingController extends Controller
 {
-    
     /**
      * Display a listing of SKU mappings
      *
@@ -193,8 +193,8 @@ class ProductMappingController extends Controller
             'sku_id' => 'required|integer|exists:product_mappings,id',
             'portal_code' => 'nullable|string|max:255',
             'item_code' => 'nullable|string|max:255',
-            'basic_rate' => 'nullable|string|max:255', 
-            'net_landing_rate' => 'nullable|string|max:255', 
+            'basic_rate' => 'nullable|string|max:255',
+            'net_landing_rate' => 'nullable|string|max:255',
         ]);
 
         if ($validator->fails()) {
@@ -396,6 +396,141 @@ class ProductMappingController extends Controller
                 'success' => false,
                 'message' => 'Error searching SKU mappings: '.$e->getMessage(),
             ], 500);
+        }
+    }
+
+    // download excel file with product mapping data
+    public function downloadSkuMappingExcel()
+    {
+        try {
+            $tempXlsxPath = storage_path('app/sku_mapping_'.Str::random(8).'.xlsx');
+            $writer = SimpleExcelWriter::create($tempXlsxPath);
+
+            $productMappings = ProductMapping::orderBy('id')->get();
+
+            if ($productMappings->isEmpty()) {
+                return redirect()->back()->with('info', 'No SKU mappings found to download.');
+            }
+
+            foreach ($productMappings as $mapping) {
+                $writer->addRow([
+                    'SKU' => $mapping->sku ?? '',
+                    'Portal Code' => $mapping->portal_code ?? '',
+                    'Item Code' => $mapping->item_code ?? '',
+                    'Basic Rate' => $mapping->basic_rate ?? '',
+                    'Net Landing Rate' => $mapping->net_landing_rate ?? '',
+                ]);
+            }
+
+            $writer->close();
+
+            return response()->download($tempXlsxPath, 'sku-mapping.xlsx', [
+                'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            ])->deleteFileAfterSend(true);
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Error downloading SKU mappings: '.$e->getMessage());
+        }
+    }
+
+    // update data using excel file upload same format as download file
+    public function uploadSkuMappingExcel(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'sku_mapping_excel' => 'required|file|mimes:xlsx,csv,xls|max:5120',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator)->withInput();
+        }
+
+        $file = $request->file('sku_mapping_excel');
+
+        if (! $file) {
+            return redirect()->back()->withErrors(['sku_mapping_excel' => 'Please upload a valid file.']);
+        }
+
+        DB::beginTransaction();
+
+        try {
+            $filePath = $file->getPathname();
+            $fileExtension = $file->getClientOriginalExtension();
+
+            $reader = SimpleExcelReader::create($filePath, $fileExtension);
+            $rows = $reader->getRows();
+
+            $insertCount = 0;
+            $updateCount = 0;
+            $skipCount = 0;
+
+            foreach ($rows as $record) {
+                $sku = trim((string) ($record['SKU'] ?? $record['sku'] ?? $record['Product SKU'] ?? ''));
+                $portalCode = trim((string) ($record['Portal Code'] ?? $record['portal_code'] ?? ''));
+                $itemCode = trim((string) ($record['Item Code'] ?? $record['item_code'] ?? ''));
+                $basicRate = trim((string) ($record['Basic Rate'] ?? $record['basic_rate'] ?? ''));
+                $netLandingRate = trim((string) ($record['Net Landing Rate'] ?? $record['net_landing_rate'] ?? ''));
+
+                if ($sku === '') {
+                    $skipCount++;
+
+                    continue;
+                }
+
+                $existingMapping = ProductMapping::where('sku', $sku)
+                    ->where('portal_code', $portalCode)
+                    ->where('item_code', $itemCode)
+                    ->first();
+
+                if ($existingMapping) {
+                    $existingMapping->basic_rate = $basicRate;
+                    $existingMapping->net_landing_rate = $netLandingRate;
+                    $existingMapping->save();
+
+                    $updateCount++;
+
+                    continue;
+                }
+
+                ProductMapping::create([
+                    'sku' => $sku,
+                    'portal_code' => $portalCode,
+                    'item_code' => $itemCode,
+                    'basic_rate' => $basicRate,
+                    'net_landing_rate' => $netLandingRate,
+                ]);
+
+                $insertCount++;
+            }
+
+            if ($insertCount === 0 && $updateCount === 0) {
+                DB::rollBack();
+
+                return redirect()->back()->with('error', 'No valid data found to import.');
+            }
+
+            DB::commit();
+
+            activity()
+                ->causedBy(Auth::user())
+                ->withProperties([
+                    'inserted' => $insertCount,
+                    'updated' => $updateCount,
+                    'skipped' => $skipCount,
+                ])
+                ->event('bulk_import')
+                ->log('SKU mappings imported/updated: '.$insertCount.' inserted, '.$updateCount.' updated');
+
+            $message = 'SKU mapping import complete. Inserted: '.$insertCount.', Updated: '.$updateCount.'.';
+            if ($skipCount > 0) {
+                $message .= ' Skipped: '.$skipCount.'.';
+            }
+
+            return redirect()->route('sku.mapping')->with('success', $message);
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return redirect()->back()
+                ->with('error', 'Error processing file: '.$e->getMessage())
+                ->withInput();
         }
     }
 }
