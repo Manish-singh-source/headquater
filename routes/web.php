@@ -169,7 +169,8 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/sku-mapping-update', 'update')->name('sku.mapping.update');
         Route::delete('/sku-mapping-destroy/{id}', 'delete')->name('sku.mapping.destroy');
 
-        // download excel file
+        // add sku mapping
+        Route::post('/add-sku-mapping', 'addSkuMapping')->name('add.sku.mapping');
         Route::get('/download-sku-mapping-excel', 'downloadSkuMappingExcel')->name('download.sku.mapping.excel');
         Route::post('/upload-sku-mapping-excel', 'uploadSkuMappingExcel')->name('upload.sku.mapping.excel');
     });

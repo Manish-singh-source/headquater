@@ -399,6 +399,113 @@ class ProductMappingController extends Controller
         }
     }
 
+    // add sku mapping via ajax
+    // unique on sku, portal_code, item_code
+    public function addSkuMapping(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'sku_mapping_excel_add' => 'required|file|mimes:xlsx,csv,xls|max:5120',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator)->withInput();
+        }
+
+        $file = $request->file('sku_mapping_excel_add');
+
+        if (! $file) {
+            return redirect()->back()->withErrors(['sku_mapping_excel_add' => 'Please upload a valid file.']);
+        }
+
+        DB::beginTransaction();
+
+        try {
+            $filePath = $file->getPathname();
+            $fileExtension = $file->getClientOriginalExtension();
+
+            $reader = SimpleExcelReader::create($filePath, $fileExtension);
+            $rows = $reader->getRows();
+
+            $insertCount = 0;
+            $skipCount = 0;
+            $duplicateCount = 0;
+
+            foreach ($rows as $record) {
+                $sku = trim((string) ($record['SKU'] ?? $record['sku'] ?? $record['Product SKU'] ?? ''));
+                $portalCode = trim((string) ($record['Portal Code'] ?? $record['portal_code'] ?? ''));
+                $itemCode = trim((string) ($record['Item Code'] ?? $record['item_code'] ?? ''));
+                $basicRate = trim((string) ($record['Basic Rate'] ?? $record['basic_rate'] ?? ''));
+                $netLandingRate = trim((string) ($record['Net Landing Rate'] ?? $record['net_landing_rate'] ?? ''));
+
+                if ($sku === '') {
+                    $skipCount++;
+
+                    continue;
+                }
+
+                $existingMapping = ProductMapping::where('sku', $sku)
+                    ->where('portal_code', $portalCode)
+                    ->where('item_code', $itemCode)
+                    ->first();
+
+                if ($existingMapping) {
+                    $duplicateCount++;
+
+                    continue;
+                }
+
+                ProductMapping::create([
+                    'sku' => $sku,
+                    'portal_code' => $portalCode,
+                    'item_code' => $itemCode,
+                    'basic_rate' => $basicRate,
+                    'net_landing_rate' => $netLandingRate,
+                ]);
+
+                $insertCount++;
+            }
+
+            if ($insertCount === 0) {
+                DB::rollBack();
+
+                $message = 'No valid data found to import.';
+                if ($duplicateCount > 0) {
+                    $message .= ' Duplicate entries skipped: '.$duplicateCount.'.';
+                }
+
+                return redirect()->back()->with('error', $message);
+            }
+
+            DB::commit();
+
+            activity()
+                ->causedBy(Auth::user())
+                ->withProperties([
+                    'inserted' => $insertCount,
+                    'skipped' => $skipCount,
+                    'duplicates' => $duplicateCount,
+                ])
+                ->event('bulk_import')
+                ->log('SKU mappings added: '.$insertCount.' records');
+
+            $message = 'SKU mapping add complete. Inserted: '.$insertCount.'.';
+            if ($duplicateCount > 0) {
+                $message .= ' Duplicates skipped: '.$duplicateCount.'.';
+            }
+            if ($skipCount > 0) {
+                $message .= ' Skipped: '.$skipCount.'.';
+            }
+
+            return redirect()->route('sku.mapping')->with('success', $message);
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return redirect()->back()
+                ->with('error', 'Error processing file: '.$e->getMessage())
+                ->withInput();
+        }
+    }
+
     // download excel file with product mapping data
     public function downloadSkuMappingExcel()
     {

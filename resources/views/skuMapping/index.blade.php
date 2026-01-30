@@ -21,6 +21,10 @@
                         data-bs-target="#skuMappingUpload">
                         <i class="bi bi-upload me-2"></i>Upload Excel
                     </button>
+                    <button type="button" class="btn btn-success" data-bs-toggle="modal"
+                        data-bs-target="#skuMappingBulkAdd">
+                        <i class="bi bi-plus-lg me-2"></i>Add SKU Mapping (Excel)
+                    </button>
                 </div>
             </div>
             <div class="modal fade" id="skuMappingUpload" data-bs-backdrop="static" data-bs-keyboard="false"
@@ -46,6 +50,34 @@
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                                 <button type="submit" class="btn btn-primary">Submit</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="modal fade" id="skuMappingBulkAdd" data-bs-backdrop="static" data-bs-keyboard="false"
+                tabindex="-1" aria-labelledby="skuMappingBulkAddLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <form action="{{ route('add.sku.mapping') }}" method="POST" enctype="multipart/form-data">
+                            @csrf
+                            @method('POST')
+                            <div class="modal-header">
+                                <h1 class="modal-title fs-5" id="skuMappingBulkAddLabel">Add SKU Mapping (Excel)</h1>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                    aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="col-12 mb-3">
+                                    <label for="sku_mapping_excel_add" class="form-label">Upload Excel (CSV/XLSX)
+                                        <span class="text-danger">*</span></label>
+                                    <input type="file" name="sku_mapping_excel_add" id="sku_mapping_excel_add"
+                                        class="form-control" required>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                <button type="submit" class="btn btn-success">Submit</button>
                             </div>
                         </form>
                     </div>
