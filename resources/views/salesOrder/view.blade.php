@@ -159,11 +159,40 @@
                         <div class="div d-flex justify-content-end my-3 gap-2">
 
                             <div>
+                                <select class="form-select border-2 border-primary" id="selectQuantityFulfilledFilter"
+                                    aria-label="Default select example" name="selectQuantityFulfilledFilter">
+                                    <option value="all" selected>Select Quantity Fulfilled</option>
+                                    <option value="0">0</option>
+                                    <option value="greater_than_0">Greater than 0</option>
+                                </select>
+                            </div>
+                            {{-- filter for quantity fulfilled --}}
+                            {{-- 
+                            <div>
+                                <select class="form-select border-2 border-primary" id="selectFinalQuantityFulfilledFilter"
+                                    aria-label="Default select example" name="selectFinalQuantityFulfilledFilter">
+                                    <option value="all" selected>Select Final Quantity Fulfilled</option>
+                                    <option value="0">0</option>
+                                    <option value="greater_than_0">Greater than 0</option>
+                                </select>
+                            </div> 
+                            --}}
+
+                            <div>
                                 <select class="form-select border-2 border-primary" id="selectProductStatusFilter"
                                     aria-label="Default select example" name="selectProductStatusFilter">
                                     <option value="" selected>Select Product Status</option>
-                                    {{-- <option value="Ready To Ship">Ready To Ship</option> --}}
+                                    <option value="Pending">Pending</option>
+                                    {{-- <option value="Blocked">Blocked</option> --}}
+                                    <option value="Ready To Package">Ready To Package</option>
+                                    <option value="Packaging">Packaging</option>
+                                    <option value="Packaged">Packaged</option>
+                                    {{-- <option value="Cancelled">Cancelled</option> --}}
+                                    {{-- <option value="Approval Pending">Approval Pending</option> --}}
+                                    <option value="Ready to Ship Approval Pending">Ready to Ship Approval Pending</option>
+                                    <option value="Ready To Ship">Ready To Ship</option>
                                     <option value="shipped">Shipped</option>
+                                    <option value="Complete">Complete</option>
                                 </select>
                             </div>
 
@@ -202,13 +231,13 @@
                                             </button>
                                         @endif
                                         {{-- @if (in_array($salesOrder->status, ['pending', 'blocked'])) --}}
-                                            <button type="button" class="dropdown-item cursor-pointer" id="exportData">
-                                                <i class="fa fa-file-excel-o"></i> Export(Excel)
-                                            </button>
-                                            <button class="dropdown-item cursor-pointer" data-bs-toggle="modal"
-                                                data-bs-target="#staticBackdrop1">
-                                                Update PO
-                                            </button>
+                                        <button type="button" class="dropdown-item cursor-pointer" id="exportData">
+                                            <i class="fa fa-file-excel-o"></i> Export(Excel)
+                                        </button>
+                                        <button class="dropdown-item cursor-pointer" data-bs-toggle="modal"
+                                            data-bs-target="#staticBackdrop1">
+                                            Update PO
+                                        </button>
                                         {{-- @endif --}}
                                     </div>
                                 </div>
@@ -268,6 +297,7 @@
                                         <th>Purchase&nbsp;Order&nbsp;Quantity</th>
                                         <th>Block&nbsp;Quantity</th>
                                         <th>Qty&nbsp;Fullfilled</th>
+                                        <th>Final&nbsp;Quantity&nbsp;Fulfilled</th>
                                         <th>Warehouse&nbsp;Allocation</th>
                                         <th>Invoice&nbsp;Status</th>
                                         <th>Product&nbsp;Status</th>
@@ -345,6 +375,8 @@
                                                     @endif
                                                 @endif
                                             </td>
+                                            <td>{{ $order->dispatched_quantity ?? 0 }}</td>
+
                                             <td>
                                                 @php
                                                     // Check if product has warehouse allocations (auto-allocation)
@@ -424,7 +456,10 @@
                                                     @endforeach
                                                 @else
                                                     @php
-                                                        if (isset($allocation->product_status) && $allocation->product_status == 'completed') {
+                                                        if (
+                                                            isset($allocation->product_status) &&
+                                                            $allocation->product_status == 'completed'
+                                                        ) {
                                                             $allocation->product_status = $allocation->shipping_status;
                                                         }
                                                     @endphp
@@ -583,6 +618,36 @@
                 // in my column 'Baroda Warehouse 1: Shipped'
                 // brandSelection.column(-1).search(selected ? '^' + selected + '$' : '', true, false).draw();
                 brandSelection.column(-1).search(selected, true, false).draw();
+            });
+
+            $('#selectQuantityFulfilledFilter').on('change', function() {
+                var selected = $(this).val().trim();
+
+                if (selected === 'all') {
+                    selected = '';
+                } else if (selected === 'greater_than_0') {
+                    // Use regex to match numbers greater than 0
+                    selected = '^(?!0$)\\d+$';
+                    brandSelection.column(23).search(selected, true, false).draw();
+                    return;
+                }
+                // Use regex for exact match
+                brandSelection.column(23).search(selected ? '^' + selected + '$' : '', true, false).draw();
+            });
+
+            $('#selectFinalQuantityFulfilledFilter').on('change', function() {
+                var selected = $(this).val().trim();
+
+                if (selected === 'all') {
+                    selected = '';
+                } else if (selected === 'greater_than_0') {
+                    // Use regex to match numbers greater than 0
+                    selected = '^(?!0$)\\d+$';
+                    brandSelection.column(24).search(selected, true, false).draw();
+                    return;
+                }
+                // Use regex for exact match
+                brandSelection.column(24).search(selected ? '^' + selected + '$' : '', true, false).draw();
             });
 
             $(document).on('click', '#exportData', function() {

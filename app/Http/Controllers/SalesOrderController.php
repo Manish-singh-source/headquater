@@ -807,6 +807,8 @@ class SalesOrderController extends Controller
                         }
                     }
                 }
+
+                $salesOrderProductUpdate->dispatched_quantity = $record['Final Fulfilled Quantity'] ?? $record['Quantity Fulfilled'] ?? 0;
                 $salesOrderProductUpdate->save();
 
                 $insertCount++;
@@ -1340,25 +1342,25 @@ class SalesOrderController extends Controller
                     ->find($request->order_id);
                 foreach ($salesOrderUpdate->orderedProducts as $order) {
 
-                    if ($order->tempOrder?->vendor_pi_received_quantity > 0) {
-                        if ($order->tempOrder?->po_qty <= ($order->tempOrder?->block ?? 0)) {
-                            $order->dispatched_quantity = $order->tempOrder->po_qty;
-                        } else {
-                            $order->dispatched_quantity = $order->tempOrder->block ?? 0;
-                        }
-                    } elseif ($order->tempOrder?->vendor_pi_fulfillment_quantity > 0) {
-                        if ($order->tempOrder?->po_qty <= ($order->tempOrder?->block ?? 0) + ($order->tempOrder?->vendor_pi_fulfillment_quantity ?? 0)) {
-                            $order->dispatched_quantity = $order->tempOrder->po_qty;
-                        } else {
-                            $order->dispatched_quantity = ($order->tempOrder?->block ?? 0) + ($order->tempOrder?->vendor_pi_fulfillment_quantity ?? 0);
-                        }
-                    } else {
-                        if ($order->tempOrder?->po_qty <= ($order->tempOrder?->block ?? 0)) {
-                            $order->dispatched_quantity = $order->tempOrder->po_qty;
-                        } else {
-                            $order->dispatched_quantity = $order->tempOrder->block ?? 0;
-                        }
-                    }
+                    // if ($order->tempOrder?->vendor_pi_received_quantity > 0) {
+                    //     if ($order->tempOrder?->po_qty <= ($order->tempOrder?->block ?? 0)) {
+                    //         $order->dispatched_quantity = $order->tempOrder->po_qty;
+                    //     } else {
+                    //         $order->dispatched_quantity = $order->tempOrder->block ?? 0;
+                    //     }
+                    // } elseif ($order->tempOrder?->vendor_pi_fulfillment_quantity > 0) {
+                    //     if ($order->tempOrder?->po_qty <= ($order->tempOrder?->block ?? 0) + ($order->tempOrder?->vendor_pi_fulfillment_quantity ?? 0)) {
+                    //         $order->dispatched_quantity = $order->tempOrder->po_qty;
+                    //     } else {
+                    //         $order->dispatched_quantity = ($order->tempOrder?->block ?? 0) + ($order->tempOrder?->vendor_pi_fulfillment_quantity ?? 0);
+                    //     }
+                    // } else {
+                    //     if ($order->tempOrder?->po_qty <= ($order->tempOrder?->block ?? 0)) {
+                    //         $order->dispatched_quantity = $order->tempOrder->po_qty;
+                    //     } else {
+                    //         $order->dispatched_quantity = $order->tempOrder->block ?? 0;
+                    //     }
+                    // }
                     $order->status = 'packaging';
                     $order->product_status = 'packaging';
 
@@ -2102,14 +2104,7 @@ class SalesOrderController extends Controller
         // Create writer
         $writer = SimpleExcelWriter::create($tempXlsxPath);
 
-        // $salesOrder = SalesOrder::with([
-        //     'customerGroup',
-        //     'warehouse',
-        //     'orderedProducts.tempOrder',
-        //     'orderedProducts.warehouseStock',
-        // ])
-        //     ->withSum('orderedProducts', 'ordered_quantity')
-        //     ->find($request->salesOrderId);
+
         $salesOrder = SalesOrder::with([
             'customerGroup',
             'warehouse',
@@ -2226,6 +2221,7 @@ class SalesOrderController extends Controller
                 'Purchase Order Quantity' => $order->tempOrder?->purchase_ordered_quantity ?? 0,
                 'Block Quantity' => $order->tempOrder?->block,
                 'Quantity Fullfilled' => $qtyFullfilled,
+                'Final Fulfilled Quantity' => 0,
                 'Warehouse Allocation' => $warehouseAllocation,
             ]);
         }
