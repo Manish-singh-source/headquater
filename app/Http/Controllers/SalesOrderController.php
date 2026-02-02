@@ -1448,6 +1448,12 @@ class SalesOrderController extends Controller
                 });
             }
 
+            if ($request->filled('shipping_status')) {
+                $salesOrderDetails->whereHas('warehouseAllocations', function ($query) use ($request) {
+                    $query->where('shipping_status', $request->shipping_status);
+                });
+            }
+
             if ($request->filled('po_number')) {
                 $salesOrderDetails->whereHas('tempOrder', function ($query) use ($request) {
                     $query->where('po_number', $request->po_number);
@@ -1569,7 +1575,7 @@ class SalesOrderController extends Controller
 
                     // Use allocated quantity instead of ordered quantity
                     $quantity = (int) $allocation->allocated_quantity;
-                    $unitPrice = (float) $detail->product->mrp;
+                    $unitPrice = (float) $detail->tempOrder->basic_rate;
                     $lineTotal = $quantity * $unitPrice;
 
                     $invoiceTotal += $lineTotal;

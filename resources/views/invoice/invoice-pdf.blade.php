@@ -247,12 +247,12 @@
         </tr>
         <tr class="invoice-table">
             <td>State:</td>
-            <td colspan="2">{{ $invoice->customer->billing_state }}</td>
-            {{-- <td>GSTIN: {{ $invoice->customer->gstin }}</td> --}}
+            <td colspan="1">{{ $invoice->customer->billing_state }}</td>
+            <td colspan="1">Pincode: {{ $invoice->customer->billing_zip }}</td>
 
-            <td>State:</td>
-            <td colspan="2">{{ $invoice->customer->shipping_state }}</td>
-            {{-- <td colspan="2">GSTIN: {{ $invoice->customer->gstin }}</td> --}}
+            <td>State:</td> 
+            <td colspan="1">{{ $invoice->customer->shipping_state }}</td>
+            <td colspan="1">Pincode: {{ $invoice->customer->shipping_zip }}</td>
         </tr>
         <tr class="invoice-table">
             <td>GSTIN: </td>
@@ -396,13 +396,22 @@
             <td width="30%" class="section-title text-center">Sign/Stamp</td>
         </tr>
         <tr class="invoice-table">
-            <td>Bank A/C:</td>
-            <td rowspan="4" class="text-center" style="height:50px; vertical-align:bottom;">
+            <td>Account Holder Name: INOVIZ IDEAS PRIVATE LIMITED</td>
+            <td rowspan="7" class="text-center" style="height:50px; vertical-align:bottom;">
                 (Authorised Signature)
             </td>
         </tr>
         <tr class="invoice-table">
-            <td>Bank IFSC:</td>
+            <td>Bank Name: YES BANK</td>
+        </tr>
+        <tr class="invoice-table">
+            <td>Bank A/C: 034663700001092</td>
+        </tr>
+        <tr class="invoice-table">
+            <td>Bank IFSC: YESB0000346</td>
+        </tr>
+        <tr class="invoice-table">
+            <td>Branch Name: HINDUSTAN NAKA KANDIVALI WEST MUMBAI</td>
         </tr>
         <tr>
             <td class="section-title">Terms & Conditions:</td>

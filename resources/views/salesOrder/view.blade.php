@@ -163,7 +163,7 @@
                                     aria-label="Default select example" name="selectProductStatusFilter">
                                     <option value="" selected>Select Product Status</option>
                                     {{-- <option value="Ready To Ship">Ready To Ship</option> --}}
-                                    <option value="Shipped">Shipped</option>
+                                    <option value="shipped">Shipped</option>
                                 </select>
                             </div>
 
@@ -607,6 +607,7 @@
 
                 let brand = $('#selectBrand').val();
                 let poNumber = $('#selectPONumber').val();
+                let shippingStatus = $('#selectProductStatusFilter').val();
 
                 // If no checkboxes selected, select all
                 if (selected.length === 0) {
@@ -628,6 +629,7 @@
                             order_id: '{{ $salesOrder->id }}',
                             brand: brand,
                             po_number: poNumber,
+                            shipping_status: shippingStatus,
                             ids: selected.join(',')
                         },
                         success: function(response) {
