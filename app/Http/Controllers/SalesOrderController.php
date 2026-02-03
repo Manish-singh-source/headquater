@@ -2,37 +2,37 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Customer;
+use App\Models\CustomerGroup;
+use App\Models\Invoice;
+use App\Models\InvoiceDetails;
+use App\Models\NotFoundTempOrder;
+use App\Models\Product;
+use App\Models\ProductMapping;
+use App\Models\PurchaseOrder;
+use App\Models\PurchaseOrderProduct;
+use App\Models\SalesOrder;
+use App\Models\SalesOrderProduct;
+use App\Models\SkuMapping;
+use App\Models\TempOrder;
 use App\Models\User;
 use App\Models\Vendor;
-use App\Models\Invoice;
-use App\Models\Product;
-use App\Models\Customer;
-use App\Models\TempOrder;
 use App\Models\Warehouse;
-use App\Models\SalesOrder;
-use App\Models\SkuMapping;
-use Illuminate\Support\Arr;
-use Illuminate\Support\Str;
-use Illuminate\Http\Request;
-use App\Models\CustomerGroup;
-use App\Models\PurchaseOrder;
-use App\Models\InvoiceDetails;
-use App\Models\ProductMapping;
-use App\Models\WarehouseStock;
-use Illuminate\Support\Carbon;
-use App\Models\NotFoundTempOrder;
-use App\Models\SalesOrderProduct;
-use App\Models\WarehouseStockLog;
-use Illuminate\Support\Facades\DB;
 use App\Models\WarehouseAllocation;
-use Illuminate\Support\Facades\Log;
-use App\Models\PurchaseOrderProduct;
-use Illuminate\Support\Facades\Auth;
+use App\Models\WarehouseStock;
+use App\Models\WarehouseStockLog;
 use App\Services\NotificationService;
+use App\Services\WarehouseAllocationService;
+use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 use Spatie\SimpleExcel\SimpleExcelReader;
 use Spatie\SimpleExcel\SimpleExcelWriter;
-use App\Services\WarehouseAllocationService;
 
 class SalesOrderController extends Controller
 {
@@ -100,6 +100,7 @@ class SalesOrderController extends Controller
     public function index()
     {
         $orders = SalesOrder::with('customerGroup')->get();
+
         return view('salesOrder.index', compact('orders'));
     }
 
@@ -158,7 +159,7 @@ class SalesOrderController extends Controller
             // Not Found Temp Order
             $vendorsNotFound = [];
 
-            // prefix for sales order using last order  
+            // prefix for sales order using last order
             $lastSalesOrder = SalesOrder::orderBy('id', 'desc')->first();
             if ($lastSalesOrder && $lastSalesOrder->order_number) {
                 $prefix = $lastSalesOrder ? 'SO-' . date('Ym', strtotime($lastSalesOrder->created_at)) . '-' : 'SO-' . date('Ym') . '-';
@@ -487,7 +488,7 @@ class SalesOrderController extends Controller
                             'vendor_code' => $vendorCode,
                         ];
 
-                        // handle if null 
+                        // handle if null
                         $lastPurchaseOrder = PurchaseOrder::orderBy('id', 'desc')->first();
                         if ($lastPurchaseOrder && $lastPurchaseOrder->order_number) {
                             $prefix = $lastPurchaseOrder ? 'PO-' . date('Ym', strtotime($lastPurchaseOrder->created_at)) . '-' : 'PO-' . date('Ym') . '-';
@@ -701,7 +702,6 @@ class SalesOrderController extends Controller
                 // 3. Build products array for TempOrder::upsert()
                 // Quantity Fullfilled	Warehouse Allocation
 
-
                 // item_code   = Item Code
                 // po_date
                 // po_expiry_date
@@ -715,10 +715,10 @@ class SalesOrderController extends Controller
                 // product_mrp  = Product MRP
                 // mrp_confirmation  = MRP Confirmation
                 // po_qty  = PO Quantity
-                // available_quantity  = 
-                // unavailable_quantity  = 
+                // available_quantity  =
+                // unavailable_quantity  =
                 // block  = Block Quantity
-                // case_pack_quantity  = 
+                // case_pack_quantity  =
                 // purchase_order_quantity  = Purchase Order Quantity
 
                 $products[] = [
@@ -808,7 +808,22 @@ class SalesOrderController extends Controller
                     }
                 }
 
-                $salesOrderProductUpdate->dispatched_quantity = $record['Final Fulfilled Quantity'] ?? $record['Quantity Fulfilled'] ?? 0;
+                if ($record['Quantity Fulfilled'] > 0) {
+                    $salesOrderProductUpdate->dispatched_quantity = $record['Final Fulfilled Quantity'] ?? $record['Quantity Fulfilled'] ?? 0;
+
+                    if ($salesOrderProductUpdate->warehouseAllocations()->count() > 0) {
+                        // Update warehouse allocation dispatched quantities
+                        $totalAllocated = $salesOrderProductUpdate->warehouseAllocations->sum('allocated_quantity');
+
+                        foreach ($salesOrderProductUpdate->warehouseAllocations as $allocation) {
+                            // Proportionally distribute dispatched quantity
+                            $proportionalDispatched = $record['Final Fulfilled Quantity'] ?? $record['Quantity Fulfilled'] ?? 0;
+
+                            $allocation->allocated_quantity = $proportionalDispatched;
+                            $allocation->save();
+                        }
+                    }
+                }
                 $salesOrderProductUpdate->save();
 
                 $insertCount++;
@@ -819,7 +834,7 @@ class SalesOrderController extends Controller
                 TempOrder::upsert(
                     $products,
                     ['id'],
-                    ['portal_code', 'item_code', 'description', 'basic_rate', 'product_basic_rate', 'rate_confirmation', 'net_landing_rate', 'product_net_landing_rate', 'net_landing_rate_confirmation', 'mrp', 'product_mrp', 'mrp_confirmation', 'po_qty', 'block', 'purchase_order_quantity', 'updated_at',]
+                    ['portal_code', 'item_code', 'description', 'basic_rate', 'product_basic_rate', 'rate_confirmation', 'net_landing_rate', 'product_net_landing_rate', 'net_landing_rate_confirmation', 'mrp', 'product_mrp', 'mrp_confirmation', 'po_qty', 'block', 'purchase_order_quantity', 'updated_at']
                 );
             }
 
@@ -1174,7 +1189,7 @@ class SalesOrderController extends Controller
             } else {
                 $user = Auth::user();
             }
-            $isAdmin = $user->hasRole(['Super Admin', 'Admin']) || !$user->warehouse_id;
+            $isAdmin = $user->hasRole(['Super Admin', 'Admin']) || ! $user->warehouse_id;
             $userWarehouseId = $user->warehouse_id;
 
             // Handle warehouse-specific status updates for shipped, delivered, completed
@@ -1183,7 +1198,7 @@ class SalesOrderController extends Controller
                 $allocationsQuery = WarehouseAllocation::where('sales_order_id', $request->order_id);
                 // If warehouse user, only update their warehouse allocations
                 if ($request->status == 'delivered') {
-                    if (!$isAdmin && $userWarehouseId) {
+                    if (! $isAdmin && $userWarehouseId) {
                         $allocationsQuery->whereHas('salesOrderProduct', function ($q) use ($request) {
                             $q->where('customer_id', $request->customer_id);
                         });
@@ -1192,7 +1207,7 @@ class SalesOrderController extends Controller
                     $allocationsQuery->whereHas('salesOrderProduct', function ($q) use ($request) {
                         $q->where('customer_id', $request->customer_id);
                     });
-                    if (!$isAdmin && $userWarehouseId) {
+                    if (! $isAdmin && $userWarehouseId) {
                         $allocationsQuery->where('warehouse_id', $userWarehouseId);
                     }
                 }
@@ -1202,6 +1217,7 @@ class SalesOrderController extends Controller
                 // dd($allocations);
                 if ($allocations->isEmpty()) {
                     DB::rollBack();
+
                     return redirect()->back()
                         ->with('error', 'No warehouse allocations found for this order and customer.');
                 }
@@ -1279,6 +1295,7 @@ class SalesOrderController extends Controller
                 DB::commit();
 
                 $warehouseName = $isAdmin ? 'all warehouses' : ($user->warehouse->name ?? 'your warehouse');
+
                 return redirect()->back()
                     ->with('success', "Status updated to '{$request->status}' for {$warehouseName} successfully!");
             }
@@ -1376,9 +1393,9 @@ class SalesOrderController extends Controller
                 $salesOrderUpdate->status = $request->status;
                 $salesOrderUpdate->save();
 
-
-                if (!$salesOrderUpdate) {
+                if (! $salesOrderUpdate) {
                     DB::rollBack();
+
                     return redirect()->back()->with('error', 'Status Not Changed. Please Try Again.');
                 }
 
@@ -1418,7 +1435,66 @@ class SalesOrderController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Error changing sales order status: ' . $e->getMessage());
+
             return redirect()->back()->with('error', 'Status Not Changed. Please Try again. Error: ' . $e->getMessage());
+        }
+    }
+
+    // send to packaging
+    public function sendToPackaging(Request $request)
+    {
+
+        DB::beginTransaction();
+
+        try {
+            $salesOrder = SalesOrder::with('orderedProducts.warehouseAllocations')->findOrFail($request->order_id);
+            $oldStatus = $salesOrder->status;
+            $salesOrder->status = 'ready_to_package';
+            $salesOrder->save();
+
+            // only update ordered products and their allocations for selected ids if provided
+            if ($request->filled('ids')) {
+                $ids = is_array($request->ids) ? $request->ids : explode(',', $request->ids);
+                $salesOrderProducts = SalesOrderProduct::where('sales_order_id', $salesOrder->id)
+                    ->whereIn('id', $ids)
+                    ->get();
+            } else {
+                $salesOrderProducts = $salesOrder->orderedProducts;
+            }
+
+            foreach ($salesOrderProducts as $order) {
+                $order->status = 'packaging';
+                $order->product_status = 'packaging';
+
+                if ($order->warehouseAllocations->count() > 0) {
+                    foreach ($order->warehouseAllocations as $allocation) {
+                        $allocation->product_status = 'packaging';
+                        $allocation->save();
+                    }
+                }
+                $order->save();
+            }
+
+            // Create status change notification
+            NotificationService::statusChanged('sales', $salesOrder->id, $oldStatus, $salesOrder->status);
+
+            activity()
+                ->performedOn($salesOrder)
+                ->causedBy(Auth::user())
+                ->withProperties([
+                    'old_status' => $oldStatus,
+                    'new_status' => $salesOrder->status,
+                ])
+                ->log('Sales order status changed to Ready to Package');
+
+            DB::commit();
+
+            return redirect()->route('packing.products.view', $request->order_id)->with('success', 'Order sent to packaging successfully! Order ID: ' . $salesOrder->id);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error sending sales order to packaging: ' . $e->getMessage());
+
+            return redirect()->back()->with('error', 'Failed to send order to packaging. Please try again. Error: ' . $e->getMessage());
         }
     }
 
@@ -1544,7 +1620,7 @@ class SalesOrderController extends Controller
                     ->orderBy('id', 'desc')
                     ->first();
 
-                $timestamp =  date('Ym');
+                $timestamp = date('Ym');
 
                 if ($lastInvoice) {
                     $lastNumber = (int) substr($lastInvoice->invoice_number, -4);
@@ -1611,7 +1687,7 @@ class SalesOrderController extends Controller
                 $invoice->taxable_amount = $invoiceTotal;
                 $invoice->tax_amount = $taxable_amount;
                 $invoice->total_amount = $invoiceTotal + $taxable_amount;
-                $invoice->balance_due =  $invoiceTotal + $taxable_amount;
+                $invoice->balance_due = $invoiceTotal + $taxable_amount;
                 $invoice->save();
 
                 $generatedInvoices[] = $invoice->id;
@@ -1791,7 +1867,7 @@ class SalesOrderController extends Controller
                         'Basic Rate Confirmation' => 'Incorrect',
 
                         'Net Landing Rate' => $netLandingRate ?? 0,
-                        'Product Net Landing Rate' =>  $productMapping->net_landing_rate ?? 0,
+                        'Product Net Landing Rate' => $productMapping->net_landing_rate ?? 0,
                         'Net Landing Rate Confirmation' => 'Incorrect',
 
                         'MRP' => $record['MRP'] ?? 0,
@@ -1927,7 +2003,7 @@ class SalesOrderController extends Controller
 
                 // dd($productMapping);
                 // Case pack quantity
-                $casePackQty = (int)$productObj->pcs_set * (int)$productObj->sets_ctn;
+                $casePackQty = (int) $productObj->pcs_set * (int) $productObj->sets_ctn;
 
                 // GST handling (0.18 → 18, 18 → 18)
                 $gst = ($record['GST'] > 0 && $record['GST'] < 1)
@@ -1960,7 +2036,6 @@ class SalesOrderController extends Controller
                 $mrpConfirmation = abs(
                     floatval($record['MRP']) - floatval($productObj->mrp)
                 ) <= $tolerance ? 'Correct' : 'Incorrect';
-
 
                 $insertedRows[] = [
                     'Customer Name' => $record['Customer Name'] ?? '',
@@ -2088,15 +2163,93 @@ class SalesOrderController extends Controller
         ])->deleteFileAfterSend(true);
     }
 
+    // Change this method as required
     public function downloadPoExcel(Request $request)
     {
-        $validated = Validator::make($request->all(), [
-            'salesOrderId' => 'required',
-        ]);
-
-        if ($validated->failed()) {
-            return back()->with('error', 'Please Try Again.');
+        // Parse IDs
+        if ($request->filled('ids')) {
+            $ids = is_array($request->ids) ? $request->ids : explode(',', $request->ids);
+        } else {
+            $ids = [];
         }
+
+        // Validate sales order exists
+        $salesOrder = SalesOrder::findOrFail($request->order_id);
+
+        // Build query with eager loading
+        $salesOrderDetails = SalesOrderProduct::with(['tempOrder', 'customer', 'product', 'warehouseAllocations.warehouse'])
+            ->where('sales_order_id', $salesOrder->id);
+
+        // Apply filters
+        if (! empty($ids)) {
+            $salesOrderDetails->whereIn('id', $ids);
+        }
+
+        if ($request->filled('brand') && $request->brand !== '') {
+            $salesOrderDetails->whereHas('product', function ($query) use ($request) {
+                $query->where('brand', $request->brand);
+            });
+        }
+
+        // if ($request->filled('shipping_status') && $request->shipping_status !== '') {
+        //     $salesOrderDetails->whereHas('warehouseAllocations', function ($query) use ($request) {
+        //         $query->where('shipping_status', strtolower($request->shipping_status));
+        //     });
+        // }
+
+        if ($request->filled('po_number') && $request->po_number !== '') {
+            $salesOrderDetails->whereHas('tempOrder', function ($query) use ($request) {
+                $query->where('po_number', $request->po_number);
+            });
+        }
+
+        // Apply quantity fulfilled filter
+        // if ($request->filled('quantity_fulfilled_filter') && $request->quantity_fulfilled_filter !== 'all') {
+        //     $qtyFilter = $request->quantity_fulfilled_filter;
+        //     if ($qtyFilter == '0') {
+        //         // Filter for not fulfilled (qty = 0)
+        //         $salesOrderDetails->where(function ($query) {
+        //             $query->whereHas('tempOrder', function ($subQuery) {
+        //                 $subQuery->where(function ($innerQuery) {
+        //                     $innerQuery->where('block', 0)
+        //                         ->orWhereNull('block');
+        //                 });
+        //             });
+        //         });
+        //     } elseif ($qtyFilter == 'greater_than_0') {
+        //         // Filter for fulfilled (qty > 0)
+        //         $salesOrderDetails->whereHas('tempOrder', function ($subQuery) {
+        //             $subQuery->where('block', '>', 0);
+        //         });
+        //     }
+        // }
+
+        // Apply final quantity fulfilled filter
+        if (
+            $request->filled('final_quantity_fulfilled_filter') &&
+            $request->final_quantity_fulfilled_filter !== 'all'
+        ) {
+            $finalQtyFilter = $request->final_quantity_fulfilled_filter;
+
+            if ($finalQtyFilter == '0') {
+                // Not fulfilled: no warehouse allocation with quantity > 0
+                $salesOrderDetails->where('dispatched_quantity', 0)->orWhereNull('dispatched_quantity');
+            }
+
+            if ($finalQtyFilter == 'greater_than_0') {
+                // Fulfilled: has warehouse allocation with quantity > 0
+                $salesOrderDetails->where('dispatched_quantity', '>', 0);
+            }
+        }
+
+
+        // Execute query
+        $filteredOrders = $salesOrderDetails->with([
+            // 'customerGroup',
+            // 'warehouse',
+            // 'warehouseStock',
+        ])
+            ->get();
 
         // Create temporary .xlsx file path
         $tempXlsxPath = storage_path('app/order_po_update_' . Str::random(8) . '.xlsx');
@@ -2104,20 +2257,7 @@ class SalesOrderController extends Controller
         // Create writer
         $writer = SimpleExcelWriter::create($tempXlsxPath);
 
-
-        $salesOrder = SalesOrder::with([
-            'customerGroup',
-            'warehouse',
-            'orderedProducts.tempOrder.vendorPIProduct',
-            'orderedProducts.warehouseStock',
-            'warehouseAllocations.warehouse',
-            'warehouseAllocations.product',
-        ])
-            ->withSum('orderedProducts', 'purchase_ordered_quantity')
-            ->withSum('orderedProducts', 'ordered_quantity')
-            ->findOrFail($request->salesOrderId);
-
-        foreach ($salesOrder->orderedProducts as $order) {
+        foreach ($filteredOrders as $order) {
             $fulfilledQuantity = 0;
 
             if ($order->ordered_quantity <= ($order->tempOrder->available_quantity ?? 0) + ($order->tempOrder->vendor_pi_fulfillment_quantity ?? 0)) {
@@ -2161,9 +2301,9 @@ class SalesOrderController extends Controller
                     $iteration = 0;
                     foreach ($order->warehouseAllocations->sortBy('sequence') as $allocation) {
                         if ($iteration > 0) {
-                            $warehouseAllocation .= ', ' . ($allocation->warehouse->name ?? 'N/A') . ': ' .  $allocation->allocated_quantity;
+                            $warehouseAllocation .= ', ' . ($allocation->warehouse->name ?? 'N/A') . ': ' . $allocation->allocated_quantity;
                         } else {
-                            $warehouseAllocation .= ($allocation->warehouse->name ?? 'N/A') . ': ' .  $allocation->allocated_quantity;
+                            $warehouseAllocation .= ($allocation->warehouse->name ?? 'N/A') . ': ' . $allocation->allocated_quantity;
                             $iteration++;
                         }
                     }
@@ -2196,42 +2336,84 @@ class SalesOrderController extends Controller
                 }
             }
 
-            $writer->addRow([
-                'Order No' => $salesOrder->order_number,
-                'Customer Name' => $order->tempOrder->customer_name,
-                'Facility Name' => $order->tempOrder->facility_name,
-                'Facility Location' => $order->tempOrder->facility_location,
-                'HSN' => $order->tempOrder->hsn,
-                'GST' => $order->tempOrder->gst,
-                'Item Code' => $order->tempOrder->item_code,
-                'SKU Code' => $order->tempOrder->sku,
-                'Brand' => $order->product->brand,
-                'Title' => $order->tempOrder->description,
-                'Basic Rate' => $order->tempOrder->basic_rate,
-                'Product Basic Rate' => $order->tempOrder->product_basic_rate,
-                'Basic Rate Confirmation' => $order->tempOrder->rate_confirmation ?? 'Incorrect',
-                'Net Landing Rate' => $order->tempOrder->net_landing_rate,
-                'Product Net Landing Rate' => $order->tempOrder->product_net_landing_rate,
-                'Net Landing Rate Confirmation' => $order->tempOrder->net_landing_rate_confirmation ?? 'Incorrect',
-                'PO MRP' => $order->tempOrder->mrp,
-                'Product MRP' => $order->tempOrder->product_mrp,
-                'MRP Confirmation' => $order->tempOrder->mrp_confirmation ?? 'Incorrect',
-                'PO Number' => $order->tempOrder->po_number,
-                'PO Quantity' => $order->ordered_quantity,
-                'Purchase Order Quantity' => $order->tempOrder?->purchase_ordered_quantity ?? 0,
-                'Block Quantity' => $order->tempOrder?->block,
-                'Quantity Fullfilled' => $qtyFullfilled,
-                'Final Fulfilled Quantity' => 0,
-                'Warehouse Allocation' => $warehouseAllocation,
-            ]);
+            if ($request->filled('quantity_fulfilled_filter') && $request->quantity_fulfilled_filter !== 'all') {
+                $qtyFilter = $request->quantity_fulfilled_filter;
+                if ($qtyFilter == '0') {
+                    if ($order->tempOrder?->block > 0) {
+                        continue;
+                    }
+                } elseif ($qtyFilter == 'greater_than_0') {
+                    if ($order->tempOrder?->block <= 0) {
+                        continue;
+                    }
+                }
+            }
+
+            // Sanitize and convert data for Excel
+            $rowData = [
+                'Order No' => $this->sanitizeExcelValue($salesOrder->order_number ?? ''),
+                'Customer Name' => $this->sanitizeExcelValue($order->tempOrder?->customer_name ?? ''),
+                'Facility Name' => $this->sanitizeExcelValue($order->tempOrder?->facility_name ?? ''),
+                'Facility Location' => $this->sanitizeExcelValue($order->tempOrder?->facility_location ?? ''),
+                'HSN' => $this->sanitizeExcelValue($order->tempOrder?->hsn ?? ''),
+                'GST' => $this->sanitizeExcelValue($order->tempOrder?->gst ?? ''),
+                'Item Code' => $this->sanitizeExcelValue($order->tempOrder?->item_code ?? ''),
+                'SKU Code' => $this->sanitizeExcelValue($order->tempOrder?->sku ?? ''),
+                'Brand' => $this->sanitizeExcelValue($order->product?->brand ?? ''),
+                'Title' => $this->sanitizeExcelValue($order->tempOrder?->description ?? ''),
+                'Basic Rate' => (float) ($order->tempOrder?->basic_rate ?? 0),
+                'Product Basic Rate' => (float) ($order->tempOrder?->product_basic_rate ?? 0),
+                'Basic Rate Confirmation' => $this->sanitizeExcelValue($order->tempOrder?->rate_confirmation ?? 'Incorrect'),
+                'Net Landing Rate' => (float) ($order->tempOrder?->net_landing_rate ?? 0),
+                'Product Net Landing Rate' => (float) ($order->tempOrder?->product_net_landing_rate ?? 0),
+                'Net Landing Rate Confirmation' => $this->sanitizeExcelValue($order->tempOrder?->net_landing_rate_confirmation ?? 'Incorrect'),
+                'PO MRP' => (float) ($order->tempOrder?->mrp ?? 0),
+                'Product MRP' => (float) ($order->tempOrder?->product_mrp ?? 0),
+                'MRP Confirmation' => $this->sanitizeExcelValue($order->tempOrder?->mrp_confirmation ?? 'Incorrect'),
+                'PO Number' => $this->sanitizeExcelValue($order->tempOrder?->po_number ?? ''),
+                'PO Quantity' => (int) ($order->ordered_quantity ?? 0),
+                'Purchase Order Quantity' => (int) ($order->tempOrder?->purchase_ordered_quantity ?? 0),
+                'Block Quantity' => (int) ($order->tempOrder?->block ?? 0),
+                'Quantity Fulfilled' => $order->dispatched_quantity ??  (int) $qtyFullfilled ?? 0,
+                'Final Fulfilled Quantity' => (int) ($order->final_dispatched_quantity ?? 0),
+                'Warehouse Allocation' => $this->sanitizeExcelValue($warehouseAllocation),
+            ];
+
+            $writer->addRow($rowData);
         }
 
         // Close the writer
         $writer->close();
 
-        return response()->download($tempXlsxPath, 'vendor_po.xlsx', [
+        return response()->download($tempXlsxPath, 'update_sales_order_po_' . $salesOrder->id . '.xlsx', [
             'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         ])->deleteFileAfterSend(true);
+    }
+
+    /**
+     * Sanitize values for Excel to prevent corruption
+     */
+    private function sanitizeExcelValue($value): string
+    {
+        if (is_null($value)) {
+            return '';
+        }
+
+        // Convert to string
+        $value = (string) $value;
+
+        // Remove control characters and invalid XML characters
+        $value = preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/u', '', $value);
+
+        // Escape formula injection attempts
+        if (in_array(substr($value, 0, 1), ['=', '+', '-', '@'])) {
+            $value = "'" . $value;
+        }
+
+        // Trim whitespace
+        $value = trim($value);
+
+        return $value;
     }
 
     public function downloadNotFoundSku($id)

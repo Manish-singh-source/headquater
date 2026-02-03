@@ -161,22 +161,22 @@
                             <div>
                                 <select class="form-select border-2 border-primary" id="selectQuantityFulfilledFilter"
                                     aria-label="Default select example" name="selectQuantityFulfilledFilter">
-                                    <option value="all" selected>Select Quantity Fulfilled</option>
-                                    <option value="0">0</option>
-                                    <option value="greater_than_0">Greater than 0</option>
+                                    <option value="all" selected>Quantity Fulfilled</option>
+                                    <option value="0">Not Fulfilled</option>
+                                    <option value="greater_than_0">Fulfilled</option>
                                 </select>
                             </div>
                             {{-- filter for quantity fulfilled --}}
-                            {{-- 
+
                             <div>
                                 <select class="form-select border-2 border-primary" id="selectFinalQuantityFulfilledFilter"
                                     aria-label="Default select example" name="selectFinalQuantityFulfilledFilter">
-                                    <option value="all" selected>Select Final Quantity Fulfilled</option>
-                                    <option value="0">0</option>
-                                    <option value="greater_than_0">Greater than 0</option>
+                                    <option value="all" selected>Final Quantity Fulfilled</option>
+                                    <option value="0">Not Fulfilled</option>
+                                    <option value="greater_than_0">Fulfilled</option>
                                 </select>
-                            </div> 
-                            --}}
+                            </div>
+
 
                             <div>
                                 <select class="form-select border-2 border-primary" id="selectProductStatusFilter"
@@ -224,6 +224,8 @@
                                     <div class="dropdown-menu dropdown-menu-right dropdown-menu-lg-end">
                                         <button type="button" id="delete-selected"
                                             class="dropdown-item cursor-pointer">Delete All</button>
+                                        <button type="button" id="sendToPackaging"
+                                            class="dropdown-item cursor-pointer">Send To Packaging</button>
                                         @if (in_array($salesOrder->status, ['ready_to_ship', 'shipped', 'completed']))
                                             <button type="button" class="dropdown-item cursor-pointer"
                                                 id="generateInvoice">
@@ -523,10 +525,10 @@
         document.getElementById('changeStatus').addEventListener('change', function() {
             if (confirm('Are you sure you want to change status for order?')) {
                 var quantityNeedsToFullfill = document.getElementById('quantityNeedsToFullfill').innerHTML;
-                // if (quantityNeedsToFullfill > 0) {
-                //     alert('Please fulfill the quantity before changing the status.');
-                //     location.reload();
-                // }
+                if (quantityNeedsToFullfill > 0) {
+                    alert('Please fulfill the quantity before changing the status.');
+                    location.reload();
+                }
 
                 document.getElementById('statusForm').submit();
             }
@@ -610,7 +612,7 @@
                 }
                 // Use regex for exact match
                 brandSelection.column(-2).search(selected ? '^' + selected + '$' : '', true, false).draw();
-            });
+            }); 
 
             $('#selectProductStatusFilter').on('change', function() {
                 var selected = $(this).val().trim();
@@ -653,14 +655,141 @@
             $(document).on('click', '#exportData', function() {
                 var purchaseOrderId = $("#orderId").text().trim();
 
-                // Construct download URL with parameters
-                var downloadUrl = '{{ route('products.download.po.excel') }}' +
-                    '?salesOrderId=' + encodeURIComponent(purchaseOrderId);
+                let selectQuantityFulfilledFilter = $('#selectQuantityFulfilledFilter').val();
+                let selectFinalQuantityFulfilledFilter = $('#selectFinalQuantityFulfilledFilter').val();
 
-                // Trigger browser download
-                window.location.href = downloadUrl;
+                let selected = [];
+                $('.row-checkbox:checked').each(function() {
+                    selected.push($(this).val());
+                });
+
+                let brand = $('#selectBrand').val();
+                let poNumber = $('#selectPONumber').val();
+                let shippingStatus = $('#selectProductStatusFilter').val();
+
+                // If no checkboxes selected, select all visible rows only
+                if (selected.length === 0) {
+                    brandSelection.rows({
+                        search: 'applied'
+                    }).nodes().to$().find('.row-checkbox').prop('checked', true);
+                    brandSelection.rows({
+                        search: 'applied'
+                    }).nodes().to$().find('.row-checkbox:checked').each(function() {
+                        selected.push($(this).val());
+                    });
+                }
+
+                // Create form for file download
+                let form = $('<form>', {
+                    'method': 'POST',
+                    'action': '{{ route('products.download.po.excel') }}'
+                });
+
+                form.append($('<input>', {
+                    'type': 'hidden',
+                    'name': '_token',
+                    'value': '{{ csrf_token() }}'
+                }));
+
+                form.append($('<input>', {
+                    'type': 'hidden',
+                    'name': 'order_id',
+                    'value': purchaseOrderId
+                }));
+
+                form.append($('<input>', {
+                    'type': 'hidden',
+                    'name': 'brand',
+                    'value': brand
+                }));
+
+                form.append($('<input>', {
+                    'type': 'hidden',
+                    'name': 'po_number',
+                    'value': poNumber
+                }));
+
+                form.append($('<input>', {
+                    'type': 'hidden',
+                    'name': 'shipping_status',
+                    'value': shippingStatus
+                }));
+
+                form.append($('<input>', {
+                    'type': 'hidden',
+                    'name': 'quantity_fulfilled_filter',
+                    'value': selectQuantityFulfilledFilter
+                }));
+
+                form.append($('<input>', {
+                    'type': 'hidden',
+                    'name': 'final_quantity_fulfilled_filter',
+                    'value': selectFinalQuantityFulfilledFilter
+                }));
+
+                form.append($('<input>', {
+                    'type': 'hidden',
+                    'name': 'ids',
+                    'value': selected.join(',')
+                }));
+
+                $('body').append(form);
+                form.submit();
+                form.remove();
             });
 
+            // Send to Packaging button click event
+            $(document).on('click', '#sendToPackaging', function() {
+                var purchaseOrderId = $("#orderId").text().trim();
+
+                let selectQuantityFulfilledFilter = $('#selectQuantityFulfilledFilter').val();
+                let selectFinalQuantityFulfilledFilter = $('#selectFinalQuantityFulfilledFilter').val();
+
+                let selected = [];
+                $('.row-checkbox:checked').each(function() {
+                    selected.push($(this).val());
+                });
+
+                // If no checkboxes selected, select all visible rows only
+                if (selected.length === 0) {
+                    brandSelection.rows({
+                        search: 'applied'
+                    }).nodes().to$().find('.row-checkbox').prop('checked', true);
+                    brandSelection.rows({
+                        search: 'applied'
+                    }).nodes().to$().find('.row-checkbox:checked').each(function() {
+                        selected.push($(this).val());
+                    });
+                }
+
+                console.log(selected.join(','));
+
+                if (confirm('Are you sure you want to send selected/all records to Packaging?')) {
+                    $.ajax({
+                        url: '{{ route('send.to.packaging') }}', // Your Laravel route
+                        method: 'POST',
+                        data: {
+                            _token: '{{ csrf_token() }}',
+                            _method: 'POST',
+                            order_id: purchaseOrderId,
+                            ids: selected.join(','),
+                            quantity_fulfilled_filter: selectQuantityFulfilledFilter,
+                            final_quantity_fulfilled_filter: selectFinalQuantityFulfilledFilter
+                        },
+                        success: function(response) {
+                            // Handle success (e.g., show a message or update UI)
+                            alert('Selected records sent to Packaging successfully!');
+                            console.log(response);
+                            location.reload();
+                        },
+                        error: function(xhr, status, error) {
+                            // Handle error
+                            alert('An error occurred while sending to Packaging.');
+                            console.error(error);
+                        }
+                    });
+                }
+            });
 
             $(document).on('click', '#generateInvoice', function(e) {
                 e.preventDefault();
@@ -674,10 +803,14 @@
                 let poNumber = $('#selectPONumber').val();
                 let shippingStatus = $('#selectProductStatusFilter').val();
 
-                // If no checkboxes selected, select all
+                // If no checkboxes selected, select all visible rows only
                 if (selected.length === 0) {
-                    brandSelection.$('.row-checkbox').prop('checked', true);
-                    brandSelection.$('.row-checkbox:checked').each(function() {
+                    brandSelection.rows({
+                        search: 'applied'
+                    }).nodes().to$().find('.row-checkbox').prop('checked', true);
+                    brandSelection.rows({
+                        search: 'applied'
+                    }).nodes().to$().find('.row-checkbox:checked').each(function() {
                         selected.push($(this).val());
                     });
                 }

@@ -1,30 +1,30 @@
 <?php
 
-use App\Http\Controllers\ReadyToShip;
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\RoleController;
-use App\Http\Controllers\StaffController;
-use App\Http\Controllers\ReportController;
-use App\Http\Controllers\VendorController;
-use App\Http\Controllers\InvoiceController;
-use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ActivityController;
 use App\Http\Controllers\CustomerController;
-use App\Http\Controllers\LocationController;
-use App\Http\Controllers\RegisterController;
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\PackagingController;
-use App\Http\Controllers\WarehouseController;
-use App\Http\Controllers\PermissionController;
-use App\Http\Controllers\SalesOrderController;
-use App\Http\Controllers\SKUMappingController;
-use App\Http\Controllers\TrackOrderController;
-use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\CustomerGroupController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\LocationController;
+use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\PackagingController;
+use App\Http\Controllers\PermissionController;
+use App\Http\Controllers\ProductController;
+use App\Http\Controllers\ProductMappingController;
 use App\Http\Controllers\ProductReturnController;
 use App\Http\Controllers\PurchaseOrderController;
-use App\Http\Controllers\ProductMappingController;
+use App\Http\Controllers\ReadyToShip;
 use App\Http\Controllers\ReceivedProductsController;
+use App\Http\Controllers\RegisterController;
+use App\Http\Controllers\ReportController;
+use App\Http\Controllers\RoleController;
+use App\Http\Controllers\SalesOrderController;
+use App\Http\Controllers\SKUMappingController;
+use App\Http\Controllers\StaffController;
+use App\Http\Controllers\TrackOrderController;
+use App\Http\Controllers\VendorController;
+use App\Http\Controllers\WarehouseController;
+use Illuminate\Support\Facades\Route;
 
 Route::controller(LocationController::class)->group(function () {
     Route::get('/countries', 'getCountries');
@@ -197,11 +197,12 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/change-status', 'changeStatus')->name('change.sales.order.status');
         Route::post('/check-products-stock', 'checkProductsStock')->name('check.sales.order.stock');
         Route::get('/download-block-order-csv', 'downloadBlockedCSV')->name('download.sales.order.excel');
-        Route::get('/products-download-po-excel', 'downloadPoExcel')->name('products.download.po.excel');
+        Route::post('/products-download-po-excel', 'downloadPoExcel')->name('products.download.po.excel');
         Route::get('/download-not-found-sku/{id}', 'downloadNotFoundSku')->name('download.not.found.sku.excel');
         Route::get('/download-not-found-customer/{id}', 'downloadNotFoundCustomer')->name('download.not.found.customer.excel');
         Route::get('/download-not-found-vendor/{id}', 'downloadNotFoundVendor')->name('download.not.found.vendor.excel');
         Route::post('/generate-invoice', 'generateInvoice')->name('generate.invoice');
+        Route::post('/send-to-packaging', 'sendToPackaging')->name('send.to.packaging');
 
         // Multi-warehouse auto allocation routes
         Route::post('/auto-allocate-stock/{id}', 'autoAllocateStock')->name('sales.order.auto.allocate');

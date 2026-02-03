@@ -60,7 +60,7 @@
         <div class="main-content">
             <div class="div d-flex my-2">
                 <div class="col">
-                    <h5 class="mb-3">Packaging List: 
+                    <h5 class="mb-3">Packaging List:
                         <span id="salesOrderId" class="d-none">{{ $salesOrder->id }}</span>
                         <span>{{ $salesOrder->order_number }}</span>
                     </h5>
@@ -150,6 +150,18 @@
                         <!-- Tabs Navigation -->
                         @if (!$isAdmin ?? false)
                             <div class="d-flex justify-content-end my-3 gap-2">
+
+                                <div>
+                                    <select class="form-select border-2 border-primary" id="selectProductStatusFilter"
+                                        aria-label="Default select example" name="selectProductStatusFilter">
+                                        <option value="" selected>Select Product Status</option>
+                                        <option value="Packaging">Packaging</option>
+                                        <option value="Packaged">Packaged</option>
+                                        <option value="Ready to Ship Approval Pending">Ready to Ship Approval Pending
+                                        </option>
+                                    </select>
+                                </div>
+
                                 <button class="btn btn-sm border-2 border-primary" data-bs-toggle="modal"
                                     data-bs-target="#staticBackdrop1" class="btn btn-sm border-2 border-primary">
                                     Update PO
@@ -179,8 +191,8 @@
                                                     </div>
 
                                                     <div class="col-12 mb-3">
-                                                        <label for="pi_excel" class="form-label">Updated PO(CSV/ELSX) <span
-                                                                class="text-danger">*</span></label>
+                                                        <label for="pi_excel" class="form-label">Updated PO(CSV/ELSX)
+                                                            <span class="text-danger">*</span></label>
                                                         <input type="file" name="pi_excel" id="pi_excel"
                                                             class="form-control" value="" required="">
                                                     </div>
@@ -489,55 +501,56 @@
                         className: 'd-none',
                     }]
                 });
-
-                // Filter by client name
-                // $('#customerPOTable').on('change', function() {
-                //     var selected = $(this).val().trim();
-                //     customerPOTableList.column(2).search(selected ? '^' + selected + '$' : '', true, false)
-                //         .draw();
-                // });
             }
+
+
+            $('#selectProductStatusFilter').on('change', function() {
+                var selected = $(this).val().trim();
+
+                customerPOTableList.column(-1).search(selected, true, false).draw();
+            });
+
 
             $("#exportPackagingProducts").on("click", function() {
                 var customerFacilityName = '';
                 var salesOrderId = $("#salesOrderId").text().trim();
-                console.log("clicked");
-                console.log(customerFacilityName);
-                console.log(salesOrderId);
 
-                // if (customerFacilityName != "" && salesOrderId != "") {
-                $.ajax({
-                    url: '/download-packing-products-excel',
-                    method: 'GET',
-                    data: {
-                        id: salesOrderId,
-                        facility_name: customerFacilityName,
-                    },
-                    xhrFields: {
-                        responseType: 'blob' // important for binary files
-                    },
-                    success: function(data, status, xhr) {
-                        // Get filename from response header (optional)
-                        var filename = xhr.getResponseHeader("Content-Disposition")
-                            ?.split("filename=")[1] || "products.xlsx";
+                var productStatus = $('#selectProductStatusFilter').val();
 
-                        var url = window.URL.createObjectURL(data);
-                        var a = document.createElement("a");
-                        a.href = url;
-                        a.download = filename;
-                        document.body.appendChild(a);
-                        a.click();
-                        a.remove();
-                        window.URL.revokeObjectURL(url);
-                    },
-                    error: function(xhr, status, error) {
-                        console.error("Error:", error);
-                        alert("Error");
-                    }
-                });
-                // } else {
-                //     alert("Please Select Client Name.");
-                // }
+                console.log(productStatus);
+                if (false) {
+                    $.ajax({
+                        url: '/download-packing-products-excel',
+                        method: 'GET',
+                        data: {
+                            id: salesOrderId,
+                            facility_name: customerFacilityName,
+                            product_status: productStatus
+                        },
+                        xhrFields: {
+                            responseType: 'blob' // important for binary files
+                        },
+                        success: function(data, status, xhr) {
+                            // Get filename from response header (optional)
+                            var filename = xhr.getResponseHeader("Content-Disposition")
+                                ?.split("filename=")[1] || "products.xlsx";
+
+                            var url = window.URL.createObjectURL(data);
+                            var a = document.createElement("a");
+                            a.href = url;
+                            a.download = filename;
+                            document.body.appendChild(a);
+                            a.click();
+                            a.remove();
+                            window.URL.revokeObjectURL(url);
+                        },
+                        error: function(xhr, status, error) {
+                            console.error("Error:", error);
+                            alert("Error");
+                        }
+                    });
+                }
+
             });
 
         });
