@@ -236,6 +236,9 @@
                                         <th>MRP</th>
                                         <th>PO&nbsp;Quantity</th>
                                         <th>Purchase&nbsp;Order&nbsp;Quantity</th>
+                                        <th>Vendor&nbsp;PI&nbsp;Fulfillment&nbsp;Quantity</th>
+                                        <th>Vendor&nbsp;PI&nbsp;Received&nbsp;Quantity</th>
+
                                         <th>Warehouse&nbsp;Name</th>
                                         <th>Warehouse&nbsp;Allocation</th>
                                         {{-- <th>PI&nbsp;Quantity</th> --}}
@@ -265,7 +268,9 @@
                                             <td>{{ $order->tempOrder->net_landing_rate }}</td>
                                             <td>{{ $order->tempOrder->mrp }}</td>
                                             <td>{{ $order->ordered_quantity }}</td>
-                                            <td>{{ $order->purchase_ordered_quantity }}</td>
+                                            <td>{{ $order->tempOrder?->purchase_order_quantity }}</td>
+                                            <td>{{ $order->tempOrder?->vendor_pi_fulfillment_quantity }}</td>
+                                            <td>{{ $order->tempOrder?->vendor_pi_received_quantity }}</td>
                                             @if ($isSuperAdmin)
                                                 <td>All</td>
                                             @else

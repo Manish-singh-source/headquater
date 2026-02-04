@@ -297,6 +297,8 @@
                                         <th>PO&nbsp;Number</th>
                                         <th>PO&nbsp;Quantity</th>
                                         <th>Purchase&nbsp;Order&nbsp;Quantity</th>
+                                        <th>Vendor&nbsp;PI&nbsp;Fulfillment&nbsp;Quantity</th>
+                                        <th>Vendor&nbsp;PI&nbsp;Received&nbsp;Quantity</th>
                                         <th>Block&nbsp;Quantity</th>
                                         <th>Qty&nbsp;Fullfilled</th>
                                         <th>Final&nbsp;Quantity&nbsp;Fulfilled</th>
@@ -347,38 +349,27 @@
                                             <td>{{ $order->tempOrder?->po_number }}</td>
                                             <td>{{ $order->ordered_quantity }}</td>
                                             <td>{{ $order->tempOrder?->purchase_order_quantity }}</td>
+                                            <td>{{ $order->tempOrder?->vendor_pi_fulfillment_quantity }}</td>
+                                            <td>{{ $order->tempOrder?->vendor_pi_received_quantity }}</td>
                                             <td>{{ $order->tempOrder?->block }}</td>
                                             <td>
-                                                @if ($order->tempOrder?->vendor_pi_received_quantity > 0)
-                                                    @if ($order->tempOrder->po_qty <= ($order->tempOrder?->block ?? 0))
-                                                        <span
-                                                            class="badge text-success bg-success-subtle">{{ $order->tempOrder->po_qty }}</span>
-                                                    @else
-                                                        <span
-                                                            class="badge text-danger bg-danger-subtle">{{ $order->tempOrder?->block ?? 0 }}</span>
-                                                    @endif
-                                                @elseif($order->tempOrder?->vendor_pi_fulfillment_quantity > 0)
-                                                    @if (
-                                                        $order->tempOrder->po_qty <=
-                                                            ($order->tempOrder?->block ?? 0) + ($order->tempOrder?->vendor_pi_fulfillment_quantity ?? 0))
-                                                        <span
-                                                            class="badge text-success bg-success-subtle">{{ $order->tempOrder->po_qty }}</span>
-                                                    @else
-                                                        <span
-                                                            class="badge text-danger bg-danger-subtle">{{ ($order->tempOrder?->block ?? 0) + ($order->tempOrder?->vendor_pi_fulfillment_quantity ?? 0) }}</span>
-                                                    @endif
+                                                @if ($order->dispatched_quantity == $order->ordered_quantity)
+                                                    <span
+                                                        class="badge text-success bg-success-subtle">{{ $order->dispatched_quantity ?? 0 }}</span>
                                                 @else
-                                                    @if ($order->tempOrder->po_qty <= ($order->tempOrder?->block ?? 0))
-                                                        <span
-                                                            class="badge text-success bg-success-subtle">{{ $order->tempOrder->po_qty }}</span>
-                                                    @else
-                                                        <span
-                                                            class="badge text-danger bg-danger-subtle">{{ $order->tempOrder?->block ?? 0 }}</span>
-                                                    @endif
+                                                    <span
+                                                        class="badge text-danger bg-danger-subtle">{{ $order->dispatched_quantity ?? 0 }}</span>
                                                 @endif
                                             </td>
-                                            <td>{{ $order->dispatched_quantity ?? 0 }}</td>
-
+                                            <td>
+                                                @if ($order->final_dispatched_quantity == $order->ordered_quantity)
+                                                    <span
+                                                        class="badge text-success bg-success-subtle">{{ $order->final_dispatched_quantity ?? 0 }}</span>
+                                                @else
+                                                    <span
+                                                        class="badge text-danger bg-danger-subtle">{{ $order->final_dispatched_quantity ?? 0 }}</span>
+                                                @endif
+                                            </td>
                                             <td>
                                                 @php
                                                     // Check if product has warehouse allocations (auto-allocation)
@@ -612,7 +603,7 @@
                 }
                 // Use regex for exact match
                 brandSelection.column(-2).search(selected ? '^' + selected + '$' : '', true, false).draw();
-            }); 
+            });
 
             $('#selectProductStatusFilter').on('change', function() {
                 var selected = $(this).val().trim();
@@ -630,11 +621,11 @@
                 } else if (selected === 'greater_than_0') {
                     // Use regex to match numbers greater than 0
                     selected = '^(?!0$)\\d+$';
-                    brandSelection.column(23).search(selected, true, false).draw();
+                    brandSelection.column(25).search(selected, true, false).draw();
                     return;
                 }
                 // Use regex for exact match
-                brandSelection.column(23).search(selected ? '^' + selected + '$' : '', true, false).draw();
+                brandSelection.column(25).search(selected ? '^' + selected + '$' : '', true, false).draw();
             });
 
             $('#selectFinalQuantityFulfilledFilter').on('change', function() {
@@ -645,11 +636,11 @@
                 } else if (selected === 'greater_than_0') {
                     // Use regex to match numbers greater than 0
                     selected = '^(?!0$)\\d+$';
-                    brandSelection.column(24).search(selected, true, false).draw();
+                    brandSelection.column(26).search(selected, true, false).draw();
                     return;
                 }
                 // Use regex for exact match
-                brandSelection.column(24).search(selected ? '^' + selected + '$' : '', true, false).draw();
+                brandSelection.column(26).search(selected ? '^' + selected + '$' : '', true, false).draw();
             });
 
             $(document).on('click', '#exportData', function() {

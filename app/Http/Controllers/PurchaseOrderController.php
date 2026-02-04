@@ -729,6 +729,8 @@ class PurchaseOrderController extends Controller
                         $salesOrderProduct = SalesOrderProduct::where('temp_order_id', $tempOrderproduct->id)->first();
 
                         if ($salesOrderProduct) {
+                            $salesOrderProduct->dispatched_quantity = $allocatedQty;
+                            $salesOrderProduct->save();
                             // Check if this sales order uses auto-allocation (has warehouse allocations)
                             $existingAllocations = WarehouseAllocation::where('sales_order_product_id', $salesOrderProduct->id)
                                 ->where('warehouse_id', $warehouseId)

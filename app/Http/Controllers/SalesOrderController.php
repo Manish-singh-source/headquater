@@ -808,18 +808,13 @@ class SalesOrderController extends Controller
                     }
                 }
 
-                if ($record['Quantity Fulfilled'] > 0) {
-                    $salesOrderProductUpdate->dispatched_quantity = $record['Final Fulfilled Quantity'] ?? $record['Quantity Fulfilled'] ?? 0;
+                if ($record['Final Fulfilled Quantity'] > 0) {
+                    $salesOrderProductUpdate->final_dispatched_quantity = $record['Final Fulfilled Quantity'] ?? 0;
 
                     if ($salesOrderProductUpdate->warehouseAllocations()->count() > 0) {
-                        // Update warehouse allocation dispatched quantities
-                        $totalAllocated = $salesOrderProductUpdate->warehouseAllocations->sum('allocated_quantity');
-
                         foreach ($salesOrderProductUpdate->warehouseAllocations as $allocation) {
                             // Proportionally distribute dispatched quantity
-                            $proportionalDispatched = $record['Final Fulfilled Quantity'] ?? $record['Quantity Fulfilled'] ?? 0;
-
-                            $allocation->allocated_quantity = $proportionalDispatched;
+                            $allocation->final_dispatched_quantity = $record['Final Fulfilled Quantity'] ?? 0;
                             $allocation->save();
                         }
                     }
@@ -2224,6 +2219,24 @@ class SalesOrderController extends Controller
         //     }
         // }
 
+        // Apply dispatched_quantity filter
+        if (
+            $request->filled('quantity_fulfilled_filter') &&
+            $request->quantity_fulfilled_filter !== 'all'
+        ) {
+            $quantifyFilter = $request->quantity_fulfilled_filter;
+
+            if ($quantifyFilter == '0') {
+                // Not fulfilled: no warehouse allocation with quantity > 0
+                $salesOrderDetails->where('dispatched_quantity', 0)->orWhereNull('dispatched_quantity');
+            }
+
+            if ($quantifyFilter == 'greater_than_0') {
+                // Fulfilled: has warehouse allocation with quantity > 0
+                $salesOrderDetails->where('dispatched_quantity', '>', 0);
+            }
+        }
+
         // Apply final quantity fulfilled filter
         if (
             $request->filled('final_quantity_fulfilled_filter') &&
@@ -2233,12 +2246,12 @@ class SalesOrderController extends Controller
 
             if ($finalQtyFilter == '0') {
                 // Not fulfilled: no warehouse allocation with quantity > 0
-                $salesOrderDetails->where('dispatched_quantity', 0)->orWhereNull('dispatched_quantity');
+                $salesOrderDetails->where('final_dispatched_quantity', 0)->orWhereNull('final_dispatched_quantity');
             }
 
             if ($finalQtyFilter == 'greater_than_0') {
                 // Fulfilled: has warehouse allocation with quantity > 0
-                $salesOrderDetails->where('dispatched_quantity', '>', 0);
+                $salesOrderDetails->where('final_dispatched_quantity', '>', 0);
             }
         }
 
@@ -2339,11 +2352,24 @@ class SalesOrderController extends Controller
             if ($request->filled('quantity_fulfilled_filter') && $request->quantity_fulfilled_filter !== 'all') {
                 $qtyFilter = $request->quantity_fulfilled_filter;
                 if ($qtyFilter == '0') {
-                    if ($order->tempOrder?->block > 0) {
+                    if ($order->dispatched_quantity > 0) {
                         continue;
                     }
                 } elseif ($qtyFilter == 'greater_than_0') {
-                    if ($order->tempOrder?->block <= 0) {
+                    if ($order->dispatched_quantity <= 0) {
+                        continue;
+                    }
+                }
+            }
+
+            if ($request->filled('final_quantity_fulfilled_filter') && $request->final_quantity_fulfilled_filter !== 'all') {
+                $finalQtyFilter = $request->final_quantity_fulfilled_filter;
+                if ($finalQtyFilter == '0') {
+                    if ($order->final_dispatched_quantity > 0) {
+                        continue;
+                    }
+                } elseif ($finalQtyFilter == 'greater_than_0') {
+                    if ($order->final_dispatched_quantity <= 0) {
                         continue;
                     }
                 }
@@ -2373,6 +2399,8 @@ class SalesOrderController extends Controller
                 'PO Number' => $this->sanitizeExcelValue($order->tempOrder?->po_number ?? ''),
                 'PO Quantity' => (int) ($order->ordered_quantity ?? 0),
                 'Purchase Order Quantity' => (int) ($order->tempOrder?->purchase_ordered_quantity ?? 0),
+                'Vendor PI Fulfillment Quantity' => (int) ($order->tempOrder?->vendor_pi_fulfillment_quantity ?? 0),
+                'Vendor PI Received Quantity' => (int) ($order->tempOrder?->vendor_pi_received_quantity ?? 0),
                 'Block Quantity' => (int) ($order->tempOrder?->block ?? 0),
                 'Quantity Fulfilled' => $order->dispatched_quantity ??  (int) $qtyFullfilled ?? 0,
                 'Final Fulfilled Quantity' => (int) ($order->final_dispatched_quantity ?? 0),
