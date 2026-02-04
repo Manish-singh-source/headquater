@@ -154,7 +154,7 @@
                                 <div>
                                     <select class="form-select border-2 border-primary" id="selectProductStatusFilter"
                                         aria-label="Default select example" name="selectProductStatusFilter">
-                                        <option value="" selected>Select Product Status</option>
+                                        <option value="all" selected>Select Product Status</option>
                                         <option value="Packaging">Packaging</option>
                                         <option value="Packaged">Packaged</option>
                                         <option value="Ready to Ship Approval Pending">Ready to Ship Approval Pending
@@ -518,7 +518,7 @@
                 var productStatus = $('#selectProductStatusFilter').val();
 
                 console.log(productStatus);
-                if (false) {
+                // if (false) {
                     $.ajax({
                         url: '/download-packing-products-excel',
                         method: 'GET',
@@ -549,7 +549,7 @@
                             alert("Error");
                         }
                     });
-                }
+                // }
 
             });
 
