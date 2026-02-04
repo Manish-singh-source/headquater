@@ -2398,7 +2398,7 @@ class SalesOrderController extends Controller
                 'MRP Confirmation' => $this->sanitizeExcelValue($order->tempOrder?->mrp_confirmation ?? 'Incorrect'),
                 'PO Number' => $this->sanitizeExcelValue($order->tempOrder?->po_number ?? ''),
                 'PO Quantity' => (int) ($order->ordered_quantity ?? 0),
-                'Purchase Order Quantity' => (int) ($order->tempOrder?->purchase_ordered_quantity ?? 0),
+                'Purchase Order Quantity' => (int) ($order->tempOrder?->purchase_order_quantity ?? 0),  
                 'Vendor PI Fulfillment Quantity' => (int) ($order->tempOrder?->vendor_pi_fulfillment_quantity ?? 0),
                 'Vendor PI Received Quantity' => (int) ($order->tempOrder?->vendor_pi_received_quantity ?? 0),
                 'Block Quantity' => (int) ($order->tempOrder?->block ?? 0),

@@ -282,42 +282,22 @@
                                                         @if ($isSuperAdmin ?? false)
                                                             <div>
                                                                 {{ $allocation->warehouse->name }}:
-                                                                {{ $allocation->allocated_quantity }}
+                                                                {{ $allocation->final_dispatched_quantity }}
                                                             </div>
                                                         @else
                                                             @if ($user->warehouse_id == $allocation->warehouse_id)
                                                                 <div>
                                                                     {{ $user->warehouse->name }}:
-                                                                    {{ $allocation->allocated_quantity ?? 0 }}
+                                                                    {{ $allocation->final_dispatched_quantity ?? 0 }}
                                                                 </div>
                                                             @endif
                                                         @endif
                                                     @endforeach
                                                 @else
-                                                    {{ $order->dispatched_quantity ?? 0 }}
+                                                    {{ $order->final_dispatched_quantity ?? 0 }}
                                                 @endif
                                             </td>
                                             <td>{{ $order->tempOrder->po_number }}</td>
-                                            <td>
-                                                @if ($order->warehouseAllocations->count() >= 1)
-                                                    @foreach ($order->warehouseAllocations as $allocation)
-                                                        @if ($isSuperAdmin ?? false)
-                                                            <div>
-                                                                {{ $allocation->warehouse->name }}:
-                                                                {{ $allocation->allocated_quantity ?? 0 }}
-                                                            </div>
-                                                        @else
-                                                            @if ($user->warehouse_id == $allocation->warehouse_id)
-                                                                <div>
-                                                                    {{ $allocation->allocated_quantity ?? 0 }}
-                                                                </div>
-                                                            @endif
-                                                        @endif
-                                                    @endforeach
-                                                @else
-                                                    {{ $order->dispatched_quantity ?? 0 }}
-                                                @endif
-                                            </td>
                                             <td>
                                                 @if ($order->warehouseAllocations->count() >= 1)
                                                     @foreach ($order->warehouseAllocations as $allocation)
@@ -336,6 +316,26 @@
                                                     @endforeach
                                                 @else
                                                     {{ $order->final_dispatched_quantity ?? 0 }}
+                                                @endif
+                                            </td>
+                                            <td>
+                                                @if ($order->warehouseAllocations->count() >= 1)
+                                                    @foreach ($order->warehouseAllocations as $allocation)
+                                                        @if ($isSuperAdmin ?? false)
+                                                            <div>
+                                                                {{ $allocation->warehouse->name }}:
+                                                                {{ $allocation->final_final_dispatched_quantity ?? 0 }}
+                                                            </div>
+                                                        @else
+                                                            @if ($user->warehouse_id == $allocation->warehouse_id)
+                                                                <div>
+                                                                    {{ $allocation->final_final_dispatched_quantity ?? 0 }}
+                                                                </div>
+                                                            @endif
+                                                        @endif
+                                                    @endforeach
+                                                @else
+                                                    {{ $order->final_final_dispatched_quantity ?? 0 }}
                                                 @endif
                                             </td>
                                             <td>{{ $order->tempOrder->case_pack_quantity }}</td>
