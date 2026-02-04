@@ -18,6 +18,9 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Spatie\SimpleExcel\SimpleExcelReader;
+use Spatie\SimpleExcel\SimpleExcelWriter;
+use Illuminate\Support\Str;
+use App\Models\CustomerGroup;
 
 class CustomerController extends Controller
 {
@@ -53,6 +56,66 @@ class CustomerController extends Controller
             return view('customer.index', compact('customers', 'status', 'totalCustomersCount', 'activeCustomersCount', 'inactiveCustomersCount'));
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Error retrieving customers: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Download customers of a group as Excel file (can be used as update template)
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  int  $g_id
+     * @return \Illuminate\Http\Response
+     */
+    public function downloadGroupCustomersExcel(Request $request, $g_id)
+    {
+        try {
+            $group = CustomerGroup::find($g_id);
+
+            if (! $group) {
+                return redirect()->back()->with('error', 'Customer group not found.');
+            }
+
+            $tempXlsxPath = storage_path('app/customers_group_' . Str::random(8) . '.xlsx');
+            $writer = SimpleExcelWriter::create($tempXlsxPath);
+
+            $customers = $group->customers()->orderBy('id')->get();
+
+            if ($customers->isEmpty()) {
+                return redirect()->back()->with('info', 'No customers found to download.');
+            }
+
+            foreach ($customers as $c) {
+                $writer->addRow([
+                    'ID' => $c->id,
+                    'Facility Name' => $c->facility_name ?? '',
+                    'Client Name' => $c->client_name ?? '',
+                    'Contact Name' => $c->contact_name ?? '',
+                    'Email' => $c->email ?? '',
+                    'Contact No' => $c->contact_no ?? '',
+                    'GSTIN' => $c->gstin ?? '',
+                    'PAN' => $c->pan ?? '',
+                    'Company Name' => $c->company_name ?? '',
+                    'Billing Address' => $c->billing_address ?? '',
+                    'Billing Country' => $c->billing_country ?? '',
+                    'Billing State' => $c->billing_state ?? '',
+                    'Billing City' => $c->billing_city ?? '',
+                    'Billing Zip' => $c->billing_zip ?? '',
+                    'Shipping Address' => $c->shipping_address ?? '',
+                    'Shipping Country' => $c->shipping_country ?? '',
+                    'Shipping State' => $c->shipping_state ?? '',
+                    'Shipping City' => $c->shipping_city ?? '',
+                    'Shipping Zip' => $c->shipping_zip ?? '',
+                    'Status' => $c->status ?? '1',
+                ]);
+            }
+
+            $writer->close();
+
+            return response()->download($tempXlsxPath, 'customers_group_' . $group->id . '.xlsx', [
+                'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            ])->deleteFileAfterSend(true);
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Error downloading customers: ' . $e->getMessage());
         }
     }
 
@@ -102,6 +165,7 @@ class CustomerController extends Controller
             $reader = SimpleExcelReader::create($filePath, $fileExtension);
 
             $insertCount = 0;
+            $updateCount = 0;
             $skipCount = 0;
             $errors = [];
             $rowNumber = 0;
@@ -142,6 +206,53 @@ class CustomerController extends Controller
                     $email = strtolower(trim($record['Email'] ?? ''));
                     $gstin = strtoupper(trim($record['GSTIN'] ?? ''));
                     $pan = strtoupper(trim($record['PAN'] ?? ''));
+
+                    // If an ID column is present, update existing customer
+                    $idVal = trim((string) ($record['ID'] ?? $record['Id'] ?? $record['id'] ?? ''));
+                    if ($idVal !== '' && is_numeric($idVal)) {
+                        $existingById = Customer::find((int) $idVal);
+                        if ($existingById) {
+                            $existingById->facility_name = $facilityName ?: $existingById->facility_name;
+                            $existingById->client_name = trim($record['Client Name'] ?? $existingById->client_name);
+                            $existingById->contact_name = trim($record['Contact Name'] ?? $existingById->contact_name);
+                            $existingById->email = $email ?: $existingById->email;
+                            $existingById->contact_no = trim($record['Contact No'] ?? $existingById->contact_no);
+                            $existingById->gstin = $gstin ?: $existingById->gstin;
+                            $existingById->pan = $pan ?: $existingById->pan;
+                            $existingById->company_name = trim($record['Company Name'] ?? $existingById->company_name);
+                            $existingById->billing_address = trim($record['Billing Address'] ?? $existingById->billing_address);
+                            $existingById->billing_country = trim($record['Billing Country'] ?? $existingById->billing_country);
+                            $existingById->billing_state = trim($record['Billing State'] ?? $existingById->billing_state);
+                            $existingById->billing_city = trim($record['Billing City'] ?? $existingById->billing_city);
+                            $existingById->billing_zip = trim($record['Billing Zip'] ?? $existingById->billing_zip);
+                            $existingById->shipping_address = trim($record['Shipping Address'] ?? $existingById->shipping_address);
+                            $existingById->shipping_country = trim($record['Shipping Country'] ?? $existingById->shipping_country);
+                            $existingById->shipping_state = trim($record['Shipping State'] ?? $existingById->shipping_state);
+                            $existingById->shipping_city = trim($record['Shipping City'] ?? $existingById->shipping_city);
+                            $existingById->shipping_zip = trim($record['Shipping Zip'] ?? $existingById->shipping_zip);
+                            if (isset($record['Status'])) {
+                                $existingById->status = trim($record['Status']) === '1' ? '1' : '0';
+                            }
+                            $existingById->save();
+
+                            // Ensure membership in this group
+                            $existingMember = CustomerGroupMember::where([
+                                'customer_id' => $existingById->id,
+                                'customer_group_id' => $g_id,
+                            ])->first();
+
+                            if (! $existingMember) {
+                                CustomerGroupMember::create([
+                                    'customer_id' => $existingById->id,
+                                    'customer_group_id' => $g_id,
+                                ]);
+                            }
+
+                            $updateCount++;
+
+                            continue;
+                        }
+                    }
 
                     // Check if customer already exists by facility name
                     $existingCustomer = Customer::where('facility_name', $facilityName)->first();
@@ -227,6 +338,9 @@ class CustomerController extends Controller
 
             // Build success message
             $message = "CSV imported successfully! Added {$insertCount} customer(s)";
+            if ($updateCount > 0) {
+                $message .= ", Updated {$updateCount} customer(s)";
+            }
             if ($skipCount > 0) {
                 $message .= ", Skipped {$skipCount} record(s)";
             }
@@ -541,7 +655,7 @@ class CustomerController extends Controller
 
             activity()->log("Customer {$customer->id} ({$customer->facility_name}) updated by " . Auth::user()->name);
 
-            if($request->filled('group_id')){
+            if ($request->filled('group_id')) {
                 return redirect()->route('customer.groups.view', $request->group_id)
                     ->with('success', 'Customer updated successfully.');
             }

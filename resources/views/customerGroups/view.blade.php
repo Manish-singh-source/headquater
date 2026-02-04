@@ -28,6 +28,10 @@
                                     data-bs-target="#staticBackdrop1">
                                     Add Customer(Bulk)
                                 </a>
+                                <a href="{{ route('customer.group.export.excel', $customerGroup->id) }}"
+                                    class="btn border-2 border-primary ms-2">
+                                    <i class="bi bi-download me-2"></i>Export Customers
+                                </a>
                                 <!-- Modal -->
                                 <div class="modal fade" id="staticBackdrop1" data-bs-backdrop="static"
                                     data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel"
@@ -61,6 +65,45 @@
                                                         <small class="text-muted">Please upload an Excel file (.xlsx or
                                                             .xls) with customer data. Make sure the first row contains
                                                             column headers including "Facility Name".</small>
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary"
+                                                        data-bs-dismiss="modal">Close</button>
+                                                    <button type="submit" id="holdOrder"
+                                                        class="btn btn-primary">Submit</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <button class="btn border-2 border-primary" data-bs-toggle="modal"
+                                    data-bs-target="#updateCustomerBulk">
+                                    Update Customers via Excel
+                                </button>
+                                <!-- Modal -->
+                                <div class="modal fade" id="updateCustomerBulk" data-bs-backdrop="static"
+                                    data-bs-keyboard="false" tabindex="-1" aria-labelledby="updateCustomerBulkLabel"
+                                    aria-hidden="true">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <form action="{{ route('customer.group.import.excel.update', $customerGroup->id) }}"
+                                                method="POST" enctype="multipart/form-data">
+                                                @csrf
+                                                @method('POST')
+                                                <div class="modal-header">
+                                                    <h1 class="modal-title fs-5" id="updateCustomerBulkLabel">Update Customers (Bulk)</h1>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                        aria-label="Close"></button>
+                                                </div>
+
+                                                <div class="modal-body">
+                                                    <div class="col-12 mb-3">
+                                                        <label for="customers_bulk_file" class="form-label">Customers
+                                                            List (XLSX/XLS) <span class="text-danger">*</span></label>
+                                                        <input type="file" name="customers_bulk_file" id="customers_bulk_file"
+                                                            class="form-control" accept=".xlsx,.xls" required="">
                                                     </div>
                                                 </div>
                                                 <div class="modal-footer">

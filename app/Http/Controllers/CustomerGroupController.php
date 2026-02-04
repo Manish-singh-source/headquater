@@ -3,14 +3,15 @@
 namespace App\Http\Controllers;
 
 use App\Models\Customer;
-use App\Models\CustomerGroup;
-use App\Models\CustomerGroupMember;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use App\Models\CustomerGroup;
 use Illuminate\Support\Facades\DB;
+use App\Models\CustomerGroupMember;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Spatie\SimpleExcel\SimpleExcelReader;
+use Spatie\SimpleExcel\SimpleExcelWriter;
 
 class CustomerGroupController extends Controller
 {
@@ -175,14 +176,13 @@ class CustomerGroupController extends Controller
         try {
             $status = request()->get('status', 'all');
 
-            $customerGroup = CustomerGroup::
-                with(['customers' => function ($query) use ($status) {
-                    if ($status === 'active') {
-                        $query->where('status', '1');
-                    } elseif ($status === 'inactive') {
-                        $query->where('status', '0');
-                    }
-                }])
+            $customerGroup = CustomerGroup::with(['customers' => function ($query) use ($status) {
+                if ($status === 'active') {
+                    $query->where('status', '1');
+                } elseif ($status === 'inactive') {
+                    $query->where('status', '0');
+                }
+            }])
                 ->withCount('customers')
                 ->withCount(['customers as active_customers_count' => function ($q) {
                     $q->where('status', '1');
@@ -401,6 +401,137 @@ class CustomerGroupController extends Controller
             Log::error('Error changing customer group status: ' . $e->getMessage());
 
             return redirect()->back()->with('error', 'Error: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Export customers of a specific group to Excel
+     */
+    public function exportCustomerGroupExcel($id)
+    {
+        try {
+            $customerGroup = CustomerGroup::with('customers')->findOrFail($id);
+            $tempXlsxPath = storage_path('app/customer_group_' . $customerGroup->id . '_customers.xlsx');
+            $writer = SimpleExcelWriter::create($tempXlsxPath);
+
+
+            if ($customerGroup->customers->isEmpty()) {
+                return redirect()->back()->with('info', 'No customers found in this group.');
+            }
+
+            // Add data rows
+            foreach ($customerGroup->customers as $customer) {
+                $writer->addRow([
+                    // company_name
+
+                    // gst_treatment
+                    // private_details
+                    'Client Name' => $customer->client_name,
+                    'Contact Name' => $customer->contact_name,
+                    'Email' => $customer->email,
+                    'Contact No' => $customer->contact_no,
+
+                    'Billing Address' => $customer->billing_address,
+                    'Billing Zip' => $customer->billing_zip,
+                    'Billing City' => $customer->billing_city,
+                    'Billing State' => $customer->billing_state,
+                    'Billing Country' => $customer->billing_country,
+
+                    'Shipping Address' => $customer->shipping_address,
+                    'Shipping Zip' => $customer->shipping_zip,
+                    'Shipping City' => $customer->shipping_city,
+                    'Shipping State' => $customer->shipping_state,
+                    'Shipping Country' => $customer->shipping_country,
+
+                    'GSTIN' => $customer->gstin,
+                    'PAN' => $customer->pan,
+                    'Facility Name' => $customer->facility_name,
+                ]);
+            }
+
+            $writer->close();
+
+            return response()->download($tempXlsxPath, 'customers_group_' . $customerGroup->id . '.xlsx', [
+                'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            ])->deleteFileAfterSend(true);
+        } catch (\Exception $e) {
+            Log::error('Error exporting customer group customers: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Error: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * 
+     * Update customers in selected group in bulk using same downloaded excel
+     */
+    public function importCustomerGroupExcelUpdate(Request $request, $id)
+    {
+        $validated = Validator::make($request->all(), [
+            'customers_bulk_file' => 'required|file|mimes:xlsx,csv,xls',
+        ]);
+
+        if ($validated->fails()) {
+            return redirect()->back()->with('error', $validated->errors()->first())->withInput();
+        }
+
+        $file = $request->file('customers_bulk_file');
+        $filepath = $file->getPathname();
+        $extension = $file->getClientOriginalExtension();
+
+        DB::beginTransaction();
+
+        try {
+            $reader = SimpleExcelReader::create($filepath, $extension);
+            $rows = $reader->getRows();
+            $insertCount = 0;
+            
+            foreach ($rows as $record) {
+                if (empty($record['Facility Name'])) {
+                    continue;
+                }
+                
+                $customer = Customer::where('facility_name', $record['Facility Name'])->first();
+                if (! $customer) {
+                    continue;
+                }
+                // Update customer details
+                $customer->client_name = $record['Client Name'] ?? $customer->client_name;
+                $customer->contact_name = $record['Contact Name'] ?? $customer->contact_name;
+                $customer->email = $record['Email'] ?? $customer->email;
+                $customer->contact_no = $record['Contact No'] ?? $customer->contact_no;
+                $customer->company_name = $record['Company Name'] ?? $customer->company_name;
+                $customer->gstin = $record['GSTIN'] ?? $customer->gstin;
+                $customer->pan = $record['PAN'] ?? $customer->pan;
+                $customer->gst_treatment = $record['GST Treatment'] ?? $customer->gst_treatment;
+                $customer->private_details = $record['Private Details'] ?? $customer->private_details;
+                $customer->billing_address = $record['Billing Address'] ?? $customer->billing_address;
+                $customer->billing_country = $record['Billing Country'] ?? $customer->billing_country;
+                $customer->billing_state = $record['Billing State'] ?? $customer->billing_state;
+                $customer->billing_city = $record['Billing City'] ?? $customer->billing_city;
+                $customer->billing_zip = $record['Billing Zip'] ?? $customer->billing_zip;
+                $customer->shipping_address = $record['Shipping Address'] ?? $customer->shipping_address;
+                $customer->shipping_country = $record['Shipping Country'] ?? $customer->shipping_country;
+                $customer->shipping_state = $record['Shipping State'] ?? $customer->shipping_state;
+                $customer->shipping_city = $record['Shipping City'] ?? $customer->shipping_city;
+                $customer->shipping_zip = $record['Shipping Zip'] ?? $customer->shipping_zip;
+                $customer->save();  
+
+                $insertCount++;
+            }
+
+            if ($insertCount === 0) {
+                DB::rollBack();
+
+                return redirect()->back()->with(['customers_bulk_file' => 'No valid data found in the CSV file.']);
+            }
+
+            DB::commit();
+
+            return redirect()->back()->with('success', 'Successfully updated ' . $insertCount . ' customers.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return redirect()->back()->with(['error' => 'Something went wrong: ' . $e->getMessage()]);
         }
     }
 }

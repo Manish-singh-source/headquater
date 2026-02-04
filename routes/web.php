@@ -96,6 +96,8 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/customer-groups/toggle-status', 'toggleStatus')->name('customer.groups.toggleStatus');
         Route::delete('/customers-group/delete-selected', 'deleteSelected')->name('delete.selected.customers.group');
         Route::post('/customer-groups/bulk-status-change', 'bulkStatusChange')->name('customer.groups.bulkStatusChange');
+        Route::get('/customer-group-export-excel/{id}', 'exportCustomerGroupExcel')->name('customer.group.export.excel');
+        Route::post('/customer-group-import-excel-update/{id}', 'importCustomerGroupExcelUpdate')->name('customer.group.import.excel.update');
     });
 
     // Customer
@@ -110,6 +112,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/customer-detail/{id}', 'detail')->name('customer.detail');
 
         Route::post('/customer-store-bulk/{g_id}', 'storeBulk')->name('customer.store.bulk');
+        Route::get('/customers/export-group/{g_id}', 'downloadGroupCustomersExcel')->name('customer.export.group');
         Route::get('/user-profile', 'profile')->name('user-profile');
         Route::put('/user-profile/update/{id}', 'updateuser')->name('user.update');
         Route::delete('/customers/delete-selected', 'deleteSelected')->name('delete.selected.customers');
