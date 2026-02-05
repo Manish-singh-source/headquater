@@ -282,7 +282,7 @@
                                                         @if ($isSuperAdmin ?? false)
                                                             <div>
                                                                 {{ $allocation->warehouse->name }}:
-                                                                {{ $allocation->final_dispatched_quantity }}
+                                                                {{ $allocation->final_dispatched_quantity ?? 0  }}
                                                             </div>
                                                         @else
                                                             @if ($user->warehouse_id == $allocation->warehouse_id)
@@ -512,6 +512,10 @@
             $('#selectProductStatusFilter').on('change', function() {
                 var selected = $(this).val().trim();
 
+                if (selected === 'all') {
+                    customerPOTableList.column(-1).search('').draw();
+                    return;
+                }
                 customerPOTableList.column(-1).search(selected, true, false).draw();
             });
 
