@@ -199,7 +199,7 @@
                                     </div>
                                 </div>
                                 @if ($vendorPIs->status != 'completed')
-                                    @if ($vendorPIs->products[0]->quantity_received > 0)
+                                    {{-- @if ($vendorPIs->products[0]->quantity_received > 0) --}}
                                         <div class="col-lg-12">
                                             <div class="row justify-content-between mb-3">
                                                 <form class="col-12 text-end" action="{{ route('received.products.status') }}"
@@ -212,7 +212,7 @@
                                                 </form>
                                             </div>
                                         </div>
-                                    @endif
+                                    {{-- @endif --}}
                                 @endif
                             @endisset
                         </div>
