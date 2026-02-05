@@ -267,7 +267,7 @@
                                             <td>{{ $order->tempOrder->basic_rate }}</td>
                                             <td>{{ $order->tempOrder->net_landing_rate }}</td>
                                             <td>{{ $order->tempOrder->mrp }}</td>
-                                            <td>{{ $order->ordered_quantity }}</td>
+                                            <td>{{ $order->tempOrder->po_qty }}</td>
                                             <td>{{ $order->tempOrder?->purchase_order_quantity }}</td>
                                             <td>{{ $order->tempOrder?->vendor_pi_fulfillment_quantity }}</td>
                                             <td>{{ $order->tempOrder?->vendor_pi_received_quantity }}</td>
@@ -336,7 +336,7 @@
                                                     @endforeach
                                                 @else
                                                     {{ $order->final_final_dispatched_quantity ?? 0 }}
-                                                @endif
+                                                @endif  
                                             </td>
                                             <td>{{ $order->tempOrder->case_pack_quantity }}</td>
                                             <td>

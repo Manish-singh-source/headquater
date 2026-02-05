@@ -119,7 +119,7 @@ class ReadyToShip extends Controller
                 ->whereIn('id', $customerIds)
                 ->get();
             // unique customers array created for view
-            // dd($customerInfo->orders);
+            // dd($customerInfo[0]->orders);
 
             return view('readyToShip.view', compact('customerInfo', 'order'));
         } catch (\Exception $e) {

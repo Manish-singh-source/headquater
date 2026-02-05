@@ -400,7 +400,9 @@ class SalesOrderController extends Controller
 
                     'po_qty' => $record['PO Quantity'] ?? '',
                     'available_quantity' => $availableQty ?? 0,
+                    'available_quantity_track' => $availableQty ?? 0,
                     'unavailable_quantity' => $shortQty ?? 0,
+                    'unavailable_quantity_track' => $shortQty ?? 0,
                     'block' => ($record['Block'] > $availableQty) ? $availableQty : $record['Block'],
 
                     'case_pack_quantity' => $casePackQty ?? '',

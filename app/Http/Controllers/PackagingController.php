@@ -383,6 +383,25 @@ class PackagingController extends Controller
                 $weight = $order->weight ?? 0;
             }
 
+            $totalDispatchQty = '0';
+            $finalDispatchQty = '0';
+            if ($order->warehouseAllocations->count() >= 1) {
+                foreach ($order->warehouseAllocations as $allocation) {
+                    if ($isSuperAdmin ?? false) {
+                        $totalDispatchQty = $allocation->final_dispatched_quantity ?? '0';
+                        $finalDispatchQty = $allocation->final_final_dispatched_quantity ?? '0';
+                    } else {
+                        if ($user->warehouse_id == $allocation->warehouse_id) {
+                            $totalDispatchQty = $allocation->final_dispatched_quantity ?? '0';
+                            $finalDispatchQty = $allocation->final_final_dispatched_quantity ?? '0';
+                        }
+                    }
+                } 
+            } else {
+                $totalDispatchQty = $order->final_dispatched_quantity ?? '0';
+                $finalDispatchQty = $order->final_final_dispatched_quantity ?? '0';
+            }
+
             $writer->addRow([
                 'Warehouse Name' => $order->warehouseStock ? $order->warehouseStock->warehouse->name : 'N/A',
                 'Customer Name' => $order->tempOrder->customer_name ?? '',
@@ -400,6 +419,8 @@ class PackagingController extends Controller
                 'MRP' => $order->tempOrder->mrp ?? '',
                 'PO Quantity' => $order->tempOrder->po_qty ?? '',
                 'Purchase Order Quantity' => $order->tempOrder->purchase_order_quantity ?? '',
+                'Vendor PI Fulfilled Quantity' => $order->tempOrder->vendor_pi_fulfillment_quantity ?? '',
+                'Vendor PI Received Quantity' => $order->tempOrder->vendor_pi_received_quantity ?? '',
                 'Warehouse Name' => $warehouseName,
                 'Warehouse Allocation' => $warehouseAllocation,
                 'Purchase Order No' => $order->tempOrder->po_number ?? '',
@@ -532,7 +553,7 @@ class PackagingController extends Controller
      */
     private function updateSalesOrderProduct($order, $record, $salesOrderId, $isAdmin, $userWarehouseId)
     {
-        $finalDispatchQty = (int) ($record['Final Dispatch Qty'] ?? $order->dispatched_quantity);
+        $finalDispatchQty = (int) ($record['Final Dispatch Qty'] ?? 0);
         $boxCount = (float) ($record['Box Count'] ?? 0);
         $weight = (float) ($record['Weight'] ?? 0);
         $issueUnits = (int) ($record['Issue Units'] ?? 0);
@@ -565,17 +586,19 @@ class PackagingController extends Controller
 
                         // Distribute final dispatch quantity proportionally
                         $proportion = $allocation->allocated_quantity / $totalAllocated;
-                        $allocation->final_dispatched_quantity = (int) ($finalDispatchQty * $proportion);
+                        // $allocation->final_dispatched_quantity = (int) ($finalDispatchQty * $proportion);
+                        $allocation->final_final_dispatched_quantity = (int) ($finalDispatchQty * $proportion);
                         // $allocation->box_count = (int) ($boxCount * $proportion);
-                        if ($casePackQuantity > 0) {
-                            $allocation->box_count = ceil($allocation->final_dispatched_quantity / $casePackQuantity);
-                        } else {
-                            $allocation->box_count = 0;
-                        }
+                        // if ($casePackQuantity > 0) {
+                        //     $allocation->box_count = ceil($allocation->final_final_dispatched_quantity / $casePackQuantity);
+                        // } else {
+                        //     $allocation->box_count = 0;
+                        // }
+                        $allocation->box_count = (float) ($boxCount * $proportion);
                         $allocation->weight = (float) ($weight * $proportion);
                         $allocation->product_status = 'packaged';
                     } else {
-                        $allocation->final_dispatched_quantity = 0;
+                        $allocation->final_final_dispatched_quantity = 0;
                         $allocation->box_count = 0;
                         $allocation->weight = 0;
                     }
@@ -588,13 +611,15 @@ class PackagingController extends Controller
                     ->first();
                 if ($userAllocation) {
                     $productInfo = Product::where('sku', $userAllocation->sku)->first();
-                    $userAllocation->final_dispatched_quantity = $finalDispatchQty;
+                    // $userAllocation->final_dispatched_quantity = $finalDispatchQty;
+                    $userAllocation->final_final_dispatched_quantity = $finalDispatchQty;
                     // $userAllocation->box_count = $boxCount;
-                    if ($productInfo->case_pack_quantity > 0) {
-                        $userAllocation->box_count = ceil($finalDispatchQty / $productInfo->case_pack_quantity);
-                    } else {
-                        $userAllocation->box_count = 0;
-                    }
+                    // if ($productInfo->case_pack_quantity > 0) {
+                    //     $userAllocation->box_count = ceil($finalDispatchQty / $productInfo->case_pack_quantity);
+                    // } else {
+                    //     $userAllocation->box_count = 0;
+                    // }
+                    $userAllocation->box_count = $boxCount;
                     $userAllocation->weight = $weight;
                     $userAllocation->product_status = 'packaged';
                     $userAllocation->save();
@@ -603,18 +628,18 @@ class PackagingController extends Controller
 
             // Update sales_order_products table with aggregated values
             if ($isAdmin) {
-                $order->final_dispatched_quantity = $finalDispatchQty;
+                $order->final_final_dispatched_quantity = $finalDispatchQty;
                 $order->box_count = $boxCount;
                 $order->weight = $weight;
             } else {
                 // For warehouse users, aggregate from all allocations
-                $order->final_dispatched_quantity = $order->warehouseAllocations->sum('final_dispatched_quantity');
+                $order->final_final_dispatched_quantity = $order->warehouseAllocations->sum('final_final_dispatched_quantity');
                 $order->box_count = $order->warehouseAllocations->sum('box_count');
                 $order->weight = $order->warehouseAllocations->sum('weight');
             }
         } else {
             // Single warehouse allocation - update sales_order_products table directly
-            $order->final_dispatched_quantity = $finalDispatchQty;
+            $order->final_final_dispatched_quantity = $finalDispatchQty;
             $order->box_count = $boxCount;
             $order->weight = $weight;
         }
