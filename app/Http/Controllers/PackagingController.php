@@ -122,9 +122,15 @@ class PackagingController extends Controller
                     $query->where('warehouse_id', $userWarehouseId);
                 })
                 ->get();
-            // dd($salesOrder->orderedProducts);
 
-            return view('packagingList.view', compact('salesOrder', 'facilityNames', 'isAdmin', 'isSuperAdmin', 'userWarehouseId', 'user', 'pendingApprovalList', 'readyToShipAllocations'));
+            $packagedAllocations = WarehouseAllocation::where('sales_order_id', $id)
+                ->where('product_status', 'packaged')
+                ->when(! $isAdmin, function ($query) use ($userWarehouseId) {
+                    $query->where('warehouse_id', $userWarehouseId);
+                })
+                ->get();
+
+            return view('packagingList.view', compact('salesOrder', 'facilityNames', 'isAdmin', 'isSuperAdmin', 'userWarehouseId', 'user', 'pendingApprovalList', 'readyToShipAllocations', 'packagedAllocations'));
         } catch (\Exception $e) {
             Log::error('Error loading packaging view: ' . $e->getMessage());
 
@@ -137,8 +143,175 @@ class PackagingController extends Controller
      * Download packaging products as Excel file
      *
      * @return \Illuminate\Http\Response
+     * 
+     * Working method
      */
     public function downloadPackagingProducts(Request $request)
+    {
+        if (! $request->id) {
+            return back()->with('error', 'Please Try Again.');
+        }
+
+        if ($request->has('product_status')) {
+            $productStatus = $request->product_status;
+        }
+
+        $id = $request->id;
+
+        // Create temporary .xlsx file path
+        $tempXlsxPath = storage_path('app/received_' . Str::random(8) . '.xlsx');
+
+        // Create writer
+        $writer = SimpleExcelWriter::create($tempXlsxPath);
+        $user = Auth::user();
+
+        $isSuperAdmin = $user->hasRole('Super Admin');
+        $isAdmin = $user->hasRole(['Super Admin', 'Admin']) || ! $user->warehouse_id;
+        $userWarehouseId = $user->warehouse_id;
+
+        $salesOrder = SalesOrder::with([
+            'customerGroup',
+            'warehouse',
+            'orderedProducts' => function ($query) use ($userWarehouseId, $isSuperAdmin, $productStatus) {
+                // Only include orderedProducts that have warehouseAllocations for this warehouse
+                $query->whereHas('warehouseAllocations', function ($q) use ($userWarehouseId, $isSuperAdmin, $productStatus) {
+                    if (! $isSuperAdmin && $userWarehouseId) {
+                        $q->where('warehouse_id', $userWarehouseId);
+                    }
+                    if (isset($productStatus) && $productStatus != 'all') {
+                        if ($productStatus == 'Packaging') {
+                            $q->where('product_status', 'packaging');
+                        } else if ($productStatus == 'Packaged') {
+                            $q->where('product_status', 'packaged');
+                        } else if ($productStatus == 'Ready to Ship Approval Pending') {
+                            $q->where('product_status', 'approval_pending');
+                        } else if ($productStatus == 'Ready to Ship') {
+                            $q->where('product_status', 'completed');
+                        }
+                    } else {
+                        $q->whereIn('product_status', ['packaging', 'packaged', 'approval_pending', 'completed']);
+                    }
+                })->with([
+                    'product',
+                    'customer',
+                    'tempOrder',
+                    'warehouseStock.warehouse',
+                    'warehouseAllocations.warehouse',
+                ]);
+            },
+        ])
+            ->whereHas('orderedProducts.warehouseAllocations', function ($query) use ($userWarehouseId, $isSuperAdmin, $productStatus) {
+                if (! $isSuperAdmin && $userWarehouseId) {
+                    $query->where('warehouse_id', $userWarehouseId);
+                }
+                if (isset($productStatus) && $productStatus != 'all') {
+                    if ($productStatus == 'Packaging') {
+                        $query->where('product_status', 'packaging');
+                    } else if ($productStatus == 'Packaged') {
+                        $query->where('product_status', 'packaged');
+                    } else if ($productStatus == 'Ready to Ship Approval Pending') {
+                        $query->where('product_status', 'approval_pending');
+                    } else if ($productStatus == 'Ready to Ship') {
+                        $query->where('product_status', 'completed');
+                    }
+                } else {
+                    $query->whereIn('product_status', ['packaging', 'packaged', 'approval_pending', 'completed']);
+                }
+            })
+            ->find($id);
+
+        // $facilityNames = $salesOrder->orderedProducts
+        //     ->pluck('customer.facility_name')
+        //     ->filter()
+        //     ->unique()
+        //     ->values()
+        //     ->toArray();
+
+
+        // Add rows
+        foreach ($salesOrder->orderedProducts as $order) {
+
+            $warehouseName = '';
+            if ($isSuperAdmin) {
+                $warehouseName = 'All';
+            } else {
+                $warehouseName = $user->warehouse->name;
+            }
+
+            $warehouseAllocation = '';
+            $totalDispatchQty = 0;
+            $finalDispatchQty = 0;
+            $boxCount = 0;
+            $weight = 0;
+
+            if ($order->warehouseAllocations->count() >= 1) {
+                foreach ($order->warehouseAllocations as $allocation) {
+                    if ($isSuperAdmin ?? false) {
+                        $warehouseAllocation = ($allocation->warehouse->name . ': ' . $allocation->final_dispatched_quantity . "\n") ?? 0 . "\n";
+                        $totalDispatchQty = ($allocation->warehouse->name . ': ' . $allocation->final_dispatched_quantity . "\n") ?? 0 . "\n";
+                        $finalDispatchQty = ($allocation->warehouse->name . ': ' . $allocation->final_final_dispatched_quantity . "\n") ?? 0 . "\n";
+                        $boxCount = $allocation->box_count ?? 0;
+                        $weight = $allocation->weight ?? 0;
+                    } else {
+                        if ($user->warehouse_id == $allocation->warehouse_id) {
+                            $warehouseAllocation = $user->warehouse->name . ': ' . ($allocation->final_dispatched_quantity ?? 0) . "\n";
+                            $totalDispatchQty = ($allocation->final_dispatched_quantity ?? 0) . "\n";
+                            $finalDispatchQty = ($allocation->final_final_dispatched_quantity ?? 0) . "\n";
+                            $boxCount = $allocation->box_count ?? 0;
+                            $weight = $allocation->weight ?? 0;
+                        }
+                    }
+                }
+            } else {
+                $warehouseAllocation = $order->final_dispatched_quantity ?? 0;
+                $totalDispatchQty = $order->final_dispatched_quantity ?? 0;
+                $finalDispatchQty = $order->final_final_dispatched_quantity ?? 0;
+                $boxCount = $order->box_count ?? 0;
+                $weight = $order->weight ?? 0;
+            }
+
+            $writer->addRow([
+                'Warehouse Name' => $order->warehouseStock ? $order->warehouseStock->warehouse->name : 'N/A',
+                'Customer Name' => $order->tempOrder->customer_name ?? '',
+                'SKU Code' => $order->tempOrder->sku ?? '',
+                'Facility Name' => $order->tempOrder->facility_name ?? '',
+                'Facility Location' => $order->tempOrder->facility_location ?? '',
+                'PO Date' => $order->tempOrder->po_date ?? '',
+                'PO Expiry Date' => $order->tempOrder->po_expiry_date ?? '',
+                'HSN' => $order->tempOrder->hsn ?? '',
+                'Item Code' => $order->tempOrder->item_code ?? '',
+                'Description' => $order->tempOrder->description ?? '',
+                'GST' => $order->tempOrder->gst ?? '',
+                'Basic Rate' => $order->tempOrder->basic_rate ?? '',
+                'Net Landing Rate' => $order->tempOrder->net_landing_rate ?? '',
+                'MRP' => $order->tempOrder->mrp ?? '',
+                'PO Quantity' => $order->tempOrder->po_qty ?? '',
+                'Purchase Order Quantity' => $order->tempOrder->purchase_order_quantity ?? '',
+                'Vendor PI Fulfilled Quantity' => $order->tempOrder->vendor_pi_fulfillment_quantity ?? '',
+                'Vendor PI Received Quantity' => $order->tempOrder->vendor_pi_received_quantity ?? '',
+                'Warehouse Name' => $warehouseName,
+                'Warehouse Allocation' => $warehouseAllocation,
+                'Purchase Order No' => $order->tempOrder->po_number ?? '',
+                'Total Dispatch Qty' => $totalDispatchQty,
+                'Final Dispatch Qty' => $finalDispatchQty,
+                // 'Case Pack Quantity' => $order->tempOrder->case_pack_quantity ?? '',
+                'Box Count' => ceil($boxCount),
+                'Weight' => ceil($weight),
+                'Issue Units' => '',
+                'Issue Reason' => '',
+            ]);
+        }
+
+        // Close the writer
+        $writer->close();
+
+        return response()->download($tempXlsxPath, 'Packaging-Products.xlsx', [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ])->deleteFileAfterSend(true);
+    }
+
+    // old method for reference
+    public function downloadPackagingProducts1(Request $request)
     {
         if (! $request->id) {
             return back()->with('error', 'Please Try Again.');
@@ -396,7 +569,7 @@ class PackagingController extends Controller
                             $finalDispatchQty = $allocation->final_final_dispatched_quantity ?? '0';
                         }
                     }
-                } 
+                }
             } else {
                 $totalDispatchQty = $order->final_dispatched_quantity ?? '0';
                 $finalDispatchQty = $order->final_final_dispatched_quantity ?? '0';

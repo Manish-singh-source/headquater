@@ -148,20 +148,23 @@
                             <h6 class="mb-3">Customer PO Table</h6>
                         </div>
                         <!-- Tabs Navigation -->
-                        @if (!$isAdmin ?? false)
-                            <div class="d-flex justify-content-end my-3 gap-2">
+                        <div class="d-flex justify-content-end my-3 gap-2">
 
-                                <div>
-                                    <select class="form-select border-2 border-primary" id="selectProductStatusFilter"
-                                        aria-label="Default select example" name="selectProductStatusFilter">
-                                        <option value="all" selected>Select Product Status</option>
-                                        <option value="Packaging">Packaging</option>
-                                        <option value="Packaged">Packaged</option>
-                                        <option value="Ready to Ship Approval Pending">Ready to Ship Approval Pending
-                                        </option>
-                                    </select>
-                                </div>
+                            <div>
+                                <select class="form-select border-2 border-primary" id="selectProductStatusFilter"
+                                    aria-label="Default select example" name="selectProductStatusFilter">
+                                    <option value="all" selected>Select Product Status</option>
+                                    <option value="Packaging">Packaging</option>
+                                    <option value="Packaged">Packaged</option>
+                                    <option value="Ready to Ship Approval Pending">Ready to Ship Approval Pending
+                                    </option>
+                                    <option value="Ready to Ship">Ready to Ship</option>
+                                    {{-- <option value="Dispatched">Dispatched</option> --}}
+                                    <option value="Shipped">Shipped</option>
+                                </select>
+                            </div>
 
+                            @if (!$isAdmin ?? false)
                                 <button class="btn btn-sm border-2 border-primary" data-bs-toggle="modal"
                                     data-bs-target="#staticBackdrop1" class="btn btn-sm border-2 border-primary">
                                     Update PO
@@ -207,12 +210,12 @@
                                         </div>
                                     </div>
                                 </div>
+                            @endif
 
-                                <button id="exportPackagingProducts" class="btn btn-sm border-2 border-primary">
-                                    <i class="fa fa-file-excel-o"></i> Export to Excel
-                                </button>
-                            </div>
-                        @endif
+                            <button id="exportPackagingProducts" class="btn btn-sm border-2 border-primary">
+                                <i class="fa fa-file-excel-o"></i> Export to Excel
+                            </button>
+                        </div>
                     </div>
 
                     <div class="product-table" id="poTable">
@@ -253,6 +256,68 @@
                                 </thead>
                                 <tbody>
                                     @forelse($salesOrder->orderedProducts as $order)
+                                        @php
+                                            $warehouseName = '';
+                                            if ($isSuperAdmin) {
+                                                $warehouseName = 'All';
+                                            } else {
+                                                $warehouseName = $user->warehouse->name;
+                                            }
+
+                                            $warehouseAllocation = '';
+                                            $totalDispatchQty = 0;
+                                            $finalDispatchQty = 0;
+                                            $boxCount = 0;
+                                            $weight = 0;
+
+                                            if ($order->warehouseAllocations->count() >= 1) {
+                                                foreach ($order->warehouseAllocations as $allocation) {
+                                                    if ($isSuperAdmin ?? false) {
+                                                        $warehouseAllocation =
+                                                            $allocation->warehouse->name .
+                                                                ': ' .
+                                                                $allocation->final_dispatched_quantity .
+                                                                "\n" ??
+                                                            0 . "\n";
+                                                        $totalDispatchQty =
+                                                            $allocation->warehouse->name .
+                                                                ': ' .
+                                                                $allocation->final_dispatched_quantity .
+                                                                "\n" ??
+                                                            0 . "\n";
+                                                        $finalDispatchQty =
+                                                            $allocation->warehouse->name .
+                                                                ': ' .
+                                                                $allocation->final_final_dispatched_quantity .
+                                                                "\n" ??
+                                                            0 . "\n";
+                                                        $boxCount = $allocation->box_count ?? 0;
+                                                        $weight = $allocation->weight ?? 0;
+                                                    } else {
+                                                        if ($user->warehouse_id == $allocation->warehouse_id) {
+                                                            $warehouseAllocation =
+                                                                $user->warehouse->name .
+                                                                ': ' .
+                                                                ($allocation->final_dispatched_quantity ?? 0) .
+                                                                "\n";
+                                                            $totalDispatchQty =
+                                                                ($allocation->final_dispatched_quantity ?? 0) . "\n";
+                                                            $finalDispatchQty =
+                                                                ($allocation->final_final_dispatched_quantity ?? 0) .
+                                                                "\n";
+                                                            $boxCount = $allocation->box_count ?? 0;
+                                                            $weight = $allocation->weight ?? 0;
+                                                        }
+                                                    }
+                                                }
+                                            } else {
+                                                $warehouseAllocation = $order->final_dispatched_quantity ?? 0;
+                                                $totalDispatchQty = $order->final_dispatched_quantity ?? 0;
+                                                $finalDispatchQty = $order->final_final_dispatched_quantity ?? 0;
+                                                $boxCount = $order->box_count ?? 0;
+                                                $weight = $order->weight ?? 0;
+                                            }
+                                        @endphp
                                         <tr>
                                             <td>{{ $order->tempOrder->customer_name }}</td>
                                             <td>{{ $order->tempOrder->sku }}</td>
@@ -271,114 +336,14 @@
                                             <td>{{ $order->tempOrder?->purchase_order_quantity }}</td>
                                             <td>{{ $order->tempOrder?->vendor_pi_fulfillment_quantity }}</td>
                                             <td>{{ $order->tempOrder?->vendor_pi_received_quantity }}</td>
-                                            @if ($isSuperAdmin)
-                                                <td>All</td>
-                                            @else
-                                                <td>{{ $user->warehouse->name }}</td>
-                                            @endif
-                                            <td>
-                                                @if ($order->warehouseAllocations->count() >= 1)
-                                                    @foreach ($order->warehouseAllocations as $allocation)
-                                                        @if ($isSuperAdmin ?? false)
-                                                            <div>
-                                                                {{ $allocation->warehouse->name }}:
-                                                                {{ $allocation->final_dispatched_quantity ?? 0  }}
-                                                            </div>
-                                                        @else
-                                                            @if ($user->warehouse_id == $allocation->warehouse_id)
-                                                                <div>
-                                                                    {{ $user->warehouse->name }}:
-                                                                    {{ $allocation->final_dispatched_quantity ?? 0 }}
-                                                                </div>
-                                                            @endif
-                                                        @endif
-                                                    @endforeach
-                                                @else
-                                                    {{ $order->final_dispatched_quantity ?? 0 }}
-                                                @endif
-                                            </td>
+                                            <td>{{ $warehouseName }}</td>
+                                            <td>{{ $warehouseAllocation }}</td>
                                             <td>{{ $order->tempOrder->po_number }}</td>
-                                            <td>
-                                                @if ($order->warehouseAllocations->count() >= 1)
-                                                    @foreach ($order->warehouseAllocations as $allocation)
-                                                        @if ($isSuperAdmin ?? false)
-                                                            <div>
-                                                                {{ $allocation->warehouse->name }}:
-                                                                {{ $allocation->final_dispatched_quantity ?? 0 }}
-                                                            </div>
-                                                        @else
-                                                            @if ($user->warehouse_id == $allocation->warehouse_id)
-                                                                <div>
-                                                                    {{ $allocation->final_dispatched_quantity ?? 0 }}
-                                                                </div>
-                                                            @endif
-                                                        @endif
-                                                    @endforeach
-                                                @else
-                                                    {{ $order->final_dispatched_quantity ?? 0 }}
-                                                @endif
-                                            </td>
-                                            <td>
-                                                @if ($order->warehouseAllocations->count() >= 1)
-                                                    @foreach ($order->warehouseAllocations as $allocation)
-                                                        @if ($isSuperAdmin ?? false)
-                                                            <div>
-                                                                {{ $allocation->warehouse->name }}:
-                                                                {{ $allocation->final_final_dispatched_quantity ?? 0 }}
-                                                            </div>
-                                                        @else
-                                                            @if ($user->warehouse_id == $allocation->warehouse_id)
-                                                                <div>
-                                                                    {{ $allocation->final_final_dispatched_quantity ?? 0 }}
-                                                                </div>
-                                                            @endif
-                                                        @endif
-                                                    @endforeach
-                                                @else
-                                                    {{ $order->final_final_dispatched_quantity ?? 0 }}
-                                                @endif  
-                                            </td>
+                                            <td>{{ $totalDispatchQty }}</td>
+                                            <td>{{ $finalDispatchQty }}</td>
                                             <td>{{ $order->tempOrder->case_pack_quantity }}</td>
-                                            <td>
-                                                @if ($order->warehouseAllocations->count() >= 1)
-                                                    @foreach ($order->warehouseAllocations as $allocation)
-                                                        @if ($isSuperAdmin ?? false)
-                                                            <div>
-                                                                {{ $allocation->warehouse->name }}:
-                                                                {{ ceil($allocation->box_count ?? 0) }}
-                                                            </div>
-                                                        @else
-                                                            @if ($user->warehouse_id == $allocation->warehouse_id)
-                                                                <div>
-                                                                    {{ ceil($allocation->box_count ?? 0) }}
-                                                                </div>
-                                                            @endif
-                                                        @endif
-                                                    @endforeach
-                                                @else
-                                                    {{ ceil($order->box_count ?? 0) }}
-                                                @endif
-                                            </td>
-                                            <td>
-                                                @if ($order->warehouseAllocations->count() >= 1)
-                                                    @foreach ($order->warehouseAllocations as $allocation)
-                                                        @if ($isSuperAdmin ?? false)
-                                                            <div>
-                                                                {{ $allocation->warehouse->name }}:
-                                                                {{ $allocation->weight ?? 0 }}
-                                                            </div>
-                                                        @else
-                                                            @if ($user->warehouse_id == $allocation->warehouse_id)
-                                                                <div>
-                                                                    {{ $allocation->weight ?? 0 }}
-                                                                </div>
-                                                            @endif
-                                                        @endif
-                                                    @endforeach
-                                                @else
-                                                    {{ $order->weight ?? 0 }}
-                                                @endif
-                                            </td>
+                                            <td>{{ $boxCount }}</td>
+                                            <td>{{ $weight }}</td>
                                             <td>
                                                 @if ($order->status == 'ready_to_ship')
                                                     @if ($isSuperAdmin ?? false)
@@ -452,7 +417,8 @@
                     </div>
                 </div>
             </div>
-            {{-- <div class="text-end">
+            {{-- 
+            <div class="text-end">
                 <a href="#" class="btn btn-success w-sm waves ripple-light">
                     Download Excel File
                 </a>
@@ -461,31 +427,30 @@
                 <a href="{{ route('invoices-details') }}" class="btn btn-success w-sm waves ripple-light">
                     Generate Invoice
                 </a>
-            </div> --}}
+            </div> 
+            --}}
 
-            @if (!$isAdmin ?? false)
 
-                @if ($readyToShipAllocations->count() == 0)
-                    <div class="d-flex justify-content-end gap-2 my-2">
-                        <div class="text-end">
-                            <form action="{{ route('change.packaging.status.ready.to.ship') }}" method="POST"
-                                onsubmit="return confirm('Are you sure you want to mark your products as ready to ship?')">
-                                @csrf
-                                @method('PUT')
-                                <input type="hidden" name="sales_order_id" value="{{ $salesOrder->id }}">
-                                <input type="hidden" name="warehouse_id" value="{{ $user->warehouse_id }}">
-                                <input type="hidden" name="user_id" value="{{ $user->id }}">
-                                <button class="btn btn-success w-sm waves ripple-light" type="submit">
-                                    @if ($isAdmin ?? false)
-                                        Mark All Ready to Ship
-                                    @else
-                                        Mark My Products Ready to Ship
-                                    @endif
-                                </button>
-                            </form>
-                        </div>
+            @if ($packagedAllocations->count() > 0)
+                <div class="d-flex justify-content-end gap-2 my-2">
+                    <div class="text-end">
+                        <form action="{{ route('change.packaging.status.ready.to.ship') }}" method="POST"
+                            onsubmit="return confirm('Are you sure you want to mark your products as ready to ship?')">
+                            @csrf
+                            @method('PUT')
+                            <input type="hidden" name="sales_order_id" value="{{ $salesOrder->id }}">
+                            <input type="hidden" name="warehouse_id" value="{{ $user->warehouse_id }}">
+                            <input type="hidden" name="user_id" value="{{ $user->id }}">
+                            <button class="btn btn-success w-sm waves ripple-light" type="submit">
+                                @if ($isAdmin ?? false)
+                                    Mark All Ready to Ship
+                                @else
+                                    Mark My Products Ready to Ship
+                                @endif
+                            </button>
+                        </form>
                     </div>
-                @endif
+                </div>
             @endif
         </div>
     </main>
@@ -528,36 +493,37 @@
 
                 console.log(productStatus);
                 // if (false) {
-                    $.ajax({
-                        url: '/download-packing-products-excel',
-                        method: 'GET',
-                        data: {
-                            id: salesOrderId,
-                            facility_name: customerFacilityName,
-                            product_status: productStatus
-                        },
-                        xhrFields: {
-                            responseType: 'blob' // important for binary files
-                        },
-                        success: function(data, status, xhr) {
-                            // Get filename from response header (optional)
-                            var filename = xhr.getResponseHeader("Content-Disposition")
-                                ?.split("filename=")[1] || "products.xlsx";
+                $.ajax({
+                    url: '/download-packing-products-excel',
+                    method: 'GET',
+                    data: {
+                        id: salesOrderId,
+                        // facility_name: customerFacilityName,
+                        product_status: productStatus,
+                        // ids: selectedIds, // Pass the selected IDs to the server
+                    },
+                    xhrFields: {
+                        responseType: 'blob' // important for binary files
+                    },
+                    success: function(data, status, xhr) {
+                        // Get filename from response header (optional)
+                        var filename = xhr.getResponseHeader("Content-Disposition")
+                            ?.split("filename=")[1] || "products.xlsx";
 
-                            var url = window.URL.createObjectURL(data);
-                            var a = document.createElement("a");
-                            a.href = url;
-                            a.download = filename;
-                            document.body.appendChild(a);
-                            a.click();
-                            a.remove();
-                            window.URL.revokeObjectURL(url);
-                        },
-                        error: function(xhr, status, error) {
-                            console.error("Error:", error);
-                            alert("Error");
-                        }
-                    });
+                        var url = window.URL.createObjectURL(data);
+                        var a = document.createElement("a");
+                        a.href = url;
+                        a.download = filename;
+                        document.body.appendChild(a);
+                        a.click();
+                        a.remove();
+                        window.URL.revokeObjectURL(url);
+                    },
+                    error: function(xhr, status, error) {
+                        console.error("Error:", error);
+                        alert("Error");
+                    }
+                });
                 // }
 
             });
