@@ -188,64 +188,66 @@
             </div>
 
             {{-- Warehouse Status Section --}}
-            @if (isset($warehouseStatuses) && count($warehouseStatuses) > 0)
-                @if ($isSuperAdmin)
-                    <div class="row mt-3">
-                        <div class="col-12">
-                            <div class="card">
-                                <div class="card-body">
-                                    <h6 class="mb-3">Warehouse Shipping Status</h6>
-                                    <div class="table-responsive">
-                                        <table class="table table-bordered">
-                                            <thead class="table-light">
-                                                <tr>
-                                                    <th>Warehouse Name</th>
-                                                    <th>Current Status</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                @php
-                                                    $statusBadgeColors = [
-                                                        'pending' => 'bg-secondary',
-                                                        'packaging' => 'bg-warning',
-                                                        'packaged' => 'bg-info',
-                                                        'partially_packaged' => 'bg-warning',
-                                                        'ready_to_ship' => 'bg-success',
-                                                        'dispatched' => 'bg-primary',
-                                                        'shipped' => 'bg-dark',
-                                                        'approval_pending' => 'bg-secondary',
-                                                        'completed' => 'bg-success',
-                                                    ];
-                                                    $statusLabels = [
-                                                        'pending' => 'Pending',
-                                                        'packaging' => 'Packaging',
-                                                        'packaged' => 'Packaged',
-                                                        'partially_packaged' => 'Partially Packaged',
-                                                        'ready_to_ship' => 'Ready to Ship',
-                                                        'dispatched' => 'Dispatched',
-                                                        'shipped' => 'Shipped',
-                                                        'approval_pending' => 'Ready to Ship Approval Pending',
-                                                        'completed' => 'Completed',
-                                                    ];
-                                                @endphp
-                                                @foreach ($warehouseStatuses as $warehouseId => $statusInfo)
+            @if (false)
+                @if (isset($warehouseStatuses) && count($warehouseStatuses) > 0)
+                    @if ($isSuperAdmin)
+                        <div class="row mt-3">
+                            <div class="col-12">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h6 class="mb-3">Warehouse Shipping Status</h6>
+                                        <div class="table-responsive">
+                                            <table class="table table-bordered">
+                                                <thead class="table-light">
                                                     <tr>
-                                                        <td>{{ $statusInfo['warehouse_name'] }}</td>
-                                                        <td>
-                                                            <span
-                                                                class="badge {{ $statusBadgeColors[$statusInfo['shipping_status']] ?? 'bg-secondary' }}">
-                                                                {{ $statusLabels[$statusInfo['shipping_status']] ?? ucfirst(str_replace('_', ' ', $statusInfo['shipping_status'])) }}
-                                                            </span>
-                                                        </td>
+                                                        <th>Warehouse Name</th>
+                                                        <th>Current Status</th>
                                                     </tr>
-                                                @endforeach
-                                            </tbody>
-                                        </table>
+                                                </thead>
+                                                <tbody>
+                                                    @php
+                                                        $statusBadgeColors = [
+                                                            'pending' => 'bg-secondary',
+                                                            'packaging' => 'bg-warning',
+                                                            'packaged' => 'bg-info',
+                                                            'partially_packaged' => 'bg-warning',
+                                                            'ready_to_ship' => 'bg-success',
+                                                            'dispatched' => 'bg-primary',
+                                                            'shipped' => 'bg-dark',
+                                                            'approval_pending' => 'bg-secondary',
+                                                            'completed' => 'bg-success',
+                                                        ];
+                                                        $statusLabels = [
+                                                            'pending' => 'Pending',
+                                                            'packaging' => 'Packaging',
+                                                            'packaged' => 'Packaged',
+                                                            'partially_packaged' => 'Partially Packaged',
+                                                            'ready_to_ship' => 'Ready to Ship',
+                                                            'dispatched' => 'Dispatched',
+                                                            'shipped' => 'Shipped',
+                                                            'approval_pending' => 'Ready to Ship Approval Pending',
+                                                            'completed' => 'Completed',
+                                                        ];
+                                                    @endphp
+                                                    @foreach ($warehouseStatuses as $warehouseId => $statusInfo)
+                                                        <tr>
+                                                            <td>{{ $statusInfo['warehouse_name'] }}</td>
+                                                            <td>
+                                                                <span
+                                                                    class="badge {{ $statusBadgeColors[$statusInfo['shipping_status']] ?? 'bg-secondary' }}">
+                                                                    {{ $statusLabels[$statusInfo['shipping_status']] ?? ucfirst(str_replace('_', ' ', $statusInfo['shipping_status'])) }}
+                                                                </span>
+                                                            </td>
+                                                        </tr>
+                                                    @endforeach
+                                                </tbody>
+                                            </table>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    @endif
                 @endif
             @endif
 

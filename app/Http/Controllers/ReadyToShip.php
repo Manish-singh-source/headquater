@@ -33,18 +33,16 @@ class ReadyToShip extends Controller
             $userWarehouseId = $user->warehouse_id;
 
             $status = $request->query('status', 'all');
-            $orders = SalesOrder::with('customerGroup')->with('orderedProducts.warehouseAllocations', function ($q) use ($isAdmin, $userWarehouseId) {
+            $allocationReadyFilter = function ($q) use ($isAdmin, $userWarehouseId) {
                 if (! $isAdmin) {
                     $q->where('warehouse_id', $userWarehouseId);
                 }
                 $q->where('product_status', 'completed');
-            })
-                ->whereHas('orderedProducts.warehouseAllocations', function ($q) use ($isAdmin, $userWarehouseId) {
-                    if (! $isAdmin) {
-                        $q->where('warehouse_id', $userWarehouseId);
-                    }
-                    $q->where('product_status', 'completed');
-                })
+            };
+
+            $orders = SalesOrder::with('customerGroup')
+                ->with(['orderedProducts.warehouseAllocations' => $allocationReadyFilter])
+                ->whereHas('orderedProducts.warehouseAllocations', $allocationReadyFilter)
                 ->get();
             // dd($orders);
 
@@ -68,7 +66,7 @@ class ReadyToShip extends Controller
             ]);
 
             if ($validator->fails()) {
-                return redirect()->route('ready.to.ship.index')
+                return redirect()->route('readyToShip.index')
                     ->with('error', 'Invalid order ID.');
             }
 
@@ -79,30 +77,28 @@ class ReadyToShip extends Controller
 
             $status = $request->query('status', 'all');
 
+            $allocationReadyFilter = function ($q) use ($isAdmin, $userWarehouseId) {
+                if (! $isAdmin) {
+                    $q->where('warehouse_id', $userWarehouseId);
+                }
+                $q->where('product_status', 'completed');
+            };
+
             $order = SalesOrder::with('orderedProducts')
-                ->with('orderedProducts.warehouseAllocations', function ($q) use ($isAdmin, $userWarehouseId) {
-                    if (! $isAdmin) {
-                        $q->where('warehouse_id', $userWarehouseId);
-                    }
-                    $q->where('product_status', 'completed');
-                })
-                ->whereHas('orderedProducts.warehouseAllocations', function ($q) use ($isAdmin, $userWarehouseId) {
-                    if (! $isAdmin) {
-                        $q->where('warehouse_id', $userWarehouseId);
-                    }
-                    $q->where('product_status', 'completed');
-                })
+                ->with(['orderedProducts.warehouseAllocations' => $allocationReadyFilter])
+                ->whereHas('orderedProducts.warehouseAllocations', $allocationReadyFilter)
                 ->find($id);
 
 
             if (! $order) {
-                return redirect()->route('ready.to.ship.index')
+                return redirect()->route('readyToShip.index')
                     ->with('error', 'Order not found or not ready to ship.');
             }
 
             // Get unique customers for this order
             $facilityNames = SalesOrderProduct::with('customer')
                 ->where('sales_order_id', $id)
+                ->whereHas('warehouseAllocations', $allocationReadyFilter)
                 ->get()
                 ->pluck('customer')
                 ->filter()
@@ -111,11 +107,15 @@ class ReadyToShip extends Controller
             $customerIds = $facilityNames->pluck('id')->toArray();
 
             $customerInfo = Customer::with('groupInfo.customerGroup')
-                ->withCount('orders')
+                ->withCount(['orders as orders_count' => function ($query) use ($id, $allocationReadyFilter) {
+                    $query->where('sales_order_id', $id)
+                        ->whereHas('warehouseAllocations', $allocationReadyFilter);
+                }])
                 // fetch status from 
-                ->with('orders', function($query) use ($id) {
-                    $query->where('sales_order_id', $id);
-                })
+                ->with(['orders' => function ($query) use ($id, $allocationReadyFilter) {
+                    $query->where('sales_order_id', $id)
+                        ->whereHas('warehouseAllocations', $allocationReadyFilter);
+                }])
                 ->whereIn('id', $customerIds)
                 ->get();
             // unique customers array created for view
@@ -156,29 +156,35 @@ class ReadyToShip extends Controller
             $isAdmin = $user->hasRole(['Super Admin', 'Admin']) || ! $user->warehouse_id;
             $userWarehouseId = $user->warehouse_id;
 
+            $allocationReadyFilter = function ($q) use ($userWarehouseId, $isSuperAdmin) {
+                if (! $isSuperAdmin && $userWarehouseId) {
+                    $q->where('warehouse_id', $userWarehouseId);
+                }
+                $q->where('product_status', 'completed');
+            };
+
             $salesOrder = SalesOrder::with([
                 'customerGroup',
                 'warehouse',
-                'orderedProducts' => function ($query) use ($userWarehouseId, $isSuperAdmin, $c_id) {
-                    // Only include orderedProducts that have warehouseAllocations for this warehouse
-                    $query->where('customer_id', $c_id);
-                    $query->whereHas('warehouseAllocations', function ($q) use ($userWarehouseId, $isSuperAdmin) {
-                        if (! $isSuperAdmin && $userWarehouseId) {
-                            $q->where('warehouse_id', $userWarehouseId);
-                        }
-                    })->with([
-                        'product',
-                        'customer',
-                        'tempOrder',
-                        'warehouseStock.warehouse',
-                        'warehouseAllocations.warehouse',
-                    ]);
+                'orderedProducts' => function ($query) use ($c_id, $allocationReadyFilter) {
+                    // Only include orderedProducts that have ready-to-ship allocations
+                    $query->where('customer_id', $c_id)
+                        ->whereHas('warehouseAllocations', $allocationReadyFilter)
+                        ->with([
+                            'product',
+                            'customer',
+                            'tempOrder',
+                            'warehouseStock.warehouse',
+                            'warehouseAllocations' => function ($q) use ($allocationReadyFilter) {
+                                $allocationReadyFilter($q);
+                                $q->with('warehouse');
+                            },
+                        ]);
                 },
             ])
-                ->whereHas('orderedProducts.warehouseAllocations', function ($query) use ($userWarehouseId, $isSuperAdmin) {
-                    if (! $isSuperAdmin && $userWarehouseId) {
-                        $query->where('warehouse_id', $userWarehouseId);
-                    }
+                ->whereHas('orderedProducts', function ($query) use ($c_id, $allocationReadyFilter) {
+                    $query->where('customer_id', $c_id)
+                        ->whereHas('warehouseAllocations', $allocationReadyFilter);
                 })
                 ->findOrFail($id);
 
@@ -219,7 +225,8 @@ class ReadyToShip extends Controller
             // Get warehouse allocation statuses for this customer's products
             $warehouseStatuses = [];
             $allocations = WarehouseAllocation::where('sales_order_id', $id)
-                ->whereHas('salesOrderProduct', function($q) use ($c_id) {
+                ->where('product_status', 'completed')
+                ->whereHas('salesOrderProduct', function ($q) use ($c_id) {
                     $q->where('customer_id', $c_id);
                 })
                 ->with('warehouse')

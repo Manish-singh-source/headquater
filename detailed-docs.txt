@@ -1639,3 +1639,7 @@ block_quantity
 
 
 $productMapping = ProductMapping::where('sku', $sku)->where('item_code', $record['Item Code'])->first();
+
+
+
+
