@@ -727,6 +727,9 @@ class PackagingController extends Controller
     private function updateSalesOrderProduct($order, $record, $salesOrderId, $isAdmin, $userWarehouseId)
     {
         $finalDispatchQty = (int) ($record['Final Dispatch Qty'] ?? 0);
+        if($finalDispatchQty == 0)  {
+            return;
+        }
         $boxCount = (float) ($record['Box Count'] ?? 0);
         $weight = (float) ($record['Weight'] ?? 0);
         $issueUnits = (int) ($record['Issue Units'] ?? 0);

@@ -473,6 +473,9 @@
                 });
             }
 
+            function escapeRegex(value) {
+                return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            }
 
             $('#selectProductStatusFilter').on('change', function() {
                 var selected = $(this).val().trim();
@@ -481,7 +484,12 @@
                     customerPOTableList.column(-1).search('').draw();
                     return;
                 }
-                customerPOTableList.column(-1).search(selected, true, false).draw();
+
+                // Match exact status and allow optional "Warehouse: " prefix
+                // Also avoid partial matches like "Ready to Ship" vs "Ready to Ship Approval Pending"
+                var pattern = '(?:^\\s*|:\\s*)' + escapeRegex(selected) +
+                    '(?=\\s*(?:$|\\r?\\n|\\S[^:]*:))';
+                customerPOTableList.column(-1).search(pattern, true, false).draw();
             });
 
 

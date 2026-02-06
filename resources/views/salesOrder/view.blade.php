@@ -580,6 +580,10 @@
                 }]
             });
 
+            function escapeRegex(value) {
+                return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            }
+
             $('#selectBrand').on('change', function() {
                 var selected = $(this).val().trim();
 
@@ -607,10 +611,14 @@
 
             $('#selectProductStatusFilter').on('change', function() {
                 var selected = $(this).val().trim();
-                // selected = 'Shipped'
-                // in my column 'Baroda Warehouse 1: Shipped'
-                // brandSelection.column(-1).search(selected ? '^' + selected + '$' : '', true, false).draw();
-                brandSelection.column(-1).search(selected, true, false).draw();
+                if (!selected) {
+                    brandSelection.column(-1).search('').draw();
+                    return;
+                }
+
+                // Match exact status and allow optional "Warehouse: " prefix
+                var pattern = '(?:^\\s*|:\\s*)' + escapeRegex(selected) + '(?:\\s|$)';
+                brandSelection.column(-1).search(pattern, true, false).draw();
             });
 
             $('#selectQuantityFulfilledFilter').on('change', function() {
