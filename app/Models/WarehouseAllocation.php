@@ -17,7 +17,7 @@ class WarehouseAllocation extends Model
         'approved_at' => 'datetime',
         'shipping_status' => 'string',
     ];
-
+    
     /**
      * Relationships
      */

@@ -44,7 +44,6 @@ class ReadyToShip extends Controller
                 ->with(['orderedProducts.warehouseAllocations' => $allocationReadyFilter])
                 ->whereHas('orderedProducts.warehouseAllocations', $allocationReadyFilter)
                 ->get();
-            // dd($orders);
 
             return view('readyToShip.index', compact('orders'));
         } catch (\Exception $e) {
@@ -59,6 +58,84 @@ class ReadyToShip extends Controller
      * @return \Illuminate\View\View
      */
     public function view($id, Request $request)
+    {
+        try {
+            $validator = Validator::make(['id' => $id], [
+                'id' => 'required|integer|exists:sales_orders,id',
+            ]);
+
+            if ($validator->fails()) {
+                return redirect()->route('readyToShip.index')
+                    ->with('error', 'Invalid order ID.');
+            }
+
+            $user = Auth::user();
+            // Check if user is admin (Super Admin or Admin role, or warehouse_id is null/0)
+            $isAdmin = $user->hasRole(['Super Admin', 'Admin']) || ! $user->warehouse_id;
+            $userWarehouseId = $user->warehouse_id;
+
+            $status = $request->query('status', 'all');
+
+            $allocationReadyFilter = function ($q) use ($isAdmin, $userWarehouseId) {
+                if (! $isAdmin) {
+                    $q->where('warehouse_id', $userWarehouseId);
+                }
+                $q->where('product_status', 'completed');
+            };
+
+            // $warehouseAllocations = WarehouseAllocation::where('sales_order_id', $id)
+            //     ->where('product_status', 'completed')
+            //     ->get();
+
+            // dd($warehouseAllocations);
+
+            $order = SalesOrder::with('orderedProducts')
+                ->with(['orderedProducts.warehouseAllocations' => $allocationReadyFilter])
+                ->whereHas('orderedProducts.warehouseAllocations', $allocationReadyFilter)
+                ->find($id);
+
+
+            if (! $order) {
+                return redirect()->route('readyToShip.index')
+                    ->with('error', 'Order not found or not ready to ship.');
+            }
+
+            // Get unique customers for this order
+            $facilityNames = SalesOrderProduct::with('customer')
+                ->where('sales_order_id', $id)
+                ->whereHas('warehouseAllocations', $allocationReadyFilter)
+                ->get()
+                ->pluck('customer')
+                ->filter()
+                ->unique('id');
+
+            $customerIds = $facilityNames->pluck('id')->toArray();
+
+            $customerInfo = Customer::with('groupInfo.customerGroup')
+                ->withCount(['orders as orders_count' => function ($query) use ($id, $allocationReadyFilter) {
+                    $query->where('sales_order_id', $id)
+                        ->whereHas('warehouseAllocations', $allocationReadyFilter);
+                }])
+                // fetch status from 
+                ->with(['orders' => function ($query) use ($id, $allocationReadyFilter) {
+                    $query->where('sales_order_id', $id)
+                        ->whereHas('warehouseAllocations', $allocationReadyFilter);
+                }])
+                ->whereIn('id', $customerIds)
+                ->get();
+            // dd($customerInfo);
+            // unique customers array created for view
+            // dd($customerInfo[0]->orders);
+
+            return view('readyToShip.view', compact('customerInfo', 'order'));
+        } catch (\Exception $e) {
+            return redirect()->route('readyToShip.index')
+                ->with('error', 'Error loading order: '.$e->getMessage());
+        }
+    }
+
+    // old backup method
+    public function view1($id, Request $request)
     {
         try {
             $validator = Validator::make(['id' => $id], [
@@ -118,6 +195,7 @@ class ReadyToShip extends Controller
                 }])
                 ->whereIn('id', $customerIds)
                 ->get();
+            // dd($customerInfo);
             // unique customers array created for view
             // dd($customerInfo[0]->orders);
 

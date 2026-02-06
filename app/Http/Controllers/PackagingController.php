@@ -762,7 +762,7 @@ class PackagingController extends Controller
     private function updateSalesOrderProduct($order, $record, $salesOrderId, $isAdmin, $userWarehouseId)
     {
         $finalDispatchQty = (int) ($record['Final Dispatch Qty'] ?? 0);
-        if($finalDispatchQty == 0)  {
+        if ($finalDispatchQty == 0) {
             return;
         }
         $boxCount = (float) ($record['Box Count'] ?? 0);
@@ -925,7 +925,7 @@ class PackagingController extends Controller
                     ->with('error', 'Invalid request.');
             }
 
-            
+
             $user = User::findOrFail($request->user_id);
             $isAdmin = $user->hasRole(['Super Admin', 'Admin']) || ! $user->warehouse_id;
             $userWarehouseId = $user->warehouse_id;
@@ -935,20 +935,20 @@ class PackagingController extends Controller
                 'orderedProducts.warehouseAllocations',
                 'orderedProducts.warehouseStock',
             ])->findOrFail($request->sales_order_id);
-            
+
             // if ($salesOrder->status !== 'ready_to_package') {
             //     return redirect()->back()
             //         ->with('error', 'Order is not in ready_to_package status.');
             // }
 
             $allocationIds = explode(',', $request->allocation_ids ?? '');
-            $allocationIds = array_filter($allocationIds, function($value) {
+            $allocationIds = array_filter($allocationIds, function ($value) {
                 return !empty(trim($value));
             });
             $allocationIds = array_map('intval', $allocationIds);
             // dd($allocationIds);
-            
-            
+
+
             $baseAllocationQuery = WarehouseAllocation::where('sales_order_id', $salesOrder->id);
             if ($specificWarehouseId) {
                 $baseAllocationQuery->where('warehouse_id', $specificWarehouseId);
@@ -1004,8 +1004,17 @@ class PackagingController extends Controller
                     ->where('final_final_dispatched_quantity', '>', 0)
                     ->get();
 
+                // get highest rts_count_id from all allocations for this sales order
+                $highestRtsCountId = WarehouseAllocation::max('rts_count_id');
+                if (is_null($highestRtsCountId) || $highestRtsCountId <= 0) {
+                    $highestRtsCountId = 1;
+                } else {
+                    $highestRtsCountId = (int) $highestRtsCountId + 1;
+                }
+                
                 foreach ($allocations as $allocation) {
                     // Approve this allocation
+                    $allocation->rts_count_id = $highestRtsCountId;
                     $allocation->approval_status = 'approved';
                     $allocation->product_status = 'completed';
                     $allocation->approved_by = $user->id;
@@ -1034,16 +1043,17 @@ class PackagingController extends Controller
                 foreach ($salesOrder->orderedProducts as $product) {
                     $allocationsForProduct = $product->warehouseAllocations ?? collect();
 
-                    if ($allocationsForProduct->isEmpty()) {
-                        if ($product->final_final_dispatched_quantity > 0) {
-                            $productsToUpdate[] = $product->id;
-                            if ($product->product_status !== 'completed') {
-                                $product->product_status = 'completed';
-                                $product->save();
-                            }
+                    // if ($allocationsForProduct->isEmpty()) {
+                    if ($product->final_final_dispatched_quantity > 0) {
+                        $productsToUpdate[] = $product->id;
+                        if ($product->product_status !== 'completed') {
+                            $product->rts_count_id = $highestRtsCountId;
+                            $product->product_status = 'completed';
+                            $product->save();
                         }
-                        continue;
                     }
+                    //     continue;
+                    // }
 
                     $allocationsNeedingApproval = $allocationsForProduct->filter(function ($allocation) {
                         return $allocation->allocated_quantity > 0;
@@ -1061,6 +1071,7 @@ class PackagingController extends Controller
                     if ($allApproved) {
                         $productsToUpdate[] = $product->id;
                         if ($product->product_status !== 'completed') {
+                            $product->rts_count_id = $highestRtsCountId;
                             $product->product_status = 'completed';
                             $product->save();
                         }
@@ -1071,22 +1082,23 @@ class PackagingController extends Controller
 
                 // Update product statuses to ready_to_ship
                 if (! empty($productsToUpdate)) {
-                    SalesOrderProduct::whereIn('id', $productsToUpdate)
-                        ->update(['status' => 'ready_to_ship']);
+                    $product = SalesOrderProduct::whereIn('id', $productsToUpdate)
+                        ->update(['status' => 'ready_to_ship', 'rts_count_id' => $highestRtsCountId]);
 
                     // Log activity for each product
-                    foreach ($productsToUpdate as $productId) {
-                        $product = SalesOrderProduct::find($productId);
-                        activity()
-                            ->performedOn($product)
-                            ->causedBy($user)
-                            ->withProperties([
-                                'old_status' => 'packaging',
-                                'new_status' => 'ready_to_ship',
-                                'sales_order_id' => $salesOrder->id,
-                            ])
-                            ->log('Product status changed to ready_to_ship');
-                    }
+                    // foreach ($productsToUpdate as $productId) {
+                    //     $product = SalesOrderProduct::find($productId);
+                    //     activity()
+                    //         ->performedOn($product)
+                    //         ->causedBy($user)
+                    //         ->withProperties([
+                    //             'old_status' => 'packaging',
+                    //             'new_status' => 'ready_to_ship',
+                    //             'sales_order_id' => $salesOrder->id,
+                    //             'rts_count_id' => $highestRtsCountId,
+                    //         ])
+                    //         ->log('Product status changed to ready_to_ship');
+                    // }
                 }
 
                 // Check if ALL products in the order are now ready_to_ship
