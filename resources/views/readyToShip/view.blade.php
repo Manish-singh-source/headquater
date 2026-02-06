@@ -29,6 +29,7 @@
                                         </th>
                                         <th>Sales Order&nbsp;Id</th>
                                         <th>Customer&nbsp;Group&nbsp;Name</th>
+                                        <th>Facility&nbsp;Name</th>
                                         <th>Client&nbsp;Name</th>
                                         <th>Contact&nbsp;Name</th>
                                         <th>Products</th>
@@ -66,6 +67,9 @@
                                                 <p class="mb-0 customer-name fw-bold">
                                                     {{ $customerOrders->groupInfo->customerGroup->name }}
                                                 </p>
+                                            </td>
+                                            <td>
+                                                {{ $customerOrders->facility_name }}
                                             </td>
                                             <td>{{ $customerOrders->client_name }}</td>
                                             <td>

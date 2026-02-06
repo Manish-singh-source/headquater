@@ -431,7 +431,7 @@
             --}}
 
 
-            @if ($packagedAllocations->count() > 0)
+            @if (!($isAdmin ?? false) && $packagedAllocations->count() > 0)
                 <div class="d-flex justify-content-end gap-2 my-2">
                     <div class="text-end">
                         <form action="{{ route('change.packaging.status.ready.to.ship') }}" method="POST"
@@ -441,12 +441,10 @@
                             <input type="hidden" name="sales_order_id" value="{{ $salesOrder->id }}">
                             <input type="hidden" name="warehouse_id" value="{{ $user->warehouse_id }}">
                             <input type="hidden" name="user_id" value="{{ $user->id }}">
+                            <input type="hidden" name="allocation_ids"
+                                value="{{ $packagedAllocations->pluck('id')->implode(',') }}">
                             <button class="btn btn-success w-sm waves ripple-light" type="submit">
-                                @if ($isAdmin ?? false)
-                                    Mark All Ready to Ship
-                                @else
-                                    Mark My Products Ready to Ship
-                                @endif
+                                Mark My Products Ready to Ship
                             </button>
                         </form>
                     </div>
@@ -475,7 +473,7 @@
 
             function escapeRegex(value) {
                 return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-            }
+            }+
 
             $('#selectProductStatusFilter').on('change', function() {
                 var selected = $(this).val().trim();

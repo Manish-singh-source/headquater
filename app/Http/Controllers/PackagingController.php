@@ -43,12 +43,29 @@ class PackagingController extends Controller
         } elseif ($status === 'ready_to_ship') {
             $orders->where('status', 'ready_to_ship');
         }
+
+        $allocationStatuses = match ($status) {
+            'ready_to_package' => ['packaging', 'packaged', 'approval_pending'],
+            'ready_to_ship' => ['completed'],
+            default => ['packaging', 'packaged', 'approval_pending', 'completed'],
+        };
+
+        // Show only orders that have at least one relevant allocation
+        $orders->whereHas('orderedProducts.warehouseAllocations', function ($query) use ($userWarehouseId, $isAdmin, $allocationStatuses) {
+            if (! $isAdmin) {
+                $query->where('warehouse_id', $userWarehouseId);
+            }
+            $query->whereIn('product_status', $allocationStatuses);
+        });
+
         $orders->with('orderedProducts.warehouseAllocations', function ($query) use ($userWarehouseId, $isAdmin) {
             if (! $isAdmin) {
                 $query->where('warehouse_id', $userWarehouseId);
             }
         });
         $orders = $orders->get();
+
+        // dd($orders);
 
         return view('packagingList.index', compact('orders', 'status'));
     }
@@ -106,14 +123,32 @@ class PackagingController extends Controller
 
             foreach ($salesOrder->orderedProducts as $order) {
                 foreach ($order->warehouseAllocations as $allocation) {
-                    if ($allocation->product_status === 'approval_pending') {
-                        $pendingApprovalList[$allocation->warehouse_id][$allocation->sales_order_id][$allocation->sales_order_product_id] = $allocation->id;
-                        $pendingApprovalList[$allocation->warehouse_id]['name'] = $allocation->warehouse->name;
-                        $pendingApprovalList[$allocation->warehouse_id]['product_count'] = count($pendingApprovalList[$allocation->warehouse_id][$allocation->sales_order_id]);
-                        $pendingApprovalList[$allocation->warehouse_id]['allocation_ids'][] = $allocation->id;
-                        $pendingApprovalList[$allocation->warehouse_id]['warehouse_id'] = $allocation->warehouse_id;
+                    if (
+                        $allocation->product_status === 'approval_pending' &&
+                        $allocation->approval_status === 'pending' &&
+                        ! is_null($allocation->final_final_dispatched_quantity) &&
+                        $allocation->final_final_dispatched_quantity > 0
+                    ) {
+                        $warehouseId = $allocation->warehouse_id;
+                        if (! isset($pendingApprovalList[$warehouseId])) {
+                            $pendingApprovalList[$warehouseId] = [
+                                'name' => $allocation->warehouse->name,
+                                'warehouse_id' => $warehouseId,
+                                'allocation_ids' => [],
+                                'product_ids' => [],
+                            ];
+                        }
+
+                        $pendingApprovalList[$warehouseId]['allocation_ids'][$allocation->id] = $allocation->id;
+                        $pendingApprovalList[$warehouseId]['product_ids'][$allocation->sales_order_product_id] = true;
                     }
                 }
+            }
+
+            foreach ($pendingApprovalList as $warehouseId => $data) {
+                $pendingApprovalList[$warehouseId]['product_count'] = count($data['product_ids'] ?? []);
+                $pendingApprovalList[$warehouseId]['allocation_ids'] = array_values($data['allocation_ids'] ?? []);
+                unset($pendingApprovalList[$warehouseId]['product_ids']);
             }
 
             $readyToShipAllocations = WarehouseAllocation::where('sales_order_id', $id)
@@ -467,10 +502,10 @@ class PackagingController extends Controller
             // Determine product status based on warehouse allocations
             $productStatus = 'pending';
             if ($hasAllocations) {
-                // Check if all allocations have final_dispatched_quantity set
+                // Check if all allocations have final_final_dispatched_quantity set
                 $allAllocationsPackaged = true;
                 foreach ($order->warehouseAllocations as $allocation) {
-                    if ($allocation->allocated_quantity > 0 && $allocation->final_dispatched_quantity <= 0) {
+                    if ($allocation->allocated_quantity > 0 && $allocation->final_final_dispatched_quantity <= 0) {
                         $allAllocationsPackaged = false;
                         break;
                     }
@@ -880,6 +915,266 @@ class PackagingController extends Controller
                 'sales_order_id' => 'required|integer|exists:sales_orders,id',
                 'warehouse_id' => 'nullable|integer|exists:warehouses,id',
                 'user_id' => 'nullable|integer|exists:users,id',
+                'allocation_ids' => 'nullable|string',
+            ]);
+
+            if ($validator->fails()) {
+                return redirect()->back()
+                    ->withErrors($validator)
+                    ->withInput()
+                    ->with('error', 'Invalid request.');
+            }
+
+            
+            $user = User::findOrFail($request->user_id);
+            $isAdmin = $user->hasRole(['Super Admin', 'Admin']) || ! $user->warehouse_id;
+            $userWarehouseId = $user->warehouse_id;
+            $specificWarehouseId = $request->warehouse_id; // For admin to approve specific warehouse
+
+            $salesOrder = SalesOrder::with([
+                'orderedProducts.warehouseAllocations',
+                'orderedProducts.warehouseStock',
+            ])->findOrFail($request->sales_order_id);
+            
+            // if ($salesOrder->status !== 'ready_to_package') {
+            //     return redirect()->back()
+            //         ->with('error', 'Order is not in ready_to_package status.');
+            // }
+
+            $allocationIds = explode(',', $request->allocation_ids ?? '');
+            $allocationIds = array_filter($allocationIds, function($value) {
+                return !empty(trim($value));
+            });
+            $allocationIds = array_map('intval', $allocationIds);
+            // dd($allocationIds);
+            
+            
+            $baseAllocationQuery = WarehouseAllocation::where('sales_order_id', $salesOrder->id);
+            if ($specificWarehouseId) {
+                $baseAllocationQuery->where('warehouse_id', $specificWarehouseId);
+            }
+            if (! $isAdmin) {
+                $baseAllocationQuery->where('warehouse_id', $userWarehouseId);
+            }
+            if (! empty($allocationIds)) {
+                $baseAllocationQuery->whereIn('id', $allocationIds);
+            }
+
+            if (! $isAdmin) {
+                // Warehouse user: Mark their allocations as pending approval
+                $allocationsUpdated = 0;
+                $allocations = (clone $baseAllocationQuery)
+                    ->where('approval_status', 'draft')
+                    ->where('final_final_dispatched_quantity', '>', 0)
+                    ->get();
+
+                foreach ($allocations as $allocation) {
+                    $allocation->approval_status = 'pending';
+                    $allocation->product_status = 'approval_pending';
+                    $allocation->save();
+                    $allocationsUpdated++;
+
+                    activity()
+                        ->performedOn($allocation)
+                        ->causedBy($user)
+                        ->withProperties([
+                            'warehouse_id' => $userWarehouseId,
+                            'sales_order_id' => $salesOrder->id,
+                            'sku' => $allocation->sku,
+                        ])
+                        ->log('Warehouse requested approval for ready to ship');
+                }
+
+                if ($allocationsUpdated === 0) {
+                    return redirect()->back()
+                        ->with('error', 'No products are ready for approval. Please ensure final dispatch quantities are set by uploading Excel file.');
+                }
+
+                DB::commit();
+
+                return redirect()->back()
+                    ->with('success', 'Approval request sent to admin for ' . $allocationsUpdated . ' product(s). Waiting for admin approval.');
+            } else {
+                // Admin: Approve pending allocations (all or specific warehouse / allocations)
+                $allocationsApproved = 0;
+                $allocations = (clone $baseAllocationQuery)
+                    ->where('product_status', 'approval_pending')
+                    ->where('approval_status', 'pending')
+                    ->whereNotNull('final_final_dispatched_quantity')
+                    ->where('final_final_dispatched_quantity', '>', 0)
+                    ->get();
+
+                foreach ($allocations as $allocation) {
+                    // Approve this allocation
+                    $allocation->approval_status = 'approved';
+                    $allocation->product_status = 'completed';
+                    $allocation->approved_by = $user->id;
+                    $allocation->approved_at = now();
+                    $allocation->save();
+
+                    activity()
+                        ->performedOn($allocation)
+                        ->causedBy($user)
+                        ->withProperties([
+                            'warehouse_id' => $allocation->warehouse_id,
+                            'sales_order_id' => $salesOrder->id,
+                            'sku' => $allocation->sku,
+                        ])
+                        ->log('Admin approved warehouse allocation for ready to ship');
+
+                    $allocationsApproved++;
+                }
+
+                if ($allocationsApproved === 0) {
+                    return redirect()->back()
+                        ->with('error', 'No products are ready to ship. Please ensure final dispatch quantities are set.');
+                }
+
+                $productsToUpdate = [];
+                foreach ($salesOrder->orderedProducts as $product) {
+                    $allocationsForProduct = $product->warehouseAllocations ?? collect();
+
+                    if ($allocationsForProduct->isEmpty()) {
+                        if ($product->final_final_dispatched_quantity > 0) {
+                            $productsToUpdate[] = $product->id;
+                            if ($product->product_status !== 'completed') {
+                                $product->product_status = 'completed';
+                                $product->save();
+                            }
+                        }
+                        continue;
+                    }
+
+                    $allocationsNeedingApproval = $allocationsForProduct->filter(function ($allocation) {
+                        return $allocation->allocated_quantity > 0;
+                    });
+
+                    if ($allocationsNeedingApproval->isEmpty()) {
+                        continue;
+                    }
+
+                    $allApproved = $allocationsNeedingApproval->every(function ($allocation) {
+                        return $allocation->approval_status === 'approved' &&
+                            $allocation->final_final_dispatched_quantity > 0;
+                    });
+
+                    if ($allApproved) {
+                        $productsToUpdate[] = $product->id;
+                        if ($product->product_status !== 'completed') {
+                            $product->product_status = 'completed';
+                            $product->save();
+                        }
+                    }
+                }
+
+                $productsToUpdate = array_values(array_unique($productsToUpdate));
+
+                // Update product statuses to ready_to_ship
+                if (! empty($productsToUpdate)) {
+                    SalesOrderProduct::whereIn('id', $productsToUpdate)
+                        ->update(['status' => 'ready_to_ship']);
+
+                    // Log activity for each product
+                    foreach ($productsToUpdate as $productId) {
+                        $product = SalesOrderProduct::find($productId);
+                        activity()
+                            ->performedOn($product)
+                            ->causedBy($user)
+                            ->withProperties([
+                                'old_status' => 'packaging',
+                                'new_status' => 'ready_to_ship',
+                                'sales_order_id' => $salesOrder->id,
+                            ])
+                            ->log('Product status changed to ready_to_ship');
+                    }
+                }
+
+                // Check if ALL products in the order are now ready_to_ship
+                $totalProducts = $salesOrder->orderedProducts->count();
+                $readyToShipProducts = SalesOrderProduct::where('sales_order_id', $salesOrder->id)
+                    ->where('status', 'ready_to_ship')
+                    ->count();
+
+                if ($totalProducts == $readyToShipProducts) {
+                    // All products are ready, update sales order status
+                    $oldStatus = $salesOrder->status;
+                    $salesOrder->status = 'ready_to_ship';
+                    $salesOrder->save();
+
+                    // Create status change notification
+                    NotificationService::statusChanged('sales', $salesOrder->id, $oldStatus, $salesOrder->status);
+
+                    activity()
+                        ->performedOn($salesOrder)
+                        ->causedBy($user)
+                        ->withProperties([
+                            'old_status' => $oldStatus,
+                            'new_status' => 'ready_to_ship',
+                        ])
+                        ->log('Sales order status changed to ready_to_ship (all products ready)');
+
+                    DB::commit();
+
+                    // If admin approved specific warehouse, stay on packaging page
+                    // If admin approved all warehouses, redirect to Ready to Ship page
+                    if ($specificWarehouseId) {
+                        $warehouseName = \App\Models\Warehouse::find($specificWarehouseId)->name ?? 'Warehouse';
+
+                        return redirect()->back()
+                            ->with('success', $warehouseName . ' approved successfully! All warehouses are now approved. Order status changed to "Ready to Ship".');
+                    } else {
+                        return redirect()->route('readyToShip.view', $salesOrder->id)
+                            ->with('success', 'All products approved and ready to ship! Order status changed to "Ready to Ship". Order ID: ' . $salesOrder->id);
+                    }
+                } else {
+                    // Some products are still in packaging
+                    // partial packaging completion
+                    DB::commit();
+
+                    // Build success message
+                    $message = '';
+                    if ($specificWarehouseId) {
+                        $warehouseName = \App\Models\Warehouse::find($specificWarehouseId)->name ?? 'Warehouse';
+                        $message = $warehouseName . ' approved successfully! ' . $allocationsApproved . ' allocation(s) approved.';
+
+                        // Check if there are still pending approvals for other warehouses
+                        $pendingAllocations = WarehouseAllocation::where('sales_order_id', $salesOrder->id)
+                            ->where('approval_status', 'pending')
+                            ->where('product_status', 'approval_pending')
+                            ->where('final_final_dispatched_quantity', '>', 0)
+                            ->count();
+
+                        if ($pendingAllocations > 0) {
+                            $message .= ' ' . $pendingAllocations . ' allocation(s) from other warehouses still pending approval.';
+                        }
+                    } else {
+                        $message = count($productsToUpdate) . ' product(s) approved and marked as ready to ship. ' . ($totalProducts - $readyToShipProducts) . ' product(s) still in packaging.';
+                    }
+
+                    return redirect()->back()
+                        ->with('success', $message);
+                }
+            }
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error changing status to ready_to_ship: ' . $e->getMessage());
+
+            return redirect()->back()
+                ->with('error', 'Error changing status: ' . $e->getMessage());
+        }
+    }
+
+    // Old function backup
+    public function changeStatusToReadyToShip1(Request $request)
+    {
+        DB::beginTransaction();
+
+        try {
+            $validator = Validator::make($request->all(), [
+                'sales_order_id' => 'required|integer|exists:sales_orders,id',
+                'warehouse_id' => 'nullable|integer|exists:warehouses,id',
+                'user_id' => 'nullable|integer|exists:users,id',
+                'allocation_ids' => 'nullable|string',
             ]);
 
             if ($validator->fails()) {
@@ -899,6 +1194,17 @@ class PackagingController extends Controller
                 'orderedProducts.warehouseStock',
             ])->findOrFail($request->sales_order_id);
 
+            $allocationIds = [];
+            if ($request->filled('allocation_ids')) {
+                $allocationIds = collect(explode(',', $request->allocation_ids))
+                    ->map('trim')
+                    ->filter()
+                    ->map('intval')
+                    ->values()
+                    ->all();
+            }
+            $allocationIdSet = ! empty($allocationIds) ? array_flip($allocationIds) : [];
+
             if ($salesOrder->status !== 'ready_to_package') {
                 return redirect()->back()
                     ->with('error', 'Order is not in ready_to_package status.');
@@ -917,7 +1223,10 @@ class PackagingController extends Controller
 
                         foreach ($userAllocations as $allocation) {
                             // Change status from 'draft' to 'pending' when warehouse clicks "Ready to Ship"
-                            if ($allocation->final_dispatched_quantity > 0 && $allocation->approval_status === 'draft') {
+                            if (
+                                $allocation->final_final_dispatched_quantity > 0 &&
+                                $allocation->approval_status === 'draft'
+                            ) {
                                 $allocation->approval_status = 'pending';
                                 $allocation->product_status = 'approval_pending';
                                 $allocation->save();
@@ -951,20 +1260,42 @@ class PackagingController extends Controller
                 $productsToUpdate = [];
                 $allocationsApproved = 0;
 
-                foreach ($salesOrder->orderedProducts as $product) {
-                    $hasAllocations = $product->warehouseAllocations && $product->warehouseAllocations->count() > 0;
+                $shouldProcessAllocation = function ($allocation) use ($specificWarehouseId, $allocationIdSet) {
+                    if ($specificWarehouseId && $allocation->warehouse_id != $specificWarehouseId) {
+                        return false;
+                    }
+                    if (! empty($allocationIdSet) && ! isset($allocationIdSet[$allocation->id])) {
+                        return false;
+                    }
 
-                    if ($hasAllocations) {
+                    return true;
+                };
+
+                $allocationReadyForApproval = function ($allocation) {
+                    return $allocation->product_status === 'approval_pending'
+                        && $allocation->approval_status === 'pending'
+                        && ! is_null($allocation->final_final_dispatched_quantity)
+                        && $allocation->final_final_dispatched_quantity > 0;
+                };
+
+                $allocationApprovedAndFilled = function ($allocation) {
+                    return $allocation->approval_status === 'approved'
+                        && $allocation->final_final_dispatched_quantity > 0;
+                };
+
+                foreach ($salesOrder->orderedProducts as $product) {
+                    $shouldCompleteProduct = false;
+                    $allocations = $product->warehouseAllocations ?? collect();
+
+                    if ($allocations->isNotEmpty()) {
                         // Multi-warehouse product
-                        foreach ($product->warehouseAllocations as $allocation) {
-                            // If specific warehouse is requested, only approve that warehouse
-                            if ($specificWarehouseId && $allocation->warehouse_id != $specificWarehouseId) {
-                                // Skip this allocation if not the requested warehouse
+                        foreach ($allocations as $allocation) {
+                            if (! $shouldProcessAllocation($allocation)) {
                                 continue;
                             }
 
-                            // Only approve if status is 'pending' (warehouse has requested approval)
-                            if ($allocation->final_dispatched_quantity > 0 && $allocation->approval_status === 'pending') {
+                            // Only approve if allocation is approval_pending and has final_final_dispatched_quantity
+                            if ($allocationReadyForApproval($allocation)) {
                                 // Approve this allocation
                                 // $allocation->status = 'ready_to_ship';
                                 $allocation->approval_status = 'approved';
@@ -988,39 +1319,32 @@ class PackagingController extends Controller
 
                         // After approving allocations, check if ALL allocations for this product are now approved
                         // IMPORTANT: We need to check ALL allocations that have allocated_quantity > 0
-                        // Not just those with final_dispatched_quantity > 0
-                        $allWarehousesApproved = true;
-                        $hasAnyAllocation = false;
-
-                        foreach ($product->warehouseAllocations as $allocation) {
-                            // Check if this allocation has allocated quantity (warehouse is supposed to dispatch)
-                            if ($allocation->allocated_quantity > 0) {
-                                $hasAnyAllocation = true;
-
-                                // This warehouse must have:
-                                // 1. final_dispatched_quantity > 0 (warehouse has uploaded Excel and filled data)
-                                // 2. approval_status = 'approved' (admin has approved)
-                                if ($allocation->final_dispatched_quantity <= 0 || $allocation->approval_status !== 'approved') {
-                                    $allWarehousesApproved = false;
-                                    break;
-                                }
-                            }
-                        }
+                        // Not just those with final_final_dispatched_quantity > 0
+                        $allocationsNeedingApproval = $allocations->filter(function ($allocation) {
+                            return $allocation->allocated_quantity > 0;
+                        });
+                        $hasAnyAllocation = $allocationsNeedingApproval->isNotEmpty();
+                        $allWarehousesApproved = $hasAnyAllocation &&
+                            $allocationsNeedingApproval->every($allocationApprovedAndFilled);
 
                         // Only update product status if:
                         // 1. Product has at least one allocation with allocated_quantity > 0
-                        // 2. All such allocations have final_dispatched_quantity > 0 AND are approved
+                        // 2. All such allocations have final_final_dispatched_quantity > 0 AND are approved
                         if ($hasAnyAllocation && $allWarehousesApproved) {
                             $productsToUpdate[] = $product->id;
+                            $shouldCompleteProduct = true;
                         }
                     } else {
                         // Single warehouse product or auto-allocation without explicit allocations
-                        if ($product->final_dispatched_quantity > 0) {
+                        if ($product->final_final_dispatched_quantity > 0) {
                             $productsToUpdate[] = $product->id;
+                            $shouldCompleteProduct = true;
                         }
                     }
-                    $product->product_status = 'completed';
-                    $product->save();
+                    if ($shouldCompleteProduct && $product->product_status !== 'completed') {
+                        $product->product_status = 'completed';
+                        $product->save();
+                    }
                 }
 
                 if (empty($productsToUpdate) && $allocationsApproved === 0) {
@@ -1099,7 +1423,8 @@ class PackagingController extends Controller
                         // Check if there are still pending approvals for other warehouses
                         $pendingAllocations = WarehouseAllocation::where('sales_order_id', $salesOrder->id)
                             ->where('approval_status', 'pending')
-                            ->where('final_dispatched_quantity', '>', 0)
+                            ->where('product_status', 'approval_pending')
+                            ->where('final_final_dispatched_quantity', '>', 0)
                             ->count();
 
                         if ($pendingAllocations > 0) {
@@ -1148,8 +1473,19 @@ class PackagingController extends Controller
                     ->with('error', 'This allocation is already approved.');
             }
 
+            if (
+                $allocation->product_status !== 'approval_pending' ||
+                is_null($allocation->final_final_dispatched_quantity) ||
+                $allocation->final_final_dispatched_quantity <= 0 ||
+                $allocation->approval_status !== 'pending'
+            ) {
+                return redirect()->back()
+                    ->with('error', 'This allocation is not ready for approval.');
+            }
+
             // Approve the allocation
             $allocation->approval_status = 'approved';
+            $allocation->product_status = 'completed';
             $allocation->approved_by = $user->id;
             $allocation->approved_at = now();
             $allocation->save();
@@ -1169,7 +1505,7 @@ class PackagingController extends Controller
             $allApproved = true;
 
             foreach ($product->warehouseAllocations as $alloc) {
-                if ($alloc->final_dispatched_quantity > 0 && $alloc->approval_status !== 'approved') {
+                if ($alloc->final_final_dispatched_quantity > 0 && $alloc->approval_status !== 'approved') {
                     $allApproved = false;
                     break;
                 }
