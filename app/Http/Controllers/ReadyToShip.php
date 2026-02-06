@@ -57,7 +57,7 @@ class ReadyToShip extends Controller
      * @param  int  $id
      * @return \Illuminate\View\View
      */
-    public function view($id, Request $request)
+    public function view1($id, Request $request)
     {
         try {
             $validator = Validator::make(['id' => $id], [
@@ -83,16 +83,16 @@ class ReadyToShip extends Controller
                 $q->where('product_status', 'completed');
             };
 
-            $salesOrderProducts = SalesOrderProduct::where('sales_order_id', $id)
-                ->whereHas('warehouseAllocations', function ($q) {
-                    $q->where('product_status', 'completed')->groupBy('sales_order_id', 'rts_count_id');
-                })
-                ->with(['warehouseAllocations' => function ($q) {
-                    $q->where('product_status', 'completed')->groupBy(['sales_order_id', 'rts_count_id']);
-                }])
-                ->get();
+            // $salesOrderProducts = SalesOrderProduct::where('sales_order_id', $id)
+            //     ->whereHas('warehouseAllocations', function ($q) {
+            //         $q->where('product_status', 'completed')->groupBy('sales_order_id', 'rts_count_id');
+            //     })
+            //     ->with(['warehouseAllocations' => function ($q) {
+            //         $q->where('product_status', 'completed')->groupBy(['sales_order_id', 'rts_count_id']);
+            //     }])
+            //     ->get();
 
-            dd($salesOrderProducts);
+            // dd($salesOrderProducts);
 
             $order = SalesOrder::with('orderedProducts')
                 ->with(['orderedProducts.warehouseAllocations' => $allocationReadyFilter])
@@ -140,7 +140,7 @@ class ReadyToShip extends Controller
     }
 
     // old backup method
-    public function view1($id, Request $request)
+    public function view($id, Request $request)
     {
         try {
             $validator = Validator::make(['id' => $id], [
