@@ -47,7 +47,7 @@ class ReadyToShip extends Controller
 
             return view('readyToShip.index', compact('orders'));
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Error retrieving orders: '.$e->getMessage());
+            return redirect()->back()->with('error', 'Error retrieving orders: ' . $e->getMessage());
         }
     }
 
@@ -83,11 +83,16 @@ class ReadyToShip extends Controller
                 $q->where('product_status', 'completed');
             };
 
-            // $warehouseAllocations = WarehouseAllocation::where('sales_order_id', $id)
-            //     ->where('product_status', 'completed')
-            //     ->get();
+            $salesOrderProducts = SalesOrderProduct::where('sales_order_id', $id)
+                ->whereHas('warehouseAllocations', function ($q) {
+                    $q->where('product_status', 'completed')->groupBy('sales_order_id', 'rts_count_id');
+                })
+                ->with(['warehouseAllocations' => function ($q) {
+                    $q->where('product_status', 'completed')->groupBy(['sales_order_id', 'rts_count_id']);
+                }])
+                ->get();
 
-            // dd($warehouseAllocations);
+            dd($salesOrderProducts);
 
             $order = SalesOrder::with('orderedProducts')
                 ->with(['orderedProducts.warehouseAllocations' => $allocationReadyFilter])
@@ -130,7 +135,7 @@ class ReadyToShip extends Controller
             return view('readyToShip.view', compact('customerInfo', 'order'));
         } catch (\Exception $e) {
             return redirect()->route('readyToShip.index')
-                ->with('error', 'Error loading order: '.$e->getMessage());
+                ->with('error', 'Error loading order: ' . $e->getMessage());
         }
     }
 
@@ -202,7 +207,7 @@ class ReadyToShip extends Controller
             return view('readyToShip.view', compact('customerInfo', 'order'));
         } catch (\Exception $e) {
             return redirect()->route('readyToShip.index')
-                ->with('error', 'Error loading order: '.$e->getMessage());
+                ->with('error', 'Error loading order: ' . $e->getMessage());
         }
     }
 
@@ -316,7 +321,7 @@ class ReadyToShip extends Controller
                     $warehouseStatuses[$warehouseId] = [
                         'warehouse_name' => $allocation->warehouse->name ?? 'N/A',
                         'shipping_status' => $allocation->shipping_status ?? 'ready_to_ship',
-                        'product_status' =>$allocation->product_status ?? 'ready_to_ship',
+                        'product_status' => $allocation->product_status ?? 'ready_to_ship',
                     ];
                 }
             }
@@ -324,7 +329,7 @@ class ReadyToShip extends Controller
             return view('readyToShip.view-detail', compact('salesOrder', 'facilityNames', 'isAdmin', 'isSuperAdmin', 'userWarehouseId', 'user', 'pendingApprovalList', 'invoice', 'customerInfo', 'warehouseStatuses'));
         } catch (\Exception $e) {
             return redirect()->back()
-                ->with('error', 'Error loading order details: '.$e->getMessage());
+                ->with('error', 'Error loading order details: ' . $e->getMessage());
         }
     }
 
@@ -343,7 +348,7 @@ class ReadyToShip extends Controller
             return view('exceed-shortage', compact('vendorOrders'));
         } catch (\Exception $e) {
             return redirect()->back()
-                ->with('error', 'Error retrieving product issues: '.$e->getMessage());
+                ->with('error', 'Error retrieving product issues: ' . $e->getMessage());
         }
     }
 
@@ -381,12 +386,12 @@ class ReadyToShip extends Controller
             if ($request->ajax()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Error retrieving vendor returns: '.$e->getMessage(),
+                    'message' => 'Error retrieving vendor returns: ' . $e->getMessage(),
                 ], 500);
             }
 
             return redirect()->back()
-                ->with('error', 'Error retrieving vendor returns: '.$e->getMessage());
+                ->with('error', 'Error retrieving vendor returns: ' . $e->getMessage());
         }
     }
 
@@ -449,7 +454,7 @@ class ReadyToShip extends Controller
 
                 // Create notification
                 NotificationService::warehouseProductAdded(
-                    'Vendor Return: '.$vendorReturnProduct->sku,
+                    'Vendor Return: ' . $vendorReturnProduct->sku,
                     $returnQty
                 );
 
@@ -461,13 +466,13 @@ class ReadyToShip extends Controller
                 DB::rollBack();
 
                 return redirect()->route('return.accept', ['status' => request()->get('status', 'all')])
-                    ->with('error', 'Warehouse stock not found for SKU: '.$vendorReturnProduct->sku);
+                    ->with('error', 'Warehouse stock not found for SKU: ' . $vendorReturnProduct->sku);
             }
         } catch (\Exception $e) {
             DB::rollBack();
 
             return redirect()->route('return.accept', ['status' => request()->get('status', 'all')])
-                ->with('error', 'Error accepting vendor products: '.$e->getMessage());
+                ->with('error', 'Error accepting vendor products: ' . $e->getMessage());
         }
     }
 
@@ -524,7 +529,7 @@ class ReadyToShip extends Controller
             DB::rollBack();
 
             return redirect()->route('return.accept', ['status' => request()->get('status', 'all')])
-                ->with('error', 'Error returning vendor products: '.$e->getMessage());
+                ->with('error', 'Error returning vendor products: ' . $e->getMessage());
         }
     }
 
@@ -604,7 +609,7 @@ class ReadyToShip extends Controller
                 $newNumber = '001';
             }
 
-            $invoiceNumber = 'INV-'.$timestamp.'-'.str_pad($newNumber + 1, 4, '0', STR_PAD_LEFT);
+            $invoiceNumber = 'INV-' . $timestamp . '-' . str_pad($newNumber + 1, 4, '0', STR_PAD_LEFT);
 
             // Calculate totals
             $subtotal = 0;
@@ -654,7 +659,7 @@ class ReadyToShip extends Controller
                 'payment_status' => 'unpaid',
                 'invoice_type' => 'sales_order',
                 'invoice_item_type' => 'product',
-                'notes' => 'Warehouse-specific invoice for '.\App\Models\Warehouse::find($warehouseId)->name,
+                'notes' => 'Warehouse-specific invoice for ' . \App\Models\Warehouse::find($warehouseId)->name,
             ]);
 
             // Create invoice details
@@ -697,7 +702,7 @@ class ReadyToShip extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
 
-            return redirect()->back()->with('error', 'Error generating warehouse invoice: '.$e->getMessage());
+            return redirect()->back()->with('error', 'Error generating warehouse invoice: ' . $e->getMessage());
         }
     }
 
@@ -762,7 +767,7 @@ class ReadyToShip extends Controller
             DB::rollBack();
 
             return redirect()->route('return.accept', ['status' => request()->get('status', 'all')])
-                ->with('error', 'Error processing bulk accept: '.$e->getMessage());
+                ->with('error', 'Error processing bulk accept: ' . $e->getMessage());
         }
     }
 }

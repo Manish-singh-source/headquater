@@ -418,6 +418,7 @@ class PurchaseOrderController extends Controller
                             WarehouseAllocation::create([
                                 'sales_order_id' => $item->sales_order_id,
                                 'sales_order_product_id' => $item->id,
+                                'customer_id' => $item->customer_id,
                                 'warehouse_id' => $request->warehouse_id,
                                 'sku' => $newSku,
                                 'allocated_quantity' => $salesOrderFulfillment[$newSku]['quantity'],
@@ -434,6 +435,7 @@ class PurchaseOrderController extends Controller
                             WarehouseAllocation::create([
                                 'sales_order_id' => $item->sales_order_id,
                                 'sales_order_product_id' => $item->id,
+                                'customer_id' => $item->customer_id,
                                 'warehouse_id' => $request->warehouse_id,
                                 'sku' => $newSku,
                                 'allocated_quantity' => $tempProduct->po_qty,
