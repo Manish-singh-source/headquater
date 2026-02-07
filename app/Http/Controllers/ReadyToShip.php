@@ -2,19 +2,21 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Customer;
+use App\Models\User;
 use App\Models\Invoice;
-use App\Models\InvoiceDetails;
-use App\Models\ProductIssue;
+use App\Models\Customer;
 use App\Models\SalesOrder;
+use App\Models\ProductIssue;
+use Illuminate\Http\Request;
+use App\Models\InvoiceDetails;
+use App\Models\WarehouseStock;
 use App\Models\SalesOrderProduct;
+use Illuminate\Support\Facades\DB;
 use App\Models\VendorReturnProduct;
 use App\Models\WarehouseAllocation;
-use App\Models\WarehouseStock;
-use App\Services\NotificationService;
-use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
+use App\Services\NotificationService;
 use Illuminate\Support\Facades\Validator;
 
 class ReadyToShip extends Controller
@@ -211,7 +213,7 @@ class ReadyToShip extends Controller
             // customer details 
             $customerInfo = Customer::find($c_id);
             // warehouse allocation details for this order and customer
-            $warehouseAllocations = WarehouseAllocation::with('customer', 'salesOrderProduct.tempOrder')                
+            $warehouseAllocations = WarehouseAllocation::with('customer', 'salesOrderProduct.tempOrder')
                 ->where('sales_order_id', $id)
                 ->where('customer_id', $c_id)
                 ->where('rts_count_id', $rts_count_id)
@@ -337,6 +339,66 @@ class ReadyToShip extends Controller
         } catch (\Exception $e) {
             return redirect()->back()
                 ->with('error', 'Error loading order details: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * 
+     * Change status of products to shipped and update warehouse stock accordingly
+     * 
+     */
+    public function changeStatusShipped(Request $request)
+    {
+        // Validate request
+        $validator = Validator::make($request->all(), [
+            'order_id' => 'required|integer|exists:sales_orders,id',
+            'customer_id' => 'nullable|integer|exists:customers,id',
+            'user_id' => 'nullable|integer|exists:users,id',
+            'status' => 'required|in:shipped,delivered,completed',
+            'all_ids' => 'nullable|string',
+        ]);
+
+        dd($request->all());
+        if ($validator->fails()) {
+            return redirect()->back()
+                ->withErrors($validator)
+                ->withInput()
+                ->with('error', 'Invalid request data.');
+        }
+
+        // Get user information for role-based updates
+        if ($request->filled('user_id')) {
+            $user = User::findOrFail($request->user_id);
+        } else {
+            $user = Auth::user();
+        }
+        $isAdmin = $user->hasRole(['Super Admin', 'Admin']) || ! $user->warehouse_id;
+        $userWarehouseId = $user->warehouse_id;
+
+        $salesOrders = SalesOrder::where('id', $request->order_id)->where('customer_id', $request->customer_id)->get();
+        
+
+        DB::beginTransaction();
+
+        try {
+            $idsList = explode(',', $request->input('all_ids', ''));
+
+            foreach ($idsList as $id) {
+                $allocation = WarehouseAllocation::find($id);
+                if ($allocation) {
+                    $allocation->shipping_status = 'shipped';
+                    $allocation->save();
+                }
+            }
+
+            DB::commit();
+
+            return redirect()->route('sales.order.index')->with('success', 'Order marked as "Shipped" successfully! Order ID: ' . $salesOrder->id);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error changing sales order status: ' . $e->getMessage());
+
+            return redirect()->back()->with('error', 'Status Not Changed. Please Try again. Error: ' . $e->getMessage());
         }
     }
 

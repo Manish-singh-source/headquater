@@ -50,7 +50,9 @@
     
         $currectStatus = 'ready_to_ship';    
         $totalAllocations = $warehouseAllocations->count(); 
-        $statuscounts = 0;
+        $statuscounts = 0; 
+
+        $allIds = $warehouseAllocations->pluck('id')->toArray();
     @endphp
 
     @foreach ($warehouseAllocations as $order)
@@ -81,12 +83,13 @@
                 </div>
                 <div class="col-6 d-flex justify-content-end text-end my-2 ">
                     <div>
-                        <form id="statusForm" action="{{ route('change.sales.order.status') }}" method="POST">
+                        <form id="statusForm" action="{{ route('change.status.shipped') }}" method="POST">
                             @csrf
                             @method('PUT')
                             <input type="hidden" name="order_id" value="{{ $salesOrder->id }}">
                             <input type="hidden" name="customer_id" value="{{ $customerInfo->id }}">
                             <input type="hidden" name="user_id" value="{{ $user->id }}">
+                            <input type="hidden" name="all_ids" value="{{ implode(',', $allIds) }}">
                             <select class="form-select border-2 border-primary" id="changeStatus"
                                 aria-label="Default select example" name="status">
                                 <option value="" selected disabled>Change Status</option>

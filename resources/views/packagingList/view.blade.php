@@ -273,24 +273,9 @@
                                             if ($order->warehouseAllocations->count() >= 1) {
                                                 foreach ($order->warehouseAllocations as $allocation) {
                                                     if ($isSuperAdmin ?? false) {
-                                                        $warehouseAllocation =
-                                                            $allocation->warehouse->name .
-                                                                ': ' .
-                                                                $allocation->final_dispatched_quantity .
-                                                                "\n" ??
-                                                            0 . "\n";
-                                                        $totalDispatchQty =
-                                                            $allocation->warehouse->name .
-                                                                ': ' .
-                                                                $allocation->final_dispatched_quantity .
-                                                                "\n" ??
-                                                            0 . "\n";
-                                                        $finalDispatchQty =
-                                                            $allocation->warehouse->name .
-                                                                ': ' .
-                                                                $allocation->final_final_dispatched_quantity .
-                                                                "\n" ??
-                                                            0 . "\n";
+                                                        $warehouseAllocation = ($allocation->warehouse->name . ': ' . ($allocation->final_dispatched_quantity ?? 0) . "\n") ?? (0 . "\n");
+                                                        $totalDispatchQty = ($allocation->warehouse->name . ': ' . ($allocation->final_dispatched_quantity ?? 0) . "\n") ?? (0 . "\n");
+                                                        $finalDispatchQty = ($allocation->warehouse->name . ': ' . ($allocation->final_final_dispatched_quantity ?? 0) . "\n") ?? (0 . "\n");
                                                         $boxCount = $allocation->box_count ?? 0;
                                                         $weight = $allocation->weight ?? 0;
                                                     } else {
@@ -473,7 +458,7 @@
 
             function escapeRegex(value) {
                 return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-            }+
+            } +
 
             $('#selectProductStatusFilter').on('change', function() {
                 var selected = $(this).val().trim();

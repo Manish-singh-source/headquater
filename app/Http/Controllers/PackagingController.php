@@ -255,13 +255,6 @@ class PackagingController extends Controller
             })
             ->find($id);
 
-        // $facilityNames = $salesOrder->orderedProducts
-        //     ->pluck('customer.facility_name')
-        //     ->filter()
-        //     ->unique()
-        //     ->values()
-        //     ->toArray();
-
 
         // Add rows
         foreach ($salesOrder->orderedProducts as $order) {
@@ -282,9 +275,9 @@ class PackagingController extends Controller
             if ($order->warehouseAllocations->count() >= 1) {
                 foreach ($order->warehouseAllocations as $allocation) {
                     if ($isSuperAdmin ?? false) {
-                        $warehouseAllocation = ($allocation->warehouse->name . ': ' . $allocation->final_dispatched_quantity . "\n") ?? 0 . "\n";
-                        $totalDispatchQty = ($allocation->warehouse->name . ': ' . $allocation->final_dispatched_quantity . "\n") ?? 0 . "\n";
-                        $finalDispatchQty = ($allocation->warehouse->name . ': ' . $allocation->final_final_dispatched_quantity . "\n") ?? 0 . "\n";
+                        $warehouseAllocation = ($allocation->warehouse->name . ': ' . ($allocation->final_dispatched_quantity ?? 0) . "\n") ?? (0 . "\n");
+                        $totalDispatchQty = ($allocation->warehouse->name . ': ' . ($allocation->final_dispatched_quantity ?? 0) . "\n") ?? (0 . "\n");
+                        $finalDispatchQty = ($allocation->warehouse->name . ': ' . ($allocation->final_final_dispatched_quantity ?? 0) . "\n") ?? (0 . "\n");
                         $boxCount = $allocation->box_count ?? 0;
                         $weight = $allocation->weight ?? 0;
                     } else {
@@ -327,8 +320,8 @@ class PackagingController extends Controller
                 'Warehouse Name' => $warehouseName,
                 'Warehouse Allocation' => $warehouseAllocation,
                 'Purchase Order No' => $order->tempOrder->po_number ?? '',
-                'Total Dispatch Qty' => $totalDispatchQty,
-                'Final Dispatch Qty' => $finalDispatchQty,
+                'Total Dispatch Qty' => $totalDispatchQty ?? '0',
+                'Final Dispatch Qty' => $finalDispatchQty ?? '0',
                 // 'Case Pack Quantity' => $order->tempOrder->case_pack_quantity ?? '',
                 'Box Count' => ceil($boxCount),
                 'Weight' => ceil($weight),
