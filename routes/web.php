@@ -264,7 +264,8 @@ Route::middleware(['auth'])->group(function () {
     Route::controller(ReadyToShip::class)->group(function () {
         Route::get('/ready-to-ship', 'index')->name('readyToShip.index');
         Route::get('/ready-to-ship-detail/{id}', 'view')->name('readyToShip.view');
-        Route::get('/ready-to-ship-detail-view/{id}/{c_id}', 'viewDetail')->name('readyToShip.view.detail');
+        // Route::get('/ready-to-ship-detail-view/{id}/{c_id}', 'viewDetail')->name('readyToShip.view.detail');
+        Route::get('/ready-to-ship-detail-view/{id}/{c_id}/{rts_count_id}', 'viewDetail')->name('readyToShip.view.detail');
         Route::get('/generate-warehouse-invoice/{orderId}/{customerId}/{warehouseId}', 'generateWarehouseInvoice')->name('ready.to.ship.generate.warehouse.invoice');
         Route::get('/product-issues', 'issuesProducts')->name('exceed.shortage.products');
         Route::get('/return-accept', 'returnAccept')->name('return.accept');

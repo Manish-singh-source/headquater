@@ -31,6 +31,11 @@ class WarehouseAllocation extends Model
         return $this->belongsTo(SalesOrderProduct::class, 'sales_order_product_id', 'id');
     }
 
+    public function customer()
+    {
+        return $this->belongsTo(Customer::class, 'customer_id', 'id');
+    }
+
     public function warehouse()
     {
         return $this->belongsTo(Warehouse::class, 'warehouse_id', 'id');

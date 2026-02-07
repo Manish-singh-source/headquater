@@ -28,7 +28,6 @@
                                             <input class="form-check-input" type="checkbox">
                                         </th>
                                         <th>Sales Order&nbsp;Id</th>
-                                        <th>Batch&nbsp;Id</th>
                                         <th>Customer&nbsp;Group&nbsp;Name</th>
                                         <th>Facility&nbsp;Name</th>
                                         <th>Client&nbsp;Name</th>
@@ -58,34 +57,33 @@
                                             'cancelled' => 'Cancelled',
                                         ];
                                     @endphp
-                                    @forelse ($warehouseAllocations as $allocation)
+                                    @forelse ($customerInfo as $customerOrders)
                                         <tr>
                                             <td>
                                                 <input class="form-check-input" type="checkbox">
                                             </td>
-                                            <td>{{ $allocation->salesOrder->order_number }}</td>
-                                            <td>{{ $allocation->rts_count_id }}</td>
+                                            <td>{{ $order->order_number }}</td>
                                             <td>
                                                 <p class="mb-0 customer-name fw-bold">
-                                                    {{ $allocation->salesOrder->customerGroup->name }}
+                                                    {{ $customerOrders->groupInfo->customerGroup->name }}
                                                 </p>
                                             </td>
                                             <td>
-                                                {{ $allocation->customer->facility_name }}
+                                                {{ $customerOrders->facility_name }}
                                             </td>
-                                            <td>{{ $allocation->customer->client_name }}</td>
+                                            <td>{{ $customerOrders->client_name }}</td>
                                             <td>
-                                                {{ $allocation->customer->contact_name }}
-                                            </td>
-                                            <td>
-                                                {{ $allocation->approved_at->format('d M Y') }}
+                                                {{ $customerOrders->facility_name }}
                                             </td>
                                             <td>
-                                                {{ $statuses[$allocation->salesOrder->status] }}
+                                                {{ $customerOrders->orders_count }}
+                                            </td>
+                                            <td>
+                                                {{ $statuses[$customerOrders->orders[0]->status] }}
                                             </td>
                                             <td>
                                                 <a aria-label="anchor"
-                                                    href="{{ route('readyToShip.view.detail', ['id' => $allocation->salesOrder->id, 'c_id' => $allocation->customer->id, 'rts_count_id' => $allocation->rts_count_id]) }}"
+                                                    href="{{ route('readyToShip.view.detail', ['id' => $order->id, 'c_id' => $customerOrders->id]) }}"
                                                     class="btn btn-icon btn-sm bg-primary-subtle me-1"
                                                     data-bs-toggle="tooltip" data-bs-original-title="View">
                                                     <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13"

@@ -57,7 +57,7 @@ class ReadyToShip extends Controller
      * @param  int  $id
      * @return \Illuminate\View\View
      */
-    public function view1($id, Request $request)
+    public function view($id, Request $request)
     {
         try {
             $validator = Validator::make(['id' => $id], [
@@ -83,56 +83,15 @@ class ReadyToShip extends Controller
                 $q->where('product_status', 'completed');
             };
 
-            // $salesOrderProducts = SalesOrderProduct::where('sales_order_id', $id)
-            //     ->whereHas('warehouseAllocations', function ($q) {
-            //         $q->where('product_status', 'completed')->groupBy('sales_order_id', 'rts_count_id');
-            //     })
-            //     ->with(['warehouseAllocations' => function ($q) {
-            //         $q->where('product_status', 'completed')->groupBy(['sales_order_id', 'rts_count_id']);
-            //     }])
-            //     ->get();
-
-            // dd($salesOrderProducts);
-
-            $order = SalesOrder::with('orderedProducts')
-                ->with(['orderedProducts.warehouseAllocations' => $allocationReadyFilter])
-                ->whereHas('orderedProducts.warehouseAllocations', $allocationReadyFilter)
-                ->find($id);
-
-
-            if (! $order) {
-                return redirect()->route('readyToShip.index')
-                    ->with('error', 'Order not found or not ready to ship.');
-            }
-
-            // Get unique customers for this order
-            $facilityNames = SalesOrderProduct::with('customer')
+            $warehouseAllocations = WarehouseAllocation::with('salesOrder.customerGroup', 'customer')
                 ->where('sales_order_id', $id)
-                ->whereHas('warehouseAllocations', $allocationReadyFilter)
-                ->get()
-                ->pluck('customer')
-                ->filter()
-                ->unique('id');
-
-            $customerIds = $facilityNames->pluck('id')->toArray();
-
-            $customerInfo = Customer::with('groupInfo.customerGroup')
-                ->withCount(['orders as orders_count' => function ($query) use ($id, $allocationReadyFilter) {
-                    $query->where('sales_order_id', $id)
-                        ->whereHas('warehouseAllocations', $allocationReadyFilter);
-                }])
-                // fetch status from 
-                ->with(['orders' => function ($query) use ($id, $allocationReadyFilter) {
-                    $query->where('sales_order_id', $id)
-                        ->whereHas('warehouseAllocations', $allocationReadyFilter);
-                }])
-                ->whereIn('id', $customerIds)
+                ->where('product_status', 'completed')
+                ->select('id', 'customer_id', 'sales_order_id', 'rts_count_id', 'approved_at') // include primary key
+                ->distinct()
                 ->get();
-            // dd($customerInfo);
-            // unique customers array created for view
-            // dd($customerInfo[0]->orders);
 
-            return view('readyToShip.view', compact('customerInfo', 'order'));
+            // dd($warehouseAllocations);
+            return view('readyToShip.view', compact('warehouseAllocations'));
         } catch (\Exception $e) {
             return redirect()->route('readyToShip.index')
                 ->with('error', 'Error loading order: ' . $e->getMessage());
@@ -140,7 +99,7 @@ class ReadyToShip extends Controller
     }
 
     // old backup method
-    public function view($id, Request $request)
+    public function view1($id, Request $request)
     {
         try {
             $validator = Validator::make(['id' => $id], [
@@ -218,7 +177,55 @@ class ReadyToShip extends Controller
      * @param  int  $c_id
      * @return \Illuminate\View\View
      */
-    public function viewDetail($id, $c_id)
+    public function viewDetail($id, $c_id, $rts_count_id)
+    {
+        try {
+            $validator = Validator::make([
+                'id' => $id,
+                'c_id' => $c_id,
+                'rts_count_id' => $rts_count_id
+            ], [
+                'id' => 'required|integer|exists:sales_orders,id',
+                'c_id' => 'required|integer|exists:customers,id',
+                'rts_count_id' => 'required|integer',
+            ]);
+
+            if ($validator->fails()) {
+                return redirect()->back()->with('error', 'Invalid order or customer ID.');
+            }
+
+            $user = Auth::user();
+
+            $isSuperAdmin = $user->hasRole(['Super Admin', 'Admin']) || ! $user->warehouse_id;
+            $userWarehouseId = $user->warehouse_id;
+
+            $allocationReadyFilter = function ($q) use ($userWarehouseId, $isSuperAdmin) {
+                if (! $isSuperAdmin && $userWarehouseId) {
+                    $q->where('warehouse_id', $userWarehouseId);
+                }
+                $q->where('product_status', 'completed');
+            };
+
+            // sales order details 
+            $salesOrder = SalesOrder::with('customerGroup')->find($id);
+            // customer details 
+            $customerInfo = Customer::find($c_id);
+            // warehouse allocation details for this order and customer
+            $warehouseAllocations = WarehouseAllocation::with('customer', 'salesOrderProduct.tempOrder')                
+                ->where('sales_order_id', $id)
+                ->where('customer_id', $c_id)
+                ->where('rts_count_id', $rts_count_id)
+                ->where('product_status', 'completed')
+                ->get();
+
+            return view('readyToShip.view-detail', compact('salesOrder', 'isSuperAdmin', 'userWarehouseId', 'user', 'customerInfo', 'warehouseAllocations'));
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('error', 'Error loading order details: ' . $e->getMessage());
+        }
+    }
+
+    public function viewDetail1($id, $c_id)
     {
         try {
             $validator = Validator::make([
