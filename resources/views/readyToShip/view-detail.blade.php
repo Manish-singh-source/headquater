@@ -288,17 +288,17 @@
                                                     <td>{{ $boxCount }}</td>
                                                     <td>{{ $weight }}</td>
                                                     <td>
-                                                        @if ($order->salesOrderProduct->status == 'ready_to_ship')
+                                                        @if ($order->shipping_status == 'ready_to_ship')
                                                             @if ($isSuperAdmin ?? false)
                                                                 <span
-                                                                    class="badge {{ $statusBadges[$order->salesOrderProduct->status] ?? 'bg-secondary' }}">
+                                                                    class="badge {{ $statusBadges[$order->shipping_status] ?? 'bg-secondary' }}">
                                                                     {{-- {{ $user->warehouse->name }}: --}}
-                                                                    {{ $statusLabels[$order->salesOrderProduct->status] ?? 'Ready to Ship' }}
+                                                                    {{ $statusLabels[$order->shipping_status] ?? 'Ready to Ship' }}
                                                                 </span>
                                                             @else
                                                                 <span
-                                                                    class="badge {{ $statusBadges[$order->salesOrderProduct->status] ?? 'bg-secondary' }}">
-                                                                    {{ $statusLabels[$order->salesOrderProduct->status] ?? 'Ready to Ship' }}
+                                                                    class="badge {{ $statusBadges[$order->shipping_status] ?? 'bg-secondary' }}">
+                                                                    {{ $statusLabels[$order->shipping_status] ?? 'Ready to Ship' }}
                                                                 </span>
                                                             @endif
                                                         @else
@@ -320,7 +320,7 @@
                                                                     </span>
                                                                 @endif
                                                             @else
-                                                                @if ($user->warehouse_id == $allocation->warehouse_id)
+                                                                @if ($user->warehouse_id == $order->warehouse_id)
                                                                     @if ($order->shipping_status == 'shipped')
                                                                         @php $order->product_status = 'shipped'; @endphp
                                                                     @endif

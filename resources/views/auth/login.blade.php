@@ -89,13 +89,15 @@
                                         <input type="submit" class="btn btn-grd-info" value="Login" name="submit">
                                     </div>
                                 </div>
+                                {{-- 
                                 <div class="col-12">
                                     <div class="text-start">
                                         <p class="mb-0">Don't have an account yet? <a
                                                 href="{{ route('register') }}">Sign up here</a>
                                         </p>
                                     </div>
-                                </div>
+                                </div> 
+                                --}}
                             </form>
                         </div>
                     </div>

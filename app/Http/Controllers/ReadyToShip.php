@@ -358,7 +358,6 @@ class ReadyToShip extends Controller
             'all_ids' => 'nullable|string',
         ]);
 
-        dd($request->all());
         if ($validator->fails()) {
             return redirect()->back()
                 ->withErrors($validator)
@@ -375,7 +374,7 @@ class ReadyToShip extends Controller
         $isAdmin = $user->hasRole(['Super Admin', 'Admin']) || ! $user->warehouse_id;
         $userWarehouseId = $user->warehouse_id;
 
-        $salesOrders = SalesOrder::where('id', $request->order_id)->where('customer_id', $request->customer_id)->get();
+        $salesOrder = SalesOrder::where('id', $request->order_id)->first();
         
 
         DB::beginTransaction();
@@ -393,7 +392,7 @@ class ReadyToShip extends Controller
 
             DB::commit();
 
-            return redirect()->route('sales.order.index')->with('success', 'Order marked as "Shipped" successfully! Order ID: ' . $salesOrder->id);
+            return redirect()->route('readyToShip.index')->with('success', 'Order marked as "Shipped" successfully! Order ID: ' . $salesOrder->id);
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Error changing sales order status: ' . $e->getMessage());

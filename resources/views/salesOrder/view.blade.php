@@ -162,8 +162,8 @@
                                 <select class="form-select border-2 border-primary" id="selectQuantityFulfilledFilter"
                                     aria-label="Default select example" name="selectQuantityFulfilledFilter">
                                     <option value="all" selected>Quantity Fulfilled</option>
-                                    <option value="0">Not Fulfilled</option>
-                                    <option value="greater_than_0">Fulfilled</option>
+                                    <option value="0">Not Fulfilled (0)</option>
+                                    <option value="greater_than_0">Fulfilled (Greater Than 0)</option>
                                 </select>
                             </div>
                             {{-- filter for quantity fulfilled --}}
@@ -172,8 +172,8 @@
                                 <select class="form-select border-2 border-primary" id="selectFinalQuantityFulfilledFilter"
                                     aria-label="Default select example" name="selectFinalQuantityFulfilledFilter">
                                     <option value="all" selected>Final Quantity Fulfilled</option>
-                                    <option value="0">Not Fulfilled</option>
-                                    <option value="greater_than_0">Fulfilled</option>
+                                    <option value="0">Not Fulfilled (0)</option>
+                                    <option value="greater_than_0">Fulfilled (Greater Than 0)</option>
                                 </select>
                             </div>
 
