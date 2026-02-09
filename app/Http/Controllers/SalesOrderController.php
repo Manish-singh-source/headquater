@@ -1648,7 +1648,7 @@ class SalesOrderController extends Controller
                     $allocation = $item['allocation'];
 
                     // Use allocated quantity instead of ordered quantity
-                    $quantity = (int) $allocation->final_dispatched_quantity;
+                    $quantity = (int) $allocation->final_final_dispatched_quantity;
                     $unitPrice = (float) $detail->tempOrder->basic_rate;
                     $lineTotal = $quantity * $unitPrice;
 

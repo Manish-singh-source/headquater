@@ -226,12 +226,12 @@
                                             class="dropdown-item cursor-pointer">Delete All</button>
                                         <button type="button" id="sendToPackaging"
                                             class="dropdown-item cursor-pointer">Send To Packaging</button>
-                                        @if (in_array($salesOrder->status, ['ready_to_ship', 'shipped', 'completed']))
+                                        {{-- @if (in_array($salesOrder->status, ['ready_to_ship', 'shipped', 'completed'])) --}}
                                             <button type="button" class="dropdown-item cursor-pointer"
                                                 id="generateInvoice">
                                                 <i class="fa fa-file-excel-o"></i> Generate Invoice
                                             </button>
-                                        @endif
+                                        {{-- @endif --}}
                                         {{-- @if (in_array($salesOrder->status, ['pending', 'blocked'])) --}}
                                         <button type="button" class="dropdown-item cursor-pointer" id="exportData">
                                             <i class="fa fa-file-excel-o"></i> Export(Excel)

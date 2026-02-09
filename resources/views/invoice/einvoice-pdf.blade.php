@@ -4,7 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <title>E-Invoice</title>
-    {{-- <style>
+    {{-- 
+    <style>
         body {
             font-family: Arial, sans-serif;
             font-size: 14px;
@@ -43,7 +44,8 @@
             background-color: #d0e4f5;
             font-weight: bold;
         }
-    </style> --}}
+    </style> 
+    --}}
 
     <style>
         @page {
@@ -175,7 +177,7 @@
         }
 
         .einvoice-info {
-            
+
             border: 2px solid #daa520;
             margin: 10px 0;
         }
@@ -196,10 +198,11 @@
 
     <table class="no-border">
         <tr>
-            <td width="20%" rowspan="4" style="text-align:left;"> <img src="{{ $image }}" alt="Logo" style="height: 100px; width: auto;"> </td>
+            <td width="20%" rowspan="4" style="text-align:left;"> <img src="{{ $image }}" alt="Logo"
+                    style="height: 100px; width: auto;"> </td>
             <td class="header" colspan="2">INOVIZIDEAS PVT. LTD.</td>
             <td width="20%" rowspan="4" style="text-align:right; vertical-align: center;">
-                @if($qrCodeImage)
+                @if ($qrCodeImage)
                     <img src="{{ $qrCodeImage }}" alt="E-Invoice QR Code" style="height: 90px; width: auto;">
                 @else
                     <img src="{{ $image1 }}" alt="E-Invoice" style="height: 90px; width: auto;">
@@ -224,28 +227,28 @@
 
 
     <!-- E-Invoice Information -->
-    @if($eInvoice->irn)
-    <table class="einvoice-info">
-        <tr>
-           <td colspan="4" class="title">E-Invoice</td>
-        </tr>
-        <tr class="invoice-table">
-            <td><b>IRN:</b></td>
-            <td colspan="3">{{ $eInvoice->irn }}</td>
-        </tr>
-        <tr class="invoice-table">
-            <td><b>Ack No:</b></td>
-            <td>{{ $eInvoice->ack_no }}</td>
-            <td><b>Ack Date:</b></td>
-            <td>{{ $eInvoice->ack_dt ? date('d-m-Y H:i:s', strtotime($eInvoice->ack_dt)) : '' }}</td>
-        </tr>
-        {{-- <tr class="invoice-table">
+    @if ($eInvoice->irn)
+        <table class="einvoice-info">
+            <tr>
+                <td colspan="4" class="title">E-Invoice</td>
+            </tr>
+            <tr class="invoice-table">
+                <td><b>IRN:</b></td>
+                <td colspan="3">{{ $eInvoice->irn }}</td>
+            </tr>
+            <tr class="invoice-table">
+                <td><b>Ack No:</b></td>
+                <td>{{ $eInvoice->ack_no }}</td>
+                <td><b>Ack Date:</b></td>
+                <td>{{ $eInvoice->ack_dt ? date('d-m-Y H:i:s', strtotime($eInvoice->ack_dt)) : '' }}</td>
+            </tr>
+            {{-- <tr class="invoice-table">
             <td><b>Status:</b></td>
             <td>{{ $invoice->einvoice_status }}</td>
             <td><b>E-Way Bill No:</b></td>
             <td>{{ $invoice->ewb_no }}</td>
         </tr> --}}
-    </table>
+        </table>
     @endif
 
     <table>
@@ -267,9 +270,9 @@
             <td>{{ $invoice->po_number }}</td>
             <td>PO Date: </td>
             @if ($invoice->po_date)
-            <td>{{ $invoice->po_date ? $invoice->po_date->format('d-m-Y') : '' }}</td>
+                <td>{{ $invoice->po_date ? $invoice->po_date->format('d-m-Y') : '' }}</td>
             @elseif($invoiceDetails[0]->tempOrder?->po_date)
-            <td>{{ $invoiceDetails[0]->tempOrder?->po_date }}</td>
+                <td>{{ $invoiceDetails[0]->tempOrder?->po_date }}</td>
             @else
                 <td></td>
             @endif
@@ -295,12 +298,14 @@
         </tr>
         <tr class="invoice-table">
             <td>State:</td>
-            <td colspan="2">{{ $invoice->customer->billing_state }}</td>
+            <td colspan="1">{{ $invoice->customer->billing_state }}</td>
+            <td colspan="1">Pincode: {{ $invoice->customer->billing_zip }}</td>
             {{-- <td>GSTIN: {{ $invoice->customer->gstin }}</td> --}}
 
             <td>State:</td>
-            <td colspan="2">{{ $invoice->customer->shipping_state }}</td>
+            <td colspan="1">{{ $invoice->customer->shipping_state }}</td>
             {{-- <td colspan="2">GSTIN: {{ $invoice->customer->gstin }}</td> --}}
+            <td colspan="1">Pincode: {{ $invoice->customer->shipping_zip }}</td>
         </tr>
         <tr class="invoice-table">
             <td>GSTIN: </td>
@@ -433,7 +438,8 @@
         <tr class="invoice-table">
             <td>Total&nbsp;Invoice&nbsp;amount&nbsp;in&nbsp;words:</td>
             {{-- <td colspan="3">{{ ucfirst(numberToWords(floor($totalAmountSum))) }} Rupees Only</td> --}}
-            <td colspan="3" class="right-align"> {{ ucfirst(numberToWords(floor($totalAmountSum))) }} Rupees Only</td>
+            <td colspan="3" class="right-align"> {{ ucfirst(numberToWords(floor($totalAmountSum))) }} Rupees Only
+            </td>
         </tr>
     </table>
 
@@ -443,13 +449,22 @@
             <td width="30%" class="section-title text-center">Sign/Stamp</td>
         </tr>
         <tr class="invoice-table">
-            <td>Bank A/C:</td>
-            <td rowspan="4" class="text-center" style="height:50px; vertical-align:bottom;">
+            <td>Account Holder Name: INOVIZ IDEAS PRIVATE LIMITED</td>
+            <td rowspan="7" class="text-center" style="height:50px; vertical-align:bottom;">
                 (Authorised Signature)
             </td>
         </tr>
         <tr class="invoice-table">
-            <td>Bank IFSC:</td>
+            <td>Bank Name: YES BANK</td>
+        </tr>
+        <tr class="invoice-table">
+            <td>Bank A/C: 034663700001092</td>
+        </tr>
+        <tr class="invoice-table">
+            <td>Bank IFSC: YESB0000346</td>
+        </tr>
+        <tr class="invoice-table">
+            <td>Branch Name: HINDUSTAN NAKA KANDIVALI WEST MUMBAI</td>
         </tr>
         <tr>
             <td class="section-title">Terms & Conditions:</td>
