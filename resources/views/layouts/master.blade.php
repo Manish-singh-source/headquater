@@ -604,6 +604,13 @@
                               <div class="menu-title">Excel Formats</div>
                           </a>
                       </li>
+                      <li>
+                          <a href="{{ url('/docs')}}">
+                              <div class="parent-icon"><i class="material-icons-outlined">store</i>
+                              </div>
+                              <div class="menu-title">Documentation</div>
+                          </a>
+                      </li>
                   @endcan
               </ul>
 
