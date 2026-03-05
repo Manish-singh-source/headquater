@@ -534,7 +534,7 @@ class InvoiceController extends Controller
                 $lastNumber = (int) substr($lastInvoice->invoice_number, -4);
                 $newNumber = str_pad($lastNumber + 1, 4, '0', STR_PAD_LEFT);
             } else {
-                $newNumber = '0001';
+                $newNumber = '6426';
             }
 
             // $invoiceNumber = "INV-{$yearMonth}-{$newNumber}";
