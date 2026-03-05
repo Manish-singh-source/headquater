@@ -1611,22 +1611,33 @@ class SalesOrderController extends Controller
                 $customerId = $firstItem['detail']->customer_id;
                 $poNumber = $firstItem['detail']->tempOrder->po_number ?? '';
 
-                $yearMonth = date('Ym');
-                $lastInvoice = Invoice::where('invoice_number', 'LIKE', "INV-{$yearMonth}-%")
+                // $yearMonth = date('Ym');
+                // $lastInvoice = Invoice::where('invoice_number', 'LIKE', "INV-{$yearMonth}-%")
+                //     ->orderBy('id', 'desc')
+                //     ->first();
+
+                // $timestamp = date('Ym');
+
+                // if ($lastInvoice) {
+                //     $lastNumber = (int) substr($lastInvoice->invoice_number, -4);
+                //     $newNumber = str_pad($lastNumber + 1, 4, '0', STR_PAD_LEFT);
+                // } else {
+                //     $newNumber = '0001';
+                // }
+
+                // // $invoiceNumber = "INV-{$yearMonth}-{$newNumber}";
+                // $invoiceNumber = 'INV-' . $timestamp . '-' . $newNumber;
+
+                $lastInvoice = Invoice::where('invoice_number', 'LIKE', "IIPL-%")
                     ->orderBy('id', 'desc')
                     ->first();
-
-                $timestamp = date('Ym');
-
                 if ($lastInvoice) {
                     $lastNumber = (int) substr($lastInvoice->invoice_number, -4);
                     $newNumber = str_pad($lastNumber + 1, 4, '0', STR_PAD_LEFT);
                 } else {
                     $newNumber = '0001';
                 }
-
-                // $invoiceNumber = "INV-{$yearMonth}-{$newNumber}";
-                $invoiceNumber = 'INV-' . $timestamp . '-' . $newNumber;
+                $invoiceNumber = 'IIPL-' . $newNumber;
 
                 // Create invoice with unique number
                 $invoice = new Invoice;
@@ -2399,7 +2410,7 @@ class SalesOrderController extends Controller
                 'MRP Confirmation' => $this->sanitizeExcelValue($order->tempOrder?->mrp_confirmation ?? 'Incorrect'),
                 'PO Number' => $this->sanitizeExcelValue($order->tempOrder?->po_number ?? ''),
                 'PO Quantity' => (int) ($order->ordered_quantity ?? 0),
-                'Purchase Order Quantity' => (int) ($order->tempOrder?->purchase_order_quantity ?? 0),  
+                'Purchase Order Quantity' => (int) ($order->tempOrder?->purchase_order_quantity ?? 0),
                 'Vendor PI Fulfillment Quantity' => (int) ($order->tempOrder?->vendor_pi_fulfillment_quantity ?? 0),
                 'Vendor PI Received Quantity' => (int) ($order->tempOrder?->vendor_pi_received_quantity ?? 0),
                 'Block Quantity' => (int) ($order->tempOrder?->block ?? 0),

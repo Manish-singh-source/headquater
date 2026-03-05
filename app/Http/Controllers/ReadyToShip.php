@@ -375,7 +375,7 @@ class ReadyToShip extends Controller
         $userWarehouseId = $user->warehouse_id;
 
         $salesOrder = SalesOrder::where('id', $request->order_id)->first();
-        
+
 
         DB::beginTransaction();
 
@@ -663,21 +663,33 @@ class ReadyToShip extends Controller
             DB::beginTransaction();
 
             // Generate invoice number
-            $yearMonth = date('Ym');
-            $lastInvoice = Invoice::where('invoice_number', 'LIKE', "INV-{$yearMonth}-%")
+            // $yearMonth = date('Ym');
+            // $lastInvoice = Invoice::where('invoice_number', 'LIKE', "INV-{$yearMonth}-%")
+            //     ->orderBy('id', 'desc')
+            //     ->first();
+
+            // $timestamp = time();
+
+            // if ($lastInvoice) {
+            //     $lastNumber = (int) substr($lastInvoice->invoice_number, -3);
+            //     $newNumber = str_pad($lastNumber + 1, 3, '0', STR_PAD_LEFT);
+            // } else {
+            //     $newNumber = '001';
+            // }
+
+            // $invoiceNumber = 'INV-' . $timestamp . '-' . str_pad($newNumber + 1, 4, '0', STR_PAD_LEFT);
+
+
+            $lastInvoice = Invoice::where('invoice_number', 'LIKE', "IIPL-%")
                 ->orderBy('id', 'desc')
                 ->first();
-
-            $timestamp = time();
-
             if ($lastInvoice) {
-                $lastNumber = (int) substr($lastInvoice->invoice_number, -3);
-                $newNumber = str_pad($lastNumber + 1, 3, '0', STR_PAD_LEFT);
+                $lastNumber = (int) substr($lastInvoice->invoice_number, -4);
+                $newNumber = str_pad($lastNumber + 1, 4, '0', STR_PAD_LEFT);
             } else {
-                $newNumber = '001';
+                $newNumber = '0001';
             }
-
-            $invoiceNumber = 'INV-' . $timestamp . '-' . str_pad($newNumber + 1, 4, '0', STR_PAD_LEFT);
+            $invoiceNumber = 'IIPL-' . $newNumber;
 
             // Calculate totals
             $subtotal = 0;

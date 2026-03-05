@@ -189,7 +189,7 @@ class InvoiceController extends Controller
             'invoiceItemType' => $invoice->invoice_item_type ?? 'product',
             'qrCodeImage' => $qrCodeImage,
         ];
-    $pdf = \PDF::loadView('invoice/einvoice-pdf', ['image' => $base64Image, 'image1' => $base643Image] + $data);
+        $pdf = \PDF::loadView('invoice/einvoice-pdf', ['image' => $base64Image, 'image1' => $base643Image] + $data);
         $pdf->setPaper('a4');
 
         return $pdf->stream('e-invoice.pdf');
@@ -520,12 +520,15 @@ class InvoiceController extends Controller
         DB::beginTransaction();
         try {
             // Generate invoice number
-            $yearMonth = date('Ym');
-            $lastInvoice = Invoice::where('invoice_number', 'LIKE', "INV-{$yearMonth}-%")
+            // $yearMonth = date('Ym');
+            // $lastInvoice = Invoice::where('invoice_number', 'LIKE', "INV-{$yearMonth}-%")
+            //     ->orderBy('id', 'desc')
+            //     ->first();
+            $lastInvoice = Invoice::where('invoice_number', 'LIKE', "IIPL-%")
                 ->orderBy('id', 'desc')
                 ->first();
 
-            $timestamp =  date('Ym');
+            // $timestamp =  date('Ym');
 
             if ($lastInvoice) {
                 $lastNumber = (int) substr($lastInvoice->invoice_number, -4);
@@ -535,7 +538,10 @@ class InvoiceController extends Controller
             }
 
             // $invoiceNumber = "INV-{$yearMonth}-{$newNumber}";
-            $invoiceNumber = 'INV-' . $timestamp . '-' . $newNumber;
+            // old format
+            // $invoiceNumber = 'INV-' . $timestamp . '-' . $newNumber;
+            // new format
+            $invoiceNumber = 'IIPL-' . $newNumber;
 
             // Calculate totals based on invoice type
             $subtotal = 0;
@@ -934,7 +940,7 @@ class InvoiceController extends Controller
                 'total_cess_value_of_state' => 0,
                 'total_discount' => $invoice->discount_amount ?? 0,
                 'total_other_charge' => 0,
-                'total_invoice_value' => number_format(collect($itemList)->sum('assessable_value') + collect($itemList)->sum('igst_amount') - ($invoice->discount_amount ?? 0) + ($invoice->round_off ?? 0), 2, '.', '' ),
+                'total_invoice_value' => number_format(collect($itemList)->sum('assessable_value') + collect($itemList)->sum('igst_amount') - ($invoice->discount_amount ?? 0) + ($invoice->round_off ?? 0), 2, '.', ''),
                 'round_off_amount' => $invoice->round_off ?? 0,
             ],
             'item_list' => $itemList,
