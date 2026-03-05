@@ -644,23 +644,23 @@ class InvoiceController extends Controller
                     ]);
 
                     // Update warehouse stock
-                    $stock = WarehouseStock::where('warehouse_id', $item['warehouse_id'])
-                        ->where('sku', $product->sku)
-                        ->first();
+                    // $stock = WarehouseStock::where('warehouse_id', $item['warehouse_id'])
+                    //     ->where('sku', $product->sku)
+                    //     ->first();
 
-                    if ($stock) {
-                        if ($stock->available_quantity < $item['quantity']) {
-                            DB::rollBack();
+                    // if ($stock) {
+                        // if ($stock->available_quantity < $item['quantity']) {
+                        //     DB::rollBack();
 
-                            return redirect()->back()
-                                ->with('error', "Insufficient stock for product: {$product->product_name}. Available: {$stock->available_quantity}")
-                                ->withInput();
-                        }
+                        //     return redirect()->back()
+                        //         ->with('error', "Insufficient stock for product: {$product->product_name}. Available: {$stock->available_quantity}")
+                        //         ->withInput();
+                        // }
 
-                        $stock->available_quantity -= $item['quantity'];
-                        $stock->original_quantity -= $item['quantity'];
-                        $stock->save();
-                    }
+                        // $stock->available_quantity -= $item['quantity'];
+                        // $stock->original_quantity -= $item['quantity'];
+                        // $stock->save();
+                    // }
                 }
             } else {
                 // Create service invoice details (no stock management)

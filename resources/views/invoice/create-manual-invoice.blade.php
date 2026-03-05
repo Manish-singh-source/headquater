@@ -139,7 +139,7 @@
                                                     <th style="width: 12%;">Warehouse <span class="text-danger">*</span></th>
                                                     <th style="width: 15%;">Product <span class="text-danger">*</span></th>
                                                     <th style="width: 7%;">HSN</th>
-                                                    <th style="width: 5%;">Stock</th>
+                                                    {{-- <th style="width: 5%;">Stock</th> --}}
                                                     <th style="width: 6%;">Qty <span class="text-danger">*</span></th>
                                                     <th style="width: 6%;">Box Count</th>
                                                     <th style="width: 6%;">Weight</th>
@@ -540,9 +540,6 @@
                    data-row="${rowIndex}" placeholder="HSN">
         </td>
         <td>
-            <input type="text" class="form-control form-control-sm stock-display" id="stock_${rowIndex}" readonly placeholder="0">
-        </td>
-        <td>
             <input type="number" name="products[${rowIndex}][quantity]" class="form-control form-control-sm quantity-input"
                    data-row="${rowIndex}" min="1" required>
         </td>
@@ -644,7 +641,7 @@
                     .then(data => {
                         if (data.success) {
                             // Populate stock
-                            document.getElementById(`stock_${rowId}`).value = data.available_quantity;
+                            // document.getElementById(`stock_${rowId}`).value = data.available_quantity;
 
                             // Populate HSN code if available
                             if (data.product && data.product.hsn) {
