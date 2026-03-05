@@ -271,6 +271,8 @@
                                         <i class="bx bx-x"></i> Cancel
                                     </a>
                                 </div>
+                                <input type="hidden" name="total_amount" id="total_amount" value="0">
+
                             </div>
                         </div>
                     </div>
@@ -444,6 +446,7 @@
                                     <input type="text" name="shipping_zip" id="shipping_zip" class="form-control"
                                         placeholder="Enter ZIP Code">
                                 </div>
+
                             </div>
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -711,6 +714,7 @@
             document.getElementById('discountDisplay').textContent = '₹' + totalDiscount.toFixed(2);
             document.getElementById('taxDisplay').textContent = '₹' + totalTax.toFixed(2);
             document.getElementById('totalDisplay').textContent = '₹' + total.toFixed(2);
+            document.getElementById('total_amount').value = '₹' + total.toFixed(2);
             document.getElementById('balanceDueDisplay').textContent = '₹' + balanceDue.toFixed(2);
 
             // Update payment status badge

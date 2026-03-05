@@ -484,7 +484,10 @@ class InvoiceController extends Controller
             'payment_mode' => 'nullable|string|max:255',
             'paid_amount' => 'nullable|numeric|min:0',
             'notes' => 'nullable|string',
+            // 'total_amount' => 'nullable|numeric|min:0',
         ]);
+
+        // dd($request->all());
 
         if ($validator->fails()) {
             return redirect()->back()->withErrors($validator)->withInput();
