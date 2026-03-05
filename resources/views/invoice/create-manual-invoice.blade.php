@@ -560,11 +560,11 @@
                    data-row="${rowIndex}" min="0" value="0">
         </td>
         <td>
-            <input type="number" name="products[${rowIndex}][tax]" class="form-control form-control-sm tax-input"
+            <input type="text" name="products[${rowIndex}][tax]" class="form-control form-control-sm tax-input"
                    data-row="${rowIndex}" min="0" value="0">
         </td>
         <td>
-            <input type="text" class="form-control form-control-sm row-total" id="total_${rowIndex}" readonly value="0">
+            <input type="text" class="form-control form-control-sm row-total" id="total_${rowIndex}" value="0">
         </td>
         <td>
             <button type="button" class="btn btn-sm btn" onclick="removeRow(${rowIndex})">
@@ -774,7 +774,7 @@
             <input type="number" name="services[${serviceRowIndex}][discount]" class="form-control form-control-sm service-discount-input" data-row="${serviceRowIndex}" min="0" value="0">
         </td>
         <td>
-            <input type="number" name="services[${serviceRowIndex}][tax]" class="form-control form-control-sm service-tax-input" data-row="${serviceRowIndex}" min="0" value="0">
+            <input type="text" name="services[${serviceRowIndex}][tax]" class="form-control form-control-sm service-tax-input" data-row="${serviceRowIndex}" min="0" value="0">
         </td>
         <td>
             <input type="text" class="form-control form-control-sm service-row-total" id="service_total_${serviceRowIndex}" readonly value="0">
