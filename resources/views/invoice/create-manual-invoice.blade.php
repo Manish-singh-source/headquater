@@ -552,7 +552,7 @@
                    data-row="${rowIndex}" min="1" placeholder="0">
         </td>
         <td>
-            <input type="number" name="products[${rowIndex}][unit_price]" class="form-control form-control-sm price-input"
+            <input type="text" name="products[${rowIndex}][unit_price]" class="form-control form-control-sm price-input"
                    data-row="${rowIndex}" min="1" required>
         </td>
         <td>
