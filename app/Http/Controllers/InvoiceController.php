@@ -617,7 +617,6 @@ class InvoiceController extends Controller
                 'invoice_type' => 'manual',
                 'invoice_item_type' => $request->invoice_item_type,
                 'notes' => $request->notes,
-
             ]);
 
             // Create invoice details based on type
@@ -627,8 +626,17 @@ class InvoiceController extends Controller
                     $product = Product::findOrFail($item['product_id']);
                     $amount = $item['quantity'] * $item['unit_price'];
                     $discount = $item['discount'] ?? 0;
-                    $tax = $item['tax'] ?? 0;
-                    $totalPrice = $amount - $discount + $tax;
+                    $taxAmount = $item['tax'] ?? 0;
+
+                    // convert tax in percentage
+                    if (!$item['tax']) {
+                        $item['tax'] = 0;
+                        $percentage = 0;
+                    } else {
+                        $percentage = ((intval($item['tax']) ?? 0) / $amount) * 100;
+                    }
+                    $tax = $percentage ?? 0;
+                    $totalPrice = $amount - $discount + $taxAmount;
 
                     InvoiceDetails::create([
                         'invoice_id' => $invoice->id,
@@ -652,17 +660,17 @@ class InvoiceController extends Controller
                     //     ->first();
 
                     // if ($stock) {
-                        // if ($stock->available_quantity < $item['quantity']) {
-                        //     DB::rollBack();
+                    // if ($stock->available_quantity < $item['quantity']) {
+                    //     DB::rollBack();
 
-                        //     return redirect()->back()
-                        //         ->with('error', "Insufficient stock for product: {$product->product_name}. Available: {$stock->available_quantity}")
-                        //         ->withInput();
-                        // }
+                    //     return redirect()->back()
+                    //         ->with('error', "Insufficient stock for product: {$product->product_name}. Available: {$stock->available_quantity}")
+                    //         ->withInput();
+                    // }
 
-                        // $stock->available_quantity -= $item['quantity'];
-                        // $stock->original_quantity -= $item['quantity'];
-                        // $stock->save();
+                    // $stock->available_quantity -= $item['quantity'];
+                    // $stock->original_quantity -= $item['quantity'];
+                    // $stock->save();
                     // }
                 }
             } else {
