@@ -138,6 +138,7 @@
                                                 <tr>
                                                     <th style="width: 12%;">Warehouse <span class="text-danger">*</span></th>
                                                     <th style="width: 15%;">Product <span class="text-danger">*</span></th>
+                                                    <th style="width: 15%;">Item Code <span class="text-danger">*</span></th>
                                                     <th style="width: 7%;">HSN</th>
                                                     {{-- <th style="width: 5%;">Stock</th> --}}
                                                     <th style="width: 6%;">Qty <span class="text-danger">*</span></th>
@@ -526,61 +527,65 @@
             row.id = `row_${rowIndex}`;
 
             row.innerHTML = `
-        <td>
-            <select name="products[${rowIndex}][warehouse_id]" class="form-select form-select-sm warehouse-select" data-row="${rowIndex}" required>
-                <option value="">Select Warehouse</option>
-                ${warehouses.map(w => `<option value="${w.id}">${w.name}</option>`).join('')}
-            </select>
-        </td>
-        <td>
-            <select name="products[${rowIndex}][product_id]" class="form-select form-select-sm product-select" data-row="${rowIndex}" required>
-                <option value="">Select Product</option>
-                ${products.map(p => `<option value="${p.id}" data-sku="${p.sku}" data-price="${p.mrp}">${p.sku}</option>`).join('')}
-            </select>
-        </td>
-        <td>
-            <input type="text" name="products[${rowIndex}][hsn]" class="form-control form-control-sm hsn-input"
-                   data-row="${rowIndex}" placeholder="HSN">
-        </td>
-        <td>
-            <input type="number" name="products[${rowIndex}][quantity]" class="form-control form-control-sm quantity-input"
-                   data-row="${rowIndex}" min="1" required>
-        </td>
-        <td>
-            <input type="number" name="products[${rowIndex}][box_count]" class="form-control form-control-sm box-count-input"
-                   data-row="${rowIndex}" min="1" placeholder="0">
-        </td>
-        <td>
-            <input type="number" name="products[${rowIndex}][weight]" class="form-control form-control-sm weight-input"
-                   data-row="${rowIndex}" min="1" placeholder="0">
-        </td>
-        <td>
-            <input type="text" name="products[${rowIndex}][unit_price]" class="form-control form-control-sm price-input"
-                   data-row="${rowIndex}" min="1" required>
-        </td>
-        <td>
-            <input type="number" name="products[${rowIndex}][discount]" class="form-control form-control-sm discount-input"
-                   data-row="${rowIndex}" min="0" value="0">
-        </td>
-        <td>
-            <input type="text" name="products[${rowIndex}][tax]" class="form-control form-control-sm tax-input"
-                   data-row="${rowIndex}" min="0" value="0">
-        </td>
-        <td>
-            <input type="text" class="form-control form-control-sm row-total" id="total_${rowIndex}" value="0">
-        </td>
-        <td>
-            <button type="button" class="btn btn-sm btn" onclick="removeRow(${rowIndex})">
-               <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trash-2 text-danger">
-                                                                <polyline points="3 6 5 6 21 6"></polyline>
-                                                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
-                                                                </path>
-                                                                <line x1="10" y1="11" x2="10" y2="17"></line>
-                                                                <line x1="14" y1="11" x2="14" y2="17"></line>
-                                                            </svg>
-            </button>
-        </td>
-    `;
+                    <td>
+                        <select name="products[${rowIndex}][warehouse_id]" class="form-select form-select-sm warehouse-select" data-row="${rowIndex}" required>
+                            <option value="">Select Warehouse</option>
+                            ${warehouses.map(w => `<option value="${w.id}">${w.name}</option>`).join('')}
+                        </select>
+                    </td>
+                    <td>
+                        <select name="products[${rowIndex}][product_id]" class="form-select form-select-sm product-select" data-row="${rowIndex}" required>
+                            <option value="">Select Product</option>
+                            ${products.map(p => `<option value="${p.id}" data-sku="${p.sku}" data-price="${p.mrp}">${p.sku}</option>`).join('')}
+                        </select>
+                    </td>
+                    <td>
+                        <input type="text" name="products[${rowIndex}][item_code]" class="form-control form-control-sm hsn-input"
+                            data-row="${rowIndex}" placeholder="Item Code">
+                    </td>
+                    <td>
+                        <input type="text" name="products[${rowIndex}][hsn]" class="form-control form-control-sm hsn-input"
+                            data-row="${rowIndex}" placeholder="HSN">
+                    </td>
+                    <td>
+                        <input type="number" name="products[${rowIndex}][quantity]" class="form-control form-control-sm quantity-input"
+                            data-row="${rowIndex}" min="1" required>
+                    </td>
+                    <td>
+                        <input type="number" name="products[${rowIndex}][box_count]" class="form-control form-control-sm box-count-input"
+                            data-row="${rowIndex}" min="1" placeholder="0">
+                    </td>
+                    <td>
+                        <input type="number" name="products[${rowIndex}][weight]" class="form-control form-control-sm weight-input"
+                            data-row="${rowIndex}" min="1" placeholder="0">
+                    </td>
+                    <td>
+                        <input type="text" name="products[${rowIndex}][unit_price]" class="form-control form-control-sm price-input"
+                            data-row="${rowIndex}" min="1" required>
+                    </td>
+                    <td>
+                        <input type="number" name="products[${rowIndex}][discount]" class="form-control form-control-sm discount-input"
+                            data-row="${rowIndex}" min="0" value="0">
+                    </td>
+                    <td>
+                        <input type="text" name="products[${rowIndex}][tax]" class="form-control form-control-sm tax-input"
+                            data-row="${rowIndex}" min="0" value="0">
+                    </td>
+                    <td>
+                        <input type="text" class="form-control form-control-sm row-total" id="total_${rowIndex}" value="0">
+                    </td>
+                    <td>
+                        <button type="button" class="btn btn-sm btn" onclick="removeRow(${rowIndex})">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trash-2 text-danger">
+                                                                            <polyline points="3 6 5 6 21 6"></polyline>
+                                                                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
+                                                                            </path>
+                                                                            <line x1="10" y1="11" x2="10" y2="17"></line>
+                                                                            <line x1="14" y1="11" x2="14" y2="17"></line>
+                                                                        </svg>
+                        </button>
+                    </td>
+                `;
 
             tbody.appendChild(row);
 
@@ -747,53 +752,53 @@
             row.id = `service_row_${serviceRowIndex}`;
 
             row.innerHTML = `
-        <td>
-            <input type="text" name="services[${serviceRowIndex}][service_title]" class="form-control form-control-sm" placeholder="Service Title">
-        </td>
-        <td>
-            <input type="text" name="services[${serviceRowIndex}][service_category]" class="form-control form-control-sm" placeholder="Category">
-        </td>
-        <td>
-            <textarea name="services[${serviceRowIndex}][service_description]" class="form-control form-control-sm" rows="1" placeholder="Description"></textarea>
-        </td>
-        <td>
-            <input type="text" name="services[${serviceRowIndex}][campaign_name]" class="form-control form-control-sm" placeholder="Campaign Name">
-        </td>
-        <td>
-            <input type="number" name="services[${serviceRowIndex}][quantity]" class="form-control form-control-sm service-quantity-input" data-row="${serviceRowIndex}" min="1" value="1" required>
-        </td>
-        <td>
-            <input type="text" name="services[${serviceRowIndex}][unit_type]" class="form-control form-control-sm" placeholder="e.g., Hours, Days">
-        </td>
-        <td>
-            <input type="number" name="services[${serviceRowIndex}][box_count]" class="form-control form-control-sm" placeholder="0" min="0">
-        </td>
-        <td>
-            <input type="number" name="services[${serviceRowIndex}][weight]" class="form-control form-control-sm" placeholder="0" min="0" step="0.01">
-        </td>
-        <td>
-            <input type="number" name="services[${serviceRowIndex}][unit_price]" class="form-control form-control-sm service-price-input" data-row="${serviceRowIndex}" min="0" step="0.01" required>
-        </td>
-        <td>
-            <input type="number" name="services[${serviceRowIndex}][discount]" class="form-control form-control-sm service-discount-input" data-row="${serviceRowIndex}" min="0" value="0">
-        </td>
-        <td>
-            <input type="text" name="services[${serviceRowIndex}][tax]" class="form-control form-control-sm service-tax-input" data-row="${serviceRowIndex}" min="0" value="0">
-        </td>
-        <td>
-            <input type="text" class="form-control form-control-sm service-row-total" id="service_total_${serviceRowIndex}" readonly value="0">
-        </td>
-        <td>
-            <button type="button" class="btn btn-sm btn" onclick="removeServiceRow(${serviceRowIndex})">
-               <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trash-2 text-danger">
-                    <polyline points="3 6 5 6 21 6"></polyline>
-                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                    <line x1="10" y1="11" x2="10" y2="17"></line>
-                    <line x1="14" y1="11" x2="14" y2="17"></line>
-                </svg>
-            </button>
-        </td>
-    `;
+                    <td>
+                        <input type="text" name="services[${serviceRowIndex}][service_title]" class="form-control form-control-sm" placeholder="Service Title">
+                    </td>
+                    <td>
+                        <input type="text" name="services[${serviceRowIndex}][service_category]" class="form-control form-control-sm" placeholder="Category">
+                    </td>
+                    <td>
+                        <textarea name="services[${serviceRowIndex}][service_description]" class="form-control form-control-sm" rows="1" placeholder="Description"></textarea>
+                    </td>
+                    <td>
+                        <input type="text" name="services[${serviceRowIndex}][campaign_name]" class="form-control form-control-sm" placeholder="Campaign Name">
+                    </td>
+                    <td>
+                        <input type="number" name="services[${serviceRowIndex}][quantity]" class="form-control form-control-sm service-quantity-input" data-row="${serviceRowIndex}" min="1" value="1" required>
+                    </td>
+                    <td>
+                        <input type="text" name="services[${serviceRowIndex}][unit_type]" class="form-control form-control-sm" placeholder="e.g., Hours, Days">
+                    </td>
+                    <td>
+                        <input type="number" name="services[${serviceRowIndex}][box_count]" class="form-control form-control-sm" placeholder="0" min="0">
+                    </td>
+                    <td>
+                        <input type="number" name="services[${serviceRowIndex}][weight]" class="form-control form-control-sm" placeholder="0" min="0" step="0.01">
+                    </td>
+                    <td>
+                        <input type="number" name="services[${serviceRowIndex}][unit_price]" class="form-control form-control-sm service-price-input" data-row="${serviceRowIndex}" min="0" step="0.01" required>
+                    </td>
+                    <td>
+                        <input type="number" name="services[${serviceRowIndex}][discount]" class="form-control form-control-sm service-discount-input" data-row="${serviceRowIndex}" min="0" value="0">
+                    </td>
+                    <td>
+                        <input type="text" name="services[${serviceRowIndex}][tax]" class="form-control form-control-sm service-tax-input" data-row="${serviceRowIndex}" min="0" value="0">
+                    </td>
+                    <td>
+                        <input type="text" class="form-control form-control-sm service-row-total" id="service_total_${serviceRowIndex}" readonly value="0">
+                    </td>
+                    <td>
+                        <button type="button" class="btn btn-sm btn" onclick="removeServiceRow(${serviceRowIndex})">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trash-2 text-danger">
+                                <polyline points="3 6 5 6 21 6"></polyline>
+                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                <line x1="10" y1="11" x2="10" y2="17"></line>
+                                <line x1="14" y1="11" x2="14" y2="17"></line>
+                            </svg>
+                        </button>
+                    </td>
+                `;
 
             tbody.appendChild(row);
 

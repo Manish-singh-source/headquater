@@ -310,7 +310,7 @@
         @endphp
         @foreach ($invoiceDetails as $index => $detail)
             <tr>
-                {{ $igstAmount = ($detail->tax / 100) * $detail->amount }}
+                {{ $igstAmount = (ceil($detail->tax) / 100) * $detail->amount }}
                 {{ $totalAmount = $igstAmount + $detail->amount }}
                 {{ $totalAmountSum = $totalAmount + $totalAmountSum }}
                 {{ $totalIgstSum = $igstAmount + $totalIgstSum }}
@@ -331,29 +331,29 @@
                 @else
                     <td>
                         {{-- <strong style="color: #000000;"> {{ $detail->product?->ean_code }} </strong> --}}
-                        <strong style="color: #000000;"> {{ $detail->tempOrder?->item_code }} </strong>
+                        <strong style="color: #000000;"> {{ $detail->tempOrder?->item_code ?? $detail->item_code }} </strong>
                         <br>
                         {{ $detail->product?->sku }}
                         <br>
-                        {{ $detail->tempOrder?->description }}
+                        {{ $detail->tempOrder?->description ?? $detail->product?->brand_title }}
                     </td>
                     <td class="right-align">{{ $detail->hsn ?? $detail->tempOrder?->hsn }}</td>
                     <td class="right-align">{{ $detail->quantity }}</td>
-                    <td class="right-align">{{ $detail->box_count ?? $detail->salesOrderProduct?->box_count }}</td>
+                    <td class="right-align">{{ intval($detail->box_count) ?? intval($detail->salesOrderProduct?->box_count) }}</td>
                 @endif
 
-                <td class="right-align">{{ $detail->unit_price }}</td>
-                <td class="right-align">{{ $detail->amount }}</td>
+                <td class="right-align">{{ number_format($detail->unit_price, 2) }}</td>
+                <td class="right-align">{{ number_format($detail->amount, 2) }}</td>
                 @if ($igstStatus)
-                    <td class="right-align">{{ floor($detail->tax / 2) }}%</td>
-                    <td class="right-align">{{ $igstAmount / 2 }}</td>
-                    <td class="right-align">{{ floor($detail->tax / 2) }}%</td>
-                    <td class="right-align">{{ $igstAmount / 2 }}</td>
+                    <td class="right-align">{{ ceil($detail->tax / 2) }}%</td>
+                    <td class="right-align">{{ number_format(($igstAmount / 2), 2) }}</td>
+                    <td class="right-align">{{ ceil($detail->tax / 2) }}%</td>
+                    <td class="right-align">{{ number_format(($igstAmount / 2), 2) }}</td>
                 @else
-                    <td class="right-align">{{ floor($detail->tax) }}%</td>
-                    <td class="right-align">{{ $igstAmount }}</td>
+                    <td class="right-align">{{ ceil($detail->tax) }}%</td>
+                    <td class="right-align">{{ number_format($igstAmount, 2) }}</td>
                 @endif
-                <td class="right-align">{{ $totalAmount }}</td>
+                <td class="right-align">{{ number_format($totalAmount, 2) }}</td>
             </tr>
         @endforeach
         <tr>
@@ -368,18 +368,18 @@
                 <td class="right-align">{{ $invoiceDetails->sum('quantity') }}</td>
                 <td class="right-align">{{ $totalBoxCount ?? ($TotalBoxCount ?? 0) }}</td>
             @endif
-            <td class="right-align">{{ $invoiceDetails->sum('unit_price') }}</td>
-            <td class="right-align">{{ $invoiceDetails->sum('amount') }}</td>
+            <td class="right-align">{{ number_format($invoiceDetails->sum('unit_price'), 2) }}</td>
+            <td class="right-align">{{ number_format($invoiceDetails->sum('amount'), 2) }}</td>
             @if ($igstStatus)
                 <td class="right-align">{{ $invoiceDetails->sum('igst_rate') / 2 }}</td>
-                <td class="right-align">{{ $totalIgstSum / 2 }}</td>
+                <td class="right-align">{{ number_format(($totalIgstSum / 2), 2) }}</td>
                 <td class="right-align">{{ $invoiceDetails->sum('igst_rate') / 2 }}</td>
-                <td class="right-align">{{ $totalIgstSum / 2 }}</td>
+                <td class="right-align">{{ number_format(($totalIgstSum / 2), 2) }}</td>
             @else
                 <td class="right-align">{{ $invoiceDetails->sum('igst_rate') }}</td>
-                <td class="right-align">{{ $totalIgstSum }}</td>
+                <td class="right-align">{{ number_format($totalIgstSum, 2) }}</td>
             @endif
-            <td class="right-align">{{ $totalAmountSum }}</td>
+            <td class="right-align">{{ number_format($totalAmountSum, 2) }}</td>
         </tr>
     </table>
 

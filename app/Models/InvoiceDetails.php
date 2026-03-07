@@ -29,6 +29,7 @@ class InvoiceDetails extends Model
         'service_description',
         'campaign_name',
         'unit_type',
+        'item_code',
     ];
 
     public function invoice()

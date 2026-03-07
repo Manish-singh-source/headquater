@@ -2,28 +2,29 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Dn;
-use App\Models\State;
-use App\Models\Invoice;
-use App\Models\Payment;
-use App\Models\Product;
+use App\Models\Appointment;
 use App\Models\Customer;
+use App\Models\Dn;
 use App\Models\EInvoice;
 use App\Models\Ewaybill;
-use App\Models\Warehouse;
-use App\Models\SalesOrder;
-use Endroid\QrCode\QrCode;
-use App\Models\Appointment;
 use App\Models\EwayTransportDetail;
-use Illuminate\Http\Request;
+use App\Models\Invoice;
 use App\Models\InvoiceDetails;
-use App\Models\WarehouseStock;
+use App\Models\Payment;
+use App\Models\Product;
+use App\Models\ProductMapping;
+use App\Models\SalesOrder;
 use App\Models\SalesOrderProduct;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
+use App\Models\State;
+use App\Models\Warehouse;
+use App\Models\WarehouseStock;
+use Endroid\QrCode\QrCode;
 use Endroid\QrCode\Writer\PngWriter;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
 class InvoiceController extends Controller
@@ -462,6 +463,7 @@ class InvoiceController extends Controller
             'products' => 'required_if:invoice_item_type,product|array',
             'products.*.warehouse_id' => 'required_with:products|exists:warehouses,id',
             'products.*.product_id' => 'required_with:products|exists:products,id',
+            'products.*.item_code' => 'nullable|string|max:255',
             'products.*.hsn' => 'nullable|string|max:255',
             'products.*.quantity' => 'required_with:products|numeric',
             'products.*.box_count' => 'nullable|integer|min:0',
@@ -487,7 +489,6 @@ class InvoiceController extends Controller
             // 'total_amount' => 'nullable|numeric|min:0',
         ]);
 
-        // dd($request->all());
 
         if ($validator->fails()) {
             return redirect()->back()->withErrors($validator)->withInput();
@@ -624,6 +625,8 @@ class InvoiceController extends Controller
                 // Create product invoice details and update stock
                 foreach ($request->products as $item) {
                     $product = Product::findOrFail($item['product_id']);
+                    $productMapping = ProductMapping::where('sku', $product->sku)->first();
+
                     $amount = $item['quantity'] * $item['unit_price'];
                     $discount = $item['discount'] ?? 0;
                     $taxAmount = $item['tax'] ?? 0;
@@ -651,7 +654,9 @@ class InvoiceController extends Controller
                         'amount' => $amount,
                         'tax' => $tax,
                         'total_price' => $totalPrice,
-                        'description' => $item['description'] ?? null,
+                        'description' => $product->brand_title ?? null,
+                        // 'description' => $item['description'] ?? null,
+                        'item_code' => $item['item_code'] ?? null,
                     ]);
 
                     // Update warehouse stock
