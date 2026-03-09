@@ -345,9 +345,9 @@
                 <td class="right-align">{{ number_format($detail->unit_price, 2) }}</td>
                 <td class="right-align">{{ number_format($detail->amount, 2) }}</td>
                 @if ($igstStatus)
-                    <td class="right-align">{{ ceil($detail->tax / 2) }}%</td>
+                    <td class="right-align">{{ ceil($detail->tax) / 2 }}%</td>
                     <td class="right-align">{{ number_format(($igstAmount / 2), 2) }}</td>
-                    <td class="right-align">{{ ceil($detail->tax / 2) }}%</td>
+                    <td class="right-align">{{ ceil($detail->tax) / 2 }}%</td>
                     <td class="right-align">{{ number_format(($igstAmount / 2), 2) }}</td>
                 @else
                     <td class="right-align">{{ ceil($detail->tax) }}%</td>
