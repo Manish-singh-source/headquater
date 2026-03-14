@@ -97,7 +97,7 @@ class InvoiceController extends Controller
         $invoiceDetails = InvoiceDetails::with('product', 'tempOrder', 'salesOrderProduct')->where('invoice_id', $id)->get();
 
         // Determine GST type: IGST if inter-state, CGST/SGST if intra-state
-        $igstStatus = ($invoice->customer->shipping_state !== 'Maharashtra');
+        $igstStatus = ($invoice->customer->shipping_state === 'Maharashtra');
 
         // Check if it's a sales order invoice or manual invoice
         if ($invoice->sales_order_id) {
