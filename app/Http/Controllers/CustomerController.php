@@ -129,8 +129,8 @@ class CustomerController extends Controller
     {
         $group_id = $g_id;
         $countries = Country::all();
-        $states = State::where('country_id', old('shippingCountry'))->get();
-        $cities = City::where('state_id', old('shippingState'))->get();
+        $states = State::where('country_id', old('shipping_country'))->get();
+        $cities = City::where('state_id', old('shipping_state'))->get();
 
         return view('customer.create', compact(/* other data */'group_id', 'countries', 'states', 'cities'));
     }
@@ -370,6 +370,7 @@ class CustomerController extends Controller
      */
     public function store(Request $request)
     {
+        $request->merge($this->normalizeCustomerAddressFields($request));
         $validator = Validator::make($request->all(), [
             'facility_name' => 'required|min:3|max:100|unique:customers,facility_name',
             'client_name' => 'required|min:3|max:100',
@@ -483,6 +484,7 @@ class CustomerController extends Controller
      */
     public function storeIndividual(Request $request)
     {
+        $request->merge($this->normalizeCustomerAddressFields($request));
         $validator = Validator::make($request->all(), [
             'facility_name' => 'required|min:3|max:100|unique:customers,facility_name',
             'client_name' => 'required|min:3|max:100',
@@ -595,6 +597,7 @@ class CustomerController extends Controller
      */
     public function update(Request $request, $id)
     {
+        $request->merge($this->normalizeCustomerAddressFields($request));
         $validator = Validator::make($request->all(), [
             'group_id' => 'nullable|exists:customer_groups,id',
             'facility_name' => 'required|min:3|max:100',
@@ -669,6 +672,32 @@ class CustomerController extends Controller
         }
     }
 
+    private function normalizeCustomerAddressFields(Request $request): array
+    {
+        return [
+            'shipping_country' => $this->resolveLocationName(Country::class, $request->input('shipping_country')),
+            'shipping_state' => $this->resolveLocationName(State::class, $request->input('shipping_state')),
+            'shipping_city' => $this->resolveLocationName(City::class, $request->input('shipping_city')),
+            'billing_country' => $this->resolveLocationName(Country::class, $request->input('billing_country')),
+            'billing_state' => $this->resolveLocationName(State::class, $request->input('billing_state')),
+            'billing_city' => $this->resolveLocationName(City::class, $request->input('billing_city')),
+        ];
+    }
+
+    private function resolveLocationName(string $modelClass, $value): string
+    {
+        $value = trim((string) $value);
+
+        if ($value === '') {
+            return '';
+        }
+
+        if (ctype_digit($value)) {
+            return (string) optional($modelClass::find($value))->name;
+        }
+
+        return $value;
+    }
     /**
      * Delete single customer
      *
@@ -1015,3 +1044,8 @@ class CustomerController extends Controller
         }
     }
 }
+
+
+
+
+

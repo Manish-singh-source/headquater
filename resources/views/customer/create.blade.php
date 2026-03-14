@@ -65,9 +65,9 @@
 
                             <div class="col-md-6">
                                 <label for="companyName" class="form-label">Company Name</label>
-                                <input type="text" class="form-control @error('companyName') is-invalid @enderror"
-                                    value="{{ old('companyName') }}" id="companyName" name="companyName" placeholder="Enter Company Name">
-                                @error('companyName') <div class="invalid-feedback">{{ $message }}</div>@enderror
+                                <input type="text" class="form-control @error('company_name') is-invalid @enderror"
+                                    value="{{ old('company_name') }}" id="companyName" name="company_name" placeholder="Enter Company Name">
+                                @error('company_name') <div class="invalid-feedback">{{ $message }}</div>@enderror
                             </div>
                             <div class="col-md-6">
                                 <label for="gstin" class="form-label">GST Number</label>
@@ -83,16 +83,16 @@
                             </div>
                             <div class="col-md-12">
                                 <label for="shippingAddress" class="form-label">Shipping Address</label>
-                                <textarea class="form-control @error('shippingAddress') is-invalid @enderror" id="shippingAddress"
-                                    name="shippingAddress" rows="3" placeholder="Enter Full Address">{{ old('shippingAddress') }}</textarea>
-                                @error('shippingAddress') <div class="invalid-feedback">{{ $message }}</div>@enderror
+                                <textarea class="form-control @error('shipping_address') is-invalid @enderror" id="shippingAddress"
+                                    name="shipping_address" rows="3" placeholder="Enter Full Address">{{ old('shipping_address') }}</textarea>
+                                @error('shipping_address') <div class="invalid-feedback">{{ $message }}</div>@enderror
                             </div>
                             <div class="col-md-3">
                                 <label for="shippingCountry" class="form-label">Country</label>
-                                <select id="shippingCountry" class="form-select" name="shippingCountry">
+                                <select id="shippingCountry" class="form-select" name="shipping_country">
                                     <option value="">Select Country</option>
                                     @foreach ($countries as $country)
-                                        <option value="{{ $country->id }}" {{ old('shippingCountry') == $country->id ? 'selected' : '' }}>
+                                        <option value="{{ $country->id }}" {{ old('shipping_country') == $country->id ? 'selected' : '' }}>
                                             {{ $country->name }}
                                         </option>
                                     @endforeach
@@ -100,10 +100,10 @@
                             </div>
                             <div class="col-md-3">
                                 <label for="shippingState" class="form-label">State</label>
-                                <select id="shippingState" class="form-select" name="shippingState">
+                                <select id="shippingState" class="form-select" name="shipping_state">
                                     <option value="">Select State</option>
                                     @foreach ($states as $state)
-                                        <option value="{{ $state->id }}" {{ old('shippingState') == $state->id ? 'selected' : '' }}>
+                                        <option value="{{ $state->id }}" {{ old('shipping_state') == $state->id ? 'selected' : '' }}>
                                             {{ $state->name }}
                                         </option>
                                     @endforeach
@@ -111,10 +111,10 @@
                             </div>
                             <div class="col-md-3">
                                 <label for="shippingCity" class="form-label">City</label>
-                                <select id="shippingCity" class="form-select" name="shippingCity">
+                                <select id="shippingCity" class="form-select" name="shipping_city">
                                     <option value="">Select City</option>
                                     @foreach ($cities as $city)
-                                        <option value="{{ $city->id }}" {{ old('shippingCity') == $city->id ? 'selected' : '' }}>
+                                        <option value="{{ $city->id }}" {{ old('shipping_city') == $city->id ? 'selected' : '' }}>
                                             {{ $city->name }}
                                         </option>
                                     @endforeach
@@ -122,22 +122,22 @@
                             </div>
                             <div class="col-md-3">
                                 <label for="shippingPinCode" class="form-label">Pin Code</label>
-                                <input type="text" class="form-control @error('shippingPinCode') is-invalid @enderror"
-                                    value="{{ old('shippingPinCode') }}" id="shippingPinCode" name="shippingPinCode" placeholder="Enter Pin Code">
-                                @error('shippingPinCode') <div class="invalid-feedback">{{ $message }}</div>@enderror
+                                <input type="text" class="form-control @error('shipping_zip') is-invalid @enderror"
+                                    value="{{ old('shipping_zip') }}" id="shippingPinCode" name="shipping_zip" placeholder="Enter Pin Code">
+                                @error('shipping_zip') <div class="invalid-feedback">{{ $message }}</div>@enderror
                             </div>
                             <div class="col-md-12">
                                 <label for="billingAddress" class="form-label">Billing Address</label>
-                                <textarea class="form-control @error('billingAddress') is-invalid @enderror" id="billingAddress"
-                                    name="billingAddress" rows="3" placeholder="Enter Full Address">{{ old('billingAddress') }}</textarea>
-                                @error('billingAddress') <div class="invalid-feedback">{{ $message }}</div>@enderror
+                                <textarea class="form-control @error('billing_address') is-invalid @enderror" id="billingAddress"
+                                    name="billing_address" rows="3" placeholder="Enter Full Address">{{ old('billing_address') }}</textarea>
+                                @error('billing_address') <div class="invalid-feedback">{{ $message }}</div>@enderror
                             </div>
                             <div class="col-md-3">
                                 <label for="billingCountry" class="form-label">Country</label>
-                                <select id="billingCountry" class="form-select" name="billingCountry">
+                                <select id="billingCountry" class="form-select" name="billing_country">
                                     <option value="">Select Country</option>
                                     @foreach ($countries as $country)
-                                        <option value="{{ $country->id }}" {{ old('billingCountry') == $country->id ? 'selected' : '' }}>
+                                        <option value="{{ $country->id }}" {{ old('billing_country') == $country->id ? 'selected' : '' }}>
                                             {{ $country->name }}
                                         </option>
                                     @endforeach
@@ -145,10 +145,10 @@
                             </div>
                             <div class="col-md-3">
                                 <label for="billingState" class="form-label">State</label>
-                                <select id="billingState" class="form-select" name="billingState">
+                                <select id="billingState" class="form-select" name="billing_state">
                                     <option value="">Select State</option>
                                     @foreach ($states as $state)
-                                        <option value="{{ $state->id }}" {{ old('billingState') == $state->id ? 'selected' : '' }}>
+                                        <option value="{{ $state->id }}" {{ old('billing_state') == $state->id ? 'selected' : '' }}>
                                             {{ $state->name }}
                                         </option>
                                     @endforeach
@@ -156,10 +156,10 @@
                             </div>
                             <div class="col-md-3">
                                 <label for="billingCity" class="form-label">City</label>
-                                <select id="billingCity" class="form-select" name="billingCity">
+                                <select id="billingCity" class="form-select" name="billing_city">
                                     <option value="">Select City</option>
                                     @foreach ($cities as $city)
-                                        <option value="{{ $city->id }}" {{ old('billingCity') == $city->id ? 'selected' : '' }}>
+                                        <option value="{{ $city->id }}" {{ old('billing_city') == $city->id ? 'selected' : '' }}>
                                             {{ $city->name }}
                                         </option>
                                     @endforeach
@@ -167,9 +167,9 @@
                             </div>
                             <div class="col-md-3">
                                 <label for="billingPinCode" class="form-label">Pin Code</label>
-                                <input type="text" class="form-control @error('billingPinCode') is-invalid @enderror"
-                                    value="{{ old('billingPinCode') }}" id="billingPinCode" name="billingPinCode" placeholder="Enter Pin Code">
-                                @error('billingPinCode') <div class="invalid-feedback">{{ $message }}</div>@enderror
+                                <input type="text" class="form-control @error('billing_zip') is-invalid @enderror"
+                                    value="{{ old('billing_zip') }}" id="billingPinCode" name="billing_zip" placeholder="Enter Pin Code">
+                                @error('billing_zip') <div class="invalid-feedback">{{ $message }}</div>@enderror
                             </div>
                             <div class="col-md-3">
                                 <label for="status" class="form-label">Status</label>
@@ -197,16 +197,49 @@
         integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
     <script>
         $(document).ready(function() {
+            const selectedLocations = {
+                shipping: {
+                    country: @json(old('shipping_country')),
+                    state: @json(old('shipping_state')),
+                    city: @json(old('shipping_city'))
+                },
+                billing: {
+                    country: @json(old('billing_country')),
+                    state: @json(old('billing_state')),
+                    city: @json(old('billing_city'))
+                }
+            };
 
-            function getLocationData(url, id, tag, data = null) {
+            function resetDropdown(id, tag) {
+                $(id).empty().append(`<option value="">Select ${tag}</option>`);
+            }
+
+            function selectMatchingOption(id, selectedValue) {
+                if (!selectedValue) {
+                    return '';
+                }
+
+                const normalizedValue = String(selectedValue).trim().toLowerCase();
+                const matchingOption = $(id).find('option').filter(function() {
+                    return String($(this).val()).trim() === String(selectedValue).trim() ||
+                        $(this).text().trim().toLowerCase() === normalizedValue;
+                }).first();
+
+                if (!matchingOption.length) {
+                    return '';
+                }
+
+                $(id).val(matchingOption.val());
+                return matchingOption.val();
+            }
+
+            function getLocationData(url, id, tag, data = null, selectedValue = null, callback = null) {
                 $.ajax({
                     url: url,
                     method: 'GET',
                     data: data,
                     success: function(data) {
-                        console.log(data.data);
-                        $(id).empty().append(
-                            `<option value="">Select ${tag}</option>`);
+                        resetDropdown(id, tag);
                         data.data.map(function(country) {
                             $(id).append(
                                 $('<option>', {
@@ -215,6 +248,12 @@
                                 })
                             );
                         });
+
+                        const resolvedValue = selectMatchingOption(id, selectedValue);
+
+                        if (typeof callback === 'function') {
+                            callback(resolvedValue);
+                        }
                     },
                     error: function(xhr, status, error) {
                         console.error('Error:', error);
@@ -222,42 +261,87 @@
                 });
             }
 
-            getLocationData("/countries", '#shippingCountry', "Country");
+            function initializeAddressDropdowns(countryId, stateId, cityId, values) {
+                getLocationData('/countries', countryId, 'Country', null, values.country, function(selectedCountryId) {
+                    resetDropdown(stateId, 'State');
+                    resetDropdown(cityId, 'City');
 
-            $("#shippingCountry").on("change", function() {
+                    if (!selectedCountryId) {
+                        return;
+                    }
+
+                    getLocationData('/states', stateId, 'State', {
+                        countryId: selectedCountryId
+                    }, values.state, function(selectedStateId) {
+                        resetDropdown(cityId, 'City');
+
+                        if (!selectedStateId) {
+                            return;
+                        }
+
+                        getLocationData('/cities', cityId, 'City', {
+                            stateId: selectedStateId
+                        }, values.city);
+                    });
+                });
+            }
+
+            initializeAddressDropdowns('#shippingCountry', '#shippingState', '#shippingCity', selectedLocations.shipping);
+            initializeAddressDropdowns('#billingCountry', '#billingState', '#billingCity', selectedLocations.billing);
+
+            $('#shippingCountry').on('change', function() {
                 let countryId = $(this).val();
-                console.log(countryId);
-                getLocationData("/states", "#shippingState", "State", {
+                resetDropdown('#shippingState', 'State');
+                resetDropdown('#shippingCity', 'City');
+
+                if (!countryId) {
+                    return;
+                }
+
+                getLocationData('/states', '#shippingState', 'State', {
                     countryId: countryId
                 });
             });
 
-            $("#shippingState").on("change", function() {
+            $('#shippingState').on('change', function() {
                 let stateId = $(this).val();
-                console.log(stateId);
-                getLocationData("/cities", "#shippingCity", "City", {
+                resetDropdown('#shippingCity', 'City');
+
+                if (!stateId) {
+                    return;
+                }
+
+                getLocationData('/cities', '#shippingCity', 'City', {
                     stateId: stateId
                 });
             });
 
-            getLocationData("/countries", '#billingCountry', "Country");
-
-            $("#billingCountry").on("change", function() {
+            $('#billingCountry').on('change', function() {
                 let countryId = $(this).val();
-                console.log(countryId);
-                getLocationData("/states", "#billingState", "State", {
+                resetDropdown('#billingState', 'State');
+                resetDropdown('#billingCity', 'City');
+
+                if (!countryId) {
+                    return;
+                }
+
+                getLocationData('/states', '#billingState', 'State', {
                     countryId: countryId
                 });
             });
 
-            $("#billingState").on("change", function() {
+            $('#billingState').on('change', function() {
                 let stateId = $(this).val();
-                console.log(stateId);
-                getLocationData("/cities", "#billingCity", "City", {
+                resetDropdown('#billingCity', 'City');
+
+                if (!stateId) {
+                    return;
+                }
+
+                getLocationData('/cities', '#billingCity', 'City', {
                     stateId: stateId
                 });
             });
-
         });
     </script>
 @endsection

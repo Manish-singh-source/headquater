@@ -95,10 +95,10 @@
 
                                 <div class="col-md-6">
                                     <label for="companyName" class="form-label">Company Name</label>
-                                    <input type="text" class="form-control  @error('companyName') is-invalid @enderror"
-                                        value="{{ old('companyName', $customer->companyName) }}" id="companyName"
-                                        placeholder="Enter Company Name" name="companyName">
-                                    @error('companyName')
+                                    <input type="text" class="form-control  @error('company_name') is-invalid @enderror"
+                                        value="{{ old('company_name', $customer->company_name) }}" id="companyName"
+                                        placeholder="Enter Company Name" name="company_name">
+                                    @error('company_name')
                                         <div class="invalid-feedback">
                                             {{ $message }}
                                         </div>
@@ -131,9 +131,9 @@
 
                                 <div class="col-md-12">
                                     <label for="shippingAddress" class="form-label">Shipping Address</label>
-                                    <textarea class="form-control  @error('shippingAddress') is-invalid @enderror" value="" id="shippingAddress"
-                                        placeholder="Enter Full Address" rows="3" name="shippingAddress">{{ old('shippingAddress', $customer->shipping_address) }}</textarea>
-                                    @error('shippingAddress')
+                                    <textarea class="form-control  @error('shipping_address') is-invalid @enderror" value="" id="shippingAddress"
+                                        placeholder="Enter Full Address" rows="3" name="shipping_address">{{ old('shipping_address', $customer->shipping_address) }}</textarea>
+                                    @error('shipping_address')
                                         <div class="invalid-feedback">
                                             {{ $message }}
                                         </div>
@@ -142,21 +142,21 @@
 
                                 <div class="col-md-3">
                                     <label for="shippingCountry" class="form-label">Country</label>
-                                    <select id="shippingCountry" class="form-select" name="shippingCountry">
+                                    <select id="shippingCountry" class="form-select" name="shipping_country">
                                         <option value="">Select Country</option>
                                     </select>
                                 </div>
 
                                 <div class="col-md-3">
                                     <label for="shippingState" class="form-label">State</label>
-                                    <select id="shippingState" class="form-select" name="shippingState">
+                                    <select id="shippingState" class="form-select" name="shipping_state">
                                         <option value="">Select State</option>
                                     </select>
                                 </div>
 
                                 <div class="col-md-3">
                                     <label for="shippingCity" class="form-label">City</label>
-                                    <select id="shippingCity" class="form-select" name="shippingCity">
+                                    <select id="shippingCity" class="form-select" name="shipping_city">
                                         <option value="">Select City</option>
                                     </select>
                                 </div>
@@ -164,10 +164,10 @@
                                 <div class="col-md-3">
                                     <label for="shippingPinCode" class="form-label">Pin Code</label>
                                     <input type="text"
-                                        class="form-control  @error('shippingPinCode') is-invalid @enderror"
-                                        value="{{ old('shippingPinCode', $customer->shippingPinCode) }}"
+                                        class="form-control  @error('shipping_zip') is-invalid @enderror"
+                                        value="{{ old('shipping_zip', $customer->shipping_zip) }}"
                                         id="shippingPinCode" placeholder="Enter Pin Code" name="shipping_zip">
-                                    @error('shippingPinCode')
+                                    @error('shipping_zip')
                                         <div class="invalid-feedback">
                                             {{ $message }}
                                         </div>
@@ -176,9 +176,9 @@
 
                                 <div class="col-md-12">
                                     <label for="billingAddress" class="form-label">Billing Address</label>
-                                    <textarea class="form-control  @error('billingAddress') is-invalid @enderror" value="" id="billingAddress"
-                                        placeholder="Enter Full Address" rows="3" name="billingAddress">{{ old('billingAddress', $customer->billing_address) }}</textarea>
-                                    @error('billingAddress')
+                                    <textarea class="form-control  @error('billing_address') is-invalid @enderror" value="" id="billingAddress"
+                                        placeholder="Enter Full Address" rows="3" name="billing_address">{{ old('billing_address', $customer->billing_address) }}</textarea>
+                                    @error('billing_address')
                                         <div class="invalid-feedback">
                                             {{ $message }}
                                         </div>
@@ -187,21 +187,21 @@
 
                                 <div class="col-md-3">
                                     <label for="billingCountry" class="form-label">Country</label>
-                                    <select id="billingCountry" class="form-select" name="billingCountry">
+                                    <select id="billingCountry" class="form-select" name="billing_country">
                                         <option value="">Select Country</option>
                                     </select>
                                 </div>
 
                                 <div class="col-md-3">
                                     <label for="billingState" class="form-label">State</label>
-                                    <select id="billingState" class="form-select" name="billingState">
+                                    <select id="billingState" class="form-select" name="billing_state">
                                         <option value="">Select State</option>
                                     </select>
                                 </div>
 
                                 <div class="col-md-3">
                                     <label for="billingCity" class="form-label">City</label>
-                                    <select id="billingCity" class="form-select" name="billingCity">
+                                    <select id="billingCity" class="form-select" name="billing_city">
                                         <option value="">Select City</option>
                                     </select>
                                 </div>
@@ -209,10 +209,10 @@
                                 <div class="col-md-3">
                                     <label for="billingPinCode" class="form-label">Pin Code</label>
                                     <input type="text"
-                                        class="form-control  @error('billingPinCode') is-invalid @enderror"
-                                        value="{{ old('billingPinCode', $customer->billing_zip) }}" id="billingPinCode"
-                                        placeholder="Enter Pin Code" name="billingPinCode">
-                                    @error('billingPinCode')
+                                        class="form-control  @error('billing_zip') is-invalid @enderror"
+                                        value="{{ old('billing_zip', $customer->billing_zip) }}" id="billingPinCode"
+                                        placeholder="Enter Pin Code" name="billing_zip">
+                                    @error('billing_zip')
                                         <div class="invalid-feedback">
                                             {{ $message }}
                                         </div>
@@ -249,16 +249,49 @@
         integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
     <script>
         $(document).ready(function() {
+            const selectedLocations = {
+                shipping: {
+                    country: @json(old('shipping_country', $customer->shipping_country)),
+                    state: @json(old('shipping_state', $customer->shipping_state)),
+                    city: @json(old('shipping_city', $customer->shipping_city))
+                },
+                billing: {
+                    country: @json(old('billing_country', $customer->billing_country)),
+                    state: @json(old('billing_state', $customer->billing_state)),
+                    city: @json(old('billing_city', $customer->billing_city))
+                }
+            };
 
-            function getLocationData(url, id, tag, data = null) {
+            function resetDropdown(id, tag) {
+                $(id).empty().append(`<option value="">Select ${tag}</option>`);
+            }
+
+            function selectMatchingOption(id, selectedValue) {
+                if (!selectedValue) {
+                    return '';
+                }
+
+                const normalizedValue = String(selectedValue).trim().toLowerCase();
+                const matchingOption = $(id).find('option').filter(function() {
+                    return String($(this).val()).trim() === String(selectedValue).trim() ||
+                        $(this).text().trim().toLowerCase() === normalizedValue;
+                }).first();
+
+                if (!matchingOption.length) {
+                    return '';
+                }
+
+                $(id).val(matchingOption.val());
+                return matchingOption.val();
+            }
+
+            function getLocationData(url, id, tag, data = null, selectedValue = null, callback = null) {
                 $.ajax({
                     url: url,
                     method: 'GET',
                     data: data,
                     success: function(data) {
-                        console.log(data.data);
-                        $(id).empty().append(
-                            `<option value="">Select ${tag}</option>`);
+                        resetDropdown(id, tag);
                         data.data.map(function(country) {
                             $(id).append(
                                 $('<option>', {
@@ -267,6 +300,12 @@
                                 })
                             );
                         });
+
+                        const resolvedValue = selectMatchingOption(id, selectedValue);
+
+                        if (typeof callback === 'function') {
+                            callback(resolvedValue);
+                        }
                     },
                     error: function(xhr, status, error) {
                         console.error('Error:', error);
@@ -274,42 +313,90 @@
                 });
             }
 
-            getLocationData("/countries", '#shippingCountry', "Country");
+            function initializeAddressDropdowns(countryId, stateId, cityId, values) {
+                getLocationData('/countries', countryId, 'Country', null, values.country, function(selectedCountryId) {
+                    resetDropdown(stateId, 'State');
+                    resetDropdown(cityId, 'City');
 
-            $("#shippingCountry").on("change", function() {
+                    if (!selectedCountryId) {
+                        return;
+                    }
+
+                    getLocationData('/states', stateId, 'State', {
+                        countryId: selectedCountryId
+                    }, values.state, function(selectedStateId) {
+                        resetDropdown(cityId, 'City');
+
+                        if (!selectedStateId) {
+                            return;
+                        }
+
+                        getLocationData('/cities', cityId, 'City', {
+                            stateId: selectedStateId
+                        }, values.city);
+                    });
+                });
+            }
+
+            initializeAddressDropdowns('#shippingCountry', '#shippingState', '#shippingCity', selectedLocations.shipping);
+            initializeAddressDropdowns('#billingCountry', '#billingState', '#billingCity', selectedLocations.billing);
+
+            $('#shippingCountry').on('change', function() {
                 let countryId = $(this).val();
-                console.log(countryId);
-                getLocationData("/states", "#shippingState", "State", {
+                resetDropdown('#shippingState', 'State');
+                resetDropdown('#shippingCity', 'City');
+
+                if (!countryId) {
+                    return;
+                }
+
+                getLocationData('/states', '#shippingState', 'State', {
                     countryId: countryId
                 });
             });
 
-            $("#shippingState").on("change", function() {
+            $('#shippingState').on('change', function() {
                 let stateId = $(this).val();
-                console.log(stateId);
-                getLocationData("/cities", "#shippingCity", "City", {
+                resetDropdown('#shippingCity', 'City');
+
+                if (!stateId) {
+                    return;
+                }
+
+                getLocationData('/cities', '#shippingCity', 'City', {
                     stateId: stateId
                 });
             });
 
-            getLocationData("/countries", '#billingCountry', "Country");
-
-            $("#billingCountry").on("change", function() {
+            $('#billingCountry').on('change', function() {
                 let countryId = $(this).val();
-                console.log(countryId);
-                getLocationData("/states", "#billingState", "State", {
+                resetDropdown('#billingState', 'State');
+                resetDropdown('#billingCity', 'City');
+
+                if (!countryId) {
+                    return;
+                }
+
+                getLocationData('/states', '#billingState', 'State', {
                     countryId: countryId
                 });
             });
 
-            $("#billingState").on("change", function() {
+            $('#billingState').on('change', function() {
                 let stateId = $(this).val();
-                console.log(stateId);
-                getLocationData("/cities", "#billingCity", "City", {
+                resetDropdown('#billingCity', 'City');
+
+                if (!stateId) {
+                    return;
+                }
+
+                getLocationData('/cities', '#billingCity', 'City', {
                     stateId: stateId
                 });
             });
-
         });
     </script>
 @endsection
+
+
+
