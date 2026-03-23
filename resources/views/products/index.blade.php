@@ -132,37 +132,37 @@
                                             <td>
                                                 @if (optional($product->product)->id)
                                                     <input class="form-check-input row-checkbox" type="checkbox"
-                                                        name="ids[]" value="{{ $product->product->id }}">
+                                                        name="ids[]" value="{{ $product->product?->id }}">
                                                 @endif
                                             </td>
                                             <td>{{ $product->warehouse->name ?? 'NA' }}</td>
-                                            <td>{{ $product->product->sku ?? 'NA' }}</td>
-                                            <td>{{ $product->product->ean_code ?? 'NA' }}</td>
+                                            <td>{{ $product->product?->sku ?? 'NA' }}</td>
+                                            <td>{{ $product->product?->ean_code ?? 'NA' }}</td>
                                             <td>
                                                 <div class="d-flex align-items-center gap-3">
                                                     <div class="product-info">
                                                         <a href="javascript:;"
-                                                            class="product-title">{{ $product->product->brand ?? 'NA' }}</a>
+                                                            class="product-title">{{ $product->product?->brand ?? 'NA' }}</a>
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td>{{ $product->product->brand_title ?? 'NA' }}</td>
-                                            <td>{{ $product->product->mrp ?? 'NA' }}</td>
-                                            <td>{{ $product->product->category ?? 'NA' }}</td>
-                                            <td>{{ $product->product->pcs_set ?? 'NA' }}</td>
-                                            <td>{{ $product->product->sets_ctn ?? 'NA' }}</td>
-                                            <td>{{ $product->product->weight ?? 'NA' }}</td>
+                                            <td>{{ $product->product?->brand_title ?? 'NA' }}</td>
+                                            <td>{{ $product->product?->mrp ?? 'NA' }}</td>
+                                            <td>{{ $product->product?->category ?? 'NA' }}</td>
+                                            <td>{{ $product->product?->pcs_set ?? 'NA' }}</td>
+                                            <td>{{ $product->product?->sets_ctn ?? 'NA' }}</td>
+                                            <td>{{ $product->product?->weight ?? 'NA' }}</td>
                                             {{-- 
-                                            <td>{{ $product->product->basic_rate ?? 'NA' }}</td> 
-                                            <td>{{ $product->product->net_landing_rate ?? 'NA' }}</td> 
+                                            <td>{{ $product->product?->basic_rate ?? 'NA' }}</td> 
+                                            <td>{{ $product->product?->net_landing_rate ?? 'NA' }}</td> 
                                             --}}
-                                            <td>{{ $product->product->case_pack_quantity ?? 'NA' }}</td>
-                                            <td>{{ $product->product->vendor_code ?? 'NA' }}</td>
-                                            <td>{{ $product->product->vendor_name ?? 'NA' }}</td>
-                                            <td>{{ $product->product->vendor_purchase_rate ?? 'NA' }}</td>
-                                            <td>{{ $product->product->gst ?? 'NA' }}</td>
-                                            <td>{{ $product->product->hsn ?? 'NA' }}</td>
-                                            <td>{{ $product->product->vendor_net_landing ?? 'NA' }}</td>
+                                            <td>{{ $product->product?->case_pack_quantity ?? 'NA' }}</td>
+                                            <td>{{ $product->product?->vendor_code ?? 'NA' }}</td>
+                                            <td>{{ $product->product?->vendor_name ?? 'NA' }}</td>
+                                            <td>{{ $product->product?->vendor_purchase_rate ?? 'NA' }}</td>
+                                            <td>{{ $product->product?->gst ?? 'NA' }}</td>
+                                            <td>{{ $product->product?->hsn ?? 'NA' }}</td>
+                                            <td>{{ $product->product?->vendor_net_landing ?? 'NA' }}</td>
                                             <td>{{ $product->product?->status == '1' ? 'Active' : 'Inactive' }}</td>
                                             <td>{{ $product->original_quantity ?? 'NA' }}</td>
                                             <td>{{ $product->available_quantity ?? 'NA' }}</td>
@@ -193,7 +193,7 @@
                                             <td>{{ $product->product?->created_at?->format('d-M-Y') }}</td>
                                             <td>
                                                 <div class="d-flex">
-                                                    <a aria-label="anchor" data-id="{{ $product->product->id }}"
+                                                    <a aria-label="anchor" data-id="{{ $product->product?->id }}"
                                                         href="javascript:void(0);"
                                                         class="btn btn-icon btn-sm bg-warning-subtle me-1 editProductBtn">
                                                         <svg xmlns="http://www.w3.org/2000/svg" width="13"
@@ -212,7 +212,7 @@
 
                                                     <!-- per-row modal removed to avoid duplicate IDs; single modal is placed once after the table -->
 
-                                                    <form action="{{ route('product.delete', $product->product->id) }}"
+                                                    <form action="{{ route('product.delete', $product->product?->id) }}"
                                                         method="POST" onsubmit="return confirm('Are you sure?')">
                                                         @csrf
                                                         @method('DELETE')
