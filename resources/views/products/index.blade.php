@@ -128,115 +128,118 @@
                                 </thead>
                                 <tbody>
                                     @forelse ($products as $product)
-                                        <tr>
-                                            <td>
-                                                @if (optional($product->product)->id)
-                                                    <input class="form-check-input row-checkbox" type="checkbox"
-                                                        name="ids[]" value="{{ $product->product?->id }}">
-                                                @endif
-                                            </td>
-                                            <td>{{ $product->warehouse->name ?? 'NA' }}</td>
-                                            <td>{{ $product->product?->sku ?? 'NA' }}</td>
-                                            <td>{{ $product->product?->ean_code ?? 'NA' }}</td>
-                                            <td>
-                                                <div class="d-flex align-items-center gap-3">
-                                                    <div class="product-info">
-                                                        <a href="javascript:;"
-                                                            class="product-title">{{ $product->product?->brand ?? 'NA' }}</a>
+                                        @if ($product->product?->id)
+                                            <tr>
+                                                <td>
+                                                    @if (optional($product->product)->id)
+                                                        <input class="form-check-input row-checkbox" type="checkbox"
+                                                            name="ids[]" value="{{ $product->product?->id }}">
+                                                    @endif
+                                                </td>
+                                                <td>{{ $product->warehouse->name ?? 'NA' }}</td>
+                                                <td>{{ $product->product?->sku ?? 'NA' }}</td>
+                                                <td>{{ $product->product?->ean_code ?? 'NA' }}</td>
+                                                <td>
+                                                    <div class="d-flex align-items-center gap-3">
+                                                        <div class="product-info">
+                                                            <a href="javascript:;"
+                                                                class="product-title">{{ $product->product?->brand ?? 'NA' }}</a>
+                                                        </div>
                                                     </div>
-                                                </div>
-                                            </td>
-                                            <td>{{ $product->product?->brand_title ?? 'NA' }}</td>
-                                            <td>{{ $product->product?->mrp ?? 'NA' }}</td>
-                                            <td>{{ $product->product?->category ?? 'NA' }}</td>
-                                            <td>{{ $product->product?->pcs_set ?? 'NA' }}</td>
-                                            <td>{{ $product->product?->sets_ctn ?? 'NA' }}</td>
-                                            <td>{{ $product->product?->weight ?? 'NA' }}</td>
-                                            {{-- 
+                                                </td>
+                                                <td>{{ $product->product?->brand_title ?? 'NA' }}</td>
+                                                <td>{{ $product->product?->mrp ?? 'NA' }}</td>
+                                                <td>{{ $product->product?->category ?? 'NA' }}</td>
+                                                <td>{{ $product->product?->pcs_set ?? 'NA' }}</td>
+                                                <td>{{ $product->product?->sets_ctn ?? 'NA' }}</td>
+                                                <td>{{ $product->product?->weight ?? 'NA' }}</td>
+                                                {{-- 
                                             <td>{{ $product->product?->basic_rate ?? 'NA' }}</td> 
                                             <td>{{ $product->product?->net_landing_rate ?? 'NA' }}</td> 
                                             --}}
-                                            <td>{{ $product->product?->case_pack_quantity ?? 'NA' }}</td>
-                                            <td>{{ $product->product?->vendor_code ?? 'NA' }}</td>
-                                            <td>{{ $product->product?->vendor_name ?? 'NA' }}</td>
-                                            <td>{{ $product->product?->vendor_purchase_rate ?? 'NA' }}</td>
-                                            <td>{{ $product->product?->gst ?? 'NA' }}</td>
-                                            <td>{{ $product->product?->hsn ?? 'NA' }}</td>
-                                            <td>{{ $product->product?->vendor_net_landing ?? 'NA' }}</td>
-                                            <td>{{ $product->product?->status == '1' ? 'Active' : 'Inactive' }}</td>
-                                            <td>{{ $product->original_quantity ?? 'NA' }}</td>
-                                            <td>{{ $product->available_quantity ?? 'NA' }}</td>
-                                            <td>
-                                                @if ($product->block_quantity)
-                                                    <span class="badge text-danger bg-danger-subtle">
-                                                        {{ $product->block_quantity }}</span>
-                                                @else
-                                                    <span>0</span>
-                                                @endif
-                                            </td>
-                                            <td>
-                                                @if ($product->allocated_quantity ?? 0)
-                                                    <span class="badge text-warning bg-warning-subtle">
-                                                        {{ $product->allocated_quantity }}</span>
-                                                @else
-                                                    <span>0</span>
-                                                @endif
-                                            </td>
-                                            <td>
-                                                @if ($product->po_required ?? 0)
-                                                    <span class="badge text-info bg-info-subtle">
-                                                        {{ $product->po_required }}</span>
-                                                @else
-                                                    <span>0</span>
-                                                @endif
-                                            </td>
-                                            <td>{{ $product->product?->created_at?->format('d-M-Y') }}</td>
-                                            <td>
-                                                <div class="d-flex">
-                                                    <a aria-label="anchor" data-id="{{ $product->product?->id }}"
-                                                        href="javascript:void(0);"
-                                                        class="btn btn-icon btn-sm bg-warning-subtle me-1 editProductBtn">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="13"
-                                                            height="13" viewBox="0 0 24 24" fill="none"
-                                                            stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                                            stroke-linejoin="round"
-                                                            class="feather feather-edit text-warning">
-                                                            <path
-                                                                d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7">
-                                                            </path>
-                                                            <path
-                                                                d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z">
-                                                            </path>
-                                                        </svg>
-                                                    </a>
-
-                                                    <!-- per-row modal removed to avoid duplicate IDs; single modal is placed once after the table -->
-
-                                                    <form action="{{ route('product.delete', $product->product?->id) }}"
-                                                        method="POST" onsubmit="return confirm('Are you sure?')">
-                                                        @csrf
-                                                        @method('DELETE')
-                                                        <button type="submit"
-                                                            class="btn btn-icon btn-sm bg-danger-subtle delete-row">
+                                                <td>{{ $product->product?->case_pack_quantity ?? 'NA' }}</td>
+                                                <td>{{ $product->product?->vendor_code ?? 'NA' }}</td>
+                                                <td>{{ $product->product?->vendor_name ?? 'NA' }}</td>
+                                                <td>{{ $product->product?->vendor_purchase_rate ?? 'NA' }}</td>
+                                                <td>{{ $product->product?->gst ?? 'NA' }}</td>
+                                                <td>{{ $product->product?->hsn ?? 'NA' }}</td>
+                                                <td>{{ $product->product?->vendor_net_landing ?? 'NA' }}</td>
+                                                <td>{{ $product->product?->status == '1' ? 'Active' : 'Inactive' }}</td>
+                                                <td>{{ $product->original_quantity ?? 'NA' }}</td>
+                                                <td>{{ $product->available_quantity ?? 'NA' }}</td>
+                                                <td>
+                                                    @if ($product->block_quantity)
+                                                        <span class="badge text-danger bg-danger-subtle">
+                                                            {{ $product->block_quantity }}</span>
+                                                    @else
+                                                        <span>0</span>
+                                                    @endif
+                                                </td>
+                                                <td>
+                                                    @if ($product->allocated_quantity ?? 0)
+                                                        <span class="badge text-warning bg-warning-subtle">
+                                                            {{ $product->allocated_quantity }}</span>
+                                                    @else
+                                                        <span>0</span>
+                                                    @endif
+                                                </td>
+                                                <td>
+                                                    @if ($product->po_required ?? 0)
+                                                        <span class="badge text-info bg-info-subtle">
+                                                            {{ $product->po_required }}</span>
+                                                    @else
+                                                        <span>0</span>
+                                                    @endif
+                                                </td>
+                                                <td>{{ $product->product?->created_at?->format('d-M-Y') }}</td>
+                                                <td>
+                                                    <div class="d-flex">
+                                                        <a aria-label="anchor" data-id="{{ $product->product?->id }}"
+                                                            href="javascript:void(0);"
+                                                            class="btn btn-icon btn-sm bg-warning-subtle me-1 editProductBtn">
                                                             <svg xmlns="http://www.w3.org/2000/svg" width="13"
                                                                 height="13" viewBox="0 0 24 24" fill="none"
                                                                 stroke="currentColor" stroke-width="2"
                                                                 stroke-linecap="round" stroke-linejoin="round"
-                                                                class="feather feather-trash-2 text-danger">
-                                                                <polyline points="3 6 5 6 21 6"></polyline>
+                                                                class="feather feather-edit text-warning">
                                                                 <path
-                                                                    d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
+                                                                    d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7">
                                                                 </path>
-                                                                <line x1="10" y1="11" x2="10"
-                                                                    y2="17"></line>
-                                                                <line x1="14" y1="11" x2="14"
-                                                                    y2="17"></line>
+                                                                <path
+                                                                    d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z">
+                                                                </path>
                                                             </svg>
-                                                        </button>
-                                                    </form>
-                                                </div>
-                                            </td>
-                                        </tr>
+                                                        </a>
+
+                                                        <!-- per-row modal removed to avoid duplicate IDs; single modal is placed once after the table -->
+
+                                                        <form
+                                                            action="{{ route('product.delete', $product->product?->id) }}"
+                                                            method="POST" onsubmit="return confirm('Are you sure?')">
+                                                            @csrf
+                                                            @method('DELETE')
+                                                            <button type="submit"
+                                                                class="btn btn-icon btn-sm bg-danger-subtle delete-row">
+                                                                <svg xmlns="http://www.w3.org/2000/svg" width="13"
+                                                                    height="13" viewBox="0 0 24 24" fill="none"
+                                                                    stroke="currentColor" stroke-width="2"
+                                                                    stroke-linecap="round" stroke-linejoin="round"
+                                                                    class="feather feather-trash-2 text-danger">
+                                                                    <polyline points="3 6 5 6 21 6"></polyline>
+                                                                    <path
+                                                                        d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
+                                                                    </path>
+                                                                    <line x1="10" y1="11" x2="10"
+                                                                        y2="17"></line>
+                                                                    <line x1="14" y1="11" x2="14"
+                                                                        y2="17"></line>
+                                                                </svg>
+                                                            </button>
+                                                        </form>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        @endif
                                     @empty
                                         <tr>
                                             <td colspan="27" class="text-center">No products found.</td>
