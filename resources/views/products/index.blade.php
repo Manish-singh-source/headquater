@@ -163,7 +163,7 @@
                                             <td>{{ $product->product->gst ?? 'NA' }}</td>
                                             <td>{{ $product->product->hsn ?? 'NA' }}</td>
                                             <td>{{ $product->product->vendor_net_landing ?? 'NA' }}</td>
-                                            <td>{{ $product->product->status === '1' ? 'Active' : 'Inactive' }}</td>
+                                            <td>{{ $product->product->status == '1' ? 'Active' : 'Inactive' }}</td>
                                             <td>{{ $product->original_quantity ?? 'NA' }}</td>
                                             <td>{{ $product->available_quantity ?? 'NA' }}</td>
                                             <td>
