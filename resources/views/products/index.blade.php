@@ -190,7 +190,7 @@
                                                     <span>0</span>
                                                 @endif
                                             </td>
-                                            <td>{{ $product->product->created_at->format('d-M-Y') }}</td>
+                                            <td>{{ $product->product?->created_at?->format('d-M-Y') }}</td>
                                             <td>
                                                 <div class="d-flex">
                                                     <a aria-label="anchor" data-id="{{ $product->product->id }}"
