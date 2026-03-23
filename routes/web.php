@@ -160,7 +160,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/download-product-sheet/{id?}', 'downloadProductSheet')->name('download.product.sheet');
         Route::post('/products/update', 'updateProduct')->name('product.update');
 
-        Route::delete('/product-order/{id}', 'destroy')->name('product.delete');
+        Route::delete('/product-order/{id?}', 'destroy')->name('product.delete');
         Route::delete('/products/delete-selected', 'deleteSelected')->name('delete.selected.product');
     });
 
