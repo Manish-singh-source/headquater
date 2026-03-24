@@ -367,7 +367,7 @@ class SalesOrderController extends Controller
                 }
 
                 if ($product) {
-                    $casePackQty = (int) $product->product->pcs_set * (int) $product->product->sets_ctn;
+                    $casePackQty = (int) ($product->product->pcs_set ?? 0) * (int) ($product->product->sets_ctn ?? 0);
                 }
 
                 $tempSalesOrder = TempOrder::create([
