@@ -2100,7 +2100,7 @@ class SalesOrderController extends Controller
 
             return view('salesOrder.process-order', ['customerGroup' => $customerGroup, 'warehouses' => $warehouses, 'fileData' => $insertedRows]);
         } catch (\Exception $e) {
-            // dd($e);
+            dd($e);
 
             return redirect()->back()->with('error', 'An error occurred while processing the CSV file. Please Check the file format and try again.');
         }
