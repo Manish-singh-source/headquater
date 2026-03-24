@@ -189,7 +189,6 @@ class SalesOrderController extends Controller
                 $purchaseQty = (int) ($record['Purchase Order Quantity'] ?? 0);
                 $warehouseId = $request->warehouse_id;
                 // $vendorCode = $record['Vendor Code'];
-                // $vendorCode = trim($record['Vendor Code']);
 
                 // Default fallback
                 $availableQty = 0;
@@ -258,6 +257,8 @@ class SalesOrderController extends Controller
                     $vendorsNotFound[] = $record['Vendor Code'];
                     $vendorStatus = 'Not Found';
                 }
+
+                $vendorCode = trim($record['Vendor Code']);
 
                 if ($customerStatus == 'Not Found' || $vendorStatus == 'Not Found' || $productStatus == 'Not Found') {
                     NotFoundTempOrder::create([
