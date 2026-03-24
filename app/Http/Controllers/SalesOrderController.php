@@ -2041,7 +2041,7 @@ class SalesOrderController extends Controller
 
                 // MRP confirmation
                 $mrpConfirmation = abs(
-                    floatval($record['MRP']) - floatval($productObj->mrp)
+                    floatval($record['MRP']) - floatval(($productObj->mrp ?? 0))
                 ) <= $tolerance ? 'Correct' : 'Incorrect';
 
                 $insertedRows[] = [
