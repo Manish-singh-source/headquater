@@ -2010,7 +2010,7 @@ class SalesOrderController extends Controller
 
                 // dd($productMapping);
                 // Case pack quantity
-                $casePackQty = (int) $productObj->pcs_set * (int) $productObj->sets_ctn;
+                $casePackQty = (int) ($productObj->pcs_set ?? 0) * (int) ($productObj->sets_ctn ?? 0);
 
                 // GST handling (0.18 → 18, 18 → 18)
                 $gst = ($record['GST'] > 0 && $record['GST'] < 1)
