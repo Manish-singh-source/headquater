@@ -185,8 +185,8 @@ class SalesOrderController extends Controller
             // Iterate Excel file
             foreach ($reader->getRows() as $key => $record) {
                 $sku = trim($record['SKU Code']);
-                $poQty = (int) $record['PO Quantity'];
-                $purchaseQty = (int) $record['Purchase Order Quantity'];
+                $poQty = (int) ($record['PO Quantity'] ?? 0);
+                $purchaseQty = (int) ($record['Purchase Order Quantity'] ?? 0);
                 $warehouseId = $request->warehouse_id;
                 // $vendorCode = $record['Vendor Code'];
                 $vendorCode = trim($record['Vendor Code']);
@@ -296,7 +296,7 @@ class SalesOrderController extends Controller
                         'block' => ($record['Block'] > $availableQty) ? $availableQty : $record['Block'],
 
                         'case_pack_quantity' => $casePackQty ?? '',
-                        'purchase_order_quantity' => $record['Purchase Order Quantity'] ?? '',
+                        'purchase_order_quantity' => (int) ($record['Purchase Order Quantity'] ?? 0),
                         'vendor_code' => $record['Vendor Code'] ?? '',
                         'customer_status' => $customerStatus ?? '',
                         'vendor_status' => $vendorStatus ?? '',
@@ -406,7 +406,7 @@ class SalesOrderController extends Controller
                     'block' => ($record['Block'] > $availableQty) ? $availableQty : $record['Block'],
 
                     'case_pack_quantity' => $casePackQty ?? '',
-                    'purchase_order_quantity' => $record['Purchase Order Quantity'] ?? '',
+                    'purchase_order_quantity' => (int) ($record['Purchase Order Quantity'] ?? 0),
                     'vendor_code' => $record['Vendor Code'] ?? '',
                     'customer_status' => 'Found',
                     'vendor_status' => 'Found',
@@ -529,8 +529,8 @@ class SalesOrderController extends Controller
 
                     if ($existingProduct) {
                         // Combine quantities if match found
-                        if ($shortQty != $record['Purchase Order Quantity']) {
-                            $existingProduct->ordered_quantity += $record['Purchase Order Quantity'];
+                        if ($shortQty != ($record['Purchase Order Quantity'] ?? 0)) {
+                            $existingProduct->ordered_quantity += ($record['Purchase Order Quantity'] ?? 0);
                             $existingProduct->save();
                         } else {
                             $existingProduct->ordered_quantity += $shortQty;
@@ -546,7 +546,7 @@ class SalesOrderController extends Controller
                         $purchaseOrderProduct->product_id = $product->product->id ?? null;
                         $purchaseOrderProduct->sku = $sku;
                         $purchaseOrderProduct->vendor_code = $vendorCode;
-                        if ($shortQty != $record['Purchase Order Quantity']) {
+                        if ($shortQty != ($record['Purchase Order Quantity'] ?? 0)) {
                             $purchaseOrderProduct->ordered_quantity = $record['Purchase Order Quantity'] ?? 0;
                         } else {
                             $purchaseOrderProduct->ordered_quantity = $shortQty;
