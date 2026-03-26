@@ -89,10 +89,15 @@ class InvoiceController extends Controller
         $path = public_path('assets/images/logo-icon.png');
         $base64 = base64_encode(file_get_contents($path));
         $base64Image = 'data:image/png;base64,' . $base64;
+        
+        $sign = public_path('assets/images/sign-transparent.png');
+        $sign64 = base64_encode(file_get_contents($sign));
+        $sign64Image = 'data:image/png;base64,' . $sign64;
 
         $path1 = public_path('assets/images/e-inv.png');
         $base642 = base64_encode(file_get_contents($path1));
         $base643Image = 'data:image/png;base64,' . $base642;
+
         $invoice = Invoice::with(['warehouse', 'customer', 'salesOrder'])->findOrFail($id);
         $invoiceDetails = InvoiceDetails::with('product', 'tempOrder', 'salesOrderProduct')->where('invoice_id', $id)->get();
 
@@ -126,8 +131,8 @@ class InvoiceController extends Controller
             'igstStatus' => $igstStatus,
             'invoiceItemType' => $invoice->invoice_item_type ?? 'product',
         ];
-        // dd($data);
-        $pdf = \PDF::loadView('invoice/invoice-pdf', ['image' => $base64Image, 'image1' => $base643Image] + $data);
+
+        $pdf = \PDF::loadView('invoice/invoice-pdf', ['image' => $base64Image, 'image1' => $base643Image, 'sign64Image' => $sign64Image] + $data);
         $pdf->setPaper('a4');
 
         return $pdf->stream('invoice.pdf');

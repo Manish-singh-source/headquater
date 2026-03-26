@@ -331,7 +331,8 @@
                 @else
                     <td>
                         {{-- <strong style="color: #000000;"> {{ $detail->product?->ean_code }} </strong> --}}
-                        <strong style="color: #000000;"> {{ $detail->tempOrder?->item_code ?? $detail->item_code }} </strong>
+                        <strong style="color: #000000;"> {{ $detail->tempOrder?->item_code ?? $detail->item_code }}
+                        </strong>
                         <br>
                         {{ $detail->product?->sku }}
                         <br>
@@ -339,16 +340,17 @@
                     </td>
                     <td class="right-align">{{ $detail->hsn ?? $detail->tempOrder?->hsn }}</td>
                     <td class="right-align">{{ $detail->quantity }}</td>
-                    <td class="right-align">{{ intval($detail->box_count) ?? intval($detail->salesOrderProduct?->box_count) }}</td>
+                    <td class="right-align">
+                        {{ intval($detail->box_count) ?? intval($detail->salesOrderProduct?->box_count) }}</td>
                 @endif
 
                 <td class="right-align">{{ number_format($detail->unit_price, 2) }}</td>
                 <td class="right-align">{{ number_format($detail->amount, 2) }}</td>
                 @if ($igstStatus)
                     <td class="right-align">{{ ceil($detail->tax) / 2 }}%</td>
-                    <td class="right-align">{{ number_format(($igstAmount / 2), 2) }}</td>
+                    <td class="right-align">{{ number_format($igstAmount / 2, 2) }}</td>
                     <td class="right-align">{{ ceil($detail->tax) / 2 }}%</td>
-                    <td class="right-align">{{ number_format(($igstAmount / 2), 2) }}</td>
+                    <td class="right-align">{{ number_format($igstAmount / 2, 2) }}</td>
                 @else
                     <td class="right-align">{{ ceil($detail->tax) }}%</td>
                     <td class="right-align">{{ number_format($igstAmount, 2) }}</td>
@@ -372,9 +374,9 @@
             <td class="right-align">{{ number_format($invoiceDetails->sum('amount'), 2) }}</td>
             @if ($igstStatus)
                 <td class="right-align">{{ $invoiceDetails->sum('igst_rate') / 2 }}</td>
-                <td class="right-align">{{ number_format(($totalIgstSum / 2), 2) }}</td>
+                <td class="right-align">{{ number_format($totalIgstSum / 2, 2) }}</td>
                 <td class="right-align">{{ $invoiceDetails->sum('igst_rate') / 2 }}</td>
-                <td class="right-align">{{ number_format(($totalIgstSum / 2), 2) }}</td>
+                <td class="right-align">{{ number_format($totalIgstSum / 2, 2) }}</td>
             @else
                 <td class="right-align">{{ $invoiceDetails->sum('igst_rate') }}</td>
                 <td class="right-align">{{ number_format($totalIgstSum, 2) }}</td>
@@ -399,8 +401,11 @@
         </tr>
         <tr class="invoice-table">
             <td>Account Holder Name: INOVIZ IDEAS PRIVATE LIMITED</td>
-            <td rowspan="7" class="text-center" style="height:50px; vertical-align:bottom;">
-                (Authorised Signature)
+            <td rowspan="6" class="text-center" style="height:50px; vertical-align:bottom;">
+                <div class="d-flex flex-col justify-content-center align-items-center">
+                    <img src="{{ $sign64Image }}" alt="Authorised Signature" width="100" height="100">
+
+                </div>
             </td>
         </tr>
         <tr class="invoice-table">
@@ -419,12 +424,16 @@
             <td class="section-title">Terms & Conditions:</td>
         </tr>
         <tr class="invoice-table">
-            <td colspan="2">
+            <td width="70%">
                 TOTAL&nbsp;SETS&nbsp;-&nbsp;QTY {{ $invoiceDetails->sum('quantity') }}<br>
                 TOTAL&nbsp;BOX&nbsp;COUNT&nbsp;- {{ $totalBoxCount ?? ($TotalBoxCount ?? 0) }}<br>
                 WEIGHT&nbsp;-&nbsp;KG {{ $totalWeight ?? ($TotalWeight ?? 0) }}
             </td>
-
+            <td width="30%" class="text-center" style="height:50px; vertical-align:bottom"> 
+                <div>
+                    (Authorised Signature)
+                </div>
+            </td>
         </tr>
     </table>
 
