@@ -53,7 +53,7 @@ class SalesOrderProduct extends Model
     {
         return $this->hasOne(Product::class, 'sku', 'sku');
     }
-    
+
     public function productMapping()
     {
         return $this->hasOne(ProductMapping::class, 'sku', 'sku');
@@ -62,6 +62,11 @@ class SalesOrderProduct extends Model
     public function tempOrder()
     {
         return $this->hasOne(TempOrder::class, 'id', 'temp_order_id');
+    }
+
+    public function tempOrder1()
+    {
+        return $this->belongsTo(TempOrder::class, 'temp_order_id', 'id');
     }
 
     public function purchaseOrder()
@@ -108,6 +113,4 @@ class SalesOrderProduct extends Model
     {
         return $this->hasMany(InvoiceDetails::class, 'sales_order_product_id', 'id');
     }
-
-    
 }
