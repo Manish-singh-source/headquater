@@ -808,6 +808,7 @@ class SalesOrderController extends Controller
 
             // Upsert TempOrder
             if (! empty($products)) {
+                dd($products);
                 TempOrder::upsert(
                     $products,
                     ['id'],
