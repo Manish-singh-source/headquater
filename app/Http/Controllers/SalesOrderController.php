@@ -642,6 +642,7 @@ class SalesOrderController extends Controller
         ]);
 
         $file = $request->file('products_excel');
+        dd($file);
         $filepath = $file->getPathname();
         $extension = $file->getClientOriginalExtension();
 
@@ -654,36 +655,32 @@ class SalesOrderController extends Controller
             // 🔹 Step 1: Check for duplicates (Customer + SKU)
             $seen = [];
 
+            foreach ($rows as $record) {
+                if (empty($record['SKU Code']) || empty($record['PO Number'])) {
+                    continue;
+                }
 
-            // foreach ($rows as $record) {
-            //     if (empty($record['SKU Code']) || empty($record['PO Number'])) {
-            //         continue;
-            //     }
+                $key = strtolower(trim($record['PO Number'])) . '|' . strtolower(trim($record['SKU Code']));
 
-            //     $key = strtolower(trim($record['PO Number'])) . '|' . strtolower(trim($record['SKU Code']));
+                if (isset($seen[$key])) {
+                    DB::rollBack();
 
-            //     if (isset($seen[$key])) {
-            //         DB::rollBack();
+                    return redirect()->back()->with([
+                        'error' => 'Please check excel file: duplicate SKU (' . $record['SKU Code'] . ') found for same customer (' . $record['PO Number'] . ').',
+                    ]);
+                }
 
-            //         return redirect()->back()->with([
-            //             'error' => 'Please check excel file: duplicate SKU (' . $record['SKU Code'] . ') found for same customer (' . $record['PO Number'] . ').',
-            //         ]);
-            //     }
-
-            //     $seen[$key] = true;
-            // }
+                $seen[$key] = true;
+            }
 
             $products = [];
             $insertCount = 0;
 
             // 🔹 Step 2: Process records if no duplicates
             foreach ($rows as $record) {
-                if (empty($record['SKU Code']) || empty($record['PO Number'])) {
+                if (empty($record['SKU Code'])) {
                     continue;
                 }
-                // if (empty($record['SKU Code'])) {
-                //     continue;
-                // }
 
                 // Find customer
                 $customerInfo = Customer::where('facility_name', $record['Facility Name'])->first();
