@@ -2140,11 +2140,11 @@ class SalesOrderController extends Controller
                 'Description' => $row['Description'] ?? '',
 
                 'Basic Rate' => $row['Basic Rate'] ?? 0,
-                'Product Basic Rate' => ($row['Product Basic Rate'] != '' && $row['Product Basic Rate'] != null) ? intval($row['Product Basic Rate']) : 0,
+                'Product Basic Rate' => ($row['Product Basic Rate'] != '' && $row['Product Basic Rate'] != null) ? floatval($row['Product Basic Rate']) : 0,
                 'Basic Rate Confirmation' => $row['Basic Rate Confirmation'] ?? 'Incorrect',
 
                 'Net Landing Rate' => $row['Net Landing Rate'] ?? 0,
-                'Product Net Landing Rate' => intval($row['Product Net Landing Rate']) ?? 0,
+                'Product Net Landing Rate' => floatval($row['Product Net Landing Rate']) ?? 0,
                 'Net Landing Rate Confirmation' => $row['Net Landing Rate Confirmation'] ?? 'Incorrect',
 
                 'MRP' => $row['MRP'] ?? 0,
@@ -2410,13 +2410,13 @@ class SalesOrderController extends Controller
                 'Product MRP' => (float) ($order->tempOrder?->product_mrp ?? 0),
                 'MRP Confirmation' => $this->sanitizeExcelValue($order->tempOrder?->mrp_confirmation ?? 'Incorrect'),
                 'PO Number' => $this->sanitizeExcelValue($order->tempOrder?->po_number ?? ''),
-                'PO Quantity' => (int) ($order->ordered_quantity ?? 0),
-                'Purchase Order Quantity' => (int) ($order->tempOrder?->purchase_order_quantity ?? 0),
-                'Vendor PI Fulfillment Quantity' => (int) ($order->tempOrder?->vendor_pi_fulfillment_quantity ?? 0),
-                'Vendor PI Received Quantity' => (int) ($order->tempOrder?->vendor_pi_received_quantity ?? 0),
-                'Block Quantity' => (int) ($order->tempOrder?->block ?? 0),
-                'Quantity Fulfilled' => $order->dispatched_quantity ??  (int) $qtyFullfilled ?? 0,
-                'Final Fulfilled Quantity' => (int) ($order->final_dispatched_quantity ?? 0),
+                'PO Quantity' => (float) ($order->ordered_quantity ?? 0),
+                'Purchase Order Quantity' => (float) ($order->tempOrder?->purchase_order_quantity ?? 0),
+                'Vendor PI Fulfillment Quantity' => (float) ($order->tempOrder?->vendor_pi_fulfillment_quantity ?? 0),
+                'Vendor PI Received Quantity' => (float) ($order->tempOrder?->vendor_pi_received_quantity ?? 0),
+                'Block Quantity' => (float) ($order->tempOrder?->block ?? 0),
+                'Quantity Fulfilled' => $order->dispatched_quantity ??  (float) $qtyFullfilled ?? 0,
+                'Final Fulfilled Quantity' => (float) ($order->final_dispatched_quantity ?? 0),
                 'Warehouse Allocation' => $this->sanitizeExcelValue($warehouseAllocation),
             ];
 
