@@ -699,8 +699,9 @@ class SalesOrderController extends Controller
                     })
                     ->first();
 
+                dd($salesOrderProductUpdate);
+
                 if (! $salesOrderProductUpdate) {
-                    dd("nope");
                     continue;
                 }
 
