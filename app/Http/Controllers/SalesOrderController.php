@@ -703,27 +703,6 @@ class SalesOrderController extends Controller
                 }
 
                 // 3. Build products array for TempOrder::upsert()
-                // Quantity Fullfilled	Warehouse Allocation
-
-                // item_code   = Item Code
-                // po_date
-                // po_expiry_date
-                // basic_rate  = Basic Rate
-                // product_basic_rate  = Product Basic Rate
-                // rate_confirmation  = Basic Rate Confirmation
-                // net_landing_rate  = Net Landing Rate
-                // product_net_landing_rate  = Product Net Landing Rate
-                // net_landing_rate_confirmation  = Net Landing Rate Confirmation
-                // mrp  = PO MRP
-                // product_mrp  = Product MRP
-                // mrp_confirmation  = MRP Confirmation
-                // po_qty  = PO Quantity
-                // available_quantity  =
-                // unavailable_quantity  =
-                // block  = Block Quantity
-                // case_pack_quantity  =
-                // purchase_order_quantity  = Purchase Order Quantity
-
                 $products[] = [
                     'id' => $salesOrderProductUpdate->temp_order_id,
                     'item_code' => Arr::get($record, 'Item Code', ''),
@@ -843,10 +822,9 @@ class SalesOrderController extends Controller
             }
 
             DB::commit();
-
+            dd("Success");
             return redirect()->route('sales.order.index')->with('success', 'CSV file imported successfully.');
         } catch (\Exception $e) {
-            dd($e);
             DB::rollBack();
 
             return redirect()->back()->with(['error' => 'Something went wrong: ' . $e->getMessage()]);
