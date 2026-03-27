@@ -688,7 +688,6 @@ class SalesOrderController extends Controller
                     continue;
                 }
 
-                dd($record);
 
                 // Find sales order product
                 $salesOrderProductUpdate = SalesOrderProduct::with('product', 'productMapping', 'tempOrder.purchaseOrderProduct')
@@ -703,6 +702,8 @@ class SalesOrderController extends Controller
                 if (! $salesOrderProductUpdate) {
                     continue;
                 }
+                dd($salesOrderProductUpdate);
+
 
                 // 3. Build products array for TempOrder::upsert()
                 $products[] = [
