@@ -641,8 +641,6 @@ class SalesOrderController extends Controller
             'products_excel' => 'required|file|mimes:xlsx,csv,xls',
         ]);
 
-        dd($request->sales_order_id);
-
         $file = $request->file('products_excel');
         $filepath = $file->getPathname();
         $extension = $file->getClientOriginalExtension();
@@ -682,6 +680,7 @@ class SalesOrderController extends Controller
                 if (empty($record['SKU Code'])) {
                     continue;
                 }
+                dd($record);
 
                 // Find customer
                 $customerInfo = Customer::where('facility_name', $record['Facility Name'])->first();
