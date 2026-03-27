@@ -683,14 +683,13 @@ class SalesOrderController extends Controller
 
                 // Find customer
                 $customerInfo = Customer::where('facility_name', $record['Facility Name'])->first();
-                dd($customerInfo);
 
                 if (! $customerInfo) {
                     continue;
                 }
 
 
-                // Find sales order product
+                // Find sales order product 986 1037
                 $salesOrderProductUpdate = SalesOrderProduct::with('product', 'productMapping', 'tempOrder.purchaseOrderProduct')
                     ->where('sku', trim($record['SKU Code'] ?? ''))
                     ->where('sales_order_id', $request->sales_order_id)
