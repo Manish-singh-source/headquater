@@ -677,6 +677,7 @@ class SalesOrderController extends Controller
 
             // 🔹 Step 2: Process records if no duplicates
             foreach ($reader->getRows() as $record) {
+                dd($record);
                 if (empty($record['SKU Code'])) {
                     continue;
                 }
@@ -721,7 +722,6 @@ class SalesOrderController extends Controller
                     'purchase_order_quantity' => Arr::get($record, 'Purchase Order Quantity', 0),
                     'updated_at' => now(),
                 ];
-                dd($products);
 
                 // 4. Update SalesOrderProduct
                 $salesOrderProductUpdate->price = $record['PO MRP'] ?? 0;
