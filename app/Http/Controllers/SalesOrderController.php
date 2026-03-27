@@ -641,6 +641,8 @@ class SalesOrderController extends Controller
             'products_excel' => 'required|file|mimes:xlsx,csv,xls',
         ]);
 
+        dd($request->sales_order_id);
+
         $file = $request->file('products_excel');
         $filepath = $file->getPathname();
         $extension = $file->getClientOriginalExtension();
