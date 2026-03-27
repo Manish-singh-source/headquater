@@ -846,6 +846,7 @@ class SalesOrderController extends Controller
 
             return redirect()->route('sales.order.index')->with('success', 'CSV file imported successfully.');
         } catch (\Exception $e) {
+            dd($e);
             DB::rollBack();
 
             return redirect()->back()->with(['error' => 'Something went wrong: ' . $e->getMessage()]);
