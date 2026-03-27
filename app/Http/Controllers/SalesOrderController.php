@@ -650,7 +650,6 @@ class SalesOrderController extends Controller
         try {
             $reader = SimpleExcelReader::create($filepath, $extension);
             $rows = $reader->getRows()->toArray(); // convert to array so we can check duplicates easily
-            dd($rows);
 
             // 🔹 Step 1: Check for duplicates (Customer + SKU)
             $seen = [];
@@ -831,6 +830,7 @@ class SalesOrderController extends Controller
 
             // Upsert TempOrder
             if (! empty($products)) {
+                dd($products);
                 TempOrder::upsert(
                     $products,
                     ['id'],
