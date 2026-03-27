@@ -650,7 +650,7 @@ class SalesOrderController extends Controller
         try {
             $reader = SimpleExcelReader::create($filepath, $extension);
             $rows = $reader->getRows()->toArray(); // convert to array so we can check duplicates easily
-
+            dd($rows);
             // 🔹 Step 1: Check for duplicates (Customer + SKU)
             $seen = [];
 
@@ -838,7 +838,6 @@ class SalesOrderController extends Controller
             }
 
             if ($insertCount === 0) {
-                dd($products);
                 DB::rollBack();
 
                 return redirect()->back()->with(['products_excel' => 'No valid data found in the file.']);
