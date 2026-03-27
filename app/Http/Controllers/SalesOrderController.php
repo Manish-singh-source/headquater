@@ -677,10 +677,10 @@ class SalesOrderController extends Controller
 
             // 🔹 Step 2: Process records if no duplicates
             foreach ($rows as $record) {
+                dd($record);
                 if (empty($record['SKU Code'])) {
                     continue;
                 }
-                dd($record);
 
                 // Find customer
                 $customerInfo = Customer::where('facility_name', $record['Facility Name'])->first();
