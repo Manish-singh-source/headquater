@@ -721,6 +721,7 @@ class SalesOrderController extends Controller
                     'purchase_order_quantity' => Arr::get($record, 'Purchase Order Quantity', 0),
                     'updated_at' => now(),
                 ];
+                dd($products);
 
                 // 4. Update SalesOrderProduct
                 $salesOrderProductUpdate->price = $record['PO MRP'] ?? 0;
@@ -808,7 +809,6 @@ class SalesOrderController extends Controller
 
             // Upsert TempOrder
             if (! empty($products)) {
-                dd($products);
                 TempOrder::upsert(
                     $products,
                     ['id'],
@@ -817,14 +817,12 @@ class SalesOrderController extends Controller
             }
 
             if ($insertCount === 0) {
-                dd($insertCount);
                 DB::rollBack();
 
                 return redirect()->back()->with(['products_excel' => 'No valid data found in the file.']);
             }
 
             DB::commit();
-            dd("Success");
             return redirect()->route('sales.order.index')->with('success', 'CSV file imported successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
