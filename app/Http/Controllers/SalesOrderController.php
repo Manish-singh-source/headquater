@@ -759,7 +759,9 @@ class SalesOrderController extends Controller
                             }
 
                             $warehouseStockUpdate->save();
-                            $salesOrderProductUpdate->tempOrder?->purchaseOrderProduct->save();
+                            if ($salesOrderProductUpdate->tempOrder?->purchaseOrderProduct) {
+                                $salesOrderProductUpdate->tempOrder?->purchaseOrderProduct->save();
+                            }
                             $salesOrderProductUpdate->tempOrder->save();
                         } else {
                             if ($salesOrderProductUpdate->tempOrder->block < $record['Purchase Order Quantity']) {
@@ -787,7 +789,9 @@ class SalesOrderController extends Controller
                             }
 
                             $warehouseStockUpdate->save();
-                            $salesOrderProductUpdate->tempOrder?->purchaseOrderProduct->save();
+                            if ($salesOrderProductUpdate->tempOrder?->purchaseOrderProduct) {
+                                $salesOrderProductUpdate->tempOrder?->purchaseOrderProduct->save();
+                            }
                             $salesOrderProductUpdate->tempOrder->save();
                         }
                     }
