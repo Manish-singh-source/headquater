@@ -830,7 +830,6 @@ class SalesOrderController extends Controller
 
             // Upsert TempOrder
             if (! empty($products)) {
-                dd($products);
                 TempOrder::upsert(
                     $products,
                     ['id'],
@@ -839,6 +838,7 @@ class SalesOrderController extends Controller
             }
 
             if ($insertCount === 0) {
+                dd($products);
                 DB::rollBack();
 
                 return redirect()->back()->with(['products_excel' => 'No valid data found in the file.']);
