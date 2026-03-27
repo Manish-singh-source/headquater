@@ -687,7 +687,6 @@ class SalesOrderController extends Controller
                 if (! $customerInfo) {
                     continue;
                 }
-                dd($customerInfo);
 
 
                 // Find sales order product
@@ -701,7 +700,7 @@ class SalesOrderController extends Controller
                     ->first();
 
                 if (! $salesOrderProductUpdate) {
-                    dd($salesOrderProductUpdate);
+                    dd("nope");
                     continue;
                 }
 
