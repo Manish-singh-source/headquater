@@ -644,13 +644,13 @@ class SalesOrderController extends Controller
         $file = $request->file('products_excel');
         $filepath = $file->getPathname();
         $extension = $file->getClientOriginalExtension();
-        
+
         DB::beginTransaction();
-        
+
         try {
             $reader = SimpleExcelReader::create($filepath, $extension);
             $rows = $reader->getRows()->toArray(); // convert to array so we can check duplicates easily
-            
+
             // 🔹 Step 1: Check for duplicates (Customer + SKU)
             $seen = [];
 
@@ -677,10 +677,10 @@ class SalesOrderController extends Controller
 
             // 🔹 Step 2: Process records if no duplicates
             foreach ($reader->getRows() as $record) {
-                dd($record);
                 if (empty($record['SKU Code'])) {
                     continue;
                 }
+                dd($record);
 
                 // Find customer
                 $customerInfo = Customer::where('facility_name', $record['Facility Name'])->first();
