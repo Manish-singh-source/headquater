@@ -680,7 +680,6 @@ class SalesOrderController extends Controller
                 if (empty($record['SKU Code'])) {
                     continue;
                 }
-                dd($record);
 
                 // Find customer
                 $customerInfo = Customer::where('facility_name', $record['Facility Name'])->first();
@@ -688,6 +687,8 @@ class SalesOrderController extends Controller
                 if (! $customerInfo) {
                     continue;
                 }
+
+                dd($record);
 
                 // Find sales order product
                 $salesOrderProductUpdate = SalesOrderProduct::with('product', 'productMapping', 'tempOrder.purchaseOrderProduct')
