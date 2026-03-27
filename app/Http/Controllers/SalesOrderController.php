@@ -687,6 +687,7 @@ class SalesOrderController extends Controller
                 if (! $customerInfo) {
                     continue;
                 }
+                dd($customerInfo);
 
 
                 // Find sales order product
@@ -700,9 +701,9 @@ class SalesOrderController extends Controller
                     ->first();
 
                 if (! $salesOrderProductUpdate) {
+                    dd($salesOrderProductUpdate);
                     continue;
                 }
-                dd($salesOrderProductUpdate);
 
 
                 // 3. Build products array for TempOrder::upsert()
