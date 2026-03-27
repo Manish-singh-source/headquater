@@ -690,16 +690,16 @@ class SalesOrderController extends Controller
 
 
                 // Find sales order product 986 1037
-                $salesOrderProductUpdate = SalesOrderProduct::with('product', 'productMapping', 'tempOrder1.purchaseOrderProduct')
+                $salesOrderProductUpdate = SalesOrderProduct::with('product', 'productMapping', 'tempOrder.purchaseOrderProduct')
                     ->where('sku', trim($record['SKU Code'] ?? ''))
                     ->where('sales_order_id', $request->sales_order_id)
                     ->where('customer_id', $customerInfo->id)
-                    ->whereHas('tempOrder1', function ($query) use ($record) {
+                    ->whereHas('tempOrder', function ($query) use ($record) {
                         $query->where('po_number', trim($record['PO Number'] ?? ''));
                     })
                     ->first();
 
-                dd($salesOrderProductUpdate);
+
                 if (! $salesOrderProductUpdate) {
                     continue;
                 }

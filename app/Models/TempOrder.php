@@ -11,7 +11,7 @@ class TempOrder extends Model
 
     public function purchaseOrderProduct()
     {
-        return $this->hasOne(purchaseOrderProduct::class, 'temp_order_id', 'id');
+        return $this->hasOne(PurchaseOrderProduct::class, 'temp_order_id', 'id');
     }
 
     public function vendorPIProduct()
