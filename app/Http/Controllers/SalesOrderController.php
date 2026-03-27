@@ -816,6 +816,7 @@ class SalesOrderController extends Controller
             }
 
             if ($insertCount === 0) {
+                dd($insertCount);
                 DB::rollBack();
 
                 return redirect()->back()->with(['products_excel' => 'No valid data found in the file.']);
