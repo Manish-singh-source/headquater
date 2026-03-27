@@ -654,8 +654,8 @@ class SalesOrderController extends Controller
             // 🔹 Step 1: Check for duplicates (Customer + SKU)
             $seen = [];
 
+            dd($rows);
             foreach ($rows as $record) {
-                dd($record);
                 if (empty($record['SKU Code']) || empty($record['PO Number'])) {
                     continue;
                 }
