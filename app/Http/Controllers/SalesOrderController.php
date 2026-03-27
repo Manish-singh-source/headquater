@@ -699,6 +699,7 @@ class SalesOrderController extends Controller
                     ->first();
 
                 if (! $salesOrderProductUpdate) {
+                    dd("not run");
                     continue;
                 }
 
