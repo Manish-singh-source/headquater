@@ -655,6 +655,7 @@ class SalesOrderController extends Controller
             $seen = [];
 
             foreach ($rows as $record) {
+                dd($record);
                 if (empty($record['SKU Code']) || empty($record['PO Number'])) {
                     continue;
                 }
@@ -677,7 +678,6 @@ class SalesOrderController extends Controller
 
             // 🔹 Step 2: Process records if no duplicates
             foreach ($rows as $record) {
-                dd($record);
                 if (empty($record['SKU Code'])) {
                     continue;
                 }
