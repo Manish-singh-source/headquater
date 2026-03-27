@@ -650,11 +650,12 @@ class SalesOrderController extends Controller
         try {
             $reader = SimpleExcelReader::create($filepath, $extension);
             $rows = $reader->getRows()->toArray(); // convert to array so we can check duplicates easily
-            dd($rows);
+            
             // 🔹 Step 1: Check for duplicates (Customer + SKU)
             $seen = [];
 
-            foreach ($rows as $record) {
+            foreach ($reader->getRows() as $record) {
+                dd($record);
                 if (empty($record['SKU Code']) || empty($record['PO Number'])) {
                     continue;
                 }
@@ -676,7 +677,7 @@ class SalesOrderController extends Controller
             $insertCount = 0;
 
             // 🔹 Step 2: Process records if no duplicates
-            foreach ($rows as $record) {
+            foreach ($reader->getRows() as $record) {
                 if (empty($record['SKU Code'])) {
                     continue;
                 }
