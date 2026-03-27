@@ -683,6 +683,7 @@ class SalesOrderController extends Controller
 
                 // Find customer
                 $customerInfo = Customer::where('facility_name', $record['Facility Name'])->first();
+                dd($customerInfo);
 
                 if (! $customerInfo) {
                     continue;
@@ -699,7 +700,6 @@ class SalesOrderController extends Controller
                     })
                     ->first();
 
-                dd($salesOrderProductUpdate);
 
                 if (! $salesOrderProductUpdate) {
                     continue;
