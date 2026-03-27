@@ -655,7 +655,6 @@ class SalesOrderController extends Controller
             $seen = [];
 
             foreach ($reader->getRows() as $record) {
-                dd($record);
                 if (empty($record['SKU Code']) || empty($record['PO Number'])) {
                     continue;
                 }
