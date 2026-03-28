@@ -86,6 +86,17 @@
                                         </div>
                                     @enderror
                                 </div>
+                                
+                                <div class="col-md-6">
+                                    <label for="mrp" class="form-label">MRP</label>
+                                    <input type="mrp" class="form-control  @error('mrp') is-invalid @enderror"
+                                        value="{{ old('mrp', $productMapping->mrp) }}" id="mrp" placeholder="Enter MRP" name="mrp">
+                                    @error('mrp')
+                                        <div class="invalid-feedback">
+                                            {{ $message }}
+                                        </div>
+                                    @enderror
+                                </div>
 
                                 <div class="col-md-12">
                                     <div class="d-md-flex d-grid align-items-center gap-3">

@@ -68,7 +68,7 @@ class ProductController extends Controller
 
             return view('products.index', compact('products'));
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Error retrieving products: '.$e->getMessage());
+            return redirect()->back()->with('error', 'Error retrieving products: ' . $e->getMessage());
         }
     }
 
@@ -124,13 +124,13 @@ class ProductController extends Controller
                     continue;
                 }
 
-                $key = strtolower(trim($record['SKU Code'] ?? '').'|'.strtolower(trim($request->warehouse_id ?? '')).'|'.trim($record['Item Code'] ?? ''));
+                $key = strtolower(trim($record['SKU Code'] ?? '') . '|' . strtolower(trim($request->warehouse_id ?? '')) . '|' . trim($record['Item Code'] ?? ''));
 
                 if (isset($seen[$key])) {
                     DB::rollBack();
 
                     return redirect()->back()->with([
-                        'error' => 'Please check excel file: duplicate SKU ('.$record['SKU Code'].') found for same warehouse ('.$request->warehouse_id.').',
+                        'error' => 'Please check excel file: duplicate SKU (' . $record['SKU Code'] . ') found for same warehouse (' . $request->warehouse_id . ').',
                     ]);
                 }
 
@@ -207,8 +207,9 @@ class ProductController extends Controller
                 ], [
                     'portal_code' => $record['Portal Code'] ?? '',
                     'item_code' => $record['Item Code'] ?? '',
-                    'basic_rate' => isset($record['Basic Rate']) ? intval($record['Basic Rate']) : '',
+                    'basic_rate' => isset($record['Basic Rate']) ? floatval($record['Basic Rate']) : '',
                     'net_landing_rate' => $netLandingRate,
+                    'mrp' => $record['MRP'] ?? '',
                 ]);
                 // }
 
@@ -225,7 +226,7 @@ class ProductController extends Controller
                 DB::rollBack();
 
                 return redirect()->back()->with([
-                    'error' => 'Duplicate SKU(s) found in the database: '.implode(', ', $duplicatesInDb),
+                    'error' => 'Duplicate SKU(s) found in the database: ' . implode(', ', $duplicatesInDb),
                 ]);
             }
 
@@ -235,17 +236,17 @@ class ProductController extends Controller
                 ->causedBy(Auth::user())
                 ->withProperties(['count' => $insertCount])
                 ->event('bulk_import')
-                ->log('Products imported: '.$insertCount.' records');
+                ->log('Products imported: ' . $insertCount . ' records');
 
             // Create notification
             NotificationService::warehouseProductAdded('Multiple products', $insertCount);
 
             return redirect()->route('products.index')
-                ->with('success', 'Successfully imported '.$insertCount.' products.');
+                ->with('success', 'Successfully imported ' . $insertCount . ' products.');
         } catch (\Exception $e) {
             DB::rollBack();
 
-            return redirect()->back()->with(['error' => 'Something went wrong: '.$e->getMessage()]);
+            return redirect()->back()->with(['error' => 'Something went wrong: ' . $e->getMessage()]);
         }
     }
 
@@ -351,17 +352,17 @@ class ProductController extends Controller
                 ->causedBy(Auth::user())
                 ->withProperties(['count' => $insertCount])
                 ->event('bulk_update')
-                ->log('Products updated: '.$insertCount.' records');
+                ->log('Products updated: ' . $insertCount . ' records');
 
             // Create notification
             NotificationService::warehouseProductAdded('Product stock updated', $insertCount);
 
             return redirect()->route('products.index')
-                ->with('success', 'Successfully updated '.$insertCount.' products.');
+                ->with('success', 'Successfully updated ' . $insertCount . ' products.');
         } catch (\Exception $e) {
             DB::rollBack();
 
-            return redirect()->back()->with(['error' => 'Something went wrong: '.$e->getMessage()]);
+            return redirect()->back()->with(['error' => 'Something went wrong: ' . $e->getMessage()]);
         }
     }
 
@@ -485,7 +486,7 @@ class ProductController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => 'Error updating product: '.$e->getMessage(),
+                'message' => 'Error updating product: ' . $e->getMessage(),
             ], 500);
         }
     }
@@ -523,7 +524,7 @@ class ProductController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
 
-            return redirect()->back()->with('error', 'Error deleting product: '.$e->getMessage());
+            return redirect()->back()->with('error', 'Error deleting product: ' . $e->getMessage());
         }
     }
 
@@ -581,13 +582,13 @@ class ProductController extends Controller
                 ->causedBy(Auth::user())
                 ->withProperties(['count' => $deleted, 'ids' => $ids])
                 ->event('bulk_delete')
-                ->log('Products deleted: '.$deleted.' records');
+                ->log('Products deleted: ' . $deleted . ' records');
 
-            return redirect()->back()->with('success', 'Successfully deleted '.$deleted.' product(s).');
+            return redirect()->back()->with('success', 'Successfully deleted ' . $deleted . ' product(s).');
         } catch (\Exception $e) {
             DB::rollBack();
 
-            return redirect()->back()->with('error', 'Error deleting products: '.$e->getMessage());
+            return redirect()->back()->with('error', 'Error deleting products: ' . $e->getMessage());
         }
     }
 
@@ -600,7 +601,7 @@ class ProductController extends Controller
     public function downloadProductSheet(Request $request, $id = null)
     {
         try {
-            $tempXlsxPath = storage_path('app/product_sheet_'.Str::random(8).'.xlsx');
+            $tempXlsxPath = storage_path('app/product_sheet_' . Str::random(8) . '.xlsx');
             $writer = SimpleExcelWriter::create($tempXlsxPath);
 
             $products = WarehouseStock::with('product', 'warehouse')
@@ -615,28 +616,32 @@ class ProductController extends Controller
 
             // Add data rows
             foreach ($products as $stock) {
-                $writer->addRow([
-                    'Warehouse Id' => $stock->warehouse?->id ?? '',
-                    'Warehouse Name' => $stock->warehouse?->name ?? '',
-                    'SKU Code' => $stock->product?->sku ?? '',
-                    'EAN Code' => $stock->product?->ean_code ?? '',
-                    'Brand' => $stock->product?->brand ?? '',
-                    'Brand Title' => $stock->product?->brand_title ?? '',
-                    'MRP' => $stock->product?->mrp ?? '',
-                    'Category' => $stock->product?->category ?? '',
-                    'PCS/Set' => $stock->product?->pcs_set ?? '',
-                    'Sets/CTN' => $stock->product?->sets_ctn ?? '',
-                    'Weight (Single Box)' => $stock->product?->weight ?? '',
-                    // 'Basic Rate' => $stock->product?->basic_rate ?? '',
-                    // 'Net Landing Rate' => $stock->product?->net_landing_rate ?? '',
-                    'Vendor Code' => $stock->product?->vendor_code ?? '',
-                    'Vendor Name' => $stock->product?->vendor_name ?? '',
-                    'Vendor Purchase Rate' => $stock->product?->vendor_purchase_rate ?? '',
-                    'GST' => $stock->product?->gst ?? '',
-                    'HSN' => $stock->product?->hsn ?? '',
-                    'Vendor Net Landing' => $stock->product?->vendor_net_landing ?? '',
-                    'Stock' => $stock->available_quantity ?? 0,
-                ]);
+                $product = Product::where('warehouse_id' , $stock->warehouse_id)->where('sku', $stock->sku)->first();
+                
+                if ($product?->sku) {
+                    $writer->addRow([
+                        'Warehouse Id' => $stock->warehouse?->id ?? '',
+                        'Warehouse Name' => $stock->warehouse?->name ?? '',
+                        'SKU Code' => $product?->sku ?? '',
+                        'EAN Code' => $product?->ean_code ?? '',
+                        'Brand' => $product?->brand ?? '',
+                        'Brand Title' => $product?->brand_title ?? '',
+                        // 'MRP' => $product?->mrp ?? '',
+                        'Category' => $product?->category ?? '',
+                        'PCS/Set' => $product?->pcs_set ?? '',
+                        'Sets/CTN' => $product?->sets_ctn ?? '',
+                        'Weight (Single Box)' => $product?->weight ?? '',
+                        // 'Basic Rate' => $product?->basic_rate ?? '',
+                        // 'Net Landing Rate' => $product?->net_landing_rate ?? '',
+                        'Vendor Code' => $product?->vendor_code ?? '',
+                        'Vendor Name' => $product?->vendor_name ?? '',
+                        'Vendor Purchase Rate' => $product?->vendor_purchase_rate ?? '',
+                        'GST' => $product?->gst ?? '',
+                        'HSN' => $product?->hsn ?? '',
+                        'Vendor Net Landing' => $product?->vendor_net_landing ?? '',
+                        'Stock' => $stock->available_quantity ?? 0,
+                    ]);
+                }
             }
 
             $writer->close();
@@ -645,7 +650,7 @@ class ProductController extends Controller
                 'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
             ])->deleteFileAfterSend(true);
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Error downloading products: '.$e->getMessage());
+            return redirect()->back()->with('error', 'Error downloading products: ' . $e->getMessage());
         }
     }
 

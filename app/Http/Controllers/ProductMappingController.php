@@ -24,7 +24,6 @@ class ProductMappingController extends Controller
         try {
             $productMapping = ProductMapping::orderBy('created_at', 'desc')
                 ->get();
-
             return view('skuMapping.index', compact('productMapping'));
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Error retrieving SKU mappings: '.$e->getMessage());
@@ -195,6 +194,7 @@ class ProductMappingController extends Controller
             'item_code' => 'nullable|string|max:255',
             'basic_rate' => 'nullable|string|max:255',
             'net_landing_rate' => 'nullable|string|max:255',
+            'mrp' => 'nullable|string|max:255',
         ]);
 
         if ($validator->fails()) {
@@ -229,6 +229,7 @@ class ProductMappingController extends Controller
             $skuMapping->item_code = $request->item_code;
             $skuMapping->basic_rate = $request->basic_rate;
             $skuMapping->net_landing_rate = $request->net_landing_rate;
+            $skuMapping->mrp = $request->mrp;
             $skuMapping->save();
 
             DB::commit();
@@ -286,6 +287,7 @@ class ProductMappingController extends Controller
                 'item_code' => $skuMapping->item_code,
                 'basic_rate' => $skuMapping->basic_rate,
                 'net_landing_rate' => $skuMapping->net_landing_rate,
+                'mrp' => $skuMapping->mrp,
             ];
 
             // Log activity before deletion
@@ -436,6 +438,8 @@ class ProductMappingController extends Controller
                 $itemCode = trim((string) ($record['Item Code'] ?? $record['item_code'] ?? ''));
                 $basicRate = trim((string) ($record['Basic Rate'] ?? $record['basic_rate'] ?? ''));
                 $netLandingRate = trim((string) ($record['Net Landing Rate'] ?? $record['net_landing_rate'] ?? ''));
+                $mrp = trim((string) ($record['MRP'] ?? $record['MRP'] ?? ''));
+
 
                 if ($sku === '') {
                     $skipCount++;
@@ -460,6 +464,7 @@ class ProductMappingController extends Controller
                     'item_code' => $itemCode,
                     'basic_rate' => $basicRate,
                     'net_landing_rate' => $netLandingRate,
+                    'mrp' => $mrp,
                 ]);
 
                 $insertCount++;
@@ -526,6 +531,7 @@ class ProductMappingController extends Controller
                     'Item Code' => $mapping->item_code ?? '',
                     'Basic Rate' => $mapping->basic_rate ?? '',
                     'Net Landing Rate' => $mapping->net_landing_rate ?? '',
+                    'MRP' => $mapping->mrp ?? '',
                 ]);
             }
 
@@ -575,6 +581,8 @@ class ProductMappingController extends Controller
                 $itemCode = trim((string) ($record['Item Code'] ?? $record['item_code'] ?? ''));
                 $basicRate = trim((string) ($record['Basic Rate'] ?? $record['basic_rate'] ?? ''));
                 $netLandingRate = trim((string) ($record['Net Landing Rate'] ?? $record['net_landing_rate'] ?? ''));
+                $mrp = trim((string) ($record['MRP'] ?? $record['MRP'] ?? ''));
+
 
                 if ($sku === '') {
                     $skipCount++;
@@ -590,6 +598,7 @@ class ProductMappingController extends Controller
                 if ($existingMapping) {
                     $existingMapping->basic_rate = $basicRate;
                     $existingMapping->net_landing_rate = $netLandingRate;
+                    $existingMapping->mrp = $mrp;
                     $existingMapping->save();
 
                     $updateCount++;
@@ -603,6 +612,7 @@ class ProductMappingController extends Controller
                     'item_code' => $itemCode,
                     'basic_rate' => $basicRate,
                     'net_landing_rate' => $netLandingRate,
+                    'mrp' => $mrp,
                 ]);
 
                 $insertCount++;

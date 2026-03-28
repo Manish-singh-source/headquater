@@ -98,6 +98,7 @@
                                         <th>Item Code</th>
                                         <th>Basic Rate</th>
                                         <th>Net Landing Rate</th>
+                                        <th>MRP</th>
                                         <th>Action</th>
                                     </tr>
                                 </thead>
@@ -118,10 +119,13 @@
                                                 {{ $product->item_code }}
                                             </td>
                                             <td>
-                                                {{ $product->basic_rate }}
+                                                {{ $product->basic_rate ?? 0 }}
                                             </td>
                                             <td>
-                                                {{ $product->net_landing_rate }}
+                                                {{ $product->net_landing_rate ?? 0 }}
+                                            </td>
+                                            <td>
+                                                {{ $product->mrp ?? 0 }}
                                             </td>
                                             <td>
                                                 <div class="d-flex">

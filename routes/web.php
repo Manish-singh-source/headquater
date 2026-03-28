@@ -164,7 +164,7 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/products/delete-selected', 'deleteSelected')->name('delete.selected.product');
     });
 
-    // For Product Mapping
+    // For Product add.sku.mapping
     Route::controller(ProductMappingController::class)->group(function () {
         Route::get('/sku-mapping', 'index')->name('sku.mapping');
         Route::post('/sku-mapping', 'store')->name('sku.mapping.store');

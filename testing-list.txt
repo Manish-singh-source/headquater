@@ -333,3 +333,16 @@
     - Ready to Ship Order Excel Format
     - Product Issue Excel Format
     - Return Order Excel Format
+
+
+
+
+
+
+
+1. adding product: B6FL not adding properly              - done 
+2. Download product: if sku not available skip it             - done 
+3. . ke bad 2 digits 
+4. 1rs difference for correct and incorrect.              - done 
+5. move mrp column from product table to sku mapping table.               - done 
+
