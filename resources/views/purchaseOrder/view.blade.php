@@ -708,7 +708,7 @@
                                                 <td>{{ $product->product?->vendor_purchase_rate }}</td>
                                                 <td>{{ $product->purchase_rate }}</td>
                                                 <td>
-                                                    @if ($product->purchase_rate <= $product->product?->vendor_purchase_rate)
+                                                    @if (floor($product->purchase_rate) == floor($product->product?->vendor_purchase_rate))
                                                         <span class="badge text-success bg-success-subtle">Correct</span>
                                                     @else
                                                         <span class="badge text-danger bg-danger-subtle">Incorrect</span>
