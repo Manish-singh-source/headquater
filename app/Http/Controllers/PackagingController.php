@@ -181,7 +181,7 @@ class PackagingController extends Controller
      * 
      * Working method
      */
-    public function downloadPackagingProducts(Request $request)
+    public function downloadPackagingProducts1(Request $request)
     {
         if (! $request->id) {
             return back()->with('error', 'Please Try Again.');
@@ -339,7 +339,7 @@ class PackagingController extends Controller
     }
 
     // old method for reference
-    public function downloadPackagingProducts1(Request $request)
+    public function downloadPackagingProducts(Request $request)
     {
         if (! $request->id) {
             return back()->with('error', 'Please Try Again.');
