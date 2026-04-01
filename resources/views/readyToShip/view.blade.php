@@ -33,7 +33,7 @@
                                         <th>Facility&nbsp;Name</th>
                                         <th>Client&nbsp;Name</th>
                                         <th>Contact&nbsp;Name</th>
-                                        <th>Products</th>
+                                        <th>Date</th>
                                         <th>Status</th>
                                         <th>Action</th>
                                     </tr>
