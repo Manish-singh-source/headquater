@@ -2403,6 +2403,7 @@ class SalesOrderController extends Controller
                 'Quantity Fulfilled' => $order->dispatched_quantity ??  (float) $qtyFullfilled ?? 0,
                 'Final Fulfilled Quantity' => (float) ($order->final_dispatched_quantity ?? 0),
                 'Warehouse Allocation' => $this->sanitizeExcelValue($warehouseAllocation),
+                'Invoice Status' => ucfirst($order->invoice_status)
             ];
 
             $writer->addRow($rowData);
