@@ -839,6 +839,7 @@
                             // Handle error
                             alert('An error occurred while generating the invoice.');
                             console.error(error);
+                            console.error(xhr.responseText);
                             // location.reload();
                         }
                     });
