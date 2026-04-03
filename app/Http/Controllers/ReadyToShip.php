@@ -92,7 +92,7 @@ class ReadyToShip extends Controller
                 ->distinct()
                 ->get();
 
-            dd($warehouseAllocations);
+            // dd($warehouseAllocations);
             return view('readyToShip.view', compact('warehouseAllocations'));
         } catch (\Exception $e) {
             return redirect()->route('readyToShip.index')

@@ -71,11 +71,11 @@
                                                 </p>
                                             </td>
                                             <td>
-                                                {{ $allocation?->salesOrderProduct?->customer?->facility_name }}
+                                                {{ $allocation?->customer?->facility_name }}
                                             </td>
-                                            <td>{{ $allocation?->salesOrderProduct?->customer?->client_name }}</td>
+                                            <td>{{ $allocation?->customer?->client_name }}</td>
                                             <td>
-                                                {{ $allocation?->salesOrderProduct?->customer?->contact_name }}
+                                                {{ $allocation?->customer?->contact_name }}
                                             </td>
                                             <td>
                                                 {{ $allocation->approved_at->format('d M Y') }}
@@ -83,10 +83,10 @@
                                             <td>
                                                 {{ $statuses[$allocation->salesOrder->status] }}
                                             </td>
-                                            {{-- @if ($allocation->salesOrder?->id && $allocation?->salesOrderProduct?->customer?->id) --}}
+                                            {{-- @if ($allocation->salesOrder?->id && $allocation?->customer?->id) --}}
                                                 <td>
                                                     <a aria-label="anchor"
-                                                        href="{{ route('readyToShip.view.detail', ['id' => $allocation->salesOrder->id, 'c_id' => $allocation->salesOrderProduct?->customer?->id, 'rts_count_id' => $allocation->rts_count_id]) }}"
+                                                        href="{{ route('readyToShip.view.detail', ['id' => $allocation->salesOrder->id, 'c_id' => $allocation->customer?->id, 'rts_count_id' => $allocation->rts_count_id]) }}"
                                                         class="btn btn-icon btn-sm bg-primary-subtle me-1"
                                                         data-bs-toggle="tooltip" data-bs-original-title="View">
                                                         <svg xmlns="http://www.w3.org/2000/svg" width="13"
