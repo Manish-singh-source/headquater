@@ -1436,8 +1436,8 @@ class InvoiceController extends Controller
     {
         try {
             $response = Http::post('https://prod-api.mastersindia.co/api/v1/token-auth', [
-                'username' => env('EINVOICE_API_USERNAME'),
-                'password' => env('EINVOICE_API_PASSWORD'),
+                'username' => "support@technofra.com",
+                'password' => "Support@0987#!",
             ]);
 
             $data = $response->json();
