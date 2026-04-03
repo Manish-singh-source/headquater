@@ -83,7 +83,7 @@
                                             <td>
                                                 {{ $statuses[$allocation->salesOrder->status] }}
                                             </td>
-                                            @if ($allocation->salesOrder?->id && $allocation?->salesOrderProduct?->customer?->id)
+                                            {{-- @if ($allocation->salesOrder?->id && $allocation?->salesOrderProduct?->customer?->id) --}}
                                                 <td>
                                                     <a aria-label="anchor"
                                                         href="{{ route('readyToShip.view.detail', ['id' => $allocation->salesOrder->id, 'c_id' => $allocation->salesOrderProduct?->customer?->id, 'rts_count_id' => $allocation->rts_count_id]) }}"
@@ -99,7 +99,7 @@
                                                         </svg>
                                                     </a>
                                                 </td>
-                                            @endif
+                                            {{-- @endif --}}
                                         </tr>
                                     @empty
                                         <tr>
