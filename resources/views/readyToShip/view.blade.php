@@ -67,15 +67,15 @@
                                             <td>{{ $allocation->rts_count_id }}</td>
                                             <td>
                                                 <p class="mb-0 customer-name fw-bold">
-                                                    {{ $allocation->salesOrder->customerGroup->name }}
+                                                    {{ $allocation->salesOrder?->customerGroup?->name }}
                                                 </p>
                                             </td>
                                             <td>
-                                                {{ $allocation->customer->facility_name }}
+                                                {{ $allocation?->customer?->facility_name }}
                                             </td>
-                                            <td>{{ $allocation->customer->client_name }}</td>
+                                            <td>{{ $allocation?->customer?->client_name }}</td>
                                             <td>
-                                                {{ $allocation->customer->contact_name }}
+                                                {{ $allocation?->customer?->contact_name }}
                                             </td>
                                             <td>
                                                 {{ $allocation->approved_at->format('d M Y') }}
