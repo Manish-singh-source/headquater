@@ -1659,7 +1659,7 @@ class SalesOrderController extends Controller
                     $invoiceDetail->hsn = $detail->hsn;
                     $invoiceDetail->amount = $lineTotal;
                     $invoiceDetail->tax = $detail->product->gst ?? 0;
-                    $invoiceDetail->total_price = $lineTotal + (($detail->product?->gst / 100) * $lineTotal); // After discount (currently 0)
+                    $invoiceDetail->total_price = intval($lineTotal) + ((intval($detail->product?->gst) / 100) * intval($lineTotal)); // After discount (currently 0)
                     $invoiceDetail->description = $detail->tempOrder?->description ?? null;
                     $invoiceDetail->po_number = $detail->tempOrder?->po_number ?? null;
                     $invoiceDetail->save();
