@@ -59,32 +59,32 @@
                                         ];
                                     @endphp
                                     @forelse ($warehouseAllocations as $allocation)
-                                        @if ($allocation->salesOrder?->id && $allocation?->customer?->id)
-                                            <tr>
-                                                <td>
-                                                    <input class="form-check-input" type="checkbox">
-                                                </td>
-                                                <td>{{ $allocation->salesOrder->order_number }}</td>
-                                                <td>{{ $allocation->rts_count_id }}</td>
-                                                <td>
-                                                    <p class="mb-0 customer-name fw-bold">
-                                                        {{ $allocation->salesOrder?->customerGroup?->name }}
-                                                    </p>
-                                                </td>
-                                                <td>
-                                                    {{ $allocation?->customer?->facility_name }}
-                                                </td>
-                                                <td>{{ $allocation?->customer?->client_name }}</td>
-                                                <td>
-                                                    {{ $allocation?->customer?->contact_name }}
-                                                </td>
-                                                <td>
-                                                    {{ $allocation->approved_at->format('d M Y') }}
-                                                </td>
-                                                <td>
-                                                    {{ $statuses[$allocation->salesOrder->status] }}
-                                                </td>
-                                                <td>
+                                        <tr>
+                                            <td>
+                                                <input class="form-check-input" type="checkbox">
+                                            </td>
+                                            <td>{{ $allocation->salesOrder->order_number }}</td>
+                                            <td>{{ $allocation->rts_count_id }}</td>
+                                            <td>
+                                                <p class="mb-0 customer-name fw-bold">
+                                                    {{ $allocation->salesOrder?->customerGroup?->name }}
+                                                </p>
+                                            </td>
+                                            <td>
+                                                {{ $allocation?->customer?->facility_name }}
+                                            </td>
+                                            <td>{{ $allocation?->customer?->client_name }}</td>
+                                            <td>
+                                                {{ $allocation?->customer?->contact_name }}
+                                            </td>
+                                            <td>
+                                                {{ $allocation->approved_at->format('d M Y') }}
+                                            </td>
+                                            <td>
+                                                {{ $statuses[$allocation->salesOrder->status] }}
+                                            </td>
+                                            <td>
+                                                @if ($allocation->salesOrder?->id && $allocation?->customer?->id)
                                                     <a aria-label="anchor"
                                                         href="{{ route('readyToShip.view.detail', ['id' => $allocation->salesOrder->id, 'c_id' => $allocation->customer->id, 'rts_count_id' => $allocation->rts_count_id]) }}"
                                                         class="btn btn-icon btn-sm bg-primary-subtle me-1"
@@ -98,13 +98,13 @@
                                                             <circle cx="12" cy="12" r="3"></circle>
                                                         </svg>
                                                     </a>
-                                                </td>
-                                            </tr>
-                                        @endif
-                                    @empty
-                                        <tr>
-                                            <td colspan="7" class="text-center">No Records Found</td>
-                                        </tr>
+                                            </td>
+                                    @endif
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="7" class="text-center">No Records Found</td>
+                                    </tr>
                                     @endforelse
 
                                 </tbody>
