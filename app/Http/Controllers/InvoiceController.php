@@ -1435,12 +1435,23 @@ class InvoiceController extends Controller
     private function getEInvoiceToken()
     {
         try {
-            $response = Http::post('https://prod-api.mastersindia.co/api/v1/token-auth', [
-                'username' => "support@technofra.com",
-                'password' => "Support@0987#!",
+            $tokenUrl = rtrim(env('EINVOICE_API_URL', 'https://prod-api.mastersindia.co/api/v1/'), '/') . '/token-auth';
+
+            $response = Http::timeout(30)->post($tokenUrl, [
+                'username' => env('EINVOICE_API_USERNAME'),
+                'password' => env('EINVOICE_API_PASSWORD'),
             ]);
 
             $data = $response->json();
+
+            if (! $response->successful() || empty($data['token'])) {
+                Log::error('E-Invoice Token API Error', [
+                    'url' => $tokenUrl,
+                    'status' => $response->status(),
+                    'body' => $response->body(),
+                ]);
+            }
+
             return $data['token'] ?? null;
         } catch (\Exception $e) {
             Log::error('E-Invoice Token Error: ' . $e->getMessage());
