@@ -654,23 +654,12 @@ class SalesOrderController extends Controller
             // 🔹 Step 1: Check for duplicates (Customer + SKU)
             $seen = [];
 
-            foreach ($reader->getRows() as $record) {
-                if (empty($record['SKU Code']) || empty($record['PO Number'])) {
-                    continue;
-                }
-
-                $key = strtolower(trim($record['PO Number'])) . '|' . strtolower(trim($record['SKU Code']));
-
-                if (isset($seen[$key])) {
-                    DB::rollBack();
-
-                    return redirect()->back()->with([
-                        'error' => 'Please check excel file: duplicate SKU (' . $record['SKU Code'] . ') found for same customer (' . $record['PO Number'] . ').',
-                    ]);
-                }
-
-                $seen[$key] = true;
+            // 🔹 Step 1: Check for duplicates (Customer + SKU)
+            $duplicateCheck = $this->checkDuplicateSkuInExcel($rows);
+            if ($duplicateCheck) {
+                return redirect()->back()->with(['error' => $duplicateCheck]);
             }
+            
 
             $products = [];
             $insertCount = 0;
