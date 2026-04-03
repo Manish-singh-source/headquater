@@ -250,7 +250,7 @@ class SalesOrderController extends Controller
                 }
 
                 // vendor availibility check
-                $vendorInfo = $this->checkVendorExistence($record['Vendor Code']);
+                $vendorInfo = $this->checkVendorExistence(trim($record['Vendor Code']));
                 // vendor availibility check done
 
                 if (! $vendorInfo) {
