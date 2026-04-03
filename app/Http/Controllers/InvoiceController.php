@@ -979,7 +979,7 @@ class InvoiceController extends Controller
             $response = Http::withHeaders([
                 'Authorization' => 'JWT ' . $token,
                 'Content-Type' => 'application/json',
-            ])->post('https://sandb-api.mastersindia.co/api/v1/einvoice/', $data);
+            ])->post('https://prod-api.mastersindia.co/api/v1/einvoice/', $data);
 
             return $response->json();
         } catch (\Exception $e) {
@@ -1026,7 +1026,7 @@ class InvoiceController extends Controller
             $response = Http::withHeaders([
                 'Authorization' => 'JWT ' . $token,
                 'Content-Type' => 'application/json',
-            ])->post('https://sandb-api.mastersindia.co/api/v1/cancel-einvoice/', $requestData);
+            ])->post('https://prod-api.mastersindia.co/api/v1/cancel-einvoice/', $requestData);
 
             $data = $response->json();
 
@@ -1152,7 +1152,7 @@ class InvoiceController extends Controller
             $response = Http::withHeaders([
                 'Authorization' => 'JWT ' . $token,
                 'Content-Type' => 'application/json',
-            ])->post('https://sandb-api.mastersindia.co/api/v1/gen-ewb-by-irn/', $requestData);
+            ])->post('https://prod-api.mastersindia.co/api/v1/gen-ewb-by-irn/', $requestData);
 
             $data = $response->json();
 
@@ -1265,7 +1265,7 @@ class InvoiceController extends Controller
             $response = Http::withHeaders([
                 'Authorization' => 'JWT ' . $token,
                 'Content-Type' => 'application/json',
-            ])->post('https://sandb-api.mastersindia.co/api/v1/ewayBillCancel/', $requestData);
+            ])->post('https://prod-api.mastersindia.co/api/v1/ewayBillCancel/', $requestData);
 
             $data = $response->json();
 
@@ -1347,7 +1347,7 @@ class InvoiceController extends Controller
             $response = Http::withHeaders([
                 'Authorization' => 'JWT ' . $token,
                 'Content-Type' => 'application/json',
-            ])->post('https://sandb-api.mastersindia.co/api/v1/getEwayBillData/', $requestData);
+            ])->post('https://prod-api.mastersindia.co/api/v1/getEwayBillData/', $requestData);
 
             $data = $response->json();
 
@@ -1422,7 +1422,7 @@ class InvoiceController extends Controller
             $response = Http::withHeaders([
                 'Authorization' => 'JWT ' . $token,
                 'Content-Type' => 'application/json',
-            ])->get('https://sandb-api.mastersindia.co/api/v1/distance/?fromPincode=' . $source . '&toPincode=' . $destination);
+            ])->get('https://prod-api.mastersindia.co/api/v1/distance/?fromPincode=' . $source . '&toPincode=' . $destination);
 
             return $response->json();
         } catch (\Exception $e) {
@@ -1435,7 +1435,7 @@ class InvoiceController extends Controller
     private function getEInvoiceToken()
     {
         try {
-            $response = Http::post('https://sandb-api.mastersindia.co/api/v1/token-auth', [
+            $response = Http::post('https://prod-api.mastersindia.co/api/v1/token-auth', [
                 'username' => env('EINVOICE_API_USERNAME'),
                 'password' => env('EINVOICE_API_PASSWORD'),
             ]);
