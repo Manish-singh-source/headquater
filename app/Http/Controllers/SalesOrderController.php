@@ -1667,7 +1667,7 @@ class SalesOrderController extends Controller
                     // Update sales order product status only if all allocations are processed
                     // We'll handle this separately after all invoices are created
 
-                    $taxable_amount += (($unitPrice * $quantity) * ($detail->product->gst / 100));
+                    $taxable_amount += (($unitPrice * $quantity) * (intval($detail->product->gst) / 100));
                 }
 
                 // Update invoice with calculated total
