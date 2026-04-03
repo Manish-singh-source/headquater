@@ -89,7 +89,7 @@ class InvoiceController extends Controller
         $path = public_path('assets/images/logo-icon.png');
         $base64 = base64_encode(file_get_contents($path));
         $base64Image = 'data:image/png;base64,' . $base64;
-        
+
         $sign = public_path('assets/images/sign-transparent.png');
         $sign64 = base64_encode(file_get_contents($sign));
         $sign64Image = 'data:image/png;base64,' . $sign64;
@@ -545,11 +545,11 @@ class InvoiceController extends Controller
             } else {
                 $newNumber = '7000';
             }
-            if(($newNumber - $lastNumber) > 1){
-                    $newNumber = $lastNumber + 1;
-                }else {
-                    $newNumber = '7000';
-                }
+            // if (($newNumber - $lastNumber) > 1) {
+            //     $newNumber = $lastNumber + 1;
+            // } else {
+            //     $newNumber = '7000';
+            // }
 
             // $invoiceNumber = "INV-{$yearMonth}-{$newNumber}";
             // old format

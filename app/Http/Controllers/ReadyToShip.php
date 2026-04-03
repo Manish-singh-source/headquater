@@ -689,11 +689,11 @@ class ReadyToShip extends Controller
             } else {
                 $newNumber = '7000';
             }
-            if(($newNumber - $lastNumber) > 1){
-                    $newNumber = $lastNumber + 1;
-                }else {
-                    $newNumber = '7000';
-                }
+            // if (($newNumber - $lastNumber) > 1) {
+            //     $newNumber = $lastNumber + 1;
+            // } else {
+            //     $newNumber = '7000';
+            // }
             $invoiceNumber = 'IIPL-' . $newNumber;
 
             // Calculate totals
