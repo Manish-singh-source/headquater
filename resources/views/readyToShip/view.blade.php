@@ -59,45 +59,48 @@
                                         ];
                                     @endphp
                                     @forelse ($warehouseAllocations as $allocation)
-                                        <tr>
-                                            <td>
-                                                <input class="form-check-input" type="checkbox">
-                                            </td>
-                                            <td>{{ $allocation->salesOrder->order_number }}</td>
-                                            <td>{{ $allocation->rts_count_id }}</td>
-                                            <td>
-                                                <p class="mb-0 customer-name fw-bold">
-                                                    {{ $allocation->salesOrder?->customerGroup?->name }}
-                                                </p>
-                                            </td>
-                                            <td>
-                                                {{ $allocation?->customer?->facility_name }}
-                                            </td>
-                                            <td>{{ $allocation?->customer?->client_name }}</td>
-                                            <td>
-                                                {{ $allocation?->customer?->contact_name }}
-                                            </td>
-                                            <td>
-                                                {{ $allocation->approved_at->format('d M Y') }}
-                                            </td>
-                                            <td>
-                                                {{ $statuses[$allocation->salesOrder->status] }}
-                                            </td>
-                                            <td>
-                                                <a aria-label="anchor"
-                                                    href="{{ route('readyToShip.view.detail', ['id' => $allocation->salesOrder->id, 'c_id' => $allocation->customer->id, 'rts_count_id' => $allocation->rts_count_id]) }}"
-                                                    class="btn btn-icon btn-sm bg-primary-subtle me-1"
-                                                    data-bs-toggle="tooltip" data-bs-original-title="View">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13"
-                                                        viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                                                        class="feather feather-eye text-primary">
-                                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                                        <circle cx="12" cy="12" r="3"></circle>
-                                                    </svg>
-                                                </a>
-                                            </td>
-                                        </tr>
+                                        @if ($allocation->id)
+                                            <tr>
+                                                <td>
+                                                    <input class="form-check-input" type="checkbox">
+                                                </td>
+                                                <td>{{ $allocation->salesOrder->order_number }}</td>
+                                                <td>{{ $allocation->rts_count_id }}</td>
+                                                <td>
+                                                    <p class="mb-0 customer-name fw-bold">
+                                                        {{ $allocation->salesOrder?->customerGroup?->name }}
+                                                    </p>
+                                                </td>
+                                                <td>
+                                                    {{ $allocation?->customer?->facility_name }}
+                                                </td>
+                                                <td>{{ $allocation?->customer?->client_name }}</td>
+                                                <td>
+                                                    {{ $allocation?->customer?->contact_name }}
+                                                </td>
+                                                <td>
+                                                    {{ $allocation->approved_at->format('d M Y') }}
+                                                </td>
+                                                <td>
+                                                    {{ $statuses[$allocation->salesOrder->status] }}
+                                                </td>
+                                                <td>
+                                                    <a aria-label="anchor"
+                                                        href="{{ route('readyToShip.view.detail', ['id' => $allocation->salesOrder->id, 'c_id' => $allocation->customer->id, 'rts_count_id' => $allocation->rts_count_id]) }}"
+                                                        class="btn btn-icon btn-sm bg-primary-subtle me-1"
+                                                        data-bs-toggle="tooltip" data-bs-original-title="View">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="13"
+                                                            height="13" viewBox="0 0 24 24" fill="none"
+                                                            stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                                            stroke-linejoin="round"
+                                                            class="feather feather-eye text-primary">
+                                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                                            <circle cx="12" cy="12" r="3"></circle>
+                                                        </svg>
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        @endif
                                     @empty
                                         <tr>
                                             <td colspan="7" class="text-center">No Records Found</td>
