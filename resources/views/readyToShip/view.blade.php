@@ -106,7 +106,6 @@
                                             <td colspan="7" class="text-center">No Records Found</td>
                                         </tr>
                                     @endforelse
-
                                 </tbody>
                             </table>
                         </div>
