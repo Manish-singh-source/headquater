@@ -59,7 +59,7 @@
                                         ];
                                     @endphp
                                     @forelse ($warehouseAllocations as $allocation)
-                                        @if ($allocation->salesOrder->id && $allocation->customer->id)
+                                        @if ($allocation->salesOrder?->id && $allocation?->customer?->id)
                                             <tr>
                                                 <td>
                                                     <input class="form-check-input" type="checkbox">
