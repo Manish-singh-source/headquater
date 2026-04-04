@@ -396,7 +396,7 @@ class SalesOrderController extends Controller
                     'net_landing_rate_confirmation' => $record['Net Landing Rate Confirmation'] ?? '',
 
                     'mrp' => $record['MRP'] ?? 0,
-                    'product_mrp' => $record['Product MRP'] ?? 0,
+                    'product_mrp' => floatval($record['Product MRP']) ?? 0,
                     'mrp_confirmation' => $record['MRP Confirmation'] ?? '',
 
                     'po_qty' => $record['PO Quantity'] ?? '',

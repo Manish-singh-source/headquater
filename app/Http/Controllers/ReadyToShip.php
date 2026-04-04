@@ -85,11 +85,17 @@ class ReadyToShip extends Controller
                 $q->where('product_status', 'completed');
             };
 
-            $warehouseAllocations = WarehouseAllocation::with('salesOrder.customerGroup', 'customer')
-                ->where('sales_order_id', $id)
+            $sub = WarehouseAllocation::where('sales_order_id', $id)
                 ->where('product_status', 'completed')
-                ->select('id', 'customer_id', 'sales_order_id', 'rts_count_id', 'approved_at') // include primary key
-                ->distinct()
+                ->selectRaw('MAX(id) as id')
+                ->groupBy('sales_order_id', 'rts_count_id');
+
+            $warehouseAllocations = WarehouseAllocation::with(
+                'salesOrder.customerGroup',
+                'customer',
+                'salesOrderProduct.customer'
+            )
+                ->whereIn('id', $sub)
                 ->get();
 
             // dd($warehouseAllocations);
