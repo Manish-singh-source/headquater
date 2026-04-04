@@ -227,7 +227,7 @@ class ReadyToShip extends Controller
                     $query->where('customer_id', $c_id);
                 })
                 ->get();
-
+            // dd($warehouseAllocations);
             return view('readyToShip.view-detail', compact('salesOrder', 'isSuperAdmin', 'userWarehouseId', 'user', 'customerInfo', 'warehouseAllocations'));
         } catch (\Exception $e) {
             return redirect()->back()

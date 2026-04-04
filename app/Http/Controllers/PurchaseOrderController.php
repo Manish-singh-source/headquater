@@ -511,7 +511,7 @@ class PurchaseOrderController extends Controller
         $warehouses = Warehouse::where('status', '1')
             ->orderBy('name')
             ->get();
-
+        // dd($purchaseOrder); 
         return view('purchaseOrder.view', compact('purchaseOrder', 'facilityNames', 'purchaseOrderProducts', 'uploadedPIOfVendors', 'vendorPIs', 'purchaseInvoice', 'purchaseGrn', 'warehouses'));
     }
 
@@ -731,7 +731,7 @@ class PurchaseOrderController extends Controller
                         $salesOrderProduct = SalesOrderProduct::where('temp_order_id', $tempOrderproduct->id)->first();
 
                         if ($salesOrderProduct) {
-                            $salesOrderProduct->dispatched_quantity = $allocatedQty;
+                            $salesOrderProduct->dispatched_quantity += $allocatedQty;
                             $salesOrderProduct->save();
                             // Check if this sales order uses auto-allocation (has warehouse allocations)
                             $existingAllocations = WarehouseAllocation::where('sales_order_product_id', $salesOrderProduct->id)
@@ -741,7 +741,7 @@ class PurchaseOrderController extends Controller
 
                             if ($existingAllocations) {
                                 // Update existing allocation
-                                $existingAllocations->allocated_quantity = $allocatedQty;
+                                $existingAllocations->allocated_quantity += $allocatedQty;
                                 $existingAllocations->save();
 
                                 Log::info('Updated WarehouseAllocation', [
