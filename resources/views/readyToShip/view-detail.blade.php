@@ -264,7 +264,7 @@
                                                 @endphp
 
                                                 <tr>
-                                                    <td>{{ $order->customer->contact_name }}</td>
+                                                    <td>{{ $order->customer?->contact_name }}</td>
                                                     <td>{{ $order->salesOrderProduct->tempOrder->sku }}</td>
                                                     <td>{{ $order->salesOrderProduct->tempOrder->facility_name }}</td>
                                                     <td>{{ $order->salesOrderProduct->tempOrder->facility_location }}</td>

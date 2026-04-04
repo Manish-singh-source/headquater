@@ -221,9 +221,11 @@ class ReadyToShip extends Controller
             // warehouse allocation details for this order and customer
             $warehouseAllocations = WarehouseAllocation::with('customer', 'salesOrderProduct.tempOrder')
                 ->where('sales_order_id', $id)
-                ->where('customer_id', $c_id)
                 ->where('rts_count_id', $rts_count_id)
                 ->where('product_status', 'completed')
+                ->whereHas('salesOrderProduct', function ($query) use ($c_id) {
+                    $query->where('customer_id', $c_id);
+                })
                 ->get();
 
             return view('readyToShip.view-detail', compact('salesOrder', 'isSuperAdmin', 'userWarehouseId', 'user', 'customerInfo', 'warehouseAllocations'));
