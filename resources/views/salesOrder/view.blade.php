@@ -29,6 +29,7 @@
                         </ol>
                     </nav>
                 </div>
+                {{-- 
                 <div class="justify-end">
                     <div class="row g-3 justify-content-end">
                         <div class="col-12 col-md-auto">
@@ -61,7 +62,7 @@
                             </div>
                         </div>
                     </div>
-                </div>
+                </div> --}}
             </div>
 
 
@@ -158,6 +159,7 @@
                         <!-- Tabs Navigation -->
                         <div class="div d-flex justify-content-end my-3 gap-2">
 
+                            {{-- 
                             <div>
                                 <select class="form-select border-2 border-primary" id="selectQuantityFulfilledFilter"
                                     aria-label="Default select example" name="selectQuantityFulfilledFilter">
@@ -165,7 +167,8 @@
                                     <option value="0">Not Fulfilled (0)</option>
                                     <option value="greater_than_0">Fulfilled (Greater Than 0)</option>
                                 </select>
-                            </div>
+                            </div> 
+                            --}}
                             {{-- filter for quantity fulfilled --}}
 
                             <div>
@@ -184,7 +187,7 @@
                                     <option value="" selected>Select Product Status</option>
                                     <option value="Pending">Pending</option>
                                     {{-- <option value="Blocked">Blocked</option> --}}
-                                    <option value="Ready To Package">Ready To Package</option>
+                                    {{-- <option value="Ready To Package">Ready To Package</option> --}}
                                     <option value="Packaging">Packaging</option>
                                     <option value="Packaged">Packaged</option>
                                     {{-- <option value="Cancelled">Cancelled</option> --}}

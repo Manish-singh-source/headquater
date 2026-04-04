@@ -244,7 +244,6 @@ class SalesOrderController extends Controller
                 // customer availibility check
                 $customerInfo = $this->checkCustomerExistence($record['Facility Name']);
                 // customer availibility check done
-
                 if (! $customerInfo) {
                     $customerStatus = 'Not Found';
                 }
@@ -429,10 +428,12 @@ class SalesOrderController extends Controller
                     $product->save();
                 }
 
+                $customerData = Customer::where('facility_name', $record['Facility Name'])->first();
+
                 $saveOrderProduct = new SalesOrderProduct;
                 $saveOrderProduct->sales_order_id = $salesOrder->id;
                 $saveOrderProduct->temp_order_id = $tempSalesOrder->id;
-                $saveOrderProduct->customer_id = $customerInfo->id ?? null;
+                $saveOrderProduct->customer_id = $customerData && $customerData->id ? $customerData->id : null;
                 $saveOrderProduct->vendor_code = $vendorInfo->id ?? null;
                 $saveOrderProduct->ordered_quantity = $record['PO Quantity'] ?? 0;
                 // For auto-allocation, set purchase_ordered_quantity to 0 initially (will be updated later)
@@ -446,10 +447,12 @@ class SalesOrderController extends Controller
                 // what is exactly subtotal ??
                 // basic rate * po quantity(customers quantity) or basic rate * purchase order quantity(vendors quantity)
                 if ($casePackQty > 0) {
-                    $saveOrderProduct->box_count = ceil($poQty / $casePackQty);
+                    // $saveOrderProduct->box_count = ceil($poQty / $casePackQty);
+                    $saveOrderProduct->box_count = 0;
                 } else {
                     $saveOrderProduct->box_count = 0;
                 }
+                $saveOrderProduct->dispatched_quantity = ($record['Block'] > $availableQty) ? $availableQty : $record['Block'];
                 $saveOrderProduct->subtotal = ($record['Basic Rate'] ?? 0) * ($record['PO Quantity'] ?? 0);
                 $saveOrderProduct->save();
 
@@ -463,6 +466,7 @@ class SalesOrderController extends Controller
                             'sales_order_id' => $salesOrder->id,
                             'sales_order_product_id' => $saveOrderProduct->id,
                             'warehouse_id' => $product->warehouse_id,
+                            'customer_id' => $customerData && $customerData->id ? $customerData->id : null,
                             'sku' => $sku,
                             'allocated_quantity' => $allocatedQty,
                             'sequence' => 1,
@@ -2029,7 +2033,7 @@ class SalesOrderController extends Controller
                 $productMapping = ProductMapping::where('sku', $sku)->where('item_code', $record['Item Code'])->first();
 
                 if (!$productMapping) {
-                    return redirect()->back()->with(['error' => 'No sku mapping found for SKU: ' . $row['SKU Code'] . ' and Item Code: ' . $row['Item Code'] . '. Please check the data and try again.']);
+                    return redirect()->back()->with(['error' => 'No sku mapping found for SKU: ' . $record['SKU Code'] . ' and Item Code: ' . $record['Item Code'] . '. Please check the data and try again.']);
                 }
                 // dd($productMapping);
                 // Case pack quantity
