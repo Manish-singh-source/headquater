@@ -43,6 +43,9 @@
                                                         class="text-danger">*</span></label>
                                                 <input type="file" name="products_excel" id="products_excel"
                                                     class="form-control" multiple>
+                                                @error ('products_excel')
+                                                    <div class="text-danger">{{ $message }}</div>
+                                                @enderror
                                             </div>
                                             <div class="col-12 col-lg-3 text-start">
                                                 <button type="submit"

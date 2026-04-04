@@ -76,8 +76,6 @@
                                             <a class="dropdown-item cursor-pointer" id="delete-selected">Delete All</a>
                                         </div>
                                     </div>
-                                    {{-- <a href="{{ route('add-customer') }}" class="btn btn-primary px-4"><i
-                                class="bi bi-plus-lg me-2"></i>Add Customers</a> --}}
                                 </div>
                             </div>
                         </div>
@@ -100,15 +98,11 @@
                                         <th>EAN&nbsp;Code</th>
                                         <th>Brand</th>
                                         <th>Brand&nbsp;Title</th>
-                                        <th>MRP</th>
+                                        {{-- <th>MRP</th> --}}
                                         <th>Category</th>
                                         <th>PCS/Set </th>
                                         <th>Sets/CTN</th>
                                         <th>Weight&nbsp;(Single&nbsp;Box)</th>
-                                        {{-- 
-                                        <th>Basic&nbsp;Rate</th>
-                                        <th>Net&nbsp;Landing&nbsp;Rate</th> 
-                                        --}}
                                         <th>Case&nbsp;Pack&nbsp;Quantity</th>
                                         <th>Vendor&nbsp;Code</th>
                                         <th>Vendor&nbsp;Name</th>
@@ -154,7 +148,7 @@
                                                     </div>
                                                 </td>
                                                 <td>{{ $productData?->brand_title ?? 'NA' }}</td>
-                                                <td>{{ $productData?->mrp ?? 'NA' }}</td>
+                                                {{-- <td>{{ $productData?->mrp ?? 'NA' }}</td> --}}
                                                 <td>{{ $productData?->category ?? 'NA' }}</td>
                                                 <td>{{ $productData?->pcs_set ?? 'NA' }}</td>
                                                 <td>{{ $productData?->sets_ctn ?? 'NA' }}</td>
@@ -213,8 +207,6 @@
                                                             </svg>
                                                         </a>
 
-                                                        <!-- per-row modal removed to avoid duplicate IDs; single modal is placed once after the table -->
-
                                                         <form
                                                             action="{{ route('product.delete', $productData?->id) }}"
                                                             method="POST" onsubmit="return confirm('Are you sure?')">
@@ -255,10 +247,7 @@
             </div>
         </div>
     </main>
-    <!--end main wrapper-->
-
-    <!-- Single Edit Product Modal -->
-    <!-- Single Edit Product Modal -->
+    
     <div class="modal fade" id="editProductModal" tabindex="-1" aria-labelledby="editProductModalLabel"
         aria-hidden="true">
         <div class="modal-dialog modal-lg">
@@ -289,11 +278,13 @@
                                 <label for="brand_title" class="form-label">Brand Title</label>
                                 <input type="text" name="brand_title" id="brand_title" class="form-control">
                             </div>
+                            {{-- 
                             <div class="col-md-6 mb-3">
                                 <label for="mrp" class="form-label">MRP</label>
                                 <input type="number" step="0.01" name="mrp" id="mrp"
                                     class="form-control">
-                            </div>
+                            </div> 
+                            --}}
                             <div class="col-md-6 mb-3">
                                 <label for="category" class="form-label">Category</label>
                                 <input type="text" name="category" id="category" class="form-control">
@@ -306,10 +297,12 @@
                                 <label for="sets_ctn" class="form-label">Sets/CTN</label>
                                 <input type="number" name="sets_ctn" id="sets_ctn" class="form-control">
                             </div>
+                            {{-- 
                             <div class="col-md-6 mb-3">
                                 <label for="basic_rate" class="form-label">Basic Rate</label>
                                 <input type="text" name="basic_rate" id="basic_rate" class="form-control">
-                            </div>
+                            </div> 
+                            --}}
                             <div class="col-md-6 mb-3">
                                 <label for="hsn" class="form-label">HSN</label>
                                 <input type="text" name="hsn" id="hsn" class="form-control">
@@ -335,6 +328,7 @@
         </div>
     </div>
 @endsection
+
 @section('script')
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -425,11 +419,9 @@
                     $('#ean_code').val(product.ean_code);
                     $('#brand').val(product.brand);
                     $('#brand_title').val(product.brand_title);
-                    $('#mrp').val(product.mrp);
                     $('#category').val(product.category);
                     $('#pcs_set').val(product.pcs_set);
                     $('#sets_ctn').val(product.sets_ctn);
-                    $('#basic_rate').val(product.basic_rate);
                     $('#hsn').val(product.hsn);
 
                     // Handle warehouse stock data

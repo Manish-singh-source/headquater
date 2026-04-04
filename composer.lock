@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "52cc3404ff3704fd6a499cc360a95201",
+    "content-hash": "d831a3b27609a00166f661f0771fdd17",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -4672,31 +4672,31 @@
         },
         {
             "name": "spatie/laravel-db-snapshots",
-            "version": "2.7.2",
+            "version": "2.10.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/spatie/laravel-db-snapshots.git",
-                "reference": "deb86a53a30cb852e82b491dd3f493fc002fe9f2"
+                "reference": "b88889a828d7997343df81be831468e87dceaaee"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/spatie/laravel-db-snapshots/zipball/deb86a53a30cb852e82b491dd3f493fc002fe9f2",
-                "reference": "deb86a53a30cb852e82b491dd3f493fc002fe9f2",
+                "url": "https://api.github.com/repos/spatie/laravel-db-snapshots/zipball/b88889a828d7997343df81be831468e87dceaaee",
+                "reference": "b88889a828d7997343df81be831468e87dceaaee",
                 "shasum": ""
             },
             "require": {
-                "illuminate/support": "^10.0|^11.0|^12.0",
+                "illuminate/support": "^11.0|^12.0|^13.0",
                 "league/flysystem": "^3.0",
-                "php": "^8.1",
-                "spatie/db-dumper": "^3.3",
+                "php": "^8.2",
+                "spatie/db-dumper": "^3.3|^4.0",
                 "spatie/laravel-package-tools": "^1.6",
                 "spatie/temporary-directory": "^2.0"
             },
             "require-dev": {
                 "mockery/mockery": "^1.4",
-                "orchestra/testbench": "^8.22.3|^9.0.4|^10.0",
-                "pestphp/pest-plugin-laravel": "^2.4|^3.1",
-                "phpunit/phpunit": "^10.5|^11.5.3"
+                "orchestra/testbench": "^9.0.4|^10.0|^11.0",
+                "pestphp/pest-plugin-laravel": "^3.1|^4.0",
+                "phpunit/phpunit": "^10.5|^11.5.3|^12.5.12"
             },
             "type": "library",
             "extra": {
@@ -4730,7 +4730,7 @@
                 "spatie"
             ],
             "support": {
-                "source": "https://github.com/spatie/laravel-db-snapshots/tree/2.7.2"
+                "source": "https://github.com/spatie/laravel-db-snapshots/tree/2.10.0"
             },
             "funding": [
                 {
@@ -4742,7 +4742,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-01-28T22:38:12+00:00"
+            "time": "2026-04-01T15:21:34+00:00"
         },
         {
             "name": "spatie/laravel-package-tools",

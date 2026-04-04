@@ -19,7 +19,6 @@ use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SalesOrderController;
-use App\Http\Controllers\SKUMappingController;
 use App\Http\Controllers\StaffController;
 use App\Http\Controllers\TrackOrderController;
 use App\Http\Controllers\VendorController;

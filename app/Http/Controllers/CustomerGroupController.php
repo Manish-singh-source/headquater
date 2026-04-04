@@ -86,6 +86,19 @@ class CustomerGroupController extends Controller
             $fileExtension = $file->getClientOriginalExtension();
 
             $reader = SimpleExcelReader::create($filePath, $fileExtension);
+            $rows = $reader->getRows()->toArray();
+
+            // Check Columns Headers 
+            $requiredHeaders = ['Client Name', 'Contact Name', 'Email', 'Contact No', 'Billing Address', 'Billing Zip', 'Billing City', 'Billing State', 'Billing Country', 'Shipping Address', 'Shipping Zip', 'Shipping City', 'Shipping State', 'Shipping Country', 'GSTIN', 'PAN', 'Facility Name'];
+
+            $fileHeaders = array_map('trim', array_keys($rows[0] ?? []));
+            $missingHeaders = array_diff($requiredHeaders, $fileHeaders);
+
+            if (! empty($missingHeaders)) {
+                DB::rollBack();
+
+                return redirect()->back()->with(['error' => 'Missing required columns: ' . implode(', ', $missingHeaders)]);
+            }
 
             $insertCount = 0;
             $existingCount = 0;
@@ -94,7 +107,7 @@ class CustomerGroupController extends Controller
             foreach ($reader->getRows() as $record) {
                 if (! isset($record['Facility Name']) || empty($record['Facility Name'])) {
                     $notStoredCustomers[] = $record;
-                    continue; // Skip rows without facility name
+                    break; // Skip rows without facility name
                 }
 
                 $customer = Customer::where('facility_name', $record['Facility Name'])->first();
@@ -484,12 +497,12 @@ class CustomerGroupController extends Controller
             $reader = SimpleExcelReader::create($filepath, $extension);
             $rows = $reader->getRows();
             $insertCount = 0;
-            
+
             foreach ($rows as $record) {
                 if (empty($record['Facility Name'])) {
                     continue;
                 }
-                
+
                 $customer = Customer::where('facility_name', $record['Facility Name'])->first();
                 if (! $customer) {
                     continue;
@@ -514,7 +527,7 @@ class CustomerGroupController extends Controller
                 $customer->shipping_state = $record['Shipping State'] ?? $customer->shipping_state;
                 $customer->shipping_city = $record['Shipping City'] ?? $customer->shipping_city;
                 $customer->shipping_zip = $record['Shipping Zip'] ?? $customer->shipping_zip;
-                $customer->save();  
+                $customer->save();
 
                 $insertCount++;
             }

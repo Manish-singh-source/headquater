@@ -142,3 +142,53 @@ You may include:
 ---
 
 Would you like me to format this into a **database table structure**, **workflow diagram**, or **status dropdown system for your UI**?
+
+
+
+
+
+
+
+
+1. When we try to punch the sales order, the sheet is correct, but it is not getting uploaded from our side. Request your team to upload it from your end.
+
+2. Stock is available in the system, but it is not reflecting in Block Quantity.
+   Example: SKU – JR500-ST (details already shared with Sourav).
+
+3. While punching the order, no facility error appears. However, after shipment, the error shows, and we are unable to make any changes.
+
+4. We have mentioned HSN in the order sheet, but it is not reflecting in the invoice label.
+
+5. After final allocation, the quantity gets auto-changed at the shipping stage every time. The sheet has already been shared in the group (Packaging-product(18)).
+
+6. In the Ready to Ship stage, multiple customer names are appearing for a single customer. Also, there is no bulk shipping option available.
+
+7. In most stages, the software redirects to the coding sheet. Even after refreshing and re-logging, the issue is not resolved.
+
+8. E-invoicing issue: We are unable to generate the E-invoice despite entering correct details. The system is showing an error.
+
+
+
+
+
+
+
+
+
+
+
+$reader = SimpleExcelReader::create($filepath, $extension);
+// $rows = $reader->getRows();
+$rows = $reader->getRows()->toArray();
+
+// Check Columns Headers 
+$requiredHeaders = ['Warehouse Id', 'Warehouse Name', 'SKU Code', 'EAN Code', 'Brand', 'Brand Title', 'Category', 'PCS/Set', 'Sets/CTN', 'Weight (Single Box)', 'Vendor Code', 'Vendor Name', 'Vendor Purchase Rate', 'GST', 'HSN', 'Vendor Net Landing', 'Stock'];
+
+$fileHeaders = array_map('trim', array_keys($rows[0] ?? []));
+$missingHeaders = array_diff($requiredHeaders, $fileHeaders);
+
+if (! empty($missingHeaders)) {
+    DB::rollBack();
+
+    return redirect()->back()->with(['error' => 'Missing required columns: ' . implode(', ', $missingHeaders)]);
+}

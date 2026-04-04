@@ -659,7 +659,7 @@ class SalesOrderController extends Controller
             if ($duplicateCheck) {
                 return redirect()->back()->with(['error' => $duplicateCheck]);
             }
-            
+
 
             $products = [];
             $insertCount = 0;
@@ -1755,6 +1755,17 @@ class SalesOrderController extends Controller
 
         $rows = $reader->getRows()->toArray(); // convert to array so we can check duplicates easily
 
+
+        // Check Columns Headers 
+        $requiredHeaders = ['Customer Name', 'PO Number', 'SKU Code', 'Facility Name', 'Facility Location', 'PO Date', 'PO Expiry Date', 'HSN', 'Item Code', 'Description', 'Basic Rate', 'GST', 'Net Landing Rate', 'MRP', 'PO Quantity'];
+
+        $fileHeaders = array_map('trim', array_keys($rows[0] ?? []));
+        $missingHeaders = array_diff($requiredHeaders, $fileHeaders);
+
+        if (! empty($missingHeaders)) {
+            return redirect()->back()->with(['error' => 'Missing required columns: ' . implode(', ', $missingHeaders)]);
+        }
+
         // 🔹 Step 1: Check for duplicates (Customer + SKU)
         $duplicateCheck = $this->checkDuplicateSkuInExcel($rows);
         if ($duplicateCheck) {
@@ -1767,6 +1778,35 @@ class SalesOrderController extends Controller
         try {
 
             foreach ($reader->getRows() as $record) {
+                if (! isset($record['Facility Name']) || empty($record['Facility Name'])) {
+                    return redirect()->back()->with(['error' => 'Facility Name is required for all rows. Please check your CSV file.']);
+                }
+
+                if (! isset($record['Facility Location']) || empty($record['Facility Location'])) {
+                    return redirect()->back()->with(['error' => 'Facility Location is required for all rows. Please check your CSV file.']);
+                }
+
+                if (! isset($record['SKU Code']) || empty($record['SKU Code'])) {
+                    return redirect()->back()->with(['error' => 'SKU Code is required for all rows. Please check your CSV file.']);
+                }
+
+                if (! isset($record['PO Number']) || empty($record['PO Number'])) {
+                    return redirect()->back()->with(['error' => 'PO Number is required for all rows. Please check your CSV file.']);
+                }
+
+                if (! isset($record['HSN']) || empty($record['HSN'])) {
+                    return redirect()->back()->with(['error' => 'HSN is required for all rows. Please check your CSV file.']);
+                }
+
+                if (! isset($record['Item Code']) || empty($record['Item Code'])) {
+                    return redirect()->back()->with(['error' => 'Item Code is required for all rows. Please check your CSV file.']);
+                }
+
+                if (! isset($record['GST']) || empty($record['GST'])) {
+                    return redirect()->back()->with(['error' => 'GST is required for all rows. Please check your CSV file.']);
+                }
+
+
                 $sku = trim($record['SKU Code']);  // customer sku
                 $poQty = (int) $record['PO Quantity'];
                 $warehouseId = $request->warehouse_id;
@@ -1988,6 +2028,9 @@ class SalesOrderController extends Controller
                 // dd($sku);
                 $productMapping = ProductMapping::where('sku', $sku)->where('item_code', $record['Item Code'])->first();
 
+                if (!$productMapping) {
+                    return redirect()->back()->with(['error' => 'No sku mapping found for SKU: ' . $row['SKU Code'] . ' and Item Code: ' . $row['Item Code'] . '. Please check the data and try again.']);
+                }
                 // dd($productMapping);
                 // Case pack quantity
                 $casePackQty = (int) ($productObj->pcs_set ?? 0) * (int) ($productObj->sets_ctn ?? 0);
@@ -2104,6 +2147,13 @@ class SalesOrderController extends Controller
         SimpleExcelReader::create($originalPath)->getRows()->each(function (array $row) use ($writer) {
             $product = Product::where('sku', $row['SKU Code'])->first();
 
+            // 
+            $productMapping = ProductMapping::where('sku', $product->sku)
+                ->where('item_code', trim($row['Item Code']))
+                ->first();
+            // if(!$productMapping) {
+            //     return redirect()->back()->with(['error' => 'No sku mapping found for SKU: ' . $row['SKU Code'] . ' and Item Code: ' . $row['Item Code'] . '. Please check the data and try again.']);  
+            // }
             $writer->addRow([
                 'Customer Name' => $row['Customer Name'] ?? '',
                 'PO Number' => $row['PO Number'] ?? '',
@@ -2114,7 +2164,7 @@ class SalesOrderController extends Controller
                 'PO Expiry Date' => $row['PO Expiry Date'] ?? '',
                 'HSN' => $row['HSN'] ?? '',
                 'GST' => $row['GST'] ?? '',
-                'Portal Code' => $row['Portal Code'] ?? '',
+                'Portal Code' => $productMapping && $productMapping->portal_code ? $productMapping->portal_code ?? $row['Portal Code'] : '',
                 'Item Code' => $row['Item Code'] ?? '',
                 'Description' => $row['Description'] ?? '',
 

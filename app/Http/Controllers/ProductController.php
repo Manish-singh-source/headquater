@@ -114,6 +114,18 @@ class ProductController extends Controller
             $reader = SimpleExcelReader::create($filePath, $fileExtension);
             $rows = $reader->getRows()->toArray();
 
+            // Check Columns Headers 
+            $requiredHeaders = ['SKU Code', 'Portal Code', 'Item Code', 'HSN', 'EAN Code', 'Brand', 'Brand Title', 'MRP', 'Category', 'PCS/Set', 'Sets/CTN', 'Weight (Single Box)', 'Basic Rate', 'Net Landing Rate', 'Vendor Code', 'Vendor Name', 'Vendor Purchase Rate', 'GST', 'Vendor Net Landing', 'Stock'];
+
+            $fileHeaders = array_map('trim', array_keys($rows[0] ?? []));
+            $missingHeaders = array_diff($requiredHeaders, $fileHeaders);
+
+            if (! empty($missingHeaders)) {
+                DB::rollBack();
+
+                return redirect()->back()->withErrors(['products_excel' => 'Missing required columns: ' . implode(', ', $missingHeaders)]);
+            }
+
             // store duplicate check from database
             $duplicatesInDb = [];
 
@@ -273,7 +285,22 @@ class ProductController extends Controller
 
         try {
             $reader = SimpleExcelReader::create($filepath, $extension);
-            $rows = $reader->getRows();
+            // $rows = $reader->getRows();
+            $rows = $reader->getRows()->toArray();
+
+            // Check Columns Headers 
+            $requiredHeaders = ['Warehouse Id', 'Warehouse Name', 'SKU Code', 'EAN Code', 'Brand', 'Brand Title', 'Category', 'PCS/Set', 'Sets/CTN', 'Weight (Single Box)', 'Vendor Code', 'Vendor Name', 'Vendor Purchase Rate', 'GST', 'HSN', 'Vendor Net Landing', 'Stock'];
+
+            $fileHeaders = array_map('trim', array_keys($rows[0] ?? []));
+            $missingHeaders = array_diff($requiredHeaders, $fileHeaders);
+
+            if (! empty($missingHeaders)) {
+                DB::rollBack();
+
+                return redirect()->back()->with(['error' => 'Missing required columns: ' . implode(', ', $missingHeaders)]);
+            }
+
+
             $products = [];
             $insertCount = 0;
 
@@ -299,7 +326,6 @@ class ProductController extends Controller
                     'ean_code' => Arr::get($record, 'EAN Code') ?? '',
                     'brand' => Arr::get($record, 'Brand') ?? '',
                     'brand_title' => Arr::get($record, 'Brand Title') ?? '',
-                    'mrp' => Arr::get($record, 'MRP') ?? '',
                     'category' => Arr::get($record, 'Category') ?? '',
                     'pcs_set' => Arr::get($record, 'PCS/Set') ?? '',
                     'sets_ctn' => Arr::get($record, 'Sets/CTN') ?? '',
@@ -431,7 +457,7 @@ class ProductController extends Controller
                 'ean_code' => $request->ean_code,
                 'brand' => $request->brand,
                 'brand_title' => $request->brand_title,
-                'mrp' => $request->mrp,
+                // 'mrp' => $request->mrp,
                 'category' => $request->category,
                 'pcs_set' => (int) ($request->pcs_set ?? 0),
                 'sets_ctn' => (int) ($request->sets_ctn ?? 0),
@@ -439,14 +465,24 @@ class ProductController extends Controller
                 'hsn' => $request->hsn,
             ];
 
+            $productMapping = ['mrp' => $request->mrp];
+
             if ($request->has('basic_rate') && $request->basic_rate !== null && $request->basic_rate !== '') {
                 $basicRate = (float) $request->basic_rate;
                 $netLandingRate = $this->calculateNetLandingRate((int) $basicRate, (int) ($product->gst ?? 0));
-                $updateData['basic_rate'] = $basicRate;
-                $updateData['net_landing_rate'] = $netLandingRate;
+
+                $productMapping['basic_rate'] = $basicRate;
+                $productMapping['net_landing_rate'] = $netLandingRate;
+
             }
 
             $product->update($updateData);
+            ProductMapping::updateOrCreate([
+                'sku' => $product->sku,
+                'portal_code' => $product->portal_code,
+                'item_code' => $product->item_code,
+            ], $productMapping);
+
 
             // Update warehouse stock if provided
             if ($request->has('original_quantity') || $request->has('available_quantity')) {
@@ -616,8 +652,8 @@ class ProductController extends Controller
 
             // Add data rows
             foreach ($products as $stock) {
-                $product = Product::where('warehouse_id' , $stock->warehouse_id)->where('sku', $stock->sku)->first();
-                
+                $product = Product::where('warehouse_id', $stock->warehouse_id)->where('sku', $stock->sku)->first();
+
                 if ($product?->sku) {
                     $writer->addRow([
                         'Warehouse Id' => $stock->warehouse?->id ?? '',
