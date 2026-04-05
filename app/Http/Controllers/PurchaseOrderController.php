@@ -358,7 +358,20 @@ class PurchaseOrderController extends Controller
 
         try {
             $reader = SimpleExcelReader::create($filepath, $extension);
-            $rows = $reader->getRows();
+            $rows = $reader->getRows()->toArray();
+
+            // Check Columns Headers 
+            $requiredHeaders = ['Sales Order No', 'Purchase Order No', 'Vendor Code', 'Portal Code', 'Item Code', 'Vendor SKU Code', 'Title', 'MRP', 'GST', 'HSN', 'PO Quantity', 'PI Quantity', 'Purchase Rate Basic'];
+
+            $fileHeaders = array_map('trim', array_keys($rows[0] ?? []));
+            $missingHeaders = array_diff($requiredHeaders, $fileHeaders);
+
+            if (! empty($missingHeaders)) {
+                DB::rollBack();
+
+                return redirect()->back()->with(['error' => 'Missing required columns: ' . implode(', ', $missingHeaders)]);
+            }
+
             $vendorProducts = [];
             $insertCount = 0;
 
@@ -378,10 +391,20 @@ class PurchaseOrderController extends Controller
                 'warehouse_id' => $request->warehouse_id,
             ]);
 
+            $mandatoryFields = ['Sales Order No', 'Purchase Order No', 'Vendor Code', 'Portal Code', 'Item Code', 'Vendor SKU Code', 'Title', 'MRP', 'GST', 'HSN', 'PO Quantity', 'PI Quantity', 'Purchase Rate Basic'];
+
             foreach ($rows as $record) {
-                if (empty($record['Vendor SKU Code'])) {
-                    continue;
+                // Validate all required fields are not empty
+                foreach ($mandatoryFields as $field) {
+                    if (! isset($record[$field]) || (is_string($record[$field]) && trim($record[$field]) === '')) {
+                        DB::rollBack();
+                        return redirect()->back()->with(['error' => "{$field} is required for all rows. Please check your CSV file."])->withInput();
+                    }
                 }
+
+                // if (empty($record['Vendor SKU Code'])) {
+                //     continue;
+                // }
 
                 // check if vendor code of request and excel file is same
                 if ($request->vendor_code != $record['Vendor Code']) {
@@ -942,11 +965,11 @@ class PurchaseOrderController extends Controller
                         'Item Code' => $order->tempOrderFetch->item_code ?? '',
                         'Vendor SKU Code' => $order->tempOrderFetch->sku ?? '',
                         'Title' => $order->tempOrderFetch->description ?? '',
-                        'MRP' => $order->tempOrderFetch->mrp ?? '',
-                        'GST' => $order->tempOrderFetch->gst ?? '',
+                        'MRP' => $order->tempOrderFetch->mrp ?? 0,
+                        'GST' => $order->tempOrderFetch->gst ?? 0,
                         'HSN' => $order->tempOrderFetch->hsn ?? '',
-                        'PO Quantity' => $order->ordered_quantity ?? '',
-                        'PI Quantity' => '',
+                        'PO Quantity' => $order->ordered_quantity ?? 0,
+                        'PI Quantity' => 0,
                         'Purchase Rate Basic' => round((float) ($order->product->vendor_purchase_rate ?? 0), 2),
                     ])
                 );

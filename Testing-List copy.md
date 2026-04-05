@@ -98,12 +98,12 @@
 
 ## SKU mapping
 
-- [ ] Add sku mapping products in bulk 
-- [ ] List sku mapping products
-- [ ] Export sku mapping products File
-- [ ] Update sku mapping product 
-- [ ] Update sku mapping products in bulk via excel
-- [ ] Delete Proudct
+- [x] Add sku mapping products in bulk 
+- [x] List sku mapping products
+- [x] Export sku mapping products File
+- [x] Update sku mapping product 
+- [x] Update sku mapping products in bulk via excel
+- [x] Delete Proudct
 - [ ] Multi Delete Proudct
 
 
@@ -111,22 +111,22 @@
 
 ### Check availability
 
-- [x] Implement “Check Availability” pre-step for sales orders.[1]
-- [x] Show only active warehouses in dropdown.[1]
-- [x] Show only active customer groups in dropdown.[1]
-- [ ] Implement Excel upload with columns: Product SKU, Quantity, Block Quantity (for SO).[1]
-- [ ] Validate all required columns in uploaded file.[1]
-- [ ] Validate customer existence (facility name) in file vs system.[1]
-- [ ] Validate all product SKUs in file vs system.[1]
-- [ ] Check requested quantity vs stock per SKU.[1]
-- [ ] Generate Excel report: Product SKU, Requested Qty, Available Qty, Status.[1]
+- [x] Active Customer Groups dropdown 
+- [x] Active warehouses dropdown and all warehouse option
+- [x] Excel file upload for check availibility 
+- [x] If any column is not present throw error 
+- [x] If any column is blank throw error
+- [x] Proper available quantity 
+- [x] Proper unavailable quantity 
+- [x] Proper purchase order quantity (same as unavailable quantity)
+- [x] Proper warehouse allocation (if all warehouse selected)
+
 
 ### Create sales order
+- [ ] Sales Order Create 
+- [ ] Create purchase order using purchase order quantity or auto generated 
+- [ ] 
 
-- [ ] Reuse all validations from “Check Availability”.[1]
-- [ ] Validate vendor existence.[1]
-- [ ] Implement sales order creation flow.[1]
-- [ ] Auto-generate purchase orders for out-of-stock products.[1]
 
 ### Sales order list and details
 

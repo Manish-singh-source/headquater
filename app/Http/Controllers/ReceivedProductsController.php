@@ -327,7 +327,20 @@ class ReceivedProductsController extends Controller
 
         try {
             $reader = SimpleExcelReader::create($filepath, $extension);
-            $rows = $reader->getRows();
+            $rows = $reader->getRows()->toArray();
+
+            // Check Columns Headers 
+            $requiredHeaders = ['Purchase Order No', 'Vendor SKU Code', 'Title', 'MRP', 'PO Quantity', 'PI Quantity', 'Quantity Received', 'Issue Units', 'Issue Description'];
+
+            $fileHeaders = array_map('trim', array_keys($rows[0] ?? []));
+            $missingHeaders = array_diff($requiredHeaders, $fileHeaders);
+
+            if (! empty($missingHeaders)) {
+                DB::rollBack();
+
+                return redirect()->back()->with(['error' => 'Missing required columns: ' . implode(', ', $missingHeaders)]);
+            }
+
             $insertCount = 0;
 
             $vendorPI = VendorPI::with('products')->find($request->vendor_pi_id);
@@ -343,10 +356,19 @@ class ReceivedProductsController extends Controller
                     ->with('error', 'This vendor PI has already been processed.');
             }
 
+            $mandatoryFields = ['Purchase Order No', 'Vendor SKU Code', 'Title', 'MRP', 'PO Quantity', 'PI Quantity', 'Quantity Received'];
+
             foreach ($rows as $record) {
-                if (empty($record['Vendor SKU Code'] ?? null)) {
-                    continue;
+                // Validate all required fields are not empty
+                foreach ($mandatoryFields as $field) {
+                    if (! isset($record[$field]) || (is_string($record[$field]) && trim($record[$field]) === '')) {
+                        DB::rollBack();
+                        return redirect()->back()->with(['error' => "{$field} is required for all rows. Please check your CSV file."])->withInput();
+                    }
                 }
+                // if (empty($record['Vendor SKU Code'] ?? null)) {
+                //     continue;
+                // }
 
                 $vendorSkuCode = trim($record['Vendor SKU Code']);
                 $quantityReceived = (int) ($record['Quantity Received'] ?? 0);

@@ -145,6 +145,16 @@ class SalesOrderController extends Controller
 
             $rows = $reader->getRows()->toArray(); // convert to array so we can check duplicates easily
 
+            // Check Columns Headers 
+            $requiredHeaders = ['Customer Name', 'PO Number', 'SKU Code', 'Facility Name', 'Facility Location', 'PO Date', 'PO Expiry Date', 'HSN', 'GST', 'Portal Code', 'Item Code', 'Description', 'Basic Rate', 'Product Basic Rate', 'Basic Rate Confirmation', 'Net Landing Rate', 'Product Net Landing Rate', 'Net Landing Rate Confirmation', 'MRP', 'Product MRP', 'MRP Confirmation', 'PO Quantity', 'Available Quantity', 'Unavailable Quantity', 'Case Pack Quantity', 'Warehouse Allocation', 'Purchase Order Quantity', 'Block', 'Vendor Code', 'Reason'];
+
+            $fileHeaders = array_map('trim', array_keys($rows[0] ?? []));
+            $missingHeaders = array_diff($requiredHeaders, $fileHeaders);
+
+            if (! empty($missingHeaders)) {
+                return redirect()->back()->with(['error' => 'Missing required columns: ' . implode(', ', $missingHeaders)]);
+            }
+
             // 🔹 Step 1: Check for duplicates (Customer + SKU)
             $duplicateCheck = $this->checkDuplicateSkuInExcel($rows);
             if ($duplicateCheck) {
@@ -182,8 +192,18 @@ class SalesOrderController extends Controller
             $salesOrder->save();
             // sales order created
 
+            $mandatoryFields = ['Customer Name', 'PO Number', 'SKU Code', 'Facility Name', 'Facility Location', 'PO Date', 'PO Expiry Date', 'HSN', 'GST', 'Portal Code', 'Item Code', 'Description', 'Basic Rate', 'Product Basic Rate', 'Basic Rate Confirmation', 'Net Landing Rate', 'Product Net Landing Rate', 'Net Landing Rate Confirmation', 'MRP', 'Product MRP', 'MRP Confirmation', 'PO Quantity', 'Available Quantity', 'Unavailable Quantity', 'Case Pack Quantity', 'Warehouse Allocation', 'Purchase Order Quantity', 'Block', 'Vendor Code'];
+
             // Iterate Excel file
-            foreach ($reader->getRows() as $key => $record) {
+            foreach ($rows as $key => $record) {
+                // Validate all required fields are not empty
+                foreach ($mandatoryFields as $field) {
+                    if (! isset($record[$field]) || (is_string($record[$field]) && trim($record[$field]) === '')) {
+                        DB::rollBack();
+                        return redirect()->back()->with(['error' => "{$field} is required for all rows. Please check your CSV file."])->withInput();
+                    }
+                }
+
                 $sku = trim($record['SKU Code']);
                 $poQty = (int) ($record['PO Quantity'] ?? 0);
                 $purchaseQty = (int) ($record['Purchase Order Quantity'] ?? 0);
@@ -489,7 +509,7 @@ class SalesOrderController extends Controller
                 }
 
                 // Make a purchase order if one or more than one products have less quantity in warehouse
-                if ($shortQty > 0) {
+                if ($shortQty > 0 || $record['Purchase Order Quantity'] ?? 0 > 0) {
                     if (! isset($productStockCache[$vendorCode])) {
                         $productStockCache[$vendorCode] = [
                             'vendor_code' => $vendorCode,
@@ -655,6 +675,18 @@ class SalesOrderController extends Controller
             $reader = SimpleExcelReader::create($filepath, $extension);
             $rows = $reader->getRows()->toArray(); // convert to array so we can check duplicates easily
 
+            // Check Columns Headers 
+            $requiredHeaders = ['Order No', 'Customer Name', 'Facility Name', 'Facility Location', 'HSN', 'GST', 'Item Code', 'SKU Code', 'Brand', 'Title', 'Basic Rate', 'Product Basic Rate', 'Basic Rate Confirmation', 'Net Landing Rate', 'Product Net Landing Rate', 'Net Landing Rate Confirmation', 'PO MRP', 'Product MRP', 'MRP Confirmation', 'PO Number', 'PO Quantity', 'Purchase Order Quantity', 'Vendor PI Fulfillment Quantity', 'Vendor PI Received Quantity', 'Block Quantity', 'Quantity Fulfilled', 'Final Fulfilled Quantity', 'Warehouse Allocation', 'Invoice Status'];
+
+            $fileHeaders = array_map('trim', array_keys($rows[0] ?? []));
+            $missingHeaders = array_diff($requiredHeaders, $fileHeaders);
+
+            if (! empty($missingHeaders)) {
+                DB::rollBack();
+
+                return redirect()->back()->with(['error' => 'Missing required columns: ' . implode(', ', $missingHeaders)]);
+            }
+
             // 🔹 Step 1: Check for duplicates (Customer + SKU)
             $seen = [];
 
@@ -667,12 +699,20 @@ class SalesOrderController extends Controller
 
             $products = [];
             $insertCount = 0;
+            $mandatoryFields = ['Order No', 'Customer Name', 'Facility Name', 'Facility Location', 'HSN', 'GST', 'Item Code', 'SKU Code', 'Brand', 'Title', 'Basic Rate', 'Product Basic Rate', 'Basic Rate Confirmation', 'Net Landing Rate', 'Product Net Landing Rate', 'Net Landing Rate Confirmation', 'PO MRP', 'Product MRP', 'MRP Confirmation', 'PO Number', 'PO Quantity', 'Purchase Order Quantity', 'Vendor PI Fulfillment Quantity', 'Vendor PI Received Quantity', 'Block Quantity', 'Quantity Fulfilled', 'Final Fulfilled Quantity', 'Warehouse Allocation', 'Invoice Status'];
 
             // 🔹 Step 2: Process records if no duplicates
             foreach ($reader->getRows() as $record) {
-                if (empty($record['SKU Code'])) {
-                    continue;
+                // Validate all required fields are not empty
+                foreach ($mandatoryFields as $field) {
+                    if (! isset($record[$field]) || (is_string($record[$field]) && trim($record[$field]) === '')) {
+                        DB::rollBack();
+                        return redirect()->back()->with(['error' => "{$field} is required for all rows. Please check your CSV file."])->withInput();
+                    }
                 }
+                // if (empty($record['SKU Code'])) {
+                //     continue;
+                // }
 
                 // Find customer
                 $customerInfo = Customer::where('facility_name', $record['Facility Name'])->first();
@@ -1761,7 +1801,23 @@ class SalesOrderController extends Controller
 
 
         // Check Columns Headers 
-        $requiredHeaders = ['Customer Name', 'PO Number', 'SKU Code', 'Facility Name', 'Facility Location', 'PO Date', 'PO Expiry Date', 'HSN', 'Item Code', 'Description', 'Basic Rate', 'GST', 'Net Landing Rate', 'MRP', 'PO Quantity'];
+        $requiredHeaders = [
+            'Customer Name',
+            'PO Number',
+            'SKU Code',
+            'Facility Name',
+            'Facility Location',
+            'PO Date',
+            'PO Expiry Date',
+            'HSN',
+            'Item Code',
+            'Description',
+            'Basic Rate',
+            'GST',
+            'Net Landing Rate',
+            'MRP',
+            'PO Quantity'
+        ];
 
         $fileHeaders = array_map('trim', array_keys($rows[0] ?? []));
         $missingHeaders = array_diff($requiredHeaders, $fileHeaders);
@@ -1779,37 +1835,34 @@ class SalesOrderController extends Controller
         // Check if auto allocation is selected
         $isAutoAllocation = ($request->warehouse_id === 'auto');
 
+        // Check Columns Headers 
+        $mandatoryFields = [
+            'Customer Name',
+            'PO Number',
+            'SKU Code',
+            'Facility Name',
+            'Facility Location',
+            'PO Date',
+            'PO Expiry Date',
+            'HSN',
+            'Item Code',
+            'Description',
+            'Basic Rate',
+            'GST',
+            'Net Landing Rate',
+            'MRP',
+            'PO Quantity'
+        ];
         try {
 
             foreach ($reader->getRows() as $record) {
-                if (! isset($record['Facility Name']) || empty($record['Facility Name'])) {
-                    return redirect()->back()->with(['error' => 'Facility Name is required for all rows. Please check your CSV file.']);
+                // Validate all required fields are not empty
+                foreach ($mandatoryFields as $field) {
+                    if (! isset($record[$field]) || (is_string($record[$field]) && trim($record[$field]) === '')) {
+                        DB::rollBack();
+                        return redirect()->back()->with(['error' => "{$field} is required for all rows. Please check your CSV file."])->withInput();
+                    }
                 }
-
-                if (! isset($record['Facility Location']) || empty($record['Facility Location'])) {
-                    return redirect()->back()->with(['error' => 'Facility Location is required for all rows. Please check your CSV file.']);
-                }
-
-                if (! isset($record['SKU Code']) || empty($record['SKU Code'])) {
-                    return redirect()->back()->with(['error' => 'SKU Code is required for all rows. Please check your CSV file.']);
-                }
-
-                if (! isset($record['PO Number']) || empty($record['PO Number'])) {
-                    return redirect()->back()->with(['error' => 'PO Number is required for all rows. Please check your CSV file.']);
-                }
-
-                if (! isset($record['HSN']) || empty($record['HSN'])) {
-                    return redirect()->back()->with(['error' => 'HSN is required for all rows. Please check your CSV file.']);
-                }
-
-                if (! isset($record['Item Code']) || empty($record['Item Code'])) {
-                    return redirect()->back()->with(['error' => 'Item Code is required for all rows. Please check your CSV file.']);
-                }
-
-                if (! isset($record['GST']) || empty($record['GST'])) {
-                    return redirect()->back()->with(['error' => 'GST is required for all rows. Please check your CSV file.']);
-                }
-
 
                 $sku = trim($record['SKU Code']);  // customer sku
                 $poQty = (int) $record['PO Quantity'];
