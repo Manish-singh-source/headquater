@@ -17,6 +17,8 @@
             </div>
             <!--end breadcrumb-->
 
+            @include('layouts.errors')
+
             <div class="row">
                 <div class="col-12">
                     <div class="card">
@@ -39,11 +41,16 @@
                                 </div>
                                 <div class="col-md-6">
                                     <label for="input9" class="form-label">Warehouse Type</label>
-                                    <select id="input9" class="form-select" name="type">
+                                    <select id="input9" class="form-select @error('type') is-invalid @enderror" name="type">
                                         <option selected="" disabled>Choose...</option>
-                                        <option value="storage hub">Storage Hub</option>
-                                        <option value="return center">Return Center</option>
+                                        <option value="storage hub" {{ old('type') == 'storage hub' ? 'selected' : '' }}>Storage Hub</option>
+                                        <option value="return center" {{ old('type') == 'return center' ? 'selected' : '' }}>Return Center</option>
                                     </select>
+                                    @error('type')
+                                        <div class="invalid-feedback">
+                                            {{ $message }}
+                                        </div>
+                                    @enderror
                                 </div>
                                 <div class="col-md-6">
                                     <label for="input2" class="form-label">Contact Person Name</label>
@@ -187,20 +194,30 @@
                                 </div>
                                 <div class="col-md-2">
                                     <label for="input9" class="form-label">Status</label>
-                                    <select id="input9" name="status" class="form-select">
+                                    <select id="input9" name="status" class="form-select @error('status') is-invalid @enderror">
                                         <option selected="" disabled>Choose any one</option>
-                                        <option value="1">Active</option>
-                                        <option value="0">Inactive</option>
+                                        <option value="1" {{ old('status') == '1' ? 'selected' : '' }}>Active</option>
+                                        <option value="0" {{ old('status') == '0' ? 'selected' : '' }}>Inactive</option>
                                     </select>
+                                    @error('status')
+                                        <div class="invalid-feedback">
+                                            {{ $message }}
+                                        </div>
+                                    @enderror
                                 </div>
                                 <div class="col-md-2">
                                     <label for="input9" class="form-label">Supported Operations</label>
-                                    <select id="input9" name="supported_operations" class="form-select">
+                                    <select id="input9" name="supported_operations" class="form-select @error('supported_operations') is-invalid @enderror">
                                         <option selected="" disabled>Choose any one</option>
-                                        <option value="inbound">Inbound</option>
-                                        <option value="outbount">Outbound</option>
-                                        <option value="return">Return</option>
+                                        <option value="inbound" {{ old('supported_operations') == 'inbound' ? 'selected' : '' }}>Inbound</option>
+                                        <option value="outbound" {{ old('supported_operations') == 'outbound' ? 'selected' : '' }}>Outbound</option>
+                                        <option value="return" {{ old('supported_operations') == 'return' ? 'selected' : '' }}>Return</option>
                                     </select>
+                                    @error('supported_operations')
+                                        <div class="invalid-feedback">
+                                            {{ $message }}
+                                        </div>
+                                    @enderror
                                 </div>
                                 {{-- 
                                 <div class="col-md-2">

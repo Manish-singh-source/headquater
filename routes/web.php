@@ -46,6 +46,29 @@ Route::middleware(['auth'])->group(function () {
     // Dashboard
     Route::get('/', [DashboardController::class, 'index'])->name('index');
 
+    Route::controller(PermissionController::class)->group(function () {
+        // Permissions
+        Route::get('/permission', 'index')->name('permission.index');
+        Route::get('/create-permission', 'create')->name('permission.create');
+        Route::post('/store-permission', 'store')->name('permission.store');
+        Route::get('/edit-permission/{id}', 'edit')->name('permission.edit');
+        Route::put('/update-permission/{id}', 'update')->name('permission.update');
+        Route::delete('/delete-permission/{id}', 'destroy')->name('permission.destroy');
+        Route::delete('/permission/delete-selected', 'deleteSelected')->name('delete.selected.permission');
+        Route::post('/permission/toggle-status', 'toggleStatus')->name('permission.toggleStatus');
+    });
+
+    Route::controller(RoleController::class)->group(function () {
+        // Roles
+        Route::get('/role', 'index')->name('role.index');
+        Route::get('/create-role', 'create')->name('role.create');
+        Route::post('/store-role', 'store')->name('role.store');
+        Route::get('/edit-role/{id}', 'edit')->name('role.edit');
+        Route::put('/update-role/{id}', 'update')->name('role.update');
+        Route::delete('/delete-role/{id}', 'destroy')->name('role.destroy');
+        Route::delete('/role/delete-selected', 'deleteSelected')->name('delete.selected.role');
+    });
+
     // Access Control
     Route::controller(StaffController::class)->group(function () {
         // Staff
@@ -60,43 +83,35 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/staff/toggle-status', 'toggleStatus')->name('staff.toggleStatus');
     });
 
-    Route::controller(RoleController::class)->group(function () {
-        // Roles
-        Route::get('/role', 'index')->name('role.index');
-        Route::get('/create-role', 'create')->name('role.create');
-        Route::post('/store-role', 'store')->name('role.store');
-        Route::get('/edit-role/{id}', 'edit')->name('role.edit');
-        Route::put('/update-role/{id}', 'update')->name('role.update');
-        Route::delete('/delete-role/{id}', 'destroy')->name('role.destroy');
-        Route::delete('/role/delete-selected', 'deleteSelected')->name('delete.selected.role');
+
+    // Warehouse List
+    Route::controller(WarehouseController::class)->group(function () {
+        Route::get('/warehouses', 'index')->name('warehouse.index');
+        Route::get('/create-warehouses', 'create')->name('warehouse.create');
+        Route::post('/warehouses', 'store')->name('warehouse.store');
+        Route::get('/warehouses/{id}', 'edit')->name('warehouse.edit');
+        Route::put('/warehouse/{id}', 'update')->name('warehouse.update');
+        Route::delete('/warehouses/{id}', 'destroy')->name('warehouse.destroy');
+        Route::get('/warehouses/view/{id}', 'view')->name('warehouse.view');
+        Route::post('/warehouse/toggle-status', 'toggleStatus')->name('warehouse.toggleStatus');
+        Route::delete('/warehouse/delete-selected', 'deleteSelected')->name('delete.selected.warehouse');
+        Route::post('/warehouse/bulk-status-change', 'bulkStatusChange')->name('warehouse.bulkStatusChange');
     });
 
-    Route::controller(PermissionController::class)->group(function () {
-        // Permissions
-        Route::get('/permission', 'index')->name('permission.index');
-        Route::get('/create-permission', 'create')->name('permission.create');
-        Route::post('/store-permission', 'store')->name('permission.store');
-        Route::get('/edit-permission/{id}', 'edit')->name('permission.edit');
-        Route::put('/update-permission/{id}', 'update')->name('permission.update');
-        Route::delete('/delete-permission/{id}', 'destroy')->name('permission.destroy');
-        Route::delete('/permission/delete-selected', 'deleteSelected')->name('delete.selected.permission');
-        Route::post('/permission/toggle-status', 'toggleStatus')->name('permission.toggleStatus');
-    });
 
-    // Customer Group Routes -- Correct -- Pagination delete/toggle status/selected working need to check
-    Route::controller(CustomerGroupController::class)->group(function () {
-        Route::get('/customer-groups', 'index')->name('customer.groups.index');
-        Route::get('/create-customer-groups', 'create')->name('customer.groups.create');
-        Route::post('/store-customer-groups', 'store')->name('customer.groups.store');
-        Route::get('/edit-customer-groups/{id}', 'edit')->name('customer.groups.edit');
-        Route::put('/update-customer-groups/{id}', 'update')->name('customer.groups.update');
-        Route::delete('/delete-customer-groups/{id}', 'destroy')->name('customer.groups.destroy');
-        Route::get('/view-customer-groups/{id}', 'view')->name('customer.groups.view');
-        Route::post('/customer-groups/toggle-status', 'toggleStatus')->name('customer.groups.toggleStatus');
-        Route::delete('/customers-group/delete-selected', 'deleteSelected')->name('delete.selected.customers.group');
-        Route::post('/customer-groups/bulk-status-change', 'bulkStatusChange')->name('customer.groups.bulkStatusChange');
-        Route::get('/customer-group-export-excel/{id}', 'exportCustomerGroupExcel')->name('customer.group.export.excel');
-        Route::post('/customer-group-import-excel-update/{id}', 'importCustomerGroupExcelUpdate')->name('customer.group.import.excel.update');
+    // Vendors
+    Route::controller(VendorController::class)->group(function () {
+        Route::get('/vendors', 'index')->name('vendor.index');
+        Route::get('/create-vendors', 'create')->name('vendor.create');
+        Route::post('/vendors', 'store')->name('vendor.store');
+        Route::get('/vendors/edit/{id}', 'edit')->name('vendor.edit');
+        Route::put('/vendors/{id}', 'update')->name('vendor.update');
+        Route::delete('/vendors/{id}', 'destroy')->name('vendor.destroy');
+        Route::get('/vendors/view/{id}', 'view')->name('vendor.view');
+        Route::get('/single-vendor-order-view/{purchaseOrderId}/{vendorCode}', 'singleVendorOrderView')->name('single-vendor-order-view');
+        Route::post('/vendor/toggle-status', 'toggleStatus')->name('vendor.toggleStatus');
+        Route::delete('/vendor/delete-selected', 'deleteSelected')->name('delete.selected.vendor');
+        Route::post('/vendor/change-selected-status', 'changeSelectedStatus')->name('vendor.changeSelectedStatus');
     });
 
     // Customer
@@ -119,33 +134,20 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/customers/bulk-status-change', 'bulkStatusChange')->name('customer.bulkStatusChange');
     });
 
-    // Vendors
-    Route::controller(VendorController::class)->group(function () {
-        Route::get('/vendors', 'index')->name('vendor.index');
-        Route::get('/create-vendors', 'create')->name('vendor.create');
-        Route::post('/vendors', 'store')->name('vendor.store');
-        Route::get('/vendors/{id}', 'edit')->name('vendor.edit');
-        Route::put('/vendor/{id}', 'update')->name('vendor.update');
-        Route::delete('/vendors/{id}', 'destroy')->name('vendor.destroy');
-        Route::get('/vendors/view/{id}', 'view')->name('vendor.view');
-        Route::get('/single-vendor-order-view/{purchaseOrderId}/{vendorCode}', 'singleVendorOrderView')->name('single-vendor-order-view');
-        Route::post('/vendor/toggle-status', 'toggleStatus')->name('vendor.toggleStatus');
-        Route::delete('/vendor/delete-selected', 'deleteSelected')->name('delete.selected.vendor');
-        Route::post('/vendor/change-selected-status', 'changeSelectedStatus')->name('vendor.changeSelectedStatus');
-    });
-
-    // Warehouse List
-    Route::controller(WarehouseController::class)->group(function () {
-        Route::get('/warehouses', 'index')->name('warehouse.index');
-        Route::get('/create-warehouses', 'create')->name('warehouse.create');
-        Route::post('/warehouses', 'store')->name('warehouse.store');
-        Route::get('/warehouses/{id}', 'edit')->name('warehouse.edit');
-        Route::put('/warehouse/{id}', 'update')->name('warehouse.update');
-        Route::delete('/warehouses/{id}', 'destroy')->name('warehouse.destroy');
-        Route::get('/warehouses/view/{id}', 'view')->name('warehouse.view');
-        Route::post('/warehouse/toggle-status', 'toggleStatus')->name('warehouse.toggleStatus');
-        Route::delete('/warehouse/delete-selected', 'deleteSelected')->name('delete.selected.warehouse');
-        Route::post('/warehouse/bulk-status-change', 'bulkStatusChange')->name('warehouse.bulkStatusChange');
+    // Customer Group Routes -- Correct -- Pagination delete/toggle status/selected working need to check
+    Route::controller(CustomerGroupController::class)->group(function () {
+        Route::get('/customer-groups', 'index')->name('customer.groups.index');
+        Route::get('/create-customer-groups', 'create')->name('customer.groups.create');
+        Route::post('/store-customer-groups', 'store')->name('customer.groups.store');
+        Route::get('/edit-customer-groups/{id}', 'edit')->name('customer.groups.edit');
+        Route::put('/update-customer-groups/{id}', 'update')->name('customer.groups.update');
+        Route::delete('/delete-customer-groups/{id}', 'destroy')->name('customer.groups.destroy');
+        Route::get('/view-customer-groups/{id}', 'view')->name('customer.groups.view');
+        Route::post('/customer-groups/toggle-status', 'toggleStatus')->name('customer.groups.toggleStatus');
+        Route::delete('/customers-group/delete-selected', 'deleteSelected')->name('delete.selected.customers.group');
+        Route::post('/customer-groups/bulk-status-change', 'bulkStatusChange')->name('customer.groups.bulkStatusChange');
+        Route::get('/customer-group-export-excel/{id}', 'exportCustomerGroupExcel')->name('customer.group.export.excel');
+        Route::post('/customer-group-import-excel-update/{id}', 'importCustomerGroupExcelUpdate')->name('customer.group.import.excel.update');
     });
 
     // Product controller

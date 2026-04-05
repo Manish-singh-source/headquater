@@ -24,77 +24,85 @@
 
 ## Warehouse management
 
-- [ ] List Warehouses
-- [ ] Add Warehouses
-- [ ] Edit Warehouses
-- [ ] Delete Warehouses
-- [ ] Multi Delete Warehouses
-- [ ] Toggle Status Warehouses
-- [ ] Multi Toggle Status Warehouses
-- [ ] View Warehouses
-- [ ] Tab Switching Warehouses
+- [x] List Warehouses
+- [x] Add Warehouses
+- [x] Edit Warehouses
+- [x] Delete Warehouses
+- [x] Multi Delete Warehouses
+- [x] Toggle Status Warehouses
+- [x] Multi Toggle Status Warehouses
+- [x] View Warehouses
+- [x] Tab Switching Warehouses
+
+
+## Vendor management
+
+- [x] List Vendors
+- [x] Add Vendors
+- [x] Edit Vendors
+- [x] Delete Vendors
+- [x] Multi Delete Vendors
+- [x] Toggle Status Vendors
+- [x] Multi Toggle Status Vendors
+- [x] View Vendors
+- [x] Tab Switching Vendors
+
+
+## Customer
+
+- [ ] List Customer
+- [ ] Add Customer
+- [ ] Edit Customer
+- [ ] Delete Customer
+- [ ] Multi Delete Customer
+- [ ] Toggle Status Customer
+- [ ] Multi Toggle Status Customer
+- [ ] View Customer
+- [ ] Tab Switching Customer
+
+## Customer group management
+
+- [ ] List Customer Groups 
+- [ ] Add Customers via excel in group
+- [ ] Edit Customer group name only 
+- [ ] Delete Customer group 
+- [ ] Multi Delete Customer group
+- [ ] Toggle Status Customer group
+- [ ] Multi Toggle Status Customer group
+- [ ] Tab Switching Customer group
+- [ ] View Customer group
+    - [ ] List Customer
+    - [ ] Add Customer
+    - [ ] Edit Customer
+    - [ ] Delete Customer
+    - [ ] Multi Delete Customer
+    - [ ] Toggle Status Customer
+    - [ ] Multi Toggle Status Customer
+    - [ ] View Customer
+    - [ ] Tab Switching Customer
+
+
+## Product management
+
+- [ ] Add products in bulk 
+- [ ] List products 
+- [ ] Export products File
+- [ ] Update product 
+- [ ] Update products in bulk via excel
+- [ ] Delete Proudct
+- [ ] Multi Delete Proudct
 
 
 ## SKU mapping
 
-- [x] Implement list of all SKU mappings.[1]
-- [x] Implement edit SKU mapping.[1]
-- [x] Implement delete SKU mapping.[1]
+- [ ] Add sku mapping products in bulk 
+- [ ] List sku mapping products
+- [ ] Export sku mapping products File
+- [ ] Update sku mapping product 
+- [ ] Update sku mapping products in bulk via excel
+- [ ] Delete Proudct
+- [ ] Multi Delete Proudct
 
-## Vendor management
-
-- [x] Implement add new vendor flow.[1]
-- [x] Implement vendor list with detail view.[1]
-- [x] Implement edit vendor details.[1]
-- [x] Implement delete vendor using soft delete.[1]
-- [x] Implement vendor status update.[1]
-- [x] Implement multi-delete for vendors.[1]
-- [x] Implement multi-status update for vendors.[1]
-- [ ] Implement Excel download for vendors.[1]
-- [ ] Enforce unique vendor code on add/edit.[1]
-
-## Product management
-
-- [x] Implement bulk add products (file upload).[1]
-- [x] Implement product list view.[1]
-- [x] Implement edit product details.[1]
-- [x] Implement delete product using soft delete.[1]
-- [x] Implement bulk update of products.[1]
-- [x] Implement multi-delete for products.[1]
-- [x] Implement Excel export for products.[1]
-- [x] Enforce unique product SKU on add/edit.[1]
-
-## Customer and group management
-
-- [x] Implement bulk add customer groups.[1]
-- [x] Implement customer group list with detail view.[1]
-- [x] Implement view of customers under each customer group.[1]
-- [x] Implement customer detail view inside group.[1]
-- [x] Implement edit customer details inside group.[1]
-- [x] Implement delete customer inside group.[1]
-- [x] Implement status update for customers inside group.[1] 
-- [x] Implement multi-delete for customers inside group.[1]
-- [x] Implement multi-status update for customers inside group.[1]
-- [x] Implement add single customer to a group.[1]
-- [x] Implement bulk add customers to a group.[1]
-- [x] Implement edit customer group details.[1]
-- [x] Implement delete customer group using soft delete.[1]
-- [x] Implement status update for customer groups.[1]
-- [x] Implement multi-delete for customer groups.[1]
-- [x] Implement multi-status update for customer groups.[1]
-- [ ] Enforce unique customer group name on add/edit.[1]
-- [ ] Show confirmation popup before deleting customer group.[1]
-- [ ] Block deletion if customers are associated and show message.[1]
-
-- [x] Implement add new customer flow.[1]
-- [x] Implement customer list with detail view.[1]
-- [x] Implement edit customer details.[1]
-- [x] Implement delete customer using soft delete.[1] Soft delete not working
-- [x] Implement customer status update.[1]
-- [x] Implement multi-delete for customers.[1] 
-- [x] Implement multi-status update for customers.[1] 
-- [ ] Implement Excel download for customers.[1]
-- [ ] Enforce unique customer email on add/edit.[1]
 
 ## Sales orders
 

@@ -326,10 +326,7 @@
             // Function to filter table based on status
             function filterWarehouse(status) {
                 vendorTable.rows().every(function() {
-                    var $checkbox = $(this.node()).find('.status-switch2');
-                    // var isChecked = $checkbox.prop('checked') ? 1 : 0;
-                    var isChecked = $checkbox.is(':checked') ? '1' : '0';
-
+                            var $checkbox = $(this.node()).find('.status-switch1');
                     if (status === 'all') {
                         $(this.node()).show();
                     } else if (isChecked == status) {

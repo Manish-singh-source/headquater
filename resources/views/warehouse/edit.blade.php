@@ -22,66 +22,92 @@
                 <div class="col-12">
                     <div class="card">
                         <div class="card-body p-4">
-                            <h5 class="mb-4">Create Warehouse</h5>
+                            <h5 class="mb-4">Edit Warehouse</h5>
                             <form class="row g-3" action="{{ route('warehouse.update', $warehouse->id) }}" method="POST">
                                 @csrf
                                 @method('PUT')
 
                                 <div class="col-md-6">
                                     <label for="input1" class="form-label">Warehouse Name</label>
-                                    <input type="text" class="form-control" name="name" id="input1"
-                                        value="{{ $warehouse->name }}" placeholder="Warehouse Name">
+                                    <input type="text" class="form-control @error('name') is-invalid @enderror" name="name" id="input1"
+                                        value="{{ old('name', $warehouse->name) }}" placeholder="Warehouse Name">
+                                    @error('name')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
                                 </div>
                                 <div class="col-md-6">
                                     <label for="input9" class="form-label">Warehouse Type</label>
-                                    <select id="input9" class="form-select" name="type">
+                                    <select id="input9" class="form-select @error('type') is-invalid @enderror" name="type">
                                         <option disabled>Choose...</option>
-                                        <option value="storage hub"
-                                            {{ $warehouse->type == 'storage hub' ? 'selected' : '' }}>Storage Hub
-                                        </option>
-                                        <option value="return center"
-                                            {{ $warehouse->type == 'return center' ? 'selected' : '' }}>Return Center
-                                        </option>
+                                        <option value="storage hub" {{ old('type', $warehouse->type) == 'storage hub' ? 'selected' : '' }}>Storage Hub</option>
+                                        <option value="return center" {{ old('type', $warehouse->type) == 'return center' ? 'selected' : '' }}>Return Center</option>
                                     </select>
+                                    @error('type')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
                                 </div>
                                 <div class="col-md-6">
                                     <label for="input2" class="form-label">Contact Person Name</label>
-                                    <input type="text" class="form-control" name="contact_person_name" id="input2"
-                                        value="{{ $warehouse->contact_person_name }}" placeholder="Contact Person Name">
+                                    <input type="text" class="form-control @error('contact_person_name') is-invalid @enderror" name="contact_person_name" id="input2"
+                                        value="{{ old('contact_person_name', $warehouse->contact_person_name) }}" placeholder="Contact Person Name">
+                                    @error('contact_person_name')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
                                 </div>
                                 <div class="col-md-6">
                                     <label for="input3" class="form-label">Phone Number</label>
-                                    <input type="text" class="form-control" name="contact_person_phone_no" id="input3"
-                                        value="{{ $warehouse->phone }}" placeholder="Phone Number">
+                                    <input type="text" class="form-control @error('contact_person_phone_no') is-invalid @enderror" name="contact_person_phone_no" id="input3"
+                                        value="{{ old('contact_person_phone_no', $warehouse->phone) }}" placeholder="Phone Number">
+                                    @error('contact_person_phone_no')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
                                 </div>
                                 <div class="col-md-6">
                                     <label for="input3" class="form-label">Alternate Phone Number</label>
-                                    <input type="text" class="form-control" name="contact_person_alt_phone_no"
-                                        value="{{ $warehouse->alt_phone }}" id="input3"
+                                    <input type="text" class="form-control @error('contact_person_alt_phone_no') is-invalid @enderror" name="contact_person_alt_phone_no"
+                                        value="{{ old('contact_person_alt_phone_no', $warehouse->alt_phone) }}" id="input3"
                                         placeholder="Alternate Phone Number">
+                                    @error('contact_person_alt_phone_no')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
                                 </div>
                                 <div class="col-md-6">
                                     <label for="input4" class="form-label">Email</label>
-                                    <input type="email" class="form-control" name="contact_person_email" id="input4"
-                                        value="{{ $warehouse->email }}" placeholder="Email Id">
+                                    <input type="email" class="form-control @error('contact_person_email') is-invalid @enderror" name="contact_person_email" id="input4"
+                                        value="{{ old('contact_person_email', $warehouse->email) }}" placeholder="Email Id">
+                                    @error('contact_person_email')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
                                 </div>
                                 <div class="col-md-6">
                                     <label for="input5" class="form-label">GST NO</label>
-                                    <input type="text" class="form-control" name="gst_no" id="input5"
-                                        value="{{ $warehouse->gst_number }}" placeholder="GST NO">
+                                    <input type="text" class="form-control @error('gst_no') is-invalid @enderror" name="gst_no" id="input5"
+                                        value="{{ old('gst_no', $warehouse->gst_number) }}" placeholder="GST NO">
+                                    @error('gst_no')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
                                 </div>
                                 <div class="col-md-6">
                                     <label for="input6" class="form-label">PAN NO</label>
-                                    <input type="text" class="form-control" name="pan_no" id="input6"
-                                        value="{{ $warehouse->pan_number }}" placeholder="PAN NO">
+                                    <input type="text" class="form-control @error('pan_no') is-invalid @enderror" name="pan_no" id="input6"
+                                        value="{{ old('pan_no', $warehouse->pan_number) }}" placeholder="PAN NO">
+                                    @error('pan_no')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
                                 </div>
                                 <div class="col-md-6">
                                     <label for="input11" class="form-label">Address Line 1</label>
-                                    <textarea class="form-control" id="input11" name="address_line_1" placeholder="Address Line 1" rows="3">{{ $warehouse->address_line_1 ?? '' }}</textarea>
+                                    <textarea class="form-control @error('address_line_1') is-invalid @enderror" id="input11" name="address_line_1" placeholder="Address Line 1" rows="3">{{ old('address_line_1', $warehouse->address_line_1) }}</textarea>
+                                    @error('address_line_1')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
                                 </div>
                                 <div class="col-md-6">
                                     <label for="input11" class="form-label">Address Line 2</label>
-                                    <textarea class="form-control" id="input11" name="address_line_2" placeholder="Address Line 2" rows="3">{{ $warehouse->address_line_2 ?? '' }}</textarea>
+                                    <textarea class="form-control @error('address_line_2') is-invalid @enderror" id="input11" name="address_line_2" placeholder="Address Line 2" rows="3">{{ old('address_line_2', $warehouse->address_line_2) }}</textarea>
+                                    @error('address_line_2')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
                                 </div>
                                 <div class="col-md-6">
                                     <label for="input6" class="form-label">Upload Licence Document</label>
@@ -90,54 +116,70 @@
                                 </div>
                                 <div class="col-md-6">
                                     <label for="input8" class="form-label">Max storage capacity</label>
-                                    <input type="number" class="form-control" name="max_storage_capacity"
-                                        value="{{ $warehouse->max_storage_capacity }}" id="input8"
+                                    <input type="number" class="form-control @error('max_storage_capacity') is-invalid @enderror" name="max_storage_capacity"
+                                        value="{{ old('max_storage_capacity', $warehouse->max_storage_capacity) }}" id="input8"
                                         placeholder="Max storage capacity">
+                                    @error('max_storage_capacity')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
                                 </div>
                                 <div class="col-md-2">
                                     <label for="shippingCountry" class="form-label">Country</label>
-                                    <select id="shippingCountry" class="form-select" name="country_id">
+                                    <select id="shippingCountry" class="form-select @error('country_id') is-invalid @enderror" name="country_id">
                                         <option value="">Select Country</option>
                                     </select>
+                                    @error('country_id')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
                                 </div>
                                 <div class="col-md-2">
                                     <label for="shippingState" class="form-label">State</label>
-                                    <select id="shippingState" class="form-select" name="state_id">
+                                    <select id="shippingState" class="form-select @error('state_id') is-invalid @enderror" name="state_id">
                                         <option value="">Select State</option>
                                     </select>
+                                    @error('state_id')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
                                 </div>
                                 <div class="col-md-2">
                                     <label for="shippingCity" class="form-label">City</label>
-                                    <select id="shippingCity" class="form-select" name="city_id">
+                                    <select id="shippingCity" class="form-select @error('city_id') is-invalid @enderror" name="city_id">
                                         <option value="">Select City</option>
                                     </select>
+                                    @error('city_id')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
                                 </div>
                                 <div class="col-md-2">
                                     <label for="input8" class="form-label">Pin Code</label>
-                                    <input type="text" class="form-control" name="pincode" id="input8"
-                                        value="{{ $warehouse->pincode }}" placeholder="Pin Code">
+                                    <input type="text" class="form-control @error('pincode') is-invalid @enderror" name="pincode" id="input8"
+                                        value="{{ old('pincode', $warehouse->pincode) }}" placeholder="Pin Code">
+                                    @error('pincode')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
                                 </div>
                                 <div class="col-md-2">
                                     <label for="input9" class="form-label">Status</label>
-                                    <select id="input9" name="status" class="form-select">
+                                    <select id="input9" name="status" class="form-select @error('status') is-invalid @enderror">
                                         <option selected="" disabled>Choose any one</option>
-                                        <option value="1" {{ $warehouse->status == '1' ? 'selected' : '' }}>Active
-                                        </option>
-                                        <option value="0" {{ $warehouse->status == '0' ? 'selected' : '' }}>Inactive
-                                        </option>
+                                        <option value="1" {{ old('status', $warehouse->status) == '1' ? 'selected' : '' }}>Active</option>
+                                        <option value="0" {{ old('status', $warehouse->status) == '0' ? 'selected' : '' }}>Inactive</option>
                                     </select>
+                                    @error('status')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
                                 </div>
                                 <div class="col-md-2">
                                     <label for="input9" class="form-label">Supported Operations</label>
-                                    <select id="input9" name="supported_operations" class="form-select">
+                                    <select id="input9" name="supported_operations" class="form-select @error('supported_operations') is-invalid @enderror">
                                         <option selected="" disabled>Choose any one</option>
-                                        <option value="inbound"
-                                            {{ $warehouse->operations == 'inbound' ? 'selected' : '' }}>Inbound</option>
-                                        <option value="outbound"
-                                            {{ $warehouse->operations == 'outbound' ? 'selected' : '' }}>Outbound</option>
-                                        <option value="return" {{ $warehouse->operations == 'return' ? 'selected' : '' }}>
-                                            Return</option>
+                                        <option value="inbound" {{ old('supported_operations', $warehouse->operations) == 'inbound' ? 'selected' : '' }}>Inbound</option>
+                                        <option value="outbound" {{ old('supported_operations', $warehouse->operations) == 'outbound' ? 'selected' : '' }}>Outbound</option>
+                                        <option value="return" {{ old('supported_operations', $warehouse->operations) == 'return' ? 'selected' : '' }}>Return</option>
                                     </select>
+                                    @error('supported_operations')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
                                 </div>
                                 {{-- 
                                 <div class="col-md-2">
@@ -218,20 +260,23 @@
             }
 
             // On page load: populate countries and auto-select existing values, chaining states and cities
+            const selectedCountryId = '{{ old('country_id', $warehouse->country_id ?? '') }}';
+            const selectedStateId = '{{ old('state_id', $warehouse->state_id ?? '') }}';
+            const selectedCityId = '{{ old('city_id', $warehouse->city_id ?? '') }}';
+
             getLocationData("/countries", '#shippingCountry', "Country", null,
-                '{{ $warehouse->country_id ?? '' }}',
+                selectedCountryId,
                 function() {
-                    // After countries loaded & country selected (if any), load states for selected country
                     const countryId = $('#shippingCountry').val();
                     if (countryId) {
                         getLocationData('/states', '#shippingState', 'State', {
                             countryId: countryId
-                        }, '{{ $warehouse->state_id ?? '' }}', function() {
+                        }, selectedStateId, function() {
                             const stateId = $('#shippingState').val();
                             if (stateId) {
                                 getLocationData('/cities', '#shippingCity', 'City', {
                                     stateId: stateId
-                                }, '{{ $warehouse->city_id ?? '' }}');
+                                }, selectedCityId);
                             }
                         });
                     }
