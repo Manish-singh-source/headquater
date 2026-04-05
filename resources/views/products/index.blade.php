@@ -148,21 +148,21 @@
                                                     </div>
                                                 </td>
                                                 <td>{{ $productData?->brand_title ?? 'NA' }}</td>
-                                                {{-- <td>{{ $productData?->mrp ?? 'NA' }}</td> --}}
+                                                {{-- <td>{{ $productData?->mrp ?? 0 }}</td> --}}
                                                 <td>{{ $productData?->category ?? 'NA' }}</td>
-                                                <td>{{ $productData?->pcs_set ?? 'NA' }}</td>
-                                                <td>{{ $productData?->sets_ctn ?? 'NA' }}</td>
-                                                <td>{{ $productData?->weight ?? 'NA' }}</td>
-                                                <td>{{ $productData?->case_pack_quantity ?? 'NA' }}</td>
+                                                <td>{{ $productData?->pcs_set ?? 0 }}</td>
+                                                <td>{{ $productData?->sets_ctn ?? 0 }}</td>
+                                                <td>{{ $productData?->weight ?? 0 }}</td>
+                                                <td>{{ $productData?->case_pack_quantity ?? 0 }}</td>
                                                 <td>{{ $productData?->vendor_code ?? 'NA' }}</td>
                                                 <td>{{ $productData?->vendor_name ?? 'NA' }}</td>
-                                                <td>{{ $productData?->vendor_purchase_rate ?? 'NA' }}</td>
-                                                <td>{{ $productData?->gst ?? 'NA' }}</td>
+                                                <td>{{ $productData?->vendor_purchase_rate ?? 0 }}</td>
+                                                <td>{{ $productData?->gst ?? 0 }}</td>
                                                 <td>{{ $productData?->hsn ?? 'NA' }}</td>
-                                                <td>{{ $productData?->vendor_net_landing ?? 'NA' }}</td>
+                                                <td>{{ $productData?->vendor_net_landing ?? 0 }}</td>
                                                 <td>{{ $productData?->status == '1' ? 'Active' : 'Inactive' }}</td>
-                                                <td>{{ $product->original_quantity ?? 'NA' }}</td>
-                                                <td>{{ $product->available_quantity ?? 'NA' }}</td>
+                                                <td>{{ $product->original_quantity ?? 0 }}</td>
+                                                <td>{{ $product->available_quantity ?? 0 }}</td>
                                                 <td>
                                                     @if ($product->block_quantity)
                                                         <span class="badge text-danger bg-danger-subtle">

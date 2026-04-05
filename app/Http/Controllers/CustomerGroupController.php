@@ -3,12 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\Customer;
-use Illuminate\Http\Request;
 use App\Models\CustomerGroup;
-use Illuminate\Support\Facades\DB;
 use App\Models\CustomerGroupMember;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Spatie\SimpleExcel\SimpleExcelReader;
 use Spatie\SimpleExcel\SimpleExcelWriter;
@@ -39,6 +39,7 @@ class CustomerGroupController extends Controller
             }
 
             $customerGroups = $query->get();
+
             return view('customerGroups.index', compact('customerGroups', 'status'));
         } catch (\Exception $e) {
             Log::error('Error loading customer groups: ' . $e->getMessage());
@@ -88,7 +89,7 @@ class CustomerGroupController extends Controller
             $reader = SimpleExcelReader::create($filePath, $fileExtension);
             $rows = $reader->getRows()->toArray();
 
-            // Check Columns Headers 
+            // Check Columns Headers
             $requiredHeaders = ['Client Name', 'Contact Name', 'Email', 'Contact No', 'Billing Address', 'Billing Zip', 'Billing City', 'Billing State', 'Billing Country', 'Shipping Address', 'Shipping Zip', 'Shipping City', 'Shipping State', 'Shipping Country', 'GSTIN', 'PAN', 'Facility Name'];
 
             $fileHeaders = array_map('trim', array_keys($rows[0] ?? []));
@@ -97,17 +98,21 @@ class CustomerGroupController extends Controller
             if (! empty($missingHeaders)) {
                 DB::rollBack();
 
-                return redirect()->back()->with(['error' => 'Missing required columns: ' . implode(', ', $missingHeaders)]);
+                return redirect()->back()->withErrors(['csv_file' => 'Missing required columns: ' . implode(', ', $missingHeaders)]);
             }
 
             $insertCount = 0;
             $existingCount = 0;
             $notStoredCustomers = [];
+            $mandatoryFields = ['Client Name', 'Contact Name', 'Email', 'Contact No', 'Billing Address', 'Billing Zip', 'Billing City', 'Billing State', 'Billing Country', 'Shipping Address', 'Shipping Zip', 'Shipping City', 'Shipping State', 'Shipping Country', 'GSTIN', 'PAN', 'Facility Name'];
 
             foreach ($reader->getRows() as $record) {
-                if (! isset($record['Facility Name']) || empty($record['Facility Name'])) {
-                    $notStoredCustomers[] = $record;
-                    break; // Skip rows without facility name
+                // Validate all required fields are not empty
+                foreach ($mandatoryFields as $field) {
+                    if (! isset($record[$field]) || (is_string($record[$field]) && trim($record[$field]) === '')) {
+                        DB::rollBack();
+                        return redirect()->back()->withErrors(['csv_file' => "{$field} is required for all rows. Please check your CSV file."])->withInput();
+                    }
                 }
 
                 $customer = Customer::where('facility_name', $record['Facility Name'])->first();
@@ -156,6 +161,7 @@ class CustomerGroupController extends Controller
 
             if ($insertCount === 0 && $existingCount === 0) {
                 DB::rollBack();
+
                 return redirect()->back()->with('error', 'No valid data found in the file.')->withInput();
             }
 
@@ -220,9 +226,11 @@ class CustomerGroupController extends Controller
     {
         try {
             $customerGroup = CustomerGroup::findOrFail($id);
+
             return view('customerGroups.edit', compact('customerGroup'));
         } catch (\Exception $e) {
             Log::error('Error loading customer group: ' . $e->getMessage());
+
             return redirect()->route('customer.groups.index')->with('error', 'Error: ' . $e->getMessage());
         }
     }
@@ -258,6 +266,7 @@ class CustomerGroupController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Error updating customer group: ' . $e->getMessage());
+
             return redirect()->back()->with('error', 'Error: ' . $e->getMessage())->withInput();
         }
     }
@@ -427,7 +436,6 @@ class CustomerGroupController extends Controller
             $tempXlsxPath = storage_path('app/customer_group_' . $customerGroup->id . '_customers.xlsx');
             $writer = SimpleExcelWriter::create($tempXlsxPath);
 
-
             if ($customerGroup->customers->isEmpty()) {
                 return redirect()->back()->with('info', 'No customers found in this group.');
             }
@@ -469,12 +477,12 @@ class CustomerGroupController extends Controller
             ])->deleteFileAfterSend(true);
         } catch (\Exception $e) {
             Log::error('Error exporting customer group customers: ' . $e->getMessage());
+
             return redirect()->back()->with('error', 'Error: ' . $e->getMessage());
         }
     }
 
     /**
-     * 
      * Update customers in selected group in bulk using same downloaded excel
      */
     public function importCustomerGroupExcelUpdate(Request $request, $id)
@@ -497,10 +505,18 @@ class CustomerGroupController extends Controller
             $reader = SimpleExcelReader::create($filepath, $extension);
             $rows = $reader->getRows();
             $insertCount = 0;
+            $mandatoryFields = ['Client Name', 'Contact Name', 'Email', 'Contact No', 'Billing Address', 'Billing Zip', 'Billing City', 'Billing State', 'Billing Country', 'Shipping Address', 'Shipping Zip', 'Shipping City', 'Shipping State', 'Shipping Country', 'GSTIN', 'PAN', 'Facility Name'];
 
             foreach ($rows as $record) {
                 if (empty($record['Facility Name'])) {
                     continue;
+                }
+
+                // Validate all required fields are not empty
+                foreach ($mandatoryFields as $field) {
+                    if (! isset($record[$field]) || (is_string($record[$field]) && trim($record[$field]) === '')) {
+                        return redirect()->back()->with(['error' => "{$field} is required for all rows. Please check your CSV file."])->withInput();
+                    }
                 }
 
                 $customer = Customer::where('facility_name', $record['Facility Name'])->first();

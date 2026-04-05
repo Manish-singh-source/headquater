@@ -2,8 +2,21 @@
 @section('main-content')
     <main class="main-wrapper">
         <div class="main-content">
+
+            <!-- Error Display at Top -->
+            @if(session('error'))
+                <div class="alert alert-danger border-0 bg-danger text-white shadow-sm mb-4" role="alert">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-exclamation-triangle-fill me-3 fs-4"></i>
+                        <div>
+                            <h6 class="alert-heading mb-1">Error!</h6>
+                            <p class="mb-0">{{ session('error') }}</p>
+                        </div>
+                    </div>
+                </div>
+            @endif
+
             <!-- Breadcrumb -->
-            
             <div class="page-header mb-3">
                 <div class="d-flex align-items-center justify-content-between">
                     <nav aria-label="breadcrumb">
@@ -22,8 +35,6 @@
                     </nav>
                 </div>
             </div>
-
-            @include('layouts.errors')
 
             <!-- Create Form -->
             <div class="row">

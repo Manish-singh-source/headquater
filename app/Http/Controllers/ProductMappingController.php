@@ -26,7 +26,7 @@ class ProductMappingController extends Controller
                 ->get();
             return view('skuMapping.index', compact('productMapping'));
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Error retrieving SKU mappings: '.$e->getMessage());
+            return redirect()->back()->with('error', 'Error retrieving SKU mappings: ' . $e->getMessage());
         }
     }
 
@@ -58,25 +58,48 @@ class ProductMappingController extends Controller
             $fileExtension = $file->getClientOriginalExtension();
 
             $reader = SimpleExcelReader::create($filePath, $fileExtension);
-            $rows = $reader->getRows();
+            $rows = $reader->getRows()->toArray();
+
+
+            // Check Columns Headers 
+            $requiredHeaders = ['SKU', 'Portal Code', 'Item Code', 'Basic Rate', 'Net Landing Rate', 'MRP'];
+
+            $fileHeaders = array_map('trim', array_keys($rows[0] ?? []));
+            $missingHeaders = array_diff($requiredHeaders, $fileHeaders);
+
+            if (! empty($missingHeaders)) {
+                DB::rollBack();
+
+                return redirect()->back()->with(['error' => 'Missing required columns: ' . implode(', ', $missingHeaders)]);
+            }
+
+
             $insertCount = 0;
             $duplicateCount = 0;
             $errorCount = 0;
 
             // Check for duplicates in the file first
             $seenSkus = [];
+            $mandatoryFields = ['SKU', 'Portal Code', 'Item Code', 'Basic Rate', 'Net Landing Rate', 'MRP'];
 
             foreach ($rows as $record) {
-                if (empty($record['Product SKU'] ?? null)) {
-                    continue;
+                // Validate all required fields are not empty
+                foreach ($mandatoryFields as $field) {
+                    if (! isset($record[$field]) || (is_string($record[$field]) && trim($record[$field]) === '')) {
+                        DB::rollBack();
+                        return redirect()->back()->with(['error' => "{$field} is required for all rows. Please check your CSV file."])->withInput();
+                    }
                 }
+                // if (empty($record['Product SKU'] ?? null)) {
+                //     continue;
+                // }
 
                 $productSku = trim($record['Product SKU']);
                 $vendorSku = trim($record['Vendor SKU'] ?? '');
                 $customerSku = trim($record['Customer SKU'] ?? '');
 
                 // Check for duplicate in current file
-                $key = strtolower($productSku.'|'.$vendorSku.'|'.$customerSku);
+                $key = strtolower($productSku . '|' . $vendorSku . '|' . $customerSku);
 
                 if (isset($seenSkus[$key])) {
                     $duplicateCount++;
@@ -135,14 +158,14 @@ class ProductMappingController extends Controller
                     'errors' => $errorCount,
                 ])
                 ->event('bulk_import')
-                ->log('SKU mappings imported: '.$insertCount.' records');
+                ->log('SKU mappings imported: ' . $insertCount . ' records');
 
-            $message = 'Successfully imported '.$insertCount.' SKU mapping(s).';
+            $message = 'Successfully imported ' . $insertCount . ' SKU mapping(s).';
             if ($duplicateCount > 0) {
-                $message .= ' ('.$duplicateCount.' duplicate entries skipped)';
+                $message .= ' (' . $duplicateCount . ' duplicate entries skipped)';
             }
             if ($errorCount > 0) {
-                $message .= ' ('.$errorCount.' errors encountered)';
+                $message .= ' (' . $errorCount . ' errors encountered)';
             }
 
             return redirect()->route('sku.mapping')->with('success', $message);
@@ -150,7 +173,7 @@ class ProductMappingController extends Controller
             DB::rollBack();
 
             return redirect()->back()
-                ->with('error', 'Error processing file: '.$e->getMessage())
+                ->with('error', 'Error processing file: ' . $e->getMessage())
                 ->withInput();
         }
     }
@@ -177,7 +200,7 @@ class ProductMappingController extends Controller
             return view('skuMapping.edit', compact('productMapping'));
         } catch (\Exception $e) {
             return redirect()->route('sku.mapping')
-                ->with('error', 'Error loading SKU mapping: '.$e->getMessage());
+                ->with('error', 'Error loading SKU mapping: ' . $e->getMessage());
         }
     }
 
@@ -251,7 +274,7 @@ class ProductMappingController extends Controller
             DB::rollBack();
 
             return redirect()->back()
-                ->with('error', 'Error updating SKU mapping: '.$e->getMessage())
+                ->with('error', 'Error updating SKU mapping: ' . $e->getMessage())
                 ->withInput();
         }
     }
@@ -308,7 +331,7 @@ class ProductMappingController extends Controller
             DB::rollBack();
 
             return redirect()->route('sku.mapping')
-                ->with('error', 'Error deleting SKU mapping: '.$e->getMessage());
+                ->with('error', 'Error deleting SKU mapping: ' . $e->getMessage());
         }
     }
 
@@ -352,12 +375,12 @@ class ProductMappingController extends Controller
             DB::commit();
 
             return redirect()->back()
-                ->with('success', 'Successfully deleted '.$deleted.' SKU mapping(s).');
+                ->with('success', 'Successfully deleted ' . $deleted . ' SKU mapping(s).');
         } catch (\Exception $e) {
             DB::rollBack();
 
             return redirect()->back()
-                ->with('error', 'Error deleting SKU mappings: '.$e->getMessage());
+                ->with('error', 'Error deleting SKU mappings: ' . $e->getMessage());
         }
     }
 
@@ -396,7 +419,7 @@ class ProductMappingController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error searching SKU mappings: '.$e->getMessage(),
+                'message' => 'Error searching SKU mappings: ' . $e->getMessage(),
             ], 500);
         }
     }
@@ -426,13 +449,35 @@ class ProductMappingController extends Controller
             $fileExtension = $file->getClientOriginalExtension();
 
             $reader = SimpleExcelReader::create($filePath, $fileExtension);
-            $rows = $reader->getRows();
+            $rows = $reader->getRows()->toArray();
+
+
+            // Check Columns Headers 
+            $requiredHeaders = ['SKU', 'Portal Code', 'Item Code', 'Basic Rate', 'Net Landing Rate', 'MRP'];
+
+            $fileHeaders = array_map('trim', array_keys($rows[0] ?? []));
+            $missingHeaders = array_diff($requiredHeaders, $fileHeaders);
+
+            if (! empty($missingHeaders)) {
+                DB::rollBack();
+
+                return redirect()->back()->with(['error' => 'Missing required columns: ' . implode(', ', $missingHeaders)]);
+            }
 
             $insertCount = 0;
             $skipCount = 0;
             $duplicateCount = 0;
+            $mandatoryFields = ['SKU', 'Portal Code', 'Item Code', 'Basic Rate', 'Net Landing Rate', 'MRP'];
+
 
             foreach ($rows as $record) {
+                // Validate all required fields are not empty
+                foreach ($mandatoryFields as $field) {
+                    if (! isset($record[$field]) || (is_string($record[$field]) && trim($record[$field]) === '')) {
+                        DB::rollBack();
+                        return redirect()->back()->with(['error' => "{$field} is required for all rows. Please check your CSV file."])->withInput();
+                    }
+                }
                 $sku = trim((string) ($record['SKU'] ?? $record['sku'] ?? $record['Product SKU'] ?? ''));
                 $portalCode = trim((string) ($record['Portal Code'] ?? $record['portal_code'] ?? ''));
                 $itemCode = trim((string) ($record['Item Code'] ?? $record['item_code'] ?? ''));
@@ -475,7 +520,7 @@ class ProductMappingController extends Controller
 
                 $message = 'No valid data found to import.';
                 if ($duplicateCount > 0) {
-                    $message .= ' Duplicate entries skipped: '.$duplicateCount.'.';
+                    $message .= ' Duplicate entries skipped: ' . $duplicateCount . '.';
                 }
 
                 return redirect()->back()->with('error', $message);
@@ -491,14 +536,14 @@ class ProductMappingController extends Controller
                     'duplicates' => $duplicateCount,
                 ])
                 ->event('bulk_import')
-                ->log('SKU mappings added: '.$insertCount.' records');
+                ->log('SKU mappings added: ' . $insertCount . ' records');
 
-            $message = 'SKU mapping add complete. Inserted: '.$insertCount.'.';
+            $message = 'SKU mapping add complete. Inserted: ' . $insertCount . '.';
             if ($duplicateCount > 0) {
-                $message .= ' Duplicates skipped: '.$duplicateCount.'.';
+                $message .= ' Duplicates skipped: ' . $duplicateCount . '.';
             }
             if ($skipCount > 0) {
-                $message .= ' Skipped: '.$skipCount.'.';
+                $message .= ' Skipped: ' . $skipCount . '.';
             }
 
             return redirect()->route('sku.mapping')->with('success', $message);
@@ -506,7 +551,7 @@ class ProductMappingController extends Controller
             DB::rollBack();
 
             return redirect()->back()
-                ->with('error', 'Error processing file: '.$e->getMessage())
+                ->with('error', 'Error processing file: ' . $e->getMessage())
                 ->withInput();
         }
     }
@@ -515,7 +560,7 @@ class ProductMappingController extends Controller
     public function downloadSkuMappingExcel()
     {
         try {
-            $tempXlsxPath = storage_path('app/sku_mapping_'.Str::random(8).'.xlsx');
+            $tempXlsxPath = storage_path('app/sku_mapping_' . Str::random(8) . '.xlsx');
             $writer = SimpleExcelWriter::create($tempXlsxPath);
 
             $productMappings = ProductMapping::orderBy('id')->get();
@@ -541,7 +586,7 @@ class ProductMappingController extends Controller
                 'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
             ])->deleteFileAfterSend(true);
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Error downloading SKU mappings: '.$e->getMessage());
+            return redirect()->back()->with('error', 'Error downloading SKU mappings: ' . $e->getMessage());
         }
     }
 
@@ -569,13 +614,36 @@ class ProductMappingController extends Controller
             $fileExtension = $file->getClientOriginalExtension();
 
             $reader = SimpleExcelReader::create($filePath, $fileExtension);
-            $rows = $reader->getRows();
+            $rows = $reader->getRows()->toArray();
+
+
+            // Check Columns Headers 
+            $requiredHeaders = ['SKU', 'Portal Code', 'Item Code', 'Basic Rate', 'Net Landing Rate', 'MRP'];
+
+            $fileHeaders = array_map('trim', array_keys($rows[0] ?? []));
+            $missingHeaders = array_diff($requiredHeaders, $fileHeaders);
+
+            if (! empty($missingHeaders)) {
+                DB::rollBack();
+
+                return redirect()->back()->with(['error' => 'Missing required columns: ' . implode(', ', $missingHeaders)]);
+            }
+
 
             $insertCount = 0;
             $updateCount = 0;
             $skipCount = 0;
+            $mandatoryFields = ['SKU', 'Portal Code', 'Item Code', 'Basic Rate', 'Net Landing Rate', 'MRP'];
+
 
             foreach ($rows as $record) {
+                // Validate all required fields are not empty
+                foreach ($mandatoryFields as $field) {
+                    if (! isset($record[$field]) || (is_string($record[$field]) && trim($record[$field]) === '')) {
+                        DB::rollBack();
+                        return redirect()->back()->with(['error' => "{$field} is required for all rows. Please check your CSV file."])->withInput();
+                    }
+                }
                 $sku = trim((string) ($record['SKU'] ?? $record['sku'] ?? $record['Product SKU'] ?? ''));
                 $portalCode = trim((string) ($record['Portal Code'] ?? $record['portal_code'] ?? ''));
                 $itemCode = trim((string) ($record['Item Code'] ?? $record['item_code'] ?? ''));
@@ -634,11 +702,11 @@ class ProductMappingController extends Controller
                     'skipped' => $skipCount,
                 ])
                 ->event('bulk_import')
-                ->log('SKU mappings imported/updated: '.$insertCount.' inserted, '.$updateCount.' updated');
+                ->log('SKU mappings imported/updated: ' . $insertCount . ' inserted, ' . $updateCount . ' updated');
 
-            $message = 'SKU mapping import complete. Inserted: '.$insertCount.', Updated: '.$updateCount.'.';
+            $message = 'SKU mapping import complete. Inserted: ' . $insertCount . ', Updated: ' . $updateCount . '.';
             if ($skipCount > 0) {
-                $message .= ' Skipped: '.$skipCount.'.';
+                $message .= ' Skipped: ' . $skipCount . '.';
             }
 
             return redirect()->route('sku.mapping')->with('success', $message);
@@ -646,7 +714,7 @@ class ProductMappingController extends Controller
             DB::rollBack();
 
             return redirect()->back()
-                ->with('error', 'Error processing file: '.$e->getMessage())
+                ->with('error', 'Error processing file: ' . $e->getMessage())
                 ->withInput();
         }
     }

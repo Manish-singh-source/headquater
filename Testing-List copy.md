@@ -50,47 +50,50 @@
 
 ## Customer
 
-- [ ] List Customer
-- [ ] Add Customer
-- [ ] Edit Customer
-- [ ] Delete Customer
-- [ ] Multi Delete Customer
-- [ ] Toggle Status Customer
-- [ ] Multi Toggle Status Customer
-- [ ] View Customer
-- [ ] Tab Switching Customer
+- [x] List Customer
+- [x] Add Customer
+- [x] Edit Customer
+- [x] Delete Customer
+- [x] Multi Delete Customer
+- [x] Toggle Status Customer
+- [x] Multi Toggle Status Customer
+- [ ] View Customer (after any order)
+- [x] Tab Switching Customer
 
 ## Customer group management
 
-- [ ] List Customer Groups 
-- [ ] Add Customers via excel in group
-- [ ] Edit Customer group name only 
-- [ ] Delete Customer group 
-- [ ] Multi Delete Customer group
-- [ ] Toggle Status Customer group
-- [ ] Multi Toggle Status Customer group
-- [ ] Tab Switching Customer group
+- [x] List Customer Groups 
+- [x] Add Customers via excel in group
+- [x] Edit Customer group name only 
+- [x] Delete Customer group 
+- [x] Multi Delete Customer group
+- [x] Toggle Status Customer group
+- [x] Multi Toggle Status Customer group
+- [x] Tab Switching Customer group
 - [ ] View Customer group
     - [ ] List Customer
-    - [ ] Add Customer
+    - [ ] Add Customer single
+    - [ ] Add Customer in bulk
     - [ ] Edit Customer
+    - [ ] Export Customer
+    - [ ] Edit Customer in bulk
     - [ ] Delete Customer
     - [ ] Multi Delete Customer
     - [ ] Toggle Status Customer
     - [ ] Multi Toggle Status Customer
     - [ ] View Customer
-    - [ ] Tab Switching Customer
+    - [ ] Tab Switching Customer    
 
 
 ## Product management
 
-- [ ] Add products in bulk 
-- [ ] List products 
-- [ ] Export products File
-- [ ] Update product 
-- [ ] Update products in bulk via excel
-- [ ] Delete Proudct
-- [ ] Multi Delete Proudct
+- [x] Add products in bulk 
+- [x] List products 
+- [x] Export products File
+- [x] Update product  - check original quantity, block and available other data will update as it is 
+- [x] Update products in bulk via excel  - check original quantity, block and available other data will update as it is 
+- [x] Delete Proudct - delete sku mapping product also 
+- [x] Multi Delete Proudct - delete sku mapping product also 
 
 
 ## SKU mapping

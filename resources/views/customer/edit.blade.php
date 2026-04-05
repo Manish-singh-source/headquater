@@ -130,7 +130,7 @@
                                 </div>
 
                                 <div class="col-md-12">
-                                    <label for="shippingAddress" class="form-label">Shipping Address</label>
+                                    <label for="shippingAddress" class="form-label">Shipping Address <span class="text-danger">*</span></label>
                                     <textarea class="form-control  @error('shipping_address') is-invalid @enderror" value="" id="shippingAddress"
                                         placeholder="Enter Full Address" rows="3" name="shipping_address">{{ old('shipping_address', $customer->shipping_address) }}</textarea>
                                     @error('shipping_address')
@@ -141,28 +141,58 @@
                                 </div>
 
                                 <div class="col-md-3">
-                                    <label for="shippingCountry" class="form-label">Country</label>
-                                    <select id="shippingCountry" class="form-select" name="shipping_country">
+                                    <label for="shippingCountry" class="form-label">Country <span class="text-danger">*</span></label>
+                                    <select id="shippingCountry" class="form-select @error('shipping_country') is-invalid @enderror" name="shipping_country">
                                         <option value="">Select Country</option>
+                                        @foreach ($countries as $country)
+                                            <option value="{{ $country->id }}" {{ old('shipping_country', $customer->shipping_country) == $country->id ? 'selected' : '' }}>
+                                                {{ $country->name }}
+                                            </option>
+                                        @endforeach
                                     </select>
+                                    @error('shipping_country')
+                                        <div class="invalid-feedback">
+                                            {{ $message }}
+                                        </div>
+                                    @enderror
                                 </div>
 
                                 <div class="col-md-3">
-                                    <label for="shippingState" class="form-label">State</label>
-                                    <select id="shippingState" class="form-select" name="shipping_state">
+                                    <label for="shippingState" class="form-label">State <span class="text-danger">*</span></label>
+                                    <select id="shippingState" class="form-select @error('shipping_state') is-invalid @enderror" name="shipping_state">
                                         <option value="">Select State</option>
+                                        @foreach ($states as $state)
+                                            <option value="{{ $state->id }}" {{ old('shipping_state', $customer->shipping_state) == $state->id ? 'selected' : '' }}>
+                                                {{ $state->name }}
+                                            </option>
+                                        @endforeach
                                     </select>
+                                    @error('shipping_state')
+                                        <div class="invalid-feedback">
+                                            {{ $message }}
+                                        </div>
+                                    @enderror
                                 </div>
 
                                 <div class="col-md-3">
-                                    <label for="shippingCity" class="form-label">City</label>
-                                    <select id="shippingCity" class="form-select" name="shipping_city">
+                                    <label for="shippingCity" class="form-label">City <span class="text-danger">*</span></label>
+                                    <select id="shippingCity" class="form-select @error('shipping_city') is-invalid @enderror" name="shipping_city">
                                         <option value="">Select City</option>
+                                        @foreach ($cities as $city)
+                                            <option value="{{ $city->id }}" {{ old('shipping_city', $customer->shipping_city) == $city->id ? 'selected' : '' }}>
+                                                {{ $city->name }}
+                                            </option>
+                                        @endforeach
                                     </select>
+                                    @error('shipping_city')
+                                        <div class="invalid-feedback">
+                                            {{ $message }}
+                                        </div>
+                                    @enderror
                                 </div>
 
                                 <div class="col-md-3">
-                                    <label for="shippingPinCode" class="form-label">Pin Code</label>
+                                    <label for="shippingPinCode" class="form-label">Pin Code <span class="text-danger">*</span></label>
                                     <input type="text"
                                         class="form-control  @error('shipping_zip') is-invalid @enderror"
                                         value="{{ old('shipping_zip', $customer->shipping_zip) }}"
@@ -175,7 +205,7 @@
                                 </div>
 
                                 <div class="col-md-12">
-                                    <label for="billingAddress" class="form-label">Billing Address</label>
+                                    <label for="billingAddress" class="form-label">Billing Address <span class="text-danger">*</span></label>
                                     <textarea class="form-control  @error('billing_address') is-invalid @enderror" value="" id="billingAddress"
                                         placeholder="Enter Full Address" rows="3" name="billing_address">{{ old('billing_address', $customer->billing_address) }}</textarea>
                                     @error('billing_address')
@@ -186,28 +216,58 @@
                                 </div>
 
                                 <div class="col-md-3">
-                                    <label for="billingCountry" class="form-label">Country</label>
-                                    <select id="billingCountry" class="form-select" name="billing_country">
+                                    <label for="billingCountry" class="form-label">Country <span class="text-danger">*</span></label>
+                                    <select id="billingCountry" class="form-select @error('billing_country') is-invalid @enderror" name="billing_country">
                                         <option value="">Select Country</option>
+                                        @foreach ($countries as $country)
+                                            <option value="{{ $country->id }}" {{ old('billing_country', $customer->billing_country) == $country->id ? 'selected' : '' }}>
+                                                {{ $country->name }}
+                                            </option>
+                                        @endforeach
                                     </select>
+                                    @error('billing_country')
+                                        <div class="invalid-feedback">
+                                            {{ $message }}
+                                        </div>
+                                    @enderror
                                 </div>
 
                                 <div class="col-md-3">
-                                    <label for="billingState" class="form-label">State</label>
-                                    <select id="billingState" class="form-select" name="billing_state">
+                                    <label for="billingState" class="form-label">State <span class="text-danger">*</span></label>
+                                    <select id="billingState" class="form-select @error('billing_state') is-invalid @enderror" name="billing_state">
                                         <option value="">Select State</option>
+                                        @foreach ($states as $state)
+                                            <option value="{{ $state->id }}" {{ old('billing_state', $customer->billing_state) == $state->id ? 'selected' : '' }}>
+                                                {{ $state->name }}
+                                            </option>
+                                        @endforeach
                                     </select>
+                                    @error('billing_state')
+                                        <div class="invalid-feedback">
+                                            {{ $message }}
+                                        </div>
+                                    @enderror
                                 </div>
 
                                 <div class="col-md-3">
-                                    <label for="billingCity" class="form-label">City</label>
-                                    <select id="billingCity" class="form-select" name="billing_city">
+                                    <label for="billingCity" class="form-label">City <span class="text-danger">*</span></label>
+                                    <select id="billingCity" class="form-select @error('billing_city') is-invalid @enderror" name="billing_city">
                                         <option value="">Select City</option>
+                                        @foreach ($cities as $city)
+                                            <option value="{{ $city->id }}" {{ old('billing_city', $customer->billing_city) == $city->id ? 'selected' : '' }}>
+                                                {{ $city->name }}
+                                            </option>
+                                        @endforeach
                                     </select>
+                                    @error('billing_city')
+                                        <div class="invalid-feedback">
+                                            {{ $message }}
+                                        </div>
+                                    @enderror
                                 </div>
 
                                 <div class="col-md-3">
-                                    <label for="billingPinCode" class="form-label">Pin Code</label>
+                                    <label for="billingPinCode" class="form-label">Pin Code <span class="text-danger">*</span></label>
                                     <input type="text"
                                         class="form-control  @error('billing_zip') is-invalid @enderror"
                                         value="{{ old('billing_zip', $customer->billing_zip) }}" id="billingPinCode"

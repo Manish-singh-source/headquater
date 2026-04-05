@@ -83,7 +83,6 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/staff/toggle-status', 'toggleStatus')->name('staff.toggleStatus');
     });
 
-
     // Warehouse List
     Route::controller(WarehouseController::class)->group(function () {
         Route::get('/warehouses', 'index')->name('warehouse.index');
@@ -97,7 +96,6 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/warehouse/delete-selected', 'deleteSelected')->name('delete.selected.warehouse');
         Route::post('/warehouse/bulk-status-change', 'bulkStatusChange')->name('warehouse.bulkStatusChange');
     });
-
 
     // Vendors
     Route::controller(VendorController::class)->group(function () {
@@ -116,14 +114,16 @@ Route::middleware(['auth'])->group(function () {
 
     // Customer
     Route::controller(CustomerController::class)->group(function () {
-        Route::get('/customers', 'index')->name('customer.index'); // done
-        Route::get('/customer-create/{g_id?}', 'create')->name('customer.create'); // done
-        Route::post('/customers/store', 'store')->name('customer.store');  // done
-        Route::post('/customers/store-individual', 'storeIndividual')->name('customer.store.individual'); // done
-        Route::get('/customers/edit/{id}/{group_id?}', 'edit')->name('customer.edit');  // done
-        Route::put('/customer/update/{id}', 'update')->name('customer.update');   // done
-        Route::delete('/customers/delete/{id}', 'delete')->name('customer.delete');     // done
+        Route::get('/customers', 'index')->name('customer.index');
+        Route::get('/customer-create/{g_id?}', 'create')->name('customer.create');
+        Route::post('/customers/store', 'store')->name('customer.store');
+        Route::get('/customers/edit/{id}/{group_id?}', 'edit')->name('customer.edit');
+        Route::put('/customer/update/{id}', 'update')->name('customer.update');
+        Route::delete('/customers/delete/{id}', 'delete')->name('customer.delete');
         Route::get('/customer-detail/{id}', 'detail')->name('customer.detail');
+
+        // in manual invoice
+        Route::post('/customers/store-individual', 'storeIndividual')->name('customer.store.individual'); // done
 
         Route::post('/customer-store-bulk/{g_id}', 'storeBulk')->name('customer.store.bulk');
         Route::get('/customers/export-group/{g_id}', 'downloadGroupCustomersExcel')->name('customer.export.group');

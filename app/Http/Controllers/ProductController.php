@@ -151,10 +151,20 @@ class ProductController extends Controller
 
             // Process records
             $insertCount = 0;
+            $mandatoryFields = ['SKU Code', 'Portal Code', 'Item Code', 'HSN', 'EAN Code', 'Brand', 'Brand Title', 'MRP', 'Category', 'PCS/Set', 'Sets/CTN', 'Weight (Single Box)', 'Basic Rate', 'Net Landing Rate', 'Vendor Code', 'Vendor Name', 'Vendor Purchase Rate', 'GST', 'Vendor Net Landing', 'Stock'];
+
 
             foreach ($reader->getRows() as $record) {
-                if (empty($record['SKU Code'] ?? null) || empty($request->warehouse_id ?? null)) {
-                    continue;
+                // if (empty($record['SKU Code'] ?? null) || empty($request->warehouse_id ?? null)) {
+                //     continue;
+                // }
+
+                // Validate all required fields are not empty
+                foreach ($mandatoryFields as $field) {
+                    if (! isset($record[$field]) || (is_string($record[$field]) && trim($record[$field]) === '')) {
+                        DB::rollBack();
+                        return redirect()->back()->withErrors(['products_excel' => "{$field} is required for all rows. Please check your CSV file."])->withInput();
+                    }
                 }
 
                 $sku = trim($record['SKU Code']);
@@ -303,11 +313,19 @@ class ProductController extends Controller
 
             $products = [];
             $insertCount = 0;
+            $mandatoryFields = ['Warehouse Id', 'Warehouse Name', 'SKU Code', 'EAN Code', 'Brand', 'Brand Title', 'Category', 'PCS/Set', 'Sets/CTN', 'Weight (Single Box)', 'Vendor Code', 'Vendor Name', 'Vendor Purchase Rate', 'GST', 'HSN', 'Vendor Net Landing', 'Stock'];
 
             foreach ($rows as $record) {
-                if (empty($record['SKU Code'] ?? null) || empty($record['Warehouse Id'] ?? null)) {
-                    continue;
+                // Validate all required fields are not empty
+                foreach ($mandatoryFields as $field) {
+                    if (! isset($record[$field]) || (is_string($record[$field]) && trim($record[$field]) === '')) {
+                        DB::rollBack();
+                        return redirect()->back()->with(['error' => "{$field} is required for all rows. Please check your CSV file."])->withInput();
+                    }
                 }
+                // if (empty($record['SKU Code'] ?? null) || empty($record['Warehouse Id'] ?? null)) {
+                //     continue;
+                // }
 
                 $sku = trim($record['SKU Code']);
                 // $basicRate = (int) ($record['Basic Rate'] ?? 0);
@@ -465,23 +483,22 @@ class ProductController extends Controller
                 'hsn' => $request->hsn,
             ];
 
-            $productMapping = ['mrp' => $request->mrp];
-
-            if ($request->has('basic_rate') && $request->basic_rate !== null && $request->basic_rate !== '') {
-                $basicRate = (float) $request->basic_rate;
-                $netLandingRate = $this->calculateNetLandingRate((int) $basicRate, (int) ($product->gst ?? 0));
-
-                $productMapping['basic_rate'] = $basicRate;
-                $productMapping['net_landing_rate'] = $netLandingRate;
-
-            }
-
             $product->update($updateData);
-            ProductMapping::updateOrCreate([
-                'sku' => $product->sku,
-                'portal_code' => $product->portal_code,
-                'item_code' => $product->item_code,
-            ], $productMapping);
+            // $productMapping = ['mrp' => $request->mrp];
+
+            // if ($request->has('basic_rate') && $request->basic_rate !== null && $request->basic_rate !== '') {
+            //     $basicRate = (float) $request->basic_rate;
+            //     $netLandingRate = $this->calculateNetLandingRate((int) $basicRate, (int) ($product->gst ?? 0));
+
+            //     $productMapping['basic_rate'] = $basicRate;
+            //     $productMapping['net_landing_rate'] = $netLandingRate;
+            // }
+
+            // ProductMapping::updateOrCreate([
+            //     'sku' => $product->sku,
+            //     'portal_code' => $product->portal_code,
+            //     'item_code' => $product->item_code,
+            // ], $productMapping);
 
 
             // Update warehouse stock if provided
@@ -542,6 +559,8 @@ class ProductController extends Controller
 
             // Delete warehouse stock
             WarehouseStock::where('sku', $product->sku)->delete();
+
+            ProductMapping::where('sku', $product->sku)->delete();
 
             // Log activity
             activity()
@@ -608,6 +627,8 @@ class ProductController extends Controller
                 WarehouseStock::where('sku', $product->sku)
                     ->where('warehouse_id', $product->warehouse_id)
                     ->delete();
+
+                ProductMapping::where('sku', $product->sku)->delete();
             }
 
             $deleted = Product::destroy($ids);
@@ -664,17 +685,17 @@ class ProductController extends Controller
                         'Brand Title' => $product?->brand_title ?? '',
                         // 'MRP' => $product?->mrp ?? '',
                         'Category' => $product?->category ?? '',
-                        'PCS/Set' => $product?->pcs_set ?? '',
-                        'Sets/CTN' => $product?->sets_ctn ?? '',
-                        'Weight (Single Box)' => $product?->weight ?? '',
+                        'PCS/Set' => $product?->pcs_set ?? 0,
+                        'Sets/CTN' => $product?->sets_ctn ?? 0,
+                        'Weight (Single Box)' => $product?->weight ?? 0,
                         // 'Basic Rate' => $product?->basic_rate ?? '',
                         // 'Net Landing Rate' => $product?->net_landing_rate ?? '',
                         'Vendor Code' => $product?->vendor_code ?? '',
                         'Vendor Name' => $product?->vendor_name ?? '',
-                        'Vendor Purchase Rate' => $product?->vendor_purchase_rate ?? '',
-                        'GST' => $product?->gst ?? '',
+                        'Vendor Purchase Rate' => $product?->vendor_purchase_rate ?? 0,
+                        'GST' => $product?->gst ?? 0,
                         'HSN' => $product?->hsn ?? '',
-                        'Vendor Net Landing' => $product?->vendor_net_landing ?? '',
+                        'Vendor Net Landing' => $product?->vendor_net_landing ?? 0,
                         'Stock' => $stock->available_quantity ?? 0,
                     ]);
                 }
