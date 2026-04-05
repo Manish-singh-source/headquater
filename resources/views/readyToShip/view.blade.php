@@ -81,7 +81,7 @@
                                                 {{ $allocation->approved_at->format('d M Y') }}
                                             </td>
                                             <td>
-                                                {{ $statuses[$allocation->salesOrder->status] }}
+                                                {{ $statuses[$allocation->shipping_status] }}
                                             </td>
                                             {{-- @if ($allocation->salesOrder?->id && $allocation?->salesOrderProduct->customer?->id) --}}
                                                 <td>
