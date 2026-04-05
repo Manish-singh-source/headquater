@@ -6,6 +6,11 @@
             <div class="row">
 
                 <div class="col-12">
+                    @if(session('error'))
+                        <div class="alert alert-danger">
+                            {{ session('error') }}
+                        </div>
+                    @endif
                     <form action="{{ route('staff.store') }}" method="post">
                         @csrf
                         @method('POST')
@@ -36,7 +41,7 @@
                                                     <option selected="" disabled="" value="">-- Select --
                                                     </option>
                                                     @foreach ($roles as $role)
-                                                        <option value="{{ $role->id }}">{{ $role->name }}</option>
+                                                        <option value="{{ $role->id }}" {{ old('role') == $role->id ? 'selected' : '' }}>{{ $role->name }}</option>
                                                     @endforeach
                                                 </select>
                                                 @error('role')
@@ -55,7 +60,7 @@
                                                     <option selected="" disabled="" value="">-- Select --
                                                     </option>
                                                     @foreach ($warehouses as $warehouse)
-                                                        <option value="{{ $warehouse->id }}">{{ $warehouse->name }}</option>
+                                                        <option value="{{ $warehouse->id }}" {{ old('warehouse_id') == $warehouse->id ? 'selected' : '' }}>{{ $warehouse->name }}</option>
                                                     @endforeach
                                                 </select>
                                                 @error('warehouses_id')
@@ -85,7 +90,7 @@
                                                 <label for="firstname" class="form-label">First
                                                     Name <span class="text-danger">*</span></label>
                                                 <input type="text" name="fname" id="firstname"
-                                                    class="form-control @error('fname') is-invalid @enderror" value=""
+                                                    class="form-control @error('fname') is-invalid @enderror" value="{{ old('fname') }}"
                                                     placeholder="Enter First Name">
                                                 @error('fname')
                                                     <div class="invalid-feedback">
@@ -99,7 +104,7 @@
                                                 <label for="lastname" class="form-label">Last Name <span
                                                         class="text-danger">*</span></label>
                                                 <input type="text" name="lname" id="lastname"
-                                                    class="form-control @error('lname') is-invalid @enderror" value=""
+                                                    class="form-control @error('lname') is-invalid @enderror" value="{{ old('lname') }}"
                                                     placeholder="Enter Last Name">
                                                 @error('lname')
                                                     <div class="invalid-feedback">
@@ -113,7 +118,7 @@
                                                 <label for="phone" class="form-label">Phone number <span
                                                         class="text-danger">*</span></label>
                                                 <input type="text" name="phone" id="phone"
-                                                    class="form-control @error('phone') is-invalid @enderror" value=""
+                                                    class="form-control @error('phone') is-invalid @enderror" value="{{ old('phone') }}"
                                                     placeholder="Enter Phone number">
                                                 @error('phone')
                                                     <div class="invalid-feedback">
@@ -127,7 +132,7 @@
                                                 <label for="email" class="form-label">E-mail address <span
                                                         class="text-danger">*</span></label>
                                                 <input type="email" name="email" id="email"
-                                                    class="form-control @error('email') is-invalid @enderror" value=""
+                                                    class="form-control @error('email') is-invalid @enderror" value="{{ old('email') }}"
                                                     placeholder="Enter Email id">
                                                 @error('email')
                                                     <div class="invalid-feedback">
@@ -155,7 +160,7 @@
                                                 <label for="dob" class="form-label">Date of Birth <span
                                                         class="text-danger">*</span></label>
                                                 <input type="date" name="dob" id="dob"
-                                                    class="form-control @error('dob') is-invalid @enderror" value=""
+                                                    class="form-control @error('dob') is-invalid @enderror" value="{{ old('dob') }}"
                                                     placeholder="Enter Date of Birth">
                                                 @error('dob')
                                                     <div class="invalid-feedback">
@@ -172,9 +177,9 @@
                                                     name="gender" id="gender">
                                                     <option selected="" disabled="" value="">-- Select --
                                                     </option>
-                                                    <option value="Male">Male</option>
-                                                    <option value="Female">Female</option>
-                                                    <option value="Other">Other</option>
+                                                    <option value="Male" {{ old('gender') == 'Male' ? 'selected' : '' }}>Male</option>
+                                                    <option value="Female" {{ old('gender') == 'Female' ? 'selected' : '' }}>Female</option>
+                                                    <option value="Other" {{ old('gender') == 'Other' ? 'selected' : '' }}>Other</option>
                                                 </select>
                                                 @error('gender')
                                                     <div class="invalid-feedback">
@@ -191,8 +196,8 @@
                                                     name="marital" id="marital">
                                                     <option selected="" disabled="" value="">-- Select --
                                                     </option>
-                                                    <option value="Yes">Yes</option>
-                                                    <option value="No">No</option>
+                                                    <option value="Yes" {{ old('marital') == 'Yes' ? 'selected' : '' }}>Yes</option>
+                                                    <option value="No" {{ old('marital') == 'No' ? 'selected' : '' }}>No</option>
                                                 </select>
                                                 @error('marital')
                                                     <div class="invalid-feedback">
@@ -219,8 +224,8 @@
                                                 <label for="current-address" class="form-label">Current Address <span
                                                         class="text-danger">*</span></label>
                                                 <textarea name="current_address" id="current_address"
-                                                    class="form-control @error('current_address') is-invalid @enderror" value=""
-                                                    placeholder="Enter Current Address"></textarea>
+                                                    class="form-control @error('current_address') is-invalid @enderror"
+                                                    placeholder="Enter Current Address">{{ old('current_address') }}</textarea>
                                                 @error('current_address')
                                                     <div class="invalid-feedback">
                                                         {{ $message }}
@@ -233,8 +238,8 @@
                                                 <label for="permanent-address" class="form-label">Permanent Address
                                                 </label>
                                                 <textarea name="permanent_address" id="permanent_address"
-                                                    class="form-control @error('permanent_address') is-invalid @enderror" value=""
-                                                    placeholder="Enter Permanent Address"></textarea>
+                                                    class="form-control @error('permanent_address') is-invalid @enderror"
+                                                    placeholder="Enter Permanent Address">{{ old('permanent_address') }}</textarea>
                                                 @error('permanent_address')
                                                     <div class="invalid-feedback">
                                                         {{ $message }}
@@ -248,7 +253,7 @@
                                                         class="text-danger">*</span></label>
                                                 <input type="text" name="city" id="city"
                                                     class="form-control @error('city') is-invalid @enderror"
-                                                    value="" placeholder="Enter City">
+                                                    value="{{ old('city') }}" placeholder="Enter City">
                                                 @error('city')
                                                     <div class="invalid-feedback">
                                                         {{ $message }}
@@ -262,7 +267,7 @@
                                                         class="text-danger">*</span></label>
                                                 <input type="text" name="state" id="state"
                                                     class="form-control @error('state') is-invalid @enderror"
-                                                    value="" placeholder="Enter State">
+                                                    value="{{ old('state') }}" placeholder="Enter State">
                                                 @error('state')
                                                     <div class="invalid-feedback">
                                                         {{ $message }}
@@ -276,7 +281,7 @@
                                                         class="text-danger">*</span></label>
                                                 <input type="text" name="country" id="country"
                                                     class="form-control @error('country') is-invalid @enderror"
-                                                    value="" placeholder="Enter Country">
+                                                    value="{{ old('country') }}" placeholder="Enter Country">
                                                 @error('country')
                                                     <div class="invalid-feedback">
                                                         {{ $message }}
@@ -290,7 +295,7 @@
                                                         class="text-danger">*</span></label>
                                                 <input type="text" name="pincode" id="pincode"
                                                     class="form-control @error('pincode') is-invalid @enderror"
-                                                    value="" placeholder="Enter Pincode">
+                                                    value="{{ old('pincode') }}" placeholder="Enter Pincode">
                                                 @error('pincode')
                                                     <div class="invalid-feedback">
                                                         {{ $message }}

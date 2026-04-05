@@ -34,58 +34,75 @@ class StaffController extends Controller
     {
         // Logic to store a new staff member
         $validated = Validator::make($request->all(), [
-            'warehouse_id' => 'required|unique:users,warehouse_id',
+            'warehouse_id' => 'required',
             'role' => 'required',
             'fname' => 'required',
             'lname' => 'required',
             'phone' => 'required|digits:10',
-            'password' => 'required',
             'email' => 'required|email|unique:users,email',
-            'permanent_address' => 'required',
+            'password' => 'required',
             'dob' => 'required|date',
             'gender' => 'required',
             'marital' => 'required',
             'current_address' => 'required',
+            'permanent_address' => 'required',
             'country' => 'required',
             'state' => 'required',
             'city' => 'required',
             'pincode' => 'required|digits:6',
+        ], [
+            'warehouse_id.required' => 'The warehouse field is required.',
+            'role.required' => 'The role field is required.',
+            'fname.required' => 'The first name field is required.',
+            'lname.required' => 'The last name field is required.',
+            'phone.required' => 'The phone number field is required.',
+            'phone.digits' => 'The phone number must be exactly 10 digits.',
+            'password.required' => 'The password field is required.',
+            'email.required' => 'The email field is required.',
+            'email.email' => 'The email must be a valid email address.',
+            'email.unique' => 'The email has already been taken.',
+            'permanent_address.required' => 'The permanent address field is required.',
+            'dob.required' => 'The date of birth field is required.',
+            'dob.date' => 'The date of birth must be a valid date.',
         ]);
 
         if ($validated->fails()) {
             return back()->withErrors($validated)->withInput();
         }
 
-        $staff = User::create([
-            'warehouse_id' => $request->warehouse_id,
-            'user_name' => $request->user_name,
-            'fname' => $request->fname,
-            'lname' => $request->lname,
-            'password' => Hash::make($request->password),
-            'phone' => $request->phone,
-            'dob' => $request->dob,
-            'marital' => $request->marital,
-            'gender' => $request->gender,
-            'email' => $request->email,
-            'current_address' => $request->current_address,
-            'permanent_address' => $request->permanent_address,
-            'country' => $request->country,
-            'state' => $request->state,
-            'city' => $request->city,
-            'pincode' => $request->pincode,
-        ]);
+        try {
+            $staff = User::create([
+                'warehouse_id' => $request->warehouse_id,
+                'fname' => $request->fname,
+                'lname' => $request->lname,
+                'password' => Hash::make($request->password),
+                'phone' => $request->phone,
+                'dob' => $request->dob,
+                'marital' => $request->marital,
+                'gender' => $request->gender,
+                'email' => $request->email,
+                'current_address' => $request->current_address,
+                'permanent_address' => $request->permanent_address,
+                'country' => $request->country,
+                'state' => $request->state,
+                'city' => $request->city,
+                'pincode' => $request->pincode,
+            ]);
 
-        // Send email with credentials
-        //  Mail::to($staff->email)->send(new StaffCredentialsMail($staff->email, $request->password));
+            // Send email with credentials
+            //  Mail::to($staff->email)->send(new StaffCredentialsMail($staff->email, $request->password));
 
-        if ($staff) {
-            // Assign role to staff
-            $staff->roles()->attach($request->role);
+            if ($staff) {
+                // Assign role to staff
+                $staff->roles()->attach($request->role);
 
-            return redirect()->route('staff.index')->with('success', 'Staff member created successfully.');
+                return redirect()->route('staff.index')->with('success', 'Staff member created successfully.');
+            }
+
+            return back()->with('error', 'Failed to create staff member.')->withInput();
+        } catch (\Exception $e) {
+            return back()->with('error', 'An error occurred while creating the staff member: '.$e->getMessage())->withInput();
         }
-
-        return back()->with('error', 'Failed to create staff member.');
     }
 
     public function edit($id)
@@ -93,53 +110,84 @@ class StaffController extends Controller
         // Logic to show the form for editing a staff member
         $staff = User::findOrFail($id);
         $roles = Role::all();
+        $currentRole = $staff->roles()->first();
 
-        return view('staffs.edit', compact('staff', 'roles'));
+        return view('staffs.edit', compact('staff', 'roles', 'currentRole'));
     }
 
     public function update(Request $request, $id)
     {
         // Logic to update a staff member
-        $staff = User::findOrFail($id);
         $validated = Validator::make($request->all(), [
             'role' => 'required',
             'fname' => 'required',
             'lname' => 'required',
-            'phone' => 'required',
-            'email' => 'required',
+            'phone' => 'required|digits:10',
+            'email' => 'required|email|unique:users,email,'.$id,
+            'dob' => 'required|date',
+            'gender' => 'required',
+            'marital' => 'required',
+            'current_address' => 'required',
             'permanent_address' => 'required',
+            'country' => 'required',
+            'state' => 'required',
+            'city' => 'required',
+            'pincode' => 'required|digits:6',
+            'status' => 'required',
+        ], [
+            'role.required' => 'The role field is required.',
+            'fname.required' => 'The first name field is required.',
+            'lname.required' => 'The last name field is required.',
+            'phone.required' => 'The phone number field is required.',
+            'phone.digits' => 'The phone number must be exactly 10 digits.',
+            'email.required' => 'The email field is required.',
+            'email.email' => 'The email must be a valid email address.',
+            'email.unique' => 'The email has already been taken.',
+            'dob.required' => 'The date of birth field is required.',
+            'dob.date' => 'The date of birth must be a valid date.',
+            'gender.required' => 'The gender field is required.',
+            'marital.required' => 'The marital status field is required.',
+            'current_address.required' => 'The current address field is required.',
+            'permanent_address.required' => 'The permanent address field is required.',
+            'country.required' => 'The country field is required.',
+            'state.required' => 'The state field is required.',
+            'city.required' => 'The city field is required.',
+            'pincode.required' => 'The pincode field is required.',
+            'pincode.digits' => 'The pincode must be exactly 6 digits.',
+            'status.required' => 'The status field is required.',
         ]);
 
         if ($validated->fails()) {
             return back()->withErrors($validated)->withInput();
         }
 
-        $staff->update([
-            'fname' => $request->fname,
-            'lname' => $request->lname,
-            'phone' => $request->phone,
-            'dob' => $request->dob,
-            'marital' => $request->marital,
-            'gender' => $request->gender,
-            'email' => $request->email,
-            'current_address' => $request->current_address,
-            'permanent_address' => $request->permanent_address,
-            'city' => $request->city,
-            'state' => $request->state,
-            'country' => $request->country,
-            'pincode' => $request->pincode,
-            'status' => $request->status ?? '1', // Default to active if not set,
-        ]);
+        try {
+            $staff = User::findOrFail($id);
 
-        // Update role
-        $staff->roles()->sync([$request->role]);
+            $staff->update([
+                'fname' => $request->fname,
+                'lname' => $request->lname,
+                'phone' => $request->phone,
+                'dob' => $request->dob,
+                'marital' => $request->marital,
+                'gender' => $request->gender,
+                'email' => $request->email,
+                'current_address' => $request->current_address,
+                'permanent_address' => $request->permanent_address,
+                'city' => $request->city,
+                'state' => $request->state,
+                'country' => $request->country,
+                'pincode' => $request->pincode,
+                'status' => $request->status,
+            ]);
 
-        if ($staff) {
-            // Mail::to($staff->email)->send(new StaffCredentialsMail($staff->email, $request->password));
+            // Update role
+            $staff->roles()->sync([$request->role]);
+
             return redirect()->route('staff.index')->with('success', 'Staff member updated successfully.');
+        } catch (\Exception $e) {
+            return back()->with('error', 'An error occurred while updating the staff member: '.$e->getMessage())->withInput();
         }
-
-        return back()->with('error', 'Failed to update staff member.');
     }
 
     public function destroy($id)

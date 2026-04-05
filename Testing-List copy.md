@@ -1,0 +1,266 @@
+# Testing List
+
+## Access control
+
+- [ ] Ensure only authorized personnel can view, edit, delete, and download any resource.[1]
+
+
+## Role management
+
+- [x] Implement roles CRUD (create, list, update, delete).
+- [x] Map permissions to roles and integrate with access control.
+
+## Staff management
+
+- [x] List Staffs 
+- [x] Create Staff
+- [x] Edit Staff
+- [x] Delete Staff
+- [x] Multi Delete Staff
+- [x] Toggle Status Staff
+- [ ] Multi Toggle Status Staff
+- [x] View Staff Staff
+
+
+## Warehouse management
+
+- [ ] List Warehouses
+- [ ] Add Warehouses
+- [ ] Edit Warehouses
+- [ ] Delete Warehouses
+- [ ] Multi Delete Warehouses
+- [ ] Toggle Status Warehouses
+- [ ] Multi Toggle Status Warehouses
+- [ ] View Warehouses
+- [ ] Tab Switching Warehouses
+
+
+## SKU mapping
+
+- [x] Implement list of all SKU mappings.[1]
+- [x] Implement edit SKU mapping.[1]
+- [x] Implement delete SKU mapping.[1]
+
+## Vendor management
+
+- [x] Implement add new vendor flow.[1]
+- [x] Implement vendor list with detail view.[1]
+- [x] Implement edit vendor details.[1]
+- [x] Implement delete vendor using soft delete.[1]
+- [x] Implement vendor status update.[1]
+- [x] Implement multi-delete for vendors.[1]
+- [x] Implement multi-status update for vendors.[1]
+- [ ] Implement Excel download for vendors.[1]
+- [ ] Enforce unique vendor code on add/edit.[1]
+
+## Product management
+
+- [x] Implement bulk add products (file upload).[1]
+- [x] Implement product list view.[1]
+- [x] Implement edit product details.[1]
+- [x] Implement delete product using soft delete.[1]
+- [x] Implement bulk update of products.[1]
+- [x] Implement multi-delete for products.[1]
+- [x] Implement Excel export for products.[1]
+- [x] Enforce unique product SKU on add/edit.[1]
+
+## Customer and group management
+
+- [x] Implement bulk add customer groups.[1]
+- [x] Implement customer group list with detail view.[1]
+- [x] Implement view of customers under each customer group.[1]
+- [x] Implement customer detail view inside group.[1]
+- [x] Implement edit customer details inside group.[1]
+- [x] Implement delete customer inside group.[1]
+- [x] Implement status update for customers inside group.[1] 
+- [x] Implement multi-delete for customers inside group.[1]
+- [x] Implement multi-status update for customers inside group.[1]
+- [x] Implement add single customer to a group.[1]
+- [x] Implement bulk add customers to a group.[1]
+- [x] Implement edit customer group details.[1]
+- [x] Implement delete customer group using soft delete.[1]
+- [x] Implement status update for customer groups.[1]
+- [x] Implement multi-delete for customer groups.[1]
+- [x] Implement multi-status update for customer groups.[1]
+- [ ] Enforce unique customer group name on add/edit.[1]
+- [ ] Show confirmation popup before deleting customer group.[1]
+- [ ] Block deletion if customers are associated and show message.[1]
+
+- [x] Implement add new customer flow.[1]
+- [x] Implement customer list with detail view.[1]
+- [x] Implement edit customer details.[1]
+- [x] Implement delete customer using soft delete.[1] Soft delete not working
+- [x] Implement customer status update.[1]
+- [x] Implement multi-delete for customers.[1] 
+- [x] Implement multi-status update for customers.[1] 
+- [ ] Implement Excel download for customers.[1]
+- [ ] Enforce unique customer email on add/edit.[1]
+
+## Sales orders
+
+### Check availability
+
+- [x] Implement “Check Availability” pre-step for sales orders.[1]
+- [x] Show only active warehouses in dropdown.[1]
+- [x] Show only active customer groups in dropdown.[1]
+- [ ] Implement Excel upload with columns: Product SKU, Quantity, Block Quantity (for SO).[1]
+- [ ] Validate all required columns in uploaded file.[1]
+- [ ] Validate customer existence (facility name) in file vs system.[1]
+- [ ] Validate all product SKUs in file vs system.[1]
+- [ ] Check requested quantity vs stock per SKU.[1]
+- [ ] Generate Excel report: Product SKU, Requested Qty, Available Qty, Status.[1]
+
+### Create sales order
+
+- [ ] Reuse all validations from “Check Availability”.[1]
+- [ ] Validate vendor existence.[1]
+- [ ] Implement sales order creation flow.[1]
+- [ ] Auto-generate purchase orders for out-of-stock products.[1]
+
+### Sales order list and details
+
+- [ ] Implement SO list with tabs: All, Blocked, Completed, Ready to Package, Ready to Ship, Shipped, Delivered, Cancelled.[1]
+- [ ] Implement delete sales order.[1]
+- [ ] Implement SO details view with tabs: all, packaging, packaged, shipped, delivered, cancelled products.[1]
+- [ ] Implement sales order products list.[1]
+- [ ] Implement delete selected sales order product.[1]
+- [ ] Implement Excel download of sales order products.[1]
+- [ ] Implement update of SO products from Excel template.[1]
+- [ ] Implement sales order status update.[1]
+- [ ] Implement invoice generation for sales order.[1]
+
+## Purchase orders
+
+### Generation rules
+
+- [ ] When generating from SO, group products by vendor.[1]
+- [ ] Create a separate purchase order per vendor.[1]
+
+### List and details
+
+- [ ] Implement PO list with tabs: All, Pending, Received, Cancelled.[1]
+- [ ] Implement manual create purchase order.[1]
+- [ ] Implement delete purchase order.[1]
+- [ ] Implement multi-delete for purchase orders.[1]
+
+- [ ] Implement PO details with tabs: all products, received products, pending products.[1]
+- [ ] Implement purchase order products list.[1]
+- [ ] Implement delete PO product.[1]
+- [ ] Implement multi-delete for PO products.[1]
+- [ ] Implement Excel download for PO products.[1]
+- [ ] Implement update PO products via Excel template.[1]
+- [ ] Implement inline update for PO product.[1]
+
+### Vendor PI, GRN, invoice, payment
+
+- [ ] Implement add vendor PI with products list.[1]
+- [ ] Implement add/update/delete vendor PI product.[1]
+- [ ] Implement add vendor GRN with view, update, delete.[1]
+- [ ] Implement add vendor invoice with view, update, delete.[1]
+- [ ] Implement add vendor payment with view, update, delete.[1]
+- [ ] Implement purchase order status change workflow.[1]
+
+### Approvals
+
+- [ ] Implement approve received purchase order and update warehouse stock.[1]
+- [ ] Implement reject received purchase order without stock change.[1]
+
+## Received orders
+
+- [ ] Implement tabs: All, Pending, Completed, Sent for Approval, Approved, Rejected.[1]
+- [ ] Implement received orders list.[1]
+- [ ] Implement view of received order products.[1]
+- [ ] Implement Excel export of received order products.[1]
+- [ ] Implement update from received order Excel template.[1]
+- [ ] Implement “send for approval” action.[1]
+- [ ] After sending for approval, hide update and submit actions.[1]
+
+## Packaging orders
+
+- [ ] Implement tabs: All, Pending Packaged, Packaged, Ready to Ship, Cancelled.[1]
+- [ ] Implement pagination for packaging orders list.[1]
+- [ ] Implement packaging orders list view.[1]
+
+### Warehouse side
+
+- [ ] Implement view packaging order products.[1]
+- [ ] Implement Excel export for packaging order products.[1]
+- [ ] Implement update via Excel (final dispatch qty, box count, weight only).[1]
+- [ ] Implement “mark ready to ship” request (warehouse only).[1]
+
+### Admin side
+
+- [ ] Implement approve ready-to-ship request.[1]
+- [ ] Implement filter products by warehouse.[1]
+- [ ] Implement Excel export for admin packaging view.[1]
+- [ ] On approval, update order status to Ready to Ship.[1]
+
+## Ready to ship, shipped, delivered
+
+- [ ] Implement Ready to Ship list with tabs: All, Pending Ready to Ship, Shipped, Delivered, Cancelled.[1]
+- [ ] Implement pagination for Ready to Ship list.[1]
+- [ ] Implement Ready to Ship orders list view.[1]
+
+- [ ] Implement Ready to Ship detail view with tabs: all, ready to ship, shipped, delivered, cancelled customer product status.[1]
+- [ ] Implement list of customers with product quantities.[1]
+- [ ] Implement status change to Shipped.[1]
+- [ ] Implement status change to Delivered.[1]
+- [ ] Implement status change to Cancelled.[1]
+
+## Product issues and returns
+
+- [ ] Implement vendor order issues list (shortage, damaged, wrong item, etc.).[1]
+- [ ] Implement warehouse/customer order issues list.[1]
+
+- [ ] Implement vendor return orders list.[1]
+- [ ] Implement vendor return status: pending, accept, return to vendor.[1]
+- [ ] On accept, increase warehouse stock.[1]
+- [ ] On return to vendor, do not change stock.[1]
+
+- [ ] Implement customer return orders list.[1]
+- [ ] Implement customer return status: pending, approved, rejected.[1]
+- [ ] On approval, increase warehouse stock.[1]
+- [ ] On rejection, do not change stock.[1]
+
+## Tracking and reports
+
+- [ ] Implement track sales order by order number.[1]
+- [ ] Implement track purchase order by order number.[1]
+
+- [ ] Implement sales reports.[1]
+- [ ] Implement inventory reports.[1]
+- [ ] Implement purchase reports.[1]
+
+## Excel formats
+
+- [ ] Define/document Staff Excel format.[2]
+- [ ] Define/document Warehouse Excel format.[2]
+- [ ] Define/document SKU Mapping Excel format.[2]
+- [ ] Define/document Vendor Excel format.[2]
+- [ ] Define/document Product Excel format.[2]
+- [ ] Define/document Customer Group Excel format.[2]
+- [ ] Define/document Customer Excel format.[2]
+- [ ] Define/document Sales Order Check Availability Excel format.[2]
+- [ ] Define/document Sales Order Create Excel format.[2]
+- [ ] Define/document Purchase Order Create Excel format.[2]
+- [ ] Define/document Received Order Excel format.[2]
+- [ ] Define/document Packaging Order Excel format.[2]
+- [ ] Define/document Ready to Ship Order Excel format.[2]
+- [ ] Define/document Product Issue Excel format.[2]
+- [ ] Define/document Return Order Excel format.[2]
+
+
+
+
+
+
+
+
+## Soft Delete 
+
+1. Vendor 
+2. Product 
+3. SKU Mapping 
+4. Customer Group 
+5. Customer 
+
