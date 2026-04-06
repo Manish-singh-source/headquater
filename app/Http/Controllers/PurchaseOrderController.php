@@ -329,8 +329,8 @@ class PurchaseOrderController extends Controller
     public function index()
     {
         $purchaseOrders = PurchaseOrder::with(['purchaseOrderProducts', 'vendorPI', 'salesOrder'])
-        ->withSum('purchaseOrderProducts', 'ordered_quantity')
-        ->withCount('purchaseOrderProducts')->get();
+            ->withSum('purchaseOrderProducts', 'ordered_quantity')
+            ->withCount('purchaseOrderProducts')->get();
 
         return view('purchaseOrder.index', compact('purchaseOrders'));
     }
@@ -438,12 +438,13 @@ class PurchaseOrderController extends Controller
                         if ($tempProduct->po_qty > $tempProduct->available_quantity) {
                             $tempProduct->vendor_pi_fulfillment_quantity = $salesOrderFulfillment[$newSku]['quantity'];
                             $tempProduct->vendor_pi_id = $vendorPi->id;
-                            WarehouseAllocation::create([
+                            WarehouseAllocation::updateOrCreate([
                                 'sales_order_id' => $item->sales_order_id,
                                 'sales_order_product_id' => $item->id,
                                 'customer_id' => $item->customer_id,
                                 'warehouse_id' => $request->warehouse_id,
                                 'sku' => $newSku,
+                            ], [
                                 'allocated_quantity' => $salesOrderFulfillment[$newSku]['quantity'],
                                 'sequence' => 1,
                                 'status' => 'allocated',
@@ -455,17 +456,21 @@ class PurchaseOrderController extends Controller
                         if ($tempProduct->po_qty > $tempProduct->available_quantity) {
                             $tempProduct->vendor_pi_fulfillment_quantity = $tempProduct->po_qty;
                             $tempProduct->vendor_pi_id = $vendorPi->id;
-                            WarehouseAllocation::create([
-                                'sales_order_id' => $item->sales_order_id,
-                                'sales_order_product_id' => $item->id,
-                                'customer_id' => $item->customer_id,
-                                'warehouse_id' => $request->warehouse_id,
-                                'sku' => $newSku,
-                                'allocated_quantity' => $tempProduct->po_qty,
-                                'sequence' => 1,
-                                'status' => 'allocated',
-                                'notes' => "Allocated from warehouse {$request->warehouse_id}",
-                            ]);
+                            WarehouseAllocation::updateOrCreate(
+                                [
+                                    'sales_order_id' => $item->sales_order_id,
+                                    'sales_order_product_id' => $item->id,
+                                    'customer_id' => $item->customer_id,
+                                    'warehouse_id' => $request->warehouse_id,
+                                    'sku' => $newSku,
+                                ],
+                                [
+                                    'allocated_quantity' => $tempProduct->po_qty,
+                                    'sequence' => 1,
+                                    'status' => 'allocated',
+                                    'notes' => "Allocated from warehouse {$request->warehouse_id}",
+                                ]
+                            );
                             $salesOrderFulfillment[$newSku]['quantity'] = $salesOrderFulfillment[$newSku]['quantity'] - $tempProduct->po_qty;
                         }
                     }
@@ -948,7 +953,7 @@ class PurchaseOrderController extends Controller
         $purchaseOrderProducts = PurchaseOrderProduct::with('product', 'salesOrder')->where('purchase_order_id', $request->purchaseOrderId)
             ->where('vendor_code', $request->vendorCode)
             ->with('tempOrderFetch')->get();
-            // dd($purchaseOrderProducts);
+        // dd($purchaseOrderProducts);
 
         // Add rows
         foreach ($purchaseOrderProducts as $order) {
