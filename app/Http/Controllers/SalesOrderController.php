@@ -146,12 +146,13 @@ class SalesOrderController extends Controller
             $rows = $reader->getRows()->toArray(); // convert to array so we can check duplicates easily
 
             // Check Columns Headers 
-            $requiredHeaders = ['Customer Name', 'PO Number', 'SKU Code', 'Facility Name', 'Facility Location', 'PO Date', 'PO Expiry Date', 'HSN', 'GST', 'Portal Code', 'Item Code', 'Description', 'Basic Rate', 'Product Basic Rate', 'Basic Rate Confirmation', 'Net Landing Rate', 'Product Net Landing Rate', 'Net Landing Rate Confirmation', 'MRP', 'Product MRP', 'MRP Confirmation', 'PO Quantity', 'Available Quantity', 'Unavailable Quantity', 'Case Pack Quantity', 'Warehouse Allocation', 'Purchase Order Quantity', 'Block', 'Vendor Code', 'Reason'];
+            $requiredHeaders = ['Customer Name', 'PO Number', 'SKU Code', 'Facility Name', 'Facility Location', 'PO Date', 'PO Expiry Date', 'HSN', 'GST', 'Portal Code', 'Item Code', 'Description', 'Basic Rate', 'Product Basic Rate', 'Basic Rate Confirmation', 'Net Landing Rate', 'Product Net Landing Rate', 'Net Landing Rate Confirmation', 'MRP', 'Product MRP', 'MRP Confirmation', 'PO Quantity', 'Available Quantity', 'Unavailable Quantity', 'Case Pack Quantity', 'Purchase Order Quantity', 'Block', 'Vendor Code', 'Reason'];
 
             $fileHeaders = array_map('trim', array_keys($rows[0] ?? []));
             $missingHeaders = array_diff($requiredHeaders, $fileHeaders);
 
             if (! empty($missingHeaders)) {
+                // dd($missingHeaders);
                 return redirect()->back()->with(['error' => 'Missing required columns: ' . implode(', ', $missingHeaders)]);
             }
 
@@ -192,7 +193,7 @@ class SalesOrderController extends Controller
             $salesOrder->save();
             // sales order created
 
-            $mandatoryFields = ['Customer Name', 'PO Number', 'SKU Code', 'Facility Name', 'Facility Location', 'PO Date', 'PO Expiry Date', 'HSN', 'GST', 'Portal Code', 'Item Code', 'Description', 'Basic Rate', 'Product Basic Rate', 'Basic Rate Confirmation', 'Net Landing Rate', 'Product Net Landing Rate', 'Net Landing Rate Confirmation', 'MRP', 'Product MRP', 'MRP Confirmation', 'PO Quantity', 'Available Quantity', 'Unavailable Quantity', 'Case Pack Quantity', 'Warehouse Allocation', 'Purchase Order Quantity', 'Block', 'Vendor Code'];
+            $mandatoryFields = ['Customer Name', 'PO Number', 'SKU Code', 'Facility Name', 'Facility Location', 'PO Date', 'PO Expiry Date', 'HSN', 'GST', 'Portal Code', 'Item Code', 'Description', 'Basic Rate', 'Product Basic Rate', 'Basic Rate Confirmation', 'Net Landing Rate', 'Product Net Landing Rate', 'Net Landing Rate Confirmation', 'MRP', 'Product MRP', 'MRP Confirmation', 'PO Quantity', 'Available Quantity', 'Unavailable Quantity', 'Case Pack Quantity', 'Purchase Order Quantity', 'Block', 'Vendor Code'];
 
             // Iterate Excel file
             foreach ($rows as $key => $record) {
@@ -642,7 +643,7 @@ class SalesOrderController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
 
-            // dd($e);
+            dd($e);
             return redirect()->back()->with(['error' => 'Something went wrong: ' . $e->getMessage()]);
         }
     }
@@ -834,10 +835,26 @@ class SalesOrderController extends Controller
                     $salesOrderProductUpdate->final_dispatched_quantity = $record['Final Fulfilled Quantity'] ?? 0;
 
                     if ($salesOrderProductUpdate->warehouseAllocations()->count() > 0) {
-                        foreach ($salesOrderProductUpdate->warehouseAllocations as $allocation) {
-                            // Proportionally distribute dispatched quantity
-                            $allocation->final_dispatched_quantity = $record['Final Fulfilled Quantity'] ?? 0;
-                            $allocation->save();
+                        if ($salesOrderProductUpdate->warehouseAllocations()->count() == 1) {
+                            foreach ($salesOrderProductUpdate->warehouseAllocations as $allocation) {
+                                // Proportionally distribute dispatched quantity
+                                $allocation->final_dispatched_quantity = $record['Final Fulfilled Quantity'] ?? 0;
+                                $allocation->save();
+                            }
+                        } else {
+                            // For multiple allocations, you can implement a more complex logic to distribute the dispatched quantity
+                            // For simplicity, let's assume we distribute it based on the allocated quantity proportion
+                            $remainingQty = $record['Final Fulfilled Quantity'] ?? 0;
+                            foreach ($salesOrderProductUpdate->warehouseAllocations as $allocation) {
+                                if($allocation->allocated_quantity <= $remainingQty) {
+                                    $allocation->final_dispatched_quantity = $allocation->allocated_quantity;
+                                    $remainingQty -= $allocation->allocated_quantity;
+                                } else {
+                                    $allocation->final_dispatched_quantity = $remainingQty;
+                                    $remainingQty = 0;
+                                }
+                                $allocation->save();        
+                            }
                         }
                     }
                 }
@@ -1702,7 +1719,7 @@ class SalesOrderController extends Controller
                     $invoiceDetail->discount = 0;
                     $invoiceDetail->hsn = $detail->hsn;
                     $invoiceDetail->amount = $lineTotal;
-                    $invoiceDetail->tax = intval($detail->product?->gst) ?? 0;
+                    $invoiceDetail->tax = intval($detail->tempOrder?->gst) ?? 0;
                     $invoiceDetail->total_price = intval($lineTotal) + ((intval($detail->product?->gst) / 100) * intval($lineTotal)); // After discount (currently 0)
                     $invoiceDetail->description = $detail->tempOrder?->description ?? null;
                     $invoiceDetail->po_number = $detail->tempOrder?->po_number ?? null;

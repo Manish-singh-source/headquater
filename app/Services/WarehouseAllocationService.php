@@ -83,7 +83,7 @@ class WarehouseAllocationService
                         'warehouse_id' => $warehouseStock->warehouse_id,
                         'sku' => $sku,
                         'allocated_quantity' => $allocateQty,
-                        'box_count' => $allocateQty / $productInfo->case_pack_quantity,
+                        'box_count' => ($productInfo->case_pack_quantity > 0) ? ($allocateQty / $productInfo->case_pack_quantity) : 0,
                         'sequence' => $sequence,
                         'status' => 'allocated',
                         'notes' => "Auto-allocated {$allocateQty} units from warehouse {$warehouseStock->warehouse->name}",

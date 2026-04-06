@@ -438,39 +438,39 @@ class PurchaseOrderController extends Controller
                         if ($tempProduct->po_qty > $tempProduct->available_quantity) {
                             $tempProduct->vendor_pi_fulfillment_quantity = $salesOrderFulfillment[$newSku]['quantity'];
                             $tempProduct->vendor_pi_id = $vendorPi->id;
-                            WarehouseAllocation::updateOrCreate([
-                                'sales_order_id' => $item->sales_order_id,
-                                'sales_order_product_id' => $item->id,
-                                'customer_id' => $item->customer_id,
-                                'warehouse_id' => $request->warehouse_id,
-                                'sku' => $newSku,
-                            ], [
-                                'allocated_quantity' => $salesOrderFulfillment[$newSku]['quantity'],
-                                'sequence' => 1,
-                                'status' => 'allocated',
-                                'notes' => "Allocated from warehouse {$request->warehouse_id}",
-                            ]);
+                            // WarehouseAllocation::updateOrCreate([
+                            //     'sales_order_id' => $item->sales_order_id,
+                            //     'sales_order_product_id' => $item->id,
+                            //     'warehouse_id' => $request->warehouse_id,
+                            //     'sku' => $newSku,
+                            // ], [
+                            //     'allocated_quantity' => $salesOrderFulfillment[$newSku]['quantity'],
+                            //     'customer_id' => $item->customer_id,
+                            //     'sequence' => 1,
+                            //     'status' => 'allocated',
+                            //     'notes' => "Allocated from warehouse {$request->warehouse_id}",
+                            // ]);
                             $salesOrderFulfillment[$newSku]['quantity'] = 0;
                         }
                     } else {
                         if ($tempProduct->po_qty > $tempProduct->available_quantity) {
                             $tempProduct->vendor_pi_fulfillment_quantity = $tempProduct->po_qty;
                             $tempProduct->vendor_pi_id = $vendorPi->id;
-                            WarehouseAllocation::updateOrCreate(
-                                [
-                                    'sales_order_id' => $item->sales_order_id,
-                                    'sales_order_product_id' => $item->id,
-                                    'customer_id' => $item->customer_id,
-                                    'warehouse_id' => $request->warehouse_id,
-                                    'sku' => $newSku,
-                                ],
-                                [
-                                    'allocated_quantity' => $tempProduct->po_qty,
-                                    'sequence' => 1,
-                                    'status' => 'allocated',
-                                    'notes' => "Allocated from warehouse {$request->warehouse_id}",
-                                ]
-                            );
+                            // WarehouseAllocation::updateOrCreate(
+                            //     [
+                            //         'sales_order_id' => $item->sales_order_id,
+                            //         'sales_order_product_id' => $item->id,
+                            //         'warehouse_id' => $request->warehouse_id,
+                            //         'sku' => $newSku,
+                            //     ],
+                            //     [
+                            //         'customer_id' => $item->customer_id,
+                            //         'allocated_quantity' => $tempProduct->po_qty,
+                            //         'sequence' => 1,
+                            //         'status' => 'allocated',
+                            //         'notes' => "Allocated from warehouse {$request->warehouse_id}",
+                            //     ]
+                            // );
                             $salesOrderFulfillment[$newSku]['quantity'] = $salesOrderFulfillment[$newSku]['quantity'] - $tempProduct->po_qty;
                         }
                     }
