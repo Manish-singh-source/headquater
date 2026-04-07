@@ -491,7 +491,7 @@ class SalesOrderController extends Controller
                             'sku' => $sku,
                             'allocated_quantity' => $allocatedQty,
                             'sequence' => 1,
-                            'box_count' => $saveOrderProduct->box_count,
+                            'box_count' => 0,
                             'status' => 'allocated',
                             'notes' => "Allocated from warehouse {$product->warehouse->name}",
                         ]);

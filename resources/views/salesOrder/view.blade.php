@@ -305,6 +305,7 @@
                                         <th>Block&nbsp;Quantity</th>
                                         <th>Qty&nbsp;Fullfilled</th>
                                         <th>Final&nbsp;Quantity&nbsp;Fulfilled</th>
+                                        <th>Final&nbsp;Shipped&nbsp;Quantity</th>
                                         <th>Warehouse&nbsp;Allocation</th>
                                         <th>Invoice&nbsp;Status</th>
                                         <th>Product&nbsp;Status</th>
@@ -371,6 +372,15 @@
                                                 @else
                                                     <span
                                                         class="badge text-danger bg-danger-subtle">{{ $order->final_dispatched_quantity ?? 0 }}</span>
+                                                @endif
+                                            </td>
+                                            <td>
+                                                @if ($order->final_final_dispatched_quantity == $order->ordered_quantity)
+                                                    <span
+                                                        class="badge text-success bg-success-subtle">{{ $order->final_final_dispatched_quantity ?? 0 }}</span>
+                                                @else
+                                                    <span
+                                                        class="badge text-danger bg-danger-subtle">{{ $order->final_final_dispatched_quantity ?? 0 }}</span>
                                                 @endif
                                             </td>
                                             <td>
