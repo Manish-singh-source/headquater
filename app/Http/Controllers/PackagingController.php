@@ -450,10 +450,10 @@ class PackagingController extends Controller
                         $weight .= $allocation->warehouse->name . ': ' . ($allocation->weight ?? 0) . "\n";
                     } elseif ($user->warehouse_id == $allocation->warehouse_id) {
                         $warehouseAllocation .= $user->warehouse->name . ': ' . ($allocation->final_dispatched_quantity ?? 0) . "\n";
-                        $totalDispatchQty .= ($allocation->final_dispatched_quantity ?? 0) . "\n";
-                        $finalDispatchQty .= ($allocation->final_final_dispatched_quantity ?? 0) . "\n";
-                        $boxCount .= ($allocation->box_count ?? 0) . "\n";
-                        $weight .= ($allocation->weight ?? 0) . "\n";
+                        $totalDispatchQty .= ($allocation->final_dispatched_quantity ?? 0) . " -- ";
+                        $finalDispatchQty .= ($allocation->final_final_dispatched_quantity ?? 0) . " -- ";
+                        $boxCount .= ($allocation->box_count ?? 0) . " -- ";
+                        $weight .= ($allocation->weight ?? 0) . " -- ";
                     }
                 }
 
