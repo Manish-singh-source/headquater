@@ -42,7 +42,7 @@ class PackagingController extends Controller
             $orders->where('status', 'ready_to_package');
         } elseif ($status === 'ready_to_ship') {
             $orders->where('status', 'ready_to_ship');
-        } elseif( $status === 'shipped') {
+        } elseif ($status === 'shipped') {
             $orders->where('status', 'shipped');
         }
 
@@ -490,7 +490,7 @@ class PackagingController extends Controller
                 }
 
                 $statusText = implode(', ', $statuses);
-            } 
+            }
             // else {
             //     $statusText = ucfirst(str_replace('_', ' ', $order->status ?? 'Unknown'));
             // }

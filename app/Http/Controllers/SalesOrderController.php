@@ -607,20 +607,17 @@ class SalesOrderController extends Controller
                         $orderProduct->id
                     );
 
-                    // If allocation failed, log it
                     if (! $allocationResult['success']) {
                         Log::warning('Auto allocation failed for SKU: ' . $orderProduct->sku, [
                             'sales_order_id' => $salesOrder->id,
                             'error' => $allocationResult['error'] ?? 'Unknown error',
                         ]);
+
+                        throw new \RuntimeException($allocationResult['error'] ?? ('Auto allocation failed for SKU: ' . $orderProduct->sku));
                     }
 
-                    // If purchase order needed, it's already created in the loop above
-                    // Just update the purchase_ordered_quantity
-                    if (isset($allocationResult['need_purchase']) && $allocationResult['need_purchase']) {
-                        $orderProduct->purchase_ordered_quantity = $allocationResult['pending_quantity'] ?? 0;
-                        $orderProduct->save();
-                    }
+                    $orderProduct->purchase_ordered_quantity = $allocationResult['pending_quantity'] ?? 0;
+                    $orderProduct->save();
                 }
 
                 activity()
@@ -2911,3 +2908,4 @@ class SalesOrderController extends Controller
         }
     }
 }
+
