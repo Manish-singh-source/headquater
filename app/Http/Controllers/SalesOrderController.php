@@ -1600,6 +1600,14 @@ class SalesOrderController extends Controller
 
                 // Group by each warehouse allocation
                 foreach ($allocations as $allocation) {
+                    if($allocation->shipping_status != 'shipped') {
+                        continue; // Only include shipped allocations for invoicing
+                    }
+
+                    if($allocation->invoice_status == 'completed') {
+                        continue; // Skip already invoiced allocations
+                    }
+
                     $warehouseId = $allocation->warehouse_id;
 
                     // Build dynamic grouping key: warehouse_id + po_number + facility_name
@@ -1620,6 +1628,9 @@ class SalesOrderController extends Controller
                         'detail' => $detail,
                         'allocation' => $allocation,
                     ];
+
+                    $allocation->invoice_status = 'completed';
+                    $allocation->save();
                 }
             }
 
@@ -2520,6 +2531,7 @@ class SalesOrderController extends Controller
                 'Block Quantity' => (float) ($order->tempOrder?->block ?? 0),
                 'Quantity Fulfilled' => $order->dispatched_quantity ??  (float) $qtyFullfilled ?? 0,
                 'Final Fulfilled Quantity' => (float) ($order->final_dispatched_quantity ?? 0),
+                'Final Shipped Quantity' => (float) ($order->final_final_dispatched_quantity ?? 0),
                 'Warehouse Allocation' => $this->sanitizeExcelValue($warehouseAllocation),
                 'Invoice Status' => ucfirst($order->invoice_status)
             ];

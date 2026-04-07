@@ -415,11 +415,12 @@
                                                 @endif
                                             </td>
                                             <td>
+                                                {{-- 
                                                 @if ($order->status == 'ready_to_ship')
                                                     @if ($isSuperAdmin ?? false)
                                                         <span
                                                             class="badge {{ $statusBadges[$order->status] ?? 'bg-secondary' }}">
-                                                            {{-- {{ $user->warehouse->name }}: --}}
+                                                            {{ $user->warehouse->name }}:
                                                             {{ $statusLabels[$order->status] ?? 'Ready to Ship' }}
                                                         </span>
                                                     @else
@@ -428,7 +429,7 @@
                                                             {{ $statusLabels[$order->status] ?? 'Ready to Ship' }}
                                                         </span>
                                                     @endif
-                                                @else
+                                                @else --}}
                                                     @if ($order->warehouseAllocations->count() >= 1)
                                                         @foreach ($order->warehouseAllocations as $allocation)
                                                             @if ($allocation->shipping_status == 'shipped')
@@ -471,7 +472,7 @@
                                                             {{ $statusLabels[$order->status] ?? 'Unknown' }}
                                                         </span>
                                                     @endif
-                                                @endif
+                                                {{-- @endif --}}
                                             </td>
                                         </tr>
                                     @empty

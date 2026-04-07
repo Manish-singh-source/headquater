@@ -445,7 +445,19 @@
                                                     @endif
                                                 @endif
                                             </td>
-                                            <td>{{ ucfirst($order->invoice_status) }}</td>
+                                            {{-- <td>{{ ucfirst($order->invoice_status) }}</td> --}}
+                                            <td>
+                                                @if ($order->warehouseAllocations->count() > 0)
+                                                    @foreach ($order->warehouseAllocations->sortBy('sequence') as $allocation)
+                                                        <div class="mb-1">
+                                                            <strong>{{ $allocation->warehouse->name ?? 'N/A' }}</strong>:
+                                                            {{ $statuses[$allocation->invoice_status] ?? 'Unknown' }}
+                                                        </div>
+                                                    @endforeach
+                                                @else
+                                                    {{ $statuses[$order->invoice_status] ?? 'Unknown' }}
+                                                @endif
+                                            </td>
                                             <td>
                                                 @if ($order->warehouseAllocations->count() > 0)
                                                     @foreach ($order->warehouseAllocations->sortBy('sequence') as $allocation)

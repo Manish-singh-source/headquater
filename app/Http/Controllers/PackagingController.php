@@ -37,11 +37,13 @@ class PackagingController extends Controller
         $status = $request->query('status', 'all');
         $orders = SalesOrder::with('customerGroup');
         if ($status === 'all') {
-            $orders->whereIn('status', ['ready_to_package', 'ready_to_ship']);
+            $orders->whereIn('status', ['ready_to_package', 'ready_to_ship', 'shipped']);
         } elseif ($status === 'ready_to_package') {
             $orders->where('status', 'ready_to_package');
         } elseif ($status === 'ready_to_ship') {
             $orders->where('status', 'ready_to_ship');
+        } elseif( $status === 'shipped') {
+            $orders->where('status', 'shipped');
         }
 
         $allocationStatuses = match ($status) {
@@ -469,9 +471,10 @@ class PackagingController extends Controller
             }
 
             $statusText = '';
-            if ($order->status == 'ready_to_ship') {
-                $statusText = 'Ready to Ship';
-            } elseif ($order->warehouseAllocations->count() >= 1) {
+            // if ($order->status == 'ready_to_ship') {
+            //     $statusText = 'Ready to Ship';
+            // } else 
+            if ($order->warehouseAllocations->count() >= 1) {
                 $statuses = [];
                 foreach ($order->warehouseAllocations as $allocation) {
                     if ($allocation->shipping_status == 'shipped') {
@@ -487,9 +490,10 @@ class PackagingController extends Controller
                 }
 
                 $statusText = implode(', ', $statuses);
-            } else {
-                $statusText = ucfirst(str_replace('_', ' ', $order->status ?? 'Unknown'));
-            }
+            } 
+            // else {
+            //     $statusText = ucfirst(str_replace('_', ' ', $order->status ?? 'Unknown'));
+            // }
 
             $writer->addRow([
                 'Customer Name' => $order->tempOrder->customer_name ?? '',
