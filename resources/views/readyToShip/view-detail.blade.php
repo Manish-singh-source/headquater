@@ -87,7 +87,7 @@
                             @csrf
                             @method('PUT')
                             <input type="hidden" name="order_id" value="{{ $salesOrder->id }}">
-                            <input type="hidden" name="customer_id" value="{{ $customerInfo->id }}">
+                            <input type="hidden" name="customer_id" value="">
                             <input type="hidden" name="user_id" value="{{ $user->id }}">
                             <input type="hidden" name="all_ids" value="{{ implode(',', $allIds) }}">
                             <select class="form-select border-2 border-primary" id="changeStatus"
@@ -124,15 +124,15 @@
                             </li>
                             <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                                 <span><b>Customer Group Name</b></span>
-                                <span>{{ $salesOrder->customerGroup->name ?? 'NA' }}</span>
+                                <span>{{ $salesOrder->customerGroup->name ?? 'NA' }} | Batch #{{ $rts_count_id }}</span>
                             </li>
                             <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
-                                <span><b>Phone No</b></span>
-                                <span> {{ $customerInfo->contact_no ?? 'NA' }} </span>
+                                <span><b>Batch Customers</b></span>
+                                <span>{{ $batchCustomerNames ?: 'NA' }}</span>
                             </li>
                             <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
-                                <span><b>Email</b></span>
-                                <span> {{ $customerInfo->email ?? 'NA' }} </span>
+                                <span><b>Batch Facilities</b></span>
+                                <span>{{ $batchFacilityNames ?: 'NA' }}</span>
                             </li>
                             <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                                 <span><b>Ordered Date</b></span>
@@ -143,12 +143,12 @@
                                 <span> NA</span>
                             </li>
                             <li class="list-group-item d-flex justify-content-between align-items-center  mb-2 pe-3">
-                                <span><b>Billing Address</b></span>
-                                <span> {{ $customerInfo->billing_address ?? 'NA' }} </span>
+                                <span><b>Primary Contact No</b></span>
+                                <span>{{ $primaryCustomer?->contact_no ?? 'NA' }}</span>
                             </li>
                             <li class="list-group-item d-flex justify-content-between align-items-center  mb-2 pe-3">
-                                <span><b> Shipping Address</b></span>
-                                <span> {{ $customerInfo->shipping_address ?? 'NA' }}</span>
+                                <span><b>Primary Email</b></span>
+                                <span>{{ $primaryCustomer?->email ?? 'NA' }}</span>
                             </li>
                             {{-- 
                             <li class="list-group-item d-flex justify-content-between align-items-center  mb-2 pe-3">
@@ -386,3 +386,4 @@
         });
     </script>
 @endsection
+

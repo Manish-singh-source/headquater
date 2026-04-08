@@ -195,7 +195,7 @@ class ReadyToShip extends Controller
                 'rts_count_id' => $rts_count_id,
             ], [
                 'id' => 'required|integer|exists:sales_orders,id',
-                'c_id' => 'required|integer|exists:customers,id',
+                'c_id' => 'nullable|integer|exists:customers,id',
                 'rts_count_id' => 'required|integer',
             ]);
 
@@ -208,29 +208,37 @@ class ReadyToShip extends Controller
             $isSuperAdmin = $user->hasRole(['Super Admin', 'Admin']) || ! $user->warehouse_id;
             $userWarehouseId = $user->warehouse_id;
 
-            $allocationReadyFilter = function ($q) use ($userWarehouseId, $isSuperAdmin) {
-                if (! $isSuperAdmin && $userWarehouseId) {
-                    $q->where('warehouse_id', $userWarehouseId);
-                }
-                $q->where('product_status', 'completed');
-            };
-
-            // sales order details
             $salesOrder = SalesOrder::with('customerGroup')->find($id);
-            // customer details
-            $customerInfo = Customer::find($c_id);
-            // warehouse allocation details for this order and customer
-            $warehouseAllocations = WarehouseAllocation::with('customer', 'salesOrderProduct.tempOrder')
+            $warehouseAllocations = WarehouseAllocation::with('customer', 'warehouse', 'salesOrderProduct.tempOrder')
                 ->where('sales_order_id', $id)
                 ->where('rts_count_id', $rts_count_id)
                 ->where('product_status', 'completed')
-                ->whereHas('salesOrderProduct', function ($query) use ($c_id) {
-                    $query->where('customer_id', $c_id);
+                ->when(! $isSuperAdmin && $userWarehouseId, function ($query) use ($userWarehouseId) {
+                    $query->where('warehouse_id', $userWarehouseId);
                 })
                 ->get();
 
-            // dd($warehouseAllocations);
-            return view('readyToShip.view-detail', compact('salesOrder', 'isSuperAdmin', 'userWarehouseId', 'user', 'customerInfo', 'warehouseAllocations'));
+            if ($warehouseAllocations->isEmpty()) {
+                return redirect()->back()->with('error', 'No ready to ship records found for this batch.');
+            }
+
+            $batchCustomers = $warehouseAllocations->pluck('customer')->filter()->unique('id')->values();
+            $primaryCustomer = $batchCustomers->first();
+            $batchCustomerNames = $batchCustomers->pluck('contact_name')->filter()->implode(', ');
+            $batchFacilityNames = $batchCustomers->pluck('facility_name')->filter()->unique()->implode(', ');
+
+            return view('readyToShip.view-detail', compact(
+                'salesOrder',
+                'isSuperAdmin',
+                'userWarehouseId',
+                'user',
+                'warehouseAllocations',
+                'batchCustomers',
+                'primaryCustomer',
+                'batchCustomerNames',
+                'batchFacilityNames',
+                'rts_count_id'
+            ));
         } catch (\Exception $e) {
             return redirect()->back()
                 ->with('error', 'Error loading order details: '.$e->getMessage());
@@ -885,3 +893,4 @@ class ReadyToShip extends Controller
         }
     }
 }
+
