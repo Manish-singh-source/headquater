@@ -843,14 +843,14 @@ class SalesOrderController extends Controller
                             // For simplicity, let's assume we distribute it based on the allocated quantity proportion
                             $remainingQty = $record['Final Fulfilled Quantity'] ?? 0;
                             foreach ($salesOrderProductUpdate->warehouseAllocations as $allocation) {
-                                if($allocation->allocated_quantity <= $remainingQty) {
+                                if ($allocation->allocated_quantity <= $remainingQty) {
                                     $allocation->final_dispatched_quantity = $allocation->allocated_quantity;
                                     $remainingQty -= $allocation->allocated_quantity;
                                 } else {
                                     $allocation->final_dispatched_quantity = $remainingQty;
                                     $remainingQty = 0;
                                 }
-                                $allocation->save();        
+                                $allocation->save();
                             }
                         }
                     }
@@ -1597,11 +1597,11 @@ class SalesOrderController extends Controller
 
                 // Group by each warehouse allocation
                 foreach ($allocations as $allocation) {
-                    if($allocation->shipping_status != 'shipped') {
+                    if ($allocation->shipping_status != 'shipped') {
                         continue; // Only include shipped allocations for invoicing
                     }
 
-                    if($allocation->invoice_status == 'completed') {
+                    if ($allocation->invoice_status == 'completed') {
                         continue; // Skip already invoiced allocations
                     }
 
@@ -1908,11 +1908,11 @@ class SalesOrderController extends Controller
                     //     $product = WarehouseStock::with('product')->where('sku', $skuMapping->product_sku)->first();
                     //     $sku = $product ? $product->sku : null;
                     // } else {
-                        // $product = WarehouseStock::with('product')->where('sku', $sku)->first();
-                        $product = WarehouseStock::with('product')
-                            ->where('sku', $sku)
-                            ->whereHas('product')
-                            ->first();
+                    // $product = WarehouseStock::with('product')->where('sku', $sku)->first();
+                    $product = WarehouseStock::with('product')
+                        ->where('sku', $sku)
+                        ->whereHas('product')
+                        ->first();
                     // }
 
                     // If not found in warehouse_stocks, check in products table
@@ -1933,7 +1933,7 @@ class SalesOrderController extends Controller
                     //     $product = WarehouseStock::with('product')->where('sku', $skuMapping->product_sku)->where('warehouse_id', $warehouseId)->first();
                     //     $sku = $product ? $product->sku : $skuMapping->product_sku;
                     // } else {
-                        $product = WarehouseStock::with('product')->where('sku', $sku)->where('warehouse_id', $warehouseId)->first();
+                    $product = WarehouseStock::with('product')->where('sku', $sku)->where('warehouse_id', $warehouseId)->first();
                     // }
                 }
                 // sku mapping done
@@ -2231,14 +2231,16 @@ class SalesOrderController extends Controller
 
         // Add rows while transforming
         SimpleExcelReader::create($originalPath)->getRows()->each(function (array $row) use ($writer) {
-            $product = Product::where('sku', $row['SKU Code'])->first();    
-
+            $product = Product::where('sku', $row['SKU Code'])->first();
+            if (!$product) {
+                return redirect()->back()->with(['error' => 'Product Not Found For This SKU: ' . $row['SKU Code'] . ' and Item Code: ' . $row['Item Code'] . '. Please check the data and try again.']);
+            }
             // 
             $productMapping = ProductMapping::where('sku', $row['SKU Code'])
                 ->where('item_code', trim($row['Item Code']))
                 ->first();
-            if(!$productMapping) {
-                return redirect()->back()->with(['error' => 'No sku mapping found for SKU: ' . $row['SKU Code'] . ' and Item Code: ' . $row['Item Code'] . '. Please check the data and try again.']);  
+            if (!$productMapping) {
+                return redirect()->back()->with(['error' => 'No sku mapping found for SKU: ' . $row['SKU Code'] . ' and Item Code: ' . $row['Item Code'] . '. Please check the data and try again.']);
             }
             $writer->addRow([
                 'Customer Name' => $row['Customer Name'] ?? '',
@@ -2912,4 +2914,3 @@ class SalesOrderController extends Controller
         }
     }
 }
-
