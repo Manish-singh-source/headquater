@@ -219,7 +219,14 @@
                                 </select>
                             </div>
 
-                            <div class="ms-auto">
+                            <div class="ms-auto d-flex align-items-center gap-2">
+                                {{-- @if (in_array($salesOrder->status, ['ready_to_ship', 'shipped', 'completed'])) --}}
+                                <button type="button" class="btn border-2 border-primary cursor-pointer"
+                                    id="generateInvoice">
+                                    <i class="fa fa-file-excel-o"></i> Generate Invoice
+                                </button>
+                                {{-- @endif --}}
+
                                 <div class="btn-group">
                                     <button class="btn border-2 border-primary  split-bg-primary dropdown-toggle"
                                         data-bs-toggle="dropdown" type="button">Action</button>
@@ -229,12 +236,14 @@
                                             class="dropdown-item cursor-pointer">Delete All</button>
                                         <button type="button" id="sendToPackaging"
                                             class="dropdown-item cursor-pointer">Send To Packaging</button>
-                                        {{-- @if (in_array($salesOrder->status, ['ready_to_ship', 'shipped', 'completed'])) --}}
+                                        {{--
+                                        @if (in_array($salesOrder->status, ['ready_to_ship', 'shipped', 'completed']))
                                             <button type="button" class="dropdown-item cursor-pointer"
                                                 id="generateInvoice">
                                                 <i class="fa fa-file-excel-o"></i> Generate Invoice
                                             </button>
-                                        {{-- @endif --}}
+                                        @endif
+                                        --}}
                                         {{-- @if (in_array($salesOrder->status, ['pending', 'blocked'])) --}}
                                         <button type="button" class="dropdown-item cursor-pointer" id="exportData">
                                             <i class="fa fa-file-excel-o"></i> Export(Excel)
