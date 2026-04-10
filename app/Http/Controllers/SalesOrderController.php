@@ -2233,9 +2233,9 @@ class SalesOrderController extends Controller
             $productMapping = ProductMapping::where('sku', $product->sku)
                 ->where('item_code', trim($row['Item Code']))
                 ->first();
-            // if(!$productMapping) {
-            //     return redirect()->back()->with(['error' => 'No sku mapping found for SKU: ' . $row['SKU Code'] . ' and Item Code: ' . $row['Item Code'] . '. Please check the data and try again.']);  
-            // }
+            if(!$productMapping) {
+                return redirect()->back()->with(['error' => 'No sku mapping found for SKU: ' . $row['SKU Code'] . ' and Item Code: ' . $row['Item Code'] . '. Please check the data and try again.']);  
+            }
             $writer->addRow([
                 'Customer Name' => $row['Customer Name'] ?? '',
                 'PO Number' => $row['PO Number'] ?? '',
