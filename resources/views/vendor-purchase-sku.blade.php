@@ -462,7 +462,7 @@
                                                 $gstRate = floatval($productDetails->gst ?? 0);
                                                 $unitCost = floatval($product->unit_cost ?? 0);
                                                 $quantity = floatval($vendorPIProduct->quantity_received ?? 0);
-                                                $taxableValue = $product->product->mrp * $quantity;
+                                                $taxableValue = floatval($product->product->mrp) * $quantity;
                                                 $gstAmount = ($taxableValue * $gstRate) / 100;
 
                                                 // Calculate CGST/SGST/IGST based on state (simplified)
@@ -496,7 +496,7 @@
                                                 <td>{{ $vendorPIProduct->available_quantity ?? 0 }}</td>
                                                 <td>{{ $vendorPIProduct->quantity_received ?? 0 }}</td>
                                                 <td>PCS</td>
-                                                <td>₹{{ number_format($product->product->mrp ?? 0, 2) }}</td>
+                                                <td>₹{{ number_format(floatval($product->product->mrp) ?? 0, 2) }}</td>
                                                 <td>₹{{ number_format($product->discount_per_unit ?? 0, 2) }}</td>
                                                 <td>₹{{ number_format($taxableValue, 2) }}</td>
                                                 <td>{{ $gstRate }}%</td>

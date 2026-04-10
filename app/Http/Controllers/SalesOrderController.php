@@ -99,8 +99,7 @@ class SalesOrderController extends Controller
      */
     public function index()
     {
-        $orders = SalesOrder::with('customerGroup')->get();
-
+        $orders = SalesOrder::with('customerGroup')->orderBy('id', 'desc')->get();
         return view('salesOrder.index', compact('orders'));
     }
 
@@ -202,6 +201,14 @@ class SalesOrderController extends Controller
                     if (! isset($record[$field]) || (is_string($record[$field]) && trim($record[$field]) === '')) {
                         DB::rollBack();
                         return redirect()->back()->with(['error' => "{$field} is required for all rows. Please check your CSV file."])->withInput();
+                    }
+
+                    if ((int)$record['Available Quantity'] < (int)$record['Block']) {
+                        DB::rollBack();
+
+                        return redirect()->back()
+                            ->with('error', "{$record['SKU Code']}: Available quantity is less than the block quantity. Please check if the warehouse has sufficient stock.")
+                            ->withInput();
                     }
                 }
 
@@ -1492,13 +1499,17 @@ class SalesOrderController extends Controller
             }
 
             foreach ($salesOrderProducts as $order) {
-                $order->status = 'packaging';
-                $order->product_status = 'packaging';
+                if ($order->final_dispatched_quantity > 0) {
+                    $order->status = 'packaging';
+                    $order->product_status = 'packaging';
+                }
 
                 if ($order->warehouseAllocations->count() > 0) {
                     foreach ($order->warehouseAllocations as $allocation) {
-                        $allocation->product_status = 'packaging';
-                        $allocation->save();
+                        if ($allocation->final_dispatched_quantity > 0) {
+                            $allocation->product_status = 'packaging';
+                            $allocation->save();
+                        }
                     }
                 }
                 $order->save();
@@ -1878,6 +1889,7 @@ class SalesOrderController extends Controller
             'MRP',
             'PO Quantity'
         ];
+
         try {
 
             foreach ($reader->getRows() as $record) {
@@ -1886,6 +1898,11 @@ class SalesOrderController extends Controller
                     if (! isset($record[$field]) || (is_string($record[$field]) && trim($record[$field]) === '')) {
                         DB::rollBack();
                         return redirect()->back()->with(['error' => "{$field} is required for all rows. Please check your CSV file."])->withInput();
+                    }
+
+                    if ($record['PO Quantity'] <= 0) {
+                        DB::rollBack();
+                        return redirect()->back()->with(['error' => "For SKU: {$record['SKU Code']}, PO Quantity Must be greater than 0."])->withInput();
                     }
                 }
 
@@ -1918,7 +1935,7 @@ class SalesOrderController extends Controller
                     // If not found in warehouse_stocks, check in products table
                     if (! $product) {
                         $productMaster = Product::where('sku', $sku)->first();
-                        if(!$productMaster) {
+                        if (!$productMaster) {
                             return redirect()->back()->with(['error' => "Product Not Found For " . $sku])->withInput();
                         }
                         if ($productMaster) {

@@ -389,10 +389,10 @@ class ReceivedProductsController extends Controller
 
                 // Process quantity received
                 if ($quantityReceived > 0) {
-                    if ($productData->available_quantity < $quantityReceived) {
+                    if ($productData->quantity_requirement < $quantityReceived) {
                         // Extra quantity received - create return entry
-                        $extraQuantity = $quantityReceived - $productData->available_quantity;
-                        $productData->quantity_received = $productData->available_quantity;
+                        $extraQuantity = $quantityReceived - $productData->quantity_requirement;
+                        $productData->quantity_received = $productData->quantity_requirement;
 
                         VendorReturnProduct::create([
                             'vendor_pi_product_id' => $productData->id,
@@ -403,9 +403,9 @@ class ReceivedProductsController extends Controller
                             'return_status' => 'pending',
                         ]);
                         $issueUnits = $extraQuantity;
-                    } elseif ($productData->available_quantity > $quantityReceived) {
+                    } elseif ($productData->quantity_requirement > $quantityReceived) {
                         // Shortage - create issue entry
-                        $shortageQuantity = $productData->available_quantity - $quantityReceived;
+                        $shortageQuantity = $productData->quantity_requirement - $quantityReceived;
                         $productData->quantity_received = $quantityReceived;
 
                         ProductIssue::create([

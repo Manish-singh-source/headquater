@@ -386,7 +386,7 @@
                                 <tbody>
                                     @foreach ($products as $product)
                                         @php
-                                            $stockValue = ($product->available_quantity ?? 0) * ($product->product->mrp ?? 0);
+                                            $stockValue = (floatval($product->available_quantity) ?? 0) * (floatval($product->product->mrp) ?? 0);
                                             $status = 'Normal';
                                             if (($product->available_quantity ?? 0) <= 10 && ($product->available_quantity ?? 0) > 0) {
                                                 $status = 'Low Stock';
@@ -406,14 +406,14 @@
                                             <td>{{ $product->product->sku ?? 'N/A' }}</td>
                                             <td>{{ $product->product->pcs_set ?? 0 }}</td>
                                             <td>{{ $product->product->sets_ctn ?? 0 }}</td>
-                                            <td>₹{{ number_format($product->product->mrp ?? 0, 2) }}</td>
+                                            <td>₹{{ number_format(floatval($product->product->mrp) ?? 0, 2) }}</td>
                                             <td>{{ number_format($product->original_quantity ?? 0) }}</td>
                                             <td>{{ number_format($product->available_quantity ?? 0) }}</td>
                                             <td>{{ number_format($product->block_quantity ?? 0) }}</td>
                                             <td>₹{{ number_format($stockValue, 2) }}</td>
                                             <td>{{ $product->product->gst ?? 0 }}%</td>
-                                            <td>₹{{ number_format($stockValue * ($product->product->gst ?? 0) / 100, 2) }}</td>
-                                            <td>₹{{ number_format($stockValue + ($stockValue * ($product->product->gst ?? 0) / 100), 2) }}</td>
+                                            <td>₹{{ number_format($stockValue * (floatval($product->product->gst) ?? 0) / 100, 2) }}</td>
+                                            <td>₹{{ number_format($stockValue + ($stockValue * (floatval($product->product->gst) ?? 0) / 100), 2) }}</td>
                                             <td>
                                                 @if($status == 'Out of Stock')
                                                     <span class="badge bg-danger">Out of Stock</span>

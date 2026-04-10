@@ -479,20 +479,22 @@ class PurchaseOrderController extends Controller
                     $salesOrderFulfillment[] = $item->temp_order_id;
                 }
 
-                $vendorProducts[] = [
-                    'purchase_order_id' => $request->purchase_order_id,
-                    'vendor_pi_id' => $vendorPi->id,
-                    'vendor_sku_code' => $newSku ?? Arr::get($record, 'Vendor SKU Code'),
-                    'title' => Arr::get($record, 'Title'),
-                    'mrp' => Arr::get($record, 'MRP') ?? 0,
-                    'quantity_requirement' => Arr::get($record, 'PO Quantity') ?? 0,
-                    'available_quantity' => Arr::get($record, 'PI Quantity') ?? 0,
-                    'purchase_rate' => Arr::get($record, 'Purchase Rate Basic') ?? 0,
-                    'gst' => Arr::get($record, 'GST') ?? 0,
-                    'hsn' => Arr::get($record, 'HSN') ?? '',
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ];
+                if (Arr::get($record, 'PI Quantity') > 0) {
+                    $vendorProducts[] = [
+                        'purchase_order_id' => $request->purchase_order_id,
+                        'vendor_pi_id' => $vendorPi->id,
+                        'vendor_sku_code' => $newSku ?? Arr::get($record, 'Vendor SKU Code'),
+                        'title' => Arr::get($record, 'Title'),
+                        'mrp' => Arr::get($record, 'MRP') ?? 0,
+                        'quantity_requirement' => Arr::get($record, 'PO Quantity') ?? 0,
+                        'available_quantity' => Arr::get($record, 'PI Quantity') ?? 0,
+                        'purchase_rate' => Arr::get($record, 'Purchase Rate Basic') ?? 0,
+                        'gst' => Arr::get($record, 'GST') ?? 0,
+                        'hsn' => Arr::get($record, 'HSN') ?? '',
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ];
+                }
 
                 $insertCount++;
             }
@@ -500,9 +502,13 @@ class PurchaseOrderController extends Controller
             if ($insertCount === 0) {
                 DB::rollBack();
 
-                return redirect()->back()->with(['pi_excel' => 'No valid data found in the CSV file.']);
+                return redirect()->back()->with(['error' => 'No valid data found in the CSV file.']);
             }
 
+            if (count($vendorProducts) <= 0) {
+                DB::rollBack();
+                return redirect()->back()->with(['error' => 'Please Upload at least one product with greater than 0 PI Quantity.']);
+            }
             VendorPIProduct::insert($vendorProducts);
             DB::commit();
 
