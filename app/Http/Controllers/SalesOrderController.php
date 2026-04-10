@@ -2234,7 +2234,7 @@ class SalesOrderController extends Controller
             $product = Product::where('sku', $row['SKU Code'])->first();    
 
             // 
-            $productMapping = ProductMapping::where('sku', $product->sku)
+            $productMapping = ProductMapping::where('sku', $row['SKU Code'])
                 ->where('item_code', trim($row['Item Code']))
                 ->first();
             if(!$productMapping) {
