@@ -1900,16 +1900,20 @@ class SalesOrderController extends Controller
                 $reason = '';
 
                 // map sku with product
-                $skuMapping = $this->mapSku($sku);
+                // $skuMapping = $this->mapSku($sku);
 
                 // If auto allocation, get product from any warehouse
                 if ($isAutoAllocation) {
-                    if ($skuMapping) {
-                        $product = WarehouseStock::with('product')->where('sku', $skuMapping->product_sku)->first();
-                        $sku = $product ? $product->sku : $skuMapping->product_sku;
-                    } else {
-                        $product = WarehouseStock::with('product')->where('sku', $sku)->first();
-                    }
+                    // if ($skuMapping) {
+                    //     $product = WarehouseStock::with('product')->where('sku', $skuMapping->product_sku)->first();
+                    //     $sku = $product ? $product->sku : null;
+                    // } else {
+                        // $product = WarehouseStock::with('product')->where('sku', $sku)->first();
+                        $product = WarehouseStock::with('product')
+                            ->where('sku', $sku)
+                            ->whereHas('product')
+                            ->first();
+                    // }
 
                     // If not found in warehouse_stocks, check in products table
                     if (! $product) {
@@ -1925,12 +1929,12 @@ class SalesOrderController extends Controller
                     }
                 } else {
                     // Single warehouse selection
-                    if ($skuMapping) {
-                        $product = WarehouseStock::with('product')->where('sku', $skuMapping->product_sku)->where('warehouse_id', $warehouseId)->first();
-                        $sku = $product ? $product->sku : $skuMapping->product_sku;
-                    } else {
+                    // if ($skuMapping) {
+                    //     $product = WarehouseStock::with('product')->where('sku', $skuMapping->product_sku)->where('warehouse_id', $warehouseId)->first();
+                    //     $sku = $product ? $product->sku : $skuMapping->product_sku;
+                    // } else {
                         $product = WarehouseStock::with('product')->where('sku', $sku)->where('warehouse_id', $warehouseId)->first();
-                    }
+                    // }
                 }
                 // sku mapping done
                 // check if product is present
@@ -2227,7 +2231,7 @@ class SalesOrderController extends Controller
 
         // Add rows while transforming
         SimpleExcelReader::create($originalPath)->getRows()->each(function (array $row) use ($writer) {
-            $product = Product::where('sku', $row['SKU Code'])->first();
+            $product = Product::where('sku', $row['SKU Code'])->first();    
 
             // 
             $productMapping = ProductMapping::where('sku', $product->sku)
