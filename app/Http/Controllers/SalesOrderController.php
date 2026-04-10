@@ -1918,6 +1918,9 @@ class SalesOrderController extends Controller
                     // If not found in warehouse_stocks, check in products table
                     if (! $product) {
                         $productMaster = Product::where('sku', $sku)->first();
+                        if(!$productMaster) {
+                            return redirect()->back()->with(['error' => "Product Not Found For " . $sku])->withInput();
+                        }
                         if ($productMaster) {
                             // Create a pseudo product object for consistency
                             $product = (object) [
