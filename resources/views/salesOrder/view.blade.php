@@ -269,8 +269,8 @@
 
                             <li class="nav-item" role="presentation">
                                 <button class="nav-link status-filter-tab" id="active-tab" data-bs-toggle="tab"
-                                    data-order="Completed" data-bs-target="#active" type="button" role="tab"
-                                    aria-controls="active" aria-selected="false">Completed</button>
+                                    data-order="Complete" data-bs-target="#active" type="button" role="tab"
+                                    aria-controls="active" aria-selected="false">Complete</button>
                             </li>
 
                             <li class="nav-item" role="presentation">
@@ -639,8 +639,11 @@
                 if (selected === 'all') {
                     selected = '';
                 }
+                // Match exact status and allow optional "Warehouse: " prefix
+                var pattern = '(?:^\\s*|:\\s*)' + escapeRegex(selected) + '(?:\\s|$)';
+                brandSelection.column(-2).search(pattern, true, false).draw();
                 // Use regex for exact match
-                brandSelection.column(-2).search(selected ? '^' + selected + '$' : '', true, false).draw();
+                // brandSelection.column(-2).search(selected ? '^' + selected + '$' : '', true, false).draw();
             });
 
             $('#selectProductStatusFilter').on('change', function() {
