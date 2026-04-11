@@ -963,24 +963,20 @@ class PackagingController extends Controller
                 $productsToUpdate = [];
                 foreach ($salesOrder->orderedProducts as $product) {
                     $allocationsForProduct = $product->warehouseAllocations ?? collect();
-
-                    // if ($allocationsForProduct->isEmpty()) {
-                    if ($product->final_final_dispatched_quantity > 0) {
-                        $productsToUpdate[] = $product->id;
-                        if ($product->product_status !== 'completed') {
-                            $product->rts_count_id = $highestRtsCountId;
-                            $product->product_status = 'completed';
-                            $product->save();
-                        }
-                    }
-                    //     continue;
-                    // }
-
                     $allocationsNeedingApproval = $allocationsForProduct->filter(function ($allocation) {
                         return $allocation->allocated_quantity > 0;
                     });
 
                     if ($allocationsNeedingApproval->isEmpty()) {
+                        if ($product->final_final_dispatched_quantity > 0) {
+                            $productsToUpdate[] = $product->id;
+                            if ($product->product_status !== 'completed') {
+                                $product->rts_count_id = $highestRtsCountId;
+                                $product->product_status = 'completed';
+                                $product->save();
+                            }
+                        }
+
                         continue;
                     }
 

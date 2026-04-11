@@ -489,7 +489,7 @@ class SalesOrderController extends Controller
                     // Use the block quantity from TempOrder (already calculated correctly)
                     $allocatedQty = intval($tempSalesOrder->block);
 
-                    if ($allocatedQty > 0) {
+                    // if ($allocatedQty > 0) {
                         WarehouseAllocation::create([
                             'sales_order_id' => $salesOrder->id,
                             'sales_order_product_id' => $saveOrderProduct->id,
@@ -513,7 +513,7 @@ class SalesOrderController extends Controller
                                 'allocated_quantity' => $allocatedQty,
                             ])
                             ->log("Stock allocated from warehouse {$product->warehouse->name}");
-                    }
+                    // }
                 }
 
                 // Make a purchase order if one or more than one products have less quantity in warehouse
