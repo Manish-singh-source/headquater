@@ -86,33 +86,46 @@ class PackagingController extends Controller
             $isSuperAdmin = $user->hasRole('Super Admin');
             $isAdmin = $user->hasRole(['Super Admin', 'Admin']) || ! $user->warehouse_id;
             $userWarehouseId = $user->warehouse_id;
+            $packagingStatuses = ['packaging', 'packaged', 'approval_pending', 'completed'];
+
+            $allocationPackagingFilter = function ($query) use ($userWarehouseId, $isAdmin, $packagingStatuses) {
+                if (! $isAdmin && $userWarehouseId) {
+                    $query->where('warehouse_id', $userWarehouseId);
+                }
+
+                $query->whereIn('product_status', $packagingStatuses);
+            };
+
+            $productPackagingFilter = function ($query) use ($packagingStatuses, $allocationPackagingFilter) {
+                $query->where(function ($productQuery) use ($packagingStatuses, $allocationPackagingFilter) {
+                    $productQuery->whereIn('status', $packagingStatuses)
+                        ->orWhereIn('product_status', $packagingStatuses)
+                        ->orWhereHas('warehouseAllocations', $allocationPackagingFilter);
+                });
+            };
 
             $salesOrder = SalesOrder::with([
                 'customerGroup',
                 'warehouse',
-                'orderedProducts' => function ($query) use ($userWarehouseId, $isSuperAdmin) {
-                    // Only include orderedProducts that have warehouseAllocations for this warehouse
-                    $query->whereHas('warehouseAllocations', function ($q) use ($userWarehouseId, $isSuperAdmin) {
-                        if (! $isSuperAdmin && $userWarehouseId) {
-                            $q->where('warehouse_id', $userWarehouseId);
-                        }
-                        $q->whereIn('product_status', ['packaging', 'packaged', 'approval_pending', 'completed']);
-                    })->with([
+                'orderedProducts' => function ($query) use ($productPackagingFilter, $allocationPackagingFilter) {
+                    $productPackagingFilter($query);
+
+                    $query->with([
                         'product',
                         'customer',
                         'tempOrder',
                         'warehouseStock.warehouse',
-                        'warehouseAllocations.warehouse',
+                        'warehouseAllocations' => function ($q) use ($allocationPackagingFilter) {
+                            $allocationPackagingFilter($q);
+                            $q->with('warehouse');
+                        },
                     ]);
                 },
             ])
-                ->whereHas('orderedProducts.warehouseAllocations', function ($query) use ($userWarehouseId, $isSuperAdmin) {
-                    if (! $isSuperAdmin && $userWarehouseId) {
-                        $query->where('warehouse_id', $userWarehouseId);
-                    }
-                    $query->whereIn('product_status', ['packaging', 'packaged', 'approval_pending', 'completed']);
+                ->whereHas('orderedProducts', function ($query) use ($productPackagingFilter) {
+                    $productPackagingFilter($query);
                 })
-                ->find($id);
+                ->findOrFail($id);
 
             $facilityNames = $salesOrder->orderedProducts
                 ->pluck('customer.facility_name')
@@ -166,7 +179,7 @@ class PackagingController extends Controller
                     $query->where('warehouse_id', $userWarehouseId);
                 })
                 ->get();
-            // dd($readyToShipAllocations);
+            // dd($packagedAllocations);
 
             return view('packagingList.view', compact('salesOrder', 'facilityNames', 'isAdmin', 'isSuperAdmin', 'userWarehouseId', 'user', 'pendingApprovalList', 'readyToShipAllocations', 'packagedAllocations'));
         } catch (\Exception $e) {
@@ -347,10 +360,7 @@ class PackagingController extends Controller
             return back()->with('error', 'Please Try Again.');
         }
 
-        if ($request->has('product_status')) {
-            $productStatus = $request->product_status;
-        }
-
+        $productStatus = $request->product_status ?? 'all';
         $id = $request->id;
 
         // Create temporary .xlsx file path
@@ -365,59 +375,67 @@ class PackagingController extends Controller
         $isAdmin = $user->hasRole(['Super Admin', 'Admin']) || ! $user->warehouse_id;
         $userWarehouseId = $user->warehouse_id;
 
+        $selectedStatuses = match ($productStatus) {
+            'Packaging' => ['packaging'],
+            'Packaged' => ['packaged'],
+            'Ready to Ship Approval Pending' => ['approval_pending'],
+            'Ready to Ship' => ['completed'],
+            default => ['packaging', 'packaged', 'approval_pending', 'completed'],
+        };
+
+        $isShippedFilter = $productStatus === 'Shipped';
+
+        $allocationDownloadFilter = function ($query) use ($userWarehouseId, $isAdmin, $selectedStatuses, $isShippedFilter) {
+            if (! $isAdmin && $userWarehouseId) {
+                $query->where('warehouse_id', $userWarehouseId);
+            }
+
+            if ($isShippedFilter) {
+                $query->where('shipping_status', 'shipped');
+
+                return;
+            }
+
+            $query->whereIn('product_status', $selectedStatuses);
+        };
+
+        $productDownloadFilter = function ($query) use ($selectedStatuses, $isShippedFilter, $allocationDownloadFilter) {
+            $query->where(function ($productQuery) use ($selectedStatuses, $isShippedFilter, $allocationDownloadFilter) {
+                if ($isShippedFilter) {
+                    $productQuery->where('status', 'shipped')
+                        ->orWhere('product_status', 'shipped')
+                        ->orWhereHas('warehouseAllocations', $allocationDownloadFilter);
+
+                    return;
+                }
+
+                $productQuery->whereIn('status', $selectedStatuses)
+                    ->orWhereIn('product_status', $selectedStatuses)
+                    ->orWhereHas('warehouseAllocations', $allocationDownloadFilter);
+            });
+        };
+
         // Fetch data with same relationships as view() method
         $salesOrder = SalesOrder::with([
             'customerGroup',
             'warehouse',
-            'orderedProducts' => function ($query) use ($userWarehouseId, $isSuperAdmin, $productStatus) {
-                // Only include orderedProducts that have warehouseAllocations for this warehouse
-                $query->whereHas('warehouseAllocations', function ($q) use ($userWarehouseId, $isSuperAdmin, $productStatus) {
-                    if (! $isSuperAdmin && $userWarehouseId) {
-                        $q->where('warehouse_id', $userWarehouseId);
-                    }
-                    if (isset($productStatus) && $productStatus != 'all') {
-                        if ($productStatus == 'Packaging') {
-                            $q->where('product_status', 'packaging');
-                        } elseif ($productStatus == 'Packaged') {
-                            $q->where('product_status', 'packaged');
-                        } elseif ($productStatus == 'Ready to Ship Approval Pending') {
-                            $q->where('product_status', 'approval_pending');
-                        } elseif ($productStatus == 'Ready to Ship') {
-                            $q->where('product_status', 'completed');
-                        } elseif ($productStatus == 'Shipped') {
-                            $q->where('shipping_status', 'shipped');
-                        }
-                    } else {
-                        $q->whereIn('product_status', ['packaging', 'packaged', 'approval_pending', 'completed']);
-                    }
-                })->with([
+            'orderedProducts' => function ($query) use ($productDownloadFilter, $allocationDownloadFilter) {
+                $productDownloadFilter($query);
+
+                $query->with([
                     'product',
                     'customer',
                     'tempOrder',
                     'warehouseStock.warehouse',
-                    'warehouseAllocations.warehouse',
+                    'warehouseAllocations' => function ($q) use ($allocationDownloadFilter) {
+                        $allocationDownloadFilter($q);
+                        $q->with('warehouse');
+                    },
                 ]);
             },
         ])
-            ->whereHas('orderedProducts.warehouseAllocations', function ($query) use ($userWarehouseId, $isSuperAdmin, $productStatus) {
-                if (! $isSuperAdmin && $userWarehouseId) {
-                    $query->where('warehouse_id', $userWarehouseId);
-                }
-                if (isset($productStatus) && $productStatus != 'all') {
-                    if ($productStatus == 'Packaging') {
-                        $query->where('product_status', 'packaging');
-                    } elseif ($productStatus == 'Packaged') {
-                        $query->where('product_status', 'packaged');
-                    } elseif ($productStatus == 'Ready to Ship Approval Pending') {
-                        $query->where('product_status', 'approval_pending');
-                    } elseif ($productStatus == 'Ready to Ship') {
-                        $query->where('product_status', 'completed');
-                    } elseif ($productStatus == 'Shipped') {
-                        $query->where('shipping_status', 'shipped');
-                    }
-                } else {
-                    $query->whereIn('product_status', ['packaging', 'packaged', 'approval_pending', 'completed']);
-                }
+            ->whereHas('orderedProducts', function ($query) use ($productDownloadFilter) {
+                $productDownloadFilter($query);
             })
             ->find($id);
 
@@ -443,25 +461,25 @@ class PackagingController extends Controller
             if ($order->warehouseAllocations->count() >= 1) {
                 foreach ($order->warehouseAllocations as $allocation) {
                     if ($isSuperAdmin ?? false) {
-                        $warehouseAllocation .= $allocation->warehouse->name . ': ' . ($allocation->final_dispatched_quantity ?? 0) . "\n";
-                        $totalDispatchQty .= $allocation->warehouse->name . ': ' . ($allocation->final_dispatched_quantity ?? 0) . "\n";
-                        $finalDispatchQty .= $allocation->warehouse->name . ': ' . ($allocation->final_final_dispatched_quantity ?? 0) . "\n";
-                        $boxCount .= $allocation->warehouse->name . ': ' . ($allocation->box_count ?? 0) . "\n";
-                        $weight .= $allocation->warehouse->name . ': ' . ($allocation->weight ?? 0) . "\n";
+                        $warehouseAllocation .= $allocation->warehouse->name . ': ' . ($allocation->final_dispatched_quantity ?? 0) . "`n";
+                        $totalDispatchQty .= $allocation->warehouse->name . ': ' . ($allocation->final_dispatched_quantity ?? 0) . "`n";
+                        $finalDispatchQty .= $allocation->warehouse->name . ': ' . ($allocation->final_final_dispatched_quantity ?? 0) . "`n";
+                        $boxCount .= $allocation->warehouse->name . ': ' . ($allocation->box_count ?? 0) . "`n";
+                        $weight .= $allocation->warehouse->name . ': ' . ($allocation->weight ?? 0) . "`n";
                     } elseif ($user->warehouse_id == $allocation->warehouse_id) {
-                        $warehouseAllocation .= $user->warehouse->name . ': ' . ($allocation->final_dispatched_quantity ?? 0) . "\n";
-                        $totalDispatchQty .= ($allocation->final_dispatched_quantity ?? 0) . " ";
-                        $finalDispatchQty .= ($allocation->final_final_dispatched_quantity ?? 0) . " ";
-                        $boxCount .= ($allocation->box_count ?? 0) . " ";
-                        $weight .= ($allocation->weight ?? 0) . " ";
+                        $warehouseAllocation .= $user->warehouse->name . ': ' . ($allocation->final_dispatched_quantity ?? 0) . "`n";
+                        $totalDispatchQty .= ($allocation->final_dispatched_quantity ?? 0) . ' ';
+                        $finalDispatchQty .= ($allocation->final_final_dispatched_quantity ?? 0) . ' ';
+                        $boxCount .= ($allocation->box_count ?? 0) . ' ';
+                        $weight .= ($allocation->weight ?? 0) . ' ';
                     }
                 }
 
-                $warehouseAllocation = rtrim($warehouseAllocation, "\n");
-                $totalDispatchQty = rtrim($totalDispatchQty, "\n");
-                $finalDispatchQty = rtrim($finalDispatchQty, "\n");
-                $boxCount = rtrim($boxCount, "\n");
-                $weight = rtrim($weight, "\n");
+                $warehouseAllocation = rtrim($warehouseAllocation, "`n");
+                $totalDispatchQty = rtrim($totalDispatchQty, "`n ");
+                $finalDispatchQty = rtrim($finalDispatchQty, "`n ");
+                $boxCount = rtrim($boxCount, "`n ");
+                $weight = rtrim($weight, "`n ");
             } else {
                 $warehouseAllocation = (string) ($order->final_dispatched_quantity ?? 0);
                 $totalDispatchQty = (string) ($order->final_dispatched_quantity ?? 0);
@@ -471,9 +489,6 @@ class PackagingController extends Controller
             }
 
             $statusText = '';
-            // if ($order->status == 'ready_to_ship') {
-            //     $statusText = 'Ready to Ship';
-            // } else 
             if ($order->warehouseAllocations->count() >= 1) {
                 $statuses = [];
                 foreach ($order->warehouseAllocations as $allocation) {
@@ -485,15 +500,15 @@ class PackagingController extends Controller
                         $productStatusLabel = $allocation->product_status == 'completed' ? 'Ready to Ship' : ucfirst(str_replace('_', ' ', $allocation->product_status));
                         $statuses[] = $allocation->warehouse->name . ': ' . $productStatusLabel;
                     } elseif ($user->warehouse_id == $allocation->warehouse_id) {
-                        $statuses[] = ucfirst(str_replace('_', ' ', $allocation->product_status));
+                        $statuses[] = $allocation->product_status == 'completed' ? 'Ready to Ship' : ucfirst(str_replace('_', ' ', $allocation->product_status));
                     }
                 }
 
                 $statusText = implode(', ', $statuses);
+            } else {
+                $fallbackStatus = $order->shipping_status == 'shipped' ? 'shipped' : ($order->product_status ?? $order->status ?? 'Unknown');
+                $statusText = $fallbackStatus == 'completed' ? 'Ready to Ship' : ucfirst(str_replace('_', ' ', $fallbackStatus));
             }
-            // else {
-            //     $statusText = ucfirst(str_replace('_', ' ', $order->status ?? 'Unknown'));
-            // }
 
             $writer->addRow([
                 'Customer Name' => $order->tempOrder->customer_name ?? '',
