@@ -1733,8 +1733,8 @@ class SalesOrderController extends Controller
                     $invoiceDetail->warehouse_id = $warehouseId;
                     $invoiceDetail->quantity = $quantity;
                     $invoiceDetail->unit_price = $unitPrice;
-                    $invoiceDetail->box_count = ceil($allocation->box_count);
-                    $invoiceDetail->weight = ceil($allocation->weight);
+                    $invoiceDetail->box_count = $allocation->box_count;
+                    $invoiceDetail->weight = $allocation->weight;
                     $invoiceDetail->discount = 0;
                     $invoiceDetail->hsn = $detail->hsn;
                     $invoiceDetail->amount = $lineTotal;
