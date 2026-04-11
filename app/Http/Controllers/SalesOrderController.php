@@ -1688,15 +1688,19 @@ class SalesOrderController extends Controller
                     ->first();
                 if ($lastInvoice) {
                     $lastNumber = (int) substr($lastInvoice->invoice_number, -4);
-                    $newNumber = str_pad($lastNumber + 1, 4, '0', STR_PAD_LEFT);
+
+                    // 👇 Force jump to 7045 if below it
+                    if ($lastNumber < 7045) {
+                        $newNumber = 7045;
+                    } else {
+                        $newNumber = $lastNumber + 1;
+                    }
+
+                    $newNumber = str_pad($newNumber, 4, '0', STR_PAD_LEFT);
                 } else {
-                    $newNumber = '7000';
+                    $newNumber = '7045'; // start from here if no invoices exist
                 }
-                // if(($newNumber - $lastNumber) > 1){
-                //     $newNumber = $lastNumber + 1;
-                // }else {
-                //     $newNumber = '7000';
-                // }
+
                 $invoiceNumber = 'IIPL-' . $newNumber;
 
                 // Create invoice with unique number

@@ -533,28 +533,25 @@ class InvoiceController extends Controller
             // $lastInvoice = Invoice::where('invoice_number', 'LIKE', "INV-{$yearMonth}-%")
             //     ->orderBy('id', 'desc')
             //     ->first();
+            // $timestamp =  date('Ym');
             $lastInvoice = Invoice::where('invoice_number', 'LIKE', "IIPL-%")
                 ->orderBy('id', 'desc')
                 ->first();
-
-            // $timestamp =  date('Ym');
-
             if ($lastInvoice) {
                 $lastNumber = (int) substr($lastInvoice->invoice_number, -4);
-                $newNumber = str_pad($lastNumber + 1, 4, '0', STR_PAD_LEFT);
-            } else {
-                $newNumber = '7000';
-            }
-            // if (($newNumber - $lastNumber) > 1) {
-            //     $newNumber = $lastNumber + 1;
-            // } else {
-            //     $newNumber = '7000';
-            // }
 
-            // $invoiceNumber = "INV-{$yearMonth}-{$newNumber}";
-            // old format
-            // $invoiceNumber = 'INV-' . $timestamp . '-' . $newNumber;
-            // new format
+                // 👇 Force jump to 7045 if below it
+                if ($lastNumber < 7045) {
+                    $newNumber = 7045;
+                } else {
+                    $newNumber = $lastNumber + 1;
+                }
+
+                $newNumber = str_pad($newNumber, 4, '0', STR_PAD_LEFT);
+            } else {
+                $newNumber = '7045'; // start from here if no invoices exist
+            }
+
             $invoiceNumber = 'IIPL-' . $newNumber;
 
             // Calculate totals based on invoice type
