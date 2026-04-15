@@ -995,14 +995,16 @@ class InvoiceController extends Controller
     private function callEInvoiceAPI($token, $data)
     {
         try {
+            $einvoiceUrl = $this->getEInvoiceApiBaseUrl() . '/einvoice/';
+
             Log::debug('E-Invoice API Request Payload', [
-                'url' => 'https://prod-api.mastersindia.co/api/v1/einvoice/',
+                'url' => $einvoiceUrl,
                 'data' => $data,
             ]);
 
-            $response = Http::withToken($token)
+            $response = Http::withHeaders($this->getEInvoiceAuthHeaders($token))
                 ->asJson()
-                ->post('https://prod-api.mastersindia.co/api/v1/einvoice/', $data);
+                ->post($einvoiceUrl, $data);
 
             Log::debug('E-Invoice API Response', [
                 'status' => $response->status(),
@@ -1465,10 +1467,8 @@ class InvoiceController extends Controller
     private function getDistance($source, $destination, $token)
     {
         try {
-            $response = Http::withHeaders([
-                'Authorization' => 'JWT ' . $token,
-                'Content-Type' => 'application/json',
-            ])->get('https://prod-api.mastersindia.co/api/v1/distance/?fromPincode=' . $source . '&toPincode=' . $destination);
+            $response = Http::withHeaders($this->getEInvoiceAuthHeaders($token))
+                ->get($this->getEInvoiceApiBaseUrl() . '/distance/?fromPincode=' . $source . '&toPincode=' . $destination);
 
             return $response->json();
         } catch (\Exception $e) {
@@ -1481,7 +1481,7 @@ class InvoiceController extends Controller
     private function getEInvoiceToken()
     {
         try {
-            $tokenUrl = rtrim(env('EINVOICE_API_URL', 'https://prod-api.mastersindia.co/api/v1/'), '/') . '/token-auth';
+            $tokenUrl = $this->getEInvoiceApiBaseUrl() . '/token-auth';
             $username = trim((string) env('EINVOICE_API_USERNAME', ''));
             $password = trim((string) env('EINVOICE_API_PASSWORD', ''));
 
@@ -1526,4 +1526,19 @@ class InvoiceController extends Controller
             return null;
         }
     }
+
+    private function getEInvoiceApiBaseUrl()
+    {
+        return rtrim(env('EINVOICE_API_URL', 'https://prod-api.mastersindia.co/api/v1/'), '/');
+    }
+
+    private function getEInvoiceAuthHeaders($token)
+    {
+        return [
+            'Authorization' => 'JWT ' . $token,
+            'Content-Type' => 'application/json',
+            'Accept' => 'application/json',
+        ];
+    }
 }
+
