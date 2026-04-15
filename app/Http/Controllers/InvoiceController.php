@@ -857,7 +857,7 @@ class InvoiceController extends Controller
         // $sellerGstin = '05AAAPG7885R002'; // Test GSTIN for seller
         // $buyerGstin = '09AAAPG7885R002'; // Test GSTIN for buyer
 
-        $sellerGstin = $warehouse ? $warehouse->gst_number : null;
+        $sellerGstin = $warehouse ? $warehouse->gst_number : env('DEFAULT_COMPANY_GSTIN', '05AAAPG7885R002'); // Default GSTIN for manual invoices
         $buyerGstin = $customer ? $customer->gstin : null;
 
         // Extract state codes from GSTINs (first 2 digits)
@@ -865,14 +865,14 @@ class InvoiceController extends Controller
         // $buyerStateCode = substr($buyerGstin, 0, 2);
 
         // Fetch GST State Code
-        $sellerStateCode = $this->getStateCode($warehouse->state->name);
+        $sellerStateCode = $warehouse ? $this->getStateCode($warehouse->state->name) : '05'; // Default state code
         $buyerStateCode = $this->getStateCode($customer->billing_state ?? $customer->shipping_state);
         // Use pincodes that match the test GSTIN states
         // $sellerPincode = '263001'; // Uttarakhand pincode
         // $buyerPincode = '201301'; // Uttar Pradesh pincode
 
         // Fetch pincode from warehouse and customer
-        $sellerPincode = $warehouse ? $warehouse->pincode : null;
+        $sellerPincode = $warehouse ? $warehouse->pincode : '263001'; // Default pincode
         $buyerPincode = $customer ? $customer->shipping_zip : null;
 
         $checkIntraState = $sellerStateCode === $buyerStateCode;
@@ -884,11 +884,13 @@ class InvoiceController extends Controller
             $igstAmount = round(($assessableValue * $gstRate) / 100, 2);
             $totalItemValue = $assessableValue + $igstAmount;
             if ($checkIntraState) {
-                $cgstAmount = $igstAmount / 2;
-                $sgstAmount = $igstAmount / 2;
+                $cgstAmount = round($igstAmount / 2, 2);
+                $sgstAmount = round($igstAmount / 2, 2);
+                $igstAmount = 0; // For intra-state, IGST is 0
             } else {
                 $cgstAmount = 0;
                 $sgstAmount = 0;
+                // IGST remains as calculated
             }
             $itemList[] = [
                 'item_serial_number' => $index + 1,
@@ -918,7 +920,7 @@ class InvoiceController extends Controller
             ],
             'document_details' => [
                 'document_type' => 'INV',
-                'document_number' => 'I' . str_pad(rand(1, 999999), 6, '0', STR_PAD_LEFT) . rand(1, 9), // Format: IXXXXXXY
+                'document_number' => $invoice->invoice_number,
                 'document_date' => $invoice->invoice_date->format('d/m/Y'),
             ],
             'seller_details' => [
