@@ -778,69 +778,85 @@ class InvoiceController extends Controller
 
             // Validate required data
             if (! $invoice->customer || ! $invoice->customer->gstin) {
-                return redirect()->back()->with('error', 'Customer GSTIN is required for e-invoice generation.');
+                return redirect()->back()->with('error', 'Customer GSTIN is required for e-invoice generation. Please update the customer GSTIN in the customer details.');
             }
 
             // For manual invoices (warehouse_id = 0), we can proceed with default company data
             // But if warehouse exists, check for GSTIN
             if ($invoice->warehouse_id != 0 && (! $invoice->warehouse || ! $invoice->warehouse->gst_number)) {
-                return redirect()->back()->with('error', 'Warehouse GSTIN is required for e-invoice generation.');
+                return redirect()->back()->with('error', 'Warehouse GSTIN is required for e-invoice generation. Please update the warehouse GSTIN in the warehouse details.');
             }
 
             if ($invoice->details->isEmpty()) {
-                return redirect()->back()->with('error', 'Invoice must have at least one item for e-invoice generation.');
+                return redirect()->back()->with('error', 'Invoice must have at least one item for e-invoice generation. Please add items to the invoice.');
             }
 
             // Get JWT token
             $token = $this->getEInvoiceToken();
             if (! $token) {
-                return redirect()->back()->with('error', 'Failed to authenticate with e-invoice API.');
+                return redirect()->back()->with('error', 'Failed to authenticate with e-invoice API. Please check the API credentials (EINVOICE_API_USERNAME and EINVOICE_API_PASSWORD) in the environment configuration.');
             }
 
             // Prepare API request data
             $requestData = $this->prepareEInvoiceData($invoice);
+            if (! $requestData) {
+                return redirect()->back()->with('error', 'Failed to prepare e-invoice data. Please check invoice details and try again.');
+            }
 
             // Make API call
             $response = $this->callEInvoiceAPI($token, $requestData);
-
-            if ($response && isset($response['results'])) {
-                $results = $response['results'];
-
-                if (isset($results['status']) && $results['status'] === 'Success' && isset($results['message'])) {
-                    $message = $results['message'];
-
-                    // Update invoice with e-invoice details
-                    EInvoice::create([
-                        'invoice_id' => $invoice->id,
-                        'irn' => $message['Irn'] ?? null,
-                        'ack_no' => $message['AckNo'] ?? null,
-                        'ack_dt' => isset($message['AckDt']) ? date('Y-m-d H:i:s', strtotime($message['AckDt'])) : null,
-                        'signed_invoice' => $message['SignedInvoice'] ?? null,
-                        'signed_qr_code' => $message['SignedQRCode'] ?? null,
-                        'einvoice_pdf' => $message['EinvoicePdf'] ?? null,
-                        'qr_code_url' => $message['QRCodeUrl'] ?? null,
-                        'einvoice_status' => $message['Status'] ?? null,
-                        'created_by' => Auth::id(),
-                    ]);
-
-                    $irn = $message['Irn'] ?? 'N/A';
-
-                    return redirect()->back()->with('success', 'E-Invoice generated successfully. IRN: ' . $irn);
-                } else {
-                    $errorMessage = $results['errorMessage'] ?? $results['InfoDtls'] ?? 'Unknown error occurred';
-                    $status = $results['status'] ?? 'Unknown';
-                    Log::error('E-Invoice API Error Response: ' . json_encode($response));
-
-                    // For debugging, show the raw response
-                    $debugInfo = 'API Response: ' . json_encode($response);
-
-                    return redirect()->back()->with('error', 'Failed to generate e-invoice (Status: ' . $status . '): ' . $errorMessage . ' | Debug: ' . substr($debugInfo, 0, 200));
-                }
-            } else {
-                Log::error('E-Invoice API Invalid Response: ' . json_encode($response));
-
-                return redirect()->back()->with('error', 'Invalid response from e-invoice API');
+            if (! $response) {
+                return redirect()->back()->with('error', 'Failed to connect to e-invoice API. Please check your internet connection and try again.');
             }
+
+            if (! isset($response['results'])) {
+                Log::error('E-Invoice API Invalid Response Structure: ' . json_encode($response));
+
+                return redirect()->back()->with('error', 'Invalid response from e-invoice API. Please contact support with the error details.');
+            }
+
+            $results = $response['results'];
+
+            if (! isset($results['status']) || $results['status'] !== 'Success' || ! isset($results['message'])) {
+                $errorMessage = $results['errorMessage'] ?? $results['InfoDtls'] ?? 'Unknown API error occurred';
+                $status = $results['status'] ?? 'Unknown';
+                Log::error('E-Invoice API Error Response: ' . json_encode($response));
+
+                return redirect()->back()->with('error', 'Failed to generate e-invoice (Status: ' . $status . '): ' . $errorMessage . '. Please check the invoice data and try again.');
+            }
+
+            $message = $results['message'];
+
+            // Validate required response data
+            if (! isset($message['Irn'])) {
+                Log::error('E-Invoice API Missing IRN: ' . json_encode($response));
+
+                return redirect()->back()->with('error', 'E-Invoice generated but IRN not received. Please contact support.');
+            }
+
+            // Save e-invoice details to database
+            try {
+                EInvoice::create([
+                    'invoice_id' => $invoice->id,
+                    'irn' => $message['Irn'] ?? null,
+                    'ack_no' => $message['AckNo'] ?? null,
+                    'ack_dt' => isset($message['AckDt']) ? date('Y-m-d H:i:s', strtotime($message['AckDt'])) : null,
+                    'signed_invoice' => $message['SignedInvoice'] ?? null,
+                    'signed_qr_code' => $message['SignedQRCode'] ?? null,
+                    'einvoice_pdf' => $message['EinvoicePdf'] ?? null,
+                    'qr_code_url' => $message['QRCodeUrl'] ?? null,
+                    'einvoice_status' => $message['Status'] ?? null,
+                    'created_by' => Auth::id(),
+                ]);
+            } catch (\Exception $e) {
+                Log::error('E-Invoice Database Save Error: ' . $e->getMessage());
+
+                return redirect()->back()->with('error', 'E-Invoice generated successfully, but failed to save details to database. IRN: ' . ($message['Irn'] ?? 'N/A') . '. Please contact support.');
+            }
+
+            $irn = $message['Irn'] ?? 'N/A';
+
+            return redirect()->back()->with('success', 'E-Invoice generated successfully. IRN: ' . $irn);
         } catch (\Exception $e) {
             Log::error('E-Invoice Generation Error: ' . $e->getMessage());
 
