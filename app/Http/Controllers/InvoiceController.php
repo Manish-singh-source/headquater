@@ -923,7 +923,6 @@ class InvoiceController extends Controller
                 'sgst_amount' => $sgstAmount,
                 'igst_amount' => $igstAmount,
                 'total_item_value' => number_format($totalItemValue, 2, '.', ''),
-                'modified_at' => now()->toIso8601String(),
             ];
         }
 
@@ -986,7 +985,6 @@ class InvoiceController extends Controller
                 'total_invoice_value' => number_format(collect($itemList)->sum('assessable_value') + collect($itemList)->sum('igst_amount') - ($invoice->discount_amount ?? 0) + ($invoice->round_off ?? 0), 2, '.', ''),
                 'round_off_amount' => $invoice->round_off ?? 0,
             ],
-            'irp_list' => $itemList,
             'item_list' => $itemList,
         ];
     }
@@ -1500,6 +1498,13 @@ class InvoiceController extends Controller
             ]);
 
             $data = $response->json();
+
+            Log::debug('E-Invoice Token API Response', [
+                'url' => $tokenUrl,
+                'status' => $response->status(),
+                'body' => $response->body(),
+                'data' => $data,
+            ]);
 
             if (! $response->successful() || empty($data['token'])) {
                 Log::error('E-Invoice Token API Error', [
