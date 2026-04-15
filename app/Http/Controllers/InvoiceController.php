@@ -923,7 +923,7 @@ class InvoiceController extends Controller
                 'sgst_amount' => $sgstAmount,
                 'igst_amount' => $igstAmount,
                 'total_item_value' => number_format($totalItemValue, 2, '.', ''),
-                'modified_at' => now()->format('Y-m-d H:i:s'),
+                'modified_at' => now()->toIso8601String(),
             ];
         }
 
@@ -986,6 +986,7 @@ class InvoiceController extends Controller
                 'total_invoice_value' => number_format(collect($itemList)->sum('assessable_value') + collect($itemList)->sum('igst_amount') - ($invoice->discount_amount ?? 0) + ($invoice->round_off ?? 0), 2, '.', ''),
                 'round_off_amount' => $invoice->round_off ?? 0,
             ],
+            'irp_list' => $itemList,
             'item_list' => $itemList,
         ];
     }
