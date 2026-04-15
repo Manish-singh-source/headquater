@@ -947,34 +947,34 @@ class InvoiceController extends Controller
             ],
             'seller_details' => [
                 'gstin' => $sellerGstin,
-                'legal_name' => $warehouse ? $warehouse->name : 'Default Company',
-                'address1' => $warehouse ? $warehouse->address_line_1 : 'Default Address',
-                'address2' => $warehouse ? ($warehouse->address_line_2 ?? '') : '',
-                'location' => $warehouse ? $warehouse->cities->name ?? 'Default City' : 'Default City',
+                'legal_name' => $this->sanitizeEInvoiceText($warehouse ? $warehouse->name : 'Default Company'),
+                'address1' => $this->sanitizeEInvoiceAddress($warehouse ? $warehouse->address_line_1 : 'Default Address', 100),
+                'address2' => $this->sanitizeEInvoiceAddress($warehouse ? ($warehouse->address_line_2 ?? '') : '', 100),
+                'location' => $this->sanitizeEInvoiceText($warehouse ? ($warehouse->cities->name ?? 'Default City') : 'Default City', 50),
                 'pincode' => $sellerPincode,
                 'state_code' => $sellerStateCode,
             ],
             'buyer_details' => [
                 'gstin' => $buyerGstin,
-                'legal_name' => $customer->client_name,
-                'address1' => $customer->billing_address ?? $customer->shipping_address ?? 'Default Address',
-                'location' => $customer->billing_city ?? $customer->shipping_city ?? 'Default City',
+                'legal_name' => $this->sanitizeEInvoiceText($customer->client_name),
+                'address1' => $this->sanitizeEInvoiceAddress($customer->billing_address ?? $customer->shipping_address ?? 'Default Address', 100),
+                'location' => $this->sanitizeEInvoiceText($customer->billing_city ?? $customer->shipping_city ?? 'Default City', 50),
                 'pincode' => $buyerPincode,
                 'place_of_supply' => $buyerStateCode,
                 'state_code' => $buyerStateCode,
             ],
             'dispatch_details' => [
-                'company_name' => $warehouse ? $warehouse->name : 'Default Company',
-                'address1' => $warehouse ? $warehouse->address_line_1 : 'Default Address',
-                'location' => $warehouse ? $warehouse->cities->name ?? 'Default City' : 'Default City',
+                'company_name' => $this->sanitizeEInvoiceText($warehouse ? $warehouse->name : 'Default Company', 60),
+                'address1' => $this->sanitizeEInvoiceAddress($warehouse ? $warehouse->address_line_1 : 'Default Address', 100),
+                'location' => $this->sanitizeEInvoiceText($warehouse ? ($warehouse->cities->name ?? 'Default City') : 'Default City', 50),
                 'pincode' => $sellerPincode,
                 'state_code' => $sellerStateCode,
             ],
             'ship_details' => [
                 'gstin' => $buyerGstin,
-                'legal_name' => $customer->client_name,
-                'address1' => $customer->shipping_address ?? $customer->billing_address ?? 'Default Address',
-                'location' => $customer->shipping_city ?? $customer->billing_city ?? 'Default City',
+                'legal_name' => $this->sanitizeEInvoiceText($customer->client_name),
+                'address1' => $this->sanitizeEInvoiceAddress($customer->shipping_address ?? $customer->billing_address ?? 'Default Address', 100),
+                'location' => $this->sanitizeEInvoiceText($customer->shipping_city ?? $customer->billing_city ?? 'Default City', 100),
                 'pincode' => $buyerPincode,
                 'state_code' => $buyerStateCode,
             ],
@@ -1478,9 +1478,22 @@ class InvoiceController extends Controller
         return str_pad((string) $stateCode, 2, '0', STR_PAD_LEFT);
     }
 
-    private function sanitizeEInvoiceText($value)
+    private function sanitizeEInvoiceText($value, $maxLength = null)
     {
-        return preg_replace('/\\s+/', ' ', trim((string) $value));
+        $text = preg_replace('/\\s+/', ' ', trim((string) $value));
+
+        if ($maxLength !== null) {
+            $text = mb_substr($text, 0, $maxLength);
+        }
+
+        return $text;
+    }
+
+    private function sanitizeEInvoiceAddress($value, $maxLength = 100)
+    {
+        $text = $this->sanitizeEInvoiceText($value, $maxLength);
+
+        return $text === '' ? 'NA' : $text;
     }
 
     private function getDistance($source, $destination, $token)
@@ -1562,6 +1575,7 @@ class InvoiceController extends Controller
         ];
     }
 }
+
 
 
 
