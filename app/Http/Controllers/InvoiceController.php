@@ -494,7 +494,6 @@ class InvoiceController extends Controller
             // 'total_amount' => 'nullable|numeric|min:0',
         ]);
 
-
         if ($validator->fails()) {
             return redirect()->back()->withErrors($validator)->withInput();
         }
@@ -503,7 +502,7 @@ class InvoiceController extends Controller
         $customerId = $request->input('customer_id');
         $customerGroupId = $request->input('customer_group_id');
 
-        if (!$customerId && !$customerGroupId) {
+        if (! $customerId && ! $customerGroupId) {
             return redirect()->back()->withErrors(['customer_selection' => 'Either Customer or Customer Group must be selected.'])->withInput();
         }
 
@@ -514,14 +513,14 @@ class InvoiceController extends Controller
         // Validate that the selected customer/group exists and is active
         if ($customerId) {
             $customer = Customer::active()->find($customerId);
-            if (!$customer) {
+            if (! $customer) {
                 return redirect()->back()->withErrors(['customer_id' => 'Selected customer is not available.'])->withInput();
             }
         }
 
         if ($customerGroupId) {
             $customerGroup = \App\Models\CustomerGroup::active()->find($customerGroupId);
-            if (!$customerGroup) {
+            if (! $customerGroup) {
                 return redirect()->back()->withErrors(['customer_group_id' => 'Selected customer group is not available.'])->withInput();
             }
         }
@@ -534,7 +533,7 @@ class InvoiceController extends Controller
             //     ->orderBy('id', 'desc')
             //     ->first();
             // $timestamp =  date('Ym');
-            $lastInvoice = Invoice::where('invoice_number', 'LIKE', "IIPL-%")
+            $lastInvoice = Invoice::where('invoice_number', 'LIKE', 'IIPL-%')
                 ->orderBy('id', 'desc')
                 ->first();
             if ($lastInvoice) {
@@ -639,7 +638,7 @@ class InvoiceController extends Controller
                     $taxAmount = $item['tax'] ?? 0;
 
                     // convert tax in percentage
-                    if (!$item['tax']) {
+                    if (! $item['tax']) {
                         $item['tax'] = 0;
                         $percentage = 0;
                     } else {
@@ -778,13 +777,13 @@ class InvoiceController extends Controller
             }
 
             // Validate required data
-            if (!$invoice->customer || !$invoice->customer->gstin) {
+            if (! $invoice->customer || ! $invoice->customer->gstin) {
                 return redirect()->back()->with('error', 'Customer GSTIN is required for e-invoice generation.');
             }
 
             // For manual invoices (warehouse_id = 0), we can proceed with default company data
             // But if warehouse exists, check for GSTIN
-            if ($invoice->warehouse_id != 0 && (!$invoice->warehouse || !$invoice->warehouse->gst_number)) {
+            if ($invoice->warehouse_id != 0 && (! $invoice->warehouse || ! $invoice->warehouse->gst_number)) {
                 return redirect()->back()->with('error', 'Warehouse GSTIN is required for e-invoice generation.');
             }
 
@@ -794,7 +793,7 @@ class InvoiceController extends Controller
 
             // Get JWT token
             $token = $this->getEInvoiceToken();
-            if (!$token) {
+            if (! $token) {
                 return redirect()->back()->with('error', 'Failed to authenticate with e-invoice API.');
             }
 
@@ -825,6 +824,7 @@ class InvoiceController extends Controller
                     ]);
 
                     $irn = $message['Irn'] ?? 'N/A';
+
                     return redirect()->back()->with('success', 'E-Invoice generated successfully. IRN: ' . $irn);
                 } else {
                     $errorMessage = $results['errorMessage'] ?? $results['InfoDtls'] ?? 'Unknown error occurred';
@@ -833,18 +833,20 @@ class InvoiceController extends Controller
 
                     // For debugging, show the raw response
                     $debugInfo = 'API Response: ' . json_encode($response);
+
                     return redirect()->back()->with('error', 'Failed to generate e-invoice (Status: ' . $status . '): ' . $errorMessage . ' | Debug: ' . substr($debugInfo, 0, 200));
                 }
             } else {
                 Log::error('E-Invoice API Invalid Response: ' . json_encode($response));
+
                 return redirect()->back()->with('error', 'Invalid response from e-invoice API');
             }
         } catch (\Exception $e) {
             Log::error('E-Invoice Generation Error: ' . $e->getMessage());
+
             return redirect()->back()->with('error', 'An error occurred while generating e-invoice: ' . $e->getMessage());
         }
     }
-
 
     private function prepareEInvoiceData($invoice)
     {
@@ -862,7 +864,7 @@ class InvoiceController extends Controller
         // $sellerStateCode = substr($sellerGstin, 0, 2);
         // $buyerStateCode = substr($buyerGstin, 0, 2);
 
-        // Fetch GST State Code 
+        // Fetch GST State Code
         $sellerStateCode = $this->getStateCode($warehouse->state->name);
         $buyerStateCode = $this->getStateCode($customer->billing_state ?? $customer->shipping_state);
         // Use pincodes that match the test GSTIN states
@@ -905,7 +907,6 @@ class InvoiceController extends Controller
                 'total_item_value' => number_format($totalItemValue, 2, '.', ''),
             ];
         }
-
 
         return [
             'user_gstin' => $sellerGstin,
@@ -981,6 +982,7 @@ class InvoiceController extends Controller
             return $response->json();
         } catch (\Exception $e) {
             Log::error('E-Invoice API Call Error: ' . $e->getMessage());
+
             return null;
         }
     }
@@ -991,7 +993,7 @@ class InvoiceController extends Controller
             $invoice = EInvoice::with('invoice.warehouse')->find($id);
 
             // Check if e-invoice exists
-            if (!$invoice) {
+            if (! $invoice) {
                 return redirect()->back()->with('error', 'No E-Invoice found for this invoice.');
             }
 
@@ -1007,7 +1009,7 @@ class InvoiceController extends Controller
 
             // Get JWT token
             $token = $this->getEInvoiceToken();
-            if (!$token) {
+            if (! $token) {
                 return redirect()->back()->with('error', 'Failed to authenticate with e-invoice API.');
             }
 
@@ -1047,14 +1049,17 @@ class InvoiceController extends Controller
                 } else {
                     $errorMessage = $results['errorMessage'] ?? $results['InfoDtls'] ?? 'Unknown error occurred';
                     Log::error('E-Invoice Cancel API Error Response: ' . json_encode($data));
+
                     return redirect()->back()->with('error', 'Failed to cancel e-invoice: ' . $errorMessage);
                 }
             } else {
                 Log::error('E-Invoice Cancel API Invalid Response: ' . json_encode($data));
+
                 return redirect()->back()->with('error', 'Invalid response from e-invoice API');
             }
         } catch (\Exception $e) {
             Log::error('E-Invoice Cancellation Error: ' . $e->getMessage());
+
             return redirect()->back()->with('error', 'An error occurred while cancelling e-invoice: ' . $e->getMessage());
         }
     }
@@ -1065,7 +1070,7 @@ class InvoiceController extends Controller
 
             // Get JWT token
             $token = $this->getEInvoiceToken();
-            if (!$token) {
+            if (! $token) {
                 return redirect()->back()->with('error', 'Failed to authenticate with e-invoice API.');
             }
 
@@ -1073,7 +1078,7 @@ class InvoiceController extends Controller
             $einvoice = EInvoice::find($request->einvoice_id);
 
             // Check if e-invoice exists
-            if (!$einvoice->irn) {
+            if (! $einvoice->irn) {
                 return redirect()->back()->with('error', 'E-Invoice must be generated first before creating E-Way Bill.');
             }
 
@@ -1093,7 +1098,7 @@ class InvoiceController extends Controller
                 'transporter_document_number' => 'required|string',
                 'transporter_document_date' => 'required|string',
             ]);
-            // validations 
+            // validations
 
             // Map transportation mode to API values
             $transportationModeMap = [
@@ -1106,7 +1111,7 @@ class InvoiceController extends Controller
 
             // Get JWT token
             $token = $this->getEInvoiceToken();
-            if (!$token) {
+            if (! $token) {
                 return redirect()->back()->with('error', 'Failed to authenticate with e-invoice API.');
             }
 
@@ -1121,10 +1126,9 @@ class InvoiceController extends Controller
             // $vehicleUpdateDate = date('Y-m-d', strtotime(str_replace('/', '-', $validated['vehicle_number_update_date'])));
             $transporterDocDate = date('Y-m-d', strtotime(str_replace('/', '-', $validated['transporter_document_date'])));
 
-
-            // Warehouse Details 
+            // Warehouse Details
             $warehouse = $invoice->warehouse;
-            // Customer Details 
+            // Customer Details
             $customer = $invoice->customer;
             // Fetch Distance from Warehouse to Customer
             $distance = $this->getDistance($warehouse->pincode, $customer->shipping_zip ?? $customer->billing_zip, $token);
@@ -1171,8 +1175,9 @@ class InvoiceController extends Controller
                         'ewaybill_pdf' => $message['EwaybillPdf'] ?? null,
                     ]);
 
-                    if (!$ewaybill) {
+                    if (! $ewaybill) {
                         DB::rollBack();
+
                         return redirect()->back()->with('error', 'Failed to generate e-way bill.');
                     }
 
@@ -1187,8 +1192,9 @@ class InvoiceController extends Controller
                         'state_of_consignor' => $stateOfConsignor,
                     ]);
 
-                    if (!$transportDetail) {
+                    if (! $transportDetail) {
                         DB::rollBack();
+
                         return redirect()->back()->with('error', 'Failed to generate e-way bill.');
                     }
 
@@ -1203,14 +1209,17 @@ class InvoiceController extends Controller
                     Log::error('E-Way Bill API Error Response: ' . json_encode($data));
                     // Show detailed error for debugging
                     $debugInfo = isset($results['errorMessage']) ? $results['errorMessage'] : (isset($results['InfoDtls']) ? $results['InfoDtls'] : json_encode($results));
+
                     return redirect()->back()->with('error', 'Failed to generate e-way bill: ' . $debugInfo);
                 }
             } else {
                 Log::error('E-Way Bill API Invalid Response: ' . json_encode($data));
+
                 return redirect()->back()->with('error', 'Invalid response from e-way bill API');
             }
         } catch (\Exception $e) {
             Log::error('E-Way Bill Generation Error: ' . $e->getMessage());
+
             return redirect()->back()->with('error', 'An error occurred while generating e-way bill: ' . $e->getMessage());
         }
     }
@@ -1234,7 +1243,7 @@ class InvoiceController extends Controller
             $customerGstin = $invoice->invoice->customer->gst_number ?? '05AAAPG7885R002'; // Test GSTIN for e-waybill consignee
 
             // Check if e-waybill exists
-            if (!$invoice->ewb_no) {
+            if (! $invoice->ewb_no) {
                 return redirect()->back()->with('error', 'No E-Way Bill found for this invoice.');
             }
 
@@ -1245,7 +1254,7 @@ class InvoiceController extends Controller
 
             // Get JWT token
             $token = $this->getEInvoiceToken();
-            if (!$token) {
+            if (! $token) {
                 return redirect()->back()->with('error', 'Failed to authenticate with e-invoice API.');
             }
 
@@ -1255,7 +1264,7 @@ class InvoiceController extends Controller
                 'eway_bill_number' => $invoice->ewb_no,
                 'reason_of_cancel' => 1, // Default reason: Wrong entry
                 'cancel_remark' => 'Cancelled by user',
-                "data_source" => 'erp'
+                'data_source' => 'erp',
             ];
 
             // Make API call
@@ -1272,6 +1281,7 @@ class InvoiceController extends Controller
                 $errorMessage = $data['message'] ?? 'Invalid response from e-way bill API';
                 Log::error('E-Way Bill Cancel API Invalid Response: ' . json_encode($data));
                 DB::rollBack();
+
                 return redirect()->back()->with('error', 'Failed to cancel e-way bill: ' . $errorMessage);
             }
 
@@ -1295,16 +1305,19 @@ class InvoiceController extends Controller
                     $errorMessage = $results['errorMessage'] ?? $results['InfoDtls'] ?? 'Unknown error occurred';
                     Log::error('E-Way Bill Cancel API Error Response: ' . json_encode($data));
                     DB::rollBack();
+
                     return redirect()->back()->with('error', 'Failed to cancel e-way bill: ' . $errorMessage);
                 }
             } else {
                 Log::error('E-Way Bill Cancel API Invalid Response: ' . json_encode($data));
                 DB::rollBack();
+
                 return redirect()->back()->with('error', 'Invalid response from e-way bill API');
             }
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('E-Way Bill Cancellation Error: ' . $e->getMessage());
+
             return redirect()->back()->with('error', 'An error occurred while cancelling e-way bill: ' . $e->getMessage());
         }
     }
@@ -1324,13 +1337,13 @@ class InvoiceController extends Controller
             $invoice = Invoice::findOrFail($id);
 
             // Check if e-waybill exists
-            if (!$invoice->ewb_no) {
+            if (! $invoice->ewb_no) {
                 return redirect()->back()->with('error', 'No E-Way Bill found for this invoice.');
             }
 
             // Get JWT token
             $token = $this->getEInvoiceToken();
-            if (!$token) {
+            if (! $token) {
                 return redirect()->back()->with('error', 'Failed to authenticate with e-invoice API.');
             }
 
@@ -1354,6 +1367,7 @@ class InvoiceController extends Controller
                 $errorMessage = $data['message'] ?? 'Invalid response from e-way bill API';
                 Log::error('E-Way Bill Check API Invalid Response: ' . json_encode($data));
                 DB::rollBack();
+
                 return redirect()->back()->with('error', 'Failed to check e-way bill status: ' . $errorMessage);
             }
 
@@ -1378,16 +1392,19 @@ class InvoiceController extends Controller
                     $errorMessage = $results['errorMessage'] ?? $results['InfoDtls'] ?? 'Unknown error occurred';
                     Log::error('E-Way Bill Check API Error Response: ' . json_encode($data));
                     DB::rollBack();
+
                     return redirect()->back()->with('error', 'Failed to check e-way bill status: ' . $errorMessage);
                 }
             } else {
                 Log::error('E-Way Bill Check API Invalid Response: ' . json_encode($data));
                 DB::rollBack();
+
                 return redirect()->back()->with('error', 'Invalid response from e-way bill API');
             }
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('E-Way Bill Check/Update Error: ' . $e->getMessage());
+
             return redirect()->back()->with('error', 'An error occurred while checking e-way bill status: ' . $e->getMessage());
         }
     }
@@ -1396,13 +1413,14 @@ class InvoiceController extends Controller
     {
         try {
             $qrCode = new QrCode($data);
-            $writer = new PngWriter();
+            $writer = new PngWriter;
             $result = $writer->write($qrCode);
 
             // Return as base64 encoded data URL
             return 'data:image/png;base64,' . base64_encode($result->getString());
         } catch (\Exception $e) {
             Log::error('QR Code Generation Error: ' . $e->getMessage());
+
             return null;
         }
     }
@@ -1410,6 +1428,7 @@ class InvoiceController extends Controller
     private function getStateCode($stateName)
     {
         $state = State::where('name', $stateName)->first();
+
         return $state ? $state->code : null;
     }
 
@@ -1424,19 +1443,31 @@ class InvoiceController extends Controller
             return $response->json();
         } catch (\Exception $e) {
             Log::error('E-Invoice API Call Error: ' . $e->getMessage());
+
             return null;
         }
     }
-
 
     private function getEInvoiceToken()
     {
         try {
             $tokenUrl = rtrim(env('EINVOICE_API_URL', 'https://prod-api.mastersindia.co/api/v1/'), '/') . '/token-auth';
+            $username = trim((string) env('EINVOICE_API_USERNAME', ''));
+            $password = trim((string) env('EINVOICE_API_PASSWORD', ''));
 
-            $response = Http::timeout(30)->post($tokenUrl, [
-                'username' => env('EINVOICE_API_USERNAME'),
-                'password' => env('EINVOICE_API_PASSWORD'),
+            if ($username === '' || $password === '') {
+                Log::error('E-Invoice Token Configuration Missing', [
+                    'url' => $tokenUrl,
+                    'username_present' => $username !== '',
+                    'password_present' => $password !== '',
+                ]);
+
+                return null;
+            }
+
+            $response = Http::asForm()->timeout(30)->post($tokenUrl, [
+                'username' => $username,
+                'password' => $password,
             ]);
 
             $data = $response->json();
@@ -1446,12 +1477,15 @@ class InvoiceController extends Controller
                     'url' => $tokenUrl,
                     'status' => $response->status(),
                     'body' => $response->body(),
+                    'username_present' => $username !== '',
+                    'password_present' => $password !== '',
                 ]);
             }
 
             return $data['token'] ?? null;
         } catch (\Exception $e) {
             Log::error('E-Invoice Token Error: ' . $e->getMessage());
+
             return null;
         }
     }
