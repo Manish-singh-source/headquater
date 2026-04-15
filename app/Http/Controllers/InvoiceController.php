@@ -994,10 +994,19 @@ class InvoiceController extends Controller
     private function callEInvoiceAPI($token, $data)
     {
         try {
-            $response = Http::withHeaders([
-                'Authorization' => 'JWT ' . $token,
-                'Content-Type' => 'application/json',
-            ])->post('https://prod-api.mastersindia.co/api/v1/einvoice/', $data);
+            Log::debug('E-Invoice API Request Payload', [
+                'url' => 'https://prod-api.mastersindia.co/api/v1/einvoice/',
+                'data' => $data,
+            ]);
+
+            $response = Http::withToken($token)
+                ->asJson()
+                ->post('https://prod-api.mastersindia.co/api/v1/einvoice/', $data);
+
+            Log::debug('E-Invoice API Response', [
+                'status' => $response->status(),
+                'body' => $response->body(),
+            ]);
 
             return $response->json();
         } catch (\Exception $e) {
