@@ -923,6 +923,7 @@ class InvoiceController extends Controller
                 'sgst_amount' => $sgstAmount,
                 'igst_amount' => $igstAmount,
                 'total_item_value' => number_format($totalItemValue, 2, '.', ''),
+                'modified_at' => now()->format('Y-m-d H:i:s'),
             ];
         }
 
