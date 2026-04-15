@@ -100,6 +100,7 @@ class SalesOrderController extends Controller
     public function index()
     {
         $orders = SalesOrder::with('customerGroup')->orderBy('id', 'desc')->get();
+
         return view('salesOrder.index', compact('orders'));
     }
 
@@ -144,7 +145,7 @@ class SalesOrderController extends Controller
 
             $rows = $reader->getRows()->toArray(); // convert to array so we can check duplicates easily
 
-            // Check Columns Headers 
+            // Check Columns Headers
             $requiredHeaders = ['Customer Name', 'PO Number', 'SKU Code', 'Facility Name', 'Facility Location', 'PO Date', 'PO Expiry Date', 'HSN', 'GST', 'Portal Code', 'Item Code', 'Description', 'Basic Rate', 'Product Basic Rate', 'Basic Rate Confirmation', 'Net Landing Rate', 'Product Net Landing Rate', 'Net Landing Rate Confirmation', 'MRP', 'Product MRP', 'MRP Confirmation', 'PO Quantity', 'Available Quantity', 'Unavailable Quantity', 'Case Pack Quantity', 'Purchase Order Quantity', 'Block', 'Vendor Code', 'Reason'];
 
             $fileHeaders = array_map('trim', array_keys($rows[0] ?? []));
@@ -160,6 +161,11 @@ class SalesOrderController extends Controller
             if ($duplicateCheck) {
                 return redirect()->back()->with(['error' => $duplicateCheck]);
             }
+
+            // Sort rows by 'Block' in descending order (high to low)
+            usort($rows, function ($a, $b) {
+                return intval($b['Block']) <=> intval($a['Block']);
+            });
 
             $productStockCache = [];
             $insertedRows = [];
@@ -200,16 +206,17 @@ class SalesOrderController extends Controller
                 foreach ($mandatoryFields as $field) {
                     if (! isset($record[$field]) || (is_string($record[$field]) && trim($record[$field]) === '')) {
                         DB::rollBack();
+
                         return redirect()->back()->with(['error' => "{$field} is required for all rows. Please check your CSV file."])->withInput();
                     }
 
-                    if ((int)$record['Available Quantity'] < (int)$record['Block']) {
-                        DB::rollBack();
+                    // if ((int) $record['Available Quantity'] < (int) $record['Block']) {
+                    //     DB::rollBack();
 
-                        return redirect()->back()
-                            ->with('error', "{$record['SKU Code']}: Available quantity is less than the block quantity. Please check if the warehouse has sufficient stock.")
-                            ->withInput();
-                    }
+                    //     return redirect()->back()
+                    //         ->with('error', "{$record['SKU Code']}: Available quantity is less than the block quantity. Please check if the warehouse has sufficient stock.")
+                    //         ->withInput();
+                    // }
                 }
 
                 $sku = trim($record['SKU Code']);
@@ -324,7 +331,8 @@ class SalesOrderController extends Controller
                         'block' => ($record['Block'] > $availableQty) ? $availableQty : $record['Block'],
 
                         'case_pack_quantity' => $casePackQty ?? '',
-                        'purchase_order_quantity' => (int) ($record['Purchase Order Quantity'] ?? 0),
+                        // 'purchase_order_quantity' => (int) ($record['Purchase Order Quantity'] ?? 0),
+                        'purchase_order_quantity' => (int) ($shortQty ?? 0),
                         'vendor_code' => $record['Vendor Code'] ?? '',
                         'customer_status' => $customerStatus ?? '',
                         'vendor_status' => $vendorStatus ?? '',
@@ -434,7 +442,8 @@ class SalesOrderController extends Controller
                     'block' => ($record['Block'] > $availableQty) ? $availableQty : $record['Block'],
 
                     'case_pack_quantity' => $casePackQty ?? '',
-                    'purchase_order_quantity' => (int) ($record['Purchase Order Quantity'] ?? 0),
+                    // 'purchase_order_quantity' => (int) ($record['Purchase Order Quantity'] ?? 0),
+                    'purchase_order_quantity' => (int) ($shortQty ?? 0),
                     'vendor_code' => $record['Vendor Code'] ?? '',
                     'customer_status' => 'Found',
                     'vendor_status' => 'Found',
@@ -466,7 +475,8 @@ class SalesOrderController extends Controller
                 $saveOrderProduct->ordered_quantity = $record['PO Quantity'] ?? 0;
                 // For auto-allocation, set purchase_ordered_quantity to 0 initially (will be updated later)
                 // For single warehouse, use Excel value
-                $saveOrderProduct->purchase_ordered_quantity = $isAutoAllocation ? 0 : ($record['Purchase Order Quantity'] ?? 0);
+                // $saveOrderProduct->purchase_ordered_quantity = $isAutoAllocation ? 0 : ($record['Purchase Order Quantity'] ?? 0);
+                $saveOrderProduct->purchase_ordered_quantity = $isAutoAllocation ? 0 : ($shortQty ?? 0);
                 $saveOrderProduct->product_id = $product->product->id ?? null;
                 // For auto allocation, warehouse_stock_id is null (multiple warehouses)
                 $saveOrderProduct->warehouse_stock_id = $isAutoAllocation ? null : ($product->id ?? null);
@@ -648,6 +658,7 @@ class SalesOrderController extends Controller
             DB::rollBack();
 
             dd($e);
+
             return redirect()->back()->with(['error' => 'Something went wrong: ' . $e->getMessage()]);
         }
     }
@@ -680,7 +691,7 @@ class SalesOrderController extends Controller
             $reader = SimpleExcelReader::create($filepath, $extension);
             $rows = $reader->getRows()->toArray(); // convert to array so we can check duplicates easily
 
-            // Check Columns Headers 
+            // Check Columns Headers
             $requiredHeaders = ['Order No', 'Customer Name', 'Facility Name', 'Facility Location', 'HSN', 'GST', 'Item Code', 'SKU Code', 'Brand', 'Title', 'Basic Rate', 'Product Basic Rate', 'Basic Rate Confirmation', 'Net Landing Rate', 'Product Net Landing Rate', 'Net Landing Rate Confirmation', 'PO MRP', 'Product MRP', 'MRP Confirmation', 'PO Number', 'PO Quantity', 'Purchase Order Quantity', 'Vendor PI Fulfillment Quantity', 'Vendor PI Received Quantity', 'Block Quantity', 'Quantity Fulfilled', 'Final Fulfilled Quantity', 'Warehouse Allocation', 'Invoice Status'];
 
             $fileHeaders = array_map('trim', array_keys($rows[0] ?? []));
@@ -701,7 +712,6 @@ class SalesOrderController extends Controller
                 return redirect()->back()->with(['error' => $duplicateCheck]);
             }
 
-
             $products = [];
             $insertCount = 0;
             $mandatoryFields = ['Order No', 'Customer Name', 'Facility Name', 'Facility Location', 'HSN', 'GST', 'Item Code', 'SKU Code', 'Brand', 'Title', 'Basic Rate', 'Product Basic Rate', 'Basic Rate Confirmation', 'Net Landing Rate', 'Product Net Landing Rate', 'Net Landing Rate Confirmation', 'PO MRP', 'Product MRP', 'MRP Confirmation', 'PO Number', 'PO Quantity', 'Purchase Order Quantity', 'Vendor PI Fulfillment Quantity', 'Vendor PI Received Quantity', 'Block Quantity', 'Quantity Fulfilled', 'Final Fulfilled Quantity', 'Warehouse Allocation', 'Invoice Status'];
@@ -712,6 +722,7 @@ class SalesOrderController extends Controller
                 foreach ($mandatoryFields as $field) {
                     if (! isset($record[$field]) || (is_string($record[$field]) && trim($record[$field]) === '')) {
                         DB::rollBack();
+
                         return redirect()->back()->with(['error' => "{$field} is required for all rows. Please check your CSV file."])->withInput();
                     }
                 }
@@ -726,7 +737,6 @@ class SalesOrderController extends Controller
                     continue;
                 }
 
-
                 // Find sales order product 986 1037
                 $salesOrderProductUpdate = SalesOrderProduct::with('product', 'productMapping', 'tempOrder.purchaseOrderProduct')
                     ->where('sku', trim($record['SKU Code'] ?? ''))
@@ -737,11 +747,9 @@ class SalesOrderController extends Controller
                     })
                     ->first();
 
-
                 if (! $salesOrderProductUpdate) {
                     continue;
                 }
-
 
                 // 3. Build products array for TempOrder::upsert()
                 $products[] = [
@@ -883,6 +891,7 @@ class SalesOrderController extends Controller
             }
 
             DB::commit();
+
             return redirect()->route('sales.order.index')->with('success', 'CSV file imported successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
@@ -1683,7 +1692,7 @@ class SalesOrderController extends Controller
                 // // $invoiceNumber = "INV-{$yearMonth}-{$newNumber}";
                 // $invoiceNumber = 'INV-' . $timestamp . '-' . $newNumber;
 
-                $lastInvoice = Invoice::where('invoice_number', 'LIKE', "IIPL-%")
+                $lastInvoice = Invoice::where('invoice_number', 'LIKE', 'IIPL-%')
                     ->orderBy('id', 'desc')
                     ->first();
                 if ($lastInvoice) {
@@ -1839,8 +1848,7 @@ class SalesOrderController extends Controller
 
         $rows = $reader->getRows()->toArray(); // convert to array so we can check duplicates easily
 
-
-        // Check Columns Headers 
+        // Check Columns Headers
         $requiredHeaders = [
             'Customer Name',
             'PO Number',
@@ -1856,7 +1864,7 @@ class SalesOrderController extends Controller
             'GST',
             'Net Landing Rate',
             'MRP',
-            'PO Quantity'
+            'PO Quantity',
         ];
 
         $fileHeaders = array_map('trim', array_keys($rows[0] ?? []));
@@ -1875,7 +1883,7 @@ class SalesOrderController extends Controller
         // Check if auto allocation is selected
         $isAutoAllocation = ($request->warehouse_id === 'auto');
 
-        // Check Columns Headers 
+        // Check Columns Headers
         $mandatoryFields = [
             'Customer Name',
             'PO Number',
@@ -1891,7 +1899,7 @@ class SalesOrderController extends Controller
             'GST',
             'Net Landing Rate',
             'MRP',
-            'PO Quantity'
+            'PO Quantity',
         ];
 
         try {
@@ -1901,11 +1909,13 @@ class SalesOrderController extends Controller
                 foreach ($mandatoryFields as $field) {
                     if (! isset($record[$field]) || (is_string($record[$field]) && trim($record[$field]) === '')) {
                         DB::rollBack();
+
                         return redirect()->back()->with(['error' => "{$field} is required for all rows. Please check your CSV file."])->withInput();
                     }
 
                     if ($record['PO Quantity'] <= 0) {
                         DB::rollBack();
+
                         return redirect()->back()->with(['error' => "For SKU: {$record['SKU Code']}, PO Quantity Must be greater than 0."])->withInput();
                     }
                 }
@@ -1939,8 +1949,8 @@ class SalesOrderController extends Controller
                     // If not found in warehouse_stocks, check in products table
                     if (! $product) {
                         $productMaster = Product::where('sku', $sku)->first();
-                        if (!$productMaster) {
-                            return redirect()->back()->with(['error' => "Product Not Found For " . $sku])->withInput();
+                        if (! $productMaster) {
+                            return redirect()->back()->with(['error' => 'Product Not Found For ' . $sku])->withInput();
                         }
                         if ($productMaster) {
                             // Create a pseudo product object for consistency
@@ -2138,7 +2148,7 @@ class SalesOrderController extends Controller
                 // dd($sku);
                 $productMapping = ProductMapping::where('sku', $sku)->where('item_code', $record['Item Code'])->first();
 
-                if (!$productMapping) {
+                if (! $productMapping) {
                     return redirect()->back()->with(['error' => 'No sku mapping found for SKU: ' . $record['SKU Code'] . ' and Item Code: ' . $record['Item Code'] . '. Please check the data and try again.']);
                 }
                 // dd($productMapping);
@@ -2256,14 +2266,14 @@ class SalesOrderController extends Controller
         // Add rows while transforming
         SimpleExcelReader::create($originalPath)->getRows()->each(function (array $row) use ($writer) {
             $product = Product::where('sku', $row['SKU Code'])->first();
-            if (!$product) {
+            if (! $product) {
                 return redirect()->back()->with(['error' => 'Product Not Found For This SKU: ' . $row['SKU Code'] . ' and Item Code: ' . $row['Item Code'] . '. Please check the data and try again.']);
             }
-            // 
+            //
             $productMapping = ProductMapping::where('sku', $row['SKU Code'])
                 ->where('item_code', trim($row['Item Code']))
                 ->first();
-            if (!$productMapping) {
+            if (! $productMapping) {
                 return redirect()->back()->with(['error' => 'No sku mapping found for SKU: ' . $row['SKU Code'] . ' and Item Code: ' . $row['Item Code'] . '. Please check the data and try again.']);
             }
             $writer->addRow([
@@ -2408,7 +2418,6 @@ class SalesOrderController extends Controller
                 $salesOrderDetails->where('final_dispatched_quantity', '>', 0);
             }
         }
-
 
         // Execute query
         $filteredOrders = $salesOrderDetails->with([
@@ -2556,11 +2565,11 @@ class SalesOrderController extends Controller
                 'Vendor PI Fulfillment Quantity' => (float) ($order->tempOrder?->vendor_pi_fulfillment_quantity ?? 0),
                 'Vendor PI Received Quantity' => (float) ($order->tempOrder?->vendor_pi_received_quantity ?? 0),
                 'Block Quantity' => (float) ($order->tempOrder?->block ?? 0),
-                'Quantity Fulfilled' => $order->dispatched_quantity ??  (float) $qtyFullfilled ?? 0,
+                'Quantity Fulfilled' => $order->dispatched_quantity ?? (float) $qtyFullfilled ?? 0,
                 'Final Fulfilled Quantity' => (float) ($order->final_dispatched_quantity ?? 0),
                 'Final Shipped Quantity' => (float) ($order->final_final_dispatched_quantity ?? 0),
                 'Warehouse Allocation' => $this->sanitizeExcelValue($warehouseAllocation),
-                'Invoice Status' => ucfirst($order->invoice_status)
+                'Invoice Status' => ucfirst($order->invoice_status),
             ];
 
             $writer->addRow($rowData);
