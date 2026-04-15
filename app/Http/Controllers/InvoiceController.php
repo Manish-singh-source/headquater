@@ -822,6 +822,10 @@ class InvoiceController extends Controller
                 $status = $results['status'] ?? 'Unknown';
                 Log::error('E-Invoice API Error Response: ' . json_encode($response));
 
+                if (str_contains(strtolower((string) $errorMessage), 'einvoice username or password is missing')) {
+                    return redirect()->back()->with('error', 'Masters India production account is missing e-invoice credentials or GSTIN mapping for this user. Please verify the GSTIN onboarding in Masters India.');
+                }
+
                 return redirect()->back()->with('error', 'Failed to generate e-invoice (Status: ' . $status . '): ' . $errorMessage . '. Please check the invoice data and try again.');
             }
 
@@ -881,15 +885,15 @@ class InvoiceController extends Controller
         // $buyerStateCode = substr($buyerGstin, 0, 2);
 
         // Fetch GST State Code
-        $sellerStateCode = $warehouse ? $this->getStateCode($warehouse->state->name) : '05'; // Default state code
-        $buyerStateCode = $this->getStateCode($customer->billing_state ?? $customer->shipping_state);
+        $sellerStateCode = $this->normalizeStateCode($warehouse ? $this->getStateCode($warehouse->state->name) : '05'); // Default state code
+        $buyerStateCode = $this->normalizeStateCode($this->getStateCode($customer->billing_state ?? $customer->shipping_state));
         // Use pincodes that match the test GSTIN states
         // $sellerPincode = '263001'; // Uttarakhand pincode
         // $buyerPincode = '201301'; // Uttar Pradesh pincode
 
         // Fetch pincode from warehouse and customer
-        $sellerPincode = $warehouse ? $warehouse->pincode : '263001'; // Default pincode
-        $buyerPincode = $customer ? $customer->shipping_zip : null;
+        $sellerPincode = (int) ($warehouse ? $warehouse->pincode : '263001'); // Default pincode
+        $buyerPincode = (int) ($customer ? ($customer->shipping_zip ?? $customer->billing_zip ?? 0) : 0);
 
         $checkIntraState = $sellerStateCode === $buyerStateCode;
 
@@ -910,7 +914,7 @@ class InvoiceController extends Controller
             }
             $itemList[] = [
                 'item_serial_number' => $index + 1,
-                'product_description' => $detail->product->brand_title ?? 'Product',
+                'product_description' => $this->sanitizeEInvoiceText($detail->product->brand_title ?? 'Product'),
                 'is_service' => $invoice->invoice_item_type === 'service' ? 'Y' : 'N',
                 'hsn_code' => preg_replace('/[^0-9]/', '', $detail->hsn ?? $detail->product->hsn ?? '1001') ?: '1001',
                 'quantity' => $detail->quantity,
@@ -934,6 +938,7 @@ class InvoiceController extends Controller
                 'supply_type' => 'B2B',
                 'charge_type' => 'N',
                 'igst_on_intra' => 'N',
+                'ecommerce_gstin' => '',
             ],
             'document_details' => [
                 'document_type' => 'INV',
@@ -986,8 +991,6 @@ class InvoiceController extends Controller
                 'total_invoice_value' => number_format(collect($itemList)->sum('assessable_value') + collect($itemList)->sum('igst_amount') - ($invoice->discount_amount ?? 0) + ($invoice->round_off ?? 0), 2, '.', ''),
                 'round_off_amount' => $invoice->round_off ?? 0,
             ],
-            'irp_list' => $itemList,
-            'eway_irp_list' => $itemList,
             'item_list' => $itemList,
         ];
     }
@@ -1011,7 +1014,9 @@ class InvoiceController extends Controller
                 'body' => $response->body(),
             ]);
 
-            return $response->json();
+            $data = $response->json();
+
+            return (int) round((float) data_get($data, 'results.distance', 0));
         } catch (\Exception $e) {
             Log::error('E-Invoice API Call Error: ' . $e->getMessage());
 
@@ -1054,10 +1059,10 @@ class InvoiceController extends Controller
             ];
 
             // Make API call
-            $response = Http::withHeaders([
-                'Authorization' => 'JWT ' . $token,
-                'Content-Type' => 'application/json',
-            ])->post('https://prod-api.mastersindia.co/api/v1/cancel-einvoice/', $requestData);
+            $response = Http::withHeaders($this->getEInvoiceAuthHeaders($token))
+                ->post($this->getEInvoiceApiBaseUrl() . '/cancel-einvoice/', $requestData);
+
+
 
             $data = $response->json();
 
@@ -1154,9 +1159,9 @@ class InvoiceController extends Controller
             $stateOfConsignor = $validated['state_of_consignor'];
             // dd($stateOfConsignor);
 
-            // Convert dates from dd/mm/yyyy to yyyy-mm-dd
+            // The API spec expects dd/mm/yyyy for transporter_document_date.
             // $vehicleUpdateDate = date('Y-m-d', strtotime(str_replace('/', '-', $validated['vehicle_number_update_date'])));
-            $transporterDocDate = date('Y-m-d', strtotime(str_replace('/', '-', $validated['transporter_document_date'])));
+            $transporterDocDate = $validated['transporter_document_date'];
 
             // Warehouse Details
             $warehouse = $invoice->warehouse;
@@ -1170,7 +1175,7 @@ class InvoiceController extends Controller
                 'irn' => $einvoice->irn,
                 'transporter_id' => $validated['transporter_id'] ?? '05AAABB0639G1Z8', // Test transporter ID - keep as is for now
                 'transportation_mode' => $transportationMode,
-                'distance' => $distance ?? 0, // Use provided distance or default
+                'distance' => $distance, // Use the numeric distance returned by the API or 0
                 'vehicle_number' => $validated['vehicle_number'],
                 'vehicle_type' => 'R', // Regular vehicle
                 'transporter_name' => $validated['transporter_name'], // Keep as is
@@ -1182,10 +1187,10 @@ class InvoiceController extends Controller
             ];
 
             // Make API call
-            $response = Http::withHeaders([
-                'Authorization' => 'JWT ' . $token,
-                'Content-Type' => 'application/json',
-            ])->post('https://prod-api.mastersindia.co/api/v1/gen-ewb-by-irn/', $requestData);
+            $response = Http::withHeaders($this->getEInvoiceAuthHeaders($token))
+                ->post($this->getEInvoiceApiBaseUrl() . '/gen-ewb-by-irn/', $requestData);
+
+
 
             $data = $response->json();
 
@@ -1214,7 +1219,7 @@ class InvoiceController extends Controller
                     }
 
                     $transportDetail = EwayTransportDetail::create([
-                        'ewaybill_id' => $einvoice->id,
+                        'ewaybill_id' => $ewaybill->id,
                         'transportation_mode' => $validated['transportation_mode'],
                         'vehicle_number' => $validated['vehicle_number'],
                         'transporter_name' => $validated['transporter_name'],
@@ -1294,16 +1299,16 @@ class InvoiceController extends Controller
             $requestData = [
                 'userGstin' => $sellerGstin, // Using test GSTIN
                 'eway_bill_number' => $invoice->ewb_no,
-                'reason_of_cancel' => 1, // Default reason: Wrong entry
+                'reason_of_cancel' => 'Others',
                 'cancel_remark' => 'Cancelled by user',
                 'data_source' => 'erp',
             ];
 
             // Make API call
-            $response = Http::withHeaders([
-                'Authorization' => 'JWT ' . $token,
-                'Content-Type' => 'application/json',
-            ])->post('https://prod-api.mastersindia.co/api/v1/ewayBillCancel/', $requestData);
+            $response = Http::withHeaders($this->getEInvoiceAuthHeaders($token))
+                ->post($this->getEInvoiceApiBaseUrl() . '/ewayBillCancel/', $requestData);
+
+
 
             $data = $response->json();
 
@@ -1381,15 +1386,15 @@ class InvoiceController extends Controller
 
             // Prepare API request data
             $requestData = [
-                'user_gstin' => '09AAAPG7885R002', // Using test GSTIN
+                'user_gstin' => $invoice->warehouse->gst_number,
                 'ewb_no' => $invoice->ewb_no,
             ];
 
             // Make API call to get ewaybill details
-            $response = Http::withHeaders([
-                'Authorization' => 'JWT ' . $token,
-                'Content-Type' => 'application/json',
-            ])->post('https://prod-api.mastersindia.co/api/v1/getEwayBillData/', $requestData);
+            $response = Http::withHeaders($this->getEInvoiceAuthHeaders($token))
+                ->post($this->getEInvoiceApiBaseUrl() . '/getEwayBillData/', $requestData);
+
+
 
             $data = $response->json();
 
@@ -1464,13 +1469,29 @@ class InvoiceController extends Controller
         return $state ? $state->code : null;
     }
 
+    private function normalizeStateCode($stateCode)
+    {
+        if ($stateCode === null || $stateCode === '') {
+            return null;
+        }
+
+        return str_pad((string) $stateCode, 2, '0', STR_PAD_LEFT);
+    }
+
+    private function sanitizeEInvoiceText($value)
+    {
+        return preg_replace('/\\s+/', ' ', trim((string) $value));
+    }
+
     private function getDistance($source, $destination, $token)
     {
         try {
             $response = Http::withHeaders($this->getEInvoiceAuthHeaders($token))
                 ->get($this->getEInvoiceApiBaseUrl() . '/distance/?fromPincode=' . $source . '&toPincode=' . $destination);
 
-            return $response->json();
+            $data = $response->json();
+
+            return (int) round((float) data_get($data, 'results.distance', 0));
         } catch (\Exception $e) {
             Log::error('E-Invoice API Call Error: ' . $e->getMessage());
 
@@ -1541,4 +1562,7 @@ class InvoiceController extends Controller
         ];
     }
 }
+
+
+
 
