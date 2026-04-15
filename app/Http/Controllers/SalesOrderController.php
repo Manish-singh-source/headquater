@@ -490,29 +490,29 @@ class SalesOrderController extends Controller
                     $allocatedQty = intval($tempSalesOrder->block);
 
                     // if ($allocatedQty > 0) {
-                        WarehouseAllocation::create([
-                            'sales_order_id' => $salesOrder->id,
-                            'sales_order_product_id' => $saveOrderProduct->id,
+                    WarehouseAllocation::create([
+                        'sales_order_id' => $salesOrder->id,
+                        'sales_order_product_id' => $saveOrderProduct->id,
+                        'warehouse_id' => $product->warehouse_id,
+                        'customer_id' => $customerData && $customerData->id ? $customerData->id : null,
+                        'sku' => $sku,
+                        'allocated_quantity' => $allocatedQty,
+                        'sequence' => 1,
+                        'box_count' => 0,
+                        'status' => 'allocated',
+                        'notes' => "Allocated from warehouse {$product->warehouse->name}",
+                    ]);
+
+                    activity()
+                        ->performedOn($saveOrderProduct)
+                        ->causedBy(Auth::user())
+                        ->withProperties([
                             'warehouse_id' => $product->warehouse_id,
-                            'customer_id' => $customerData && $customerData->id ? $customerData->id : null,
+                            'warehouse_name' => $product->warehouse->name,
                             'sku' => $sku,
                             'allocated_quantity' => $allocatedQty,
-                            'sequence' => 1,
-                            'box_count' => 0,
-                            'status' => 'allocated',
-                            'notes' => "Allocated from warehouse {$product->warehouse->name}",
-                        ]);
-
-                        activity()
-                            ->performedOn($saveOrderProduct)
-                            ->causedBy(Auth::user())
-                            ->withProperties([
-                                'warehouse_id' => $product->warehouse_id,
-                                'warehouse_name' => $product->warehouse->name,
-                                'sku' => $sku,
-                                'allocated_quantity' => $allocatedQty,
-                            ])
-                            ->log("Stock allocated from warehouse {$product->warehouse->name}");
+                        ])
+                        ->log("Stock allocated from warehouse {$product->warehouse->name}");
                     // }
                 }
 
@@ -1690,15 +1690,15 @@ class SalesOrderController extends Controller
                     $lastNumber = (int) substr($lastInvoice->invoice_number, -4);
 
                     // 👇 Force jump to 7045 if below it
-                    if ($lastNumber < 7045) {
-                        $newNumber = 7045;
+                    if ($lastNumber < 7056) {
+                        $newNumber = 7056;
                     } else {
                         $newNumber = $lastNumber + 1;
                     }
 
                     $newNumber = str_pad($newNumber, 4, '0', STR_PAD_LEFT);
                 } else {
-                    $newNumber = '7045'; // start from here if no invoices exist
+                    $newNumber = '7056'; // start from here if no invoices exist
                 }
 
                 $invoiceNumber = 'IIPL-' . $newNumber;

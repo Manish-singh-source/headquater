@@ -541,15 +541,15 @@ class InvoiceController extends Controller
                 $lastNumber = (int) substr($lastInvoice->invoice_number, -4);
 
                 // 👇 Force jump to 7045 if below it
-                if ($lastNumber < 7045) {
-                    $newNumber = 7045;
+                if ($lastNumber < 7056) {
+                    $newNumber = 7056;
                 } else {
                     $newNumber = $lastNumber + 1;
                 }
 
                 $newNumber = str_pad($newNumber, 4, '0', STR_PAD_LEFT);
             } else {
-                $newNumber = '7045'; // start from here if no invoices exist
+                $newNumber = '7056'; // start from here if no invoices exist
             }
 
             $invoiceNumber = 'IIPL-' . $newNumber;
