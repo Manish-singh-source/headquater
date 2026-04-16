@@ -889,7 +889,7 @@ class InvoiceController extends Controller
         // $sellerGstin = '09AAAPG7885R002'; // Test GSTIN for seller
         // $buyerGstin = '05AAAPG7885R002'; // Test GSTIN for buyer
 
-        $sellerGstin = $warehouse ? $warehouse->gst_number : env('DEFAULT_COMPANY_GSTIN', '05AAAPG7885R002'); // Default GSTIN for manual invoices
+        $sellerGstin = $warehouse ? $warehouse->gst_number : env('DEFAULT_COMPANY_GSTIN', '27AAGCI3319H1ZM'); // Default GSTIN for manual invoices
         $buyerGstin = $customer ? $customer->gstin : null;
 
         // Extract state codes from GSTINs (first 2 digits)
@@ -897,14 +897,14 @@ class InvoiceController extends Controller
         // $buyerStateCode = substr($buyerGstin, 0, 2);
 
         // Fetch GST State Code
-        $sellerStateCode = $this->normalizeStateCode($warehouse ? $this->getStateCode($warehouse->state->name) : '05'); // Default state code
+        $sellerStateCode = $this->normalizeStateCode($warehouse ? $this->getStateCode($warehouse->state->name) : '27'); // Default state code
         $buyerStateCode = $this->normalizeStateCode($this->getStateCode($customer->billing_state ?? $customer->shipping_state));
         // Use pincodes that match the test GSTIN states
         // $sellerPincode = '263001'; // Uttarakhand pincode
         // $buyerPincode = '201301'; // Uttar Pradesh pincode
 
         // Fetch pincode from warehouse and customer
-        $sellerPincode = (int) ($warehouse ? $warehouse->pincode : '263001'); // Default pincode
+        $sellerPincode = (int) ($warehouse ? $warehouse->pincode : '421302'); // Default pincode
         $buyerPincode = (int) ($customer ? ($customer->shipping_zip ?? $customer->billing_zip ?? 0) : 0);
 
         $checkIntraState = $sellerStateCode === $buyerStateCode;
