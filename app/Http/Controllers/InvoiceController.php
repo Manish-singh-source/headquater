@@ -151,6 +151,10 @@ class InvoiceController extends Controller
         $base64 = base64_encode(file_get_contents($path));
         $base64Image = 'data:image/png;base64,' . $base64;
 
+        $sign = public_path('assets/images/sign-transparent.png');
+        $sign64 = base64_encode(file_get_contents($sign));
+        $sign64Image = 'data:image/png;base64,' . $sign64;
+
         $path1 = public_path('assets/images/e-inv.png');
         $base642 = base64_encode(file_get_contents($path1));
         $base643Image = 'data:image/png;base64,' . $base642;
@@ -194,6 +198,7 @@ class InvoiceController extends Controller
             'igstStatus' => $igstStatus,
             'invoiceItemType' => $invoice->invoice_item_type ?? 'product',
             'qrCodeImage' => $qrCodeImage,
+            'sign64Image' => $sign64Image,
         ];
         $pdf = \PDF::loadView('invoice/einvoice-pdf', ['image' => $base64Image, 'image1' => $base643Image] + $data);
         $pdf->setPaper('a4');
@@ -830,6 +835,12 @@ class InvoiceController extends Controller
             }
 
             $message = $results['message'];
+            // dd($message);
+            if (isset($message['Status']) && $message['Status'] === 'CAN') {
+                Log::error('E-Invoice API returned cancelled status on generation: ' . json_encode($response));
+
+                return redirect()->back()->with('error', 'E-Invoice generation returned a cancelled status. Please verify the invoice details and try again.');
+            }
 
             // Validate required response data
             if (! isset($message['Irn'])) {
@@ -874,8 +885,8 @@ class InvoiceController extends Controller
         $customer = $invoice->customer;
 
         // Use the provided test GSTINs
-        // $sellerGstin = '05AAAPG7885R002'; // Test GSTIN for seller
-        // $buyerGstin = '09AAAPG7885R002'; // Test GSTIN for buyer
+        // $sellerGstin = '09AAAPG7885R002'; // Test GSTIN for seller
+        // $buyerGstin = '05AAAPG7885R002'; // Test GSTIN for buyer
 
         $sellerGstin = $warehouse ? $warehouse->gst_number : env('DEFAULT_COMPANY_GSTIN', '05AAAPG7885R002'); // Default GSTIN for manual invoices
         $buyerGstin = $customer ? $customer->gstin : null;
@@ -927,6 +938,7 @@ class InvoiceController extends Controller
                 'sgst_amount' => $sgstAmount,
                 'igst_amount' => $igstAmount,
                 'total_item_value' => number_format($totalItemValue, 2, '.', ''),
+                'product_serial_number' => (string) ($detail->product->id ?? 'N/A'),
                 'modified_at' => (string) now()->timestamp,
             ];
         }
@@ -949,9 +961,10 @@ class InvoiceController extends Controller
                 'gstin' => $sellerGstin,
                 'legal_name' => $this->sanitizeEInvoiceText($warehouse ? $warehouse->name : 'Default Company'),
                 'address1' => $this->sanitizeEInvoiceAddress($warehouse ? $warehouse->address_line_1 : 'Default Address', 100),
-                'address2' => $this->sanitizeEInvoiceAddress($warehouse ? ($warehouse->address_line_2 ?? '') : '', 100),
+                // 'address2' => $this->sanitizeEInvoiceAddress($warehouse ? ($warehouse->address_line_2 ?? '') : '', 100),
                 'location' => $this->sanitizeEInvoiceText($warehouse ? ($warehouse->cities->name ?? 'Default City') : 'Default City', 50),
                 'pincode' => $sellerPincode,
+                // 'pincode' => 201301,
                 'state_code' => $sellerStateCode,
             ],
             'buyer_details' => [
@@ -960,6 +973,7 @@ class InvoiceController extends Controller
                 'address1' => $this->sanitizeEInvoiceAddress($customer->billing_address ?? $customer->shipping_address ?? 'Default Address', 100),
                 'location' => $this->sanitizeEInvoiceText($customer->billing_city ?? $customer->shipping_city ?? 'Default City', 50),
                 'pincode' => $buyerPincode,
+                // 'pincode' => 263001,
                 'place_of_supply' => $buyerStateCode,
                 'state_code' => $buyerStateCode,
             ],
@@ -968,6 +982,7 @@ class InvoiceController extends Controller
                 'address1' => $this->sanitizeEInvoiceAddress($warehouse ? $warehouse->address_line_1 : 'Default Address', 100),
                 'location' => $this->sanitizeEInvoiceText($warehouse ? ($warehouse->cities->name ?? 'Default City') : 'Default City', 50),
                 'pincode' => $sellerPincode,
+                // 'pincode' => 201301,
                 'state_code' => $sellerStateCode,
             ],
             'ship_details' => [
@@ -976,6 +991,7 @@ class InvoiceController extends Controller
                 'address1' => $this->sanitizeEInvoiceAddress($customer->shipping_address ?? $customer->billing_address ?? 'Default Address', 100),
                 'location' => $this->sanitizeEInvoiceText($customer->shipping_city ?? $customer->billing_city ?? 'Default City', 100),
                 'pincode' => $buyerPincode,
+                // 'pincode' => 263001,
                 'state_code' => $buyerStateCode,
             ],
             'value_details' => [
@@ -1014,9 +1030,7 @@ class InvoiceController extends Controller
                 'body' => $response->body(),
             ]);
 
-            $data = $response->json();
-
-            return (int) round((float) data_get($data, 'results.distance', 0));
+            return $response->json();
         } catch (\Exception $e) {
             Log::error('E-Invoice API Call Error: ' . $e->getMessage());
 
@@ -1053,6 +1067,7 @@ class InvoiceController extends Controller
             // Prepare API request data
             $requestData = [
                 'user_gstin' => $invoice->invoice->warehouse->gst_number, // Using test GSTIN same gstin who created invoice
+                // 'user_gstin' => '09AAAPG7885R002', // Using test GSTIN same gstin who created invoice
                 'irn' => $invoice->irn,
                 'cancel_reason' => $request->cancel_reason, // Default reason: Wrong entry
                 'cancel_remarks' => $request->cancel_remark ?? '',
@@ -1061,8 +1076,6 @@ class InvoiceController extends Controller
             // Make API call
             $response = Http::withHeaders($this->getEInvoiceAuthHeaders($token))
                 ->post($this->getEInvoiceApiBaseUrl() . '/cancel-einvoice/', $requestData);
-
-
 
             $data = $response->json();
 
@@ -1168,14 +1181,16 @@ class InvoiceController extends Controller
             // Customer Details
             $customer = $invoice->customer;
             // Fetch Distance from Warehouse to Customer
-            $distance = $this->getDistance($warehouse->pincode, $customer->shipping_zip ?? $customer->billing_zip, $token);
+            // $distance = $this->getDistance($warehouse->pincode, $customer->shipping_zip ?? $customer->billing_zip, $token);
+            $distance = $this->getDistance("201301", "248001", $token);
 
             $requestData = [
                 'user_gstin' => $invoice->warehouse->gst_number,
+                // 'user_gstin' => "09AAAPG7885R002",
                 'irn' => $einvoice->irn,
                 'transporter_id' => $validated['transporter_id'] ?? '05AAABB0639G1Z8', // Test transporter ID - keep as is for now
                 'transportation_mode' => $transportationMode,
-                'distance' => $distance, // Use the numeric distance returned by the API or 0
+                'transportation_distance' => $distance, // Use the numeric distance returned by the API or 0
                 'vehicle_number' => $validated['vehicle_number'],
                 'vehicle_type' => 'R', // Regular vehicle
                 'transporter_name' => $validated['transporter_name'], // Keep as is
@@ -1189,8 +1204,6 @@ class InvoiceController extends Controller
             // Make API call
             $response = Http::withHeaders($this->getEInvoiceAuthHeaders($token))
                 ->post($this->getEInvoiceApiBaseUrl() . '/gen-ewb-by-irn/', $requestData);
-
-
 
             $data = $response->json();
 
@@ -1308,8 +1321,6 @@ class InvoiceController extends Controller
             $response = Http::withHeaders($this->getEInvoiceAuthHeaders($token))
                 ->post($this->getEInvoiceApiBaseUrl() . '/ewayBillCancel/', $requestData);
 
-
-
             $data = $response->json();
 
             // Check for different response structures
@@ -1393,8 +1404,6 @@ class InvoiceController extends Controller
             // Make API call to get ewaybill details
             $response = Http::withHeaders($this->getEInvoiceAuthHeaders($token))
                 ->post($this->getEInvoiceApiBaseUrl() . '/getEwayBillData/', $requestData);
-
-
 
             $data = $response->json();
 
@@ -1575,8 +1584,3 @@ class InvoiceController extends Controller
         ];
     }
 }
-
-
-
-
-

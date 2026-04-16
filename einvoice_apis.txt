@@ -107,3 +107,78 @@
 - **Method:** GET
 - **URL:** https://sandb-api.mastersindia.co/api/v1/getBulkEinvoiceResponse?request_id={request_id}
 - **Mandatory Fields:** None (parameter in URL)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+{
+    "results": {
+        "message": {
+            "AckNo": 142610031261597,
+            "AckDt": "2026-04-16 10:55:05",
+            "Irn": "9b38195768ed6417ca0ff924afbb22ba9d4d9fc591b9a7d2739d3b014ebe0877",
+            "SignedInvoice": "eyJhbGciOiJSUzI1NiIsImtpZCI6IjNCRTE3RTUxNDE5MjUyMjY0N0YwMUZEQkZGNTI3MUFENTI2OEQ3MzUiLCJ4NXQiOiJPLUYtVVVHU1VpWkg4Ql9iXzFKeHJWSm8xelUiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJOSUMgU2FuZGJveCIsImRhdGEiOiJ7XCJBY2tOb1wiOjE0MjYxMDAzMTI2MTU5NyxcIkFja0R0XCI6XCIyMDI2LTA0LTE2IDEwOjU1OjA1XCIsXCJJcm5cIjpcIjliMzgxOTU3NjhlZDY0MTdjYTBmZjkyNGFmYmIyMmJhOWQ0ZDlmYzU5MWI5YTdkMjczOWQzYjAxNGViZTA4NzdcIixcIlZlcnNpb25cIjpcIjEuMVwiLFwiVHJhbkR0bHNcIjp7XCJUYXhTY2hcIjpcIkdTVFwiLFwiU3VwVHlwXCI6XCJCMkJcIixcIlJlZ1JldlwiOlwiTlwiLFwiSWdzdE9uSW50cmFcIjpcIk5cIn0sXCJEb2NEdGxzXCI6e1wiVHlwXCI6XCJJTlZcIixcIk5vXCI6XCJJSVBMLTcwODNcIixcIkR0XCI6XCIxNi8wNC8yMDI2XCJ9LFwiU2VsbGVyRHRsc1wiOntcIkdzdGluXCI6XCIwOUFBQVBHNzg4NVIwMDJcIixcIkxnbE5tXCI6XCJCaGl3YW5kaSBXSFwiLFwiQWRkcjFcIjpcIkJMREcuMyBHQUxBLjExMCBBUklIQU5UIENPTVBMRVgsIEtPUEVSIEJISVdBTkRJLiBUSEFORSA0MjEzMDIuLCBNdW1iYWksIE1haGFyYXNodHJhIChNSC0yNykgNDIxMzAyLFwiLFwiTG9jXCI6XCJNdW1iYWlcIixcIlBpblwiOjIwMTMwMSxcIlN0Y2RcIjpcIjA5XCJ9LFwiQnV5ZXJEdGxzXCI6e1wiR3N0aW5cIjpcIjA1QUFBUEc3ODg1UjAwMlwiLFwiTGdsTm1cIjpcIk1vb25zdG9uZSBWZW50dXJlcyBMTFAgLSBLdW5kbGkgLSBGZWVkZXIgV2FyZWhvdXNlXCIsXCJQb3NcIjpcIjA1XCIsXCJBZGRyMVwiOlwiU2hlZCBBIE11c3RoaWwgNDEgS2hhc3JhIE5vIDI2IDIzIE5IIDEgdmlsbGFnZSBLdW1hc3B1ciBBZGpvaW5pbmcgdG8gSnVyYXNpayBwYXJrIGlubiwgU29uaXBhdCwgSGFyeVwiLFwiTG9jXCI6XCJTb25pcGF0XCIsXCJQaW5cIjoyNjMwMDEsXCJTdGNkXCI6XCIwNVwifSxcIkRpc3BEdGxzXCI6e1wiTm1cIjpcIkJoaXdhbmRpIFdIXCIsXCJBZGRyMVwiOlwiQkxERy4zIEdBTEEuMTEwIEFSSUhBTlQgQ09NUExFWCwgS09QRVIgQkhJV0FOREkuIFRIQU5FIDQyMTMwMi4sIE11bWJhaSwgTWFoYXJhc2h0cmEgKE1ILTI3KSA0MjEzMDIsXCIsXCJMb2NcIjpcIk11bWJhaVwiLFwiUGluXCI6NDIxMzAyLFwiU3RjZFwiOlwiMjdcIn0sXCJTaGlwRHRsc1wiOntcIkxnbE5tXCI6XCJNb29uc3RvbmUgVmVudHVyZXMgTExQIC0gS3VuZGxpIC0gRmVlZGVyIFdhcmVob3VzZVwiLFwiQWRkcjFcIjpcIlNoZWQgQSBNdXN0aGlsIDQxIEtoYXNyYSBObyAyNiAyMyBOSCAxIHZpbGxhZ2UgS3VtYXNwdXIgQWRqb2luaW5nIHRvIEp1cmFzaWsgcGFyayBpbm4sIFNvbmlwYXQsIEhhcnlcIixcIkxvY1wiOlwiU29uaXBhdFwiLFwiUGluXCI6MTMxMDAxLFwiU3RjZFwiOlwiMDZcIn0sXCJJdGVtTGlzdFwiOlt7XCJJdGVtTm9cIjowLFwiU2xOb1wiOlwiMVwiLFwiSXNTZXJ2Y1wiOlwiTlwiLFwiUHJkRGVzY1wiOlwiUEFTQUJBSENFIEhPTUVNQURFIEpBUiAxMDAwIE1MIFNFVCBPRiAyUENTXCIsXCJIc25DZFwiOlwiNzAxMzk5MDBcIixcIlF0eVwiOjYwLjAsXCJGcmVlUXR5XCI6MC4wLFwiVW5pdFwiOlwiUENTXCIsXCJVbml0UHJpY2VcIjozNDkuOSxcIlRvdEFtdFwiOjIwOTk0LjAsXCJEaXNjb3VudFwiOjAuMCxcIlByZVRheFZhbFwiOjAuMCxcIkFzc0FtdFwiOjIwOTk0LjAsXCJHc3RSdFwiOjE4LjAsXCJJZ3N0QW10XCI6Mzc3OC45MixcIkNnc3RBbXRcIjowLjAsXCJTZ3N0QW10XCI6MC4wLFwiQ2VzUnRcIjowLjAsXCJDZXNBbXRcIjowLjAsXCJDZXNOb25BZHZsQW10XCI6MC4wLFwiU3RhdGVDZXNSdFwiOjAuMCxcIlN0YXRlQ2VzQW10XCI6MC4wLFwiU3RhdGVDZXNOb25BZHZsQW10XCI6MC4wLFwiT3RoQ2hyZ1wiOjAuMCxcIlRvdEl0ZW1WYWxcIjoyNDc3Mi45MixcIlByZFNsTm9cIjpcIjEyM1wifSx7XCJJdGVtTm9cIjowLFwiU2xOb1wiOlwiMlwiLFwiSXNTZXJ2Y1wiOlwiTlwiLFwiUHJkRGVzY1wiOlwiUGFzYWJhaGNlIEFtYmVyIFN0ZW0gR2xhc3MgV2luZSBHbGFzcyAoMzY1IG1sLCBUcmFuc3BhcmVudClcIixcIkhzbkNkXCI6XCI3MDEzOTkwMFwiLFwiUXR5XCI6MTYuMCxcIkZyZWVRdHlcIjowLjAsXCJVbml0XCI6XCJQQ1NcIixcIlVuaXRQcmljZVwiOjY1Ny44NCxcIlRvdEFtdFwiOjEwNTI1LjQ0LFwiRGlzY291bnRcIjowLjAsXCJQcmVUYXhWYWxcIjowLjAsXCJBc3NBbXRcIjoxMDUyNS40NCxcIkdzdFJ0XCI6MTguMCxcIklnc3RBbXRcIjoxODk0LjU4LFwiQ2dzdEFtdFwiOjAuMCxcIlNnc3RBbXRcIjowLjAsXCJDZXNSdFwiOjAuMCxcIkNlc0FtdFwiOjAuMCxcIkNlc05vbkFkdmxBbXRcIjowLjAsXCJTdGF0ZUNlc1J0XCI6MC4wLFwiU3RhdGVDZXNBbXRcIjowLjAsXCJTdGF0ZUNlc05vbkFkdmxBbXRcIjowLjAsXCJPdGhDaHJnXCI6MC4wLFwiVG90SXRlbVZhbFwiOjEyNDIwLjAyLFwiUHJkU2xOb1wiOlwiMTI0XCJ9XSxcIlZhbER0bHNcIjp7XCJBc3NWYWxcIjozMTUxOS40NCxcIkNnc3RWYWxcIjowLjAsXCJTZ3N0VmFsXCI6MC4wLFwiSWdzdFZhbFwiOjU2NzMuNSxcIkNlc1ZhbFwiOjAuMCxcIlN0Q2VzVmFsXCI6MC4wLFwiRGlzY291bnRcIjowLjAsXCJPdGhDaHJnXCI6MC4wLFwiUm5kT2ZmQW10XCI6MC4wLFwiVG90SW52VmFsXCI6MzcxOTIuOTQsXCJUb3RJbnZWYWxGY1wiOjAuMH19In0.qxQ8CEAn6rH5664XgkDkgF1Pxqt_MZH6a9lX_tXPEyHMbzLAKaqexzaJZD-Nu-FN1F-bwAhJSOcS4458bdmfqVz9wRvHswUXPn-xCg9aRjdzpgFwx29QgTsGPMAbdEsXa-OobJbCt59ShtC-ENtzFicQx8kJ27sd0HO-APEihNUnwcNQgqHH7vKA_pGPcCq6hqcw41HK6mYogEPJl-3odKf7cNJOGlxvPTaVa6UoI170a3AUSjeg1jvP_3C1oWYdKsbmCtFb2Pn_5HrII_ggwY_XSiTiRFjDtkDtDKn-37wf7EE5IMDMUIK2wJGTXqoQMsC2y8ntlkEuYtkYfzQQMg",
+            "SignedQRCode": "eyJhbGciOiJSUzI1NiIsImtpZCI6IjNCRTE3RTUxNDE5MjUyMjY0N0YwMUZEQkZGNTI3MUFENTI2OEQ3MzUiLCJ4NXQiOiJPLUYtVVVHU1VpWkg4Ql9iXzFKeHJWSm8xelUiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJOSUMgU2FuZGJveCIsImRhdGEiOiJ7XCJTZWxsZXJHc3RpblwiOlwiMDlBQUFQRzc4ODVSMDAyXCIsXCJCdXllckdzdGluXCI6XCIwNUFBQVBHNzg4NVIwMDJcIixcIkRvY05vXCI6XCJJSVBMLTcwODNcIixcIkRvY1R5cFwiOlwiSU5WXCIsXCJEb2NEdFwiOlwiMTYvMDQvMjAyNlwiLFwiVG90SW52VmFsXCI6MzcxOTIuOTQsXCJJdGVtQ250XCI6MixcIk1haW5Ic25Db2RlXCI6XCI3MDEzOTkwMFwiLFwiSXJuXCI6XCI5YjM4MTk1NzY4ZWQ2NDE3Y2EwZmY5MjRhZmJiMjJiYTlkNGQ5ZmM1OTFiOWE3ZDI3MzlkM2IwMTRlYmUwODc3XCIsXCJJcm5EdFwiOlwiMjAyNi0wNC0xNiAxMDo1NTowNVwifSJ9.uwNUak6w0Nrl_hsGBvXAB80LtmH51XPKAK7P5EsqwUBaz7gmxKHXbPa8ESdODBVzaveCPyEfG6DQ7Nl0BpoP8kKV5aY66cwXxQpLYnOjsUBklwfscbncSru6o9RMmyJ4q7TL-f1tvNNDet1ugN11wem9aK7tq29LrAbTGf_eJaD1HwDrcidk2xKdvj_YE7Bxtt0JbdGdhFGPAOfI2jugPNgbExWWaXzjYeATI8D_sEC425mcci99k_SVPVDl6NytaxnmQsefHf2-Atiea2rv5RSZln0GCWK4pc1TV9yeiLlkLIe1hJsZBSR_oavoLqmdBrX0gVcx2Q3E70TqG2LWJQ",
+            "EwbNo": null,
+            "EwbDt": null,
+            "EwbValidTill": null,
+            "QRCodeUrl": "https://sandb-api.mastersindia.co/api/v1/einvoice/qrcode/YXByX2p1bl8yMDI2LTI3-69e072b1994b23309bef9e8d/",
+            "EinvoicePdf": "https://sandb-api.mastersindia.co/api/v1/einvoice/pdf/YXByX2p1bl8yMDI2LTI3-69e072b1994b23309bef9e8d/",
+            "Status": "ACT",
+            "Remarks": "",
+            "alert": "",
+            "error": false
+        },
+        "errorMessage": "",
+        "InfoDtls": "",
+        "status": "Success",
+        "code": 200,
+        "requestId": "09AAAPG7885R002_IIPL-7083_1776317105"
+    }
+}
+
+
+
+
+
+
+    "user_gstin": "09AAAPG7885R002",
+    "irn": "3fb67436f433411e5998f7e5394f57a60f3b239153199771f05ab4e8a54dbf91",
+    "transporter_id": "05AAABB0639G1Z8",
+    "transporter_name": "Jay Trans",
+    "transportation_mode": "1",
+    "transportation_distance": 220,
+    "transporter_document_number": "LRN25122301",
+    "transporter_document_date": "23/12/2025",
+    "vehicle_number": "UP14AB1234",
+    "vehicle_type": "R",
+    "data_source": "erp",
+    "dispatch_details": {
+        "company_name": "MastersIndia UP",
+        "address1": "Plot 45, Sector 63",
+        "address2": "Noida Expressway",
+        "location": "Noida",
+        "pincode": 201301,
+        "state_code": "09"
+    },
+    "ship_details": {
+        "gstin": "05AAAPG7885R002",
+        "legal_name": "Masters India UK",
+        "address1": "Plot 12, Rajpur Road",
+        "address2": "Dehradun Hills",
+        "location": "Dehradun",
+        "pincode": 248001,
+        "state_code": "05"
+    }

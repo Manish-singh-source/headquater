@@ -22,7 +22,7 @@
                                         <span>
                                             <a href="{{ route('invoice.downloadPdf', $invoiceDetails->id) }}"
                                                 class="btn btn-icon btn-sm bg-primary-subtle me-1">Download</a>
-                                            @if (count($invoiceDetails->einvoices) == 0)
+                                            @if ($total_einvoices == 0)
                                                 <form action="{{ route('invoice.generateEInvoice', $invoiceDetails->id) }}"
                                                     method="POST" style="display: inline;">
                                                     @csrf
@@ -51,7 +51,7 @@
                                 <div class="card-header d-flex justify-content-between align-items-center">
                                     <h4 class="card-title">E-Invoice Details</h4>
 
-                                    @if (count($invoiceDetails->einvoices) > 0)
+                                    {{-- @if (count($invoiceDetails->einvoices) > 0)
                                         <div
                                             class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                                             <span>
@@ -67,7 +67,7 @@
                                                 @endif
                                             </span>
                                         </div>
-                                    @endif
+                                    @endif --}}
                                 </div>
                                 <div class="card-body">
                                     <table class="table table-bordered">
@@ -122,8 +122,8 @@
                                                         @if ($einvoice->ewaybills->count() == 0)
                                                             <button type="button"
                                                                 class="btn btn-icon btn-sm bg-danger-subtle me-1"
-                                                                data-bs-toggle="modal"
-                                                                data-bs-target="#cancelEInvoiceModal">Cancel
+                                                                data-bs-toggle="modal" data-bs-target="#cancelEInvoiceModal"
+                                                                data-action="{{ route('invoice.cancelEInvoice', $einvoice->id) }}">Cancel
                                                                 E-Invoice</button>
                                                             <button type="button"
                                                                 class="btn btn-icon btn-sm bg-success-subtle me-1"
@@ -299,7 +299,7 @@
             aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
-                    <form action="{{ route('invoice.cancelEInvoice', $einvoice->id) }}" method="POST">
+                    <form action="#" method="POST" id="cancelEInvoiceForm">
                         @csrf
                         @method('DELETE')
                         <div class="modal-header">
@@ -364,7 +364,7 @@
                                         placeholder="KA01AB1234" required>
                                 </div>
                             </div>
-                            
+
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label for="place_of_consignor" class="form-label">Place of Consignor</label>
@@ -379,7 +379,7 @@
                                         name="state_of_consignor" placeholder="UTTARAKHAND" required>
                                 </div>
                             </div>
-                            
+
                             {{-- 
                             <div class="col-md-6">
                                 <div class="mb-3">
@@ -396,8 +396,8 @@
                                         placeholder="05AAAPG7885R002" required>
                                 </div>
                             </div> --}}
-                            
-                        {{-- 
+
+                            {{-- 
                         
                             <div class="col-md-6">
                                 <div class="mb-3">
@@ -407,7 +407,7 @@
                                 </div>
                             </div>
                             --}}
-                        
+
                             {{-- <div class="col-md-6">
                                 <div class="mb-3">
                                     <label for="vehicle_number_update_date" class="form-label">Vehicle Number Update
@@ -426,8 +426,8 @@
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label for="transporter_id" class="form-label">Transporter ID(GSTIN)</label>
-                                    <input type="text" class="form-control" id="transporter_id"
-                                        name="transporter_id" placeholder="05AAABB0639G1Z8" value="05AAABB0639G1Z8" required>
+                                    <input type="text" class="form-control" id="transporter_id" name="transporter_id"
+                                        placeholder="05AAABB0639G1Z8" value="05AAABB0639G1Z8" required>
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -442,7 +442,7 @@
                                     </select>
                                 </div>
                             </div>
-                            
+
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label for="transporter_document_number" class="form-label">Transporter Document
@@ -459,7 +459,7 @@
                                         name="transporter_document_date" placeholder="12/12/2025" required>
                                 </div>
                             </div>
-                            
+
                             {{-- <div class="col-md-6">
                                 <div class="mb-3">
                                     <label for="group_number" class="form-label">Group Number</label>
@@ -498,6 +498,13 @@
                 modal.find('.modal-body #invoice_id').val(invoiceId)
                 modal.find('.modal-body #einvoice_id').val(einvoiceId)
                 modal.find('.modal-body #einvoice_irn').val(irn)
+            })
+
+            $('#cancelEInvoiceModal').on('show.bs.modal', function(event) {
+                var button = $(event.relatedTarget)
+                var action = button.data('action')
+                var modal = $(this)
+                modal.find('#cancelEInvoiceForm').attr('action', action)
             })
 
             $('#cancelInvoiceModal').on('show.bs.modal', function(event) {
