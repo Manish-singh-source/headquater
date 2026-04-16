@@ -881,7 +881,8 @@ class InvoiceController extends Controller
 
     private function prepareEInvoiceData($invoice)
     {
-        $warehouse = $invoice->warehouse;
+        // $warehouse = $invoice->warehouse;
+        $warehouse = Warehouse::where('id', 3)->first();
         $customer = $invoice->customer;
 
         // Use the provided test GSTINs

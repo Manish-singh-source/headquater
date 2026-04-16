@@ -210,13 +210,13 @@ class SalesOrderController extends Controller
                         return redirect()->back()->with(['error' => "{$field} is required for all rows. Please check your CSV file."])->withInput();
                     }
 
-                    // if ((int) $record['Available Quantity'] < (int) $record['Block']) {
-                    //     DB::rollBack();
+                    if ((int) $record['Available Quantity'] < (int) $record['Block']) {
+                        DB::rollBack();
 
-                    //     return redirect()->back()
-                    //         ->with('error', "{$record['SKU Code']}: Available quantity is less than the block quantity. Please check if the warehouse has sufficient stock.")
-                    //         ->withInput();
-                    // }
+                        return redirect()->back()
+                            ->with('error', "{$record['SKU Code']}: Available quantity is less than the block quantity. Please check if the warehouse has sufficient stock.")
+                            ->withInput();
+                    }
                 }
 
                 $sku = trim($record['SKU Code']);
@@ -389,12 +389,9 @@ class SalesOrderController extends Controller
                 $availableQty = $productStockCache[$sku]['available'];
 
                 // Stock check
-                // 100 >= 36
                 if ($availableQty >= $poQty) {
                     // Sufficient stock
-                    // 100 - 36 = 64
                     $productStockCache[$sku]['available'] -= $poQty;
-                    // 36
                     $availableQty = $poQty;
                 } else {
                     // Insufficient stock
