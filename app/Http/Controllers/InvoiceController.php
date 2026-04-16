@@ -893,12 +893,12 @@ class InvoiceController extends Controller
         $buyerGstin = $customer ? $customer->gstin : null;
 
         // Extract state codes from GSTINs (first 2 digits)
-        // $sellerStateCode = substr($sellerGstin, 0, 2);
-        // $buyerStateCode = substr($buyerGstin, 0, 2);
+        $sellerStateCode = substr($sellerGstin, 0, 2);
+        $buyerStateCode = substr($buyerGstin, 0, 2);
 
         // Fetch GST State Code
-        $sellerStateCode = $this->normalizeStateCode($warehouse ? $this->getStateCode($warehouse->state->name) : '27'); // Default state code
-        $buyerStateCode = $this->normalizeStateCode($this->getStateCode($customer->billing_state ?? $customer->shipping_state));
+        // $sellerStateCode = $this->normalizeStateCode($warehouse ? $this->getStateCode($warehouse->state->name) : '27'); // Default state code
+        // $buyerStateCode = $this->normalizeStateCode($this->getStateCode($customer->billing_state ?? $customer->shipping_state));
         // Use pincodes that match the test GSTIN states
         // $sellerPincode = '263001'; // Uttarakhand pincode
         // $buyerPincode = '201301'; // Uttar Pradesh pincode
