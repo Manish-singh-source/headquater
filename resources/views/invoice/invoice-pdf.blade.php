@@ -406,7 +406,7 @@
                     <img src="{{ $sign64Image }}" alt="Authorised Signature" width="100" height="100">
 
                 </div>
-            </td>
+            </td>   
         </tr>
         <tr class="invoice-table">
             <td>Bank Name: YES BANK</td>
