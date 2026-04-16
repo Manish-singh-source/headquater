@@ -1005,7 +1005,17 @@ class InvoiceController extends Controller
                 'total_cess_value_of_state' => 0,
                 'total_discount' => $invoice->discount_amount ?? 0,
                 'total_other_charge' => 0,
-                'total_invoice_value' => number_format(collect($itemList)->sum('assessable_value') + collect($itemList)->sum('igst_amount') - ($invoice->discount_amount ?? 0) + ($invoice->round_off ?? 0), 2, '.', ''),
+                'total_invoice_value' => number_format(
+                    collect($itemList)->sum('assessable_value')
+                    + collect($itemList)->sum('cgst_amount')
+                    + collect($itemList)->sum('sgst_amount')
+                    + collect($itemList)->sum('igst_amount')
+                    - ($invoice->discount_amount ?? 0)
+                    + ($invoice->round_off ?? 0),
+                    2,
+                    '.',
+                    ''
+                ),
                 'round_off_amount' => $invoice->round_off ?? 0,
             ],
             'item_list' => $itemList,
@@ -1585,3 +1595,5 @@ class InvoiceController extends Controller
         ];
     }
 }
+
+
