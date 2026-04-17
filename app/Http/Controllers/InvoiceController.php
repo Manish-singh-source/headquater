@@ -1198,12 +1198,12 @@ class InvoiceController extends Controller
             $sellerGstin = '27AAGCI3319H1ZM'; // Test GSTIN for e-waybill consignor
 
             // For test GSTIN 05AAAPG7885R002, state is Uttarakhand
-            $stateOfConsignor = $validated['state_of_consignor'];
+            // $stateOfConsignor = $validated['state_of_consignor'];
             // dd($stateOfConsignor);
 
             // The API spec expects dd/mm/yyyy for transporter_document_date.
             // $vehicleUpdateDate = date('Y-m-d', strtotime(str_replace('/', '-', $validated['vehicle_number_update_date'])));
-            $transporterDocDate = $validated['transporter_document_date'];
+            // $transporterDocDate = $validated['transporter_document_date'];
 
             // Warehouse Details
             // $warehouse = $warehouse = Warehouse::where('id', 3)->first();
@@ -1282,13 +1282,13 @@ class InvoiceController extends Controller
 
                     $transportDetail = EwayTransportDetail::create([
                         'ewaybill_id' => $ewaybill->id,
-                        'transportation_mode' => $validated['transportation_mode'] ?? '',
-                        'vehicle_number' => $validated['vehicle_number'] ?? '',
+                        'transportation_mode' => '',
+                        'vehicle_number' => '',
                         'transporter_name' => $validated['transporter_name'] ?? '',
-                        'transporter_document_number' => $validated['transporter_document_number'] ?? '',
-                        'transporter_document_date' => $transporterDocDate ?? '',
-                        'place_of_consignor' => $validated['place_of_consignor'] ?? '',
-                        'state_of_consignor' => $stateOfConsignor ?? '',
+                        'transporter_document_number' => '',
+                        'transporter_document_date' => '',
+                        'place_of_consignor' => '',
+                        'state_of_consignor' => '',
                     ]);
 
                     if (! $transportDetail) {
