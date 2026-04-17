@@ -1167,14 +1167,14 @@ class InvoiceController extends Controller
             // Validate request data
             $validated = $request->validate([
                 'update_mode' => 'nullable|string',
-                'vehicle_number' => 'nullable|string',
-                'place_of_consignor' => 'nullable|string',
-                'state_of_consignor' => 'nullable|string',
+                // 'vehicle_number' => 'nullable|string',
+                // 'place_of_consignor' => 'nullable|string',
+                // 'state_of_consignor' => 'nullable|string',
                 'transporter_id' => 'required|string',
                 'transporter_name' => 'required|string',
                 'transportation_mode' => 'nullable|string',
-                'transporter_document_number' => 'nullable|string',
-                'transporter_document_date' => 'nullable|string',
+                // 'transporter_document_number' => 'nullable|string',
+                // 'transporter_document_date' => 'nullable|string',
             ]);
             // validations
 
@@ -1360,7 +1360,7 @@ class InvoiceController extends Controller
 
             // Prepare API request data
             $requestData = [
-                'user_gstin' => $sellerGstin, // Using test GSTIN
+                'userGstin' => $sellerGstin, // Using test GSTIN
                 'eway_bill_number' => $invoice->ewb_no,
                 'reason_of_cancel' => 'Others',
                 'cancel_remark' => 'Cancelled by user',

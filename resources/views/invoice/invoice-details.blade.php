@@ -360,25 +360,26 @@
                                     <input type="hidden" name="invoice_id" value="" id="invoice_id">
                                     <input type="hidden" name="einvoice_id" value="" id="einvoice_id">
                                     <label for="vehicle_number" class="form-label">Vehicle Number</label>
-                                    <input type="text" class="form-control" id="vehicle_number" name="vehicle_number"
-                                        placeholder="KA01AB1234">
+                                    {{-- <input type="hidden" class="form-control" id="vehicle_number" name="vehicle_number"
+                                        placeholder="KA01AB1234" > --}}
                                 </div>
                             </div>
 
+                            {{-- 
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label for="place_of_consignor" class="form-label">Place of Consignor</label>
-                                    <input type="text" class="form-control" id="place_of_consignor"
+                                    <input type="hidden" class="form-control" id="place_of_consignor"
                                         name="place_of_consignor" placeholder="Haldwani">
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label for="state_of_consignor" class="form-label">State of Consignor</label>
-                                    <input type="text" class="form-control" id="state_of_consignor"
+                                    <input type="hidden" class="form-control" id="state_of_consignor"
                                         name="state_of_consignor" placeholder="UTTARAKHAND">
                                 </div>
-                            </div>
+                            </div> --}}
 
                             {{-- 
                             <div class="col-md-6">
@@ -430,6 +431,7 @@
                                         placeholder="05AAABB0639G1Z8" value="05AAABB0639G1Z8" required>
                                 </div>
                             </div>
+                            {{-- 
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label for="transportation_mode" class="form-label">Transportation Mode</label>
@@ -441,8 +443,9 @@
                                         <option value="Ship">Ship</option>
                                     </select>
                                 </div>
-                            </div>
+                            </div> --}}
 
+                            {{-- 
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label for="transporter_document_number" class="form-label">Transporter Document
@@ -458,7 +461,7 @@
                                     <input type="date" class="form-control" id="transporter_document_date"
                                         name="transporter_document_date" placeholder="12/12/2025" >
                                 </div>
-                            </div>
+                            </div> --}}
 
                             {{-- <div class="col-md-6">
                                 <div class="mb-3">

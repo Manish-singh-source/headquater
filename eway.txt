@@ -1,0 +1,12 @@
+1: 
+ewb_no: 252183923326
+ewb_dt:
+ewaybill_pdf: https://router.mastersindia.co/api/v1/detailPrintPdf/YXByX2p1bl8yMDI2LTI3-69e1fdfc9071c5c6369ce182/
+
+2: 
+ewb_no: 282183960559 
+ewaybill_pdf: https://router.mastersindia.co/api/v1/detailPrintPdf/YXByX2p1bl8yMDI2LTI3-69e2064ab0ffa4ada064dda3/ 
+
+3: 
+ewb_no: 222183962825 
+ewaybill_pdf: https://router.mastersindia.co/api/v1/detailPrintPdf/YXByX2p1bl8yMDI2LTI3-69e206d03f2c424b53ff11c9/
