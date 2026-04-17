@@ -1212,12 +1212,12 @@ class InvoiceController extends Controller
                 'transporter_name' => $validated['transporter_name'] ?? null, // Keep as is
                 'transportation_mode' => $transportationMode ?? null,
                 'transportation_distance' => $distance ?? 0, // Use the numeric distance returned by the API or 0
-                'vehicle_number' => null,
-                'vehicle_type' => null, 
-                'transporter_document_number' => $validated['transporter_document_number'] ?? null,
-                'transporter_document_date' => $transporterDocDate ?? null,
-                'place_of_consignor' => $validated['place_of_consignor'] ?? null,
-                'state_of_consignor' => $stateOfConsignor ?? null,
+                // 'vehicle_number' => null,
+                // 'vehicle_type' => null, 
+                // 'transporter_document_number' => $validated['transporter_document_number'] ?? null,
+                // 'transporter_document_date' => $transporterDocDate ?? null,
+                // 'place_of_consignor' => $validated['place_of_consignor'] ?? null,
+                // 'state_of_consignor' => $stateOfConsignor ?? null,
                 'data_source' => 'erp',
             ];
 
