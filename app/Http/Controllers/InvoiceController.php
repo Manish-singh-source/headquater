@@ -1085,18 +1085,26 @@ class InvoiceController extends Controller
             // Prepare API request data
             $requestData = [
                 // 'user_gstin' => $invoice->invoice->warehouse->gst_number, // Using test GSTIN same gstin who created invoice
-                'user_gstin' => "27AAGCI3319H1ZM", // Using test GSTIN same gstin who created invoice
+                'user_gstin' => '27AAGCI3319H1ZM', // Using test GSTIN same gstin who created invoice
                 // 'user_gstin' => '09AAAPG7885R002', // Using test GSTIN same gstin who created invoice
                 'irn' => $invoice->irn,
                 'cancel_reason' => $request->cancel_reason, // Default reason: Wrong entry
                 'cancel_remarks' => $request->cancel_remark ?? '',
             ];
 
-            // Make API call
+            // Make API call with JSON body
             $response = Http::withHeaders($this->getEInvoiceAuthHeaders($token))
+                ->asJson()
                 ->post($this->getEInvoiceApiBaseUrl() . '/cancel-einvoice/', $requestData);
 
             $data = $response->json();
+
+            Log::debug('E-Invoice Cancel API Response', [
+                'url' => $this->getEInvoiceApiBaseUrl() . '/cancel-einvoice/',
+                'status' => $response->status(),
+                'body' => $response->body(),
+                'request' => $requestData,
+            ]);
 
             if ($response->successful() && isset($data['results'])) {
                 $results = $data['results'];
@@ -1208,10 +1216,10 @@ class InvoiceController extends Controller
 
             $sellerStateCode = $this->normalizeStateCode($warehouse ? $this->getStateCode($warehouse->state->name) : '27'); // Default state code
             // $buyerStateCode = $this->normalizeStateCode($this->getStateCode($customer->billing_state ?? $customer->shipping_state));
-        
+
             $requestData = [
                 // 'user_gstin' => $warehouse->gst_number,
-                'user_gstin' => "27AAGCI3319H1ZM",
+                'user_gstin' => '27AAGCI3319H1ZM',
                 'irn' => $einvoice->irn,
                 'transporter_id' => $validated['transporter_id'] ?? null, // Test transporter ID - keep as is for now
                 'transporter_name' => $validated['transporter_name'] ?? null, // Keep as is
@@ -1352,18 +1360,26 @@ class InvoiceController extends Controller
 
             // Prepare API request data
             $requestData = [
-                'userGstin' => $sellerGstin, // Using test GSTIN
+                'user_gstin' => $sellerGstin, // Using test GSTIN
                 'eway_bill_number' => $invoice->ewb_no,
                 'reason_of_cancel' => 'Others',
                 'cancel_remark' => 'Cancelled by user',
                 'data_source' => 'erp',
             ];
 
-            // Make API call
+            // Make API call with JSON body
             $response = Http::withHeaders($this->getEInvoiceAuthHeaders($token))
+                ->asJson()
                 ->post($this->getEInvoiceApiBaseUrl() . '/ewayBillCancel/', $requestData);
 
             $data = $response->json();
+
+            Log::debug('E-Way Bill Cancel API Response', [
+                'url' => $this->getEInvoiceApiBaseUrl() . '/ewayBillCancel/',
+                'status' => $response->status(),
+                'body' => $response->body(),
+                'request' => $requestData,
+            ]);
 
             // Check for different response structures
             if (isset($data['success']) && $data['success'] === false) {
@@ -1443,11 +1459,19 @@ class InvoiceController extends Controller
                 'ewb_no' => $invoice->ewb_no,
             ];
 
-            // Make API call to get ewaybill details
+            // Make API call to get ewaybill details with JSON body
             $response = Http::withHeaders($this->getEInvoiceAuthHeaders($token))
+                ->asJson()
                 ->post($this->getEInvoiceApiBaseUrl() . '/getEwayBillData/', $requestData);
 
             $data = $response->json();
+
+            Log::debug('E-Way Bill Check API Response', [
+                'url' => $this->getEInvoiceApiBaseUrl() . '/getEwayBillData/',
+                'status' => $response->status(),
+                'body' => $response->body(),
+                'request' => $requestData,
+            ]);
 
             // Check for different response structures
             if (isset($data['success']) && $data['success'] === false) {
