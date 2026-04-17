@@ -1208,16 +1208,16 @@ class InvoiceController extends Controller
                 'user_gstin' => $warehouse->gst_number,
                 // 'user_gstin' => "09AAAPG7885R002",
                 'irn' => $einvoice->irn,
-                'transporter_id' => $validated['transporter_id'] ?? '', // Test transporter ID - keep as is for now
-                'transporter_name' => $validated['transporter_name'] ?? '', // Keep as is
-                'transportation_mode' => $transportationMode ?? '1',
+                'transporter_id' => $validated['transporter_id'] ?? null, // Test transporter ID - keep as is for now
+                'transporter_name' => $validated['transporter_name'] ?? null, // Keep as is
+                'transportation_mode' => $transportationMode ?? null,
                 'transportation_distance' => $distance ?? 0, // Use the numeric distance returned by the API or 0
                 'vehicle_number' => null,
                 'vehicle_type' => null, 
-                'transporter_document_number' => $validated['transporter_document_number'] ?? '',
-                'transporter_document_date' => $transporterDocDate ?? '',
-                'place_of_consignor' => $validated['place_of_consignor'] ?? '',
-                'state_of_consignor' => $stateOfConsignor ?? '',
+                'transporter_document_number' => $validated['transporter_document_number'] ?? null,
+                'transporter_document_date' => $transporterDocDate ?? null,
+                'place_of_consignor' => $validated['place_of_consignor'] ?? null,
+                'state_of_consignor' => $stateOfConsignor ?? null,
                 'data_source' => 'erp',
             ];
 
