@@ -1212,7 +1212,7 @@ class InvoiceController extends Controller
                 'transportation_mode' => $transportationMode ?? '1',
                 'transportation_distance' => $distance ?? 0, // Use the numeric distance returned by the API or 0
                 'vehicle_number' => $validated['vehicle_number'] ?? '',
-                'vehicle_type' => 'R', // Regular vehicle
+                'vehicle_type' => $validated['vehicle_number'] ? 'R' : 'O', // Regular vehicle
                 'transporter_name' => $validated['transporter_name'] ?? '', // Keep as is
                 'transporter_document_number' => $validated['transporter_document_number'] ?? '',
                 'transporter_document_date' => $transporterDocDate ?? '',
