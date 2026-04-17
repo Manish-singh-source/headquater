@@ -361,7 +361,7 @@
                                     <input type="hidden" name="einvoice_id" value="" id="einvoice_id">
                                     <label for="vehicle_number" class="form-label">Vehicle Number</label>
                                     <input type="text" class="form-control" id="vehicle_number" name="vehicle_number"
-                                        placeholder="KA01AB1234" required>
+                                        placeholder="KA01AB1234">
                                 </div>
                             </div>
 
@@ -369,14 +369,14 @@
                                 <div class="mb-3">
                                     <label for="place_of_consignor" class="form-label">Place of Consignor</label>
                                     <input type="text" class="form-control" id="place_of_consignor"
-                                        name="place_of_consignor" placeholder="Haldwani" required>
+                                        name="place_of_consignor" placeholder="Haldwani">
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label for="state_of_consignor" class="form-label">State of Consignor</label>
                                     <input type="text" class="form-control" id="state_of_consignor"
-                                        name="state_of_consignor" placeholder="UTTARAKHAND" required>
+                                        name="state_of_consignor" placeholder="UTTARAKHAND">
                                 </div>
                             </div>
 
@@ -448,7 +448,7 @@
                                     <label for="transporter_document_number" class="form-label">Transporter Document
                                         Number</label>
                                     <input type="text" class="form-control" id="transporter_document_number"
-                                        name="transporter_document_number" placeholder="DOC1765519669" required>
+                                        name="transporter_document_number" placeholder="DOC1765519669" >
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -456,7 +456,7 @@
                                     <label for="transporter_document_date" class="form-label">Transporter Document
                                         Date</label>
                                     <input type="date" class="form-control" id="transporter_document_date"
-                                        name="transporter_document_date" placeholder="12/12/2025" required>
+                                        name="transporter_document_date" placeholder="12/12/2025" >
                                 </div>
                             </div>
 

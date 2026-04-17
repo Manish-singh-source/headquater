@@ -775,7 +775,14 @@ class InvoiceController extends Controller
         try {
             $invoice = Invoice::with(['customer', 'warehouse', 'details.product', 'einvoices'])->findOrFail($id);
             $einvoice = EInvoice::where('invoice_id', $id)->where('einvoice_status', 'ACT')->first();
-
+            
+            // if(count($invoice->einvoices) > 0) {
+            //     $activeEInvoice = EInvoice::where('invoice_id', $id)->where('einvoice_status', 'ACT')->first();
+            //     if(!$activeEInvoice) {
+            //         $invoice->invoice_number 
+            //     }
+            // }
+            
             // Check if e-invoice already generated
             if ($einvoice && $einvoice->irn) {
                 return redirect()->back()->with('error', 'E-Invoice already generated for this invoice.');
@@ -1150,14 +1157,15 @@ class InvoiceController extends Controller
 
             // Validate request data
             $validated = $request->validate([
-                'update_mode' => 'required|string',
-                'vehicle_number' => 'required|string',
-                'place_of_consignor' => 'required|string',
-                'state_of_consignor' => 'required|string',
+                'update_mode' => 'nullable|string',
+                'vehicle_number' => 'nullable|string',
+                'place_of_consignor' => 'nullable|string',
+                'state_of_consignor' => 'nullable|string',
+                'transporter_id' => 'required|string',
                 'transporter_name' => 'required|string',
                 'transportation_mode' => 'required|string',
-                'transporter_document_number' => 'required|string',
-                'transporter_document_date' => 'required|string',
+                'transporter_document_number' => 'nullable|string',
+                'transporter_document_date' => 'nullable|string',
             ]);
             // validations
 
@@ -1177,7 +1185,8 @@ class InvoiceController extends Controller
             }
 
             // Prepare API request data for E-Way Bill generation
-            $sellerGstin = $invoice->warehouse ? $invoice->warehouse->gst_number : '05AAABC0181E1ZE'; // Test GSTIN for e-waybill consignor
+            // $sellerGstin = $invoice->warehouse ? $invoice->warehouse->gst_number : '27AAGCI3319H1ZM'; // Test GSTIN for e-waybill consignor
+            $sellerGstin = '27AAGCI3319H1ZM'; // Test GSTIN for e-waybill consignor
 
             // For test GSTIN 05AAAPG7885R002, state is Uttarakhand
             $stateOfConsignor = $validated['state_of_consignor'];
@@ -1188,27 +1197,27 @@ class InvoiceController extends Controller
             $transporterDocDate = $validated['transporter_document_date'];
 
             // Warehouse Details
-            $warehouse = $invoice->warehouse;
+            $warehouse = $warehouse = Warehouse::where('id', 3)->first();
             // Customer Details
             $customer = $invoice->customer;
             // Fetch Distance from Warehouse to Customer
-            // $distance = $this->getDistance($warehouse->pincode, $customer->shipping_zip ?? $customer->billing_zip, $token);
-            $distance = $this->getDistance("201301", "248001", $token);
+            $distance = $this->getDistance($warehouse->pincode, $customer->shipping_zip ?? $customer->billing_zip, $token);
+            // $distance = $this->getDistance("201301", "248001", $token);
 
             $requestData = [
-                'user_gstin' => $invoice->warehouse->gst_number,
+                'user_gstin' => $warehouse->gst_number,
                 // 'user_gstin' => "09AAAPG7885R002",
                 'irn' => $einvoice->irn,
-                'transporter_id' => $validated['transporter_id'] ?? '05AAABB0639G1Z8', // Test transporter ID - keep as is for now
-                'transportation_mode' => $transportationMode,
-                'transportation_distance' => $distance, // Use the numeric distance returned by the API or 0
-                'vehicle_number' => $validated['vehicle_number'],
+                'transporter_id' => $validated['transporter_id'] ?? '', // Test transporter ID - keep as is for now
+                'transportation_mode' => $transportationMode ?? '1',
+                'transportation_distance' => $distance ?? 0, // Use the numeric distance returned by the API or 0
+                'vehicle_number' => $validated['vehicle_number'] ?? '',
                 'vehicle_type' => 'R', // Regular vehicle
-                'transporter_name' => $validated['transporter_name'], // Keep as is
-                'transporter_document_number' => $validated['transporter_document_number'],
-                'transporter_document_date' => $transporterDocDate,
-                'place_of_consignor' => $validated['place_of_consignor'],
-                'state_of_consignor' => $stateOfConsignor,
+                'transporter_name' => $validated['transporter_name'] ?? '', // Keep as is
+                'transporter_document_number' => $validated['transporter_document_number'] ?? '',
+                'transporter_document_date' => $transporterDocDate ?? '',
+                'place_of_consignor' => $validated['place_of_consignor'] ?? '',
+                'state_of_consignor' => $stateOfConsignor ?? '',
                 'data_source' => 'erp',
             ];
 
@@ -1244,13 +1253,13 @@ class InvoiceController extends Controller
 
                     $transportDetail = EwayTransportDetail::create([
                         'ewaybill_id' => $ewaybill->id,
-                        'transportation_mode' => $validated['transportation_mode'],
-                        'vehicle_number' => $validated['vehicle_number'],
-                        'transporter_name' => $validated['transporter_name'],
-                        'transporter_document_number' => $validated['transporter_document_number'],
-                        'transporter_document_date' => $transporterDocDate,
-                        'place_of_consignor' => $validated['place_of_consignor'],
-                        'state_of_consignor' => $stateOfConsignor,
+                        'transportation_mode' => $validated['transportation_mode'] ?? '',
+                        'vehicle_number' => $validated['vehicle_number'] ?? '',
+                        'transporter_name' => $validated['transporter_name'] ?? '',
+                        'transporter_document_number' => $validated['transporter_document_number'] ?? '',
+                        'transporter_document_date' => $transporterDocDate ?? '',
+                        'place_of_consignor' => $validated['place_of_consignor'] ?? '',
+                        'state_of_consignor' => $stateOfConsignor ?? '',
                     ]);
 
                     if (! $transportDetail) {
@@ -1300,7 +1309,8 @@ class InvoiceController extends Controller
             // $invoice = Invoice::findOrFail($id);
             $invoice = Ewaybill::with('invoice.customer', 'invoice.warehouse')->find($id);
 
-            $sellerGstin = $invoice->invoice->warehouse ? $invoice->invoice->warehouse->gst_number : '05AAABC0181E1ZE'; // Test GSTIN for e-waybill consignor
+            // $sellerGstin = $invoice->invoice->warehouse ? $invoice->invoice->warehouse->gst_number : '27AAGCI3319H1ZM'; // Test GSTIN for e-waybill consignor
+            $sellerGstin = '27AAGCI3319H1ZM'; // Test GSTIN for e-waybill consignor
             $customerGstin = $invoice->invoice->customer->gst_number ?? '05AAAPG7885R002'; // Test GSTIN for e-waybill consignee
 
             // Check if e-waybill exists
