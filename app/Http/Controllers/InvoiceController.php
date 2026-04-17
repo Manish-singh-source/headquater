@@ -1198,28 +1198,40 @@ class InvoiceController extends Controller
             $transporterDocDate = $validated['transporter_document_date'];
 
             // Warehouse Details
-            $warehouse = $warehouse = Warehouse::where('id', 3)->first();
+            // $warehouse = $warehouse = Warehouse::where('id', 3)->first();
+            $warehouse = $invoice->warehouse;
             // Customer Details
             $customer = $invoice->customer;
             // Fetch Distance from Warehouse to Customer
             $distance = $this->getDistance($warehouse->pincode, $customer->shipping_zip ?? $customer->billing_zip, $token);
             // $distance = $this->getDistance("201301", "248001", $token);
 
+            $sellerStateCode = $this->normalizeStateCode($warehouse ? $this->getStateCode($warehouse->state->name) : '27'); // Default state code
+            // $buyerStateCode = $this->normalizeStateCode($this->getStateCode($customer->billing_state ?? $customer->shipping_state));
+        
             $requestData = [
-                'user_gstin' => $warehouse->gst_number,
-                // 'user_gstin' => "09AAAPG7885R002",
+                // 'user_gstin' => $warehouse->gst_number,
+                'user_gstin' => "27AAGCI3319H1ZM",
                 'irn' => $einvoice->irn,
                 'transporter_id' => $validated['transporter_id'] ?? null, // Test transporter ID - keep as is for now
                 'transporter_name' => $validated['transporter_name'] ?? null, // Keep as is
                 // 'transportation_mode' => null,
                 // 'transportation_distance' => $distance ?? 0, // Use the numeric distance returned by the API or 0
                 // 'vehicle_number' => null,
-                // 'vehicle_type' => null, 
+                // 'vehicle_type' => null,
                 // 'transporter_document_number' => $validated['transporter_document_number'] ?? null,
                 // 'transporter_document_date' => $transporterDocDate ?? null,
                 // 'place_of_consignor' => $validated['place_of_consignor'] ?? null,
                 // 'state_of_consignor' => $stateOfConsignor ?? null,
                 'data_source' => 'erp',
+                'dispatch_details' => [
+                    'company_name' => $this->sanitizeEInvoiceText($warehouse ? $warehouse->name : 'Default Company', 60),
+                    'address1' => $this->sanitizeEInvoiceAddress($warehouse ? $warehouse->address_line_1 : 'Default Address', 100),
+                    'location' => $this->sanitizeEInvoiceText($warehouse ? ($warehouse->cities->name ?? 'Default City') : 'Default City', 50),
+                    'pincode' => $warehouse->pincode,
+                    // 'pincode' => 201301,
+                    'state_code' => $sellerStateCode,
+                ],
             ];
 
             // Make API call with JSON body
