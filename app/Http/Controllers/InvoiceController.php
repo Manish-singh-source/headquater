@@ -775,14 +775,14 @@ class InvoiceController extends Controller
         try {
             $invoice = Invoice::with(['customer', 'warehouse', 'details.product', 'einvoices'])->findOrFail($id);
             $einvoice = EInvoice::where('invoice_id', $id)->where('einvoice_status', 'ACT')->first();
-            
+
             // if(count($invoice->einvoices) > 0) {
             //     $activeEInvoice = EInvoice::where('invoice_id', $id)->where('einvoice_status', 'ACT')->first();
             //     if(!$activeEInvoice) {
-            //         $invoice->invoice_number 
+            //         $invoice->invoice_number
             //     }
             // }
-            
+
             // Check if e-invoice already generated
             if ($einvoice && $einvoice->irn) {
                 return redirect()->back()->with('error', 'E-Invoice already generated for this invoice.');
@@ -893,11 +893,11 @@ class InvoiceController extends Controller
         $customer = $invoice->customer;
 
         // Use the provided test GSTINs
-        // $sellerGstin = '09AAAPG7885R002'; // Test GSTIN for seller
-        // $buyerGstin = '05AAAPG7885R002'; // Test GSTIN for buyer
+        $sellerGstin = '09AAAPG7885R002'; // Test GSTIN for seller
+        $buyerGstin = '05AAAPG7885R002'; // Test GSTIN for buyer
 
-        $sellerGstin = $warehouse ? $warehouse->gst_number : env('DEFAULT_COMPANY_GSTIN', '27AAGCI3319H1ZM'); // Default GSTIN for manual invoices
-        $buyerGstin = $customer ? $customer->gstin : null;
+        // $sellerGstin = $warehouse ? $warehouse->gst_number : env('DEFAULT_COMPANY_GSTIN', '27AAGCI3319H1ZM'); // Default GSTIN for manual invoices
+        // $buyerGstin = $customer ? $customer->gstin : null;
 
         // Extract state codes from GSTINs (first 2 digits)
         $sellerStateCode = substr($sellerGstin, 0, 2);
@@ -907,12 +907,12 @@ class InvoiceController extends Controller
         // $sellerStateCode = $this->normalizeStateCode($warehouse ? $this->getStateCode($warehouse->state->name) : '27'); // Default state code
         // $buyerStateCode = $this->normalizeStateCode($this->getStateCode($customer->billing_state ?? $customer->shipping_state));
         // Use pincodes that match the test GSTIN states
-        // $sellerPincode = '263001'; // Uttarakhand pincode
-        // $buyerPincode = '201301'; // Uttar Pradesh pincode
+        $sellerPincode = '263001'; // Uttarakhand pincode
+        $buyerPincode = '201301'; // Uttar Pradesh pincode
 
         // Fetch pincode from warehouse and customer
-        $sellerPincode = (int) ($warehouse ? $warehouse->pincode : '421302'); // Default pincode
-        $buyerPincode = (int) ($customer ? ($customer->shipping_zip ?? $customer->billing_zip ?? 0) : 0);
+        // $sellerPincode = (int) ($warehouse ? $warehouse->pincode : '421302'); // Default pincode
+        // $buyerPincode = (int) ($customer ? ($customer->shipping_zip ?? $customer->billing_zip ?? 0) : 0);
 
         $checkIntraState = $sellerStateCode === $buyerStateCode;
 
@@ -971,8 +971,8 @@ class InvoiceController extends Controller
                 'address1' => $this->sanitizeEInvoiceAddress($warehouse ? $warehouse->address_line_1 : 'Default Address', 100),
                 // 'address2' => $this->sanitizeEInvoiceAddress($warehouse ? ($warehouse->address_line_2 ?? '') : '', 100),
                 'location' => $this->sanitizeEInvoiceText($warehouse ? ($warehouse->cities->name ?? 'Default City') : 'Default City', 50),
-                'pincode' => $sellerPincode,
-                // 'pincode' => 201301,
+                // 'pincode' => $sellerPincode,
+                'pincode' => 201301,
                 'state_code' => $sellerStateCode,
             ],
             'buyer_details' => [
@@ -980,8 +980,8 @@ class InvoiceController extends Controller
                 'legal_name' => $this->sanitizeEInvoiceText($customer->client_name),
                 'address1' => $this->sanitizeEInvoiceAddress($customer->billing_address ?? $customer->shipping_address ?? 'Default Address', 100),
                 'location' => $this->sanitizeEInvoiceText($customer->billing_city ?? $customer->shipping_city ?? 'Default City', 50),
-                'pincode' => $buyerPincode,
-                // 'pincode' => 263001,
+                // 'pincode' => $buyerPincode,
+                'pincode' => 263001,
                 'place_of_supply' => $buyerStateCode,
                 'state_code' => $buyerStateCode,
             ],
@@ -989,8 +989,8 @@ class InvoiceController extends Controller
                 'company_name' => $this->sanitizeEInvoiceText($warehouse ? $warehouse->name : 'Default Company', 60),
                 'address1' => $this->sanitizeEInvoiceAddress($warehouse ? $warehouse->address_line_1 : 'Default Address', 100),
                 'location' => $this->sanitizeEInvoiceText($warehouse ? ($warehouse->cities->name ?? 'Default City') : 'Default City', 50),
-                'pincode' => $sellerPincode,
-                // 'pincode' => 201301,
+                // 'pincode' => $sellerPincode,
+                'pincode' => 201301,
                 'state_code' => $sellerStateCode,
             ],
             'ship_details' => [
@@ -998,8 +998,8 @@ class InvoiceController extends Controller
                 'legal_name' => $this->sanitizeEInvoiceText($customer->client_name),
                 'address1' => $this->sanitizeEInvoiceAddress($customer->shipping_address ?? $customer->billing_address ?? 'Default Address', 100),
                 'location' => $this->sanitizeEInvoiceText($customer->shipping_city ?? $customer->billing_city ?? 'Default City', 100),
-                'pincode' => $buyerPincode,
-                // 'pincode' => 263001,
+                // 'pincode' => $buyerPincode,
+                'pincode' => 263001,
                 'state_code' => $buyerStateCode,
             ],
             'value_details' => [
@@ -1014,11 +1014,11 @@ class InvoiceController extends Controller
                 'total_other_charge' => 0,
                 'total_invoice_value' => number_format(
                     collect($itemList)->sum('assessable_value')
-                    + collect($itemList)->sum('cgst_amount')
-                    + collect($itemList)->sum('sgst_amount')
-                    + collect($itemList)->sum('igst_amount')
-                    - ($invoice->discount_amount ?? 0)
-                    + ($invoice->round_off ?? 0),
+                        + collect($itemList)->sum('cgst_amount')
+                        + collect($itemList)->sum('sgst_amount')
+                        + collect($itemList)->sum('igst_amount')
+                        - ($invoice->discount_amount ?? 0)
+                        + ($invoice->round_off ?? 0),
                     2,
                     '.',
                     ''
@@ -1205,13 +1205,13 @@ class InvoiceController extends Controller
             // $distance = $this->getDistance("201301", "248001", $token);
 
             $requestData = [
-                'user_gstin' => $warehouse->gst_number,
-                // 'user_gstin' => "09AAAPG7885R002",
+                // 'user_gstin' => $warehouse->gst_number,
+                'user_gstin' => "09AAAPG7885R002",
                 'irn' => $einvoice->irn,
                 'transporter_id' => $validated['transporter_id'] ?? null, // Test transporter ID - keep as is for now
                 'transporter_name' => $validated['transporter_name'] ?? null, // Keep as is
-                'transportation_mode' => $transportationMode ?? null,
-                'transportation_distance' => $distance ?? 0, // Use the numeric distance returned by the API or 0
+                // 'transportation_mode' => null,
+                // 'transportation_distance' => $distance ?? 0, // Use the numeric distance returned by the API or 0
                 // 'vehicle_number' => null,
                 // 'vehicle_type' => null, 
                 // 'transporter_document_number' => $validated['transporter_document_number'] ?? null,
@@ -1221,15 +1221,23 @@ class InvoiceController extends Controller
                 'data_source' => 'erp',
             ];
 
-            // Make API call
+            // Make API call with JSON body
             $response = Http::withHeaders($this->getEInvoiceAuthHeaders($token))
+                ->asJson()
                 ->post($this->getEInvoiceApiBaseUrl() . '/gen-ewb-by-irn/', $requestData);
 
             $data = $response->json();
 
+            Log::debug('E-Way Bill API Response', [
+                'url' => $this->getEInvoiceApiBaseUrl() . '/gen-ewb-by-irn/',
+                'status' => $response->status(),
+                'body' => $response->body(),
+                'request' => $requestData,
+            ]);
+
             if ($response->successful() && isset($data['results'])) {
                 $results = $data['results'];
-
+                // dd($results);
                 if (isset($results['status']) && $results['status'] === 'Success' && isset($results['message'])) {
                     $message = $results['message'];
 
@@ -1593,7 +1601,7 @@ class InvoiceController extends Controller
 
     private function getEInvoiceApiBaseUrl()
     {
-        return rtrim(env('EINVOICE_API_URL', 'https://prod-api.mastersindia.co/api/v1/'), '/');
+        return rtrim(env('EINVOICE_API_URL', 'https://sandb-api.mastersindia.co/api/v1/'), '/');
     }
 
     private function getEInvoiceAuthHeaders($token)
@@ -1605,5 +1613,3 @@ class InvoiceController extends Controller
         ];
     }
 }
-
-
