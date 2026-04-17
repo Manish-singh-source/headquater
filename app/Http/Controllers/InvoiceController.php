@@ -1209,11 +1209,11 @@ class InvoiceController extends Controller
                 // 'user_gstin' => "09AAAPG7885R002",
                 'irn' => $einvoice->irn,
                 'transporter_id' => $validated['transporter_id'] ?? '', // Test transporter ID - keep as is for now
+                'transporter_name' => $validated['transporter_name'] ?? '', // Keep as is
                 'transportation_mode' => $transportationMode ?? '1',
                 'transportation_distance' => $distance ?? 0, // Use the numeric distance returned by the API or 0
-                'vehicle_number' => $validated['vehicle_number'] ?? '',
-                'vehicle_type' => $validated['vehicle_number'] ? 'R' : 'O', // Regular vehicle
-                'transporter_name' => $validated['transporter_name'] ?? '', // Keep as is
+                'vehicle_number' => null,
+                'vehicle_type' => null, 
                 'transporter_document_number' => $validated['transporter_document_number'] ?? '',
                 'transporter_document_date' => $transporterDocDate ?? '',
                 'place_of_consignor' => $validated['place_of_consignor'] ?? '',
