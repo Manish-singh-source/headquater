@@ -1172,20 +1172,20 @@ class InvoiceController extends Controller
                 // 'state_of_consignor' => 'nullable|string',
                 'transporter_id' => 'required|string',
                 'transporter_name' => 'required|string',
-                'transportation_mode' => 'nullable|string',
+                // 'transportation_mode' => 'nullable|string',
                 // 'transporter_document_number' => 'nullable|string',
                 // 'transporter_document_date' => 'nullable|string',
             ]);
             // validations
 
             // Map transportation mode to API values
-            $transportationModeMap = [
-                'Road' => '1',
-                'Rail' => '2',
-                'Air' => '3',
-                'Ship' => '4',
-            ];
-            $transportationMode = $transportationModeMap[$validated['transportation_mode']] ?? '1';
+            // $transportationModeMap = [
+            //     'Road' => '1',
+            //     'Rail' => '2',
+            //     'Air' => '3',
+            //     'Ship' => '4',
+            // ];
+            // $transportationMode = $transportationModeMap[$validated['transportation_mode']] ?? '1';
 
             // Get JWT token
             $token = $this->getEInvoiceToken();
