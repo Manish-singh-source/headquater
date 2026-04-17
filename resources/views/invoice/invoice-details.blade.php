@@ -352,8 +352,8 @@
                     @csrf
                     <div class="modal-body">
                         <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
+                            {{-- <div class="col-md-6">
+                                <div class="mb-3"> --}}
                                     <input type="hidden" class="form-control" id="update_mode" name="update_mode"
                                         value="API" readonly>
                                     <input type="hidden" name="einvoice_irn" value="" id="einvoice_irn">
@@ -363,8 +363,8 @@
                                     <label for="vehicle_number" class="form-label">Vehicle Number</label>
                                     <input type="hidden" class="form-control" id="vehicle_number" name="vehicle_number"
                                         placeholder="KA01AB1234" > --}}
-                                </div>
-                            </div>
+                                {{-- </div>
+                            </div> --}}
 
                             {{-- 
                             <div class="col-md-6">
