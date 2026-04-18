@@ -1215,7 +1215,7 @@ class InvoiceController extends Controller
             // $distance = $this->getDistance("201301", "248001", $token);
 
             if($warehouse->pincode == ($customer->shipping_zip ?? $customer->billing_zip)) {
-                $requestData['transportation_distance'] = $this->getDistance($warehouse->pincode, $customer->shipping_zip ?? $customer->billing_zip, $token);
+                $requestData['transportation_distance'] = 254;
             }
             $sellerStateCode = $this->normalizeStateCode($warehouse ? $this->getStateCode($warehouse->state->name) : '27'); // Default state code
             // $buyerStateCode = $this->normalizeStateCode($this->getStateCode($customer->billing_state ?? $customer->shipping_state));
