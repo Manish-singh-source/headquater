@@ -1193,9 +1193,8 @@ class InvoiceController extends Controller
                 return redirect()->back()->with('error', 'Failed to authenticate with e-invoice API.');
             }
 
-            // Prepare API request data for E-Way Bill generation
-            // $sellerGstin = $invoice->warehouse ? $invoice->warehouse->gst_number : '27AAGCI3319H1ZM'; // Test GSTIN for e-waybill consignor
-            $sellerGstin = '27AAGCI3319H1ZM'; // Test GSTIN for e-waybill consignor
+            // Use the invoice warehouse GSTIN so the e-way bill request stays in the same account context as the e-invoice.
+            $sellerGstin = $invoice->warehouse?->gst_number ?: env('DEFAULT_COMPANY_GSTIN', '27AAGCI3319H1ZM');
 
             // For test GSTIN 05AAAPG7885R002, state is Uttarakhand
             // $stateOfConsignor = $validated['state_of_consignor'];
@@ -1220,8 +1219,7 @@ class InvoiceController extends Controller
             // $buyerStateCode = $this->normalizeStateCode($this->getStateCode($customer->billing_state ?? $customer->shipping_state));
 
             $requestData = [
-                // 'user_gstin' => $warehouse->gst_number,
-                'user_gstin' => '27AAGCI3319H1ZM',
+                'user_gstin' => $sellerGstin,
                 'irn' => $einvoice->irn,
                 'transporter_id' => $validated['transporter_id'] ?? null, // Test transporter ID - keep as is for now
                 'transporter_name' => $validated['transporter_name'] ?? null, // Keep as is
