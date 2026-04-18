@@ -1227,7 +1227,7 @@ class InvoiceController extends Controller
                 'transporter_id' => $validated['transporter_id'] ?? null, // Test transporter ID - keep as is for now
                 'transporter_name' => $validated['transporter_name'] ?? null, // Keep as is
                 // 'transportation_mode' => null,
-                'transportation_distance' => ($distance == 0) ? $distance : 254, // Use the numeric distance returned by the API or 0
+                'transportation_distance' => ($distance == 0) ? 254 : $distance, // Use the numeric distance returned by the API or 0
                 // 'vehicle_number' => null,
                 // 'vehicle_type' => null,
                 // 'transporter_document_number' => $validated['transporter_document_number'] ?? null,
