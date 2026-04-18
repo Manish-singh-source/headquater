@@ -1210,13 +1210,12 @@ class InvoiceController extends Controller
             $warehouse = $invoice->warehouse;
             // Customer Details
             $customer = $invoice->customer;
-            // Fetch Distance from Warehouse to Customer
-            $distance = $this->getDistance($warehouse->pincode, $customer->shipping_zip ?? $customer->billing_zip, $token) ?? 0;
-            // $distance = $this->getDistance("201301", "248001", $token);
-
-            // if($warehouse->pincode == ($customer->shipping_zip ?? $customer->billing_zip)) {
-            //     $requestData['transportation_distance'] = '254';
-            // }
+            // Fetch distance from warehouse to customer, but never send 0 for same-pincode moves.
+            $distance = $this->resolveTransportationDistance(
+                $warehouse->pincode,
+                $customer->shipping_zip ?? $customer->billing_zip,
+                $token
+            );
             $sellerStateCode = $this->normalizeStateCode($warehouse ? $this->getStateCode($warehouse->state->name) : '27'); // Default state code
             // $buyerStateCode = $this->normalizeStateCode($this->getStateCode($customer->billing_state ?? $customer->shipping_state));
 
@@ -1227,7 +1226,7 @@ class InvoiceController extends Controller
                 'transporter_id' => $validated['transporter_id'] ?? null, // Test transporter ID - keep as is for now
                 'transporter_name' => $validated['transporter_name'] ?? null, // Keep as is
                 // 'transportation_mode' => null,
-                'transportation_distance' => ($distance == 0) ? 254 : $distance, // Use the numeric distance returned by the API or 0
+                'transportation_distance' => $distance,
                 // 'vehicle_number' => null,
                 // 'vehicle_type' => null,
                 // 'transporter_document_number' => $validated['transporter_document_number'] ?? null,
@@ -1572,6 +1571,37 @@ class InvoiceController extends Controller
         $text = $this->sanitizeEInvoiceText($value, $maxLength);
 
         return $text === '' ? 'NA' : $text;
+    }
+
+    private function normalizePincode($value)
+    {
+        $digits = preg_replace('/\D+/', '', (string) $value);
+
+        return $digits !== '' ? $digits : null;
+    }
+
+    private function resolveTransportationDistance($source, $destination, $token)
+    {
+        $sourcePincode = $this->normalizePincode($source);
+        $destinationPincode = $this->normalizePincode($destination);
+
+        if ($sourcePincode && $destinationPincode && $sourcePincode === $destinationPincode) {
+            return 1;
+        }
+
+        $distance = $this->getDistance($sourcePincode, $destinationPincode, $token);
+
+        if ($distance !== null && $distance > 0) {
+            return $distance;
+        }
+
+        Log::warning('Falling back to default e-way bill distance.', [
+            'source_pincode' => $sourcePincode,
+            'destination_pincode' => $destinationPincode,
+            'distance' => $distance,
+        ]);
+
+        return 254;
     }
 
     private function getDistance($source, $destination, $token)
