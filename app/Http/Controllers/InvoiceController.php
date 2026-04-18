@@ -1599,7 +1599,7 @@ class InvoiceController extends Controller
             'distance' => $distance,
         ]);
 
-        return 0;
+        return 200;
     }
 
     private function getDistance($source, $destination, $token)
