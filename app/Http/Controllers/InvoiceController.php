@@ -1223,7 +1223,7 @@ class InvoiceController extends Controller
                 'irn' => $einvoice->irn,
                 'transporter_id' => $validated['transporter_id'] ?? null, // Test transporter ID - keep as is for now
                 'transporter_name' => $validated['transporter_name'] ?? null, // Keep as is
-                'transportation_mode' => '1', // Default to road transport for IRN-based e-way bill generation.
+                // 'transportation_mode' => '1', // Default to road transport for IRN-based e-way bill generation.
                 'distance' => $distance,
                 // 'vehicle_number' => null,
                 // 'vehicle_type' => null,
