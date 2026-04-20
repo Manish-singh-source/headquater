@@ -1256,6 +1256,25 @@ class InvoiceController extends Controller
                 'request' => $requestData,
             ]);
 
+            $apiErrorMessage = (string) data_get($data, 'results.errorMessage', '');
+
+            if ($response->successful() && str_contains($apiErrorMessage, '4029:')) {
+                $requestData['distance'] = '54';
+
+                $response = Http::withHeaders($this->getEInvoiceAuthHeaders($token))
+                    ->asJson()
+                    ->post($this->getEInvoiceApiBaseUrl() . '/gen-ewb-by-irn/', $requestData);
+
+                $data = $response->json();
+
+                Log::debug('E-Way Bill API Response After Distance Retry', [
+                    'url' => $this->getEInvoiceApiBaseUrl() . '/gen-ewb-by-irn/',
+                    'status' => $response->status(),
+                    'body' => $response->body(),
+                    'request' => $requestData,
+                ]);
+            }
+
             if ($response->successful() && isset($data['results'])) {
                 $results = $data['results'];
                 // dd($results);
