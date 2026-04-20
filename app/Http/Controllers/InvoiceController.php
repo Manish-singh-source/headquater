@@ -1209,12 +1209,9 @@ class InvoiceController extends Controller
             $warehouse = $invoice->warehouse;
             // Customer Details
             $customer = $invoice->customer;
-            // Fetch distance from warehouse to customer, but never send 0 for same-pincode moves.
-            $distance = $this->resolveTransportationDistance(
-                $warehouse->pincode,
-                $customer->shipping_zip ?? $customer->billing_zip,
-                $token
-            );
+            $warehousePincode = $this->normalizePincode($warehouse->pincode);
+            $customerPincode = $this->normalizePincode($customer->shipping_zip ?? $customer->billing_zip);
+            $isSamePincodeMove = $warehousePincode && $customerPincode && $warehousePincode === $customerPincode;
             $sellerStateCode = $this->normalizeStateCode($warehouse ? $this->getStateCode($warehouse->state->name) : '27'); // Default state code
             // $buyerStateCode = $this->normalizeStateCode($this->getStateCode($customer->billing_state ?? $customer->shipping_state));
 
@@ -1224,7 +1221,6 @@ class InvoiceController extends Controller
                 'transporter_id' => $validated['transporter_id'] ?? null, // Test transporter ID - keep as is for now
                 'transporter_name' => $validated['transporter_name'] ?? null, // Keep as is
                 // 'transportation_mode' => '1', // Road transport mode for IRN-based e-way bill generation.
-                // 'distance' => "54",
                 // 'vehicle_number' => null,
                 // 'vehicle_type' => null,
                 // 'transporter_document_number' => $validated['transporter_document_number'] ?? null,
@@ -1241,6 +1237,10 @@ class InvoiceController extends Controller
                     'state_code' => $sellerStateCode,
                 ],
             ];
+
+            if ($isSamePincodeMove) {
+                $requestData['distance'] = '54';
+            }
 
             // Make API call with JSON body
             $response = Http::withHeaders($this->getEInvoiceAuthHeaders($token))
