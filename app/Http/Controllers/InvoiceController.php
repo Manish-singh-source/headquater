@@ -1224,7 +1224,7 @@ class InvoiceController extends Controller
                 'transporter_id' => $validated['transporter_id'] ?? null, // Test transporter ID - keep as is for now
                 'transporter_name' => $validated['transporter_name'] ?? null, // Keep as is
                 // 'transportation_mode' => '1', // Road transport mode for IRN-based e-way bill generation.
-                'distance' => "54",
+                // 'distance' => "54",
                 // 'vehicle_number' => null,
                 // 'vehicle_type' => null,
                 // 'transporter_document_number' => $validated['transporter_document_number'] ?? null,
