@@ -135,7 +135,7 @@ class InvoiceController extends Controller
         $pdf = \PDF::loadView('invoice/invoice-pdf', ['image' => $base64Image, 'image1' => $base643Image, 'sign64Image' => $sign64Image] + $data);
         $pdf->setPaper('a4');
 
-        return $pdf->stream('Invoice-' . $invoice->invoice_number . 'pdf');
+        return $pdf->stream('Invoice-' . $invoice->invoice_number . '.pdf');
     }
 
     public function downloadEInvoicePdf($id)
