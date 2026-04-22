@@ -172,7 +172,7 @@
                                                 <td>{{ $ewaybill->ewb_dt }}</td>
                                                 <td>{{ $ewaybill->ewb_valid_till }}</td>
                                                 <td>
-                                                    <a href="{{ $ewaybill->ewaybill_pdf }}" target="_blank"
+                                                    <a href="{{ route('invoice.downloadEWayBillPdf', $ewaybill->id) }}"
                                                         class="btn btn-icon btn-sm bg-primary-subtle me-1">Download</a>
                                                 </td>
                                                 <td>
@@ -354,16 +354,16 @@
                         <div class="row">
                             {{-- <div class="col-md-6">
                                 <div class="mb-3"> --}}
-                                    <input type="hidden" class="form-control" id="update_mode" name="update_mode"
-                                        value="API" readonly>
-                                    <input type="hidden" name="einvoice_irn" value="" id="einvoice_irn">
-                                    <input type="hidden" name="invoice_id" value="" id="invoice_id">
-                                    <input type="hidden" name="einvoice_id" value="" id="einvoice_id">
-                                    {{-- 
+                            <input type="hidden" class="form-control" id="update_mode" name="update_mode"
+                                value="API" readonly>
+                            <input type="hidden" name="einvoice_irn" value="" id="einvoice_irn">
+                            <input type="hidden" name="invoice_id" value="" id="invoice_id">
+                            <input type="hidden" name="einvoice_id" value="" id="einvoice_id">
+                            {{-- 
                                     <label for="vehicle_number" class="form-label">Vehicle Number</label>
                                     <input type="hidden" class="form-control" id="vehicle_number" name="vehicle_number"
                                         placeholder="KA01AB1234" > --}}
-                                {{-- </div>
+                            {{-- </div>
                             </div> --}}
 
                             {{-- 

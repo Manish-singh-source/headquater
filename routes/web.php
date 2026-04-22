@@ -349,6 +349,9 @@ Route::middleware(['auth'])->group(function () {
         // Cancel E-Way Bill
         Route::delete('/cancel-e-way-bill/{id}', 'cancelEWayBill')->name('invoice.cancelEWayBill');
 
+        // Download E-Way Bill PDF
+        Route::get('/download-e-way-bill-pdf/{id}', 'downloadEWayBillPdf')->name('invoice.downloadEWayBillPdf');
+
         // Check and Update E-Way Bill
         Route::post('/check-and-update-e-way-bill/{id}', 'checkAndUpdateEWayBill')->name('invoice.checkAndUpdateEWayBill');
 

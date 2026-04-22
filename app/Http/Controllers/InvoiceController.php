@@ -135,7 +135,7 @@ class InvoiceController extends Controller
         $pdf = \PDF::loadView('invoice/invoice-pdf', ['image' => $base64Image, 'image1' => $base643Image, 'sign64Image' => $sign64Image] + $data);
         $pdf->setPaper('a4');
 
-        return $pdf->stream('invoice.pdf');
+        return $pdf->stream('Invoice-' . $invoice->invoice_number . 'pdf');
     }
 
     public function downloadEInvoicePdf($id)
@@ -203,7 +203,29 @@ class InvoiceController extends Controller
         $pdf = \PDF::loadView('invoice/einvoice-pdf', ['image' => $base64Image, 'image1' => $base643Image] + $data);
         $pdf->setPaper('a4');
 
-        return $pdf->stream('e-invoice.pdf');
+        return $pdf->stream('E-Invoice-' . $invoice->invoice_number . '.pdf');
+    }
+
+    public function downloadEWayBillPdf($id)
+    {
+        $ewaybill = Ewaybill::with('invoice')->findOrFail($id);
+
+        if (! $ewaybill->ewaybill_pdf) {
+            return redirect()->back()->with('error', 'E-Way Bill PDF not available.');
+        }
+
+        // Fetch the PDF from the external URL
+        $response = Http::get($ewaybill->ewaybill_pdf);
+
+        if ($response->failed()) {
+            return redirect()->back()->with('error', 'Failed to download E-Way Bill PDF.');
+        }
+
+        // Return the PDF with proper headers for download
+        return response($response->body(), 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="E-Way-Bill-' . $ewaybill->invoice->invoice_number . '.pdf"',
+        ]);
     }
 
     public function invoiceAppointmentUpdate(Request $request, $id)
@@ -1224,7 +1246,7 @@ class InvoiceController extends Controller
                 'transporter_id' => $validated['transporter_id'] ?? null, // Test transporter ID - keep as is for now
                 'transporter_name' => $validated['transporter_name'] ?? null, // Keep as is
                 // 'transportation_mode' => '1', // Road transport mode for IRN-based e-way bill generation.
-                'distance' => "54",
+                'distance' => '54',
                 // 'vehicle_number' => null,
                 // 'vehicle_type' => null,
                 // 'transporter_document_number' => $validated['transporter_document_number'] ?? null,
