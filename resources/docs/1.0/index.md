@@ -4,3 +4,4 @@
     - [Access Control](/{{route}}/{{version}}/access-control)
     - [Master](/{{route}}/{{version}}/master)
     - [Purchase Workflow](/{{route}}/{{version}}/purchase-workflow)
+    - [Sales Order](/{{route}}/{{version}}/sales-order)
