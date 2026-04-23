@@ -774,66 +774,76 @@ class SalesOrderController extends Controller
 
                 // 5. Update warehouse stock if PO quantity changed
                 if ($salesOrderProductUpdate->tempOrder && $salesOrderProductUpdate->tempOrder->purchase_order_quantity != $record['Purchase Order Quantity']) {
+                    $tempOrder = $salesOrderProductUpdate->tempOrder;
+                    $purchaseOrderProduct = $tempOrder->purchaseOrderProduct;
                     $warehouseStockUpdate = WarehouseStock::find($salesOrderProductUpdate->warehouse_stock_id);
                     if ($warehouseStockUpdate) {
-                        if ($salesOrderProductUpdate->tempOrder->purchase_order_quantity > $record['Purchase Order Quantity']) {
-                            if ($salesOrderProductUpdate->tempOrder->block > $record['Purchase Order Quantity']) {
-                                $extraBlockQuantity = $salesOrderProductUpdate->tempOrder->block - $record['Purchase Order Quantity'];
+                        if ($tempOrder->purchase_order_quantity > $record['Purchase Order Quantity']) {
+                            if ($tempOrder->block > $record['Purchase Order Quantity']) {
+                                $extraBlockQuantity = $tempOrder->block - $record['Purchase Order Quantity'];
 
                                 // Prevent negative values
                                 $warehouseStockUpdate->block_quantity = max(0, $warehouseStockUpdate->block_quantity - $extraBlockQuantity);
 
                                 // update tempOrder
-                                $salesOrderProductUpdate->tempOrder->po_qty = $record['PO Quantity'];
-                                $salesOrderProductUpdate->tempOrder->purchase_order_quantity = $record['Purchase Order Quantity'];
+                                $tempOrder->po_qty = $record['PO Quantity'];
+                                $tempOrder->purchase_order_quantity = $record['Purchase Order Quantity'];
 
-                                $salesOrderProductUpdate->tempOrder->block = max(0, $salesOrderProductUpdate->tempOrder->block - $extraBlockQuantity);
-                                $salesOrderProductUpdate->tempOrder->available_quantity = max(0, $salesOrderProductUpdate->tempOrder->block - $extraBlockQuantity);
-                                $salesOrderProductUpdate->tempOrder->unavailable_quantity = max(0, ($salesOrderProductUpdate->tempOrder->block - $extraBlockQuantity) - $record['Purchase Order Quantity']);
-                                $salesOrderProductUpdate->tempOrder->purchaseOrderProduct->ordered_quantity = max(0, ($salesOrderProductUpdate->tempOrder->block - $extraBlockQuantity) - $record['Purchase Order Quantity']);
-                            } elseif ($salesOrderProductUpdate->tempOrder->block < $record['Purchase Order Quantity']) {
-                                $salesOrderProductUpdate->tempOrder->unavailable_quantity = $record['Purchase Order Quantity'];
-                                $salesOrderProductUpdate->tempOrder->purchaseOrderProduct->ordered_quantity = $record['Purchase Order Quantity'];
+                                $tempOrder->block = max(0, $tempOrder->block - $extraBlockQuantity);
+                                $tempOrder->available_quantity = max(0, $tempOrder->block - $extraBlockQuantity);
+                                $tempOrder->unavailable_quantity = max(0, ($tempOrder->block - $extraBlockQuantity) - $record['Purchase Order Quantity']);
+                                if ($purchaseOrderProduct) {
+                                    $purchaseOrderProduct->ordered_quantity = max(0, ($tempOrder->block - $extraBlockQuantity) - $record['Purchase Order Quantity']);
+                                }
+                            } elseif ($tempOrder->block < $record['Purchase Order Quantity']) {
+                                $tempOrder->unavailable_quantity = $record['Purchase Order Quantity'];
+                                if ($purchaseOrderProduct) {
+                                    $purchaseOrderProduct->ordered_quantity = $record['Purchase Order Quantity'];
+                                }
 
-                                $salesOrderProductUpdate->tempOrder->purchase_order_quantity = $record['Purchase Order Quantity'];
-                                $salesOrderProductUpdate->tempOrder->po_qty = $record['PO Quantity'];
+                                $tempOrder->purchase_order_quantity = $record['Purchase Order Quantity'];
+                                $tempOrder->po_qty = $record['PO Quantity'];
                             }
 
                             $warehouseStockUpdate->save();
-                            if ($salesOrderProductUpdate->tempOrder?->purchaseOrderProduct) {
-                                $salesOrderProductUpdate->tempOrder?->purchaseOrderProduct->save();
+                            if ($purchaseOrderProduct) {
+                                $purchaseOrderProduct->save();
                             }
-                            $salesOrderProductUpdate->tempOrder->save();
+                            $tempOrder->save();
                         } else {
-                            if ($salesOrderProductUpdate->tempOrder->block < $record['Purchase Order Quantity']) {
-                                $extraBlockQuantity = $record['Purchase Order Quantity'] - $salesOrderProductUpdate->tempOrder->purchase_order_quantity;
+                            if ($tempOrder->block < $record['Purchase Order Quantity']) {
+                                $extraBlockQuantity = $record['Purchase Order Quantity'] - $tempOrder->purchase_order_quantity;
 
                                 // check if warehouse has available quantity so we will block for this product
                                 if ($warehouseStockUpdate->available_quantity >= $extraBlockQuantity) {
                                     $warehouseStockUpdate->available_quantity -= $extraBlockQuantity;
                                     $warehouseStockUpdate->block_quantity += $extraBlockQuantity;
 
-                                    $salesOrderProductUpdate->tempOrder->block += $extraBlockQuantity;
-                                    $salesOrderProductUpdate->tempOrder->available_quantity += $extraBlockQuantity;
-                                    $salesOrderProductUpdate->tempOrder->unavailable_quantity -= $extraBlockQuantity;
-                                    $salesOrderProductUpdate->tempOrder->purchaseOrderProduct->ordered_quantity -= $extraBlockQuantity;
+                                    $tempOrder->block += $extraBlockQuantity;
+                                    $tempOrder->available_quantity += $extraBlockQuantity;
+                                    $tempOrder->unavailable_quantity -= $extraBlockQuantity;
+                                    if ($purchaseOrderProduct) {
+                                        $purchaseOrderProduct->ordered_quantity -= $extraBlockQuantity;
+                                    }
 
-                                    $salesOrderProductUpdate->tempOrder->purchase_order_quantity = $record['Purchase Order Quantity'];
-                                    $salesOrderProductUpdate->tempOrder->po_qty = $record['PO Quantity'];
+                                    $tempOrder->purchase_order_quantity = $record['Purchase Order Quantity'];
+                                    $tempOrder->po_qty = $record['PO Quantity'];
                                 } else {
 
-                                    $salesOrderProductUpdate->tempOrder->unavailable_quantity += $extraBlockQuantity;
-                                    $salesOrderProductUpdate->tempOrder->purchaseOrderProduct->ordered_quantity += $extraBlockQuantity;
-                                    $salesOrderProductUpdate->tempOrder->purchase_order_quantity = $record['Purchase Order Quantity'];
-                                    $salesOrderProductUpdate->tempOrder->po_qty = $record['PO Quantity'];
+                                    $tempOrder->unavailable_quantity += $extraBlockQuantity;
+                                    if ($purchaseOrderProduct) {
+                                        $purchaseOrderProduct->ordered_quantity += $extraBlockQuantity;
+                                    }
+                                    $tempOrder->purchase_order_quantity = $record['Purchase Order Quantity'];
+                                    $tempOrder->po_qty = $record['PO Quantity'];
                                 }
                             }
 
                             $warehouseStockUpdate->save();
-                            if ($salesOrderProductUpdate->tempOrder?->purchaseOrderProduct) {
-                                $salesOrderProductUpdate->tempOrder?->purchaseOrderProduct->save();
+                            if ($purchaseOrderProduct) {
+                                $purchaseOrderProduct->save();
                             }
-                            $salesOrderProductUpdate->tempOrder->save();
+                            $tempOrder->save();
                         }
                     }
                 }
