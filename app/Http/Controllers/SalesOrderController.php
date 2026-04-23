@@ -848,30 +848,30 @@ class SalesOrderController extends Controller
                     }
                 }
 
-                if ($record['Final Fulfilled Quantity'] > 0) {
-                    $salesOrderProductUpdate->final_dispatched_quantity = $record['Final Fulfilled Quantity'] ?? 0;
+                $finalFulfilledQty = $this->normalizeQuantityValue($record['Final Fulfilled Quantity'] ?? 0);
+                $salesOrderProductUpdate->final_dispatched_quantity = $finalFulfilledQty;
 
-                    if ($salesOrderProductUpdate->warehouseAllocations()->count() > 0) {
-                        if ($salesOrderProductUpdate->warehouseAllocations()->count() == 1) {
-                            foreach ($salesOrderProductUpdate->warehouseAllocations as $allocation) {
-                                // Proportionally distribute dispatched quantity
-                                $allocation->final_dispatched_quantity = $record['Final Fulfilled Quantity'] ?? 0;
-                                $allocation->save();
+                $allocationsCount = $salesOrderProductUpdate->warehouseAllocations()->count();
+                if ($allocationsCount > 0) {
+                    if ($allocationsCount == 1) {
+                        foreach ($salesOrderProductUpdate->warehouseAllocations as $allocation) {
+                            $allocation->final_dispatched_quantity = $finalFulfilledQty;
+                            $allocation->save();
+                        }
+                    } else {
+                        // Distribute entered final fulfilled quantity across allocations in sequence.
+                        $remainingQty = $finalFulfilledQty;
+                        foreach ($salesOrderProductUpdate->warehouseAllocations as $allocation) {
+                            if ($remainingQty <= 0) {
+                                $allocation->final_dispatched_quantity = 0;
+                            } elseif ($allocation->allocated_quantity <= $remainingQty) {
+                                $allocation->final_dispatched_quantity = $allocation->allocated_quantity;
+                                $remainingQty -= $allocation->allocated_quantity;
+                            } else {
+                                $allocation->final_dispatched_quantity = $remainingQty;
+                                $remainingQty = 0;
                             }
-                        } else {
-                            // For multiple allocations, you can implement a more complex logic to distribute the dispatched quantity
-                            // For simplicity, let's assume we distribute it based on the allocated quantity proportion
-                            $remainingQty = $record['Final Fulfilled Quantity'] ?? 0;
-                            foreach ($salesOrderProductUpdate->warehouseAllocations as $allocation) {
-                                if ($allocation->allocated_quantity <= $remainingQty) {
-                                    $allocation->final_dispatched_quantity = $allocation->allocated_quantity;
-                                    $remainingQty -= $allocation->allocated_quantity;
-                                } else {
-                                    $allocation->final_dispatched_quantity = $remainingQty;
-                                    $remainingQty = 0;
-                                }
-                                $allocation->save();
-                            }
+                            $allocation->save();
                         }
                     }
                 }
@@ -2612,6 +2612,26 @@ class SalesOrderController extends Controller
         $value = trim($value);
 
         return $value;
+    }
+
+    /**
+     * Normalize numeric values coming from Excel uploads (e.g. "1,234", " 200 ").
+     */
+    private function normalizeQuantityValue($value): int
+    {
+        if (is_null($value)) {
+            return 0;
+        }
+
+        if (is_string($value)) {
+            $value = trim(str_replace(',', '', $value));
+        }
+
+        if ($value === '') {
+            return 0;
+        }
+
+        return max(0, (int) round((float) $value));
     }
 
     public function downloadNotFoundSku($id)
