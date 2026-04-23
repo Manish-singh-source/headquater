@@ -62,7 +62,7 @@ class SalesOrderController extends Controller
      */
     protected function checkCustomerExistence(string $facilityName)
     {
-        return Customer::where('facility_name', $facilityName)->first();
+        return Customer::where('facility_name', trim($facilityName))->first();
     }
 
     protected function checkVendorExistence(string $vendorCode)
