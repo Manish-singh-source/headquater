@@ -5,3 +5,6 @@
     - [Master](/{{route}}/{{version}}/master)
     - [Purchase Workflow](/{{route}}/{{version}}/purchase-workflow)
     - [Sales Order](/{{route}}/{{version}}/sales-order)
+    - [Purchase Order](/{{route}}/{{version}}/purchase-order)
+        - [Received Products](/{{route}}/{{version}}/received-products)
+    - [Packaging List](/{{route}}/{{version}}/packaging-list)

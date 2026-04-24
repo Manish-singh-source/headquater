@@ -44,6 +44,7 @@
                                     </ul>
                                 </div>
                             @endif
+                           
                             <form class="row g-3" action="{{ route('store.purchase.order') }}" method="POST"
                                 enctype="multipart/form-data">
                                 @csrf
