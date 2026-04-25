@@ -139,8 +139,6 @@ class PackagingController extends Controller
                 ->where('sales_order_id', $id)
                 ->where('product_status', 'approval_pending')
                 ->where('approval_status', 'pending')
-                ->whereNotNull('final_final_dispatched_quantity')
-                ->where('final_final_dispatched_quantity', '>', 0)
                 ->get();
 
             foreach ($pendingAllocations as $allocation) {
@@ -173,9 +171,6 @@ class PackagingController extends Controller
 
             $packagedAllocations = WarehouseAllocation::where('sales_order_id', $id)
                 ->where('product_status', 'packaged')
-                ->where('approval_status', 'draft')
-                ->whereNotNull('final_final_dispatched_quantity')
-                ->where('final_final_dispatched_quantity', '>', 0)
                 ->when(! $isAdmin, function ($query) use ($userWarehouseId) {
                     $query->where('warehouse_id', $userWarehouseId);
                 })
@@ -889,8 +884,7 @@ class PackagingController extends Controller
                 // Warehouse user: Mark their allocations as pending approval
                 $allocationsUpdated = 0;
                 $allocations = (clone $baseAllocationQuery)
-                    ->where('approval_status', 'draft')
-                    ->where('final_final_dispatched_quantity', '>', 0)
+                    ->where('product_status', 'packaged')
                     ->get();
 
                 foreach ($allocations as $allocation) {
@@ -912,7 +906,7 @@ class PackagingController extends Controller
 
                 if ($allocationsUpdated === 0) {
                     return redirect()->back()
-                        ->with('error', 'No products are ready for approval. Please ensure final dispatch quantities are set by uploading Excel file.');
+                        ->with('error', 'No packaged products found to send for approval.');
                 }
 
                 DB::commit();
@@ -925,8 +919,6 @@ class PackagingController extends Controller
                 $allocations = (clone $baseAllocationQuery)
                     ->where('product_status', 'approval_pending')
                     ->where('approval_status', 'pending')
-                    ->whereNotNull('final_final_dispatched_quantity')
-                    ->where('final_final_dispatched_quantity', '>', 0)
                     ->get();
 
                 // get highest rts_count_id from all allocations for this sales order
@@ -961,7 +953,7 @@ class PackagingController extends Controller
 
                 if ($allocationsApproved === 0) {
                     return redirect()->back()
-                        ->with('error', 'No products are ready to ship. Please ensure final dispatch quantities are set.');
+                        ->with('error', 'No approval-pending products found to approve.');
                 }
 
                 $productsToUpdate = [];
@@ -985,8 +977,7 @@ class PackagingController extends Controller
                     }
 
                     $allApproved = $allocationsNeedingApproval->every(function ($allocation) {
-                        return $allocation->approval_status === 'approved' &&
-                            $allocation->final_final_dispatched_quantity > 0;
+                        return $allocation->approval_status === 'approved';
                     });
 
                     if ($allApproved) {
@@ -1075,7 +1066,6 @@ class PackagingController extends Controller
                         $pendingAllocations = WarehouseAllocation::where('sales_order_id', $salesOrder->id)
                             ->where('approval_status', 'pending')
                             ->where('product_status', 'approval_pending')
-                            ->where('final_final_dispatched_quantity', '>', 0)
                             ->count();
 
                         if ($pendingAllocations > 0) {
