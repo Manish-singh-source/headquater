@@ -135,29 +135,27 @@ class PackagingController extends Controller
                 ->toArray();
 
             $pendingApprovalList = [];
+            $pendingAllocations = WarehouseAllocation::with('warehouse')
+                ->where('sales_order_id', $id)
+                ->where('product_status', 'approval_pending')
+                ->where('approval_status', 'pending')
+                ->whereNotNull('final_final_dispatched_quantity')
+                ->where('final_final_dispatched_quantity', '>', 0)
+                ->get();
 
-            foreach ($salesOrder->orderedProducts as $order) {
-                foreach ($order->warehouseAllocations as $allocation) {
-                    if (
-                        $allocation->product_status === 'approval_pending' &&
-                        $allocation->approval_status === 'pending' &&
-                        ! is_null($allocation->final_final_dispatched_quantity) &&
-                        $allocation->final_final_dispatched_quantity > 0
-                    ) {
-                        $warehouseId = $allocation->warehouse_id;
-                        if (! isset($pendingApprovalList[$warehouseId])) {
-                            $pendingApprovalList[$warehouseId] = [
-                                'name' => $allocation->warehouse->name,
-                                'warehouse_id' => $warehouseId,
-                                'allocation_ids' => [],
-                                'product_ids' => [],
-                            ];
-                        }
-
-                        $pendingApprovalList[$warehouseId]['allocation_ids'][$allocation->id] = $allocation->id;
-                        $pendingApprovalList[$warehouseId]['product_ids'][$allocation->sales_order_product_id] = true;
-                    }
+            foreach ($pendingAllocations as $allocation) {
+                $warehouseId = $allocation->warehouse_id;
+                if (! isset($pendingApprovalList[$warehouseId])) {
+                    $pendingApprovalList[$warehouseId] = [
+                        'name' => $allocation->warehouse->name ?? 'Warehouse',
+                        'warehouse_id' => $warehouseId,
+                        'allocation_ids' => [],
+                        'product_ids' => [],
+                    ];
                 }
+
+                $pendingApprovalList[$warehouseId]['allocation_ids'][$allocation->id] = $allocation->id;
+                $pendingApprovalList[$warehouseId]['product_ids'][$allocation->sales_order_product_id] = true;
             }
 
             foreach ($pendingApprovalList as $warehouseId => $data) {
@@ -175,6 +173,9 @@ class PackagingController extends Controller
 
             $packagedAllocations = WarehouseAllocation::where('sales_order_id', $id)
                 ->where('product_status', 'packaged')
+                ->where('approval_status', 'draft')
+                ->whereNotNull('final_final_dispatched_quantity')
+                ->where('final_final_dispatched_quantity', '>', 0)
                 ->when(! $isAdmin, function ($query) use ($userWarehouseId) {
                     $query->where('warehouse_id', $userWarehouseId);
                 })
@@ -848,7 +849,10 @@ class PackagingController extends Controller
                     ->with('error', 'Invalid request.');
             }
 
-            $user = User::findOrFail($request->user_id);
+            $user = Auth::user();
+            if (! $user) {
+                return redirect()->back()->with('error', 'User session expired. Please login again.');
+            }
             $isAdmin = $user->hasRole(['Super Admin', 'Admin']) || ! $user->warehouse_id;
             $userWarehouseId = $user->warehouse_id;
             $specificWarehouseId = $request->warehouse_id; // For admin to approve specific warehouse

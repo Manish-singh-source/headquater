@@ -67,7 +67,7 @@
                 </div>
             </div>
 
-            @if (!$isAdmin ?? false)
+            @if (!($isAdmin ?? false))
                 @if ($readyToShipAllocations->count() > 0)
                     <div class="alert alert-info my-2" role="alert">
                         <i class="bx bx-info-circle me-1"></i> You have
@@ -164,7 +164,7 @@
                                 </select>
                             </div>
 
-                            @if (!$isAdmin ?? false)
+                            @if (!($isAdmin ?? false))
                                 <button class="btn btn-sm border-2 border-primary" data-bs-toggle="modal"
                                     data-bs-target="#staticBackdrop1" class="btn btn-sm border-2 border-primary">
                                     Update PO
