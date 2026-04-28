@@ -1264,6 +1264,10 @@ class InvoiceController extends Controller
 
             if (! empty($vehicleNumber)) {
                 $requestData['vehicle_number'] = $vehicleNumber;
+                // API requires transport mode when vehicle number is provided.
+                // For vehicle-based movement, treat this as Road transport.
+                $requestData['transportation_mode'] = '1';
+                $requestData['vehicle_type'] = 'R';
             }
 
             if ($isSamePincodeMove) {
