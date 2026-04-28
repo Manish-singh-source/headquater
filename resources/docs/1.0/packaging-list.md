@@ -1,6 +1,6 @@
 # Packaging List
 
-The **Packaging List** tab is used to send final allocated sales order quantities to the warehouse team for packaging. The warehouse team updates the dispatch quantity, box count, and weight, then sends the packed order back to the admin for approval.
+The **Packaging List** page is used after a sales order is sent to packaging. Warehouse users update final dispatch details for their assigned products, then send those packaged products to the admin for ready-to-ship approval.
 
 ---
 
@@ -8,12 +8,12 @@ The **Packaging List** tab is used to send final allocated sales order quantitie
 
 The Packaging List process helps the team:
 
-- Confirm the final allocated quantity for a sales order.
-- Prepare the final allocation sheet from the Sales Order section.
-- Send only eligible products to packaging.
-- Allow each warehouse team to package its assigned products.
+- View sales orders that are ready for packaging or ready to ship.
+- Allow each warehouse user to work only on that warehouse's assigned allocation.
+- Export packaging product details to Excel.
 - Update final dispatch quantity, box count, and weight through Excel.
-- Send packed products to the admin for approval.
+- Move packaged products to admin approval.
+- Mark products and the sales order as **Ready To Ship** after approval.
 
 ---
 
@@ -78,7 +78,7 @@ After applying the required filters:
 2. Click **Send to Packaging**.
 3. The selected products will be sent to the **Packaging List** tab.
 
-After this step, the order will appear in the **Packaging List** menu.
+After this step, the sales order status becomes **Ready To Package** and the selected product allocations move into packaging flow.
 
 ---
 
@@ -89,10 +89,57 @@ To open the packaging order:
 ![Packaging List](/docsimages/packging-list.png)
 
 1. Click **Packaging List** from the menu.
-2. Find the required sales order.
-3. Open the packaging list record.
+2. Use the status tabs if required.
+3. Find the required sales order.
+4. Click the view action to open the packaging product list.
 
-The warehouse team will use this section from their own login. For example, if there are two warehouses, **Warehouse 1** and **Warehouse 2**, each warehouse team will see and package only the products assigned to their warehouse.
+Available tabs:
+
+- **All Orders**: Shows orders in **Ready To Package**, **Ready To Ship**, and **Shipped** stages.
+- **Ready To Package**: Shows orders with products in **Packaging**, **Packaged**, or **Ready to Ship Approval Pending**.
+- **Ready To Ship**: Shows orders with completed ready-to-ship allocations.
+
+Warehouse users see only the products assigned to their own warehouse. Admin and Super Admin users can see all warehouse allocations.
+
+---
+
+## Packaging Product Status
+
+Inside a packaging order, products can show these statuses:
+
+- **Packaging**: Product has been sent to the warehouse for packaging.
+- **Packaged**: Warehouse has uploaded final dispatch details.
+- **Ready to Ship Approval Pending**: Warehouse has requested admin approval.
+- **Ready to Ship**: Admin has approved the warehouse allocation.
+- **Shipped**: Product has moved forward from ready-to-ship/shipping flow.
+
+The product status filter on the packaging details page can be used before export or review.
+
+---
+
+## Customer PO Table
+
+The packaging details page shows the **Customer PO Table** with product and allocation details.
+
+Main columns shown:
+
+- Customer Name
+- SKU Code
+- Facility Name and Facility Location
+- PO Date and PO Expiry Date
+- HSN, Item Code, Description, GST, Basic Rate, Net Landing Rate, and MRP
+- PO Quantity and Purchase Order Quantity
+- Vendor PI Fulfillment Quantity and Vendor PI Received Quantity
+- Warehouse Name and Warehouse Allocation
+- Purchase Order No
+- Total Dispatch Qty
+- Final Dispatch Qty
+- Case Pack Quantity
+- Box Count
+- Weight
+- Status
+
+For Super Admin, warehouse allocation values are shown warehouse-wise. For warehouse users, only their own warehouse quantity is shown.
 
 ---
 
@@ -100,17 +147,60 @@ The warehouse team will use this section from their own login. For example, if t
 
 After opening the packaging list record:
 
-1. Click **Export to Excel**.
-2. Download the packaging Excel sheet.
-3. Open the downloaded file.
+1. Select a product status filter if required.
+2. Click **Export to Excel**.
+3. Download the **Packaging-Products.xlsx** file.
+4. Open the downloaded file.
 
-The warehouse team must update the dispatch and package details in this Excel sheet.
+The export supports these product status filters:
+
+- Packaging
+- Packaged
+- Ready to Ship Approval Pending
+- Ready to Ship
+- Shipped
+
+If no status is selected, the export includes packaging, packaged, approval pending, and completed products.
+
+---
+
+## Packaging Excel Columns
+
+The uploaded Excel must keep these required columns:
+
+- Customer Name
+- SKU Code
+- Facility Name
+- Facility Location
+- PO Date
+- PO Expiry Date
+- HSN
+- Item Code
+- Description
+- GST
+- Basic Rate
+- Net Landing Rate
+- MRP
+- PO Quantity
+- Purchase Order Quantity
+- Vendor PI Fulfillment Quantity
+- Vendor PI Received Quantity
+- Warehouse Name
+- Warehouse Allocation
+- Purchase Order No
+- Total Dispatch Qty
+- Final Dispatch Qty
+- Case Pack Quantity
+- Box Count
+- Weight
+
+Do not remove or rename these columns. The upload will fail if any required column is missing or empty.
 
 ---
 
 ## Update Packaging Details in Excel
 
-In the downloaded packaging Excel sheet, update the required packaging details.
+In the downloaded packaging Excel sheet, update the packaging details.
 
 Update these columns:
 
@@ -118,7 +208,14 @@ Update these columns:
 - **Box Count**: Enter the number of boxes used for packaging.
 - **Weight**: Enter the final package weight.
 
-After filling in the details, save the Excel sheet.
+Important rules:
+
+- **Final Dispatch Qty** must be greater than `0` for the row to be processed.
+- For warehouse users, only that user's warehouse allocation is updated.
+- For admin users, if multiple warehouse allocations exist, final dispatch quantity, box count, and weight are distributed against the allocations.
+- After a valid upload, product status becomes **Packaged**.
+
+If **Final Dispatch Qty** is less than dispatched quantity, the system records a **Shortage** issue. If **Final Dispatch Qty** is greater than dispatched quantity, the system records an **Exceed** issue.
 
 ---
 
@@ -131,7 +228,9 @@ After saving the updated packaging Excel sheet:
 3. Upload the updated Excel sheet.
 4. Submit the file.
 
-The packaging details are now updated in the system.
+Accepted file formats are `.xlsx`, `.csv`, and `.xls`.
+
+The system validates the sales order, required headers, required row values, facility name, SKU code, and purchase order number. If valid rows are found, the packaging details are updated.
 
 ---
 
@@ -139,9 +238,11 @@ The packaging details are now updated in the system.
 
 After uploading the updated packaging Excel sheet:
 
-1. Go to the end of the packaging list page.
-2. Click **Mark My Product Ready to Ship**.
-3. The order will be sent to the admin for approval.
+1. Go to the bottom of the packaging list page.
+2. Click **Mark My Products Ready to Ship**.
+3. The packaged products are sent to admin for approval.
+
+For warehouse users, this step changes warehouse allocations from **Packaged** to **Ready to Ship Approval Pending**. The products are not final ready-to-ship until the admin approves them.
 
 ---
 
@@ -149,14 +250,20 @@ After uploading the updated packaging Excel sheet:
 
 ![Packaging Admin Approval](/docsimages/packging-admin.png)
 
-After the warehouse team marks the products ready to ship:
+After the warehouse team marks products ready to ship:
 
 1. The admin opens the **Packaging List** tab.
 2. The admin opens the related order.
-3. The admin reviews the packaging details.
-4. The admin approves the ready-to-ship request.
+3. Pending warehouse approval cards appear at the top of the page.
+4. The admin can approve one warehouse or approve all pending warehouses.
 
-After admin approval, the order packaging process is completed.
+After approval:
+
+- Allocation approval status becomes **Approved**.
+- Allocation product status becomes **Ready to Ship**.
+- Product status becomes **Ready To Ship** when all required allocations for that product are approved.
+- Sales order status becomes **Ready To Ship** when all products in the order are ready to ship.
+- If all products are ready, the system redirects the admin to the Ready to Ship detail page.
 
 ---
 
@@ -173,10 +280,11 @@ The Packaging List process follows these steps:
 7. Use optional filters such as **Brand** or **PO Number** if required.
 8. Click **Send to Packaging** from the **Action** button.
 9. Open **Packaging List** from the menu.
-10. Warehouse team opens the assigned packaging order.
-11. Export the packaging Excel sheet.
-12. Update **Final Dispatch Qty**, **Box Count**, and **Weight**.
-13. Upload the updated packaging Excel sheet using **Update PO**.
-14. Click **Mark My Product Ready to Ship**.
-15. Admin opens **Packaging List** and approves the request.
-16. After approval, the order packaging process is completed.
+10. Use **All Orders**, **Ready To Package**, or **Ready To Ship** tabs as needed.
+11. Warehouse team opens the assigned packaging order.
+12. Export the packaging Excel sheet.
+13. Update **Final Dispatch Qty**, **Box Count**, and **Weight**.
+14. Upload the updated packaging Excel sheet using **Update PO**.
+15. Warehouse user clicks **Mark My Products Ready to Ship**.
+16. Admin approves the pending warehouse request.
+17. After all required products are approved, the sales order moves to **Ready To Ship**.

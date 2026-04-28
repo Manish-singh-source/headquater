@@ -181,6 +181,127 @@ The purchase order is now ready for the next purchase workflow steps, such as re
 
 ---
 
+## Create Manual Purchase Order
+
+The **Create Order** option is used when the admin needs to create a purchase order manually instead of using a purchase order generated automatically from a sales order shortage.
+
+Manual purchase order creation is available from the `/purchase-order-create` page.
+
+---
+
+## Open Manual Purchase Order Form
+
+To create a manual purchase order:
+
+1. Open the **Purchase Order** tab from the menu.
+2. On the purchase order list page, click **Create Order**.
+3. The system opens the **Create Purchase Order** form.
+
+The form contains the following fields:
+
+- **Warehouse Name**
+- **Vendor Name**
+- **Purchase Order** Excel upload
+
+If the page is opened with an existing purchase order number, the form can also show **Purchase Order No**.
+
+---
+
+## Select Warehouse
+
+Select the warehouse where the purchase order stock will be received.
+
+This field is required. The selected warehouse is saved with the purchase order and is used later when vendor PI and received stock are processed.
+
+---
+
+## Select Vendor
+
+Select the vendor for the purchase order.
+
+This field is required. The system saves the selected vendor ID and vendor code with the purchase order.
+
+The uploaded purchase products will be linked with this vendor.
+
+---
+
+## Upload Purchase Order Excel
+
+Upload the purchase order Excel file in the **Purchase Order** field.
+
+Allowed file formats are:
+
+- `.xlsx`
+- `.csv`
+- `.xls`
+
+The Excel file should contain product purchase details. Important columns used by the system include:
+
+- **SKU Code**
+- **PO Quantity**
+- **PO Number**
+- **HSN**
+- **GST**
+- **Item Code**
+- **Title**
+- **Basic Rate**
+- **Net Landing Rate**
+- **MRP**
+
+The system checks the uploaded file before creating the purchase order.
+
+---
+
+## Manual Purchase Order Validation
+
+When the form is submitted, the system validates the following:
+
+1. Purchase Excel file is uploaded.
+2. Warehouse is selected.
+3. Vendor is selected.
+4. Excel file format is valid.
+5. Duplicate **SKU Code** is not present in the Excel file.
+6. Each SKU exists in the product master.
+7. At least one valid product row is available in the file.
+
+If any SKU is duplicated, the system shows an error message.
+
+If any SKU is not found in the product master, the system stops the import and shows the missing SKU error.
+
+---
+
+## Submit Manual Purchase Order
+
+After selecting warehouse, vendor, and Excel file:
+
+1. Click **Submit**.
+2. The system creates a new purchase order number.
+3. The purchase order is saved with **Pending** status.
+4. Product rows from the Excel file are added to the purchase order.
+5. Total amount is calculated using **PO Quantity** and **MRP**.
+6. A purchase order notification is created.
+7. The system redirects back to the purchase order list.
+
+After creation, the manual purchase order appears in the purchase order list with the selected vendor code.
+
+---
+
+## After Manual Purchase Order Creation
+
+After a manual purchase order is created, the remaining process is the same as a normal purchase order.
+
+The admin can:
+
+1. Open the purchase order from the list.
+2. Review the **Vendor PO Table**.
+3. Export the vendor PO and share it with the vendor.
+4. Upload the vendor PI.
+5. Upload vendor GRN and vendor invoice when available.
+6. Add vendor payment details.
+7. Continue with received products and warehouse stock approval flow.
+
+---
+
 ## Summary
 
 The purchase order process follows these steps:
