@@ -432,6 +432,14 @@
                                         placeholder="05AAABB0639G1Z8" value="" required>
                                 </div>
                             </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="vehicle_number" class="form-label">Vehicle Number (Optional)</label>
+                                    <input type="text" class="form-control" id="vehicle_number" name="vehicle_number"
+                                        placeholder="MH12AB1234">
+                                    {{-- <small class="text-muted">Required only when transport mode is Road.</small> --}}
+                                </div>
+                            </div>
                             {{-- 
                             <div class="col-md-6">
                                 <div class="mb-3">

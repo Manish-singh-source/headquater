@@ -1189,7 +1189,7 @@ class InvoiceController extends Controller
             // Validate request data
             $validated = $request->validate([
                 'update_mode' => 'nullable|string',
-                // 'vehicle_number' => 'nullable|string',
+                'vehicle_number' => ['nullable', 'string', 'regex:/^[A-Z]{2}[0-9]{1,2}[A-Z]{1,3}[0-9]{4}$/i'],
                 // 'place_of_consignor' => 'nullable|string',
                 // 'state_of_consignor' => 'nullable|string',
                 'transporter_id' => 'required|string',
@@ -1198,6 +1198,8 @@ class InvoiceController extends Controller
                 // 'transporter_document_number' => 'nullable|string',
                 // 'transporter_document_date' => 'nullable|string',
             ]);
+
+            $vehicleNumber = isset($validated['vehicle_number']) ? strtoupper(preg_replace('/\s+/', '', $validated['vehicle_number'])) : null;
             // validations
 
             // Map transportation mode to API values
@@ -1259,6 +1261,10 @@ class InvoiceController extends Controller
                     'state_code' => $sellerStateCode,
                 ],
             ];
+
+            if (! empty($vehicleNumber)) {
+                $requestData['vehicle_number'] = $vehicleNumber;
+            }
 
             if ($isSamePincodeMove) {
                 $requestData['distance'] = '54';
@@ -1324,7 +1330,7 @@ class InvoiceController extends Controller
                     $transportDetail = EwayTransportDetail::create([
                         'ewaybill_id' => $ewaybill->id,
                         'transportation_mode' => '',
-                        'vehicle_number' => '',
+                        'vehicle_number' => $vehicleNumber ?? '',
                         'transporter_name' => $validated['transporter_name'] ?? '',
                         'transporter_document_number' => '',
                         'transporter_document_date' => '',
