@@ -33,6 +33,10 @@
             margin: 0 auto;
         }
 
+        .invoice-table {
+            table-layout: fixed;
+        }
+
         /* .invoice-table {
             border-collapse: collapse;
             width: 80%;
@@ -86,16 +90,32 @@
         }
 
         .sno {
-            width: 4%;
+            width: 3%;
         }
 
         .item-desc {
-            width: 32%;
-            /* Combined Product Code + ASIN + Description */
+            width: 22%;
+            /* Product mode */
+        }
+
+        .svc-title {
+            width: 14%;
+        }
+
+        .svc-category {
+            width: 7%;
+        }
+
+        .svc-description {
+            width: 14%;
+        }
+
+        .svc-campaign {
+            width: 10%;
         }
 
         .hsn {
-            width: 8%;
+            width: 7%;
         }
 
         .qty {
@@ -107,23 +127,23 @@
         }
 
         .rate {
-            width: 6%;
+            width: 7%;
         }
 
         .amt {
-            width: 9%;
+            width: 7%;
         }
 
         .igstr {
-            width: 6%;
+            width: 5%;
         }
 
         .igsta {
-            width: 8%;
+            width: 7%;
         }
 
         .total {
-            width: 9%;
+            width: 8%;
         }
 
         .right-align {
@@ -190,22 +210,25 @@
             <td>Invoice&nbsp;date:</td>
             <td>{{ $invoice->invoice_date->format('d-m-Y') }}</td>
         </tr>
-        <tr class="invoice-table">
-            {{-- <td>Reverse&nbsp;Charge&nbsp;(Y/N):</td> --}}
-            {{-- <td>N</td> --}}
-            {{-- <td>State: {{ $invoice->customer->shipping_state }}</td> --}}
-            {{-- <td>Code: {{ $invoice->customer->shipping_zip }}</td> --}}
-            <td>PO No: </td>
-            <td>{{ $invoice->po_number }}</td>
-            <td>PO Date: </td>
-            @if ($invoice->po_date)
-                <td>{{ $invoice->po_date ? $invoice->po_date->format('d-m-Y') : '' }}</td>
-            @elseif($invoiceDetails[0]->tempOrder?->po_date)
-                <td>{{ $invoiceDetails[0]->tempOrder?->po_date }}</td>
-            @else
-                <td></td>
-            @endif
-        </tr>
+
+        @if ($invoiceItemType !== 'service')
+            <tr class="invoice-table">
+                {{-- <td>Reverse&nbsp;Charge&nbsp;(Y/N):</td> --}}
+                {{-- <td>N</td> --}}
+                {{-- <td>State: {{ $invoice->customer->shipping_state }}</td> --}}
+                {{-- <td>Code: {{ $invoice->customer->shipping_zip }}</td> --}}
+                <td>PO&nbsp;No: </td>
+                <td>{{ $invoice->po_number }}</td>
+                <td>PO&nbsp;Date: </td>
+                @if ($invoice->po_date)
+                    <td>{{ $invoice->po_date ? $invoice->po_date->format('d-m-Y') : '' }}</td>
+                @elseif($invoiceDetails[0]->tempOrder?->po_date)
+                    <td>{{ $invoiceDetails[0]->tempOrder?->po_date }}</td>
+                @else
+                    <td></td>
+                @endif
+            </tr>
+        @endif
     </table>
 
     <table>
@@ -243,9 +266,9 @@
             <td>PAN: {{ $invoice->customer->pan }}</td>
         </tr>
         <tr class="invoice-table">
-            <td>Contact Name: </td>
+            <td>Contact&nbsp;Name: </td>
             <td colspan="2">{{ $invoice->customer->contact_name }}</td>
-            <td>Contact No.: </td>
+            <td>Contact&nbsp;No.: </td>
             <td colspan="2">{{ $invoice->customer->contact_no }}</td>
         </tr>
     </table>
@@ -254,14 +277,14 @@
         <tr class="section-title">
             <th class="sno">S No.</th>
             @if ($invoiceItemType === 'service')
-                <th class="item-desc">Service Title</th>
-                <th class="hsn">Category</th>
-                <th class="hsn">Description</th>
-                <th class="hsn">Campaign Name</th>
+                <th class="svc-title">Service Title</th>
+                <th class="svc-category">Category</th>
+                <th class="svc-description">Description</th>
+                <th class="svc-campaign">Campaign Name</th>
                 <th class="qty">Qty</th>
-                <th class="box">Unit Type</th>
-                <th class="box">BOX</th>
-                <th class="box">Weight (KG)</th>
+                {{-- <th class="box">Unit Type</th> --}}
+                {{-- <th class="box">BOX</th> --}}
+                {{-- <th class="box">Weight (KG)</th> --}}
             @else
                 <th class="item-desc">Item Description</th>
                 <th class="hsn">HSN </br>Code</th>
@@ -289,12 +312,16 @@
         @endphp
         @foreach ($invoiceDetails as $index => $detail)
             <tr>
-                {{ $igstAmount = (ceil($detail->tax) / 100) * $detail->amount }}
-                {{ $totalAmount = $igstAmount + $detail->amount }}
-                {{ $totalAmountSum = $totalAmount + $totalAmountSum }}
-                {{ $totalIgstSum = $igstAmount + $totalIgstSum }}
-                {{ $totalBoxCount += $detail->box_count ? ceil($detail->box_count) : $detail->salesOrderProduct?->box_count }}
-                {{ $totalWeight += $detail->weight ? $detail->weight : $detail->salesOrderProduct?->weight }}
+                @php
+                    $igstAmount = (ceil($detail->tax) / 100) * $detail->amount;
+                    $totalAmount = $igstAmount + $detail->amount;
+                    $totalAmountSum = $totalAmount + $totalAmountSum;
+                    $totalIgstSum = $igstAmount + $totalIgstSum;
+                    $totalBoxCount += $detail->box_count
+                        ? ceil($detail->box_count)
+                        : $detail->salesOrderProduct?->box_count;
+                    $totalWeight += $detail->weight ? $detail->weight : $detail->salesOrderProduct?->weight;
+                @endphp
 
                 <td class="text-center">{{ $index + 1 }}</td>
 
@@ -304,9 +331,9 @@
                     <td>{{ $detail->service_description }}</td>
                     <td>{{ $detail->campaign_name }}</td>
                     <td class="right-align">{{ $detail->quantity }}</td>
-                    <td>{{ $detail->unit_type }}</td>
-                    <td class="right-align">{{ ceil($detail->box_count) ?? 0 }}</td>
-                    <td class="right-align">{{ $detail->weight ?? 0 }}</td>
+                    {{-- <td>{{ $detail->unit_type }}</td> --}}
+                    {{-- <td class="right-align">{{ ceil($detail->box_count) ?? 0 }}</td> --}}
+                    {{-- <td class="right-align">{{ $detail->weight ?? 0 }}</td> --}}
                 @else
                     <td>
                         {{-- <strong style="color: #000000;"> {{ $detail->product?->ean_code }} </strong> --}}
@@ -341,9 +368,8 @@
             @if ($invoiceItemType === 'service')
                 <td colspan="5" class="section-title">Total</td>
                 <td class="right-align">{{ $invoiceDetails->sum('quantity') }}</td>
-                <td></td>
-                <td class="right-align">{{ $totalBoxCount ?? ($TotalBoxCount ?? 0) }}</td>
-                <td class="right-align">{{ $totalWeight ?? ($TotalWeight ?? 0) }}</td>
+                {{-- <td class="right-align">{{ $totalBoxCount ?? ($TotalBoxCount ?? 0) }}</td> --}}
+                {{-- <td class="right-align">{{ $totalWeight ?? ($TotalWeight ?? 0) }}</td> --}}
             @else
                 <td colspan="3" class="section-title">Total</td>
                 <td class="right-align">{{ $invoiceDetails->sum('quantity') }}</td>
@@ -385,7 +411,7 @@
                     <img src="{{ $sign64Image }}" alt="Authorised Signature" width="100" height="100">
 
                 </div>
-            </td>   
+            </td>
         </tr>
         <tr class="invoice-table">
             <td>Bank Name: YES BANK</td>
@@ -405,10 +431,12 @@
         <tr class="invoice-table">
             <td width="70%">
                 TOTAL&nbsp;SETS&nbsp;-&nbsp;QTY {{ $invoiceDetails->sum('quantity') }}<br>
-                TOTAL&nbsp;BOX&nbsp;COUNT&nbsp;- {{ $totalBoxCount ?? ($TotalBoxCount ?? 0) }}<br>
-                WEIGHT&nbsp;-&nbsp;KG {{ $totalWeight ?? ($TotalWeight ?? 0) }}
+                @if ($invoiceItemType !== 'service')
+                    TOTAL&nbsp;BOX&nbsp;COUNT&nbsp;- {{ $totalBoxCount ?? ($TotalBoxCount ?? 0) }}<br>
+                    WEIGHT&nbsp;-&nbsp;KG {{ $totalWeight ?? ($TotalWeight ?? 0) }}
+                @endif
             </td>
-            <td width="30%" class="text-center" style="height:50px; vertical-align:bottom"> 
+            <td width="30%" class="text-center" style="height:50px; vertical-align:bottom">
                 <div>
                     (Authorised Signature)
                 </div>
@@ -422,8 +450,8 @@
     <div class="top-right-note">Duplicate Copy</div>
     <table class="no-border">
         <tr>
-            <td width="20%" rowspan="4" style="text-align:left;"> <img src="{{ $image }}" alt="Logo"
-                    style="height: 100px; width: auto;"> </td>
+            <td width="20%" rowspan="4" style="text-align:left;"> <img src="{{ $image }}"
+                    alt="Logo" style="height: 100px; width: auto;"> </td>
             <td class="header" colspan="2">INOVIZIDEAS PVT. LTD.</td>
             <td width="20%" rowspan="4" style="text-align:right; vertical-align: center;"> </td>
         </tr>
@@ -453,22 +481,24 @@
             <td>Invoice&nbsp;date:</td>
             <td>{{ $invoice->invoice_date->format('d-m-Y') }}</td>
         </tr>
-        <tr class="invoice-table">
-            {{-- <td>Reverse&nbsp;Charge&nbsp;(Y/N):</td> --}}
-            {{-- <td>N</td> --}}
-            {{-- <td>State: {{ $invoice->customer->shipping_state }}</td> --}}
-            {{-- <td>Code: {{ $invoice->customer->shipping_zip }}</td> --}}
-            <td>PO No: </td>
-            <td>{{ $invoice->po_number }}</td>
-            <td>PO Date: </td>
-            @if ($invoice->po_date)
-                <td>{{ $invoice->po_date ? $invoice->po_date->format('d-m-Y') : '' }}</td>
-            @elseif($invoiceDetails[0]->tempOrder?->po_date)
-                <td>{{ $invoiceDetails[0]->tempOrder?->po_date }}</td>
-            @else
-                <td></td>
-            @endif
-        </tr>
+        @if ($invoiceItemType !== 'service')
+            <tr class="invoice-table">
+                {{-- <td>Reverse&nbsp;Charge&nbsp;(Y/N):</td> --}}
+                {{-- <td>N</td> --}}
+                {{-- <td>State: {{ $invoice->customer->shipping_state }}</td> --}}
+                {{-- <td>Code: {{ $invoice->customer->shipping_zip }}</td> --}}
+                <td>PO No: </td>
+                <td>{{ $invoice->po_number }}</td>
+                <td>PO Date: </td>
+                @if ($invoice->po_date)
+                    <td>{{ $invoice->po_date ? $invoice->po_date->format('d-m-Y') : '' }}</td>
+                @elseif($invoiceDetails[0]->tempOrder?->po_date)
+                    <td>{{ $invoiceDetails[0]->tempOrder?->po_date }}</td>
+                @else
+                    <td></td>
+                @endif
+            </tr>
+        @endif
     </table>
 
     <table>
@@ -517,14 +547,14 @@
         <tr class="section-title">
             <th class="sno">S No.</th>
             @if ($invoiceItemType === 'service')
-                <th class="item-desc">Service Title</th>
-                <th class="hsn">Category</th>
-                <th class="hsn">Description</th>
-                <th class="hsn">Campaign Name</th>
+                <th class="svc-title">Service Title</th>
+                <th class="svc-category">Category</th>
+                <th class="svc-description">Description</th>
+                <th class="svc-campaign">Campaign Name</th>
                 <th class="qty">Qty</th>
-                <th class="box">Unit Type</th>
-                <th class="box">BOX</th>
-                <th class="box">Weight (KG)</th>
+                {{-- <th class="box">Unit Type</th> --}}
+                {{-- <th class="box">BOX</th> --}}
+                {{-- <th class="box">Weight (KG)</th> --}}
             @else
                 <th class="item-desc">Item Description</th>
                 <th class="hsn">HSN </br>Code</th>
@@ -552,12 +582,16 @@
         @endphp
         @foreach ($invoiceDetails as $index => $detail)
             <tr>
-                {{ $igstAmount = (ceil($detail->tax) / 100) * $detail->amount }}
-                {{ $totalAmount = $igstAmount + $detail->amount }}
-                {{ $totalAmountSum = $totalAmount + $totalAmountSum }}
-                {{ $totalIgstSum = $igstAmount + $totalIgstSum }}
-                {{ $totalBoxCount += $detail->box_count ? ceil($detail->box_count) : $detail->salesOrderProduct?->box_count }}
-                {{ $totalWeight += $detail->weight ? $detail->weight : $detail->salesOrderProduct?->weight }}
+                @php
+                    $igstAmount = (ceil($detail->tax) / 100) * $detail->amount;
+                    $totalAmount = $igstAmount + $detail->amount;
+                    $totalAmountSum = $totalAmount + $totalAmountSum;
+                    $totalIgstSum = $igstAmount + $totalIgstSum;
+                    $totalBoxCount += $detail->box_count
+                        ? ceil($detail->box_count)
+                        : $detail->salesOrderProduct?->box_count;
+                    $totalWeight += $detail->weight ? $detail->weight : $detail->salesOrderProduct?->weight;
+                @endphp
 
                 <td class="text-center">{{ $index + 1 }}</td>
 
@@ -567,9 +601,9 @@
                     <td>{{ $detail->service_description }}</td>
                     <td>{{ $detail->campaign_name }}</td>
                     <td class="right-align">{{ $detail->quantity }}</td>
-                    <td>{{ $detail->unit_type }}</td>
-                    <td class="right-align">{{ ceil($detail->box_count) ?? 0 }}</td>
-                    <td class="right-align">{{ $detail->weight ?? 0 }}</td>
+                    {{-- <td>{{ $detail->unit_type }}</td> --}}
+                    {{-- <td class="right-align">{{ ceil($detail->box_count) ?? 0 }}</td> --}}
+                    {{-- <td class="right-align">{{ $detail->weight ?? 0 }}</td> --}}
                 @else
                     <td>
                         {{-- <strong style="color: #000000;"> {{ $detail->product?->ean_code }} </strong> --}}
@@ -604,9 +638,8 @@
             @if ($invoiceItemType === 'service')
                 <td colspan="5" class="section-title">Total</td>
                 <td class="right-align">{{ $invoiceDetails->sum('quantity') }}</td>
-                <td></td>
-                <td class="right-align">{{ $totalBoxCount ?? ($TotalBoxCount ?? 0) }}</td>
-                <td class="right-align">{{ $totalWeight ?? ($TotalWeight ?? 0) }}</td>
+                {{-- <td class="right-align">{{ $totalBoxCount ?? ($TotalBoxCount ?? 0) }}</td> --}}
+                {{-- <td class="right-align">{{ $totalWeight ?? ($TotalWeight ?? 0) }}</td> --}}
             @else
                 <td colspan="3" class="section-title">Total</td>
                 <td class="right-align">{{ $invoiceDetails->sum('quantity') }}</td>
@@ -648,7 +681,7 @@
                     <img src="{{ $sign64Image }}" alt="Authorised Signature" width="100" height="100">
 
                 </div>
-            </td>   
+            </td>
         </tr>
         <tr class="invoice-table">
             <td>Bank Name: YES BANK</td>
@@ -668,10 +701,12 @@
         <tr class="invoice-table">
             <td width="70%">
                 TOTAL&nbsp;SETS&nbsp;-&nbsp;QTY {{ $invoiceDetails->sum('quantity') }}<br>
-                TOTAL&nbsp;BOX&nbsp;COUNT&nbsp;- {{ $totalBoxCount ?? ($TotalBoxCount ?? 0) }}<br>
-                WEIGHT&nbsp;-&nbsp;KG {{ $totalWeight ?? ($TotalWeight ?? 0) }}
+                @if ($invoiceItemType !== 'service')
+                    TOTAL&nbsp;BOX&nbsp;COUNT&nbsp;- {{ $totalBoxCount ?? ($TotalBoxCount ?? 0) }}<br>
+                    WEIGHT&nbsp;-&nbsp;KG {{ $totalWeight ?? ($TotalWeight ?? 0) }}
+                @endif
             </td>
-            <td width="30%" class="text-center" style="height:50px; vertical-align:bottom"> 
+            <td width="30%" class="text-center" style="height:50px; vertical-align:bottom">
                 <div>
                     (Authorised Signature)
                 </div>
@@ -685,8 +720,8 @@
     <div class="top-right-note">Triplicate Copy</div>
     <table class="no-border">
         <tr>
-            <td width="20%" rowspan="4" style="text-align:left;"> <img src="{{ $image }}" alt="Logo"
-                    style="height: 100px; width: auto;"> </td>
+            <td width="20%" rowspan="4" style="text-align:left;"> <img src="{{ $image }}"
+                    alt="Logo" style="height: 100px; width: auto;"> </td>
             <td class="header" colspan="2">INOVIZIDEAS PVT. LTD.</td>
             <td width="20%" rowspan="4" style="text-align:right; vertical-align: center;"> </td>
         </tr>
@@ -716,22 +751,24 @@
             <td>Invoice&nbsp;date:</td>
             <td>{{ $invoice->invoice_date->format('d-m-Y') }}</td>
         </tr>
-        <tr class="invoice-table">
-            {{-- <td>Reverse&nbsp;Charge&nbsp;(Y/N):</td> --}}
-            {{-- <td>N</td> --}}
-            {{-- <td>State: {{ $invoice->customer->shipping_state }}</td> --}}
-            {{-- <td>Code: {{ $invoice->customer->shipping_zip }}</td> --}}
-            <td>PO No: </td>
-            <td>{{ $invoice->po_number }}</td>
-            <td>PO Date: </td>
-            @if ($invoice->po_date)
-                <td>{{ $invoice->po_date ? $invoice->po_date->format('d-m-Y') : '' }}</td>
-            @elseif($invoiceDetails[0]->tempOrder?->po_date)
-                <td>{{ $invoiceDetails[0]->tempOrder?->po_date }}</td>
-            @else
-                <td></td>
-            @endif
-        </tr>
+        @if ($invoiceItemType !== 'service')
+            <tr class="invoice-table">
+                {{-- <td>Reverse&nbsp;Charge&nbsp;(Y/N):</td> --}}
+                {{-- <td>N</td> --}}
+                {{-- <td>State: {{ $invoice->customer->shipping_state }}</td> --}}
+                {{-- <td>Code: {{ $invoice->customer->shipping_zip }}</td> --}}
+                <td>PO No: </td>
+                <td>{{ $invoice->po_number }}</td>
+                <td>PO Date: </td>
+                @if ($invoice->po_date)
+                    <td>{{ $invoice->po_date ? $invoice->po_date->format('d-m-Y') : '' }}</td>
+                @elseif($invoiceDetails[0]->tempOrder?->po_date)
+                    <td>{{ $invoiceDetails[0]->tempOrder?->po_date }}</td>
+                @else
+                    <td></td>
+                @endif
+            </tr>
+        @endif
     </table>
 
     <table>
@@ -780,14 +817,14 @@
         <tr class="section-title">
             <th class="sno">S No.</th>
             @if ($invoiceItemType === 'service')
-                <th class="item-desc">Service Title</th>
-                <th class="hsn">Category</th>
-                <th class="hsn">Description</th>
-                <th class="hsn">Campaign Name</th>
+                <th class="svc-title">Service Title</th>
+                <th class="svc-category">Category</th>
+                <th class="svc-description">Description</th>
+                <th class="svc-campaign">Campaign Name</th>
                 <th class="qty">Qty</th>
-                <th class="box">Unit Type</th>
-                <th class="box">BOX</th>
-                <th class="box">Weight (KG)</th>
+                {{-- <th class="box">Unit Type</th> --}}
+                {{-- <th class="box">BOX</th> --}}
+                {{-- <th class="box">Weight (KG)</th> --}}
             @else
                 <th class="item-desc">Item Description</th>
                 <th class="hsn">HSN </br>Code</th>
@@ -815,12 +852,16 @@
         @endphp
         @foreach ($invoiceDetails as $index => $detail)
             <tr>
-                {{ $igstAmount = (ceil($detail->tax) / 100) * $detail->amount }}
-                {{ $totalAmount = $igstAmount + $detail->amount }}
-                {{ $totalAmountSum = $totalAmount + $totalAmountSum }}
-                {{ $totalIgstSum = $igstAmount + $totalIgstSum }}
-                {{ $totalBoxCount += $detail->box_count ? ceil($detail->box_count) : $detail->salesOrderProduct?->box_count }}
-                {{ $totalWeight += $detail->weight ? $detail->weight : $detail->salesOrderProduct?->weight }}
+                @php
+                    $igstAmount = (ceil($detail->tax) / 100) * $detail->amount;
+                    $totalAmount = $igstAmount + $detail->amount;
+                    $totalAmountSum = $totalAmount + $totalAmountSum;
+                    $totalIgstSum = $igstAmount + $totalIgstSum;
+                    $totalBoxCount += $detail->box_count
+                        ? ceil($detail->box_count)
+                        : $detail->salesOrderProduct?->box_count;
+                    $totalWeight += $detail->weight ? $detail->weight : $detail->salesOrderProduct?->weight;
+                @endphp
 
                 <td class="text-center">{{ $index + 1 }}</td>
 
@@ -830,9 +871,9 @@
                     <td>{{ $detail->service_description }}</td>
                     <td>{{ $detail->campaign_name }}</td>
                     <td class="right-align">{{ $detail->quantity }}</td>
-                    <td>{{ $detail->unit_type }}</td>
-                    <td class="right-align">{{ ceil($detail->box_count) ?? 0 }}</td>
-                    <td class="right-align">{{ $detail->weight ?? 0 }}</td>
+                    {{-- <td>{{ $detail->unit_type }}</td> --}}
+                    {{-- <td class="right-align">{{ ceil($detail->box_count) ?? 0 }}</td> --}}
+                    {{-- <td class="right-align">{{ $detail->weight ?? 0 }}</td> --}}
                 @else
                     <td>
                         {{-- <strong style="color: #000000;"> {{ $detail->product?->ean_code }} </strong> --}}
@@ -867,9 +908,8 @@
             @if ($invoiceItemType === 'service')
                 <td colspan="5" class="section-title">Total</td>
                 <td class="right-align">{{ $invoiceDetails->sum('quantity') }}</td>
-                <td></td>
-                <td class="right-align">{{ $totalBoxCount ?? ($TotalBoxCount ?? 0) }}</td>
-                <td class="right-align">{{ $totalWeight ?? ($TotalWeight ?? 0) }}</td>
+                {{-- <td class="right-align">{{ $totalBoxCount ?? ($TotalBoxCount ?? 0) }}</td> --}}
+                {{-- <td class="right-align">{{ $totalWeight ?? ($TotalWeight ?? 0) }}</td> --}}
             @else
                 <td colspan="3" class="section-title">Total</td>
                 <td class="right-align">{{ $invoiceDetails->sum('quantity') }}</td>
@@ -911,7 +951,7 @@
                     <img src="{{ $sign64Image }}" alt="Authorised Signature" width="100" height="100">
 
                 </div>
-            </td>   
+            </td>
         </tr>
         <tr class="invoice-table">
             <td>Bank Name: YES BANK</td>
@@ -931,10 +971,12 @@
         <tr class="invoice-table">
             <td width="70%">
                 TOTAL&nbsp;SETS&nbsp;-&nbsp;QTY {{ $invoiceDetails->sum('quantity') }}<br>
-                TOTAL&nbsp;BOX&nbsp;COUNT&nbsp;- {{ $totalBoxCount ?? ($TotalBoxCount ?? 0) }}<br>
-                WEIGHT&nbsp;-&nbsp;KG {{ $totalWeight ?? ($TotalWeight ?? 0) }}
+                @if ($invoiceItemType !== 'service')
+                    TOTAL&nbsp;BOX&nbsp;COUNT&nbsp;- {{ $totalBoxCount ?? ($TotalBoxCount ?? 0) }}<br>
+                    WEIGHT&nbsp;-&nbsp;KG {{ $totalWeight ?? ($TotalWeight ?? 0) }}
+                @endif
             </td>
-            <td width="30%" class="text-center" style="height:50px; vertical-align:bottom"> 
+            <td width="30%" class="text-center" style="height:50px; vertical-align:bottom">
                 <div>
                     (Authorised Signature)
                 </div>
@@ -945,5 +987,3 @@
 </body>
 
 </html>
-
-
