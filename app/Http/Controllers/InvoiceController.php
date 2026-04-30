@@ -509,9 +509,6 @@ class InvoiceController extends Controller
             'services.*.service_description' => 'nullable|string',
             'services.*.campaign_name' => 'nullable|string|max:255',
             'services.*.quantity' => 'required_with:services|integer|min:1',
-            'services.*.unit_type' => 'nullable|string|max:255',
-            'services.*.box_count' => 'nullable|integer|min:0',
-            'services.*.weight' => 'nullable|numeric|min:0',
             'services.*.unit_price' => 'required_with:services|numeric|min:0',
             'services.*.discount' => 'nullable|numeric|min:0',
             'services.*.tax' => 'nullable|numeric|min:0',
@@ -719,6 +716,8 @@ class InvoiceController extends Controller
                     $tax = $item['tax'] ?? 0;
                     $totalPrice = $amount - $discount + $tax;
 
+                    $taxPercent = ((intval($item['tax']) ?? 0) / $amount) * 100;
+
                     InvoiceDetails::create([
                         'invoice_id' => $invoice->id,
                         'warehouse_id' => null,
@@ -728,14 +727,15 @@ class InvoiceController extends Controller
                         'amount' => $amount,
                         'total_price' => $totalPrice,
                         'discount' => $discount,
-                        'tax' => $tax,
+                        'tax' => $taxPercent,
                         'service_title' => $item['service_title'] ?? null,
                         'service_category' => $item['service_category'] ?? null,
                         'service_description' => $item['service_description'] ?? null,
                         'campaign_name' => $item['campaign_name'] ?? null,
-                        'unit_type' => $item['unit_type'] ?? null,
-                        'box_count' => $item['box_count'] ?? null,
-                        'weight' => $item['weight'] ?? null,
+                        // Not collected for service invoices.
+                        'unit_type' => null,
+                        'box_count' => null,
+                        'weight' => null,
                     ]);
                 }
             }

@@ -172,17 +172,14 @@
                                             <thead class="table-light">
                                                 <tr>
                                                     <th style="width: 10%;">Service Title</th>
-                                                    <th style="width: 8%;">Category</th>
-                                                    <th style="width: 10%;">Description</th>
-                                                    <th style="width: 9%;">Campaign Name</th>
-                                                    <th style="width: 5%;">Qty <span class="text-danger">*</span></th>
-                                                    <th style="width: 7%;">Unit Type</th>
-                                                    <th style="width: 6%;">Box Count</th>
-                                                    <th style="width: 6%;">Weight (KG)</th>
-                                                    <th style="width: 7%;">Rate <span class="text-danger">*</span></th>
-                                                    <th style="width: 6%;">Discount</th>
-                                                    <th style="width: 6%;">Tax</th>
-                                                    <th style="width: 7%;">Total</th>
+                                                    <th style="width: 10%;">Category</th>
+                                                    <th style="width: 16%;">Description</th>
+                                                    <th style="width: 12%;">Campaign Name</th>
+                                                    <th style="width: 7%;">Qty <span class="text-danger">*</span></th>
+                                                    <th style="width: 10%;">Rate <span class="text-danger">*</span></th>
+                                                    <th style="width: 8%;">Discount</th>
+                                                    <th style="width: 8%;">Tax</th>
+                                                    <th style="width: 10%;">Total</th>
                                                     <th style="width: 5%;">Action</th>
                                                 </tr>
                                             </thead>
@@ -766,15 +763,6 @@
                     </td>
                     <td>
                         <input type="number" name="services[${serviceRowIndex}][quantity]" class="form-control form-control-sm service-quantity-input" data-row="${serviceRowIndex}" min="1" value="1" required>
-                    </td>
-                    <td>
-                        <input type="text" name="services[${serviceRowIndex}][unit_type]" class="form-control form-control-sm" placeholder="e.g., Hours, Days">
-                    </td>
-                    <td>
-                        <input type="number" name="services[${serviceRowIndex}][box_count]" class="form-control form-control-sm" placeholder="0" min="0">
-                    </td>
-                    <td>
-                        <input type="number" name="services[${serviceRowIndex}][weight]" class="form-control form-control-sm" placeholder="0" min="0" step="0.01">
                     </td>
                     <td>
                         <input type="number" name="services[${serviceRowIndex}][unit_price]" class="form-control form-control-sm service-price-input" data-row="${serviceRowIndex}" min="0" step="0.01" required>
