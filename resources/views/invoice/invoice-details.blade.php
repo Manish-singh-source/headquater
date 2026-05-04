@@ -422,14 +422,14 @@
                                 <div class="mb-3">
                                     <label for="transporter_name" class="form-label">Transporter Name</label>
                                     <input type="text" class="form-control" id="transporter_name"
-                                        name="transporter_name" placeholder="Test Transporter" required>
+                                        name="transporter_name" placeholder="Test Transporter">
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label for="transporter_id" class="form-label">Transporter ID(GSTIN)</label>
                                     <input type="text" class="form-control" id="transporter_id" name="transporter_id"
-                                        placeholder="05AAABB0639G1Z8" value="" required>
+                                        placeholder="05AAABB0639G1Z8" value="">
                                 </div>
                             </div>
                             <div class="col-md-6">
