@@ -1600,7 +1600,7 @@ class SalesOrderController extends Controller
                 return redirect()->back()->with('error', 'No sales order details found matching the criteria.');
             }
 
-            // Group by: warehouse_id + po_number + facility_name + optional(brand) + optional(client_name)
+            // Group by: po_number + facility_name + optional(brand) + optional(client_name)
             $invoicesGroup = [];
 
             foreach ($salesOrderDetails as $detail) {
@@ -1630,10 +1630,8 @@ class SalesOrderController extends Controller
                         continue; // Skip already invoiced allocations
                     }
 
-                    $warehouseId = $allocation->warehouse_id;
-
-                    // Build dynamic grouping key: warehouse_id + po_number + facility_name
-                    $groupKey = $warehouseId . '|' . $poNumber . '|' . $facilityName;
+                    // Build dynamic grouping key: po_number + facility_name
+                    $groupKey = $poNumber . '|' . $facilityName;
 
                     if ($request->filled('brand')) {
                         $brand = $detail->product->brand ?? '';
@@ -1671,14 +1669,12 @@ class SalesOrderController extends Controller
                 // Reset total for this invoice
                 $invoiceTotal = 0;
 
-                // Extract warehouse_id from groupKey (first part before |)
-                $groupParts = explode('|', $groupKey);
-                $warehouseId = (int) $groupParts[0];
-
                 // Get customer_id and po_number from first item
                 $firstItem = $invoiceData[0];
                 $customerId = $firstItem['detail']->customer_id;
                 $poNumber = $firstItem['detail']->tempOrder->po_number ?? '';
+                // Keep invoice warehouse as first allocation warehouse when multiple warehouses exist in same invoice
+                $warehouseId = $firstItem['allocation']->warehouse_id;
 
                 // $yearMonth = date('Ym');
                 // $lastInvoice = Invoice::where('invoice_number', 'LIKE', "INV-{$yearMonth}-%")
@@ -1748,7 +1744,7 @@ class SalesOrderController extends Controller
                     $invoiceDetail->invoice_id = $invoice->id;
                     $invoiceDetail->product_id = $detail->product_id;
                     $invoiceDetail->temp_order_id = $detail->temp_order_id;
-                    $invoiceDetail->warehouse_id = $warehouseId;
+                    $invoiceDetail->warehouse_id = $allocation->warehouse_id;
                     $invoiceDetail->quantity = $quantity;
                     $invoiceDetail->unit_price = $unitPrice;
                     $invoiceDetail->box_count = $allocation->box_count;
