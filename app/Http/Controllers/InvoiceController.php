@@ -1193,7 +1193,7 @@ class InvoiceController extends Controller
                 // 'place_of_consignor' => 'nullable|string',
                 // 'state_of_consignor' => 'nullable|string',
                 'transporter_id' => 'nullable|string',
-                'transporter_name' => 'nullable|required_if:transporter_id,string',
+                'transporter_name' => 'nullable|string|required_with:transporter_id',
                 // 'transportation_mode' => 'nullable|string',
                 // 'transporter_document_number' => 'nullable|string',
                 // 'transporter_document_date' => 'nullable|string',
