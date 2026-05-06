@@ -530,20 +530,25 @@ class ReportController extends Controller
 
             $totalSKU = count($skuSet);
 
-            // Get unique purchase order IDs from all completed purchase orders for dropdown
-            $purchaseOrderNumbers = PurchaseOrder::whereHas('vendorPI', function ($q) {
-                $q->where('status', 'completed');
-            })->distinct('id')->orderBy('id', 'desc')->pluck('id');
+            // Get dropdown values from all records (same scope expectation as table data)
+            $purchaseOrderNumbers = PurchaseOrder::query()
+                ->distinct('id')
+                ->orderBy('id', 'desc')
+                ->pluck('id');
 
-            // Get unique vendor codes from all completed purchase orders for dropdown
-            $purchaseOrdersVendors = PurchaseOrder::whereHas('vendorPI', function ($q) {
-                $q->where('status', 'completed');
-            })->with('vendor')->get()->pluck('vendor.vendor_code')->unique()->filter()->sort()->values();
+            $purchaseOrdersVendors = PurchaseOrder::with('vendor')
+                ->get()
+                ->pluck('vendor.vendor_code')
+                ->filter()
+                ->unique()
+                ->sort()
+                ->values();
 
-            // Get unique SKUs from all completed purchase orders for dropdown
-            $purchaseOrdersSKUs = PurchaseOrderProduct::whereHas('purchaseOrder.vendorPI', function ($q) {
-                $q->where('status', 'completed');
-            })->distinct('sku')->orderBy('sku')->pluck('sku');
+            $purchaseOrdersSKUs = PurchaseOrderProduct::query()
+                ->whereNotNull('sku')
+                ->distinct('sku')
+                ->orderBy('sku')
+                ->pluck('sku');
 
             $filters = $request->only(['from_date', 'to_date', 'purchase_order_no', 'vendor_code', 'sku']);
 
