@@ -222,17 +222,17 @@ class ReportController extends Controller
                 $query->whereDate('created_at', '<=', $request->to_date);
             }
 
-            // Purchase order filter - filter by purchase order ID
+            // Purchase order filter - filter by purchase order number (same as table display)
             if ($request->filled('purchase_order_no')) {
                 $po = $request->purchase_order_no;
-                $query->whereIn('id', (array) $po);
+                $query->whereIn('order_number', (array) $po);
             }
 
-            // Vendor filter - filter by vendor code
+            // Vendor filter - filter by vendor name (same as table display)
             if ($request->filled('vendor_code')) {
                 $vc = $request->vendor_code;
                 $query->whereHas('vendor', function ($v) use ($vc) {
-                    $v->whereIn('vendor_code', (array) $vc);
+                    $v->whereIn('client_name', (array) $vc);
                 });
             }
 
