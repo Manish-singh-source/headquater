@@ -798,6 +798,7 @@
       <script>
           $(document).ready(function() {
               var table1 = $('#example').DataTable({
+                  "order": [],
                   "columnDefs": [{
                           "orderable": false,
                           //   "targets": [0, -1],

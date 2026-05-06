@@ -38,7 +38,7 @@ class InvoiceController extends Controller
 
         // Fetch all invoices with relationships
         $query = Invoice::with(['warehouse', 'details', 'customer', 'salesOrder.customerGroup', 'appointment', 'dns', 'payments'])
-            ->orderBy('created_at', 'desc');
+            ->orderBy('id', 'desc');
 
         // Filter invoices based on user role
         if (! $isSuperAdmin && ! $isAdmin && $userWarehouseId) {
@@ -47,10 +47,10 @@ class InvoiceController extends Controller
         }
 
         $invoices = $query->get();
-
+        
         // Separate manual and sales order invoices
         $manualInvoices = $invoices->where('invoice_type', 'manual');
-        $salesOrderInvoices = SalesOrder::with(['customerGroup', 'invoices'])->whereHas('invoices')->get();
+        $salesOrderInvoices = SalesOrder::with(['customerGroup', 'invoices'])->whereHas('invoices')->orderBy('id', 'desc')->get();
 
         return view('invoice.index', compact('invoices', 'manualInvoices', 'salesOrderInvoices'));
     }

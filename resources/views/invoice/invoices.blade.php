@@ -159,6 +159,7 @@
         $(document).ready(function() {
             // DataTable is already initialized in master.blade.php for #example table
             // This script adds additional functionality
+            $('#example').DataTable().order([]).draw();
 
             // Export to Excel functionality
             $('#exportInvoices').on('click', function() {
