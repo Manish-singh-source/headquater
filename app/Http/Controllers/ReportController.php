@@ -64,17 +64,17 @@ class ReportController extends Controller
                 $query->whereDate('created_at', '<=', $request->to_date);
             }
 
-            // Purchase order filter - filter by purchase order ID
+            // Purchase order filter - filter by purchase order number (same as table display)
             if ($request->filled('purchase_order_no')) {
                 $po = $request->purchase_order_no;
-                $query->whereIn('id', (array) $po);
+                $query->whereIn('order_number', (array) $po);
             }
 
-            // Vendor filter - filter by vendor code
+            // Vendor filter - filter by vendor name (same as table display)
             if ($request->filled('vendor_code')) {
                 $vc = $request->vendor_code;
                 $query->whereHas('vendor', function ($v) use ($vc) {
-                    $v->whereIn('vendor_code', (array) $vc);
+                    $v->whereIn('client_name', (array) $vc);
                 });
             }
 
@@ -532,13 +532,14 @@ class ReportController extends Controller
 
             // Get dropdown values from all records (same scope expectation as table data)
             $purchaseOrderNumbers = PurchaseOrder::query()
-                ->distinct('id')
-                ->orderBy('id', 'desc')
-                ->pluck('id');
+                ->whereNotNull('order_number')
+                ->distinct('order_number')
+                ->orderBy('order_number', 'desc')
+                ->pluck('order_number');
 
             $purchaseOrdersVendors = PurchaseOrder::with('vendor')
                 ->get()
-                ->pluck('vendor.vendor_code')
+                ->pluck('vendor.client_name')
                 ->filter()
                 ->unique()
                 ->sort()
@@ -580,7 +581,7 @@ class ReportController extends Controller
             'from_date' => 'nullable|date',
             'to_date' => 'nullable|date|after_or_equal:from_date',
             'purchase_order_no' => 'nullable|array',
-            'purchase_order_no.*' => 'integer|exists:purchase_orders,id',
+            'purchase_order_no.*' => 'string|exists:purchase_orders,order_number',
             'vendor_code' => 'nullable|array',
             'vendor_code.*' => 'string',
             'sku' => 'nullable|array',
@@ -618,17 +619,17 @@ class ReportController extends Controller
                 $query->whereDate('created_at', '<=', $request->to_date);
             }
 
-            // Purchase order filter - filter by purchase order ID
+            // Purchase order filter - filter by purchase order number (same as table display)
             if ($request->filled('purchase_order_no')) {
                 $po = $request->purchase_order_no;
-                $query->whereIn('id', (array) $po);
+                $query->whereIn('order_number', (array) $po);
             }
 
-            // Vendor filter - filter by vendor code
+            // Vendor filter - filter by vendor name (same as table display)
             if ($request->filled('vendor_code')) {
                 $vc = $request->vendor_code;
                 $query->whereHas('vendor', function ($v) use ($vc) {
-                    $v->whereIn('vendor_code', (array) $vc);
+                    $v->whereIn('client_name', (array) $vc);
                 });
             }
 
