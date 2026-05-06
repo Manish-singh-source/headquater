@@ -124,7 +124,7 @@
             <div class="card mt-4">
                 <div class="card-body pb-1">
                     <h6 class="mb-3 fw-bold"><i class="bx bx-filter-alt me-2"></i>Filter Options</h6>
-                    <form id="filterForm" method="GET" action="{{ route('vendor-purchase-history') }}">
+                    <form id="filterForm" method="GET" action="{{ route('vendor-purchase-invoices') }}">
                         <div class="row align-items-end">
                             <div class="col-lg-10">
                                 <div class="row">
@@ -289,7 +289,7 @@
                                                 <p class="mb-0">No vendor purchase records found.</p>
                                                 @if (request()->hasAny(['from_date', 'to_date', 'vendor_code']))
                                                     <small>Try adjusting your filters or <a
-                                                            href="{{ route('vendor-purchase-history') }}"
+                                                            href="{{ route('vendor-purchase-invoices') }}"
                                                             class="text-primary">reset filters</a>.</small>
                                                 @endif
                                             </td>
@@ -401,7 +401,7 @@
                 $('#vendor-code').val('');
 
                 // Redirect to base URL without filters
-                window.location.href = '{{ route('vendor-purchase-history') }}';
+                window.location.href = '{{ route('vendor-purchase-invoices') }}';
             });
 
             /**

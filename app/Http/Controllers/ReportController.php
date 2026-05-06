@@ -371,8 +371,8 @@ class ReportController extends Controller
                 ->causedBy(Auth::user())
                 ->withProperties([
                     'vendor_code' => $request->vendor_code,
-                    'date_from' => $request->date_from,
-                    'date_to' => $request->date_to,
+                    'from_date' => $request->from_date,
+                    'to_date' => $request->to_date,
                     'sku' => $request->sku,
                     'records' => $vendorPIProducts->count(),
                 ])
@@ -562,6 +562,22 @@ class ReportController extends Controller
 
     public function vendorPurchaseHistoryExcel1(Request $request)
     {
+        $validator = Validator::make($request->all(), [
+            'from_date' => 'nullable|date',
+            'to_date' => 'nullable|date|after_or_equal:from_date',
+            'purchase_order_no' => 'nullable|array',
+            'purchase_order_no.*' => 'integer|exists:purchase_orders,id',
+            'vendor_code' => 'nullable|array',
+            'vendor_code.*' => 'string',
+            'sku' => 'nullable|array',
+            'sku.*' => 'string',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator)->withInput();
+        }
+
+        DB::beginTransaction();
         try {
             // Build base query with all relations
             $query = PurchaseOrder::with([
@@ -616,8 +632,8 @@ class ReportController extends Controller
             // Clone for stats before pagination
             $statsQuery = clone $query;
 
-            // Get paginated purchase orders (15 per page)
-            $vendorPIProducts = $query->latest('id')->paginate(15)->appends($request->all());
+            // Get all filtered purchase orders for export (no pagination)
+            $vendorPIProducts = $query->latest('id')->get();
             // dd($vendorPIProducts);
             // Calculate statistics based on filtered results
             $purchaseOrdersTotal = $statsQuery->sum('total_amount');
@@ -763,8 +779,8 @@ class ReportController extends Controller
                 ->causedBy(Auth::user())
                 ->withProperties([
                     'vendor_code' => $request->vendor_code,
-                    'date_from' => $request->date_from,
-                    'date_to' => $request->date_to,
+                    'from_date' => $request->from_date,
+                    'to_date' => $request->to_date,
                     'sku' => $request->sku,
                     'records' => $vendorPIProducts->count(),
                 ])
