@@ -364,6 +364,7 @@
                     @else
                         <td>
                             <strong style="color: #000000;"> {{ $detail->product?->ean_code }} </strong>
+                            <strong style="color: #000000;"> {{ $detail->product?->ean_code }} </strong>
                             <br>
                             {{ $detail->product?->sku }}
                             <br>
