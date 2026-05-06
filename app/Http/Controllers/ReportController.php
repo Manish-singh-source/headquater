@@ -692,10 +692,29 @@ class ReportController extends Controller
 
                 foreach ($purchaseOrder->purchaseOrderProducts as $product) {
                     $productDetails = $product->product ?? null;
-                    $gstRate = floatval($productDetails->gst ?? 0);
-                    $unitCost = floatval($product->unit_cost ?? 0);
-                    $quantity = floatval($product->ordered_quantity ?? 0);
-                    $taxableValue = $product->product->mrp * $quantity;
+                    $toNumber = static function ($value): float {
+                        if (is_int($value) || is_float($value)) {
+                            return (float) $value;
+                        }
+
+                        if (is_string($value)) {
+                            $cleaned = str_replace(',', '', trim($value));
+                            if (is_numeric($cleaned)) {
+                                return (float) $cleaned;
+                            }
+
+                            $cleaned = preg_replace('/[^0-9.\-]/', '', $cleaned);
+                            return is_numeric($cleaned) ? (float) $cleaned : 0.0;
+                        }
+
+                        return 0.0;
+                    };
+
+                    $gstRate = $toNumber($productDetails?->gst);
+                    $quantity = $toNumber($product->ordered_quantity);
+                    $mrp = $toNumber($productDetails?->mrp);
+                    $discountPerUnit = $toNumber($product->discount_per_unit);
+                    $taxableValue = $mrp * $quantity;
                     $gstAmount = ($taxableValue * $gstRate) / 100;
                     $totalAmount = $taxableValue + $gstAmount;
 
@@ -713,26 +732,26 @@ class ReportController extends Controller
                         $productDetails->brand_title ?? 'N/A',
                         $productDetails->hsn ?? 'N/A',
                         $purchaseOrder->created_at ? $purchaseOrder->created_at : 'N/A',
-                        $vendorPI->updated_at ? $vendorPI->updated_at->addMonth()->format('d-m-Y') : 'N/A',
+                        $vendorPI?->updated_at ? $vendorPI->updated_at->copy()->addMonth()->format('d-m-Y') : 'N/A',
                         $product->ordered_quantity ?? 'N/A',
                         $product->ordered_quantity ?? 'N/A',
                         $product->ordered_quantity ?? 'N/A',
                         'PCS',
-                        $product->product->mrp ?? 'N/A',
-                        $product->discount_per_unit ?? 'N/A',
-                        $taxableValue ?? 'N/A',
-                        $gstRate ?? 'N/A',
-                        $cgst ?? 'N/A',
-                        $sgst ?? 'N/A',
-                        $gstRate ?? 'N/A',
-                        $gstAmount ?? 'N/A',
-                        $totalAmount ?? 'N/A',
+                        number_format($mrp, 2, '.', ''),
+                        number_format($discountPerUnit, 2, '.', ''),
+                        number_format($taxableValue, 2, '.', ''),
+                        number_format($gstRate, 2, '.', ''),
+                        number_format($cgst, 2, '.', ''),
+                        number_format($sgst, 2, '.', ''),
+                        number_format($igst, 2, '.', ''),
+                        number_format($gstAmount, 2, '.', ''),
+                        number_format($totalAmount, 2, '.', ''),
                         0 ?? 'N/A',
                         0 ?? 'N/A',
                         $purchaseInvoice ? 'Yes' : 'No',
                         $purchaseGrn ? 'Yes' : 'No',
                         'N/A',
-                        $vendorPI->warehouse->name ?? 'N/A',
+                        $vendorPI?->warehouse?->name ?? 'N/A',
                     ]);
                 }
             }
@@ -1095,7 +1114,34 @@ class ReportController extends Controller
             // Add data rows
             foreach ($products as $record) {
                 $product = $record->product;
-                $stockValue = ($record->available_quantity ?? 0) * ($product->mrp ?? 0);
+                $toNumber = static function ($value): float {
+                    if (is_int($value) || is_float($value)) {
+                        return (float) $value;
+                    }
+
+                    if (is_string($value)) {
+                        $cleaned = str_replace(',', '', trim($value));
+                        if (is_numeric($cleaned)) {
+                            return (float) $cleaned;
+                        }
+
+                        // Handles values like "18%" or "Rs 1,250.50"
+                        $cleaned = preg_replace('/[^0-9.\-]/', '', $cleaned);
+                        return is_numeric($cleaned) ? (float) $cleaned : 0.0;
+                    }
+
+                    return 0.0;
+                };
+
+                $mrp = $toNumber($product?->mrp);
+                $gst = $toNumber($product?->gst);
+                $availableQty = $toNumber($record->available_quantity);
+                $originalQty = $toNumber($record->original_quantity);
+                $blockQty = $toNumber($record->block_quantity);
+
+                $stockValue = $availableQty * $mrp;
+                $gstValue = ($stockValue * $gst) / 100;
+                $totalValue = $stockValue + $gstValue;
 
                 fputcsv($file, [
                     $record->warehouse?->name ?? 'N/A',
@@ -1105,14 +1151,14 @@ class ReportController extends Controller
                     $product?->sku ?? 'N/A',
                     $product?->pcs_set ?? 0,
                     $product?->sets_ctn ?? 0,
-                    number_format($product?->mrp ?? 0, 2, '.', ''),
-                    $record->original_quantity ?? 0,
-                    $record->available_quantity ?? 0,
-                    $record->block_quantity ?? 0,
+                    number_format($mrp, 2, '.', ''),
+                    $originalQty,
+                    $availableQty,
+                    $blockQty,
                     number_format($stockValue, 2, '.', ''),
-                    $product->gst ?? 0,
-                    number_format($stockValue * ($product->gst ?? 0) / 100, 2, '.', ''),
-                    number_format($stockValue + ($stockValue * ($product->gst ?? 0) / 100), 2, '.', ''),
+                    $gst,
+                    number_format($gstValue, 2, '.', ''),
+                    number_format($totalValue, 2, '.', ''),
                     $record->created_at?->format('d-m-Y') ?? 'N/A',
                 ]);
             }
