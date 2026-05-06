@@ -130,10 +130,19 @@ class ReportController extends Controller
                 $q->where('status', 'completed');
             })->distinct('id')->orderBy('id', 'desc')->pluck('id');
 
-            // Get unique vendor codes from all completed purchase orders for dropdown
+            // Get unique vendors (non-null) from completed purchase orders for dropdown
             $purchaseOrdersVendors = PurchaseOrder::whereHas('vendorPI', function ($q) {
                 $q->where('status', 'completed');
-            })->with('vendor')->get();
+            })
+                ->with('vendor')
+                ->get()
+                ->filter(function ($po) {
+                    return !empty($po->vendor?->vendor_code);
+                })
+                ->unique(function ($po) {
+                    return $po->vendor->vendor_code;
+                })
+                ->values();
 
             // dd($purchaseOrdersVendors);
             // ->pluck('vendor.vendor_code')->unique()->filter()->sort()->values();
