@@ -191,7 +191,7 @@ class ReceivedProductsController extends Controller
                     // 'Order No' => $vendorPI->id ?? '',
                     'Purchase Order No' => $vendorPI->purchaseOrder->order_number ?? '',
                     'Vendor SKU Code' => $product->vendor_sku_code ?? '',
-                    'Title' => $product->product?->brand_title ?? '',
+                    'Title' => $product->product?->brand_title ?? $product->title ?? '',
                     'MRP' => $product->mrp ?? '',
                     'PO Quantity' => $product->quantity_requirement ?? '',
                     'PI Quantity' => $product->available_quantity ?? '',

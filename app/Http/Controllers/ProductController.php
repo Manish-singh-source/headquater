@@ -419,8 +419,12 @@ class ProductController extends Controller
     public function editProduct($id)
     {
         try {
-            $product = Product::with('warehouseStock')
-                ->findOrFail($id);
+            $product = Product::findOrFail($id);
+            $warehouseStock = WarehouseStock::where('sku', $product->sku)
+                ->where('warehouse_id', $product->warehouse_id)
+                ->first();
+
+            $product->setRelation('warehouseStock', $warehouseStock);
 
             return response()->json([
                 'success' => true,
@@ -503,7 +507,10 @@ class ProductController extends Controller
 
             // Update warehouse stock if provided
             if ($request->has('original_quantity') || $request->has('available_quantity')) {
-                $warehouseStock = WarehouseStock::where('sku', $product->sku)->first();
+                $warehouseStock = WarehouseStock::where('sku', $product->sku)
+                    ->where('warehouse_id', $product->warehouse_id)
+                    ->lockForUpdate()
+                    ->first();
 
                 if ($warehouseStock) {
                     $updateStockData = [];
