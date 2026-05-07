@@ -1273,6 +1273,11 @@ class ReportController extends Controller
                 $query->where('order_date', '<=', $request->to_date);
             }
 
+            // Sales Order Number Filter
+            if ($request->filled('sales_order_no')) {
+                $query->whereIn('order_number', (array) $request->sales_order_no);
+            }
+
             // Warehouse Filter - filter by warehouse allocations, not sales_order warehouse_id
             if ($request->filled('warehouse_id')) {
                 $warehouseIds = (array) $request->warehouse_id;
@@ -1491,6 +1496,13 @@ class ReportController extends Controller
                 ->sort()
                 ->values();
 
+            // Get unique Sales Order numbers
+            $salesOrderNumbers = SalesOrder::whereNotNull('order_number')
+                ->distinct()
+                ->pluck('order_number')
+                ->sort()
+                ->values();
+
             // Get unique appointment dates (from invoices related to sales orders)
             $appointmentDates = \App\Models\Appointment::distinct('appointment_date')
                 ->whereNotNull('appointment_date')
@@ -1517,6 +1529,7 @@ class ReportController extends Controller
                 'customerGroups' => $customerGroups,
                 'invoiceNumbers' => $invoiceNumbers,
                 'poNumbers' => $poNumbers,
+                'salesOrderNumbers' => $salesOrderNumbers,
                 'appointmentDates' => $appointmentDates,
                 'totalInvoices' => $totalInvoices,
                 'totalCustomers' => $totalCustomers,
@@ -1534,6 +1547,7 @@ class ReportController extends Controller
                     'customer_type' => $request->customer_type,
                     'invoice_no' => $request->input('invoice_no', []),
                     'po_no' => $request->input('po_no', []),
+                    'sales_order_no' => $request->input('sales_order_no', []),
                     'appointment_date' => $request->input('appointment_date', []),
                 ],
             ];
@@ -1579,6 +1593,8 @@ class ReportController extends Controller
             'invoice_no.*' => 'string',
             'po_no' => 'nullable|array',
             'po_no.*' => 'string',
+            'sales_order_no' => 'nullable|array',
+            'sales_order_no.*' => 'string|exists:sales_orders,order_number',
             'appointment_date' => 'nullable|array',
             'appointment_date.*' => 'date',
         ]);
@@ -1612,6 +1628,11 @@ class ReportController extends Controller
             }
             if ($request->filled('to_date')) {
                 $query->where('order_date', '<=', $request->to_date);
+            }
+
+            // Apply sales order number filter
+            if ($request->filled('sales_order_no')) {
+                $query->whereIn('order_number', (array) $request->sales_order_no);
             }
 
             // Apply warehouse filter - filter by warehouse allocations, not sales_order warehouse_id
@@ -1765,27 +1786,30 @@ class ReportController extends Controller
                         foreach ($product->warehouseAllocations as $allocation) {
                             // Get invoice number for this warehouse
                             $invoiceNumber = 'N/A';
-                            if ($salesOrder->invoices->count() > 0) {
-                                foreach ($salesOrder->invoices as $invoice) {
-                                    if ($invoice->warehouse_id == $allocation->warehouse_id) {
-                                        $invoiceNumber = $invoice->invoice_number ?? 'N/A';
-                                        break;
-                                    }
-                                }
-                            }
-
+                            // if ($salesOrder->invoices->count() > 0) {
+                            //     foreach ($salesOrder->invoices as $invoice) {
+                            //         if ($invoice->warehouse_id == $allocation->warehouse_id) {
+                            //             $invoiceNumber = $invoice->invoice_number ?? 'N/A';
+                            //             break;
+                            //         }
+                            //     }
+                            // }
+                            
                             // Get invoice details
                             $invoiceDetail = $product->invoiceDetails->first();
                             $invoice = $invoiceDetail?->invoice;
+                            $invoiceNumber = $invoice->invoice_number ?? 'N/A';
                             $appointment = $invoice?->appointment;
                             $dns = $invoice?->dns;
                             $payment = $invoice?->payments?->first();
-
+    
                             // Calculate subtotal and total for this allocation
-                            $subtotal = $allocation->final_dispatched_quantity * $product->price;
+                            $subtotal = $allocation->final_final_dispatched_quantity * $product->tempOrder?->basic_rate;
                             $gstRate = $product->tempOrder->gst ?? 0;
                             $total = $subtotal * (1 + $gstRate / 100);
+                            $gstAmount = 0;
 
+                            // dd($product->tempOrder->po_qty);
                             $exportData->push([
                                 'Sales Order No' => $salesOrder->order_number ?? 'N/A',
                                 'Customer Group Name' => $customerGroup->name ?? 'N/A',
@@ -1798,39 +1822,40 @@ class ReportController extends Controller
                                 'Customer State' => $customer->shipping_state ?? 'N/A',
                                 'PO No' => $product->tempOrder->po_number ?? 'N/A',
                                 // Product details
-                                'PO SKU' => $product->tempOrder->sku ?? 'N/A',
-                                'Title' => $product->product->brand_title ?? 'N/A',
+                                'SKU Code' => $product->tempOrder->sku ?? 'N/A',
+                                'Item Code' => $product->tempOrder->item_code ?? 'N/A',
+                                'Title' => $product->tempOrder->description ?? $product->product->brand_title,
                                 'Brand' => $product->product->brand ?? 'N/A',
-                                'HSN' => $product->product->hsn ?? 'N/A',
+                                'HSN' => $product->tempOrder->hsn ?? $product->product->hsn,
 
                                 // Order quantities
-                                'Orderd Quantity' => $allocation->allocated_quantity ?? 'N/A',
-                                'Dispatched Quantity' => $allocation->final_dispatched_quantity ?? 'N/A',
-                                'Box Count' => $allocation->box_count ?? 'N/A',
-                                'Weight' => $allocation->weight ?? 'N/A',
+                                'Orderd Quantity' => intval($product->tempOrder?->po_qty) ?? intval($product->ordered_quantity),
+                                'Dispatched Quantity' => $allocation->final_final_dispatched_quantity ?? 0,
+                                'Box Count' => $allocation->box_count ?? 0,
+                                'Weight' => $allocation->weight ?? 0,
 
                                 // Sale price fields
-                                'Unit Price' => $product->price ?? 0,
-                                'Taxable Amount' => $allocation->final_dispatched_quantity * ($product->price ?? 0),
+                                'Unit Price' => $product->tempOrder?->basic_rate ?? 0,
+                                'Taxable Amount' => $invoiceNumber === 'N/A' ? 0 : $allocation->final_final_dispatched_quantity * ($product->tempOrder?->basic_rate ?? 0),
                                 'GST' => $product->tempOrder->gst ?? 0,
-                                'GST Amount' => $allocation->final_dispatched_quantity * ($product->price ?? 0) * (($product->tempOrder->gst ?? 0) / 100),
-                                'Invoice Amount' => $allocation->final_dispatched_quantity * ($product->price ?? 0) * (1 + (($product->tempOrder->gst ?? 0) / 100)),
+                                'GST Amount' => $invoiceNumber === 'N/A' ? 0 : $allocation->final_final_dispatched_quantity * ($product->tempOrder?->basic_rate ?? 0) * (($product->tempOrder->gst ?? 0) / 100),
+                                'Invoice Amount' => $invoiceNumber === 'N/A' ? 0 : $allocation->final_final_dispatched_quantity * ($product->tempOrder?->basic_rate ?? 0) * (1 + (($product->tempOrder->gst ?? 0) / 100)),
 
                                 // Purchase details
-                                'Purchase Order No' => $product->purchase_ordered_quantity ?? 0,
-                                'Purchase Rate' => $product->vendorPIProduct?->purchase_rate ?? 0,
+                                'Purchase Order No' => $product->vendorPIProduct && $product->purchase_ordered_quantity > 0 ? $product->purchase_ordered_quantity : 0,
+                                'Purchase Rate' => $product->vendorPIProduct && $product->purchase_ordered_quantity > 0 ? $product->vendorPIProduct?->purchase_rate : 0,
 
                                 // Subtotal (purchase)
-                                'Subtotal' => $subtotal = ($product->purchase_ordered_quantity * ($product->vendorPIProduct?->purchase_rate ?? 0)),
+                                'Subtotal' => $product->vendorPIProduct && $product->purchase_ordered_quantity > 0 ? ($subtotal = ($product->purchase_ordered_quantity * ($product->vendorPIProduct?->purchase_rate ?? 0))) : 0,
 
                                 // Purchase GST %
-                                'Purchase GST' => $product->vendorPIProduct?->gst ?? 0,
+                                'Purchase GST' => $product->vendorPIProduct && $product->purchase_ordered_quantity > 0 ? $product->vendorPIProduct?->gst : 0,
 
                                 // Purchase GST Amount
-                                'GST Amount (Purchase)' => $gstAmount = $subtotal * (($product->vendorPIProduct?->gst ?? 0) / 100),
+                                'GST Amount (Purchase)' => $product->vendorPIProduct && $product->purchase_ordered_quantity > 0 ? ($gstAmount = $subtotal * (($product->vendorPIProduct?->gst ?? 0) / 100)) : 0,
 
                                 // Total Purchase Amount
-                                'Total Amount' => $subtotal + $gstAmount,
+                                'Total Amount' => $product->vendorPIProduct && $product->purchase_ordered_quantity > 0 ? ($subtotal + $gstAmount) : 0,
                             ]);
                         }
                     }
@@ -1857,7 +1882,8 @@ class ReportController extends Controller
                 'Customer City',
                 'Customer State',
                 'PO No',
-                'PO SKU',
+                'SKU Code',
+                'Item Code',
                 'Title',
                 'Brand',
                 'HSN',

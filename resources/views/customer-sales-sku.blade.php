@@ -151,7 +151,8 @@
                             <div class="ms-2">
                                 <p class="text-dark mb-1">Total Purchase Order Quantity</p>
                                 <div class="d-inline-flex align-items-center flex-wrap gap-2">
-                                    <h4 class="mb-0 fw-bold"><span class="" id="summary-total-po-quantity">0</span></h4>
+                                    <h4 class="mb-0 fw-bold"><span class="" id="summary-total-po-quantity">0</span>
+                                    </h4>
                                 </div>
                             </div>
                         </div>
@@ -167,7 +168,8 @@
                             <div class="ms-2">
                                 <p class="text-dark mb-1">Total Purchase Order Amount</p>
                                 <div class="d-inline-flex align-items-center flex-wrap gap-2">
-                                    <h4 class="mb-0 fw-bold"><span class="" id="summary-total-po-amount">₹0.00</span></h4>
+                                    <h4 class="mb-0 fw-bold"><span class=""
+                                            id="summary-total-po-amount">₹0.00</span></h4>
                                 </div>
                             </div>
                         </div>
@@ -489,6 +491,44 @@
                                             </div>
                                         </div>
                                     </div>
+
+                                    <!-- Sales Order No Filter -->
+                                    <div class="col-md-2">
+                                        <div class="mb-3">
+                                            <label class="form-label">Sales Order No</label>
+                                            <div class="dropdown">
+                                                <button class="btn btn-outline-secondary dropdown-toggle w-100 text-start"
+                                                    type="button" id="salesOrderNoDropdown" data-bs-toggle="dropdown">
+                                                    <i class="bx bx-filter-alt me-1"></i>
+                                                    <span id="salesOrderNoDropdownText">
+                                                        @if (is_array($filters['sales_order_no'] ?? null) && count($filters['sales_order_no']) > 0)
+                                                            {{ count($filters['sales_order_no']) }} selected
+                                                        @else
+                                                            Select Sales Order No
+                                                        @endif
+                                                    </span>
+                                                </button>
+                                                <ul class="dropdown-menu w-100" id="salesOrderNoCheckboxList"
+                                                    style="max-height: 250px; overflow-y: auto;">
+                                                    @foreach ($salesOrderNumbers as $salesOrderNo)
+                                                        <li class="px-2 py-1">
+                                                            <div class="form-check">
+                                                                <input class="form-check-input sales-order-no-checkbox"
+                                                                    type="checkbox" name="sales_order_no[]"
+                                                                    value="{{ $salesOrderNo }}"
+                                                                    id="sales_order_no_{{ $loop->index }}"
+                                                                    {{ in_array($salesOrderNo, (array) ($filters['sales_order_no'] ?? [])) ? 'checked' : '' }}>
+                                                                <label class="form-check-label w-100 cursor-pointer"
+                                                                    for="sales_order_no_{{ $loop->index }}">
+                                                                    {{ $salesOrderNo }}
+                                                                </label>
+                                                            </div>
+                                                        </li>
+                                                    @endforeach
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
@@ -588,18 +628,22 @@
                                                     <td>
                                                         @php
                                                             $invoiceNumber = 'N/A';
-                                                            if ($salesOrder->invoices->count() > 0) {
-                                                                foreach ($salesOrder->invoices as $invoice) {
-                                                                    if (
-                                                                        $invoice->warehouse_id ==
-                                                                        $allocation->warehouse_id
-                                                                    ) {
-                                                                        $invoiceNumber =
-                                                                            $invoice->invoice_number ?? 'N/A';
-                                                                        break;
-                                                                    }
-                                                                }
-                                                            }
+                                                            // if ($salesOrder->invoices->count() > 0) {
+                                                            //     foreach ($salesOrder->invoices as $invoice) {
+                                                            //         if (
+                                                            //             $invoice->warehouse_id ==
+                                                            //             $allocation->warehouse_id
+                                                            //         ) {
+                                                            //             $invoiceNumber =
+                                                            //                 $invoice->invoice_number ?? 'N/A';
+                                                            //             break;
+                                                            //         }
+                                                            //     }
+                                                            // }
+
+                                                            $invoiceDetail = $product->invoiceDetails->first();
+                                                            $invoice = $invoiceDetail?->invoice;
+                                                            $invoiceNumber = $invoice->invoice_number ?? 'N/A';
                                                         @endphp
                                                         {{ $invoiceNumber }}
                                                     </td>
@@ -608,21 +652,22 @@
                                                     <td>{{ $product->customer->shipping_city ?? 'N/A' }}</td>
                                                     <td>{{ $product->customer->shipping_state ?? 'N/A' }}</td>
                                                     <td>{{ $product->tempOrder->po_number ?? 'N/A' }}</td>
-                                                    <td>{{ $product->tempOrder->sku }}</td>
+                                                    <td>{{ $product->tempOrder->sku ?? 'N/A' }}</td>
                                                     <td>{{ $product->product->brand_title }}</td>
                                                     <td>{{ $product->product->brand }}</td>
                                                     <td>{{ $product->product->hsn }}</td>
-                                                    <td>{{ $allocation->allocated_quantity ?? 'N/A' }}</td>
-                                                    <td>{{ $allocation->final_dispatched_quantity ?? 'N/A' }}</td>
-                                                    <td>{{ $allocation->box_count ?? 'N/A' }}</td>
-                                                    <td>{{ $allocation->weight ?? 'N/A' }}</td>
-                                                    <td>{{ $product->price ?? 'N/A' }}</td>
-                                                    <td>{{ $allocation->final_dispatched_quantity * $product->price ?? 'N/A' }}
+                                                    <td>{{ intval($product->tempOrder->po_qty ?? ($product->ordered_quantity ?? 0)) }}
                                                     </td>
-                                                    <td>{{ $product->tempOrder->gst ?? 'N/A' }}</td>
-                                                    <td>{{ $allocation->final_dispatched_quantity * $product->price * ($product->tempOrder->gst / 100) ?? 'N/A' }}
+                                                    <td>{{ $allocation->final_final_dispatched_quantity ?? 0 }}</td>
+                                                    <td>{{ $allocation->box_count ?? 0 }}</td>
+                                                    <td>{{ $allocation->weight ?? 0 }}</td>
+                                                    <td>{{ $product->tempOrder?->basic_rate ?? 0 }}</td>
+                                                    <td>{{ $allocation->final_final_dispatched_quantity * $product->tempOrder?->basic_rate ?? 0 }}
                                                     </td>
-                                                    <td>{{ $allocation->final_dispatched_quantity * $product->price * (1 + $product->tempOrder->gst / 100) ?? 'N/A' }}
+                                                    <td>{{ $product->tempOrder->gst ?? 0 }}</td>
+                                                    <td>{{ $allocation->final_final_dispatched_quantity * $product->tempOrder?->basic_rate * (($product->tempOrder->gst ?? 0) / 100) ?? 0 }}
+                                                    </td>
+                                                    <td>{{ $allocation->final_final_dispatched_quantity * $product->tempOrder?->basic_rate * (1 + ($product->tempOrder->gst ?? 0) / 100) ?? 0 }}
                                                     </td>
                                                     <td>{{ $product->purchase_ordered_quantity ?? 0 }}</td>
                                                     <td>{{ $product->vendorPIProduct?->purchase_rate ?? 0 }}</td>
@@ -636,118 +681,6 @@
                                                     <td>
                                                         {{ $subtotal + $gstAmount }}
                                                     </td>
-                                                </tr>
-                                            @endforeach
-                                        @endif
-                                    @endforeach
-                                @empty
-                                    <tr>
-                                        <td colspan="32" class="text-center text-muted py-4">
-                                            <i class="bx bx-info-circle fs-4 d-block mb-2"></i>
-                                            No customer sales records found for the selected criteria.
-                                        </td>
-                                    </tr>
-                                @endforelse
-                            </tbody>
-                            <tbody class="d-none">
-                                @forelse ($invoices as $salesOrder)
-                                    @foreach ($salesOrder->orderedProducts as $product)
-                                        @if ($product->warehouseAllocations->count() > 0)
-                                            @foreach ($product->warehouseAllocations as $allocation)
-                                                <tr>
-                                                    <td>{{ $salesOrder->customerGroup->name ?? 'N/A' }}</td>
-                                                    <td>{{ $allocation->warehouse->name ?? 'N/A' }}</td>
-                                                    <td>{{ $product->customer->client_name ?? 'N/A' }}</td>
-                                                    {{-- <td>{{ $product->tempOrder->gst ?? 'N/A' }}</td> --}}
-                                                    <td>
-                                                        @php
-                                                            $invoiceNumber = 'N/A';
-                                                            if ($salesOrder->invoices->count() > 0) {
-                                                                foreach ($salesOrder->invoices as $invoice) {
-                                                                    if (
-                                                                        $invoice->warehouse_id ==
-                                                                        $allocation->warehouse_id
-                                                                    ) {
-                                                                        $invoiceNumber =
-                                                                            $invoice->invoice_number ?? 'N/A';
-                                                                        break;
-                                                                    }
-                                                                }
-                                                            }
-                                                        @endphp
-                                                        {{ $invoiceNumber }}
-                                                    </td>
-                                                    {{-- <td>{{ $salesOrder->invoices->first()->invoice_number ??   'N/A' }}</td> --}}
-                                                    {{-- <td>{{ $salesOrder->created_by ?? 'N/A' }}</td> --}}
-                                                    <td>{{ $product->customer->contact_no ?? 'N/A' }}</td>
-                                                    <td>{{ $product->customer->email ?? 'N/A' }}</td>
-                                                    <td>{{ $product->customer->shipping_city ?? 'N/A' }}</td>
-                                                    <td>{{ $product->customer->shipping_state ?? 'N/A' }}</td>
-                                                    <td>{{ $product->tempOrder->po_number ?? 'N/A' }}</td>
-                                                    <td>{{ $product->tempOrder->sku }}</td>
-                                                    <td>{{ $product->product->brand_title }}</td>
-                                                    <td>{{ $product->product->brand }}</td>
-
-                                                    {{-- <td>{{ $product->tempOrder->po_date ?? 'N/A' }}</td> --}}
-
-                                                    <td>{{ $product->invoiceDetails->first()?->invoice?->appointment?->appointment_date->format('d-m-Y') ?? 'N/A' }}
-                                                    </td>
-                                                    <td>{{ $product->invoiceDetails->first()?->invoice?->appointment?->appointment_date->addMonth()->format('d-m-Y') ?? 'N/A' }}
-                                                    </td>
-
-                                                    {{-- <td>{{ $salesOrder->due_date ?? 'N/A' }}</td>   --}}
-                                                    <td>{{ $product->invoiceDetails->first()?->invoice?->appointment?->pod ? 'Yes' : 'No' }}
-                                                    </td>
-                                                    <td>{{ $product->invoiceDetails->first()?->invoice?->appointment?->grn ? 'Yes' : 'No' }}
-                                                    </td>
-                                                    <td>{{ $product->invoiceDetails->first()?->invoice?->dns?->dn_amount ?? 0 }}
-                                                    </td>
-                                                    <td>{{ $product->invoiceDetails->first()?->invoice?->dns?->dn_receipt ? 'Yes' : 'No' }}
-                                                    </td>
-                                                    <td>{{ $salesOrder->appointment?->lr ? 'Yes' : 'No' }}</td>
-                                                    <td>{{ $salesOrder->invoices->first()->currency ?? 'INR' }}</td>
-
-                                                    <td>{{ $product->product->brand ?? 'N/A' }}</td>
-
-                                                    <td>{{ $product->tempOrder->hsn ?? 'N/A' }}</td>
-                                                    <td>{{ $product->ordered_quantity ?? 'N/A' }}</td>
-                                                    <td>{{ $allocation->final_dispatched_quantity ?? 'N/A' }}</td>
-                                                    <td>{{ $allocation->box_count ?? 'N/A' }}</td>
-                                                    <td>{{ $allocation->weight ?? 'N/A' }}</td>
-                                                    <td>{{ $product->price ?? 'N/A' }}</td>
-                                                    <td>{{ $allocation->final_dispatched_quantity * $product->price ?? 'N/A' }}
-                                                    </td>
-                                                    <td>{{ $product->tempOrder->gst ?? 'N/A' }}</td>
-                                                    <td>{{ $allocation->final_dispatched_quantity * $product->price * (1 + $product->tempOrder->gst / 100) ?? 'N/A' }}
-                                                    </td>
-                                                    <td>{{ $statuses[$salesOrder->status] ?? 'N/A' }}</td>
-                                                    <td>{{ $product->invoiceDetails->first()?->invoice?->total_amount ?? 'N/A' }}
-                                                        {{-- @if ($loop->first) --}}
-                                                        {{-- <td rowspan="{{ $product->warehouseAllocations->count() }}"> --}}
-                                                    <td>
-                                                        {{ $product->invoiceDetails->first()?->invoice?->paid_amount ?? 'N/A' }}
-                                                    </td>
-                                                    {{-- @endif --}}
-                                                    <td>{{ $product->invoiceDetails->first()?->invoice?->balance_due ?? 'N/A' }}
-                                                    </td>
-                                                    <td>{{ $product->invoiceDetails->first()?->invoice?->payments?->first()?->created_at->format('d-m-Y') ?? 'N/A' }}
-                                                    </td>
-                                                    <td>{{ $product->invoiceDetails->first()?->invoice?->payments?->first()?->payment_method ?? 'N/A' }}
-                                                    </td>
-
-                                                    <td>{{ $product->tempOrder->gst / 2 ?? 'N/A' }}</td>
-                                                    <td>{{ $product->tempOrder->gst / 2 ?? 'N/A' }}</td>
-                                                    <td>{{ $product->tempOrder->gst ?? 'N/A' }}</td>
-                                                    <td>{{ $product->invoiceDetails->first()?->invoice->cess ?? 'N/A' }}
-                                                    </td>
-                                                    {{-- 
-                                                    <td>
-                                                        <a href=""
-                                                            class="btn btn-icon btn-sm bg-primary-subtle me-1"
-                                                            data-bs-toggle="tooltip" title="View Sales Order">
-                                                            <i class="bx bx-show text-primary"></i>
-                                                        </a>
-                                                    </td> --}}
                                                 </tr>
                                             @endforeach
                                         @endif
@@ -855,6 +788,11 @@
                     'appointmentDateDropdownText', 'Select Date');
             });
 
+            $(document).on('change', '.sales-order-no-checkbox', function() {
+                updateDropdownText('.sales-order-no-checkbox', 'salesOrderNoDropdown',
+                    'salesOrderNoDropdownText', 'Select Sales Order No');
+            });
+
             /**
              * Reset Filter Button Click Handler
              */
@@ -872,6 +810,7 @@
                 $('.invoice-no-checkbox').prop('checked', false);
                 $('.po-no-checkbox').prop('checked', false);
                 $('.appointment-date-checkbox').prop('checked', false);
+                $('.sales-order-no-checkbox').prop('checked', false);
 
                 // Redirect to base URL without filters
                 window.location.href = '{{ route('customer-sales-sku') }}';
@@ -905,6 +844,9 @@
                 var poNo = $('input[name="po_no[]"]:checked').map(function() {
                     return this.value;
                 }).get();
+                var salesOrderNo = $('input[name="sales_order_no[]"]:checked').map(function() {
+                    return this.value;
+                }).get();
                 var appointmentDate = $('input[name="appointment_date[]"]:checked').map(function() {
                     return this.value;
                 }).get();
@@ -934,6 +876,9 @@
                 // });
                 if (poNo.length > 0) poNo.forEach(function(val) {
                     params.push('po_no[]=' + encodeURIComponent(val));
+                });
+                if (salesOrderNo.length > 0) salesOrderNo.forEach(function(val) {
+                    params.push('sales_order_no[]=' + encodeURIComponent(val));
                 });
                 if (appointmentDate.length > 0) appointmentDate.forEach(function(val) {
                     params.push('appointment_date[]=' + encodeURIComponent(val));
@@ -1049,7 +994,9 @@
                 var totalPOAmount = 0;
 
                 // Get all visible rows from the DataTable (respects current filter/search)
-                inventoryStockTable.rows({ search: 'applied' }).every(function() {
+                inventoryStockTable.rows({
+                    search: 'applied'
+                }).every(function() {
                     var data = this.data();
 
                     // Column index 23 is "Purchase Order Quantity"

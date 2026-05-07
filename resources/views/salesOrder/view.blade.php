@@ -629,7 +629,7 @@
                 var selected = $(this).val().trim();
 
                 // Use regex for exact match
-                brandSelection.column(-8).search(selected ? '^' + selected + '$' : '', true, false).draw();
+                brandSelection.column(-12).search(selected ? '^' + selected + '$' : '', true, false).draw();
             });
 
             $('.status-filter-tab').on('click', function() {
