@@ -84,7 +84,6 @@
                                         <tr>
                                             <th style="width:40px;"><input class="form-check-input" type="checkbox" id="selectAllSales"></th>
                                             <th>Sales&nbsp;Order&nbsp;ID</th>
-                                            <th>Invoice&nbsp;No</th>
                                             <th>Customer&nbsp;Group&nbsp;Name</th>
                                             <th>Ordered&nbsp;Date</th>
                                             <th>Status</th>
@@ -96,7 +95,6 @@
                                             <tr>
                                                 <td><input class="form-check-input" type="checkbox"></td>
                                                 <td>{{ $invoice->order_number }}</td>
-                                                <td>{{ $invoice->invoices->pluck('invoice_number')->filter()->implode(', ') ?: 'N/A' }}</td>
                                                 <td>{{ $invoice->customerGroup?->name ?? 'N/A' }}</td>
                                                 <td>{{ $invoice->created_at ? $invoice->created_at->format('d-M-Y') : 'N/A' }}</td>
                                                 <td>
@@ -124,7 +122,7 @@
                                             </tr>
                                         @empty
                                             <tr>
-                                                <td colspan="7" class="text-center text-muted py-4">No sales order invoices found</td>
+                                                <td colspan="6" class="text-center text-muted py-4">No sales order invoices found</td>
                                             </tr>
                                         @endforelse
                                     </tbody>
@@ -135,7 +133,7 @@
                         <!-- Manual Invoices Tab -->
                         <div class="tab-pane fade" id="manual" role="tabpanel" aria-labelledby="manual-tab">
                             <div class="table-responsive white-space-nowrap">
-                                <table id="example" class="table table-striped table-hover">
+                                <table id="example2" class="table table-striped table-hover">
                                     <thead class="table-light">
                                         <tr>
                                             <th style="width:40px;"><input class="form-check-input" type="checkbox" id="selectAllManual"></th>
