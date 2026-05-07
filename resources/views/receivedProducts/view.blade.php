@@ -172,7 +172,7 @@
                                                                 <td>{{ $vendorPIs->purchaseOrder->order_number }}</td>
                                                                 <td>{{ $vendorPIs->vendor_code }}</td>
                                                                 <td>{{ $product->vendor_sku_code }}</td>
-                                                                <td>{{ $product->product?->brand_title ?? 'NA' }}</td>
+                                                                <td>{{ $product->product?->brand_title ?? $product->title ?? 'NA' }}</td>
                                                                 <td>{{ $product->mrp }}</td>
                                                                 <td>{{ $product->quantity_requirement }}</td>
                                                                 <td>{{ $product->available_quantity }}</td>
