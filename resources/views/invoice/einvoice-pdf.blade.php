@@ -355,7 +355,7 @@
                     @if ($invoiceItemType === 'service')
                         <td>{{ $detail->service_title }}</td>
                         <td>{{ $detail->service_category }}</td>
-                        <td>{{ $detail->service_description }}</td>
+                        <td>{{ $detail->service_description }}</td> 
                         <td>{{ $detail->campaign_name }}</td>
                         <td class="right-align">{{ $detail->quantity }}</td>
                         <td>{{ $detail->unit_type }}</td>
@@ -369,11 +369,11 @@
                             <br>
                             {{ $detail->product?->sku }}
                             <br>
-                            {{ $detail->product?->brand_title }}
+                            {{ $detail->tempOrder?->description ?? $detail->product?->brand_title }}
                         </td>
                         <td class="right-align">{{ $detail->hsn ?? $detail->tempOrder?->hsn }}</td>
                         <td class="right-align">{{ $detail->quantity }}</td>
-                        <td class="right-align">{{ $detail->box_count ?? $detail->salesOrderProduct?->box_count }}</td>
+                        <td class="right-align">{{ intval($detail->box_count) ?? intval($detail->salesOrderProduct?->box_count) }}</td>
                     @endif
 
                     <td class="right-align">{{ number_format($detail->unit_price, 2) }}</td>
