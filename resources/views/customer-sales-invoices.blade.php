@@ -366,7 +366,46 @@
                                         </div>
                                     </div>
 
+                                    <!-- Sales Order No Filter -->
+                                    <div class="col-md-2">
+                                        <div class="mb-3">
+                                            <label class="form-label">Sales Order No</label>
+                                            <div class="dropdown">
+                                                <button class="btn btn-outline-secondary dropdown-toggle w-100 text-start"
+                                                    type="button" id="salesOrderNoDropdown" data-bs-toggle="dropdown">
+                                                    <i class="bx bx-filter-alt me-1"></i>
+                                                    <span id="salesOrderNoDropdownText">
+                                                        @if (is_array($filters['sales_order_no'] ?? null) && count($filters['sales_order_no']) > 0)
+                                                            {{ count($filters['sales_order_no']) }} selected
+                                                        @else
+                                                            Select Sales Order No
+                                                        @endif
+                                                    </span>
+                                                </button>
+                                                <ul class="dropdown-menu w-100" id="salesOrderNoCheckboxList"
+                                                    style="max-height: 250px; overflow-y: auto;">
+                                                    @foreach ($salesOrderNumbers as $salesOrderNo)
+                                                        <li class="px-2 py-1">
+                                                            <div class="form-check">
+                                                                <input class="form-check-input sales-order-no-checkbox"
+                                                                    type="checkbox" name="sales_order_no[]"
+                                                                    value="{{ $salesOrderNo }}"
+                                                                    id="sales_order_no_{{ $loop->index }}"
+                                                                    {{ in_array($salesOrderNo, (array) ($filters['sales_order_no'] ?? [])) ? 'checked' : '' }}>
+                                                                <label class="form-check-label w-100 cursor-pointer"
+                                                                    for="sales_order_no_{{ $loop->index }}">
+                                                                    {{ $salesOrderNo }}
+                                                                </label>
+                                                            </div>
+                                                        </li>
+                                                    @endforeach
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+
                                     <!-- Appointment Date Filter -->
+                                    {{-- 
                                     <div class="col-md-2">
                                         <div class="mb-3">
                                             <label class="form-label">Appointment Date</label>
@@ -403,7 +442,7 @@
                                                 </ul>
                                             </div>
                                         </div>
-                                    </div>
+                                    </div> --}}
                                 </div>
                             </div>
 
@@ -509,6 +548,7 @@
                                             $cgstAmount = 0;
                                             $sgstAmount = 0;
                                             $igstAmount = 0;
+                                            $cessAmount = 0;
                                             $firstGstRate = 0;
 
                                             foreach ($invoice->details as $detail) {
@@ -526,6 +566,7 @@
                                                 // GST amount calculation: (amount * tax) / 100
                                                 $detailGstAmount = ($detail->amount * $detail->tax) / 100;
                                                 $gstAmount += $detailGstAmount;
+                                                $cessAmount += (float) ($detail->cess ?? 0);
 
                                                 // Store first GST rate for display
                                                 if ($firstGstRate == 0 && $detail->tax > 0) {
@@ -553,6 +594,14 @@
                                                     $cgstAmount += $detailGstAmount / 2;
                                                     $sgstAmount += $detailGstAmount / 2;
                                                     $igstAmount += $detailGstAmount;
+                                                }
+                                            }
+
+                                            // If line-level cess is unavailable, derive from invoice-level tax
+                                            if ($cessAmount <= 0) {
+                                                $invoiceTaxAmount = (float) ($invoice->tax_amount ?? 0);
+                                                if ($invoiceTaxAmount > $gstAmount) {
+                                                    $cessAmount = $invoiceTaxAmount - $gstAmount;
                                                 }
                                             }
                                         @endphp
@@ -595,7 +644,7 @@
                                             <td>₹{{ number_format($cgstAmount, 2) }}</td>
                                             <td>₹{{ number_format($sgstAmount, 2) }}</td>
                                             <td>₹{{ number_format($igstAmount, 2) }}</td>
-                                            <td>₹0.00</td>
+                                            <td>{{ number_format($cessAmount, 2) }}</td>
                                         </tr>
                                     @endforeach
                                 @empty
@@ -692,6 +741,11 @@
                     'appointmentDateDropdownText', 'Select Date');
             });
 
+            $(document).on('change', '.sales-order-no-checkbox', function() {
+                updateDropdownText('.sales-order-no-checkbox', 'salesOrderNoDropdown',
+                    'salesOrderNoDropdownText', 'Select Sales Order No');
+            });
+
             /**
              * Reset Filter Button Click Handler
              */
@@ -707,6 +761,7 @@
                 $('.invoice-no-checkbox').prop('checked', false);
                 $('.po-no-checkbox').prop('checked', false);
                 $('.appointment-date-checkbox').prop('checked', false);
+                $('.sales-order-no-checkbox').prop('checked', false);
 
                 // Redirect to base URL without filters
                 window.location.href = '{{ route('customer-sales-invoices') }}';
@@ -734,6 +789,9 @@
                 var poNo = $('input[name="po_no[]"]:checked').map(function() {
                     return this.value;
                 }).get();
+                var salesOrderNo = $('input[name="sales_order_no[]"]:checked').map(function() {
+                    return this.value;
+                }).get();
                 var appointmentDate = $('input[name="appointment_date[]"]:checked').map(function() {
                     return this.value;
                 }).get();
@@ -757,6 +815,9 @@
                 });
                 if (poNo.length > 0) poNo.forEach(function(val) {
                     params.push('po_no[]=' + encodeURIComponent(val));
+                });
+                if (salesOrderNo.length > 0) salesOrderNo.forEach(function(val) {
+                    params.push('sales_order_no[]=' + encodeURIComponent(val));
                 });
                 if (appointmentDate.length > 0) appointmentDate.forEach(function(val) {
                     params.push('appointment_date[]=' + encodeURIComponent(val));
@@ -803,6 +864,9 @@
                 var poNo = $('input[name="po_no[]"]:checked').map(function() {
                     return this.value;
                 }).get();
+                var salesOrderNo = $('input[name="sales_order_no[]"]:checked').map(function() {
+                    return this.value;
+                }).get();
                 var appointmentDate = $('input[name="appointment_date[]"]:checked').map(function() {
                     return this.value;
                 }).get();
@@ -826,6 +890,9 @@
                 });
                 if (poNo.length > 0) poNo.forEach(function(val) {
                     params.push('po_no[]=' + encodeURIComponent(val));
+                });
+                if (salesOrderNo.length > 0) salesOrderNo.forEach(function(val) {
+                    params.push('sales_order_no[]=' + encodeURIComponent(val));
                 });
                 if (appointmentDate.length > 0) appointmentDate.forEach(function(val) {
                     params.push('appointment_date[]=' + encodeURIComponent(val));

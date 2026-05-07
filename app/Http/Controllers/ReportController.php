@@ -1971,6 +1971,9 @@ class ReportController extends Controller
         if ($request->filled('to_date')) {
             $query->where('order_date', '<=', $request->to_date);
         }
+        if ($request->filled('sales_order_no')) {
+            $query->whereIn('order_number', (array) $request->sales_order_no);
+        }
         if ($request->filled('invoice_no')) {
             $invoiceNos = (array) $request->invoice_no;
 
@@ -2139,6 +2142,12 @@ class ReportController extends Controller
             ->sort()
             ->values();
 
+        $salesOrderNumbers = SalesOrder::whereNotNull('order_number')
+            ->distinct()
+            ->pluck('order_number')
+            ->sort()
+            ->values();
+
         // Get unique appointment dates (from invoices related to sales orders)
         $appointmentDates = \App\Models\Appointment::distinct('appointment_date')
             ->whereNotNull('appointment_date')
@@ -2163,6 +2172,7 @@ class ReportController extends Controller
             'customer_type' => $request->customer_type,
             'invoice_no' => $request->input('invoice_no', []),
             'po_no' => $request->input('po_no', []),
+            'sales_order_no' => $request->input('sales_order_no', []),
             'appointment_date' => $request->input('appointment_date', []),
         ];
 
@@ -2174,6 +2184,7 @@ class ReportController extends Controller
             'regions',
             'invoiceNumbers',
             'poNumbers',
+            'salesOrderNumbers',
             'appointmentDates',
             'totalRevenue',
             'totalPaid',
@@ -2224,6 +2235,9 @@ class ReportController extends Controller
 
             if ($request->filled('to_date')) {
                 $query->where('order_date', '<=', $request->to_date);
+            }
+            if ($request->filled('sales_order_no')) {
+                $query->whereIn('order_number', (array) $request->sales_order_no);
             }
             if ($request->filled('invoice_no')) {
                 $invoiceNos = (array) $request->invoice_no;
@@ -2405,6 +2419,7 @@ class ReportController extends Controller
                     $cgstAmount = 0;
                     $sgstAmount = 0;
                     $igstAmount = 0;
+                    $cessAmount = 0;
                     $firstGstRate = 0;
 
                     foreach ($invoice->details as $detail) {
@@ -2422,6 +2437,7 @@ class ReportController extends Controller
                         // GST amount calculation: (amount * tax) / 100
                         $detailGstAmount = ($detail->amount * $detail->tax) / 100;
                         $gstAmount += $detailGstAmount;
+                        $cessAmount += (float) ($detail->cess ?? 0);
 
                         // Store first GST rate for display
                         if ($firstGstRate == 0 && $detail->tax > 0) {
@@ -2449,6 +2465,14 @@ class ReportController extends Controller
                             $cgstAmount += $detailGstAmount / 2;
                             $sgstAmount += $detailGstAmount / 2;
                             $igstAmount += $detailGstAmount;
+                        }
+                    }
+
+                    // If line-level cess is unavailable, derive from invoice-level tax
+                    if ($cessAmount <= 0) {
+                        $invoiceTaxAmount = (float) ($invoice->tax_amount ?? 0);
+                        if ($invoiceTaxAmount > $gstAmount) {
+                            $cessAmount = $invoiceTaxAmount - $gstAmount;
                         }
                     }
 
@@ -2488,7 +2512,7 @@ class ReportController extends Controller
                         'CGST' => number_format($cgstAmount, 2),
                         'SGST' => number_format($sgstAmount, 2),
                         'IGST' => number_format($igstAmount, 2),
-                        'Cess' => 0.00 ?? 'N/A',
+                        'Cess' => number_format($cessAmount, 2),
                     ]);
                 }
             }

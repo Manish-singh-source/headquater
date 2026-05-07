@@ -75,7 +75,7 @@
 - [x] Implement customer detail view inside group.[1]
 - [x] Implement edit customer details inside group.[1]
 - [x] Implement delete customer inside group.[1]
-- [x] Implement status update for customers inside group.[1] 
+- [x] Implement status update for customers inside group.[1]
 - [x] Implement multi-delete for customers inside group.[1]
 - [x] Implement multi-status update for customers inside group.[1]
 - [x] Implement add single customer to a group.[1]
@@ -94,8 +94,8 @@
 - [x] Implement edit customer details.[1]
 - [x] Implement delete customer using soft delete.[1] Soft delete not working
 - [x] Implement customer status update.[1]
-- [x] Implement multi-delete for customers.[1] 
-- [x] Implement multi-status update for customers.[1] 
+- [x] Implement multi-delete for customers.[1]
+- [x] Implement multi-status update for customers.[1]
 - [ ] Implement Excel download for customers.[1]
 - [ ] Enforce unique customer email on add/edit.[1]
 
@@ -252,18 +252,14 @@
 - [ ] Define/document Product Issue Excel format.[2]
 - [ ] Define/document Return Order Excel format.[2]
 
+## Soft Delete
 
+1. Vendor
+2. Product
+3. SKU Mapping
+4. Customer Group
+5. Customer
 
+For Cess Value
 
-
-
-
-
-## Soft Delete 
-
-1. Vendor 
-2. Product 
-3. SKU Mapping 
-4. Customer Group 
-5. Customer 
-
+Note: if your DB rows don’t actually carry cess (detail->cess empty and invoice.tax_amount not higher than GST amount), Cess will still be 0.00, which is correct for that data.
