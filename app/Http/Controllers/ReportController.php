@@ -843,7 +843,7 @@ class ReportController extends Controller
     {
         try {
             // Build base query
-            $query = WarehouseStock::with('product', 'warehouse');
+            $query = WarehouseStock::with('product', 'warehouse', 'productMapping');
 
             // Apply filters
             if ($request->filled('warehouse_id')) {
@@ -925,26 +925,32 @@ class ReportController extends Controller
                 }
             }
 
-            // Clone for stats
-            $statsQuery = clone $query;
-
             // Get paginated results
             $products = $query->get();
 
             // Calculate statistics
-            $stats = $statsQuery->selectRaw('
-                SUM(original_quantity) as total_original,
-                SUM(available_quantity) as total_available,
-                SUM(block_quantity) as total_blocked,
-                SUM(available_quantity * COALESCE(products.mrp, 0)) as total_value
-            ')
-                ->leftJoin('products', 'warehouse_stocks.sku', '=', 'products.sku')
-                ->first();
+            $toNumber = static function ($value): float {
+                if (is_int($value) || is_float($value)) {
+                    return (float) $value;
+                }
+                if (is_string($value)) {
+                    $cleaned = str_replace(',', '', trim($value));
+                    if (is_numeric($cleaned)) {
+                        return (float) $cleaned;
+                    }
+                    $cleaned = preg_replace('/[^0-9.\-]/', '', $cleaned);
+                    return is_numeric($cleaned) ? (float) $cleaned : 0.0;
+                }
+                return 0.0;
+            };
 
-            $productsSum = $stats->total_original ?? 0;
-            $availableProductsSum = $stats->total_available ?? 0;
-            $blockProductsSum = $stats->total_blocked ?? 0;
-            $totalStockValue = $stats->total_value ?? 0;
+            $productsSum = $products->sum('original_quantity');
+            $availableProductsSum = $products->sum('available_quantity');
+            $blockProductsSum = $products->sum('block_quantity');
+            $totalStockValue = $products->sum(function ($record) use ($toNumber) {
+                $baseRate = $toNumber($record->productMapping?->basic_rate) ?: $toNumber($record->product?->basic_rate);
+                return $toNumber($record->available_quantity) * $baseRate;
+            });
 
             // Get filter dropdown data
             $warehouses = Warehouse::active()->select('id', 'name')->get();
@@ -953,14 +959,13 @@ class ReportController extends Controller
             $skus = Product::distinct('sku')->whereNotNull('sku')->pluck('sku');
 
             // Low stock alerts (available_quantity <= 10) - based on filtered results
-            $lowStockQuery = clone $statsQuery;
-            $lowStockCount = $lowStockQuery->where('available_quantity', '<=', 10)
+            $lowStockCount = $products
+                ->where('available_quantity', '<=', 10)
                 ->where('available_quantity', '>', 0)
                 ->count();
 
             // Out of stock count - based on filtered results
-            $outOfStockQuery = clone $statsQuery;
-            $outOfStockCount = $outOfStockQuery->where('available_quantity', 0)->count();
+            $outOfStockCount = $products->where('available_quantity', 0)->count();
 
             return view('inventory-stock-history', compact(
                 'products',
@@ -1027,7 +1032,7 @@ class ReportController extends Controller
         DB::beginTransaction();
         try {
             // Build query with all filters
-            $query = WarehouseStock::with('product', 'warehouse');
+            $query = WarehouseStock::with('product', 'warehouse', 'productMapping');
 
             if ($request->filled('warehouse_id')) {
                 $wid = $request->input('warehouse_id');
@@ -1132,6 +1137,8 @@ class ReportController extends Controller
                 'PCS/Set',
                 'Sets/CTN',
                 'MRP',
+                'Basic Rate',
+                'Net Landing Rate',
                 'Original Quantity',
                 'Available Quantity',
                 'Hold Qty',
@@ -1164,13 +1171,19 @@ class ReportController extends Controller
                     return 0.0;
                 };
 
-                $mrp = $toNumber($product?->mrp);
+                $mappedMrp = $toNumber($record->productMapping?->mrp);
+                $mappedBasicRate = $toNumber($record->productMapping?->basic_rate);
+                $mappedNetLandingRate = $toNumber($record->productMapping?->net_landing_rate);
+
+                $mrp = $mappedMrp ?: $toNumber($product?->mrp);
+                $basicRate = $mappedBasicRate ?: $toNumber($product?->basic_rate);
+                $netLandingRate = $mappedNetLandingRate ?: $toNumber($product?->net_landing_rate);
                 $gst = $toNumber($product?->gst);
                 $availableQty = $toNumber($record->available_quantity);
                 $originalQty = $toNumber($record->original_quantity);
                 $blockQty = $toNumber($record->block_quantity);
 
-                $stockValue = $availableQty * $mrp;
+                $stockValue = $availableQty * $basicRate;
                 $gstValue = ($stockValue * $gst) / 100;
                 $totalValue = $stockValue + $gstValue;
 
@@ -1183,6 +1196,8 @@ class ReportController extends Controller
                     $product?->pcs_set ?? 0,
                     $product?->sets_ctn ?? 0,
                     number_format($mrp, 2, '.', ''),
+                    number_format($basicRate, 2, '.', ''),
+                    number_format($netLandingRate, 2, '.', ''),
                     $originalQty,
                     $availableQty,
                     $blockQty,

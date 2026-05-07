@@ -299,6 +299,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/vendor-purchase-sku', 'vendorPurchaseHistory1')->name('vendor-purchase-sku');
 
         Route::get('/inventory-stock-history', 'inventoryStockHistory')->name('inventory-stock-history');
+        Route::get('/inventory-stock-history-excel', 'inventoryStockHistoryExcel')->name('inventory.stock.history.excel');
 
         Route::get('/customer-sales-invoices', 'customerSalesHistory')->name('customer-sales-invoices');
         Route::get('/customer-sales-sku', 'customerSalesHistory1')->name('customer-sales-sku');
@@ -306,7 +307,6 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/vendor-purchase-history-excel', 'vendorPurchaseHistoryExcel')->name('vendor.purchase.history.excel');
         Route::get('/vendor-purchase-history-excel1', 'vendorPurchaseHistoryExcel1')->name('vendor.purchase.history.excel1');
 
-        Route::get('/inventory-stock-history-excel', 'inventoryStockHistoryExcel')->name('inventory.stock.history.excel');
 
         Route::get('/customer-sales-history-excel', 'customerSalesHistoryExcel')->name('customer.sales.history.excel');
         Route::get('/customer.sales.history.excel1', 'customerSalesHistoryExcel1')->name('customer.sales.history.excel1');

@@ -372,6 +372,8 @@
                                         <th>PCS/Set</th>
                                         <th>Sets/CTN</th>
                                         <th>MRP</th>
+                                        <th>Basic&nbsp;Rate</th>
+                                        <th>Net&nbsp;Landing&nbsp;Rate</th>
                                         <th>Original&nbsp;Qty</th>
                                         <th>Available&nbsp;Qty</th>
                                         <th>Hold&nbsp;Qty</th>
@@ -386,7 +388,16 @@
                                 <tbody>
                                     @foreach ($products as $product)
                                         @php
-                                            $stockValue = (floatval($product->available_quantity) ?? 0) * (floatval($product->product->mrp) ?? 0);
+                                            $mappedMrp = floatval($product->productMapping->mrp ?? 0);
+                                            $mappedBasicRate = floatval($product->productMapping->basic_rate ?? 0);
+                                            $mappedNetLandingRate = floatval($product->productMapping->net_landing_rate ?? 0);
+
+                                            $displayMrp = $mappedMrp > 0 ? $mappedMrp : floatval($product->product->mrp ?? 0);
+                                            $displayBasicRate = $mappedBasicRate > 0 ? $mappedBasicRate : floatval($product->product->basic_rate ?? 0);
+                                            $displayNetLandingRate = $mappedNetLandingRate > 0 ? $mappedNetLandingRate : floatval($product->product->net_landing_rate ?? 0);
+
+                                            // Taxable value should be computed using basic rate (not MRP)
+                                            $stockValue = (floatval($product->available_quantity) ?? 0) * $displayBasicRate;
                                             $status = 'Normal';
                                             if (($product->available_quantity ?? 0) <= 10 && ($product->available_quantity ?? 0) > 0) {
                                                 $status = 'Low Stock';
@@ -406,7 +417,9 @@
                                             <td>{{ $product->product->sku ?? 'N/A' }}</td>
                                             <td>{{ $product->product->pcs_set ?? 0 }}</td>
                                             <td>{{ $product->product->sets_ctn ?? 0 }}</td>
-                                            <td>₹{{ number_format(floatval($product->product->mrp) ?? 0, 2) }}</td>
+                                            <td>₹{{ number_format($displayMrp, 2) }}</td>
+                                            <td>{{ number_format($displayBasicRate, 2) }}</td>
+                                            <td>{{ number_format($displayNetLandingRate, 2) }}</td>
                                             <td>{{ number_format($product->original_quantity ?? 0) }}</td>
                                             <td>{{ number_format($product->available_quantity ?? 0) }}</td>
                                             <td>{{ number_format($product->block_quantity ?? 0) }}</td>
@@ -464,7 +477,7 @@
                 lengthChange: true,
                 pageLength: 10,
                 order: [
-                    [17, 'desc']
+                    [19, 'desc']
                 ], // Sort by Date column (index 14) in descending order
                 buttons: [{
                     extend: 'excelHtml5',

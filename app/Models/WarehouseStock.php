@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class WarehouseStock extends Model
 {
@@ -12,6 +13,11 @@ class WarehouseStock extends Model
     public function product()
     {
         return $this->hasOne(Product::class, 'sku', 'sku');
+    }
+
+    public function productMapping(): HasOne
+    {
+        return $this->hasOne(ProductMapping::class, 'sku', 'sku')->latestOfMany();
     }
 
     public function warehouse()
