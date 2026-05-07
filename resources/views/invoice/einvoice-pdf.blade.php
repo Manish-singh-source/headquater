@@ -86,16 +86,16 @@
         }
 
         .sno {
-            width: 4%;
+            width: 3%;
         }
 
         .item-desc {
-            width: 32%;
+            width: 22%;
             /* Combined Product Code + ASIN + Description */
         }
 
         .hsn {
-            width: 8%;
+            width: 7%;
         }
 
         .qty {
@@ -107,23 +107,23 @@
         }
 
         .rate {
-            width: 6%;
+            width: 7%;
         }
 
         .amt {
-            width: 9%;
+            width: 7%;
         }
 
         .igstr {
-            width: 6%;
+            width: 5%;
         }
 
         .igsta {
-            width: 8%;
+            width: 7%;
         }
 
         .total {
-            width: 9%;
+            width: 8%;
         }
 
         .right-align {
