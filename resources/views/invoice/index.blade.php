@@ -44,6 +44,20 @@
 
             <div class="card mt-4">
                 <div class="card-body">
+                    <form action="{{ route('invoices') }}" method="GET" class="row g-3 align-items-end mb-3">
+                        <div class="col-12 col-md-4 col-lg-3">
+                            <label for="invoiceNoFilter" class="form-label">Filter Invoice No</label>
+                            <input type="text" name="invoice_no" id="invoiceNoFilter" class="form-control"
+                                value="{{ $filters['invoice_no'] ?? '' }}" placeholder="Enter invoice no">
+                        </div>
+                        <div class="col-12 col-md-auto">
+                            <button type="submit" class="btn btn-primary px-4">Search</button>
+                            @if (!empty($filters['invoice_no']))
+                                <a href="{{ route('invoices') }}" class="btn btn-outline-secondary px-4 ms-2">Clear</a>
+                            @endif
+                        </div>
+                    </form>
+
                     <!-- Tabs Navigation -->
                     <ul class="nav nav-tabs mb-3" id="invoiceTabs" role="tablist">
                         <li class="nav-item" role="presentation">
@@ -70,6 +84,7 @@
                                         <tr>
                                             <th style="width:40px;"><input class="form-check-input" type="checkbox" id="selectAllSales"></th>
                                             <th>Sales&nbsp;Order&nbsp;ID</th>
+                                            <th>Invoice&nbsp;No</th>
                                             <th>Customer&nbsp;Group&nbsp;Name</th>
                                             <th>Ordered&nbsp;Date</th>
                                             <th>Status</th>
@@ -81,6 +96,7 @@
                                             <tr>
                                                 <td><input class="form-check-input" type="checkbox"></td>
                                                 <td>{{ $invoice->order_number }}</td>
+                                                <td>{{ $invoice->invoices->pluck('invoice_number')->filter()->implode(', ') ?: 'N/A' }}</td>
                                                 <td>{{ $invoice->customerGroup?->name ?? 'N/A' }}</td>
                                                 <td>{{ $invoice->created_at ? $invoice->created_at->format('d-M-Y') : 'N/A' }}</td>
                                                 <td>
@@ -108,7 +124,7 @@
                                             </tr>
                                         @empty
                                             <tr>
-                                                <td colspan="6" class="text-center text-muted py-4">No sales order invoices found</td>
+                                                <td colspan="7" class="text-center text-muted py-4">No sales order invoices found</td>
                                             </tr>
                                         @endforelse
                                     </tbody>
