@@ -44,6 +44,20 @@
 
             <div class="card mt-4">
                 <div class="card-body">
+                    <form action="{{ route('invoices') }}" method="GET" class="row g-3 align-items-end mb-3">
+                        <div class="col-12 col-md-4 col-lg-3">
+                            <label for="invoiceNoFilter" class="form-label">Filter Invoice No</label>
+                            <input type="text" name="invoice_no" id="invoiceNoFilter" class="form-control"
+                                value="{{ $filters['invoice_no'] ?? '' }}" placeholder="Enter invoice no">
+                        </div>
+                        <div class="col-12 col-md-auto">
+                            <button type="submit" class="btn btn-primary px-4">Search</button>
+                            @if (!empty($filters['invoice_no']))
+                                <a href="{{ route('invoices') }}" class="btn btn-outline-secondary px-4 ms-2">Clear</a>
+                            @endif
+                        </div>
+                    </form>
+
                     <!-- Tabs Navigation -->
                     <ul class="nav nav-tabs mb-3" id="invoiceTabs" role="tablist">
                         <li class="nav-item" role="presentation">
@@ -119,7 +133,7 @@
                         <!-- Manual Invoices Tab -->
                         <div class="tab-pane fade" id="manual" role="tabpanel" aria-labelledby="manual-tab">
                             <div class="table-responsive white-space-nowrap">
-                                <table id="example" class="table table-striped table-hover">
+                                <table id="example2" class="table table-striped table-hover">
                                     <thead class="table-light">
                                         <tr>
                                             <th style="width:40px;"><input class="form-check-input" type="checkbox" id="selectAllManual"></th>

@@ -29,7 +29,7 @@ use Illuminate\Support\Facades\Validator;
 
 class InvoiceController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $user = Auth::user();
         $isSuperAdmin = $user->hasRole('Super Admin');
@@ -46,13 +46,26 @@ class InvoiceController extends Controller
             $query->where('warehouse_id', $userWarehouseId);
         }
 
+        $invoiceNo = trim((string) $request->query('invoice_no', ''));
+
         $invoices = $query->get();
         
         // Separate manual and sales order invoices
         $manualInvoices = $invoices->where('invoice_type', 'manual');
-        $salesOrderInvoices = SalesOrder::with(['customerGroup', 'invoices'])->whereHas('invoices')->orderBy('id', 'desc')->get();
+        $salesOrderInvoicesQuery = SalesOrder::with(['customerGroup', 'invoices'])
+            ->whereHas('invoices', function ($invoiceQuery) use ($invoiceNo) {
+                if ($invoiceNo !== '') {
+                    $invoiceQuery->where('invoice_number', 'like', '%' . $invoiceNo . '%');
+                }
+            })
+            ->orderBy('id', 'desc');
 
-        return view('invoice.index', compact('invoices', 'manualInvoices', 'salesOrderInvoices'));
+        $salesOrderInvoices = $salesOrderInvoicesQuery->get();
+        $filters = [
+            'invoice_no' => $invoiceNo,
+        ];
+
+        return view('invoice.index', compact('invoices', 'manualInvoices', 'salesOrderInvoices', 'filters'));
     }
 
     public function view($id)
