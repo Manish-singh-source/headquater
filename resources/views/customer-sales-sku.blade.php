@@ -594,7 +594,7 @@
                                     <th>Customer&nbsp;State</th>
 
                                     <th>PO&nbsp;No</th>
-                                    <th>SKU&nbsp;SKU</th>
+                                    <th>SKU&nbsp;Code</th>
                                     <th>Title</th>
                                     <th>Brand</th>
                                     <th>HSN</th>
