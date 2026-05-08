@@ -1219,8 +1219,11 @@ class InvoiceController extends Controller
                 return redirect()->back()->with('error', 'E-Invoice must be generated first before creating E-Way Bill.');
             }
 
-            if ($einvoice->ewaybills()->exists()) {
-                return redirect()->back()->with('error', 'E-Way Bill already exists for this E-Invoice.');
+            if ($einvoice->ewaybills()
+                ->whereNotNull('ewb_no')
+                ->where('ewb_valid_till', '>', now())
+                ->exists()) {
+                return redirect()->back()->with('error', 'Active E-Way Bill already exists for this E-Invoice.');
             }
 
             // Get JWT token
@@ -1246,12 +1249,6 @@ class InvoiceController extends Controller
             // ];
             // $transportationMode = $transportationModeMap[$validated['transportation_mode']] ?? '1';
 
-            // Get JWT token
-            $token = $this->getEInvoiceToken();
-            if (! $token) {
-                return redirect()->back()->with('error', 'Failed to authenticate with e-invoice API.');
-            }
-
             // Use the invoice warehouse GSTIN so the e-way bill request stays in the same account context as the e-invoice.
             $sellerGstin = $invoice->warehouse?->gst_number ?: env('DEFAULT_COMPANY_GSTIN', '27AAGCI3319H1ZM');
 
@@ -1270,7 +1267,7 @@ class InvoiceController extends Controller
             $customer = $invoice->customer;
             $warehousePincode = $this->normalizePincode($warehouse->pincode);
             $customerPincode = $this->normalizePincode($customer->shipping_zip ?? $customer->billing_zip);
-            $isSamePincodeMove = $warehousePincode && $customerPincode && $warehousePincode === $customerPincode;
+            $distance = $this->resolveTransportationDistance($warehousePincode, $customerPincode, $token);
             $sellerStateCode = $this->normalizeStateCode($warehouse ? $this->getStateCode($warehouse->state->name) : '27'); // Default state code
             // $buyerStateCode = $this->normalizeStateCode($this->getStateCode($customer->billing_state ?? $customer->shipping_state));
 
@@ -1279,6 +1276,7 @@ class InvoiceController extends Controller
                 'irn' => $einvoice->irn,
                 'transporter_id' => $validated['transporter_id'] ?? null, // Test transporter ID - keep as is for now
                 'transporter_name' => $validated['transporter_name'] ?? null, // Keep as is
+                'distance' => (string) $distance,
                 // 'transportation_mode' => '1', // Road transport mode for IRN-based e-way bill generation.
                 // 'vehicle_number' => null,
                 // 'vehicle_type' => null,
@@ -1303,10 +1301,6 @@ class InvoiceController extends Controller
                 // For vehicle-based movement, treat this as Road transport.
                 $requestData['transportation_mode'] = '1';
                 $requestData['vehicle_type'] = 'R';
-            }
-
-            if ($isSamePincodeMove) {
-                $requestData['distance'] = '54';
             }
 
             // Make API call with JSON body
@@ -1685,7 +1679,7 @@ class InvoiceController extends Controller
             'distance' => $distance,
         ]);
 
-        return 0;
+        return 54;
     }
 
     private function getDistance($source, $destination, $token)

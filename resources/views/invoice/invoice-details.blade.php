@@ -495,23 +495,25 @@
 @section('script')
     <script>
         // 
+        document.addEventListener('DOMContentLoaded', function() {
+            var ewayBillModal = document.getElementById('ewayBillModal');
+
+            if (ewayBillModal) {
+                ewayBillModal.addEventListener('show.bs.modal', function(event) {
+                    var button = event.relatedTarget;
+
+                    if (!button) {
+                        return;
+                    }
+
+                    ewayBillModal.querySelector('#invoice_id').value = button.getAttribute('data-invoiceid') || '';
+                    ewayBillModal.querySelector('#einvoice_id').value = button.getAttribute('data-einvoiceid') || '';
+                    ewayBillModal.querySelector('#einvoice_irn').value = button.getAttribute('data-irn') || '';
+                });
+            }
+        });
+
         $(document).ready(function() {
-            $('#ewayBillModal').on('show.bs.modal', function(event) {
-                console.log("Hello")
-                var button = $(event.relatedTarget) // Button that triggered the modal
-                var invoiceId = button.data('invoiceid') // Extract info from data* attributes
-                var einvoiceId = button.data('einvoiceid') // Extract info from data-* attributes
-                var irn = button.data('irn') // Extract info from data-* attributes
-                console.log(irn);
-                console.log(invoiceId);
-                console.log(einvoiceId);
-
-                var modal = $(this)
-                modal.find('.modal-body #invoice_id').val(invoiceId)
-                modal.find('.modal-body #einvoice_id').val(einvoiceId)
-                modal.find('.modal-body #einvoice_irn').val(irn)
-            })
-
             $('#cancelEInvoiceModal').on('show.bs.modal', function(event) {
                 var button = $(event.relatedTarget)
                 var action = button.data('action')
