@@ -357,7 +357,7 @@
                             <input type="hidden" class="form-control" id="update_mode" name="update_mode"
                                 value="API" readonly>
                             <input type="hidden" name="einvoice_irn" value="" id="einvoice_irn">
-                            <input type="hidden" name="invoice_id" value="" id="invoice_id">
+                            <input type="hidden" name="invoice_id" value="{{ $invoiceDetails->id }}" id="invoice_id">
                             <input type="hidden" name="einvoice_id" value="" id="einvoice_id">
                             {{-- 
                                     <label for="vehicle_number" class="form-label">Vehicle Number</label>
