@@ -1342,50 +1342,46 @@ class InvoiceController extends Controller
                 ]);
             }
 
+            $duplicateDebugInfo = data_get($data, 'results.errorMessage')
+                ?? data_get($data, 'results.InfoDtls')
+                ?? data_get($data, 'message')
+                ?? $response->body();
+            $duplicateDebugText = is_array($duplicateDebugInfo) ? json_encode($duplicateDebugInfo) : (string) $duplicateDebugInfo;
+            $duplicateEwbNo = $this->extractDuplicateEwbNo($duplicateDebugText);
+
+            if ($duplicateEwbNo) {
+                $ewayBillMessage = $this->fetchEWayBillMessage($sellerGstin, $duplicateEwbNo, $token) ?: [
+                    'EwbNo' => $duplicateEwbNo,
+                ];
+                $ewayBillMessage['EwbNo'] = $ewayBillMessage['EwbNo'] ?? $duplicateEwbNo;
+
+                $ewaybill = $this->saveEWayBillFromApiMessage(
+                    $invoice,
+                    $einvoice,
+                    $ewayBillMessage,
+                    $vehicleNumber,
+                    $validated['transporter_name'] ?? ''
+                );
+
+                activity()->performedOn($invoice)->causedBy(Auth::user())->log('E-Way Bill linked from duplicate API response: ' . $ewaybill->ewb_no);
+
+                return redirect()->back()->with('success', 'E-Way Bill already exists. Linked EWB No: ' . $ewaybill->ewb_no);
+            }
+
             if ($response->successful() && isset($data['results'])) {
                 $results = $data['results'];
                 // dd($results);
                 if (isset($results['status']) && $results['status'] === 'Success' && isset($results['message'])) {
                     $message = $results['message'];
 
-                    DB::beginTransaction();
-                    // Update invoice with e-waybill details
-
-                    $ewaybill = Ewaybill::create([
-                        'invoice_id' => $invoice->id,
-                        'einvoice_id' => $einvoice->id,
-                        'ewb_no' => $message['EwbNo'] ?? null,
-                        'ewb_dt' => isset($message['EwbDt']) ? date('Y-m-d H:i:s', strtotime($message['EwbDt'])) : null,
-                        'ewb_valid_till' => isset($message['EwbValidTill']) ? date('Y-m-d H:i:s', strtotime($message['EwbValidTill'])) : null,
-                        'ewaybill_pdf' => $message['EwaybillPdf'] ?? null,
-                    ]);
-
-                    if (! $ewaybill) {
-                        DB::rollBack();
-
-                        return redirect()->back()->with('error', 'Failed to generate e-way bill.');
-                    }
-
-                    $transportDetail = EwayTransportDetail::create([
-                        'ewaybill_id' => $ewaybill->id,
-                        'transportation_mode' => '',
-                        'vehicle_number' => $vehicleNumber ?? '',
-                        'transporter_name' => $validated['transporter_name'] ?? '',
-                        'transporter_document_number' => '',
-                        'transporter_document_date' => '',
-                        'place_of_consignor' => '',
-                        'state_of_consignor' => '',
-                    ]);
-
-                    if (! $transportDetail) {
-                        DB::rollBack();
-
-                        return redirect()->back()->with('error', 'Failed to generate e-way bill.');
-                    }
-
-                    DB::commit();
-
-                    $ewbNo = $message['EwbNo'] ?? 'N/A';
+                    $ewaybill = $this->saveEWayBillFromApiMessage(
+                        $invoice,
+                        $einvoice,
+                        $message,
+                        $vehicleNumber,
+                        $validated['transporter_name'] ?? ''
+                    );
+                    $ewbNo = $ewaybill->ewb_no ?? 'N/A';
                     activity()->performedOn($invoice)->causedBy(Auth::user())->log('E-Way Bill generated: ' . $ewbNo);
 
                     return redirect()->back()->with('success', 'E-Way Bill generated successfully. EWB No: ' . $ewbNo);
@@ -1394,8 +1390,29 @@ class InvoiceController extends Controller
                     Log::error('E-Way Bill API Error Response: ' . json_encode($data));
                     // Show detailed error for debugging
                     $debugInfo = isset($results['errorMessage']) ? $results['errorMessage'] : (isset($results['InfoDtls']) ? $results['InfoDtls'] : json_encode($results));
+                    $debugText = is_array($debugInfo) ? json_encode($debugInfo) : (string) $debugInfo;
+                    $duplicateEwbNo = $this->extractDuplicateEwbNo($debugText);
 
-                    return redirect()->back()->with('error', 'Failed to generate e-way bill: ' . $debugInfo);
+                    if ($duplicateEwbNo) {
+                        $ewayBillMessage = $this->fetchEWayBillMessage($sellerGstin, $duplicateEwbNo, $token) ?: [
+                            'EwbNo' => $duplicateEwbNo,
+                        ];
+                        $ewayBillMessage['EwbNo'] = $ewayBillMessage['EwbNo'] ?? $duplicateEwbNo;
+
+                        $ewaybill = $this->saveEWayBillFromApiMessage(
+                            $invoice,
+                            $einvoice,
+                            $ewayBillMessage,
+                            $vehicleNumber,
+                            $validated['transporter_name'] ?? ''
+                        );
+
+                        activity()->performedOn($invoice)->causedBy(Auth::user())->log('E-Way Bill linked from duplicate API response: ' . $ewaybill->ewb_no);
+
+                        return redirect()->back()->with('success', 'E-Way Bill already exists. Linked EWB No: ' . $ewaybill->ewb_no);
+                    }
+
+                    return redirect()->back()->with('error', 'Failed to generate e-way bill: ' . $debugText);
                 }
             } else {
                 Log::error('E-Way Bill API Invalid Response: ' . json_encode($data));
@@ -1605,6 +1622,143 @@ class InvoiceController extends Controller
 
             return redirect()->back()->with('error', 'An error occurred while checking e-way bill status: ' . $e->getMessage());
         }
+    }
+
+    private function saveEWayBillFromApiMessage($invoice, $einvoice, array $message, ?string $vehicleNumber = null, string $transporterName = '')
+    {
+        $ewbNo = data_get($message, 'EwbNo')
+            ?? data_get($message, 'ewb_no')
+            ?? data_get($message, 'ewbNo')
+            ?? data_get($message, 'eway_bill_number');
+
+        if (! $ewbNo) {
+            throw new \RuntimeException('E-Way Bill number missing in API response.');
+        }
+
+        $ewbDt = $this->parseEWayBillDate(
+            data_get($message, 'EwbDt')
+            ?? data_get($message, 'ewb_dt')
+            ?? data_get($message, 'ewbDate')
+        );
+        $ewbValidTill = $this->parseEWayBillDate(
+            data_get($message, 'EwbValidTill')
+            ?? data_get($message, 'ewb_valid_till')
+            ?? data_get($message, 'validUpto')
+        );
+        $ewaybillPdf = data_get($message, 'EwaybillPdf')
+            ?? data_get($message, 'ewaybill_pdf')
+            ?? data_get($message, 'EwayBillPdf');
+
+        return DB::transaction(function () use ($invoice, $einvoice, $ewbNo, $ewbDt, $ewbValidTill, $ewaybillPdf, $vehicleNumber, $transporterName) {
+            $ewaybill = Ewaybill::firstOrNew([
+                'invoice_id' => $invoice->id,
+                'einvoice_id' => $einvoice->id,
+                'ewb_no' => (string) $ewbNo,
+            ]);
+            $ewaybill->ewb_dt = $ewbDt ?? $ewaybill->ewb_dt;
+            $ewaybill->ewb_valid_till = $ewbValidTill ?? $ewaybill->ewb_valid_till;
+            $ewaybill->ewaybill_pdf = $ewaybillPdf ?? $ewaybill->ewaybill_pdf;
+            $ewaybill->save();
+
+            EwayTransportDetail::updateOrCreate(
+                ['ewaybill_id' => $ewaybill->id],
+                [
+                    'transportation_mode' => '',
+                    'vehicle_number' => $vehicleNumber ?? '',
+                    'transporter_name' => $transporterName,
+                    'transporter_document_number' => '',
+                    'transporter_document_date' => '',
+                    'place_of_consignor' => '',
+                    'state_of_consignor' => '',
+                ]
+            );
+
+            $invoice->update([
+                'ewb_no' => (string) $ewbNo,
+                'ewb_dt' => $ewbDt ?? $invoice->ewb_dt,
+                'ewb_valid_till' => $ewbValidTill ?? $invoice->ewb_valid_till,
+                'ewaybill_pdf' => $ewaybillPdf ?? $invoice->ewaybill_pdf,
+            ]);
+
+            $einvoice->update([
+                'ewb_no' => (string) $ewbNo,
+                'ewb_dt' => $ewbDt ?? $einvoice->ewb_dt,
+                'ewb_valid_till' => $ewbValidTill ?? $einvoice->ewb_valid_till,
+                'ewaybill_pdf' => $ewaybillPdf ?? $einvoice->ewaybill_pdf,
+            ]);
+
+            return $ewaybill;
+        });
+    }
+
+    private function fetchEWayBillMessage(string $sellerGstin, string $ewbNo, string $token): ?array
+    {
+        try {
+            $requestData = [
+                'user_gstin' => $sellerGstin,
+                'ewb_no' => $ewbNo,
+            ];
+
+            $response = Http::withHeaders($this->getEInvoiceAuthHeaders($token))
+                ->asJson()
+                ->post($this->getEInvoiceApiBaseUrl() . '/getEwayBillData/', $requestData);
+
+            $data = $response->json();
+
+            Log::debug('E-Way Bill Fetch API Response', [
+                'url' => $this->getEInvoiceApiBaseUrl() . '/getEwayBillData/',
+                'status' => $response->status(),
+                'body' => $response->body(),
+                'request' => $requestData,
+            ]);
+
+            if (! $response->successful()) {
+                return null;
+            }
+
+            $message = data_get($data, 'results.message');
+
+            return is_array($message) ? $message : null;
+        } catch (\Exception $e) {
+            Log::error('E-Way Bill Fetch Error: ' . $e->getMessage());
+
+            return null;
+        }
+    }
+
+    private function extractDuplicateEwbNo($errorMessage): ?string
+    {
+        $message = is_array($errorMessage) ? json_encode($errorMessage) : (string) $errorMessage;
+        $lowerMessage = strtolower($message);
+
+        if (! str_contains($message, '4026') && ! str_contains($lowerMessage, 'duplicate')) {
+            return null;
+        }
+
+        if (preg_match('/\bE\s*W\s*B\s*No\b\s*[-:=]?\s*\(?\s*(\d{8,20})\s*\)?/i', $message, $matches)) {
+            return $matches[1];
+        }
+
+        if (preg_match('/\bEway\s*Bill\b.*?\(?\s*(\d{8,20})\s*\)?/i', $message, $matches)) {
+            return $matches[1];
+        }
+
+        if (preg_match('/\b(\d{12})\b/', $message, $matches)) {
+            return $matches[1];
+        }
+
+        return null;
+    }
+
+    private function parseEWayBillDate($value): ?string
+    {
+        if (! $value) {
+            return null;
+        }
+
+        $timestamp = strtotime((string) $value);
+
+        return $timestamp ? date('Y-m-d H:i:s', $timestamp) : null;
     }
 
     private function generateQRCode($data)
