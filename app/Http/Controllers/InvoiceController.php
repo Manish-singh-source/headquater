@@ -25,6 +25,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Validator;
 
 class InvoiceController extends Controller
@@ -1673,22 +1674,38 @@ class InvoiceController extends Controller
                 ]
             );
 
-            $invoice->update([
+            $this->updateEwayColumnsIfPresent($invoice, [
                 'ewb_no' => (string) $ewbNo,
-                'ewb_dt' => $ewbDt ?? $invoice->ewb_dt,
-                'ewb_valid_till' => $ewbValidTill ?? $invoice->ewb_valid_till,
-                'ewaybill_pdf' => $ewaybillPdf ?? $invoice->ewaybill_pdf,
+                'ewb_dt' => $ewbDt,
+                'ewb_valid_till' => $ewbValidTill,
+                'ewaybill_pdf' => $ewaybillPdf,
             ]);
 
-            $einvoice->update([
+            $this->updateEwayColumnsIfPresent($einvoice, [
                 'ewb_no' => (string) $ewbNo,
-                'ewb_dt' => $ewbDt ?? $einvoice->ewb_dt,
-                'ewb_valid_till' => $ewbValidTill ?? $einvoice->ewb_valid_till,
-                'ewaybill_pdf' => $ewaybillPdf ?? $einvoice->ewaybill_pdf,
+                'ewb_dt' => $ewbDt,
+                'ewb_valid_till' => $ewbValidTill,
+                'ewaybill_pdf' => $ewaybillPdf,
             ]);
 
             return $ewaybill;
         });
+    }
+
+    private function updateEwayColumnsIfPresent($model, array $values): void
+    {
+        $table = $model->getTable();
+        $updates = [];
+
+        foreach ($values as $column => $value) {
+            if (Schema::hasColumn($table, $column)) {
+                $updates[$column] = $value ?? $model->{$column};
+            }
+        }
+
+        if (! empty($updates)) {
+            $model->update($updates);
+        }
     }
 
     private function fetchEWayBillMessage(string $sellerGstin, string $ewbNo, string $token): ?array
