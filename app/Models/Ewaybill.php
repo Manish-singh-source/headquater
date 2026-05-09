@@ -26,6 +26,6 @@ class Ewaybill extends Model
 
     public function einvoice()
     {
-        return $this->belongsTo(Einvoice::class);
+        return $this->belongsTo(EInvoice::class);
     }
 }

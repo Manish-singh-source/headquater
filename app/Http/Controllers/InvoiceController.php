@@ -1179,6 +1179,52 @@ class InvoiceController extends Controller
     public function generateEWayBill(Request $request, $id)
     {
         try {
+            $validated = $request->validate([
+                'update_mode' => 'nullable|string',
+                'invoice_id' => 'nullable|integer|exists:invoices,id',
+                'einvoice_id' => 'required|integer|exists:e_invoices,id',
+                'einvoice_irn' => 'nullable|string',
+                'vehicle_number' => ['nullable', 'string', 'regex:/^[A-Z]{2}[0-9]{1,2}[A-Z]{1,3}[0-9]{4}$/i'],
+                'transporter_id' => 'nullable|string',
+                'transporter_name' => 'nullable|string|required_with:transporter_id',
+            ]);
+
+            $postedInvoiceId = (int) ($validated['invoice_id'] ?? $id);
+            if ($postedInvoiceId !== (int) $id) {
+                return redirect()->back()->with('error', 'Invalid E-Way Bill request: invoice mismatch.');
+            }
+
+            $invoice = Invoice::with('customer', 'warehouse', 'ewaybills')->find($id);
+            if (! $invoice) {
+                return redirect()->back()->with('error', 'Invoice not found.');
+            }
+
+            $einvoice = EInvoice::where('id', $validated['einvoice_id'])
+                ->where('invoice_id', $invoice->id)
+                ->first();
+
+            if (! $einvoice) {
+                return redirect()->back()->with('error', 'Invalid E-Way Bill request: E-Invoice does not belong to this invoice.');
+            }
+
+            if (! empty($validated['einvoice_irn']) && $validated['einvoice_irn'] !== $einvoice->irn) {
+                return redirect()->back()->with('error', 'Invalid E-Way Bill request: IRN mismatch.');
+            }
+
+            if ($einvoice->einvoice_status !== 'ACT') {
+                return redirect()->back()->with('error', 'E-Invoice must be active before creating E-Way Bill.');
+            }
+
+            if (! $einvoice->irn) {
+                return redirect()->back()->with('error', 'E-Invoice must be generated first before creating E-Way Bill.');
+            }
+
+            if ($einvoice->ewaybills()
+                ->whereNotNull('ewb_no')
+                ->where('ewb_valid_till', '>', now())
+                ->exists()) {
+                return redirect()->back()->with('error', 'Active E-Way Bill already exists for this E-Invoice.');
+            }
 
             // Get JWT token
             $token = $this->getEInvoiceToken();
@@ -1186,31 +1232,10 @@ class InvoiceController extends Controller
                 return redirect()->back()->with('error', 'Failed to authenticate with e-invoice API.');
             }
 
-            $invoice = Invoice::with('customer', 'warehouse', 'ewaybills')->find($request->invoice_id);
-            $einvoice = EInvoice::find($request->einvoice_id);
-
-            // Check if e-invoice exists
-            if (! $einvoice->irn) {
-                return redirect()->back()->with('error', 'E-Invoice must be generated first before creating E-Way Bill.');
-            }
-
             // Check if e-waybill already generated and still valid
             if ($einvoice->ewb_no && $einvoice->ewb_valid_till && $einvoice->ewb_valid_till > now()) {
                 return redirect()->back()->with('error', 'E-Way Bill already exists and is still valid.');
             }
-
-            // Validate request data
-            $validated = $request->validate([
-                'update_mode' => 'nullable|string',
-                'vehicle_number' => ['nullable', 'string', 'regex:/^[A-Z]{2}[0-9]{1,2}[A-Z]{1,3}[0-9]{4}$/i'],
-                // 'place_of_consignor' => 'nullable|string',
-                // 'state_of_consignor' => 'nullable|string',
-                'transporter_id' => 'nullable|string',
-                'transporter_name' => 'nullable|string|required_with:transporter_id',
-                // 'transportation_mode' => 'nullable|string',
-                // 'transporter_document_number' => 'nullable|string',
-                // 'transporter_document_date' => 'nullable|string',
-            ]);
 
             $vehicleNumber = isset($validated['vehicle_number']) ? strtoupper(preg_replace('/\s+/', '', $validated['vehicle_number'])) : null;
             // validations
@@ -1223,12 +1248,6 @@ class InvoiceController extends Controller
             //     'Ship' => '4',
             // ];
             // $transportationMode = $transportationModeMap[$validated['transportation_mode']] ?? '1';
-
-            // Get JWT token
-            $token = $this->getEInvoiceToken();
-            if (! $token) {
-                return redirect()->back()->with('error', 'Failed to authenticate with e-invoice API.');
-            }
 
             // Use the invoice warehouse GSTIN so the e-way bill request stays in the same account context as the e-invoice.
             $sellerGstin = $invoice->warehouse?->gst_number ?: env('DEFAULT_COMPANY_GSTIN', '27AAGCI3319H1ZM');
@@ -1248,7 +1267,7 @@ class InvoiceController extends Controller
             $customer = $invoice->customer;
             $warehousePincode = $this->normalizePincode($warehouse->pincode);
             $customerPincode = $this->normalizePincode($customer->shipping_zip ?? $customer->billing_zip);
-            $isSamePincodeMove = $warehousePincode && $customerPincode && $warehousePincode === $customerPincode;
+            $distance = $this->resolveTransportationDistance($warehousePincode, $customerPincode, $token);
             $sellerStateCode = $this->normalizeStateCode($warehouse ? $this->getStateCode($warehouse->state->name) : '27'); // Default state code
             // $buyerStateCode = $this->normalizeStateCode($this->getStateCode($customer->billing_state ?? $customer->shipping_state));
 
@@ -1257,6 +1276,7 @@ class InvoiceController extends Controller
                 'irn' => $einvoice->irn,
                 'transporter_id' => $validated['transporter_id'] ?? null, // Test transporter ID - keep as is for now
                 'transporter_name' => $validated['transporter_name'] ?? null, // Keep as is
+                'distance' => (string) $distance,
                 // 'transportation_mode' => '1', // Road transport mode for IRN-based e-way bill generation.
                 // 'vehicle_number' => null,
                 // 'vehicle_type' => null,
@@ -1281,16 +1301,6 @@ class InvoiceController extends Controller
                 // For vehicle-based movement, treat this as Road transport.
                 $requestData['transportation_mode'] = '1';
                 $requestData['vehicle_type'] = 'R';
-            }
-
-            if ($isSamePincodeMove) {
-                $requestData['distance'] = '54';
-            } else {
-                $apiDistance = $this->resolveTransportationDistance($warehousePincode, $customerPincode, $token);
-
-                if ($apiDistance > 0) {
-                    $requestData['distance'] = (string) $apiDistance;
-                }
             }
 
             // Make API call with JSON body
@@ -1410,7 +1420,7 @@ class InvoiceController extends Controller
 
             // $sellerGstin = $invoice->invoice->warehouse ? $invoice->invoice->warehouse->gst_number : '27AAGCI3319H1ZM'; // Test GSTIN for e-waybill consignor
             $sellerGstin = '27AAGCI3319H1ZM'; // Test GSTIN for e-waybill consignor
-            $customerGstin = $invoice->invoice->customer->gst_number ?? '05AAAPG7885R002'; // Test GSTIN for e-waybill consignee
+            $customerGstin = $invoice->invoice->customer->gst_number ?? null; // Test GSTIN for e-waybill consignee
 
             // Check if e-waybill exists
             if (! $invoice->ewb_no) {
@@ -1669,7 +1679,7 @@ class InvoiceController extends Controller
             'distance' => $distance,
         ]);
 
-        return 0;
+        return 54;
     }
 
     private function getDistance($source, $destination, $token)
