@@ -1318,8 +1318,14 @@ class InvoiceController extends Controller
             ]);
 
             $apiErrorMessage = (string) data_get($data, 'results.errorMessage', '');
+            $apiResponseBody = $response->body();
 
-            if ($response->successful() && (str_contains($apiErrorMessage, '4029:') || str_contains($apiErrorMessage, '4013:'))) {
+            if (
+                str_contains($apiErrorMessage, '4029:')
+                || str_contains($apiErrorMessage, '4013:')
+                || str_contains($apiResponseBody, '4029:')
+                || str_contains($apiResponseBody, '4013:')
+            ) {
                 $requestData['distance'] = '54';
 
                 $response = Http::withHeaders($this->getEInvoiceAuthHeaders($token))
