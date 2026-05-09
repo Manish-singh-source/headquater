@@ -1285,6 +1285,12 @@ class InvoiceController extends Controller
 
             if ($isSamePincodeMove) {
                 $requestData['distance'] = '54';
+            } else {
+                $apiDistance = $this->resolveTransportationDistance($warehousePincode, $customerPincode, $token);
+
+                if ($apiDistance > 0) {
+                    $requestData['distance'] = (string) $apiDistance;
+                }
             }
 
             // Make API call with JSON body
@@ -1303,7 +1309,7 @@ class InvoiceController extends Controller
 
             $apiErrorMessage = (string) data_get($data, 'results.errorMessage', '');
 
-            if ($response->successful() && str_contains($apiErrorMessage, '4029:')) {
+            if ($response->successful() && (str_contains($apiErrorMessage, '4029:') || str_contains($apiErrorMessage, '4013:'))) {
                 $requestData['distance'] = '54';
 
                 $response = Http::withHeaders($this->getEInvoiceAuthHeaders($token))
