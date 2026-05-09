@@ -348,7 +348,8 @@
                     <h5 class="modal-title" id="ewayBillModalLabel">Generate E-Way Bill</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <form action="{{ route('invoice.generateEWayBill', $invoiceDetails->id) }}" method="POST">
+                <form action="{{ route('invoice.generateEWayBill', $invoiceDetails->id) }}" method="POST"
+                    id="ewayBillForm">
                     @csrf
                     <div class="modal-body">
                         <div class="row">
@@ -483,7 +484,7 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        <button type="submit" class="btn btn-success">Generate E-Way Bill</button>
+                        <button type="submit" class="btn btn-success" id="ewayBillSubmitBtn">Generate E-Way Bill</button>
                     </div>
                 </form>
             </div>
@@ -510,6 +511,16 @@
                     ewayBillModal.querySelector('#einvoice_id').value = button.getAttribute('data-einvoiceid') || '';
                     ewayBillModal.querySelector('#einvoice_irn').value = button.getAttribute('data-irn') || '';
                 });
+
+                var ewayBillForm = document.getElementById('ewayBillForm');
+                var ewayBillSubmitBtn = document.getElementById('ewayBillSubmitBtn');
+
+                if (ewayBillForm && ewayBillSubmitBtn) {
+                    ewayBillForm.addEventListener('submit', function() {
+                        ewayBillSubmitBtn.disabled = true;
+                        ewayBillSubmitBtn.textContent = 'Generating...';
+                    });
+                }
             }
         });
 

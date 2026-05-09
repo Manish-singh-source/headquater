@@ -16,7 +16,10 @@ class Ewaybill extends Model
         'ewb_no',
         'ewb_dt',
         'ewb_valid_till',
-        'ewaybill_pdf'
+        'ewaybill_pdf',
+        'ewaybill_status',
+        'ewaybill_cancel_reason',
+        'ewaybill_cancel_remarks',
     ];
 
     public function invoice()

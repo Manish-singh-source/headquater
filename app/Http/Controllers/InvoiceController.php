@@ -1174,16 +1174,29 @@ class InvoiceController extends Controller
             }
 
             $invoice = Invoice::with('customer', 'warehouse', 'ewaybills')->find($request->invoice_id);
-            $einvoice = EInvoice::find($request->einvoice_id);
+            $einvoice = EInvoice::with('ewaybills')->find($request->einvoice_id);
 
             // Check if e-invoice exists
-            if (! $einvoice->irn) {
+            if (! $invoice || ! $einvoice || $einvoice->invoice_id !== $invoice->id || ! $einvoice->irn) {
                 return redirect()->back()->with('error', 'E-Invoice must be generated first before creating E-Way Bill.');
             }
 
             // Check if e-waybill already generated and still valid
-            if ($einvoice->ewb_no && $einvoice->ewb_valid_till && $einvoice->ewb_valid_till > now()) {
-                return redirect()->back()->with('error', 'E-Way Bill already exists and is still valid.');
+            $existingEwaybill = $einvoice->ewaybills()
+                ->whereNotNull('ewb_no')
+                ->where(function ($query) {
+                    $query->whereNull('ewaybill_status')
+                        ->orWhere('ewaybill_status', '!=', 'CAN');
+                })
+                ->where(function ($query) {
+                    $query->whereNull('ewb_valid_till')
+                        ->orWhere('ewb_valid_till', '>', now());
+                })
+                ->latest()
+                ->first();
+
+            if ($existingEwaybill) {
+                return redirect()->back()->with('error', 'E-Way Bill already exists. EWB No: ' . $existingEwaybill->ewb_no);
             }
 
             // Validate request data
@@ -1323,6 +1336,7 @@ class InvoiceController extends Controller
                         'ewb_dt' => isset($message['EwbDt']) ? date('Y-m-d H:i:s', strtotime($message['EwbDt'])) : null,
                         'ewb_valid_till' => isset($message['EwbValidTill']) ? date('Y-m-d H:i:s', strtotime($message['EwbValidTill'])) : null,
                         'ewaybill_pdf' => $message['EwaybillPdf'] ?? null,
+                        'ewaybill_status' => 'ACT',
                     ]);
 
                     if (! $ewaybill) {
@@ -1359,6 +1373,64 @@ class InvoiceController extends Controller
                     Log::error('E-Way Bill API Error Response: ' . json_encode($data));
                     // Show detailed error for debugging
                     $debugInfo = isset($results['errorMessage']) ? $results['errorMessage'] : (isset($results['InfoDtls']) ? $results['InfoDtls'] : json_encode($results));
+
+                    if (str_contains($debugInfo, '4026:') && preg_match('/EwbNo\s*-\s*\(?([0-9]+)\)?/i', $debugInfo, $matches)) {
+                        $ewbNo = $matches[1];
+                        $ewaybillDetails = [];
+
+                        $ewaybillDataResponse = Http::withHeaders($this->getEInvoiceAuthHeaders($token))
+                            ->get($this->getEInvoiceApiBaseUrl() . '/getEwayBillData/', [
+                                'action' => 'GetEwayBill',
+                                'gstin' => $sellerGstin,
+                                'eway_bill_number' => $ewbNo,
+                            ]);
+
+                        $ewaybillData = $ewaybillDataResponse->json();
+
+                        Log::debug('E-Way Bill Duplicate Recovery API Response', [
+                            'url' => $this->getEInvoiceApiBaseUrl() . '/getEwayBillData/',
+                            'status' => $ewaybillDataResponse->status(),
+                            'body' => $ewaybillDataResponse->body(),
+                            'request' => [
+                                'action' => 'GetEwayBill',
+                                'gstin' => $sellerGstin,
+                                'eway_bill_number' => $ewbNo,
+                            ],
+                        ]);
+
+                        if ($ewaybillDataResponse->successful() && data_get($ewaybillData, 'results.status') === 'Success') {
+                            $ewaybillDetails = (array) data_get($ewaybillData, 'results.message', []);
+                        }
+
+                        $ewaybill = Ewaybill::updateOrCreate(
+                            [
+                                'invoice_id' => $invoice->id,
+                                'einvoice_id' => $einvoice->id,
+                                'ewb_no' => $ewbNo,
+                            ],
+                            [
+                                'ewb_dt' => isset($ewaybillDetails['eway_bill_date']) ? date('Y-m-d H:i:s', strtotime($ewaybillDetails['eway_bill_date'])) : null,
+                                'ewb_valid_till' => isset($ewaybillDetails['eway_bill_valid_date']) ? date('Y-m-d H:i:s', strtotime($ewaybillDetails['eway_bill_valid_date'])) : null,
+                                'ewaybill_pdf' => $ewaybillDetails['EwaybillPdf'] ?? null,
+                                'ewaybill_status' => $ewaybillDetails['eway_bill_status'] ?? 'ACT',
+                            ]
+                        );
+
+                        EwayTransportDetail::firstOrCreate(
+                            ['ewaybill_id' => $ewaybill->id],
+                            [
+                                'transportation_mode' => '',
+                                'vehicle_number' => $vehicleNumber ?? '',
+                                'transporter_name' => $validated['transporter_name'] ?? '',
+                                'transporter_document_number' => '',
+                                'transporter_document_date' => '',
+                                'place_of_consignor' => '',
+                                'state_of_consignor' => '',
+                            ]
+                        );
+
+                        return redirect()->back()->with('success', 'E-Way Bill already exists on GST portal. Local record updated. EWB No: ' . $ewbNo);
+                    }
 
                     return redirect()->back()->with('error', 'Failed to generate e-way bill: ' . $debugInfo);
                 }
@@ -1451,6 +1523,9 @@ class InvoiceController extends Controller
                     // Update invoice with cancellation details
                     $invoice->update([
                         'ewb_valid_till' => null, // Clear valid till to indicate cancelled
+                        'ewaybill_status' => 'CAN',
+                        'ewaybill_cancel_reason' => 'Others',
+                        'ewaybill_cancel_remarks' => 'Cancelled by user',
                         // Keep other fields as they are, or clear them if needed
                     ]);
 
