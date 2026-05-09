@@ -222,10 +222,20 @@ class InvoiceController extends Controller
 
     public function downloadEWayBillPdf($id)
     {
-        $ewaybill = Ewaybill::with('invoice')->findOrFail($id);
+        $ewaybill = Ewaybill::with('invoice.warehouse', 'einvoice')->findOrFail($id);
 
         if (! $ewaybill->ewaybill_pdf) {
-            return redirect()->back()->with('error', 'E-Way Bill PDF not available.');
+            $token = $this->getEInvoiceToken();
+            $sellerGstin = $ewaybill->invoice?->warehouse?->gst_number ?: env('DEFAULT_COMPANY_GSTIN', '27AAGCI3319H1ZM');
+            $message = $token ? $this->fetchEWayBillMessage($sellerGstin, $ewaybill->ewb_no, $token) : null;
+
+            if ($message && $ewaybill->invoice && $ewaybill->einvoice) {
+                $ewaybill = $this->saveEWayBillFromApiMessage($ewaybill->invoice, $ewaybill->einvoice, $message);
+            }
+        }
+
+        if (! $ewaybill->ewaybill_pdf) {
+            return redirect()->back()->with('error', 'E-Way Bill PDF not available from API yet.');
         }
 
         // Fetch the PDF from the external URL
@@ -423,6 +433,8 @@ class InvoiceController extends Controller
     public function invoiceDetails($id)
     {
         $invoiceDetails = Invoice::with(['appointment', 'dns', 'payments', 'customer', 'warehouse', 'einvoices.ewaybills', 'ewaybills'])->find($id);
+        $this->syncMissingEWayBillDetails($invoiceDetails);
+        $invoiceDetails->load(['appointment', 'dns', 'payments', 'customer', 'warehouse', 'einvoices.ewaybills', 'ewaybills']);
         // dd($invoiceDetails);
         // count total active einvoices
         $total_einvoices = $invoiceDetails->einvoices->where('einvoice_status', 'ACT')->count();
@@ -1627,28 +1639,53 @@ class InvoiceController extends Controller
 
     private function saveEWayBillFromApiMessage($invoice, $einvoice, array $message, ?string $vehicleNumber = null, string $transporterName = '')
     {
-        $ewbNo = data_get($message, 'EwbNo')
-            ?? data_get($message, 'ewb_no')
-            ?? data_get($message, 'ewbNo')
-            ?? data_get($message, 'eway_bill_number');
+        $ewbNo = $this->firstDataValue($message, [
+            'EwbNo',
+            'EWBNo',
+            'ewbNo',
+            'ewb_no',
+            'EWayBillNo',
+            'EwayBillNo',
+            'ewayBillNo',
+            'eway_bill_number',
+            'ewayBillNumber',
+        ]);
 
         if (! $ewbNo) {
             throw new \RuntimeException('E-Way Bill number missing in API response.');
         }
 
         $ewbDt = $this->parseEWayBillDate(
-            data_get($message, 'EwbDt')
-            ?? data_get($message, 'ewb_dt')
-            ?? data_get($message, 'ewbDate')
+            $this->firstDataValue($message, [
+                'EwbDt',
+                'EwbDate',
+                'EWayBillDate',
+                'ewayBillDate',
+                'ewb_dt',
+                'ewb_date',
+            ])
         );
         $ewbValidTill = $this->parseEWayBillDate(
-            data_get($message, 'EwbValidTill')
-            ?? data_get($message, 'ewb_valid_till')
-            ?? data_get($message, 'validUpto')
+            $this->firstDataValue($message, [
+                'EwbValidTill',
+                'ValidTill',
+                'ValidUpto',
+                'validUpto',
+                'valid_till',
+                'ewb_valid_till',
+            ])
         );
-        $ewaybillPdf = data_get($message, 'EwaybillPdf')
-            ?? data_get($message, 'ewaybill_pdf')
-            ?? data_get($message, 'EwayBillPdf');
+        $ewaybillPdf = $this->firstDataValue($message, [
+            'EwaybillPdf',
+            'EwayBillPdf',
+            'EWayBillPdf',
+            'ewaybill_pdf',
+            'ewayBillPdf',
+            'ewb_pdf',
+            'pdf',
+            'pdfUrl',
+            'PdfUrl',
+        ]);
 
         return DB::transaction(function () use ($invoice, $einvoice, $ewbNo, $ewbDt, $ewbValidTill, $ewaybillPdf, $vehicleNumber, $transporterName) {
             $ewaybill = Ewaybill::firstOrNew([
@@ -1708,6 +1745,54 @@ class InvoiceController extends Controller
         }
     }
 
+    private function syncMissingEWayBillDetails(?Invoice $invoice): void
+    {
+        if (! $invoice || $invoice->ewaybills->isEmpty()) {
+            return;
+        }
+
+        $missingDetails = $invoice->ewaybills->contains(function ($ewaybill) {
+            return $ewaybill->ewb_no && (! $ewaybill->ewb_dt || ! $ewaybill->ewb_valid_till || ! $ewaybill->ewaybill_pdf);
+        });
+
+        if (! $missingDetails) {
+            return;
+        }
+
+        $token = $this->getEInvoiceToken();
+        if (! $token) {
+            return;
+        }
+
+        $sellerGstin = $invoice->warehouse?->gst_number ?: env('DEFAULT_COMPANY_GSTIN', '27AAGCI3319H1ZM');
+
+        foreach ($invoice->ewaybills as $ewaybill) {
+            if (! $ewaybill->ewb_no || ($ewaybill->ewb_dt && $ewaybill->ewb_valid_till && $ewaybill->ewaybill_pdf)) {
+                continue;
+            }
+
+            $einvoice = $ewaybill->einvoice ?: $invoice->einvoices->firstWhere('id', $ewaybill->einvoice_id);
+            $message = $this->fetchEWayBillMessage($sellerGstin, $ewaybill->ewb_no, $token);
+
+            if ($message && $einvoice) {
+                $this->saveEWayBillFromApiMessage($invoice, $einvoice, $message);
+            }
+        }
+    }
+
+    private function firstDataValue(array $data, array $paths)
+    {
+        foreach ($paths as $path) {
+            $value = data_get($data, $path);
+
+            if ($value !== null && $value !== '') {
+                return $value;
+            }
+        }
+
+        return null;
+    }
+
     private function fetchEWayBillMessage(string $sellerGstin, string $ewbNo, string $token): ?array
     {
         try {
@@ -1733,7 +1818,15 @@ class InvoiceController extends Controller
                 return null;
             }
 
-            $message = data_get($data, 'results.message');
+            $message = data_get($data, 'results.message')
+                ?? data_get($data, 'results')
+                ?? data_get($data, 'message')
+                ?? data_get($data, 'data');
+
+            if (is_string($message)) {
+                $decodedMessage = json_decode($message, true);
+                $message = json_last_error() === JSON_ERROR_NONE ? $decodedMessage : null;
+            }
 
             return is_array($message) ? $message : null;
         } catch (\Exception $e) {
