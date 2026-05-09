@@ -29,7 +29,7 @@ use Illuminate\Support\Facades\Validator;
 
 class InvoiceController extends Controller
 {
-    public function index(Request $request)
+    public function index()
     {
         $user = Auth::user();
         $isSuperAdmin = $user->hasRole('Super Admin');
@@ -38,7 +38,7 @@ class InvoiceController extends Controller
 
         // Fetch all invoices with relationships
         $query = Invoice::with(['warehouse', 'details', 'customer', 'salesOrder.customerGroup', 'appointment', 'dns', 'payments'])
-            ->orderBy('id', 'desc');
+            ->orderBy('created_at', 'desc');
 
         // Filter invoices based on user role
         if (! $isSuperAdmin && ! $isAdmin && $userWarehouseId) {
@@ -46,26 +46,13 @@ class InvoiceController extends Controller
             $query->where('warehouse_id', $userWarehouseId);
         }
 
-        $invoiceNo = trim((string) $request->query('invoice_no', ''));
-
         $invoices = $query->get();
-        
+
         // Separate manual and sales order invoices
         $manualInvoices = $invoices->where('invoice_type', 'manual');
-        $salesOrderInvoicesQuery = SalesOrder::with(['customerGroup', 'invoices'])
-            ->whereHas('invoices', function ($invoiceQuery) use ($invoiceNo) {
-                if ($invoiceNo !== '') {
-                    $invoiceQuery->where('invoice_number', 'like', '%' . $invoiceNo . '%');
-                }
-            })
-            ->orderBy('id', 'desc');
+        $salesOrderInvoices = SalesOrder::with(['customerGroup', 'invoices'])->whereHas('invoices')->get();
 
-        $salesOrderInvoices = $salesOrderInvoicesQuery->get();
-        $filters = [
-            'invoice_no' => $invoiceNo,
-        ];
-
-        return view('invoice.index', compact('invoices', 'manualInvoices', 'salesOrderInvoices', 'filters'));
+        return view('invoice.index', compact('invoices', 'manualInvoices', 'salesOrderInvoices'));
     }
 
     public function view($id)
@@ -1179,49 +1166,6 @@ class InvoiceController extends Controller
     public function generateEWayBill(Request $request, $id)
     {
         try {
-            $validated = $request->validate([
-                'update_mode' => 'nullable|string',
-                'invoice_id' => 'nullable|integer|exists:invoices,id',
-                'einvoice_id' => 'required|integer|exists:e_invoices,id',
-                'einvoice_irn' => 'nullable|string',
-                'vehicle_number' => ['nullable', 'string', 'regex:/^[A-Z]{2}[0-9]{1,2}[A-Z]{1,3}[0-9]{4}$/i'],
-                'transporter_id' => 'nullable|string',
-                'transporter_name' => 'nullable|string|required_with:transporter_id',
-            ]);
-
-            $postedInvoiceId = (int) ($validated['invoice_id'] ?? $id);
-            if ($postedInvoiceId !== (int) $id) {
-                return redirect()->back()->with('error', 'Invalid E-Way Bill request: invoice mismatch.');
-            }
-
-            $invoice = Invoice::with('customer', 'warehouse', 'ewaybills')->find($id);
-            if (! $invoice) {
-                return redirect()->back()->with('error', 'Invoice not found.');
-            }
-
-            $einvoice = EInvoice::where('id', $validated['einvoice_id'])
-                ->where('invoice_id', $invoice->id)
-                ->first();
-
-            if (! $einvoice) {
-                return redirect()->back()->with('error', 'Invalid E-Way Bill request: E-Invoice does not belong to this invoice.');
-            }
-
-            if (! empty($validated['einvoice_irn']) && $validated['einvoice_irn'] !== $einvoice->irn) {
-                return redirect()->back()->with('error', 'Invalid E-Way Bill request: IRN mismatch.');
-            }
-
-            if ($einvoice->einvoice_status !== 'ACT') {
-                return redirect()->back()->with('error', 'E-Invoice must be active before creating E-Way Bill.');
-            }
-
-            if (! $einvoice->irn) {
-                return redirect()->back()->with('error', 'E-Invoice must be generated first before creating E-Way Bill.');
-            }
-
-            if ($einvoice->ewaybills()->exists()) {
-                return redirect()->back()->with('error', 'E-Way Bill already exists for this E-Invoice.');
-            }
 
             // Get JWT token
             $token = $this->getEInvoiceToken();
@@ -1229,10 +1173,31 @@ class InvoiceController extends Controller
                 return redirect()->back()->with('error', 'Failed to authenticate with e-invoice API.');
             }
 
+            $invoice = Invoice::with('customer', 'warehouse', 'ewaybills')->find($request->invoice_id);
+            $einvoice = EInvoice::find($request->einvoice_id);
+
+            // Check if e-invoice exists
+            if (! $einvoice->irn) {
+                return redirect()->back()->with('error', 'E-Invoice must be generated first before creating E-Way Bill.');
+            }
+
             // Check if e-waybill already generated and still valid
             if ($einvoice->ewb_no && $einvoice->ewb_valid_till && $einvoice->ewb_valid_till > now()) {
                 return redirect()->back()->with('error', 'E-Way Bill already exists and is still valid.');
             }
+
+            // Validate request data
+            $validated = $request->validate([
+                'update_mode' => 'nullable|string',
+                'vehicle_number' => ['nullable', 'string', 'regex:/^[A-Z]{2}[0-9]{1,2}[A-Z]{1,3}[0-9]{4}$/i'],
+                // 'place_of_consignor' => 'nullable|string',
+                // 'state_of_consignor' => 'nullable|string',
+                'transporter_id' => 'nullable|string',
+                'transporter_name' => 'nullable|string|required_with:transporter_id',
+                // 'transportation_mode' => 'nullable|string',
+                // 'transporter_document_number' => 'nullable|string',
+                // 'transporter_document_date' => 'nullable|string',
+            ]);
 
             $vehicleNumber = isset($validated['vehicle_number']) ? strtoupper(preg_replace('/\s+/', '', $validated['vehicle_number'])) : null;
             // validations
@@ -1426,7 +1391,7 @@ class InvoiceController extends Controller
 
             // $sellerGstin = $invoice->invoice->warehouse ? $invoice->invoice->warehouse->gst_number : '27AAGCI3319H1ZM'; // Test GSTIN for e-waybill consignor
             $sellerGstin = '27AAGCI3319H1ZM'; // Test GSTIN for e-waybill consignor
-            $customerGstin = $invoice->invoice->customer->gst_number ?? null; // Test GSTIN for e-waybill consignee
+            $customerGstin = $invoice->invoice->customer->gst_number ?? '05AAAPG7885R002'; // Test GSTIN for e-waybill consignee
 
             // Check if e-waybill exists
             if (! $invoice->ewb_no) {
