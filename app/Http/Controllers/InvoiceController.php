@@ -1326,7 +1326,7 @@ class InvoiceController extends Controller
                 || str_contains($apiResponseBody, '4029:')
                 || str_contains($apiResponseBody, '4013:')
             ) {
-                $requestData['distance'] = '54';
+                $requestData['distance'] = '1350';
 
                 $response = Http::withHeaders($this->getEInvoiceAuthHeaders($token))
                     ->asJson()
@@ -1685,7 +1685,7 @@ class InvoiceController extends Controller
             'distance' => $distance,
         ]);
 
-        return 54;
+        return 1350;
     }
 
     private function getDistance($source, $destination, $token)
