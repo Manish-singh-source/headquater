@@ -1261,8 +1261,8 @@ class InvoiceController extends Controller
             // $transporterDocDate = $validated['transporter_document_date'];
 
             // Warehouse Details
-            // $warehouse = $warehouse = Warehouse::where('id', 3)->first();
-            $warehouse = $invoice->warehouse;
+            // Keep e-way bill dispatch details aligned with the warehouse used for e-invoice generation.
+            $warehouse = Warehouse::where('id', 3)->first() ?: $invoice->warehouse;
             // Customer Details
             $customer = $invoice->customer;
             $warehousePincode = $this->normalizePincode($warehouse->pincode);
