@@ -29,30 +29,50 @@ use Illuminate\Support\Facades\Validator;
 
 class InvoiceController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $user = Auth::user();
         $isSuperAdmin = $user->hasRole('Super Admin');
         $isAdmin = $user->hasRole(['Super Admin', 'Admin']) || ! $user->warehouse_id;
         $userWarehouseId = $user->warehouse_id;
+        $filters = [
+            'invoice_no' => trim((string) $request->query('invoice_no', '')),
+        ];
 
         // Fetch all invoices with relationships
         $query = Invoice::with(['warehouse', 'details', 'customer', 'salesOrder.customerGroup', 'appointment', 'dns', 'payments'])
             ->orderBy('created_at', 'desc');
 
-        // Filter invoices based on user role
-        if (! $isSuperAdmin && ! $isAdmin && $userWarehouseId) {
+        $applyInvoiceFilters = function ($invoiceQuery) use ($isSuperAdmin, $isAdmin, $userWarehouseId, $filters) {
             // Warehouse users can only see invoices for their warehouse
-            $query->where('warehouse_id', $userWarehouseId);
-        }
+            if (! $isSuperAdmin && ! $isAdmin && $userWarehouseId) {
+                $invoiceQuery->where('warehouse_id', $userWarehouseId);
+            }
+
+            if ($filters['invoice_no'] !== '') {
+                $invoiceQuery->where('invoice_number', 'like', '%' . $filters['invoice_no'] . '%');
+            }
+        };
+
+        $applyInvoiceFilters($query);
 
         $invoices = $query->get();
 
         // Separate manual and sales order invoices
         $manualInvoices = $invoices->where('invoice_type', 'manual');
-        $salesOrderInvoices = SalesOrder::with(['customerGroup', 'invoices'])->whereHas('invoices')->get();
+        $salesOrderInvoices = SalesOrder::with([
+            'customerGroup',
+            'invoices' => function ($invoiceQuery) use ($applyInvoiceFilters) {
+                $applyInvoiceFilters($invoiceQuery);
+            },
+        ])
+            ->whereHas('invoices', function ($invoiceQuery) use ($applyInvoiceFilters) {
+                $applyInvoiceFilters($invoiceQuery);
+            })
+            ->orderBy('created_at', 'desc')
+            ->get();
 
-        return view('invoice.index', compact('invoices', 'manualInvoices', 'salesOrderInvoices'));
+        return view('invoice.index', compact('invoices', 'manualInvoices', 'salesOrderInvoices', 'filters'));
     }
 
     public function view($id)
