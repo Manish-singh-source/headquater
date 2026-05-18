@@ -48,12 +48,13 @@
                                         <th>
                                             <input class="form-check-input" type="checkbox" id="select-all">
                                         </th>
+                                        <th>Warehouse&nbsp;Name</th>
                                         <th>Name</th>
                                         <th>Email</th>
-                                        <th>Contact Number</th>
+                                        <th>Contact&nbsp;Number</th>
                                         <th>Role</th>
                                         <th>Status</th>
-                                        <th>Created By</th>
+                                        <th>Created&nbsp;By</th>
                                         <th>Action</th>
                                     </tr>
                                 </thead>
@@ -63,6 +64,9 @@
                                             <td>
                                                 <input class="form-check-input row-checkbox" type="checkbox" name="ids[]"
                                                     value="{{ $staff->id }}">
+                                            </td>
+                                            <td>
+                                                {{ $staff->warehouse->name ?? 'NA' }}
                                             </td>
                                             <td>
                                                 <a class="d-flex align-items-center gap-3" href="staff-detail.php">

@@ -72,14 +72,14 @@
 
 8. staff: 
 
-    - list staff (warehouse name, name, email, contact number, role, status, created by, action)
+    - list staff 
     - create staff 
     - update staff 
     - delete staff 
     - view staff
-        - staff details all 
+        - staff details all     
         - edit button for redirect to edit page
-        - permissions list
+        - permissions list  
 
     - proper pagination
     - sorting properly 

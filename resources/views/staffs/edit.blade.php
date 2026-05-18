@@ -49,6 +49,21 @@
                                                 @enderror
                                             </div>
                                             <div class="col-12 col-md-6">
+                                                <label for="warehouse_id" class="form-label">Warehouse Name
+                                                    <span class="text-danger">*</span></label>
+                                                <select class="form-select @error('warehouse_id') is-invalid @enderror" name="warehouse_id" id="warehouse_id">
+                                                    <option disabled value="">-- Select --</option>
+                                                    @foreach ($warehouses as $warehouse)
+                                                        <option value="{{ $warehouse->id }}" {{ old('warehouse_id', $staff->warehouse_id) == $warehouse->id ? 'selected' : '' }}>{{ $warehouse->name }}</option>
+                                                    @endforeach
+                                                </select>
+                                                @error('warehouse_id')
+                                                    <div class="invalid-feedback">
+                                                        {{ $message }}
+                                                    </div>
+                                                @enderror
+                                            </div>
+                                            <div class="col-12 col-md-6">
                                                 <label for="status" class="form-label">Status
                                                     <span class="text-danger">*</span></label>
                                                 <select class="form-control @error('status') is-invalid @enderror" name="status" id="status">

@@ -50,6 +50,7 @@ class StaffController extends Controller
             'state' => 'required',
             'city' => 'required',
             'pincode' => 'required|digits:6',
+            'status' => 'required',
         ], [
             'warehouse_id.required' => 'The warehouse field is required.',
             'role.required' => 'The role field is required.',
@@ -64,6 +65,7 @@ class StaffController extends Controller
             'permanent_address.required' => 'The permanent address field is required.',
             'dob.required' => 'The date of birth field is required.',
             'dob.date' => 'The date of birth must be a valid date.',
+            'status.required' => 'The status field is required.',
         ]);
 
         if ($validated->fails()) {
@@ -87,6 +89,7 @@ class StaffController extends Controller
                 'state' => $request->state,
                 'city' => $request->city,
                 'pincode' => $request->pincode,
+                'status' => $request->status,
             ]);
 
             // Send email with credentials
@@ -110,15 +113,17 @@ class StaffController extends Controller
         // Logic to show the form for editing a staff member
         $staff = User::findOrFail($id);
         $roles = Role::all();
+        $warehouses = Warehouse::all();
         $currentRole = $staff->roles()->first();
 
-        return view('staffs.edit', compact('staff', 'roles', 'currentRole'));
+        return view('staffs.edit', compact('staff', 'roles', 'warehouses', 'currentRole'));
     }
 
     public function update(Request $request, $id)
     {
         // Logic to update a staff member
         $validated = Validator::make($request->all(), [
+            'warehouse_id' => 'required',
             'role' => 'required',
             'fname' => 'required',
             'lname' => 'required',
@@ -135,6 +140,7 @@ class StaffController extends Controller
             'pincode' => 'required|digits:6',
             'status' => 'required',
         ], [
+            'warehouse_id.required' => 'The warehouse field is required.',
             'role.required' => 'The role field is required.',
             'fname.required' => 'The first name field is required.',
             'lname.required' => 'The last name field is required.',
@@ -165,6 +171,7 @@ class StaffController extends Controller
             $staff = User::findOrFail($id);
 
             $staff->update([
+                'warehouse_id' => $request->warehouse_id,
                 'fname' => $request->fname,
                 'lname' => $request->lname,
                 'phone' => $request->phone,
