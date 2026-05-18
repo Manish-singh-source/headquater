@@ -15,10 +15,29 @@ class StaffController extends Controller
     //
     public function index()
     {
-        // Logic to list staff members
-        $staffMembers = User::get(); // Assuming you have a Staff model
+        $status = request('status', 'all');
+        $allowedStatuses = ['all', 'active', 'inactive'];
+        if (! in_array($status, $allowedStatuses, true)) {
+            $status = 'all';
+        }
 
-        return view('staffs.index', compact('staffMembers'));
+        $baseStaffQuery = User::query()->whereNotNull('warehouse_id');
+        $staffQuery = (clone $baseStaffQuery)->with(['roles', 'warehouse'])->latest('created_at');
+
+        if ($status === 'active') {
+            $staffQuery->where('status', '1');
+        } elseif ($status === 'inactive') {
+            $staffQuery->where('status', '0');
+        }
+
+        $staffMembers = $staffQuery->get();
+        $statusCounts = [
+            'all' => (clone $baseStaffQuery)->count(),
+            'active' => (clone $baseStaffQuery)->where('status', '1')->count(),
+            'inactive' => (clone $baseStaffQuery)->where('status', '0')->count(),
+        ];
+
+        return view('staffs.index', compact('staffMembers', 'status', 'statusCounts'));
     }
 
     public function create()
@@ -211,7 +230,7 @@ class StaffController extends Controller
     public function view($id)
     {
         // Logic to view a staff member
-        $staff = User::findOrFail($id);
+        $staff = User::with(['roles', 'warehouse'])->findOrFail($id);
         $staffPermissions = $staff->getAllPermissions();
         $permissionGroups = PermissionGroup::with('permissions')->active()->get();
 
@@ -225,8 +244,14 @@ class StaffController extends Controller
 
     public function deleteSelected(Request $request)
     {
-        $ids = is_array($request->ids) ? $request->ids : explode(',', $request->ids);
-        $staff = User::destroy($ids);
+        $ids = is_array($request->ids) ? $request->ids : explode(',', (string) $request->ids);
+        $ids = array_values(array_filter(array_map('intval', $ids)));
+
+        if (empty($ids)) {
+            return redirect()->back()->with('error', 'Please select at least one staff member.');
+        }
+
+        User::whereIn('id', $ids)->delete();
 
         return redirect()->back()->with('success', 'Selected Staff deleted successfully.');
     }
@@ -238,5 +263,30 @@ class StaffController extends Controller
         $staff->save();
 
         return response()->json(['success' => true]);
+    }
+
+    public function toggleSelectedStatus(Request $request)
+    {
+        $validated = Validator::make($request->all(), [
+            'ids' => 'required',
+            'status' => 'required|in:0,1',
+        ]);
+
+        if ($validated->fails()) {
+            return redirect()->back()->withErrors($validated);
+        }
+
+        $ids = is_array($request->ids) ? $request->ids : explode(',', (string) $request->ids);
+        $ids = array_values(array_filter(array_map('intval', $ids)));
+
+        if (empty($ids)) {
+            return redirect()->back()->with('error', 'Please select at least one staff member.');
+        }
+
+        User::whereIn('id', $ids)->update([
+            'status' => (string) $request->status,
+        ]);
+
+        return redirect()->back()->with('success', 'Selected staff status updated successfully.');
     }
 }

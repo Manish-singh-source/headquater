@@ -87,6 +87,7 @@
     - multi delete functionality
     - multi toggle status functionality
 
+    - done
 
 9. customer groups: 
     - list customer groups 

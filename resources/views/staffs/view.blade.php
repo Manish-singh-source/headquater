@@ -13,7 +13,12 @@
                                     </h5>
                                 </div>
                                 <div>
-                                    <a href="{{ url()->previous() }}" class="btn btn-primary float-end mt-n1">Back</a>
+                                    <div class="d-flex g-4 flex-row align-items-center justify-content-between">
+
+                                        <a href="{{ route('staff.edit', $staff->id) }}"
+                                            class="btn btn-warning float-end mt-n1 me-2">Edit</a>
+                                        <a href="{{ url()->previous() }}" class="btn btn-primary float-end mt-n1">Back</a>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -26,8 +31,14 @@
                                     <span class="fw-semibold text-break">Name :
                                     </span>
                                     <span>
-                                        {{ $staff->fname }}
+                                        {{ trim(($staff->fname ?? '') . ' ' . ($staff->lname ?? '')) }}
                                     </span>
+                                </li>
+
+                                <li
+                                    class="list-group-item border-0 d-flex align-items-center justify-content-between gap-3 flex-wrap">
+                                    <span class="fw-semibold text-break">Warehouse :</span>
+                                    <span>{{ $staff->warehouse->name ?? 'NA' }}</span>
                                 </li>
 
                                 <li
@@ -57,7 +68,7 @@
                                     <span class="fw-semibold text-break">Contact no :
                                     </span>
                                     <span>
-                                        {{ $staff->phone }}
+                                        {{ $staff->phone ?? 'NA' }}
                                     </span>
                                 </li>
 
@@ -66,8 +77,50 @@
                                     <span class="fw-semibold text-break">E-mail :
                                     </span>
                                     <span>
-                                        {{ $staff->email }}
+                                        {{ $staff->email ?? 'NA' }}
                                     </span>
+                                </li>
+
+                                <li
+                                    class="list-group-item border-0 d-flex align-items-center justify-content-between gap-3 flex-wrap">
+                                    <span class="fw-semibold text-break">Current Address :</span>
+                                    <span>{{ $staff->current_address ?? 'NA' }}</span>
+                                </li>
+
+                                <li
+                                    class="list-group-item border-0 d-flex align-items-center justify-content-between gap-3 flex-wrap">
+                                    <span class="fw-semibold text-break">Permanent Address :</span>
+                                    <span>{{ $staff->permanent_address ?? 'NA' }}</span>
+                                </li>
+
+                                <li
+                                    class="list-group-item border-0 d-flex align-items-center justify-content-between gap-3 flex-wrap">
+                                    <span class="fw-semibold text-break">City :</span>
+                                    <span>{{ $staff->city ?? 'NA' }}</span>
+                                </li>
+
+                                <li
+                                    class="list-group-item border-0 d-flex align-items-center justify-content-between gap-3 flex-wrap">
+                                    <span class="fw-semibold text-break">State :</span>
+                                    <span>{{ $staff->state ?? 'NA' }}</span>
+                                </li>
+
+                                <li
+                                    class="list-group-item border-0 d-flex align-items-center justify-content-between gap-3 flex-wrap">
+                                    <span class="fw-semibold text-break">Country :</span>
+                                    <span>{{ $staff->country ?? 'NA' }}</span>
+                                </li>
+
+                                <li
+                                    class="list-group-item border-0 d-flex align-items-center justify-content-between gap-3 flex-wrap">
+                                    <span class="fw-semibold text-break">Pincode :</span>
+                                    <span>{{ $staff->pincode ?? 'NA' }}</span>
+                                </li>
+
+                                <li
+                                    class="list-group-item border-0 d-flex align-items-center justify-content-between gap-3 flex-wrap">
+                                    <span class="fw-semibold text-break">Added Date :</span>
+                                    <span>{{ $staff->created_at ?? 'NA' }}</span>
                                 </li>
                             </ul>
                         </div>
@@ -84,7 +137,8 @@
 
                         <div class="card-body">
                             <div class="mt-3">
-                                <small class="text-muted">Permissions assigned to this staff member (grouped by category)</small>
+                                <small class="text-muted">Permissions assigned to this staff member (grouped by
+                                    category)</small>
 
                                 <div class="row g-3 mt-2">
                                     @forelse($permissionGroups as $group)
@@ -93,8 +147,9 @@
                                                 <div class="mb-3">
                                                     <h6 class="mb-0">
                                                         <i class="bx bx-folder me-2"></i>{{ $group->name }}
-                                                        @if($group->description)
-                                                            <small class="text-muted d-block mt-1">{{ $group->description }}</small>
+                                                        @if ($group->description)
+                                                            <small
+                                                                class="text-muted d-block mt-1">{{ $group->description }}</small>
                                                         @endif
                                                     </h6>
                                                 </div>
@@ -102,7 +157,8 @@
                                                 <div class="row g-3">
                                                     @forelse($group->permissions as $permission)
                                                         <div class="col-md-6">
-                                                            <div class="d-flex align-items-center justify-content-between gap-3 form-control p-2">
+                                                            <div
+                                                                class="d-flex align-items-center justify-content-between gap-3 form-control p-2">
                                                                 <label class="mb-0">
                                                                     {{ ucfirst($permission->name) }}
                                                                 </label>

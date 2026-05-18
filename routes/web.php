@@ -90,6 +90,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/view-staff/{id}', 'view')->name('staff.view');
         Route::delete('/staff/delete-selected', 'deleteSelected')->name('delete.selected.staff');
         Route::post('/staff/toggle-status', 'toggleStatus')->name('staff.toggleStatus');
+        Route::post('/staff/toggle-selected-status', 'toggleSelectedStatus')->name('staff.toggleSelectedStatus');
     });
 
     // Warehouse List

@@ -28,6 +28,8 @@
                                         </button>
                                         <div class="dropdown-menu dropdown-menu-right dropdown-menu-lg-end">
                                             <a class="dropdown-item cursor-pointer" id="delete-selected">Delete All</a>
+                                            <a class="dropdown-item cursor-pointer" id="activate-selected">Mark Selected Active</a>
+                                            <a class="dropdown-item cursor-pointer" id="deactivate-selected">Mark Selected Inactive</a>
                                         </div>
                                     </div>
                                 </div>
@@ -40,6 +42,23 @@
 
             <div class="card mt-4">
                 <div class="card-body">
+                    <ul class="nav nav-tabs mb-3">
+                        <li class="nav-item">
+                            <a class="nav-link {{ $status === 'all' ? 'active' : '' }}" href="{{ route('staff.index', ['status' => 'all']) }}">
+                                All ({{ $statusCounts['all'] ?? 0 }})
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {{ $status === 'active' ? 'active' : '' }}" href="{{ route('staff.index', ['status' => 'active']) }}">
+                                Active ({{ $statusCounts['active'] ?? 0 }})
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {{ $status === 'inactive' ? 'active' : '' }}" href="{{ route('staff.index', ['status' => 'inactive']) }}">
+                                Inactive ({{ $statusCounts['inactive'] ?? 0 }})
+                            </a>
+                        </li>
+                    </ul>
                     <div class="customer-table">
                         <div class="table-responsive white-space-nowrap">
                             <table id="example" class="table table-striped table-bordered">
@@ -69,7 +88,7 @@
                                                 {{ $staff->warehouse->name ?? 'NA' }}
                                             </td>
                                             <td>
-                                                <a class="d-flex align-items-center gap-3" href="staff-detail.php">
+                                                <a class="d-flex align-items-center gap-3" href="{{ route('staff.view', $staff->id) }}">
                                                     <p class="mb-0 customer-name fw-bold">{{ $staff->fname ?? '' }}</p>
                                                 </a>
                                             </td>
@@ -219,6 +238,35 @@
                     document.body.appendChild(form);
                     form.submit();
                 }
+            });
+
+            function submitBulkStatus(status) {
+                let selected = [];
+                document.querySelectorAll('.row-checkbox:checked').forEach(cb => {
+                    selected.push(cb.value);
+                });
+                if (selected.length === 0) {
+                    alert('Please select at least one record.');
+                    return;
+                }
+                let form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '{{ route('staff.toggleSelectedStatus') }}';
+                form.innerHTML = `
+                    @csrf
+                    <input type="hidden" name="ids" value="${selected.join(',')}">
+                    <input type="hidden" name="status" value="${status}">
+                `;
+                document.body.appendChild(form);
+                form.submit();
+            }
+
+            document.getElementById('activate-selected').addEventListener('click', function() {
+                submitBulkStatus(1);
+            });
+
+            document.getElementById('deactivate-selected').addEventListener('click', function() {
+                submitBulkStatus(0);
             });
         });
     </script>
