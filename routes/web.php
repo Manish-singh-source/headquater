@@ -38,6 +38,11 @@ Route::controller(RegisterController::class)->group(function () {
 
     Route::get('/login', 'showLoginForm')->name('login');
     Route::post('/login', 'login')->name('login.auth.check');
+    
+    Route::get('/forgot-password', 'showForgotPasswordForm')->name('password.request');
+    Route::post('/forgot-password', 'sendResetLinkEmail')->name('password.email');
+    Route::get('/reset-password/{token}', 'showResetPasswordForm')->name('password.reset');
+    Route::post('/reset-password', 'resetPassword')->name('password.update');
 
     Route::get('/logout', 'logout')->name('logout');
 

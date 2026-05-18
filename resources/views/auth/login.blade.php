@@ -40,6 +40,27 @@
                         <h4 class="fw-bold">Get Started Now</h4>
                         <p class="mb-0">Enter your credentials to login your account</p>
 
+                        @if (session('success'))
+                            <div class="alert alert-success alert-dismissible fade show mt-3 mb-0" role="alert">
+                                {{ session('success') }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        @endif
+
+                        @if (session('status'))
+                            <div class="alert alert-success alert-dismissible fade show mt-3 mb-0" role="alert">
+                                {{ session('status') }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        @endif
+
+                        @if (session('error'))
+                            <div class="alert alert-danger alert-dismissible fade show mt-3 mb-0" role="alert">
+                                {{ session('error') }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        @endif
+
                         <div class="form-body mt-4">
                             <form class="row g-3" action="{{ route('login.auth.check') }}" method="POST">
                                 @csrf
@@ -81,7 +102,7 @@
                                             <label class="form-check-label" for="flexSwitchCheckChecked">Remember Me</label>
                                     </div>
                                 </div>
-                                <div class="col-md-6 text-end"> <a href="auth-boxed-forgot-password.html">Forgot
+                                <div class="col-md-6 text-end"> <a href="{{ route('password.request') }}">Forgot
                                         Password ?</a>
                                 </div>
                                 <div class="col-12">

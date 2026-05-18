@@ -15,7 +15,11 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 class RegisterController extends Controller
 {
@@ -124,22 +128,40 @@ class RegisterController extends Controller
             return redirect()->back()->withErrors($validator)->withInput();
         }
 
+        $throttleKey = $this->throttleKey($request);
+
+        if (RateLimiter::tooManyAttempts($throttleKey, 5)) {
+            $seconds = RateLimiter::availableIn($throttleKey);
+
+            throw ValidationException::withMessages([
+                'email' => "Too many login attempts. Please try again in {$seconds} seconds.",
+            ]);
+        }
+
         try {
             $user = User::where('email', strtolower($request->email))->first();
 
             if (! $user) {
+                RateLimiter::hit($throttleKey, 60);
+
                 return redirect()->back()
                     ->withErrors(['email' => 'The provided credentials do not match.'])
                     ->withInput();
             }
 
             if ($user->status !== '1') {
+                RateLimiter::hit($throttleKey, 60);
+
                 return redirect()->back()
                     ->withErrors(['email' => 'Your account is not active. Please contact administrator.'])
                     ->withInput();
             }
 
-            if (Auth::attempt(['email' => strtolower($request->email), 'password' => $request->password])) {
+            if (Auth::attempt([
+                'email' => strtolower($request->email),
+                'password' => $request->password,
+            ], $request->boolean('remember'))) {
+                RateLimiter::clear($throttleKey);
                 $request->session()->regenerate();
 
                 // Log activity
@@ -151,6 +173,8 @@ class RegisterController extends Controller
                 return redirect()->intended('/')->with('success', 'Login successful.');
             }
 
+            RateLimiter::hit($throttleKey, 60);
+
             return redirect()->back()
                 ->withErrors(['email' => 'The provided credentials do not match.'])
                 ->withInput();
@@ -159,6 +183,98 @@ class RegisterController extends Controller
                 ->with('error', 'Login failed. Please try again.')
                 ->withInput();
         }
+    }
+
+    /**
+     * Show forgot password request form.
+     *
+     * @return \Illuminate\View\View
+     */
+    public function showForgotPasswordForm()
+    {
+        if (Auth::check()) {
+            return redirect()->intended('/');
+        }
+
+        return view('auth.forgot-password');
+    }
+
+    /**
+     * Send password reset link.
+     *
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function sendResetLinkEmail(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email|exists:users,email',
+        ], [
+            'email.exists' => 'We could not find an account with that email address.',
+        ]);
+
+        $status = Password::sendResetLink([
+            'email' => strtolower(trim($request->email)),
+        ]);
+
+        return $status === Password::RESET_LINK_SENT
+            ? back()->with('status', __($status))
+            : back()->withErrors(['email' => __($status)])->withInput();
+    }
+
+    /**
+     * Show reset password form.
+     *
+     * @return \Illuminate\View\View
+     */
+    public function showResetPasswordForm(Request $request, string $token)
+    {
+        if (Auth::check()) {
+            return redirect()->intended('/');
+        }
+
+        return view('auth.reset-password', [
+            'token' => $token,
+            'email' => $request->email,
+        ]);
+    }
+
+    /**
+     * Reset user password.
+     *
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function resetPassword(Request $request)
+    {
+        $request->validate([
+            'token' => 'required',
+            'email' => 'required|email',
+            'password' => 'required|string|min:8|confirmed|regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/',
+        ], [
+            'password.regex' => 'Password must contain uppercase, lowercase, number, and special character.',
+            'password.confirmed' => 'Passwords do not match.',
+        ]);
+
+        $status = Password::reset(
+            $request->only('email', 'password', 'password_confirmation', 'token'),
+            function (User $user, string $password) {
+                $user->forceFill([
+                    'password' => Hash::make($password),
+                    'remember_token' => Str::random(60),
+                ])->save();
+            }
+        );
+
+        return $status === Password::PASSWORD_RESET
+            ? redirect()->route('login')->with('success', __($status))
+            : back()->withErrors(['email' => __($status)])->withInput();
+    }
+
+    /**
+     * Build the login throttle key.
+     */
+    private function throttleKey(Request $request): string
+    {
+        return Str::transliterate(Str::lower($request->input('email')) . '|' . $request->ip());
     }
 
     /**
