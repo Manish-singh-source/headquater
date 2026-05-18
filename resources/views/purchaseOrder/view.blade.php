@@ -99,7 +99,7 @@
                                     <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                                         <span><b>Sales Order Id</b></span>
                                         <span id="sales-order-id" class="d-none">{{ $purchaseOrder->sales_order_id }}</span>
-                                        <span>{{ $purchaseOrder->salesOrder->order_number }}</span>
+                                        <span>{{ $purchaseOrder->salesOrder?->order_number ?? 'NA'}}</span>
                                     </li>
                                 @endisset
                                 <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
@@ -603,7 +603,7 @@
                                                     name="ids[]" value="{{ $order->id }}">
                                             </td>
                                             @isset($order->sales_order_id)
-                                                <td>{{ $purchaseOrder->salesOrder->order_number }}</td>
+                                                <td>{{ $purchaseOrder->salesOrder?->order_number ?? 'NA' }}</td>
                                             @endisset
                                             <td>{{ $purchaseOrder->order_number }}</td>
                                             <td>{{ $order->vendor_code }}</td>

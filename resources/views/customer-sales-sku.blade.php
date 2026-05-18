@@ -188,7 +188,7 @@
                                     <!-- From Date Filter -->
                                     <div class="col-md-2">
                                         <div class="mb-3">
-                                            <label class="form-label">From Date</label>
+                                            <label class="form-label">From Sales Order Date</label>
                                             <input type="date" class="form-control" name="from_date" id="from_date"
                                                 value="{{ $filters['from_date'] ?? '' }}" placeholder="Select from date">
                                         </div>
@@ -197,7 +197,7 @@
                                     <!-- To Date Filter -->
                                     <div class="col-md-2">
                                         <div class="mb-3">
-                                            <label class="form-label">To Date</label>
+                                            <label class="form-label">To Sales Order Date</label>
                                             <input type="date" class="form-control" name="to_date" id="to_date"
                                                 value="{{ $filters['to_date'] ?? '' }}" placeholder="Select to date">
                                         </div>
@@ -584,10 +584,12 @@
                             <thead class="table-light">
                                 <tr>
                                     <th>Sales&nbsp;Order&nbsp;No</th>
+                                    <th>Sales&nbsp;Order&nbsp;Date</th>
                                     <th>Customer&nbsp;Group&nbsp;Name</th>
                                     <th>Warehouse&nbsp;Name</th>
                                     <th>Customer&nbsp;Name</th>
                                     <th>Invoice&nbsp;No</th>
+                                    <th>Invoice&nbsp;Date</th>
                                     <th>Customer&nbsp;Phone&nbsp;No</th>
                                     <th>Customer&nbsp;Email</th>
                                     <th>Customer&nbsp;City</th>
@@ -622,6 +624,7 @@
                                             @foreach ($product->warehouseAllocations as $allocation)
                                                 <tr>
                                                     <td>{{ $salesOrder->order_number ?? 'N/A' }}</td>
+                                                    <td>{{ $salesOrder->created_at?->format('d-m-Y') ?? 'N/A' }}</td>
                                                     <td>{{ $salesOrder->customerGroup->name ?? 'N/A' }}</td>
                                                     <td>{{ $allocation->warehouse->name ?? 'N/A' }}</td>
                                                     <td>{{ $product->customer->client_name ?? 'N/A' }}</td>
@@ -647,6 +650,7 @@
                                                         @endphp
                                                         {{ $invoiceNumber }}
                                                     </td>
+                                                    <td>{{ $invoice?->created_at?->format('d-m-Y') ?? 'N/A' }}</td>
                                                     <td>{{ $product->customer->contact_no ?? 'N/A' }}</td>
                                                     <td>{{ $product->customer->email ?? 'N/A' }}</td>
                                                     <td>{{ $product->customer->shipping_city ?? 'N/A' }}</td>
@@ -687,7 +691,7 @@
                                     @endforeach
                                 @empty
                                     <tr>
-                                        <td colspan="32" class="text-center text-muted py-4">
+                                        <td colspan="34" class="text-center text-muted py-4">
                                             <i class="bx bx-info-circle fs-4 d-block mb-2"></i>
                                             No customer sales records found for the selected criteria.
                                         </td>
@@ -728,8 +732,8 @@
                 lengthChange: true,
                 pageLength: 10,
                 order: [
-                    [10, 'desc']
-                ], // Sort by Date column (index 14) in descending order
+                    [1, 'desc']
+                ], // Sort by sales order date in descending order
                 buttons: [{
                     extend: 'excelHtml5',
                     className: 'd-none', // hide the default button

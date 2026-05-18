@@ -1279,13 +1279,12 @@ class ReportController extends Controller
 
 
 
-            // Date Filters
             if ($request->filled('from_date')) {
-                $query->where('order_date', '>=', $request->from_date);
+                $query->whereDate('created_at', '>=', $request->from_date);
             }
 
             if ($request->filled('to_date')) {
-                $query->where('order_date', '<=', $request->to_date);
+                $query->whereDate('created_at', '<=', $request->to_date);
             }
 
             // Sales Order Number Filter
@@ -1427,7 +1426,7 @@ class ReportController extends Controller
             }
 
             // Final result
-            $salesOrders = $query->latest('order_date')->get();
+            $salesOrders = $query->latest('created_at')->get();
 
             // dd($salesOrders);
 
@@ -1637,12 +1636,11 @@ class ReportController extends Controller
                 'orderedProducts.vendorPIProduct'
             ]);
 
-            // Apply filters (same as customerSalesHistory method)
             if ($request->filled('from_date')) {
-                $query->where('order_date', '>=', $request->from_date);
+                $query->whereDate('created_at', '>=', $request->from_date);
             }
             if ($request->filled('to_date')) {
-                $query->where('order_date', '<=', $request->to_date);
+                $query->whereDate('created_at', '<=', $request->to_date);
             }
 
             // Apply sales order number filter
@@ -1771,7 +1769,7 @@ class ReportController extends Controller
             }
 
             // Get all sales orders
-            $salesOrders = $query->latest('order_date')->get();
+            $salesOrders = $query->latest('created_at')->get();
 
             if ($salesOrders->isEmpty()) {
                 return redirect()->back()->with('error', 'No customer sales records found for the selected criteria.');
@@ -1827,10 +1825,12 @@ class ReportController extends Controller
                             // dd($product->tempOrder->po_qty);
                             $exportData->push([
                                 'Sales Order No' => $salesOrder->order_number ?? 'N/A',
+                                'Sales Order Date' => $salesOrder->created_at?->format('d-m-Y') ?? 'N/A',
                                 'Customer Group Name' => $customerGroup->name ?? 'N/A',
                                 'Warehouse Name' => $allocation->warehouse->name ?? 'N/A',
                                 'Customer Name' => $customer->client_name ?? 'N/A',
                                 'Invoice No' => $invoiceNumber,
+                                'Invoice Date' => $invoice?->created_at?->format('d-m-Y') ?? 'N/A',
                                 'Customer Phone No' => $customer->contact_no ?? 'N/A',
                                 'Customer Email' => $customer->email ?? 'N/A',
                                 'Customer City' => $customer->shipping_city ?? 'N/A',
@@ -1888,10 +1888,12 @@ class ReportController extends Controller
             // Add header row (matching view table columns exactly)
             $writer->addRow([
                 'Sales Order No',
+                'Sales Order Date',
                 'Customer Group Name',
                 'Warehouse Name',
                 'Customer Name',
                 'Invoice No',
+                'Invoice Date',
                 'Customer Phone No',
                 'Customer Email',
                 'Customer City',
