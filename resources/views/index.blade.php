@@ -52,15 +52,16 @@
                                     </div>
                                     <div class="col-md-4">
                                         <label for="brands" class="form-label">Select Brands</label>
-                                        <select class="form-select" id="brands" name="brands">
+                                        <select class="form-select" id="brands" name="brands[]" multiple size="5">
                                             <option value="">All Brands</option>
                                             @foreach ($allBrands as $brand)
                                                 <option value="{{ $brand }}"
-                                                    {{ $brand == $selectedBrands ? 'selected' : '' }}>
+                                                    {{ in_array($brand, $selectedBrands, true) ? 'selected' : '' }}>
                                                     {{ $brand }}
                                                 </option>
                                             @endforeach
                                         </select>
+                                        <small class="text-muted">Hold Ctrl to select multiple brands.</small>
                                     </div>
                                     <div class="col-md-2 d-flex align-items-end gap-2">
                                         <button type="submit" class="btn btn-primary">Apply</button>
@@ -85,15 +86,15 @@
                                     <div class="col-md-4">
                                         <div class="card bg-light">
                                             <div class="card-body text-center">
-                                                <h6 class="text-muted">Total Sales Till Date</h6>
+                                                <h6 class="text-muted">Total Sales</h6>
                                                 <h3 class="text-success">
                                                     ₹{{ number_format($salesData['total_sales_overall'], 2) }}</h3>
-                                                <small class="text-muted">Current Year</small>
+                                                <small class="text-muted">Selected Period</small>
                                             </div>
                                         </div>
                                     </div>
                                     <div class="col-md-8">
-                                        <h6 class="mb-3">Sales Trend (Last 4 Months)</h6>
+                                        <h6 class="mb-3">Sales Trend (Selected Period)</h6>
                                         <canvas id="salesTrendChart" height="100"></canvas>
                                     </div>
                                 </div>
@@ -145,15 +146,15 @@
                                     <div class="col-md-4">
                                         <div class="card bg-light">
                                             <div class="card-body text-center">
-                                                <h6 class="text-muted">Total Purchases Till Date</h6>
+                                                <h6 class="text-muted">Total Purchases</h6>
                                                 <h3 class="text-info">
                                                     ₹{{ number_format($purchaseData['total_amount_overall'], 2) }}</h3>
-                                                <small class="text-muted">Current Year</small>
+                                                <small class="text-muted">Selected Period</small>
                                             </div>
                                         </div>
                                     </div>
                                     <div class="col-md-8">
-                                        <h6 class="mb-3">Purchase Trend (Last 4 Months)</h6>
+                                        <h6 class="mb-3">Purchase Trend (Selected Period)</h6>
                                         <canvas id="purchaseTrendChart" height="100"></canvas>
                                     </div>
                                 </div>
@@ -438,7 +439,7 @@
                                     <div class="col-6">
                                         <div class="card bg-success text-white">
                                             <div class="card-body text-center p-3">
-                                                <h6 class="mb-1">Monthly Received</h6>
+                                                <h6 class="mb-1">Received</h6>
                                                 <h5 class="mb-0">
                                                     ₹{{ number_format($paymentData['monthly_received'], 2) }}
                                                 </h5>
@@ -457,7 +458,7 @@
                                     </div>
                                 </div>
                                 <div class="mt-3">
-                                    <h6 class="mb-2">Payment Trend (Last 4 Months)</h6>
+                                    <h6 class="mb-2">Payment Trend (Selected Period)</h6>
                                     <canvas id="paymentTrendChart" height="150"></canvas>
                                 </div>
                             </div>
@@ -568,7 +569,7 @@
 @endsection
 
 @section('script')
-    @if ($user && $user->hasRole('Super Admin', 'Super Admin 2'))
+    @if ($user && $user->hasRole(['Super Admin', 'Super Admin 2']))
         <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
         <script>
             // Sales Trend Chart
@@ -716,7 +717,7 @@
                                 callbacks: {
                                     label: function(context) {
                                         const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                        const percentage = ((context.parsed / total) * 100).toFixed(2);
+                                        const percentage = total > 0 ? ((context.parsed / total) * 100).toFixed(2) : 0;
                                         return context.label + ': ' + context.parsed + ' (' + percentage + '%)';
                                     }
                                 }
@@ -732,121 +733,123 @@
 
             if (deliveryCtx) {
                 new Chart(deliveryCtx, {
-                        type: 'doughnut',
-                        data: {
-                            labels: ['POD Received', 'POD Not Received'],
-                            datasets: [{
-                                data: [deliveryData.pod_received, deliveryData.pod_not_received],
-                                backgroundColor: ['#8bffd4', '#ff84a8'],
-                                borderWidth: 2
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: true,
-                            plugins: {
-                                legend: {
-                                    position: 'bottom'
-                                },
-                                tooltip: {
-                                    callbacks: {
-                                        label: function(context) {
-                                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                            const percentage = ((context.parsed / total) * 100).toFixed(2);
-                                            return context.label + ': ' + context.parsed + ' (' + percentage + '%)';
-                                        }
-                                    }
-                                }
-                            }
-                        });
-                }
-
-                // GRN Chart (Bar)
-                const grnCtx = document.getElementById('grnChart')?.getContext('2d');
-                const grnData = @json($grnData);
-
-                if (grnCtx) {
-                    new Chart(grnCtx, {
-                        type: 'bar',
-                        data: {
-                            labels: ['GRN Done', 'GRN Not Done'],
-                            datasets: [{
-                                label: 'Count',
-                                data: [grnData.grn_done, grnData.grn_not_done],
-                                backgroundColor: ['#8bffd4', '#ff84a8'],
-                                borderWidth: 2
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: true,
-                            indexAxis: 'y',
-                            plugins: {
-                                legend: {
-                                    display: false
-                                },
-                                tooltip: {
-                                    callbacks: {
-                                        label: function(context) {
-                                            return context.label + ': ' + context.parsed.x;
-                                        }
-                                    }
-                                }
+                    type: 'doughnut',
+                    data: {
+                        labels: ['POD Received', 'POD Not Received'],
+                        datasets: [{
+                            data: [deliveryData.pod_received, deliveryData.pod_not_received],
+                            backgroundColor: ['#8bffd4', '#ff84a8'],
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
                             },
-                            scales: {
-                                x: {
-                                    beginAtZero: true
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                        const percentage = total > 0 ? ((context.parsed / total) * 100).toFixed(2) : 0;
+                                        return context.label + ': ' + context.parsed + ' (' + percentage + '%)';
+                                    }
                                 }
                             }
                         }
-                    });
-                }
+                    }
+                });
+            }
 
-                // Payment Trend Chart
-                const paymentTrendCtx = document.getElementById('paymentTrendChart')?.getContext('2d');
-                const paymentTrendData = @json($paymentData['monthly_trend']);
+            // GRN Chart (Bar)
+            const grnCtx = document.getElementById('grnChart')?.getContext('2d');
+            const grnData = @json($grnData);
 
-                if (paymentTrendCtx) {
-                    new Chart(paymentTrendCtx, {
-                            type: 'line',
-                            data: {
-                                labels: paymentTrendData.map(item => item.month),
-                                datasets: [{
-                                    label: 'Payment Received',
-                                    data: paymentTrendData.map(item => item.amount),
-                                    borderColor: '#8bffd4',
-                                    backgroundColor: '#8bffd4',
-                                    tension: 0.4,
-                                    fill: true
-                                }]
+            if (grnCtx) {
+                new Chart(grnCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['GRN Done', 'GRN Not Done'],
+                        datasets: [{
+                            label: 'Count',
+                            data: [grnData.grn_done, grnData.grn_not_done],
+                            backgroundColor: ['#8bffd4', '#ff84a8'],
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        indexAxis: 'y',
+                        plugins: {
+                            legend: {
+                                display: false
                             },
-                            options: {
-                                responsive: true,
-                                maintainAspectRatio: true,
-                                plugins: {
-                                    legend: {
-                                        position: 'bottom'
-                                    },
-                                    tooltip: {
-                                        callbacks: {
-                                            label: function(context) {
-                                                return 'Payment: ₹' + context.parsed.y.toLocaleString();
-                                            }
-                                        }
-                                    }
-                                },
-                                scales: {
-                                    y: {
-                                        beginAtZero: true,
-                                        ticks: {
-                                            callback: function(value) {
-                                                return '₹' + value.toLocaleString();
-                                            }
-                                        }
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return context.label + ': ' + context.parsed.x;
                                     }
                                 }
-                            });
+                            }
+                        },
+                        scales: {
+                            x: {
+                                beginAtZero: true
+                            }
+                        }
                     }
+                });
+            }
+
+            // Payment Trend Chart
+            const paymentTrendCtx = document.getElementById('paymentTrendChart')?.getContext('2d');
+            const paymentTrendData = @json($paymentData['monthly_trend']);
+
+            if (paymentTrendCtx) {
+                new Chart(paymentTrendCtx, {
+                    type: 'line',
+                    data: {
+                        labels: paymentTrendData.map(item => item.month),
+                        datasets: [{
+                            label: 'Payment Received',
+                            data: paymentTrendData.map(item => item.amount),
+                            borderColor: '#8bffd4',
+                            backgroundColor: '#8bffd4',
+                            tension: 0.4,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return 'Payment: ₹' + context.parsed.y.toLocaleString();
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: function(value) {
+                                        return '₹' + value.toLocaleString();
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
         </script>
     @endif
 @endsection

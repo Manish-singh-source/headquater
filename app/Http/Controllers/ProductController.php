@@ -23,11 +23,20 @@ class ProductController extends Controller
      *
      * @return \Illuminate\View\View
      */
-    public function index()
+    public function index(Request $request)
     {
         try {
-            $products = WarehouseStock::with('product', 'warehouse')
-                ->get();
+            $brand = trim((string) $request->query('brand', ''));
+
+            $productsQuery = WarehouseStock::with('product', 'warehouse');
+
+            if ($brand !== '') {
+                $productsQuery->whereHas('product', function ($query) use ($brand) {
+                    $query->where('brand', $brand);
+                });
+            }
+
+            $products = $productsQuery->get();
 
             // Get all warehouse allocations grouped by SKU and warehouse
             $allocations = DB::table('warehouse_allocations')

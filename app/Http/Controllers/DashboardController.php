@@ -17,12 +17,16 @@ class DashboardController extends Controller
 {
     public function index(Request $request)
     {
-        // Get filter parameters
-        $startDate = $request->input('start_date', Carbon::now()->startOfMonth()->format('Y-m-d'));
-        $endDate = $request->input('end_date', Carbon::now()->endOfMonth()->format('Y-m-d'));
-        $selectedBrands = $request->input('brands', []);
+        $periodStart = $this->parseDate($request->input('start_date'), Carbon::now()->startOfMonth())->startOfDay();
+        $periodEnd = $this->parseDate($request->input('end_date'), Carbon::now()->endOfMonth())->endOfDay();
 
-        // dd($selectedBrands);
+        if ($periodEnd->lt($periodStart)) {
+            [$periodStart, $periodEnd] = [$periodEnd->copy()->startOfDay(), $periodStart->copy()->endOfDay()];
+        }
+
+        $startDate = $periodStart->format('Y-m-d');
+        $endDate = $periodEnd->format('Y-m-d');
+        $selectedBrands = $this->normalizeBrands($request->input('brands', []));
 
         // Get all unique brands for filter dropdown
         $allBrands = Product::whereNotNull('brand')
@@ -33,27 +37,27 @@ class DashboardController extends Controller
             ->values();
 
         // 1. SALES SECTION
-        $salesData = $this->getSalesData($startDate, $endDate, $selectedBrands);
+        $salesData = $this->getSalesData($periodStart, $periodEnd, $selectedBrands);
 
         // 2. PURCHASE SECTION
-        $purchaseData = $this->getPurchaseData($startDate, $endDate, $selectedBrands);
+        $purchaseData = $this->getPurchaseData($periodStart, $periodEnd, $selectedBrands);
 
         // dd($purchaseData);
         // 3. ORDER STATUS SECTION
-        $orderStatusData = $this->getOrderStatusData($startDate, $endDate, $selectedBrands);
+        $orderStatusData = $this->getOrderStatusData($periodStart, $periodEnd, $selectedBrands);
 
         // 4. DISPATCH SECTION
-        $dispatchData = $this->getDispatchData($startDate, $endDate, $selectedBrands);
+        $dispatchData = $this->getDispatchData($periodStart, $periodEnd, $selectedBrands);
 
         // dd($dispatchData);
         // 5. DELIVERY CONFIRMATION SECTION
-        $deliveryData = $this->getDeliveryData($startDate, $endDate, $selectedBrands);
+        $deliveryData = $this->getDeliveryData($periodStart, $periodEnd, $selectedBrands);
 
         // 6. GRN SECTION
-        $grnData = $this->getGRNData($startDate, $endDate, $selectedBrands);
+        $grnData = $this->getGRNData($periodStart, $periodEnd, $selectedBrands);
 
         // 7. PAYMENT SECTION
-        $paymentData = $this->getPaymentData($startDate, $endDate, $selectedBrands);
+        $paymentData = $this->getPaymentData($periodStart, $periodEnd, $selectedBrands);
 
         // 8. WAREHOUSE SECTION
         $warehouseData = $this->getWarehouseData($selectedBrands);
@@ -78,20 +82,98 @@ class DashboardController extends Controller
         ));
     }
 
-    // done
+    private function parseDate($date, Carbon $fallback)
+    {
+        try {
+            return $date ? Carbon::parse($date) : $fallback->copy();
+        } catch (\Throwable $e) {
+            return $fallback->copy();
+        }
+    }
+
+    private function normalizeBrands($brands)
+    {
+        if (is_string($brands)) {
+            $brands = [$brands];
+        }
+
+        if (! is_array($brands)) {
+            return [];
+        }
+
+        return collect($brands)
+            ->map(fn ($brand) => trim((string) $brand))
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
+    }
+
+    private function applySalesOrderBrandFilter($query, array $selectedBrands)
+    {
+        if (! empty($selectedBrands)) {
+            $query->whereHas('orderedProducts.product', function ($productQuery) use ($selectedBrands) {
+                $productQuery->whereIn('brand', $selectedBrands);
+            });
+        }
+
+        return $query;
+    }
+
+    private function applyInvoiceBrandFilter($query, array $selectedBrands)
+    {
+        if (! empty($selectedBrands)) {
+            $query->whereHas('details.product', function ($productQuery) use ($selectedBrands) {
+                $productQuery->whereIn('brand', $selectedBrands);
+            });
+        }
+
+        return $query;
+    }
+
+    private function applyPaymentBrandFilter($query, array $selectedBrands)
+    {
+        if (! empty($selectedBrands)) {
+            $query->whereHas('invoice.details.product', function ($productQuery) use ($selectedBrands) {
+                $productQuery->whereIn('brand', $selectedBrands);
+            });
+        }
+
+        return $query;
+    }
+
+    private function monthlyPeriods(Carbon $startDate, Carbon $endDate)
+    {
+        $periods = [];
+        $monthStart = $startDate->copy()->startOfMonth();
+
+        while ($monthStart->lte($endDate)) {
+            $periodStart = $monthStart->lt($startDate) ? $startDate->copy() : $monthStart->copy();
+            $monthEnd = $monthStart->copy()->endOfMonth();
+            $periodEnd = $monthEnd->gt($endDate) ? $endDate->copy() : $monthEnd;
+
+            $periods[] = [
+                'label' => $monthStart->format('M Y'),
+                'start' => $periodStart,
+                'end' => $periodEnd,
+            ];
+
+            $monthStart->addMonthNoOverflow()->startOfMonth();
+        }
+
+        return $periods;
+    }
+
     private function getSalesData($startDate, $endDate, $selectedBrands)
     {
-        // Total Sales Till Date (current year)
-        $yearStart = Carbon::now()->startOfYear();
-
         $totalSalesQuery = Invoice::join('invoice_details', 'invoices.id', '=', 'invoice_details.invoice_id')
             ->join('products', 'invoice_details.product_id', '=', 'products.id')
-            ->where('invoices.invoice_date', '>=', $yearStart)
+            ->whereBetween('invoices.invoice_date', [$startDate->toDateString(), $endDate->toDateString()])
             ->whereNotNull('products.brand')
             ->where('products.brand', '!=', '');
 
         if (! empty($selectedBrands)) {
-            $totalSalesQuery->where('products.brand', $selectedBrands);
+            $totalSalesQuery->whereIn('products.brand', $selectedBrands);
         }
 
         $totalSalesByBrand = $totalSalesQuery
@@ -99,20 +181,16 @@ class DashboardController extends Controller
             ->groupBy('products.brand')
             ->get();
 
-        // Monthly Sales Trend (last 3 months + current month)
         $monthlyTrend = [];
-        for ($i = 3; $i >= 0; $i--) {
-            $monthStart = Carbon::now()->subMonths($i)->startOfMonth();
-            $monthEnd = Carbon::now()->subMonths($i)->endOfMonth();
-
+        foreach ($this->monthlyPeriods($startDate, $endDate) as $period) {
             $monthlySalesQuery = Invoice::join('invoice_details', 'invoices.id', '=', 'invoice_details.invoice_id')
                 ->join('products', 'invoice_details.product_id', '=', 'products.id')
-                ->whereBetween('invoices.invoice_date', [$monthStart, $monthEnd])
+                ->whereBetween('invoices.invoice_date', [$period['start']->toDateString(), $period['end']->toDateString()])
                 ->whereNotNull('products.brand')
                 ->where('products.brand', '!=', '');
 
             if (! empty($selectedBrands)) {
-                $monthlySalesQuery->where('products.brand', $selectedBrands);
+                $monthlySalesQuery->whereIn('products.brand', $selectedBrands);
             }
 
             $monthlySales = $monthlySalesQuery
@@ -121,7 +199,7 @@ class DashboardController extends Controller
                 ->get();
 
             $monthlyTrend[] = [
-                'month' => $monthStart->format('M Y'),
+                'month' => $period['label'],
                 'data' => $monthlySales,
             ];
         }
@@ -136,15 +214,14 @@ class DashboardController extends Controller
     // done
     private function getPurchaseData($startDate, $endDate, $selectedBrands)
     {
-        // Total Purchases Till Date (current year)
-        $yearStart = Carbon::now()->startOfYear();
-
         $totalPurchasesQuery = VendorPIProduct::join('products', 'vendor_p_i_products.vendor_sku_code', '=', 'products.sku')
             ->where('vendor_p_i_products.quantity_received', '>', 0)
-            ->where('vendor_p_i_products.created_at', '>=', $yearStart);
+            ->whereBetween('vendor_p_i_products.created_at', [$startDate, $endDate])
+            ->whereNotNull('products.brand')
+            ->where('products.brand', '!=', '');
 
         if (! empty($selectedBrands)) {
-            $totalPurchasesQuery->whereIn('products.brand', $selectedBrands); // use whereIn for multiple brands
+            $totalPurchasesQuery->whereIn('products.brand', $selectedBrands);
         }
 
         $totalPurchasesQuery->select(
@@ -157,18 +234,16 @@ class DashboardController extends Controller
 
         $totalPurchasesByBrand = $totalPurchasesQuery->get();
 
-        // Monthly Purchase Trend (last 3 months + current month)
         $monthlyTrend = [];
-        for ($i = 3; $i >= 0; $i--) {
-            $monthStart = Carbon::now()->subMonths($i)->startOfMonth();
-            $monthEnd = Carbon::now()->subMonths($i)->endOfMonth();
-
+        foreach ($this->monthlyPeriods($startDate, $endDate) as $period) {
             $monthlyPurchasesQuery = VendorPIProduct::join('products', 'vendor_p_i_products.vendor_sku_code', '=', 'products.sku')
                 ->where('vendor_p_i_products.quantity_received', '>', 0)
-                ->whereBetween('vendor_p_i_products.created_at', [$monthStart, $monthEnd]);
+                ->whereBetween('vendor_p_i_products.created_at', [$period['start'], $period['end']])
+                ->whereNotNull('products.brand')
+                ->where('products.brand', '!=', '');
 
             if (! empty($selectedBrands)) {
-                $monthlyPurchasesQuery->whereIn('products.brand', $selectedBrands); // use whereIn for multiple brands
+                $monthlyPurchasesQuery->whereIn('products.brand', $selectedBrands);
             }
 
             $monthlyPurchasesQuery->select(
@@ -182,7 +257,7 @@ class DashboardController extends Controller
             $monthlyPurchases = $monthlyPurchasesQuery->get();
 
             $monthlyTrend[] = [
-                'month' => $monthStart->format('M Y'),
+                'month' => $period['label'],
                 'data' => $monthlyPurchases,
             ];
         }
@@ -205,7 +280,7 @@ class DashboardController extends Controller
             ->where('products.brand', '!=', '');
 
         if (! empty($selectedBrands)) {
-            $ordersQuery->where('products.brand', $selectedBrands);
+            $ordersQuery->whereIn('products.brand', $selectedBrands);
         }
 
         $ordersByBrand = $ordersQuery
@@ -232,8 +307,11 @@ class DashboardController extends Controller
         // Only consider sales orders with status 'ready_to_ship'
         $orders = SalesOrder::with(['invoices.appointment'])
             ->whereBetween('created_at', [$startDate, $endDate])
-            ->where('status', 'ready_to_ship')
-            ->get();
+            ->where('status', 'ready_to_ship');
+
+        $this->applySalesOrderBrandFilter($orders, $selectedBrands);
+
+        $orders = $orders->get();
 
         $lrPending = 0;
         $apptReceivedGrnPending = 0;
@@ -257,10 +335,8 @@ class DashboardController extends Controller
                 }
                 // For LR Pending logic,
                 // If you have an LR doc/number column (update this logic as needed):
-                if (property_exists($invoice, 'lr_number')) {
-                    if (! empty($invoice->lr_number)) {
-                        $hasLR = true;
-                    }
+                if (! empty($invoice->lr_number) || ! empty($invoice->lr_doc) || ! empty($invoice->lr_file)) {
+                    $hasLR = true;
                 }
                 // If LR is stored in appointment or invoice with file, update here as well
             }
@@ -286,14 +362,21 @@ class DashboardController extends Controller
     private function getDeliveryData($startDate, $endDate, $selectedBrands)
     {
         // Count POD received from appointments
-        $podReceived = Invoice::whereHas('appointment', function ($query) {
+        $podReceivedQuery = Invoice::whereHas('appointment', function ($query) {
             $query->whereNotNull('pod');
-        })->whereBetween('created_at', [$startDate, $endDate])->count();
+        })->whereBetween('created_at', [$startDate, $endDate]);
+
+        $this->applyInvoiceBrandFilter($podReceivedQuery, $selectedBrands);
+
+        $podReceived = $podReceivedQuery->count();
 
         // Count POD not received for ready to ship orders
-        $podNotReceived = SalesOrder::where('status', 'ready_to_ship')
-            ->whereBetween('created_at', [$startDate, $endDate])
-            ->count();
+        $podNotReceivedQuery = SalesOrder::where('status', 'ready_to_ship')
+            ->whereBetween('created_at', [$startDate, $endDate]);
+
+        $this->applySalesOrderBrandFilter($podNotReceivedQuery, $selectedBrands);
+
+        $podNotReceived = $podNotReceivedQuery->count();
 
         return [
             'pod_received' => $podReceived,
@@ -305,17 +388,23 @@ class DashboardController extends Controller
     private function getGRNData($startDate, $endDate, $selectedBrands)
     {
         // Total = Sales Orders with status complete
-        $total = SalesOrder::where('status', 'completed')
-            ->whereBetween('created_at', [$startDate, $endDate])
-            ->count();
+        $totalQuery = SalesOrder::where('status', 'completed')
+            ->whereBetween('created_at', [$startDate, $endDate]);
+
+        $this->applySalesOrderBrandFilter($totalQuery, $selectedBrands);
+
+        $total = $totalQuery->count();
 
         // GRN Complete = GRN uploaded in Appointment via Invoice
-        $grnDone = SalesOrder::where('status', 'completed')
+        $grnDoneQuery = SalesOrder::where('status', 'completed')
             ->whereHas('invoices.appointment', function ($query) {
                 $query->whereNotNull('grn');
             })
-            ->whereBetween('created_at', [$startDate, $endDate])
-            ->count();
+            ->whereBetween('created_at', [$startDate, $endDate]);
+
+        $this->applySalesOrderBrandFilter($grnDoneQuery, $selectedBrands);
+
+        $grnDone = $grnDoneQuery->count();
 
         // GRN Pending = Total - GRN Complete
         $grnPending = $total - $grnDone;
@@ -331,43 +420,41 @@ class DashboardController extends Controller
     private function getPaymentData($startDate, $endDate, $selectedBrands)
     {
         // Total Payment Outstanding (all unpaid invoices)
-        $totalOutstanding = Invoice::whereDoesntHave('payments')->sum('total_amount');
+        $totalOutstandingQuery = Invoice::whereDoesntHave('payments');
+        $this->applyInvoiceBrandFilter($totalOutstandingQuery, $selectedBrands);
+        $totalOutstanding = $totalOutstandingQuery->sum('total_amount');
         // $totalOutstanding = Invoice::whereDoesntHave('payments', function ($query) {
         //     $query->where('payment_status', 'paid');
         // })->sum('total_amount');
 
-        // Monthly Payment Received (current month)
-        $monthStart = Carbon::now()->startOfMonth();
-        $monthEnd = Carbon::now()->endOfMonth();
-
-        $monthlyReceived = Payment::whereBetween('created_at', [$monthStart, $monthEnd])
-            ->sum('amount');
+        $monthlyReceivedQuery = Payment::whereBetween('created_at', [$startDate, $endDate]);
+        $this->applyPaymentBrandFilter($monthlyReceivedQuery, $selectedBrands);
+        $monthlyReceived = $monthlyReceivedQuery->sum('amount');
         // $monthlyReceived = Payment::whereBetween('created_at', [$monthStart, $monthEnd])
         //     ->where('payment_status', 'paid')
         //     ->sum('amount');
 
         // Payment Due Outstanding (overdue payments)
-        $paymentDueOutstanding = Invoice::where('invoice_date', '<', Carbon::now()->subDays(30))
-            ->whereDoesntHave('payments')->sum('total_amount');
+        $paymentDueOutstandingQuery = Invoice::where('invoice_date', '<', Carbon::now()->subDays(30))
+            ->whereDoesntHave('payments');
+        $this->applyInvoiceBrandFilter($paymentDueOutstandingQuery, $selectedBrands);
+        $paymentDueOutstanding = $paymentDueOutstandingQuery->sum('total_amount');
         // $paymentDueOutstanding = Invoice::where('invoice_date', '<', Carbon::now()->subDays(30))
         //     ->whereDoesntHave('payments', function ($query) {
         //         $query->where('payment_status', 'paid');
         //     })->sum('total_amount');
 
-        // Monthly Payment Trend (last 3 months + current month)
         $monthlyTrend = [];
-        for ($i = 3; $i >= 0; $i--) {
-            $monthStart = Carbon::now()->subMonths($i)->startOfMonth();
-            $monthEnd = Carbon::now()->subMonths($i)->endOfMonth();
-
-            $monthlyPayment = Payment::whereBetween('created_at', [$monthStart, $monthEnd])
-                ->sum('amount');
+        foreach ($this->monthlyPeriods($startDate, $endDate) as $period) {
+            $monthlyPaymentQuery = Payment::whereBetween('created_at', [$period['start'], $period['end']]);
+            $this->applyPaymentBrandFilter($monthlyPaymentQuery, $selectedBrands);
+            $monthlyPayment = $monthlyPaymentQuery->sum('amount');
             // $monthlyPayment = Payment::whereBetween('created_at', [$monthStart, $monthEnd])
             //     ->where('payment_status', 'paid')
             //     ->sum('amount');
 
             $monthlyTrend[] = [
-                'month' => $monthStart->format('M Y'),
+                'month' => $period['label'],
                 'amount' => $monthlyPayment,
             ];
         }
@@ -388,7 +475,7 @@ class DashboardController extends Controller
             ->where('products.brand', '!=', '');
 
         if (! empty($selectedBrands)) {
-            $warehouseQuery->where('products.brand', $selectedBrands);
+            $warehouseQuery->whereIn('products.brand', $selectedBrands);
         }
 
         $inventoryByBrand = $warehouseQuery
