@@ -124,8 +124,6 @@ class RegisterController extends Controller
             return redirect()->back()->withErrors($validator)->withInput();
         }
 
-        $credentials = $request->only('email', 'password');
-
         try {
             $user = User::where('email', strtolower($request->email))->first();
 
@@ -186,6 +184,148 @@ class RegisterController extends Controller
 
         return redirect()->route('login')->with('success', 'Logged out successfully.');
     }
+
+    /**
+     * 
+     * Show Login User Profile Page
+     * 
+     * @return \Illuminate\View\View
+     */
+    public function profile()
+    {
+        if (!Auth::check()) {
+            return redirect()->intended('/login');
+        }
+
+        $user = Auth::user();
+
+        return view('profile', compact('user'));
+    }
+
+    /**
+     * Update logged in staff/admin profile information.
+     *
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function updateProfile(Request $request)
+    {
+        if (!Auth::check()) {
+            return redirect()->intended('/login');
+        }
+
+        $user = Auth::user();
+
+        $validator = Validator::make($request->all(), [
+            'fname' => 'required|min:3|max:50',
+            'lname' => 'required|min:3|max:50',
+            'email' => 'required|email|unique:users,email,' . $user->id,
+            'phone' => 'required|digits:10',
+            'country' => 'nullable|max:50',
+            'state' => 'nullable|max:50',
+            'city' => 'nullable|max:50',
+            'pincode' => 'nullable|digits:6',
+            'current_address' => 'nullable|max:255',
+            'permanent_address' => 'nullable|max:255',
+            'profile_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ]);
+
+        if ($validator->fails()) {
+            return back()->withErrors($validator)->withInput();
+        }
+
+        DB::beginTransaction();
+
+        try {
+            $data = [
+                'fname' => trim($request->fname),
+                'lname' => trim($request->lname),
+                'email' => strtolower(trim($request->email)),
+                'phone' => trim($request->phone),
+                'country' => trim($request->country ?? ''),
+                'state' => trim($request->state ?? ''),
+                'city' => trim($request->city ?? ''),
+                'pincode' => trim($request->pincode ?? ''),
+                'current_address' => trim($request->current_address ?? ''),
+                'permanent_address' => trim($request->permanent_address ?? ''),
+            ];
+
+            if ($request->hasFile('profile_image')) {
+                $image = $request->file('profile_image');
+                $imageName = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
+                $uploadPath = public_path('uploads/images/profile');
+
+                if (! file_exists($uploadPath)) {
+                    mkdir($uploadPath, 0755, true);
+                }
+
+                if ($user->profile_image && file_exists(public_path($user->profile_image))) {
+                    unlink(public_path($user->profile_image));
+                }
+
+                $image->move($uploadPath, $imageName);
+                $data['profile_image'] = 'uploads/images/profile/' . $imageName;
+            }
+
+            $user->update($data);
+
+            activity()
+                ->performedOn($user)
+                ->causedBy($user)
+                ->event('profile_updated')
+                ->log('Profile updated');
+
+            DB::commit();
+
+            return redirect()->route('profile')->with('success', 'Profile updated successfully.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return back()->with('error', 'Failed to update profile. Please try again.')->withInput();
+        }
+    }
+
+    /**
+     * Change logged in staff/admin password.
+     *
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function changePassword(Request $request)
+    {
+        if (!Auth::check()) {
+            return redirect()->intended('/login');
+        }
+
+        $validator = Validator::make($request->all(), [
+            'current_password' => 'required|string',
+            'password' => 'required|string|min:8|confirmed|regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/',
+        ], [
+            'password.regex' => 'Password must contain uppercase, lowercase, number, and special character.',
+            'password.confirmed' => 'Passwords do not match.',
+        ]);
+
+        if ($validator->fails()) {
+            return back()->withErrors($validator)->withInput();
+        }
+
+        $user = Auth::user();
+
+        if (! Hash::check($request->current_password, $user->password)) {
+            return back()->withErrors(['current_password' => 'Current password is incorrect.']);
+        }
+
+        $user->update([
+            'password' => Hash::make($request->password),
+        ]);
+
+        activity()
+            ->performedOn($user)
+            ->causedBy($user)
+            ->event('password_changed')
+            ->log('Password changed');
+
+        return redirect()->route('profile')->with('success', 'Password changed successfully.');
+    }
+
 
     /**
      * Display dashboard
@@ -277,7 +417,7 @@ class RegisterController extends Controller
                 'readyToPackageOrdersCount'
             ));
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Error loading dashboard: '.$e->getMessage());
+            return redirect()->back()->with('error', 'Error loading dashboard: ' . $e->getMessage());
         }
     }
 
@@ -378,7 +518,7 @@ class RegisterController extends Controller
                 ];
             });
         })
-            ->filter(fn ($item) => ! empty($item['brand']))
+            ->filter(fn($item) => ! empty($item['brand']))
             ->groupBy('brand')
             ->map(function ($items, $brand) {
                 return [

@@ -40,6 +40,10 @@ Route::controller(RegisterController::class)->group(function () {
     Route::post('/login', 'login')->name('login.auth.check');
 
     Route::get('/logout', 'logout')->name('logout');
+
+    Route::get('/profile', 'profile')->name('profile');
+    Route::put('/profile/update', 'updateProfile')->name('profile.update');
+    Route::put('/profile/change-password', 'changePassword')->name('profile.change-password');
 });
 
 Route::middleware(['auth'])->group(function () {
