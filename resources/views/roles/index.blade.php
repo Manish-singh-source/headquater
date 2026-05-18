@@ -1,6 +1,5 @@
 @extends('layouts.master')
 @section('main-content')
-    <!--start main wrapper-->
     <main class="main-wrapper">
         <div class="main-content">
             <div class="page-breadcrumb d-none d-sm-flex align-items-center justify-content-between mb-3">
@@ -108,5 +107,15 @@
             </div>
         </div>
     </main>
-    <!--end main wrapper-->
-@endsection 
+
+    <script>
+        $(document).ready(function() {
+            var table2 = $('#example').DataTable({
+                "columnDefs": [{
+                        "orderable": false,
+                    } 
+                ],
+            });
+        });
+    </script>
+@endsection

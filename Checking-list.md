@@ -5,6 +5,8 @@
     - show proper errors 
     - throttling 
 
+    - done
+
 2. Dashboard: 
 
     - sales analytics reports 
@@ -24,8 +26,12 @@
     - change password option
     - logout option
 
+    - done
+
 4. Logout button: 
     - logout functionality 
+
+    - done
 
 5. permissions: 
 
@@ -42,6 +48,9 @@
     - delete role 
 
     - proper pagination 
+    - sorting properly 
+
+    - done
 
 7. warehouses: 
 

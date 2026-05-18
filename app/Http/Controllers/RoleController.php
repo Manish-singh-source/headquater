@@ -13,7 +13,6 @@ class RoleController extends Controller
     {
         // Logic to list roles
         $roles = Role::latest()->get(); // Assuming you have a Role model
-
         return view('roles.index', compact('roles'));
     }
 
