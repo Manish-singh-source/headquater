@@ -59,14 +59,16 @@
     - update warehouse 
     - delete warehouse 
     - view warehouse
-        - products list 
-        - export products functionality 
+        - products list                  - pending
+        - export products functionality  - pending
 
     - proper pagination
     - sorting properly 
     - tabs switching 
     - multi delete functionality
     - multi toggle status functionality
+
+    - done
 
 8. staff: 
 

@@ -109,11 +109,12 @@
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
+                                {{-- 
                                 <div class="col-md-6">
                                     <label for="input6" class="form-label">Upload Licence Document</label>
                                     <input type="file" class="form-control" name="licence_doc" id="input6"
                                         placeholder="Upload Licence Document">
-                                </div>
+                                </div> --}}
                                 <div class="col-md-6">
                                     <label for="input8" class="form-label">Max storage capacity</label>
                                     <input type="number" class="form-control @error('max_storage_capacity') is-invalid @enderror" name="max_storage_capacity"

@@ -15,7 +15,6 @@
                         </ol>
                     </nav>
                 </div>
-
             </div>
             <!--end breadcrumb-->
 
@@ -25,8 +24,8 @@
                         <ul class="col-12 list-group list-group-flush">
                             <li
                                 class="list-group-item d-flex justify-content-between align-items-center border-bottom mb-2 pe-3">
-                                <span><b>Warehouse Id</b></span>
-                                <span>{{ $warehouse->id }}</span>
+                                <span><b>Warehouse Name</b></span>
+                                <span>{{ $warehouse->name }}</span>
                             </li>
                             <li
                                 class="list-group-item d-flex justify-content-between align-items-center border-bottom mb-2 pe-3">
@@ -68,8 +67,6 @@
                         <button class="btn btn-icon border-2 border-primary me-1" id="exportData">
                             <i class="fa fa-file-excel-o"></i> Export to Excel
                         </button>
-                        {{-- <a href="{{ route('products.create') }}" class="btn btn-primary px-4"><i
-                                class="bi bi-plus-lg me-2"></i>Add Product</a> --}}
                     </div>
                 </div>
             </div>
@@ -81,8 +78,6 @@
                             <div class="table-responsive white-space-nowrap">
                                 <table id="example" class="table align-middle">
                                     <thead class="table-light">
-
-
                                         <tr>
                                             <th>
                                                 <input class="form-check-input" type="checkbox">
@@ -146,7 +141,7 @@
                                             </tr>
                                         @empty
                                             <tr>
-                                                <td colspan="15" class="text-center">No Products Found</td>
+                                                <td colspan="18" class="text-center">No Products Found</td>
                                             </tr>
                                         @endforelse
 

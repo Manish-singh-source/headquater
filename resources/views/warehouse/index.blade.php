@@ -70,25 +70,25 @@
                                         <th>
                                             <input class="form-check-input" type="checkbox" id="select-all">
                                         </th>
-                                        <th>Warehouse&nbsp;Id</th>
+                                        <th>Sr&nbsp;No</th>
                                         <th>Warehouse&nbsp;Name</th>
                                         <th>Type</th>
                                         <th>City</th>
                                         <th>Contact&nbsp;Person&nbsp;Name</th>
                                         <th>Phone&nbsp;Number</th>
-                                        <th>Default&nbsp;Warehouse</th>
+                                        {{-- <th>Default&nbsp;Warehouse</th> --}}
                                         <th>Status</th>
                                         <th>Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @forelse ($warehouses as $warehouse)
+                                    @forelse ($warehouses as $index => $warehouse)
                                         <tr>
                                             <td>
                                                 <input class="form-check-input row-checkbox" type="checkbox" name="ids[]"
                                                     value="{{ $warehouse->id }}">
                                             </td>
-                                            <td>{{ $warehouse->id }} </td>
+                                            <td>{{ $index + 1 }} </td>
                                             <td>
                                                 <p class="mb-0 customer-name fw-bold">{{ $warehouse->name }}</p>
                                             </td>
@@ -99,7 +99,7 @@
                                             <td>{{ $warehouse->contact_person_name }}</td>
                                             <td>{{ $warehouse->phone }}</td>
 
-                                            <td>{{ $warehouse->default_warehouse ?? 'NA' }}</td>
+                                            {{-- <td>{{ $warehouse->default_warehouse ?? 'NA' }}</td> --}}
                                             <td>
                                                 <div class="form-switch form-check-success">
                                                     <input class="form-check-input status-switch2" type="checkbox"
@@ -177,8 +177,6 @@
                     </div>
                 </div>
             </div>
-
-
         </div>
     </main>
 @endsection
@@ -258,7 +256,7 @@
                 "order": [],
                 'columnDefs': [{
                     'orderable': false,
-                    'targets': [0, 9] // Disable ordering on the first and last columns
+                    'targets': [0, 8] // Disable ordering on the first and last columns
                 }]
             });
 

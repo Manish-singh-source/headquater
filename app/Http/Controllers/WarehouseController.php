@@ -242,7 +242,7 @@ class WarehouseController extends Controller
             'pan_number' => trim($request->pan_no),
             'address_line_1' => trim($request->address_line_1),
             'address_line_2' => trim($request->address_line_2),
-            'licence_doc' => $request->licence_doc,
+            // 'licence_doc' => $request->licence_doc,
             'max_storage_capacity' => $request->max_storage_capacity,
             'operations' => $request->supported_operations,
             'country_id' => $request->country_id,
