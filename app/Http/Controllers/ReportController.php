@@ -1963,6 +1963,56 @@ class ReportController extends Controller
         }
     }
 
+    private function applyCustomerSalesInvoiceFilters($query, Request $request)
+    {
+        if (
+            ! $request->filled('from_date') &&
+            ! $request->filled('to_date') &&
+            ! $request->filled('invoice_no') &&
+            ! $request->filled('customer_id') &&
+            ! $request->filled('appointment_date')
+        ) {
+            return;
+        }
+
+        $invoiceFilter = function ($invoiceQuery) use ($request) {
+            if ($request->filled('from_date')) {
+                $invoiceQuery->whereDate('created_at', '>=', $request->from_date);
+            }
+
+            if ($request->filled('to_date')) {
+                $invoiceQuery->whereDate('created_at', '<=', $request->to_date);
+            }
+
+            if ($request->filled('invoice_no')) {
+                $invoiceQuery->whereIn('invoice_number', (array) $request->invoice_no);
+            }
+
+            if ($request->filled('customer_id')) {
+                $invoiceQuery->whereIn('customer_id', (array) $request->customer_id);
+            }
+
+            if ($request->filled('appointment_date')) {
+                $appointmentDates = collect((array) $request->appointment_date)
+                    ->map(function ($date) {
+                        try {
+                            return \Carbon\Carbon::parse($date)->format('Y-m-d');
+                        } catch (\Exception $e) {
+                            return $date;
+                        }
+                    })
+                    ->all();
+
+                $invoiceQuery->whereHas('appointment', function ($appointmentQuery) use ($appointmentDates) {
+                    $appointmentQuery->whereIn('appointment_date', $appointmentDates);
+                });
+            }
+        };
+
+        $query->whereHas('invoices', $invoiceFilter)
+            ->with(['invoices' => $invoiceFilter]);
+    }
+
     public function customerSalesHistory(Request $request)
     {
 
@@ -1978,14 +2028,6 @@ class ReportController extends Controller
             'orderedProducts.tempOrder',
         ]);
 
-        // Date Filters
-        if ($request->filled('from_date')) {
-            $query->where('order_date', '>=', $request->from_date);
-        }
-
-        if ($request->filled('to_date')) {
-            $query->where('order_date', '<=', $request->to_date);
-        }
         if ($request->filled('sales_order_no')) {
             $query->whereIn('order_number', (array) $request->sales_order_no);
         }
@@ -2078,8 +2120,10 @@ class ReportController extends Controller
             });
         }
 
+        $this->applyCustomerSalesInvoiceFilters($query, $request);
+
         // Final result
-        $salesOrders = $query->latest('order_date')->get();
+        $salesOrders = $query->latest('created_at')->get();
 
         // dd($salesOrders[0]->invoices[0]);
 
@@ -2243,14 +2287,6 @@ class ReportController extends Controller
                 'orderedProducts.tempOrder',
             ]);
 
-            // Date Filters
-            if ($request->filled('from_date')) {
-                $query->where('order_date', '>=', $request->from_date);
-            }
-
-            if ($request->filled('to_date')) {
-                $query->where('order_date', '<=', $request->to_date);
-            }
             if ($request->filled('sales_order_no')) {
                 $query->whereIn('order_number', (array) $request->sales_order_no);
             }
@@ -2341,8 +2377,10 @@ class ReportController extends Controller
                     $q->whereIn('id', $customerTypes);
                 });
             }
+            $this->applyCustomerSalesInvoiceFilters($query, $request);
+
             // Final result
-            $salesOrders = $query->latest('order_date')->get();
+            $salesOrders = $query->latest('created_at')->get();
 
             // dd($salesOrders[0]->invoices[0]);
 
@@ -2496,6 +2534,7 @@ class ReportController extends Controller
                         'Customer Group Name' => $salesOrder->customerGroup->name ?? 'N/A',
                         'Customer Name' => $invoice->customer->client_name ?? 'N/A',
                         'Invoice No' => $invoice->invoice_number,
+                        'Invoice Date' => $invoice->created_at?->format('d-m-Y') ?? 'N/A',
                         'Customer Phone No' => $invoice->customer->contact_no ?? 'N/A',
                         'Customer Email' => $invoice->customer->email ?? 'N/A',
                         'Customer City' => $invoice->customer->shipping_city ?? 'N/A',
@@ -2546,6 +2585,7 @@ class ReportController extends Controller
                 'Customer Group Name',
                 'Customer Name',
                 'Invoice No',
+                'Invoice Date',
                 'Customer Phone No',
                 'Customer Email',
                 'Customer City',
@@ -2664,14 +2704,22 @@ class ReportController extends Controller
 
         try {
             // Use the same aggregation logic as the index method
-            $query = Invoice::with(['warehouse', 'customer.groupInfo.customerGroup', 'salesOrder', 'payments']);
+            $query = Invoice::with([
+                'warehouse',
+                'customer.groupInfo.customerGroup',
+                'salesOrder.customerGroup',
+                'payments',
+                'details.salesOrderProduct',
+                'appointment',
+                'dns',
+            ]);
 
             // Apply filters (same as index method)
             if ($request->filled('from_date')) {
-                $query->where('invoice_date', '>=', $request->from_date);
+                $query->whereDate('created_at', '>=', $request->from_date);
             }
             if ($request->filled('to_date')) {
-                $query->where('invoice_date', '<=', $request->to_date);
+                $query->whereDate('created_at', '<=', $request->to_date);
             }
 
             // Apply customer filter (supports single or multiple)
@@ -2847,13 +2895,14 @@ class ReportController extends Controller
                     'customer_name' => $customer->client_name ?? 'N/A',
                     'customer_gstin' => $customer->gstin ?? 'N/A',
                     'invoice_no' => $invoice->invoice_number,
+                    'invoice_date' => $invoice->created_at?->format('d-m-Y') ?? 'N/A',
                     'creator_name' => 'System',
                     'customer_phone_no' => $customer->contact_no ?? 'N/A',
                     'customer_email' => $customer->email ?? 'N/A',
                     'customer_city' => $customer->billing_city ?? $customer->shipping_city ?? 'N/A',
                     'customer_state' => $customer->billing_state ?? $customer->shipping_state ?? 'N/A',
                     'po_no' => $invoice->po_number ?? $salesOrder->po_number ?? 'N/A',
-                    'po_date' => $salesOrder ? $salesOrder->created_at->format('d-m-Y') : 'N/A',
+                    'po_date' => $invoice->created_at?->format('d-m-Y') ?? 'N/A',
                     'appointment_date' => $appointment ? $appointment->appointment_date->format('d-m-Y') : 'N/A',
                     'due_date' => 'N/A',
                     'currency' => 'INR',
@@ -2889,6 +2938,11 @@ class ReportController extends Controller
                     'total_revenue' => $totalRevenue,
                     'total_pending_payments' => $totalPendingPayments,
                     'total_customers' => $customers->count(),
+                    'top_customer' => $invoiceData->groupBy('customer_name')
+                        ->map(fn ($rows) => $rows->sum('total'))
+                        ->sortDesc()
+                        ->keys()
+                        ->first() ?? 'N/A',
                 ],
                 'invoices' => $invoiceData,
             ];
