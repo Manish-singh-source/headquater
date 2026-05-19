@@ -11,6 +11,7 @@ use App\Models\CustomerReturn;
 use App\Models\Invoice;
 use App\Models\Payment;
 use App\Models\SalesOrder;
+use App\Models\SalesOrderProduct;
 use App\Models\State;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -624,7 +625,7 @@ class CustomerController extends Controller
     public function storeBulk(Request $request, $g_id)
     {
         $validator = Validator::make($request->all(), [
-            'csv_file' => 'required|file|mimes:xlsx,xls', // 5MB max
+            'csv_file' => 'required|file|mimes:xlsx,xls,csv', // 5MB max
         ]);
 
         if ($validator->fails()) {

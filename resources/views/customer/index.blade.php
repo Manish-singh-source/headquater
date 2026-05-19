@@ -149,6 +149,7 @@
                                         <th>Contact&nbsp;Number</th>
                                         <th>GSTIN</th>
                                         <th>PAN</th>
+                                        <th class="d-none">Created&nbsp;At</th>
                                         <th>Status</th>
                                         <th>Action</th>
                                     </tr>
@@ -177,6 +178,7 @@
                                             <td>{{ $customer->contact_no }}</td>
                                             <td>{{ $customer->gstin }}</td>
                                             <td>{{ $customer->pan }}</td>
+                                            <td class="d-none">{{ optional($customer->created_at)->timestamp ?? 0 }}</td>
                                             <td>
                                                 <div class="form-switch form-check-success">
                                                     <input class="form-check-input customer-status-switch" type="checkbox"
@@ -246,7 +248,7 @@
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="9" class="text-center">
+                                            <td colspan="11" class="text-center">
                                                 No Record Found
                                             </td>
                                         </tr>
@@ -296,11 +298,15 @@
 
             const groupId = $('#customerGroupId').text();
             const table = $('#customerTable').DataTable({
-                "order": [],
+                "order": [[8, "desc"]],
                 'columnDefs': [{
                     'orderable': false,
-                    'targets': [0, 9] // Disable ordering on the first and last columns
-                }]
+                    'targets': [0, 10] // Disable ordering on the first and last columns
+                }, {
+                    'targets': [8],
+                    'visible': false,
+                    'searchable': false
+                }],
             });
             
             // Select All

@@ -137,6 +137,7 @@
             </div>
 
             <!-- Navigation Tabs -->
+            {{-- 
             <div class="card">
                 <div class="card-header">
                     <ul class="nav nav-tabs card-header-tabs" id="customerTabs" role="tablist">
@@ -225,12 +226,21 @@
                                                     <a href="{{ route('invoices.view', $invoice->id) }}" target="_blank"
                                                         class="btn btn-icon btn-sm bg-primary-subtle me-1"
                                                         data-bs-toggle="tooltip" title="View Invoice">
-                                                        <i class="bx bx-show text-primary"></i>
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="13"
+                                                            height="13" viewBox="0 0 24 24" fill="none"
+                                                            stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                                            stroke-linejoin="round"
+                                                            class="feather feather-eye text-primary">
+                                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                                            <circle cx="12" cy="12" r="3"></circle>
+                                                        </svg>
                                                     </a>
                                                     <a href="{{ route('invoice.downloadPdf', $invoice->id) }}" target="_blank"
                                                         class="btn btn-icon btn-sm bg-success-subtle"
                                                         data-bs-toggle="tooltip" title="Download PDF">
-                                                        <i class="bx bx-download text-success"></i>
+                                                        <img width="15" height="15"
+                                                                src="https://img.icons8.com/ios/50/document--v1.png"
+                                                                alt="document" />
                                                     </a>
                                                 </td>
                                             </tr>
@@ -436,7 +446,7 @@
                         </div>
                     </div>
                 </div>
-            </div>
+            </div> --}}
         </div>
     </main>
 @endsection

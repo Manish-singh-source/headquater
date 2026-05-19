@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Customer;
 use App\Models\CustomerGroup;
 use App\Models\CustomerGroupMember;
+use App\Models\SalesOrder;
 use Illuminate\Http\Request;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -38,7 +40,7 @@ class CustomerGroupController extends Controller
                 $query->inactive();
             }
 
-            $customerGroups = $query->get();
+            $customerGroups = $query->latest()->get();
 
             return view('customerGroups.index', compact('customerGroups', 'status'));
         } catch (\Exception $e) {
@@ -201,6 +203,7 @@ class CustomerGroupController extends Controller
                 } elseif ($status === 'inactive') {
                     $query->where('status', '0');
                 }
+                $query->orderByDesc('created_at')->orderByDesc('id');
             }])
                 ->withCount('customers')
                 ->withCount(['customers as active_customers_count' => function ($q) {
@@ -288,6 +291,15 @@ class CustomerGroupController extends Controller
 
         try {
             $customerGroup = CustomerGroup::findOrFail($id);
+
+            $salesOrdersCount = SalesOrder::where('customer_group_id', $customerGroup->id)->count();
+            if ($salesOrdersCount > 0) {
+                DB::rollBack();
+
+                return redirect()->route('customer.groups.index')
+                    ->with('error', "Customer group '{$customerGroup->name}' cannot be deleted because it is linked with {$salesOrdersCount} sales order(s). Please update or delete those sales orders first.");
+            }
+
             $customerGroup->delete();
 
             DB::commit();
@@ -298,11 +310,21 @@ class CustomerGroupController extends Controller
                 ->log('Customer Group deleted');
 
             return redirect()->route('customer.groups.index')->with('success', 'Customer group deleted successfully.');
+        } catch (QueryException $e) {
+            DB::rollBack();
+            Log::error('Error deleting customer group: ' . $e->getMessage());
+
+            if ($e->getCode() === '23000') {
+                return redirect()->route('customer.groups.index')
+                    ->with('error', 'This customer group cannot be deleted because it is linked with existing records. Please remove or update those records first.');
+            }
+
+            return redirect()->route('customer.groups.index')->with('error', 'Unable to delete customer group. Please try again.');
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Error deleting customer group: ' . $e->getMessage());
 
-            return redirect()->route('customer.groups.index')->with('error', 'Error: ' . $e->getMessage());
+            return redirect()->route('customer.groups.index')->with('error', 'Unable to delete customer group. Please try again.');
         }
     }
 
@@ -365,6 +387,14 @@ class CustomerGroupController extends Controller
                 return redirect()->back()->with('error', 'No customer groups selected.');
             }
 
+            $linkedSalesOrdersCount = SalesOrder::whereIn('customer_group_id', $ids)->count();
+            if ($linkedSalesOrdersCount > 0) {
+                DB::rollBack();
+
+                return redirect()->back()
+                    ->with('error', "Selected customer groups cannot be deleted because {$linkedSalesOrdersCount} sales order(s) are linked with them. Please update or delete those sales orders first.");
+            }
+
             $deleted = CustomerGroup::destroy($ids);
 
             DB::commit();
@@ -378,11 +408,21 @@ class CustomerGroupController extends Controller
             } else {
                 return redirect()->back()->with('error', 'No groups deleted.');
             }
+        } catch (QueryException $e) {
+            DB::rollBack();
+            Log::error('Error deleting customer groups: ' . $e->getMessage());
+
+            if ($e->getCode() === '23000') {
+                return redirect()->back()
+                    ->with('error', 'Selected customer groups cannot be deleted because they are linked with existing records. Please remove or update those records first.');
+            }
+
+            return redirect()->back()->with('error', 'Unable to delete selected customer groups. Please try again.');
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Error deleting customer groups: ' . $e->getMessage());
 
-            return redirect()->back()->with('error', 'Error: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Unable to delete selected customer groups. Please try again.');
         }
     }
 

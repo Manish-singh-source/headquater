@@ -59,11 +59,11 @@
                                                     </div>
                                                     <div class="col-12 mb-3">
                                                         <label for="csv_file" class="form-label">Customers
-                                                            List (XLSX/XLS) <span class="text-danger">*</span></label>
+                                                            List (XLSX/XLS/CSV) <span class="text-danger">*</span></label>
                                                         <input type="file" name="csv_file" id="csv_file"
-                                                            class="form-control" accept=".xlsx,.xls" required="">
+                                                            class="form-control" accept=".xlsx,.xls, .csv" required="">
                                                         <small class="text-muted">Please upload an Excel file (.xlsx or
-                                                            .xls) with customer data. Make sure the first row contains
+                                                            .xls or .csv) with customer data. Make sure the first row contains
                                                             column headers including "Facility Name".</small>
                                                     </div>
                                                 </div>
@@ -117,9 +117,11 @@
                                     </div>
                                 </div>
 
+                                {{-- 
                                 <a href="{{ route('customer.create', $customerGroup->id) }}"><button
                                         class="btn border-2 border-primary"><i class="bi bi-plus-lg me-2"></i>Add
-                                        Customer(Single)</button></a>
+                                        Customer(Single)</button></a> 
+                                --}}
                                 <div class="ms-auto">
                                     <div class="btn-group">
                                         <button type="button" class="btn btn-outline-primary">Action</button>
@@ -246,6 +248,7 @@
                                         <th>Contact&nbsp;Number</th>
                                         <th>GSTIN</th>
                                         <th>PAN</th>
+                                        <th class="d-none">Created&nbsp;At</th>
                                         <th>Status</th>
                                         <th>Action</th>
                                     </tr>
@@ -274,6 +277,7 @@
                                             <td>{{ $customer->contact_no }}</td>
                                             <td>{{ $customer->gstin }}</td>
                                             <td>{{ $customer->pan }}</td>
+                                            <td class="d-none">{{ optional($customer->created_at)->timestamp ?? 0 }}</td>
                                             <td>
                                                 <div class="form-switch form-check-success">
                                                     <input class="form-check-input customer-status-switch" type="checkbox"
@@ -343,7 +347,7 @@
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="9" class="text-center">
+                                            <td colspan="11" class="text-center">
                                                 No Record Found
                                             </td>
                                         </tr>
@@ -394,10 +398,14 @@
             const groupId = $('#customerGroupId').text();
 
             const table = $('#customerGroupTable').DataTable({
-                "order": [],
+                "order": [[8, "desc"]],
                 'columnDefs': [{
                     'orderable': false,
-                    'targets': [0, 9] // Disable ordering on the first and last columns
+                    'targets': [0, 10] // Disable ordering on the first and last columns
+                }, {
+                    'targets': [8],
+                    'visible': false,
+                    'searchable': false
                 }]
             });
 
