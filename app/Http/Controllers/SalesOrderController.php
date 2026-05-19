@@ -658,17 +658,6 @@ class SalesOrderController extends Controller
         }
     }
 
-    public function edit($id)
-    {
-        $salesOrder = SalesOrder::with('customerGroup', 'warehouse', 'orderedProducts.product', 'orderedProducts.tempOrder', 'orderedProducts.vendorPIProduct.order', 'vendorPIs.products')->findOrFail($id);
-        foreach ($salesOrder->orderedProducts as $orderedProduct) {
-            $orderedProduct->warehouseStockLog = WarehouseStockLog::where('sales_order_id', $orderedProduct->sales_order_id)
-                ->where('sku', $orderedProduct->sku)
-                ->first();
-        }
-
-        return view('salesOrder.edit', compact('salesOrder'));
-    }
 
     public function update(Request $request)
     {

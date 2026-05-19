@@ -203,24 +203,43 @@ Route::middleware(['auth'])->group(function () {
 
     // All Order page
     Route::controller(SalesOrderController::class)->group(function () {
+
+        // Sales Orders List Page
         Route::get('/order', 'index')->name('sales.order.index');
+        // Sales Orders Create/Check Availibility Form Page
         Route::get('/create-order', 'create')->name('sales.order.create');
-        Route::post('/store-order', 'store')->name('sales.order.store');
-        Route::get('/edit-order/{id}', 'edit')->name('sales.order.edit');
-        Route::put('/update-order', 'update')->name('sales.order.update');
+        // Sales Orders Create/Check Availibility Form Page
         Route::get('/view-order/{id}', 'view')->name('sales.order.view');
+        // Delete Sales Order 
         Route::delete('/delete-order/{id}', 'destroy')->name('sales.order.delete');
+        // Delete Sales Order Products
         Route::delete('/order/delete-selected', 'deleteSelected')->name('delete.selected.order');
-        Route::put('/change-status', 'changeStatus')->name('change.sales.order.status');
+
+        // Step 1: Check availibility 
         Route::post('/check-products-stock', 'checkProductsStock')->name('check.sales.order.stock');
         Route::get('/download-block-order-csv', 'downloadBlockedCSV')->name('download.sales.order.excel');
+
+        // Step 2: Block Order / Create Sales Order 
+        Route::post('/store-order', 'store')->name('sales.order.store');
+        
+        // Step 3: download excel and update final quantity fulfilled
         Route::post('/products-download-po-excel', 'downloadPoExcel')->name('products.download.po.excel');
+        Route::put('/update-order', 'update')->name('sales.order.update');
+
+        // Step 4: send to packaging whose final quantity fulfilled > 0 and status pending only.
+        Route::post('/send-to-packaging', 'sendToPackaging')->name('send.to.packaging');
+
+        // Step 5: generate invoice where status is shipped.
+        Route::post('/generate-invoice', 'generateInvoice')->name('generate.invoice');
+
+        // Step 6: change sales order status to complete
+        Route::put('/change-status', 'changeStatus')->name('change.sales.order.status');
+
+        // download not found excels after step 2 this will visible in view page
         Route::get('/download-not-found-sku/{id}', 'downloadNotFoundSku')->name('download.not.found.sku.excel');
         Route::get('/download-not-found-customer/{id}', 'downloadNotFoundCustomer')->name('download.not.found.customer.excel');
         Route::get('/download-not-found-vendor/{id}', 'downloadNotFoundVendor')->name('download.not.found.vendor.excel');
-        Route::post('/generate-invoice', 'generateInvoice')->name('generate.invoice');
-        Route::post('/send-to-packaging', 'sendToPackaging')->name('send.to.packaging');
-
+        
         // Multi-warehouse auto allocation routes
         Route::post('/auto-allocate-stock/{id}', 'autoAllocateStock')->name('sales.order.auto.allocate');
         Route::get('/allocation-breakdown/{id}', 'getAllocationBreakdown')->name('sales.order.allocation.breakdown');
@@ -264,24 +283,40 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/download-received-products-excel', 'downloadReceivedProductsFile')->name('download.received-products.excel');
     });
 
+    // After send to packaging step (from step 4 in sales order controller)
     Route::controller(PackagingController::class)->group(function () {
+        // List sales orders which send to packaging 
         Route::get('/packaging-list', 'index')->name('packaging.list.index');
+        // View sales order to see packaging products
         Route::get('/packing-products-list/{id}', 'view')->name('packing.products.view');
+
+        // Export packaging products list
         Route::get('/download-packing-products-excel', 'downloadPackagingProducts')->name('download.packing.products.excel');
+        // Update packaging products to packaged and it's quantity
         Route::post('/update-packaging-products', 'updatePackagingProducts')->name('update.packing.products');
+        // 1. Warehouse person Mark packaged products to Ready to Ship Approval Pending
+        // 2. Admin approves these products and change status to ready to ship
         Route::put('/change-packaging-status-to-ready-to-ship', 'changeStatusToReadyToShip')->name('change.packaging.status.ready.to.ship');
-        Route::post('/approve-warehouse-allocation/{id}', 'approveWarehouseAllocation')->name('approve.warehouse.allocation');
-        Route::post('/reject-warehouse-allocation/{id}', 'rejectWarehouseAllocation')->name('reject.warehouse.allocation');
+
+
+        // Route::post('/approve-warehouse-allocation/{id}', 'approveWarehouseAllocation')->name('approve.warehouse.allocation');
+        // Route::post('/reject-warehouse-allocation/{id}', 'rejectWarehouseAllocation')->name('reject.warehouse.allocation');
     });
 
     //
     Route::controller(ReadyToShip::class)->group(function () {
+        // List sales orders which - partially ready to ship/ready to ship/partially shipped/shipped
         Route::get('/ready-to-ship', 'index')->name('readyToShip.index');
+        // List sales orders clients with batch no which are shipped
         Route::get('/ready-to-ship-detail/{id}', 'view')->name('readyToShip.view');
-        // Route::get('/ready-to-ship-detail-view/{id}/{c_id}', 'viewDetail')->name('readyToShip.view.detail');
+        // List sales order products 
         Route::get('/ready-to-ship-detail-view/{id}/{c_id}/{rts_count_id}', 'viewDetail')->name('readyToShip.view.detail');
+        // Change status to shipped (this will not required)
         Route::put('/change-status-shipped', 'changeStatusShipped')->name('change.status.shipped');
+
+        // Route::get('/ready-to-ship-detail-view/{id}/{c_id}', 'viewDetail')->name('readyToShip.view.detail');
         Route::get('/generate-warehouse-invoice/{orderId}/{customerId}/{warehouseId}', 'generateWarehouseInvoice')->name('ready.to.ship.generate.warehouse.invoice');
+        
         Route::get('/product-issues', 'issuesProducts')->name('exceed.shortage.products');
         Route::get('/return-accept', 'returnAccept')->name('return.accept');
         Route::get('/accept-vendor-products/{id}', 'acceptVendorProducts')->name('accept.vendor.products');
