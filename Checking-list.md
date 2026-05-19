@@ -179,6 +179,29 @@
 
 ================================================================================
 
+common layout: Check following functionalities for selected routes (Master Section Start to Master Section End) and correct the same layout for all these view files. 
+
+list 
+tab switching
+pagination 
+toggle status 
+multi toggle status 
+delete 
+multi delete 
+
+
+create functionality (if available) 
+update functionality (if available)
+view functionality (if available)
+
+export file functionality (if available)
+update via excel functionality (if available)
+
+
+
+
+================================================================================
+
 14. check availability: 
     - fill form and upload excel then submit 
     - display availibility table and export button
