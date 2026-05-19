@@ -27,8 +27,8 @@
                     </button>
                 </div>
             </div>
-            <div class="modal fade" id="skuMappingUpload" data-bs-backdrop="static" data-bs-keyboard="false"
-                tabindex="-1" aria-labelledby="skuMappingUploadLabel" aria-hidden="true">
+            <div class="modal fade" id="skuMappingUpload" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+                aria-labelledby="skuMappingUploadLabel" aria-hidden="true">
                 <div class="modal-dialog">
                     <div class="modal-content">
                         <form action="{{ route('upload.sku.mapping.excel') }}" method="POST" enctype="multipart/form-data">
@@ -55,8 +55,8 @@
                     </div>
                 </div>
             </div>
-            <div class="modal fade" id="skuMappingBulkAdd" data-bs-backdrop="static" data-bs-keyboard="false"
-                tabindex="-1" aria-labelledby="skuMappingBulkAddLabel" aria-hidden="true">
+            <div class="modal fade" id="skuMappingBulkAdd" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+                aria-labelledby="skuMappingBulkAddLabel" aria-hidden="true">
                 <div class="modal-dialog">
                     <div class="modal-content">
                         <form action="{{ route('add.sku.mapping') }}" method="POST" enctype="multipart/form-data">
@@ -106,8 +106,8 @@
                                     @forelse($productMapping as $product)
                                         <tr>
                                             <td>
-                                                <input class="form-check-input row-checkbox" type="checkbox" name="ids[]"
-                                                    value="{{ $product->id }}">
+                                                <input class="form-check-input row-checkbox" type="checkbox"
+                                                    name="ids[]" value="{{ $product->id }}">
                                             </td>
                                             <td>
                                                 {{ $product->sku }}
@@ -129,7 +129,8 @@
                                             </td>
                                             <td>
                                                 <div class="d-flex">
-                                                    <a aria-label="anchor" href="{{ route('sku.mapping.edit', $product->id) }}"
+                                                    <a aria-label="anchor"
+                                                        href="{{ route('sku.mapping.edit', $product->id) }}"
                                                         class="btn btn-icon btn-sm bg-warning-subtle me-1"
                                                         data-bs-toggle="tooltip" data-bs-original-title="Edit">
                                                         <svg xmlns="http://www.w3.org/2000/svg" width="13"
@@ -183,4 +184,15 @@
             </div>
         </div>
     </main>
+
+    <script>
+        $(document).ready(function() {
+            var table2 = $('#example2').DataTable({
+                "columnDefs": [{
+                    "orderable": false,
+                    "targets": [0, -1],
+                }],
+            });
+        });
+    </script>
 @endsection

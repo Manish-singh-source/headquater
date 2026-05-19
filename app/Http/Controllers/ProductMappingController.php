@@ -22,7 +22,7 @@ class ProductMappingController extends Controller
     public function index()
     {
         try {
-            $productMapping = ProductMapping::orderBy('created_at', 'desc')
+            $productMapping = ProductMapping::orderBy('updated_at', 'desc')
                 ->get();
             return view('skuMapping.index', compact('productMapping'));
         } catch (\Exception $e) {
@@ -563,7 +563,7 @@ class ProductMappingController extends Controller
             $tempXlsxPath = storage_path('app/sku_mapping_' . Str::random(8) . '.xlsx');
             $writer = SimpleExcelWriter::create($tempXlsxPath);
 
-            $productMappings = ProductMapping::orderBy('id')->get();
+            $productMappings = ProductMapping::orderBy('updated_at', 'desc')->get();
 
             if ($productMappings->isEmpty()) {
                 return redirect()->back()->with('info', 'No SKU mappings found to download.');
@@ -574,9 +574,9 @@ class ProductMappingController extends Controller
                     'SKU' => $mapping->sku ?? '',
                     'Portal Code' => $mapping->portal_code ?? '',
                     'Item Code' => $mapping->item_code ?? '',
-                    'Basic Rate' => $mapping->basic_rate ?? '',
-                    'Net Landing Rate' => $mapping->net_landing_rate ?? '',
-                    'MRP' => $mapping->mrp ?? '',
+                    'Basic Rate' => $mapping->basic_rate ?? 0,
+                    'Net Landing Rate' => $mapping->net_landing_rate ?? 0,
+                    'MRP' => $mapping->mrp ?? 0,
                 ]);
             }
 

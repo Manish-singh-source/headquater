@@ -74,13 +74,13 @@
                                             <input class="form-check-input" type="checkbox" id="select-all">
                                         </th>
                                         <th>SR.No</th>
-                                        <th>Vendor Code</th>
-                                        <th>Vendor Name</th>
+                                        <th>Vendor&nbsp;Code</th>
+                                        <th>Vendor&nbsp;Name</th>
                                         <th>Email</th>
-                                        <th>Contact Number</th>
+                                        <th>Contact&nbsp;Number</th>
                                         <th>Orders</th>
                                         <th>Location</th>
-                                        <th>Joined At</th>
+                                        <th>Joined&nbsp;At</th>
                                         <th>Status</th>
                                         <th>Action</th>
                                     </tr>
@@ -312,7 +312,7 @@
             var vendorTable = $('#vendorTable').DataTable({
                 "columnDefs": [{
                         "orderable": false,
-                        "targets": -1
+                        "targets": [0, -1],
                     } // last column not orderable
                 ],
                 lengthChange: true,

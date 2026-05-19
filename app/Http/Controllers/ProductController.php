@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 use App\Models\ProductMapping;
+use App\Models\Vendor;
 use App\Models\Warehouse;
 use App\Models\WarehouseStock;
 use App\Services\NotificationService;
@@ -36,7 +37,7 @@ class ProductController extends Controller
                 });
             }
 
-            $products = $productsQuery->get();
+            $products = $productsQuery->latest('updated_at')->get();
 
             // Get all warehouse allocations grouped by SKU and warehouse
             $allocations = DB::table('warehouse_allocations')
@@ -156,6 +157,35 @@ class ProductController extends Controller
                 }
 
                 $seen[$key] = true;
+            }
+
+            // Validate vendor codes from uploaded file before processing products.
+            $vendorCodesFromFile = collect($rows)
+                ->pluck('Vendor Code')
+                ->map(function ($code) {
+                    return trim((string) $code);
+                })
+                ->filter()
+                ->unique()
+                ->values();
+
+            if ($vendorCodesFromFile->isNotEmpty()) {
+                $validVendorCodes = Vendor::whereIn('vendor_code', $vendorCodesFromFile->all())
+                    ->pluck('vendor_code')
+                    ->map(function ($code) {
+                        return trim((string) $code);
+                    })
+                    ->unique()
+                    ->values();
+
+                $invalidVendorCodes = $vendorCodesFromFile->diff($validVendorCodes)->values();
+                if ($invalidVendorCodes->isNotEmpty()) {
+                    DB::rollBack();
+
+                    return redirect()->back()->withErrors([
+                        'products_excel' => 'Vendor code not found: ' . $invalidVendorCodes->implode(', ') . '. Please add vendor first or correct vendor code in file.',
+                    ])->withInput();
+                }
             }
 
             // Process records
@@ -319,6 +349,35 @@ class ProductController extends Controller
                 return redirect()->back()->with(['error' => 'Missing required columns: ' . implode(', ', $missingHeaders)]);
             }
 
+            // Validate vendor codes from uploaded file before processing products.
+            $vendorCodesFromFile = collect($rows)
+                ->pluck('Vendor Code')
+                ->map(function ($code) {
+                    return trim((string) $code);
+                })
+                ->filter()
+                ->unique()
+                ->values();
+
+            if ($vendorCodesFromFile->isNotEmpty()) {
+                $validVendorCodes = Vendor::whereIn('vendor_code', $vendorCodesFromFile->all())
+                    ->pluck('vendor_code')
+                    ->map(function ($code) {
+                        return trim((string) $code);
+                    })
+                    ->unique()
+                    ->values();
+
+                $invalidVendorCodes = $vendorCodesFromFile->diff($validVendorCodes)->values();
+                if ($invalidVendorCodes->isNotEmpty()) {
+                    DB::rollBack();
+
+                    return redirect()->back()->with([
+                        'error' => 'Vendor code not found: ' . $invalidVendorCodes->implode(', ') . '. Please add vendor first or correct vendor code in file.',
+                    ])->withInput();
+                }
+            }
+
 
             $products = [];
             $insertCount = 0;
@@ -466,6 +525,7 @@ class ProductController extends Controller
             'weight' => 'nullable|numeric|min:0',
             'basic_rate' => 'nullable|numeric|min:0',
             'hsn' => 'nullable|string|max:50',
+            'vendor_code' => 'nullable|string|max:255|exists:vendors,vendor_code',
             'original_quantity' => 'nullable|integer|min:0',
             'available_quantity' => 'nullable|integer|min:0',
         ]);
@@ -494,6 +554,7 @@ class ProductController extends Controller
                 'sets_ctn' => (int) ($request->sets_ctn ?? 0),
                 'weight' => $request->weight,
                 'hsn' => $request->hsn,
+                'vendor_code' => $request->vendor_code,
             ];
 
             $product->update($updateData);

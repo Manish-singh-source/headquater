@@ -130,47 +130,52 @@
 
 11. vendors: 
 
-    - list vendors 
-    - create vendors 
-    - update vendors 
-    - delete vendors 
+    - list vendors   - done
+    - create vendors - done
+    - update vendors - done
+    - delete vendors - done
     - view vendors
-        - personal details 
-        - address details 
+        - personal details  - done
+        - address details   - done
         - orders list:
             - list orders 
             - export button
     
-    - proper pagination
-    - sorting properly 
-    - tabs switching 
-    - multi delete functionality
-    - multi toggle status functionality
+    - proper pagination - done
+    - sorting properly - done
+    - tabs switching   - done
+    - multi delete functionality  - done
+    - toggle status functionality   - done
+    - multi toggle status functionality   - done
 
 
 12. products: 
-    - list products 
-    - add products in bulk
-    - export products
-    - update products 
-    - update products in bulk 
-    - delete products 
-    - multi delete functionality
+    - list products  - done
+    - add products in bulk  - done
+    - export products     - done
+    - update products     - done
+    - update products in bulk   - done
+    - delete products  - done
+    - multi delete functionality  - done
     
-    - proper pagination
-    - sorting properly 
+    - proper pagination  - done
+    - sorting properly   - done
+
+    Logics: 
+
+    - check vendor is present or not when adding product - done
 
 13. sku mapping:
-    - list sku mapping 
-    - add sku mapping products in bulk 
-    - export sku mapping products
-    - update sku mapping products 
-    - update sku mapping products in bulk 
-    - delete sku mapping products 
-    - multi delete functionality
+    - list sku mapping           - done
+    - add sku mapping products in bulk   - done
+    - export sku mapping products        - done
+    - update sku mapping products        - done
+    - update sku mapping products in bulk - done
+    - delete sku mapping products        - done
+    - multi delete functionality         - not available
 
-    - proper pagination
-    - sorting properly 
+    - proper pagination      - done 
+    - sorting properly       - done 
 
 ================================================================================
 
