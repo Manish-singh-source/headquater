@@ -29,20 +29,23 @@
                         </ol>
                     </nav>
                 </div>
-                {{-- 
-                <div class="justify-end">
-                    <div class="row g-3 justify-content-end">
-                        <div class="col-12 col-md-auto">
-                            <div class="d-flex align-items-center gap-2 justify-content-lg-end">
 
-                                <ul class="nav nav-tabs" id="vendorTabs" role="tablist">
-                                    <form id="statusForm" action="{{ route('change.sales.order.status') }}" method="POST">
-                                        @csrf
-                                        @method('PUT')
-                                        <input type="hidden" name="order_id" value="{{ $salesOrder->id }}">
-                                        <select class="form-select border-2 border-primary" id="changeStatus"
-                                            aria-label="Default select example" name="status">
-                                            <option value="" selected disabled>Change Status</option>
+                @if ($unpaidInvoiceCount == 0)
+                    <div class="justify-end">
+                        <div class="row g-3 justify-content-end">
+                            <div class="col-12 col-md-auto">
+                                <div class="d-flex align-items-center gap-2 justify-content-lg-end">
+
+                                    <ul class="nav nav-tabs" id="vendorTabs" role="tablist">
+                                        <form id="statusForm" action="{{ route('change.sales.order.status') }}"
+                                            method="POST">
+                                            @csrf
+                                            @method('PUT')
+                                            <input type="hidden" name="order_id" value="{{ $salesOrder->id }}">
+                                            <select class="form-select border-2 border-primary" id="changeStatus"
+                                                aria-label="Default select example" name="status">
+                                                <option value="" selected disabled>Change Status</option>
+                                                {{-- 
                                             <option value="pending" @if ($salesOrder->status == 'pending') selected @endif
                                                 @if (in_array($salesOrder->status, ['blocked', 'ready_to_package', 'ready_to_ship', 'shipped', 'completed'])) disabled @endif>Pending</option>
                                             <option value="blocked" @if ($salesOrder->status == 'blocked') selected @endif
@@ -53,16 +56,18 @@
                                             <option value="ready_to_ship" @if ($salesOrder->status == 'ready_to_ship') selected @endif
                                                 @if (in_array($salesOrder->status, ['shipped', 'completed'])) disabled @endif>Ready To Ship</option>
                                             <option value="shipped" @if ($salesOrder->status == 'shipped') selected @endif
-                                                @if (in_array($salesOrder->status, ['completed'])) disabled @endif>Shipped</option>
-                                            <option value="completed" @if ($salesOrder->status == 'completed') selected @endif>
-                                                Completed</option>
-                                        </select>
-                                    </form>
-                                </ul>
+                                                @if (in_array($salesOrder->status, ['completed'])) disabled @endif>Shipped</option> 
+                                            --}}
+                                                <option value="completed" @if ($salesOrder->status == 'completed') selected @endif>
+                                                    Completed</option>
+                                            </select>
+                                        </form>
+                                    </ul>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div> --}}
+                @endif
             </div>
 
 

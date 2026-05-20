@@ -142,8 +142,10 @@
                         @enderror
                     </div>
                     <div class="col-12 mb-3">
-                        <label for="payment_status_{{ $invoice->id }}" class="form-label">Payment Status<span class="text-danger">*</span></label>
-                        <select disabled id="payment_status_{{ $invoice->id }}" name="payment_status" class="form-select @error('payment_status') is-invalid @enderror">
+                        {{-- <label for="payment_status_{{ $invoice->id }}" class="form-label">Payment Status<span class="text-danger">*</span></label> --}}
+                        <input type="hidden" name="payment_status" value="paid">
+                        {{-- 
+                        <select disabled id="payment_status_{{ $invoice->id }}" class="form-select @error('payment_status') is-invalid @enderror">
                             <option value="" selected disabled>Select Payment Status</option>
                             <option value="pending" {{ old('payment_status') == 'pending' ? 'selected' : '' }}>Pending</option>
                             <option value="rejected" {{ old('payment_status') == 'rejected' ? 'selected' : '' }}>Rejected</option>
@@ -151,7 +153,7 @@
                         </select>
                         @error('payment_status')
                             <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
+                        @enderror --}}
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -162,4 +164,3 @@
         </div>
     </div>
 </div>
-

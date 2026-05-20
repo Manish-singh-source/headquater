@@ -330,3 +330,382 @@ update via excel functionality (if available)
 33. Track Order:
     - search order by sales order id / purchase order id 
 
+
+
+
+
+
+
+
+
+
+=============================================================================================================
+
+1. Case 1: All available
+
+a. Create sales order (full quantity available in warehouse)                         - done
+b. block quantity as seen in available column                                        - done
+c. create sales order                                                                - done
+d. add final fulfill quantity same as in fulfill quantity                            - done
+e. send for packaging                                                                - done
+f. add packaged quantity same as final filfill also add box count and weight         - done
+g. send for admin approval                                                           - done
+i. approve order                                                                     - done
+j. change status from ready to ship - shipped                                        - done
+k. generate invoice                                                                  - done
+l. generate e-invoice 
+m. generate e-way bill
+n. upload other documents                                                            - done
+o. change status to complete sales order. 
+
+
+2. Case 2: All Available but blocking less quantity
+
+a. Create sales order (full quantity available in warehouse)
+b. block quantity as less than available column                                       - change here
+c. create sales order 
+d. add final fulfill quantity same as in fulfill quantity 
+e. send for packaging 
+f. add packaged quantity same as final filfill also add box count and weight 
+g. send for admin approval 
+i. approve order 
+j. change status from ready to ship - shipped 
+k. generate invoice 
+l. generate e-invoice 
+m. generate e-way bill
+n. upload other documents 
+o. change status to complete sales order. 
+
+
+
+3. Case 3: All Available but final fulfill less quantity
+
+a. Create sales order (full quantity available in warehouse)
+b. block quantity as seen in available column 
+c. create sales order 
+d. add final fulfill quantity less than fulfill quantity                                      - change here
+e. send for packaging 
+f. add packaged quantity same as final filfill also add box count and weight 
+g. send for admin approval 
+i. approve order 
+j. change status from ready to ship - shipped 
+k. generate invoice 
+l. generate e-invoice 
+m. generate e-way bill
+n. upload other documents 
+o. change status to complete sales order. 
+
+
+4. Case 4: All Available but packaged quantity less
+
+a. Create sales order (full quantity available in warehouse)
+b. block quantity as seen in available column 
+c. create sales order 
+d. add final fulfill quantity same as seen in fulfill quantity
+e. send for packaging 
+f. add packaged quantity same as final filfill also add box count and weight                                     - change here
+g. send for admin approval 
+i. approve order 
+j. change status from ready to ship - shipped 
+k. generate invoice 
+l. generate e-invoice 
+m. generate e-way bill
+n. upload other documents 
+o. change status to complete sales order. 
+
+
+5. Case 5: All not Available
+
+a. Create sales order (half quantity available in warehouse)
+b. block quantity as seen in available column 
+c. create sales order 
+d. auto generate purchase order
+e. add vendor pi for purchase order                                
+f. add received quantity for purchase order 
+g. send for admin approval
+h. approve received products
+i. add final fulfill quantity same as in fulfill quantity 
+j. send for packaging 
+k. add packaged quantity same as final filfill also add box count and weight 
+l. send for admin approval 
+m. approve order 
+n. change status from ready to ship - shipped 
+o. generate invoice 
+p. generate e-invoice 
+q. generate e-way bill
+r. upload other documents 
+s. change status to complete sales order. 
+
+
+
+6. Case 6: All not Available but block less quantity
+
+a. Create sales order (half quantity available in warehouse)
+b. block quantity as seen in available column                        - change here
+c. create sales order 
+d. auto generate purchase order
+e. add vendor pi for purchase order                                
+f. add received quantity for purchase order 
+g. send for admin approval
+h. approve received products
+i. add final fulfill quantity same as in fulfill quantity 
+j. send for packaging 
+k. add packaged quantity same as final filfill also add box count and weight 
+l. send for admin approval 
+m. approve order 
+n. change status from ready to ship - shipped 
+o. generate invoice 
+p. generate e-invoice 
+q. generate e-way bill
+r. upload other documents 
+s. change status to complete sales order. 
+
+
+7. Case 7: All not Available but less vendor pi quantity
+
+a. Create sales order (half quantity available in warehouse)
+b. block quantity as seen in available column
+c. create sales order 
+d. auto generate purchase order
+e. add vendor pi for purchase order                                  - change here                      
+f. add received quantity for purchase order 
+g. send for admin approval
+h. approve received products
+i. add final fulfill quantity same as in fulfill quantity 
+j. send for packaging 
+k. add packaged quantity same as final filfill also add box count and weight 
+l. send for admin approval 
+m. approve order 
+n. change status from ready to ship - shipped 
+o. generate invoice 
+p. generate e-invoice 
+q. generate e-way bill
+r. upload other documents 
+s. change status to complete sales order. 
+
+
+
+8. Case 8: All not Available but less vendor pi quantity
+
+a. Create sales order (half quantity available in warehouse)
+b. block quantity as seen in available column
+c. create sales order 
+d. auto generate purchase order
+e. add vendor pi for purchase order
+f. add received quantity for purchase order                                   - change here
+g. send for admin approval
+h. approve received products
+i. add final fulfill quantity same as in fulfill quantity 
+j. send for packaging 
+k. add packaged quantity same as final filfill also add box count and weight 
+l. send for admin approval 
+m. approve order 
+n. change status from ready to ship - shipped 
+o. generate invoice 
+p. generate e-invoice 
+q. generate e-way bill
+r. upload other documents 
+s. change status to complete sales order. 
+
+
+
+9. Case 9: All not Available but less vendor pi quantity
+
+a. Create sales order (half quantity available in warehouse)
+b. block quantity as seen in available column
+c. create sales order 
+d. auto generate purchase order
+e. add vendor pi for purchase order
+f. add received quantity for purchase order
+g. send for admin approval
+h. approve received products
+i. add final fulfill quantity same as in fulfill quantity                                    - change here
+j. send for packaging 
+k. add packaged quantity same as final filfill also add box count and weight 
+l. send for admin approval 
+m. approve order 
+n. change status from ready to ship - shipped 
+o. generate invoice 
+p. generate e-invoice 
+q. generate e-way bill
+r. upload other documents 
+s. change status to complete sales order. 
+
+
+
+
+10. Case 10: All not Available but less vendor pi quantity
+
+a. Create sales order (half quantity available in warehouse)
+b. block quantity as seen in available column
+c. create sales order 
+d. auto generate purchase order
+e. add vendor pi for purchase order
+f. add received quantity for purchase order
+g. send for admin approval
+h. approve received products
+i. add final fulfill quantity same as in fulfill quantity
+j. send for packaging 
+k. add packaged quantity same as final filfill also add box count and weight                                     - change here
+l. send for admin approval 
+m. approve order 
+n. change status from ready to ship - shipped 
+o. generate invoice 
+p. generate e-invoice 
+q. generate e-way bill
+r. upload other documents 
+s. change status to complete sales order. 
+
+
+
+11. Case 11: All not Available but block quantity as per requirement
+
+a. Create sales order (half quantity available in warehouse)
+b. block quantity as seen in available column                                - change here
+c. create sales order 
+d. auto generate purchase order
+e. add vendor pi for purchase order
+f. add received quantity for purchase order
+g. send for admin approval
+h. approve received products
+i. add final fulfill quantity same as in fulfill quantity
+j. send for packaging 
+k. add packaged quantity same as final filfill also add box count and weight
+l. send for admin approval 
+m. approve order 
+n. change status from ready to ship - shipped 
+o. generate invoice 
+p. generate e-invoice 
+q. generate e-way bill
+r. upload other documents 
+s. change status to complete sales order. 
+
+
+
+
+12. Case 12: All not Available but block quantity as per requirement
+
+a. Create sales order (half quantity available in warehouse)       
+b. block quantity as seen in available column                               
+c. create sales order 
+d. auto generate purchase order                                     - change here
+e. add vendor pi for purchase order
+f. add received quantity for purchase order
+g. send for admin approval
+h. approve received products
+i. add final fulfill quantity same as in fulfill quantity
+j. send for packaging 
+k. add packaged quantity same as final filfill also add box count and weight
+l. send for admin approval 
+m. approve order 
+n. change status from ready to ship - shipped 
+o. generate invoice 
+p. generate e-invoice 
+q. generate e-way bill
+r. upload other documents 
+s. change status to complete sales order. 
+
+
+
+
+
+13. Case 13: All not Available but block quantity as per requirement
+
+a. Create sales order (half quantity available in warehouse)       
+b. block quantity as seen in available column                               
+c. create sales order 
+d. auto generate purchase order
+e. add vendor pi for purchase order                                          - change here
+f. add received quantity for purchase order
+g. send for admin approval
+h. approve received products
+i. add final fulfill quantity same as in fulfill quantity
+j. send for packaging 
+k. add packaged quantity same as final filfill also add box count and weight
+l. send for admin approval 
+m. approve order 
+n. change status from ready to ship - shipped 
+o. generate invoice 
+p. generate e-invoice 
+q. generate e-way bill
+r. upload other documents 
+s. change status to complete sales order. 
+
+
+
+
+14. Case 14: All not Available but block quantity as per requirement
+
+a. Create sales order (half quantity available in warehouse)       
+b. block quantity as seen in available column                               
+c. create sales order 
+d. auto generate purchase order
+e. add vendor pi for purchase order
+f. add received quantity for purchase order                                          - change here
+g. send for admin approval
+h. approve received products
+i. add final fulfill quantity same as in fulfill quantity
+j. send for packaging 
+k. add packaged quantity same as final filfill also add box count and weight
+l. send for admin approval 
+m. approve order 
+n. change status from ready to ship - shipped 
+o. generate invoice 
+p. generate e-invoice 
+q. generate e-way bill
+r. upload other documents 
+s. change status to complete sales order. 
+
+
+
+
+
+15. Case 15: All not Available but block quantity as per requirement
+
+a. Create sales order (half quantity available in warehouse)       
+b. block quantity as seen in available column                               
+c. create sales order 
+d. auto generate purchase order
+e. add vendor pi for purchase order
+f. add received quantity for purchase order
+g. send for admin approval
+h. approve received products
+i. add final fulfill quantity same as in fulfill quantity                                          - change here
+j. send for packaging 
+k. add packaged quantity same as final filfill also add box count and weight
+l. send for admin approval 
+m. approve order 
+n. change status from ready to ship - shipped 
+o. generate invoice 
+p. generate e-invoice 
+q. generate e-way bill
+r. upload other documents 
+s. change status to complete sales order. 
+
+
+
+
+
+
+16. Case 16: All not Available but block quantity as per requirement
+
+a. Create sales order (half quantity available in warehouse)       
+b. block quantity as seen in available column                               
+c. create sales order 
+d. auto generate purchase order
+e. add vendor pi for purchase order
+f. add received quantity for purchase order
+g. send for admin approval
+h. approve received products
+i. add final fulfill quantity same as in fulfill quantity
+j. send for packaging 
+k. add packaged quantity same as final filfill also add box count and weight                                          - change here
+l. send for admin approval 
+m. approve order 
+n. change status from ready to ship - shipped 
+o. generate invoice 
+p. generate e-invoice 
+q. generate e-way bill
+r. upload other documents 
+s. change status to complete sales order. 
+

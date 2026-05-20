@@ -359,6 +359,7 @@ class InvoiceController extends Controller
             'utr_no' => 'required|unique:payments,payment_utr_no',
             'pay_amount' => 'required|numeric|min:0.01',
             'payment_method' => 'required|string',
+            'payment_status' => 'nullable|string',
         ]);
 
         if ($validator->fails()) {
@@ -392,7 +393,7 @@ class InvoiceController extends Controller
             $payment->payment_utr_no = $request->input('utr_no');
             $payment->amount = $request->input('pay_amount');
             $payment->payment_method = $request->input('payment_method');
-            $payment->payment_status = $request->input('payment_status');
+            $payment->payment_status = $request->input('payment_status', 'paid');
             $payment->save();
 
             // Update invoice paid_amount and balance_due

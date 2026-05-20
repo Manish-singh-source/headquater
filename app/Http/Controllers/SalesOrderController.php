@@ -253,7 +253,12 @@ class SalesOrderController extends Controller
 
         $facilityNames = array_unique($facilityNames);
 
-        return view('salesOrder.view', compact('uniqueBrands', 'uniquePONumbers', 'remainingQuantity', 'blockQuantity', 'salesOrder', 'vendorPiFulfillmentTotal', 'availableQuantity', 'orderedQuantity', 'unavailableQuantity', 'vendorPiReceivedTotal', 'warehouseAllocations', 'displayProducts', 'facilityNames', 'isSuperAdmin'));
+        // get invoices count that are paid 
+        $invoiceCount = Invoice::where('sales_order_id', $id)->count();
+        $paidInvoiceCount = Invoice::where('sales_order_id', $id)->where('payment_status', 'paid')->count();
+        $unpaidInvoiceCount = $invoiceCount - $paidInvoiceCount;
+
+        return view('salesOrder.view', compact('unpaidInvoiceCount', 'uniqueBrands', 'uniquePONumbers', 'remainingQuantity', 'blockQuantity', 'salesOrder', 'vendorPiFulfillmentTotal', 'availableQuantity', 'orderedQuantity', 'unavailableQuantity', 'vendorPiReceivedTotal', 'warehouseAllocations', 'displayProducts', 'facilityNames', 'isSuperAdmin'));
     }
 
     
@@ -2197,7 +2202,7 @@ class SalesOrderController extends Controller
                     $invoiceDetail->hsn = $detail->hsn;
                     $invoiceDetail->amount = $lineTotal;
                     $invoiceDetail->tax = intval($detail->tempOrder?->gst) ?? 0;
-                    $invoiceDetail->total_price = intval($lineTotal) + ((intval($detail->product?->gst) / 100) * intval($lineTotal)); // After discount (currently 0)
+                    $invoiceDetail->total_price = intval($lineTotal) + ((intval($detail->tempOrder?->gst) / 100) * intval($lineTotal)); // After discount (currently 0)
                     $invoiceDetail->description = $detail->tempOrder?->description ?? null;
                     $invoiceDetail->po_number = $detail->tempOrder?->po_number ?? null;
                     $invoiceDetail->save();
@@ -2205,7 +2210,7 @@ class SalesOrderController extends Controller
                     // Update sales order product status only if all allocations are processed
                     // We'll handle this separately after all invoices are created
 
-                    $taxable_amount += (($unitPrice * $quantity) * (intval($detail->product->gst) / 100));
+                    $taxable_amount += (($unitPrice * $quantity) * (intval($detail->tempOrder?->gst) / 100));
                 }
 
                 // Update invoice with calculated total
