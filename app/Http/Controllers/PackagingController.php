@@ -591,15 +591,41 @@ class PackagingController extends Controller
 
             $insertCount = 0;
 
-            $mandatoryFields = ['Customer Name', 'SKU Code', 'Facility Name', 'Facility Location', 'PO Date', 'PO Expiry Date', 'HSN', 'Item Code', 'Description', 'GST', 'Basic Rate', 'Net Landing Rate', 'MRP', 'PO Quantity', 'Purchase Order Quantity', 'Vendor PI Fulfillment Quantity', 'Vendor PI Received Quantity', 'Warehouse Name', 'Warehouse Allocation', 'Purchase Order No', 'Total Dispatch Qty', 'Final Dispatch Qty', 'Case Pack Quantity', 'Box Count', 'Weight'];
+            $mandatoryFields = ['Customer Name', 'SKU Code', 'Facility Name', 'Facility Location', 'PO Date', 'PO Expiry Date', 'HSN', 'Item Code', 'Description', 'GST', 'Basic Rate', 'Net Landing Rate', 'MRP', 'PO Quantity', 'Purchase Order Quantity', 'Vendor PI Fulfillment Quantity', 'Vendor PI Received Quantity', 'Warehouse Name', 'Warehouse Allocation', 'Purchase Order No', 'Total Dispatch Qty', 'Final Dispatch Qty', 'Case Pack Quantity'];
 
-            foreach ($rows as $record) {
+            foreach ($rows as $rowIndex => $record) {
                 // Validate all required fields are not empty
                 foreach ($mandatoryFields as $field) {
                     if (! isset($record[$field]) || (is_string($record[$field]) && trim($record[$field]) === '')) {
                         DB::rollBack();
 
                         return redirect()->back()->with(['error' => "{$field} is required for all rows. Please check your CSV file."])->withInput();
+                    }
+                }
+
+                $finalDispatchQty = (int) ($record['Final Dispatch Qty'] ?? 0);
+                $boxCount = $record['Box Count'] ?? null;
+                $weight = $record['Weight'] ?? null;
+
+                // If final dispatch is entered, box count and weight must be provided and greater than zero.
+                if ($finalDispatchQty !== 0) {
+                    $boxCountMissing = is_null($boxCount) || trim((string) $boxCount) === '';
+                    $weightMissing = is_null($weight) || trim((string) $weight) === '';
+
+                    if ($boxCountMissing || $weightMissing) {
+                        DB::rollBack();
+
+                        return redirect()->back()->with([
+                            'error' => 'Box Count and Weight are required when Final Dispatch Qty is not 0. Please check row ' . ($rowIndex + 2) . '.',
+                        ])->withInput();
+                    }
+
+                    if ((float) $boxCount <= 0 || (float) $weight <= 0) {
+                        DB::rollBack();
+
+                        return redirect()->back()->with([
+                            'error' => 'Box Count and Weight must be greater than 0 when Final Dispatch Qty is not 0. Please check row ' . ($rowIndex + 2) . '.',
+                        ])->withInput();
                     }
                 }
                 // // Skip empty SKU records

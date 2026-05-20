@@ -236,7 +236,7 @@
                                                         $finalDispatchedQty =
                                                             $order->warehouse->name .
                                                                 ' :' .
-                                                                $order->final_dispatched_quantity ??
+                                                                $order->final_final_dispatched_quantity ??
                                                             0;
 
                                                         // box count
@@ -255,7 +255,7 @@
                                                                 $order->allocated_quantity;
                                                             $totalDispatchedQty = $order->allocated_quantity ?? 0;
                                                             $finalDispatchedQty =
-                                                                $order->final_dispatched_quantity ?? 0;
+                                                                $order->final_final_dispatched_quantity ?? 0;
                                                             $boxCount = $order->box_count ?? 0;
                                                             $weight = $order->weight ?? 0;
                                                         }
