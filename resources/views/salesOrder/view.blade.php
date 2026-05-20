@@ -552,17 +552,22 @@
 
 @section('script')
     <script>
-        document.getElementById('changeStatus').addEventListener('change', function() {
-            if (confirm('Are you sure you want to change status for order?')) {
-                var quantityNeedsToFullfill = document.getElementById('quantityNeedsToFullfill').innerHTML;
-                if (quantityNeedsToFullfill > 0) {
-                    alert('Please fulfill the quantity before changing the status.');
-                    location.reload();
-                }
+        const changeStatus = document.getElementById('changeStatus');
 
-                document.getElementById('statusForm').submit();
-            }
-        });
+        if (changeStatus) {
+            changeStatus.addEventListener('change', function() {
+                if (confirm('Are you sure you want to change status for order?')) {
+                    var quantityNeedsToFullfill = parseFloat(document.getElementById('quantityNeedsToFullfill').innerHTML) || 0;
+                    if (quantityNeedsToFullfill > 0) {
+                        alert('Please fulfill the quantity before changing the status.');
+                        location.reload();
+                        return;
+                    }
+
+                    document.getElementById('statusForm').submit();
+                }
+            });
+        }
     </script>
 
     <script>

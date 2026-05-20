@@ -356,7 +356,7 @@ k. generate invoice                                                             
 l. generate e-invoice 
 m. generate e-way bill
 n. upload other documents                                                            - done
-o. change status to complete sales order. 
+o. change status to complete sales order.                                            - done
 
 
 2. Case 2: All Available but blocking less quantity

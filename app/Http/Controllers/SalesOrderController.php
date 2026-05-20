@@ -2322,16 +2322,17 @@ class SalesOrderController extends Controller
                 // Update warehouse allocations based on user role
                 $allocationsQuery = WarehouseAllocation::where('sales_order_id', $request->order_id);
                 // If warehouse user, only update their warehouse allocations
-                if ($request->status == 'delivered') {
-                    if (! $isAdmin && $userWarehouseId) {
-                        $allocationsQuery->whereHas('salesOrderProduct', function ($q) use ($request) {
-                            $q->where('customer_id', $request->customer_id);
-                        });
-                    }
-                } else {
+                if ($request->filled('customer_id')) {
                     $allocationsQuery->whereHas('salesOrderProduct', function ($q) use ($request) {
                         $q->where('customer_id', $request->customer_id);
                     });
+                }
+
+                if ($request->status == 'delivered') {
+                    if (! $isAdmin && $userWarehouseId) {
+                        $allocationsQuery->where('warehouse_id', $userWarehouseId);
+                    }
+                } else {
                     if (! $isAdmin && $userWarehouseId) {
                         $allocationsQuery->where('warehouse_id', $userWarehouseId);
                     }
@@ -2365,9 +2366,13 @@ class SalesOrderController extends Controller
                 }
 
                 // Update sales order products status
-                $salesOrderProducts = SalesOrderProduct::where('sales_order_id', $request->order_id)
-                    ->where('customer_id', $request->customer_id)
-                    ->get();
+                $salesOrderProductsQuery = SalesOrderProduct::where('sales_order_id', $request->order_id);
+
+                if ($request->filled('customer_id')) {
+                    $salesOrderProductsQuery->where('customer_id', $request->customer_id);
+                }
+
+                $salesOrderProducts = $salesOrderProductsQuery->get();
 
                 foreach ($salesOrderProducts as $product) {
                     $product->status = $request->status;
