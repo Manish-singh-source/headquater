@@ -605,6 +605,20 @@
                                                     $cessAmount = $invoiceTaxAmount - $gstAmount;
                                                 }
                                             }
+
+                                            $invoicePoNumber = $invoice->po_number;
+                                            if (empty($invoicePoNumber)) {
+                                                foreach ($invoice->details as $detail) {
+                                                    $invoicePoNumber =
+                                                        $detail->po_number ??
+                                                        $detail->tempOrder?->po_number ??
+                                                        $detail->salesOrderProduct?->tempOrder?->po_number;
+
+                                                    if (!empty($invoicePoNumber)) {
+                                                        break;
+                                                    }
+                                                }
+                                            }
                                         @endphp
                                         <tr>
                                             <td>{{ $salesOrder->order_number ?? 'N/A' }}</td>
@@ -616,7 +630,7 @@
                                             <td>{{ $invoice->customer->email ?? 'N/A' }}</td>
                                             <td>{{ $invoice->customer->shipping_city ?? 'N/A' }}</td>
                                             <td>{{ $invoice->customer->shipping_state ?? 'N/A' }}</td>
-                                            <td>{{ $invoice->po_number ?? 'N/A' }}</td>
+                                            <td>{{ $invoicePoNumber ?? 'N/A' }}</td>
                                             <td>{{ $invoice->created_at->format('d-m-Y') ?? 'N/A' }}</td>
                                             <td>{{ $invoice->appointment?->appointment_date?->format('d-m-Y') ?? 'N/A' }}
                                             </td>

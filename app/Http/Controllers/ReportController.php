@@ -951,6 +951,14 @@ class ReportController extends Controller
                 $baseRate = $toNumber($record->productMapping?->basic_rate) ?: $toNumber($record->product?->basic_rate);
                 return $toNumber($record->available_quantity) * $baseRate;
             });
+            
+            $totalAmountValue = $products->sum(function ($record) use ($toNumber) {
+                $baseRate = $toNumber($record->productMapping?->basic_rate) ?: $toNumber($record->product?->basic_rate);
+                $taxableValue = $toNumber($record->available_quantity) * $baseRate;
+                $gstValue = ($taxableValue * $toNumber($record->product?->gst)) / 100;
+
+                return $taxableValue + $gstValue;
+            });
 
             // Get filter dropdown data
             $warehouses = Warehouse::active()->select('id', 'name')->get();
@@ -973,6 +981,7 @@ class ReportController extends Controller
                 'availableProductsSum',
                 'blockProductsSum',
                 'totalStockValue',
+                'totalAmountValue',
                 'warehouses',
                 'categories',
                 'brands',
@@ -1244,6 +1253,30 @@ class ReportController extends Controller
         }
     }
 
+    private function applyCustomerSalesSkuProductFilters($query, Request $request): void
+    {
+        if (! $request->filled('customer_id') && ! $request->filled('po_no')) {
+            return;
+        }
+
+        $productFilter = function ($productQuery) use ($request) {
+            if ($request->filled('customer_id')) {
+                $productQuery->whereIn('customer_id', (array) $request->customer_id);
+            }
+
+            if ($request->filled('po_no')) {
+                $poNos = (array) $request->po_no;
+
+                $productQuery->whereHas('tempOrder', function ($tempOrderQuery) use ($poNos) {
+                    $tempOrderQuery->whereIn('po_number', $poNos);
+                });
+            }
+        };
+
+        $query->whereHas('orderedProducts', $productFilter)
+            ->with(['orderedProducts' => $productFilter]);
+    }
+
     /**
      * Display customer sales history with detailed invoice information
      *
@@ -1401,6 +1434,8 @@ class ReportController extends Controller
                         }); // keep when no orderedProducts
                     });
             }
+
+            $this->applyCustomerSalesSkuProductFilters($query, $request);
 
             // Appointment Date Filter
             if ($request->filled('appointment_date')) {
@@ -1747,6 +1782,8 @@ class ReportController extends Controller
                     });
             }
 
+            $this->applyCustomerSalesSkuProductFilters($query, $request);
+
             // Apply appointment date filter
             if ($request->filled('appointment_date')) {
                 $apptDates = (array) $request->appointment_date;
@@ -1972,7 +2009,8 @@ class ReportController extends Controller
             ! $request->filled('to_date') &&
             ! $request->filled('invoice_no') &&
             ! $request->filled('customer_id') &&
-            ! $request->filled('appointment_date')
+            ! $request->filled('appointment_date') &&
+            ! $request->filled('po_no')
         ) {
             return;
         }
@@ -1992,6 +2030,23 @@ class ReportController extends Controller
 
             if ($request->filled('customer_id')) {
                 $invoiceQuery->whereIn('customer_id', (array) $request->customer_id);
+            }
+
+            if ($request->filled('po_no')) {
+                $poNos = (array) $request->po_no;
+
+                $invoiceQuery->where(function ($poQuery) use ($poNos) {
+                    $poQuery->whereIn('po_number', $poNos)
+                        ->orWhereHas('details', function ($detailQuery) use ($poNos) {
+                            $detailQuery->whereIn('po_number', $poNos)
+                                ->orWhereHas('tempOrder', function ($tempOrderQuery) use ($poNos) {
+                                    $tempOrderQuery->whereIn('po_number', $poNos);
+                                })
+                                ->orWhereHas('salesOrderProduct.tempOrder', function ($tempOrderQuery) use ($poNos) {
+                                    $tempOrderQuery->whereIn('po_number', $poNos);
+                                });
+                        });
+                });
             }
 
             if ($request->filled('appointment_date')) {
@@ -2015,13 +2070,33 @@ class ReportController extends Controller
             ->with(['invoices' => $invoiceFilter]);
     }
 
+    private function resolveInvoicePoNumber(Invoice $invoice): string
+    {
+        if (! empty($invoice->po_number)) {
+            return $invoice->po_number;
+        }
+
+        foreach ($invoice->details as $detail) {
+            $poNumber = $detail->po_number
+                ?? $detail->tempOrder?->po_number
+                ?? $detail->salesOrderProduct?->tempOrder?->po_number;
+
+            if (! empty($poNumber)) {
+                return $poNumber;
+            }
+        }
+
+        return 'N/A';
+    }
+
     public function customerSalesHistory(Request $request)
     {
 
         $query = SalesOrder::with([
             'customerGroup',
             'invoices.payments',
-            'invoices.details.salesOrderProduct',
+            'invoices.details.tempOrder',
+            'invoices.details.salesOrderProduct.tempOrder',
             'invoices.appointment',
             'invoices.customer',
             'invoices.dns',
@@ -2280,7 +2355,8 @@ class ReportController extends Controller
             $query = SalesOrder::with([
                 'customerGroup',
                 'invoices.payments',
-                'invoices.details.salesOrderProduct',
+                'invoices.details.tempOrder',
+                'invoices.details.salesOrderProduct.tempOrder',
                 'invoices.appointment',
                 'invoices.customer',
                 'invoices.dns',
@@ -2541,7 +2617,7 @@ class ReportController extends Controller
                         'Customer Email' => $invoice->customer->email ?? 'N/A',
                         'Customer City' => $invoice->customer->shipping_city ?? 'N/A',
                         'Customer State' => $invoice->customer->shipping_state ?? 'N/A',
-                        'PO No' => $invoice->po_number ?? 'N/A',
+                        'PO No' => $this->resolveInvoicePoNumber($invoice),
                         'PO Date' => $invoice->created_at->format('d-m-Y') ?? 'N/A',
                         'Appointment Date' => $invoice->appointment?->appointment_date?->format('d-m-Y') ?? 'N/A',
                         'Due Date' => $invoice->appointment?->appointment_date?->addMonth()->format('d-m-Y') ?? 'N/A',
@@ -2711,7 +2787,8 @@ class ReportController extends Controller
                 'customer.groupInfo.customerGroup',
                 'salesOrder.customerGroup',
                 'payments',
-                'details.salesOrderProduct',
+                'details.tempOrder',
+                'details.salesOrderProduct.tempOrder',
                 'appointment',
                 'dns',
             ]);
@@ -2808,12 +2885,20 @@ class ReportController extends Controller
 
             // Apply PO no filter (supports single or multiple)
             if ($request->filled('po_no')) {
-                $poNos = $request->input('po_no');
-                if (is_array($poNos)) {
-                    $query->whereIn('po_number', $poNos);
-                } else {
-                    $query->where('po_number', $poNos);
-                }
+                $poNos = (array) $request->input('po_no');
+
+                $query->where(function ($poQuery) use ($poNos) {
+                    $poQuery->whereIn('po_number', $poNos)
+                        ->orWhereHas('details', function ($detailQuery) use ($poNos) {
+                            $detailQuery->whereIn('po_number', $poNos)
+                                ->orWhereHas('tempOrder', function ($tempOrderQuery) use ($poNos) {
+                                    $tempOrderQuery->whereIn('po_number', $poNos);
+                                })
+                                ->orWhereHas('salesOrderProduct.tempOrder', function ($tempOrderQuery) use ($poNos) {
+                                    $tempOrderQuery->whereIn('po_number', $poNos);
+                                });
+                        });
+                });
             }
 
             // Apply appointment date filter (supports single or multiple)
@@ -2903,7 +2988,7 @@ class ReportController extends Controller
                     'customer_email' => $customer->email ?? 'N/A',
                     'customer_city' => $customer->billing_city ?? $customer->shipping_city ?? 'N/A',
                     'customer_state' => $customer->billing_state ?? $customer->shipping_state ?? 'N/A',
-                    'po_no' => $invoice->po_number ?? $salesOrder->po_number ?? 'N/A',
+                    'po_no' => $this->resolveInvoicePoNumber($invoice),
                     'po_date' => $invoice->created_at?->format('d-m-Y') ?? 'N/A',
                     'appointment_date' => $appointment ? $appointment->appointment_date->format('d-m-Y') : 'N/A',
                     'due_date' => 'N/A',

@@ -133,7 +133,7 @@
                                 <i class="ti ti-package fs-24"></i>
                             </span>
                             <div class="ms-2">
-                                <p class="text-dark mb-1">Total Purchase Order</p>
+                                <p class="text-dark mb-1">Total Sales Order</p>
                                 <div class="d-inline-flex align-items-center flex-wrap gap-2">
                                     <h4 class="mb-0 fw-bold">{{ $totalPurchaseOrder }}</h4>
                                 </div>
@@ -149,27 +149,10 @@
                                 <i class="ti ti-package fs-24"></i>
                             </span>
                             <div class="ms-2">
-                                <p class="text-dark mb-1">Total Purchase Order Quantity</p>
+                                <p class="text-dark mb-1">Total Dispatched Quantity</p>
                                 <div class="d-inline-flex align-items-center flex-wrap gap-2">
                                     <h4 class="mb-0 fw-bold"><span class="" id="summary-total-po-quantity">0</span>
                                     </h4>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                {{-- Total Purchase Order Amount --}}
-                <div class="col-xl-3 col-sm-6 col-12 d-flex">
-                    <div class="card bg-white sale-widget flex-fill">
-                        <div class="card-body d-flex align-items-center">
-                            <span class="sale-icon bg-white text-primary">
-                                <i class="ti ti-package fs-24"></i>
-                            </span>
-                            <div class="ms-2">
-                                <p class="text-dark mb-1">Total Purchase Order Amount</p>
-                                <div class="d-inline-flex align-items-center flex-wrap gap-2">
-                                    <h4 class="mb-0 fw-bold"><span class=""
-                                            id="summary-total-po-amount">₹0.00</span></h4>
                                 </div>
                             </div>
                         </div>
@@ -279,104 +262,6 @@
                                         </div>
                                     </div>
 
-                                    <!-- Region Filter -->
-                                    {{-- 
-                                    <div class="col-md-2">
-                                        <div class="mb-3">
-                                            <label class="form-label">Region</label>
-                                            <div class="dropdown">
-                                                <button class="btn btn-outline-secondary dropdown-toggle w-100 text-start"
-                                                    type="button" id="regionDropdown" data-bs-toggle="dropdown">
-                                                    <i class="bx bx-filter-alt me-1"></i>
-                                                    <span id="regionDropdownText">
-                                                        @if (is_array($filters['region'] ?? null) && count($filters['region']) > 0)
-                                                            {{ count($filters['region']) }} selected
-                                                        @else
-                                                            Select Region
-                                                        @endif
-                                                    </span>
-                                                </button>
-                                                <ul class="dropdown-menu w-100" id="regionCheckboxList"
-                                                    style="max-height: 250px; overflow-y: auto;">
-                                                    @foreach ($regions as $region)
-                                                        <li class="px-2 py-1">
-                                                            <div class="form-check">
-                                                                <input class="form-check-input region-checkbox"
-                                                                    type="checkbox" name="region[]"
-                                                                    value="{{ $region }}"
-                                                                    id="region_{{ $loop->index }}"
-                                                                    {{ in_array($region, (array) ($filters['region'] ?? [])) ? 'checked' : '' }}>
-                                                                <label class="form-check-label w-100 cursor-pointer"
-                                                                    for="region_{{ $loop->index }}">
-                                                                    {{ $region }}
-                                                                </label>
-                                                            </div>
-                                                        </li>
-                                                    @endforeach
-                                                </ul>
-                                            </div>
-                                        </div>
-                                    </div> 
-                                    --}}
-
-                                    <!-- Payment Status Filter -->
-                                    <div class="col-md-2">
-                                        <div class="mb-3">
-                                            <label class="form-label">Payment Status</label>
-                                            <div class="dropdown">
-                                                <button class="btn btn-outline-secondary dropdown-toggle w-100 text-start"
-                                                    type="button" id="paymentStatusDropdown" data-bs-toggle="dropdown">
-                                                    <i class="bx bx-filter-alt me-1"></i>
-                                                    <span id="paymentStatusDropdownText">
-                                                        @if (is_array($filters['payment_status'] ?? null) && count($filters['payment_status']) > 0)
-                                                            {{ count($filters['payment_status']) }} selected
-                                                        @else
-                                                            Select Status
-                                                        @endif
-                                                    </span>
-                                                </button>
-                                                <ul class="dropdown-menu w-100" id="paymentStatusCheckboxList">
-                                                    <li class="px-2 py-1">
-                                                        <div class="form-check">
-                                                            <input class="form-check-input payment-status-checkbox"
-                                                                type="checkbox" name="payment_status[]" value="paid"
-                                                                id="payment_status_paid"
-                                                                {{ in_array('paid', (array) ($filters['payment_status'] ?? [])) ? 'checked' : '' }}>
-                                                            <label class="form-check-label w-100 cursor-pointer"
-                                                                for="payment_status_paid">
-                                                                Paid
-                                                            </label>
-                                                        </div>
-                                                    </li>
-                                                    <li class="px-2 py-1">
-                                                        <div class="form-check">
-                                                            <input class="form-check-input payment-status-checkbox"
-                                                                type="checkbox" name="payment_status[]" value="partial"
-                                                                id="payment_status_partial"
-                                                                {{ in_array('partial', (array) ($filters['payment_status'] ?? [])) ? 'checked' : '' }}>
-                                                            <label class="form-check-label w-100 cursor-pointer"
-                                                                for="payment_status_partial">
-                                                                Partial
-                                                            </label>
-                                                        </div>
-                                                    </li>
-                                                    <li class="px-2 py-1">
-                                                        <div class="form-check">
-                                                            <input class="form-check-input payment-status-checkbox"
-                                                                type="checkbox" name="payment_status[]" value="unpaid"
-                                                                id="payment_status_unpaid"
-                                                                {{ in_array('unpaid', (array) ($filters['payment_status'] ?? [])) ? 'checked' : '' }}>
-                                                            <label class="form-check-label w-100 cursor-pointer"
-                                                                for="payment_status_unpaid">
-                                                                Unpaid
-                                                            </label>
-                                                        </div>
-                                                    </li>
-                                                </ul>
-                                            </div>
-                                        </div>
-                                    </div>
-
                                     <!-- Customer Type Filter -->
                                     <div class="col-md-2">
                                         <div class="mb-3">
@@ -414,45 +299,6 @@
                                             </div>
                                         </div>
                                     </div>
-
-
-                                    <!-- Invoice No Filter -->
-                                    {{-- <div class="col-md-2">
-                                        <div class="mb-3">
-                                            <label class="form-label">Invoice No</label>
-                                            <div class="dropdown">
-                                                <button class="btn btn-outline-secondary dropdown-toggle w-100 text-start"
-                                                    type="button" id="invoiceNoDropdown" data-bs-toggle="dropdown">
-                                                    <i class="bx bx-filter-alt me-1"></i>
-                                                    <span id="invoiceNoDropdownText">
-                                                        @if (is_array($filters['invoice_no'] ?? null) && count($filters['invoice_no']) > 0)
-                                                            {{ count($filters['invoice_no']) }} selected
-                                                        @else
-                                                            Select Invoice
-                                                        @endif
-                                                    </span>
-                                                </button>
-                                                <ul class="dropdown-menu w-100" id="invoiceNoCheckboxList"
-                                                    style="max-height: 250px; overflow-y: auto;">
-                                                    @foreach ($invoiceNumbers as $invoiceNo)
-                                                        <li class="px-2 py-1">
-                                                            <div class="form-check">
-                                                                <input class="form-check-input invoice-no-checkbox"
-                                                                    type="checkbox" name="invoice_no[]"
-                                                                    value="{{ $invoiceNo }}"
-                                                                    id="invoice_no_{{ $loop->index }}"
-                                                                    {{ in_array($invoiceNo, (array) ($filters['invoice_no'] ?? [])) ? 'checked' : '' }}>
-                                                                <label class="form-check-label w-100 cursor-pointer"
-                                                                    for="invoice_no_{{ $loop->index }}">
-                                                                    {{ $invoiceNo }}
-                                                                </label>
-                                                            </div>
-                                                        </li>
-                                                    @endforeach
-                                                </ul>
-                                            </div>
-                                        </div>
-                                    </div> --}}
 
                                     <!-- PO No Filter -->
                                     <div class="col-md-2">
@@ -631,19 +477,6 @@
                                                     <td>
                                                         @php
                                                             $invoiceNumber = 'N/A';
-                                                            // if ($salesOrder->invoices->count() > 0) {
-                                                            //     foreach ($salesOrder->invoices as $invoice) {
-                                                            //         if (
-                                                            //             $invoice->warehouse_id ==
-                                                            //             $allocation->warehouse_id
-                                                            //         ) {
-                                                            //             $invoiceNumber =
-                                                            //                 $invoice->invoice_number ?? 'N/A';
-                                                            //             break;
-                                                            //         }
-                                                            //     }
-                                                            // }
-
                                                             $invoiceDetail = $product->invoiceDetails->first();
                                                             $invoice = $invoiceDetail?->invoice;
                                                             $invoiceNumber = $invoice->invoice_number ?? 'N/A';
@@ -1004,7 +837,7 @@
                     var data = this.data();
 
                     // Column index 23 is "Purchase Order Quantity"
-                    var poQuantityText = $(data[23]).text() || data[23];
+                    var poQuantityText = $(data[17]).text() || data[17];
                     var poQuantity = parseFloat(poQuantityText.replace(/[,]/g, '')) || 0;
                     totalPOQuantity += poQuantity;
 

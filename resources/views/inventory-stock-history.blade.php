@@ -27,7 +27,7 @@
                                 <div class="ms-2">
                                     <p class="text-dark mb-1">Total Stock</p>
                                     <div class="d-inline-flex align-items-center flex-wrap gap-2">
-                                        <h4 class="text-dark">{{ number_format($productsSum/2) }}</h4>
+                                        <h4 class="text-dark">{{ number_format($productsSum) }}</h4>
                                     </div>
                                 </div>
                             </div>
@@ -43,7 +43,7 @@
                                 <div class="ms-2">
                                     <p class="text-dark mb-1">Total Available Stock</p>
                                     <div class="d-inline-flex align-items-center flex-wrap gap-2">
-                                        <h4 class="text-dark">{{ number_format(($productsSum-$blockProductsSum)/2) }}</h4>
+                                        <h4 class="text-dark">{{ number_format(($productsSum-$blockProductsSum)) }}</h4>
                                     </div>
                                 </div>
                             </div>
@@ -59,7 +59,23 @@
                                 <div class="ms-2">
                                     <p class="text-dark mb-1">Total Blocked Stock</p>
                                     <div class="d-inline-flex align-items-center flex-wrap gap-2">
-                                        <h4 class="text-dark">{{ number_format($blockProductsSum/2) }}</h4>
+                                        <h4 class="text-dark">{{ number_format($blockProductsSum) }}</h4>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {{-- Total Stock Value  --}}
+                    <div class="col-xl-3 col-sm-6 col-12 d-flex">
+                        <div class="card bg-white sale-widget flex-fill">
+                            <div class="card-body d-flex align-items-center">
+                                <span class="sale-icon bg-white text-info">
+                                    <i class="ti ti-currency-rupee fs-24"></i>
+                                </span>
+                                <div class="ms-2">
+                                    <p class="text-dark mb-1">Total Taxable Value</p>
+                                    <div class="d-inline-flex align-items-center flex-wrap gap-2">
+                                        <h4 class="text-dark">₹{{ number_format($totalStockValue, 2) }}</h4>
                                     </div>
                                 </div>
                             </div>
@@ -75,7 +91,7 @@
                                 <div class="ms-2">
                                     <p class="text-dark mb-1">Total Stock Value</p>
                                     <div class="d-inline-flex align-items-center flex-wrap gap-2">
-                                        <h4 class="text-dark">₹{{ number_format($totalStockValue/2, 2) }}</h4>
+                                        <h4 class="text-dark">₹{{ number_format($totalAmountValue, 2) }}</h4>
                                     </div>
                                 </div>
                             </div>
@@ -91,7 +107,7 @@
                                 <div class="ms-2">
                                     <p class="text-dark mb-1">Low Stock</p>
                                     <div class="d-inline-flex align-items-center flex-wrap gap-2">
-                                        <h4 class="text-dark">{{ $lowStockCount/2 }}</h4>
+                                        <h4 class="text-dark">{{ $lowStockCount }}</h4>
                                     </div>
                                 </div>
                             </div>
@@ -105,9 +121,9 @@
                                     <i class="ti ti-x fs-24"></i>
                                 </span>
                                 <div class="ms-2">
-                                    <p class="text-dark mb-1">Out of Stock</p>
+                                    <p class="text-dark mb-1">Out of Stock Products</p>
                                     <div class="d-inline-flex align-items-center flex-wrap gap-2">
-                                        <h4 class="text-dark">{{ $outOfStockCount/2 }}</h4>
+                                        <h4 class="text-dark">{{ $outOfStockCount }}</h4>
                                     </div>
                                 </div>
                             </div>

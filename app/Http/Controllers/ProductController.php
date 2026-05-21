@@ -543,37 +543,17 @@ class ProductController extends Controller
         try {
             $product = Product::findOrFail($request->id);
 
-            // Only update basic_rate and net_landing_rate if basic_rate is provided
             $updateData = [
                 'ean_code' => $request->ean_code,
                 'brand' => $request->brand,
                 'brand_title' => $request->brand_title,
-                // 'mrp' => $request->mrp,
                 'category' => $request->category,
                 'pcs_set' => (int) ($request->pcs_set ?? 0),
                 'sets_ctn' => (int) ($request->sets_ctn ?? 0),
-                'weight' => $request->weight,
                 'hsn' => $request->hsn,
-                'vendor_code' => $request->vendor_code,
             ];
 
             $product->update($updateData);
-            // $productMapping = ['mrp' => $request->mrp];
-
-            // if ($request->has('basic_rate') && $request->basic_rate !== null && $request->basic_rate !== '') {
-            //     $basicRate = (float) $request->basic_rate;
-            //     $netLandingRate = $this->calculateNetLandingRate((int) $basicRate, (int) ($product->gst ?? 0));
-
-            //     $productMapping['basic_rate'] = $basicRate;
-            //     $productMapping['net_landing_rate'] = $netLandingRate;
-            // }
-
-            // ProductMapping::updateOrCreate([
-            //     'sku' => $product->sku,
-            //     'portal_code' => $product->portal_code,
-            //     'item_code' => $product->item_code,
-            // ], $productMapping);
-
 
             // Update warehouse stock if provided
             if ($request->has('original_quantity') || $request->has('available_quantity')) {

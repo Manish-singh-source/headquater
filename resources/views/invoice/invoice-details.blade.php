@@ -250,7 +250,7 @@
                                         <span><b>DN Receipt</b></span>
                                         {{-- <span>{{ $invoiceDetails->dns->dn_reason }}</span> --}}
                                         <a href="{{ asset('uploads/dn_receipts/' . $invoiceDetails->dns->dn_receipt) }}"
-                                            class="btn btn-icon btn-sm bg-primary-subtle me-1">View </a>
+                                            target="_blank" class="btn btn-icon btn-sm bg-primary-subtle me-1">View </a>
                                     </li>
                                 </ul>
                             </div>
