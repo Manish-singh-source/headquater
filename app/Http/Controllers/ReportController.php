@@ -43,9 +43,9 @@ class ReportController extends Controller
                 'vendor',
                 'warehouse',
                 'purchaseOrderProducts.product',
-                'vendorPI.payments',
-                'vendorPI.products',
-                'vendorPI.warehouse',
+                'vendorPI' => function ($q) {
+                    $q->where('status', 'completed')->with(['payments', 'products', 'warehouse']);
+                },
                 'purchaseInvoices',
                 'purchaseGrn',
             ]);
@@ -70,11 +70,11 @@ class ReportController extends Controller
                 $query->whereIn('order_number', (array) $po);
             }
 
-            // Vendor filter - filter by vendor name (same as table display)
+            // Vendor filter - dropdown submits vendor_code
             if ($request->filled('vendor_code')) {
                 $vc = $request->vendor_code;
                 $query->whereHas('vendor', function ($v) use ($vc) {
-                    $v->whereIn('client_name', (array) $vc);
+                    $v->whereIn('vendor_code', (array) $vc);
                 });
             }
 
@@ -115,7 +115,7 @@ class ReportController extends Controller
                 if ($vendorPI) {
                     // Calculate taxable amount from products
                     foreach ($vendorPI->products as $product) {
-                        $totalTaxableAmount += $product->mrp * $product->quantity_received;
+                        $totalTaxableAmount += $product->purchase_rate * $product->quantity_received;
                     }
 
                     // Invoice amount, paid amount, and due amount
@@ -128,7 +128,7 @@ class ReportController extends Controller
             // Get unique purchase order IDs from all completed purchase orders for dropdown
             $purchaseOrderNumbers = PurchaseOrder::whereHas('vendorPI', function ($q) {
                 $q->where('status', 'completed');
-            })->distinct('id')->orderBy('id', 'desc')->pluck('id');
+            })->whereNotNull('order_number')->distinct()->orderBy('id', 'desc')->pluck('order_number');
 
             // Get unique vendors (non-null) from completed purchase orders for dropdown
             $purchaseOrdersVendors = PurchaseOrder::whereHas('vendorPI', function ($q) {
@@ -201,9 +201,9 @@ class ReportController extends Controller
                 'vendor',
                 'warehouse',
                 'purchaseOrderProducts.product',
-                'vendorPI.payments',
-                'vendorPI.products',
-                'vendorPI.warehouse',
+                'vendorPI' => function ($q) {
+                    $q->where('status', 'completed')->with(['payments', 'products', 'warehouse']);
+                },
                 'purchaseInvoices',
                 'purchaseGrn',
             ]);
@@ -228,11 +228,11 @@ class ReportController extends Controller
                 $query->whereIn('order_number', (array) $po);
             }
 
-            // Vendor filter - filter by vendor name (same as table display)
+            // Vendor filter - dropdown submits vendor_code
             if ($request->filled('vendor_code')) {
                 $vc = $request->vendor_code;
                 $query->whereHas('vendor', function ($v) use ($vc) {
-                    $v->whereIn('client_name', (array) $vc);
+                    $v->whereIn('vendor_code', (array) $vc);
                 });
             }
 
@@ -253,8 +253,8 @@ class ReportController extends Controller
             // Clone for stats before pagination
             $statsQuery = clone $query;
 
-            // Get paginated purchase orders (15 per page)
-            $vendorPIProducts = $query->latest('id')->paginate(15)->appends($request->all());
+            // Get all matching purchase orders for export
+            $vendorPIProducts = $query->latest('id')->get();
 
             // dd($vendorPIProducts);
             // Calculate statistics based on filtered results
@@ -267,7 +267,7 @@ class ReportController extends Controller
             // Get unique purchase order IDs from all completed purchase orders for dropdown
             $purchaseOrderNumbers = PurchaseOrder::whereHas('vendorPI', function ($q) {
                 $q->where('status', 'completed');
-            })->distinct('id')->orderBy('id', 'desc')->pluck('id');
+            })->whereNotNull('order_number')->distinct()->orderBy('id', 'desc')->pluck('order_number');
 
             // Get unique vendor codes from all completed purchase orders for dropdown
             $purchaseOrdersVendors = PurchaseOrder::whereHas('vendorPI', function ($q) {
@@ -316,7 +316,6 @@ class ReportController extends Controller
                 'Payment Method',
                 'Invioice Uploaded',
                 'GRN Uploaded',
-                'Shipping Charges',
                 'Warehouse',
             ]);
 
@@ -326,9 +325,9 @@ class ReportController extends Controller
                 $totalTaxableValue = 0;
                 $totalGstAmount = 0;
                 foreach ($purchaseOrder->vendorPI[0]->products as $product) {
-                    $totalTaxableValue += $product->mrp * $product->quantity_received;
+                    $totalTaxableValue += $product->purchase_rate * $product->quantity_received;
                     $totalGstAmount +=
-                        $product->mrp * $product->quantity_received * ($product->gst / 100);
+                        $product->purchase_rate * $product->quantity_received * ($product->gst / 100);
                 }
 
                 if ($purchaseOrder->purchaseInvoices->count() > 0) {
@@ -343,33 +342,35 @@ class ReportController extends Controller
                     $invoiceFile = 'N/A';
                 }
 
+                $vendorPI = $purchaseOrder->vendorPI[0] ?? null;
+                $payment = $vendorPI?->payments[0] ?? null;
+
                 fputcsv($file, [
                     $purchaseOrder->order_number ?? 'N/A',
                     $purchaseOrder->created_at ? $purchaseOrder->created_at->format('d-m-Y') : 'N/A',
                     $purchaseOrder->vendor->client_name ?? 'N/A',
                     $invoiceNo ?? 'N/A',
-                    $invoiceDate ? $invoiceDate : 'N/A',
-                    $purchaseOrder->vendorPI[0]->updated_at ? $purchaseOrder->vendorPI[0]->updated_at->addMonth()->format('d-m-Y') : 'N/A',
+                    $invoiceDate instanceof \Carbon\Carbon ? $invoiceDate->format('d-m-Y') : 'N/A',
+                    $vendorPI?->updated_at ? $vendorPI->updated_at->copy()->addMonth()->format('d-m-Y') : 'N/A',
                     $purchaseOrder->purchaseOrderProducts->sum('ordered_quantity') ?? 'N/A',
-                    $purchaseOrder->vendorPI[0]->products->sum('quantity_received') ?? 'N/A',
+                    $vendorPI?->products->sum('quantity_received') ?? 'N/A',
                     $totalTaxableValue ?? 'N/A',
-                    $purchaseOrder->vendorPI[0]->products->sum('gst') ?? 'N/A',
-                    $purchaseOrder->vendorPI[0]->products->sum('gst') / 2 ?? 'N/A',
-                    $purchaseOrder->vendorPI[0]->products->sum('gst') / 2 ?? 'N/A',
-                    $purchaseOrder->vendorPI[0]->products->sum('gst') ?? 'N/A',
+                    $vendorPI?->products->sum('gst') ?? 'N/A',
+                    ($vendorPI?->products->sum('gst') ?? 0) / 2,
+                    ($vendorPI?->products->sum('gst') ?? 0) / 2,
+                    $vendorPI?->products->sum('gst') ?? 'N/A',
                     $totalGstAmount ?? 'N/A',
-                    $purchaseOrder->vendorPI[0]->total_amount ?? 'N/A',
-                    0 ?? 'N/A',
-                    0 ?? 'N/A',
-                    $purchaseOrder->vendorPI[0]->total_amount ?? 'N/A',
-                    $purchaseOrder->vendorPI[0]->total_paid_amount ?? 'N/A',
-                    $purchaseOrder->vendorPI[0]->total_due_amount ?? 'N/A',
-                    $purchaseOrder->vendorPI[0]->payment_status ?? 'N/A',
-                    $purchaseOrder->vendorPI[0]->payments[0]->payment_method ?? 'N/A',
+                    $totalTaxableValue + $totalGstAmount,
+                    0,
+                    0,
+                    $vendorPI?->total_amount ?? 'N/A',
+                    $vendorPI?->total_paid_amount ?? 'N/A',
+                    $vendorPI?->total_due_amount ?? 'N/A',
+                    $payment ? ucwords(str_replace('_', ' ', $payment->payment_status)) : 'N/A',
+                    $payment ? ucwords(str_replace('_', ' ', $payment->payment_method)) : 'N/A',
                     $invoiceFile ? 'Yes' : 'No',
                     $purchaseOrder->purchaseGrn ? 'Yes' : 'No',
-                    $purchaseOrder->shipping_charges ?? 'N/A',
-                    $purchaseOrder->vendorPI[0]->warehouse->name ?? 'N/A',
+                    $vendorPI?->warehouse->name ?? 'N/A',
                 ]);
             }
 

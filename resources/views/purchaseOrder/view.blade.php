@@ -683,7 +683,7 @@
                                         <th>GST</th>
                                         <th>HSN</th>
                                         <th>MRP</th>
-                                        <th>Basic&nbsp;Rate</th>
+                                        <th>Basic&nbsp;Rate(Product&nbsp;Master)</th>
                                         <th>Purchase&nbsp;Rate&nbsp;Basic</th>
                                         <th>Rate&nbsp;Confirmation</th>
                                         <th>PO&nbsp;Quantity</th>

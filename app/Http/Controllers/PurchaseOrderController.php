@@ -1076,7 +1076,7 @@ class PurchaseOrderController extends Controller
     {
         // Logic to add invoice payment details
         $validated = Validator::make($request->all(), [
-            'vendor_pi_id' => 'required',
+            'vendor_pi_id' => 'required|exists:vendor_p_i_s,id',
             'utr_no' => 'required|unique:vendor_payments,payment_utr_no',
             'pay_amount' => 'required|numeric|min:1',
             'payment_method' => 'required|string',
@@ -1087,47 +1087,36 @@ class PurchaseOrderController extends Controller
             return back()->with('error', $validated->errors()->first())->withInput();
         }
 
-        if ($request->input('pay_amount') == 0) {
-            return back()->with('error', 'Payment amount is required.');
-        }
-
         DB::beginTransaction();
         try {
-            $payment = new VendorPayment;
-            $payment->vendor_pi_id = $request->vendor_pi_id;
-            $payment->payment_utr_no = $request->input('utr_no');
-            $payment->amount = $request->input('pay_amount');
-            $payment->payment_method = $request->input('payment_method');
+            $payAmount = (float) $request->input('pay_amount');
+            $vendorPI = VendorPI::where('id', $request->vendor_pi_id)->lockForUpdate()->firstOrFail();
+            $dueAmount = (float) $vendorPI->total_due_amount;
 
-            $vendorPI = VendorPI::findOrFail($request->vendor_pi_id);
-            if ($vendorPI->total_due_amount == 0) {
+            if ($dueAmount <= 0) {
                 DB::rollBack();
 
                 return back()->with('error', 'Payment amount is already paid.');
             }
 
-            if ($vendorPI->total_due_amount < $request->input('pay_amount')) {
+            if ($payAmount > $dueAmount) {
                 DB::rollBack();
 
                 return back()->with('error', 'Payment amount is greater than due amount.');
             }
 
-            if ($vendorPI->total_due_amount > 0 && $vendorPI->total_due_amount <= $vendorPI->total_amount) {
-                $vendorPI->total_due_amount -= $request->input('pay_amount');
-                $vendorPI->total_paid_amount += $request->input('pay_amount');
-                if ($vendorPI->total_due_amount == 0) {
-                    $vendorPI->payment_status = 'paid';
-                } else {
-                    $vendorPI->payment_status = 'partial_paid';
-                }
-                $vendorPI->save();
-            }
+            $payment = new VendorPayment;
+            $payment->vendor_pi_id = $vendorPI->id;
+            $payment->payment_utr_no = $request->input('utr_no');
+            $payment->amount = $payAmount;
+            $payment->payment_method = $request->input('payment_method');
+            $payment->payment_status = $payAmount >= $dueAmount ? 'completed' : 'partial';
 
-            if ($vendorPI->total_due_amount == $request->input('pay_amount')) {
-                $payment->payment_status = 'completed';
-            } else {
-                $payment->payment_status = 'partial';
-            }
+            $vendorPI->total_due_amount = max(0, $dueAmount - $payAmount);
+            $vendorPI->total_paid_amount = (float) $vendorPI->total_paid_amount + $payAmount;
+            $vendorPI->payment_status = $vendorPI->total_due_amount <= 0 ? 'paid' : 'partial_paid';
+            $vendorPI->save();
+
             $payment->save();
             DB::commit();
         } catch (\Exception $e) {

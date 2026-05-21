@@ -300,9 +300,10 @@
                                 <!-- Reset Filter Button -->
                                 <div class="col">
                                     <div class="mb-3">
-                                        <button type="button" id="resetFilters" class="btn btn-secondary w-100">
+                                        <a href="{{ route('vendor-purchase-invoices') }}" id="resetFilters"
+                                            class="btn btn-secondary w-100">
                                             <i class="bx bx-reset me-1"></i>Reset Filters
-                                        </button>
+                                        </a>
                                     </div>
                                 </div>
 
@@ -410,7 +411,7 @@
                                         <th>Payment&nbsp;Method</th>
                                         <th>Invioice&nbsp;Uploaded</th>
                                         <th>GRN&nbsp;Uploaded</th>
-                                        <th>Shipping&nbsp;Charges</th>
+                                        {{-- <th>Shipping&nbsp;Charges</th> --}}
                                         <th>Warehouse</th>
                                     </tr>
                                 </thead>
@@ -420,9 +421,9 @@
                                             $totalTaxableValue = 0;
                                             $totalGstAmount = 0;
                                             foreach ($purchaseOrder->vendorPI[0]->products as $product) {
-                                                $totalTaxableValue += $product->mrp * $product->quantity_received;
+                                                $totalTaxableValue += $product->purchase_rate * $product->quantity_received;
                                                 $totalGstAmount +=
-                                                    $product->mrp * $product->quantity_received * ($product->gst / 100);
+                                                    $product->purchase_rate * $product->quantity_received * ($product->gst / 100);
                                             }
                                         @endphp
                                         <tr>
@@ -443,7 +444,7 @@
                                                 <td>{{ 'N/A' }}
                                                 </td>
                                             @endif
-                                            <td>{{ $purchaseOrder->vendorPI && $purchaseOrder->vendorPI[0]?->updated_at ? $purchaseOrder->vendorPI[0]?->updated_at?->addMonth()->format('d-m-Y') : 'N/A' }}
+                                            <td>{{ $purchaseOrder->vendorPI && $purchaseOrder->vendorPI[0]?->updated_at ? $purchaseOrder->vendorPI[0]?->updated_at?->copy()->addMonth()->format('d-m-Y') : 'N/A' }}
                                             </td>
                                             {{-- <td>{{ $purchaseOrder->productDetails?->hsn ?? 'N/A' }}</td> --}}
                                             <td>{{ $purchaseOrder->purchaseOrderProducts?->sum('ordered_quantity') ?? 0 }}
@@ -459,7 +460,7 @@
                                             </td>
                                             <td>{{ number_format($purchaseOrder->vendorPI[0]->products->sum('gst'), 2) }}%
                                             </td>
-                                            <td>₹{{ number_format($totalGstAmount, 2) }}
+                                            <td>₹{{ number_format($totalGstAmount, 2) }}</td>
                                             <td>₹{{ number_format($totalGstAmount + $totalTaxableValue, 2) }}
                                             </td>
                                             <td>0%</td>
@@ -467,12 +468,21 @@
                                             <td>{{ $purchaseOrder->vendorPI[0]->total_amount ?? 'N/A' }}</td>
                                             <td>{{ $purchaseOrder->vendorPI[0]->total_paid_amount ?? 'N/A' }}</td>
                                             <td>{{ $purchaseOrder->vendorPI[0]->total_due_amount ?? 'N/A' }}</td>
+                                            {{-- 
                                             <td>
                                                 <span>Pending
-                                                    {{-- class="badge {{ $vendorPI && $statusBadges[$vendorPI->payment_status] ? $statusBadges[$vendorPI->payment_status] : 'bg-danger' }}">
-                                                    {{ $vendorPI && $statusLabels[$vendorPI->payment_status] ? $statusLabels[$vendorPI->payment_status] : 'Pending' }} --}}
                                                 </span>
-                                            </td>
+                                            </td> --}}
+                                            @if ($purchaseOrder?->vendorPI->count() > 0)
+                                                @if ($purchaseOrder?->vendorPI[0]?->payments->count() > 0)
+                                                    <td>{{ ucwords(str_replace('_', ' ', $purchaseOrder?->vendorPI[0]?->payments[0]?->payment_status)) ?? 'N/A' }}
+                                                    </td>
+                                                @else
+                                                    <td>{{ 'N/A' }}</td>
+                                                @endif
+                                            @else
+                                                <td>{{ 'N/A' }}</td>
+                                            @endif
                                             @if ($purchaseOrder?->vendorPI->count() > 0)
                                                 @if ($purchaseOrder?->vendorPI[0]?->payments->count() > 0)
                                                     <td>{{ ucwords(str_replace('_', ' ', $purchaseOrder?->vendorPI[0]?->payments[0]?->payment_method)) ?? 'N/A' }}
@@ -485,9 +495,8 @@
                                             @endif
                                             <td>{{ $purchaseOrder?->purchaseInvoices?->count() > 0 ? 'Yes' : 'No' }}</td>
                                             <td>{{ $purchaseOrder?->purchaseGrn ? 'Yes' : 'No' }}</td>
-                                            <td>N/A</td>
+                                            {{-- <td>N/A</td> --}}
                                             <td>{{ $purchaseOrder?->vendorPI[0]?->warehouse->name ?? 'N/A' }}</td>
-
                                         </tr>
                                     @empty
                                         <tr>
@@ -524,7 +533,7 @@
             var table1 = $('#vendor-purchase-history-table').DataTable({
                 "columnDefs": [{
                         "orderable": false,
-                        //   "targets": [0, -1],
+                        "targets": [0],
                     } // Disable sorting for the 4th column (index starts at 0)
                 ],
                 lengthChange: true,
@@ -634,7 +643,7 @@
                 $('.sku-checkbox').prop('checked', false);
 
                 // Redirect to base URL without filters
-                window.location.href = '{{ route('vendor-purchase-invoices') }}';
+                window.location.replace($(this).attr('href'));
             });
 
             /**
