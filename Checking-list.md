@@ -376,6 +376,8 @@ m. generate e-way bill
 n. upload other documents 
 o. change status to complete sales order. 
 
+- done
+
 
 
 3. Case 3: All Available but final fulfill less quantity
@@ -395,6 +397,7 @@ m. generate e-way bill
 n. upload other documents 
 o. change status to complete sales order. 
 
+- done
 
 4. Case 4: All Available but packaged quantity less
 
@@ -412,6 +415,8 @@ l. generate e-invoice
 m. generate e-way bill
 n. upload other documents 
 o. change status to complete sales order. 
+
+- done
 
 
 5. Case 5: All not Available

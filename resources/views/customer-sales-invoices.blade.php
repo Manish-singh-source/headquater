@@ -515,9 +515,9 @@
                                     <th>GRN</th>
                                     <th>DN&nbsp;Amount</th>
                                     <th>DN&nbsp;Reciept</th>
-                                    <th>LR</th>
+                                    {{-- <th>LR</th> --}}
                                     <th>Currency</th>
-                                    <th>HSN</th>
+                                    {{-- <th>HSN</th> --}}
                                     <th>Ordered&nbsp;Quantity</th>
                                     <th>Dispatched&nbsp;Quantity</th>
                                     <th>Box&nbsp;Count</th>
@@ -626,9 +626,9 @@
                                             <td>{{ $invoice->appointment?->grn ? 'Yes' : 'No' }}</td>
                                             <td>{{ $invoice->dns?->first()?->dn_amount ? $invoice->dns?->first()?->dn_amount : 0 }}</td>
                                             <td>{{ $invoice->dns?->first()?->dn_receipt ? 'Yes' : 'No' }}</td>
-                                            <td>{{ $invoice->lr ? 'Yes' : 'No' }}</td>
+                                            {{-- <td>{{ $invoice->lr ? 'Yes' : 'No' }}</td> --}}
                                             <td>{{ $invoice->currency ?? 'INR' }}</td>
-                                            <td>{{ $invoice->details->first()->hsn ?? 'N/A' }}</td>
+                                            {{-- <td>{{ $invoice->details->first()->hsn ?? 'N/A' }}</td> --}}
                                             <td>{{ $invoice->details->sum('quantity') ?? 0 }}</td>
                                             <td>{{ $invoice->details->sum('quantity') ?? 0 }}</td>
                                             <td>{{ number_format($totalBoxCount, 0) }}</td>
@@ -642,7 +642,7 @@
                                             <td>₹{{ number_format($invoice->balance_due ?? 0, 2) }}</td>
                                             <td>{{ $invoice->payments?->first()?->created_at?->format('d-m-Y') ?? 'N/A' }}
                                             </td>
-                                            <td>{{ $invoice->payments->first()->payment_method ?? 'N/A' }}</td>
+                                            <td>{{ ucwords(str_replace('_', ' ', $invoice->payments->first()->payment_method ?? 'N/A')) }}</td>
                                             <td>₹{{ number_format($cgstAmount, 2) }}</td>
                                             <td>₹{{ number_format($sgstAmount, 2) }}</td>
                                             <td>₹{{ number_format($igstAmount, 2) }}</td>

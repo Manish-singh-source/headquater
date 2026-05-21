@@ -30,7 +30,7 @@
                     </nav>
                 </div>
 
-                @if ($unpaidInvoiceCount == 0)
+                @if ($invoiceCount > 0 && $unpaidInvoiceCount == 0)
                     <div class="justify-end">
                         <div class="row g-3 justify-content-end">
                             <div class="col-12 col-md-auto">
@@ -557,12 +557,12 @@
         if (changeStatus) {
             changeStatus.addEventListener('change', function() {
                 if (confirm('Are you sure you want to change status for order?')) {
-                    var quantityNeedsToFullfill = parseFloat(document.getElementById('quantityNeedsToFullfill').innerHTML) || 0;
-                    if (quantityNeedsToFullfill > 0) {
-                        alert('Please fulfill the quantity before changing the status.');
-                        location.reload();
-                        return;
-                    }
+                    // var quantityNeedsToFullfill = parseFloat(document.getElementById('quantityNeedsToFullfill').innerHTML) || 0;
+                    // if (quantityNeedsToFullfill > 0) {
+                    //    alert('Please fulfill the quantity before changing the status.');
+                    //    location.reload();
+                    //    return;
+                    // }
 
                     document.getElementById('statusForm').submit();
                 }

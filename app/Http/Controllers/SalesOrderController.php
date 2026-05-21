@@ -258,7 +258,7 @@ class SalesOrderController extends Controller
         $paidInvoiceCount = Invoice::where('sales_order_id', $id)->where('payment_status', 'paid')->count();
         $unpaidInvoiceCount = $invoiceCount - $paidInvoiceCount;
 
-        return view('salesOrder.view', compact('unpaidInvoiceCount', 'uniqueBrands', 'uniquePONumbers', 'remainingQuantity', 'blockQuantity', 'salesOrder', 'vendorPiFulfillmentTotal', 'availableQuantity', 'orderedQuantity', 'unavailableQuantity', 'vendorPiReceivedTotal', 'warehouseAllocations', 'displayProducts', 'facilityNames', 'isSuperAdmin'));
+        return view('salesOrder.view', compact('invoiceCount', 'unpaidInvoiceCount', 'uniqueBrands', 'uniquePONumbers', 'remainingQuantity', 'blockQuantity', 'salesOrder', 'vendorPiFulfillmentTotal', 'availableQuantity', 'orderedQuantity', 'unavailableQuantity', 'vendorPiReceivedTotal', 'warehouseAllocations', 'displayProducts', 'facilityNames', 'isSuperAdmin'));
     }
 
     
@@ -1011,7 +1011,33 @@ class SalesOrderController extends Controller
                 $sku = trim($record['SKU Code']);
                 $poQty = max(0, (int) ($record['PO Quantity'] ?? 0));
                 $warehouseId = $request->warehouse_id;
-                $blockQty = max(0, (int) ($record['Block'] ?? 0));
+                $rawBlockQty = $record['Block'] ?? null;
+
+                if (! is_numeric($rawBlockQty)) {
+                    DB::rollBack();
+
+                    return redirect()->back()
+                        ->with(['error' => 'Block quantity must be numeric for row ' . ($key + 2) . " (SKU: {$sku})."])
+                        ->withInput();
+                }
+
+                $blockQty = (int) $rawBlockQty;
+
+                if ($blockQty < 0) {
+                    DB::rollBack();
+
+                    return redirect()->back()
+                        ->with(['error' => 'Block quantity cannot be less than 0 for row ' . ($key + 2) . " (SKU: {$sku})."])
+                        ->withInput();
+                }
+
+                if ($blockQty > $poQty) {
+                    DB::rollBack();
+
+                    return redirect()->back()
+                        ->with(['error' => 'Block quantity cannot be greater than PO Quantity for row ' . ($key + 2) . " (SKU: {$sku}, PO Quantity: {$poQty}, Block: {$blockQty})."])
+                        ->withInput();
+                }
 
 
                 // Default fallback
@@ -1176,10 +1202,14 @@ class SalesOrderController extends Controller
 
                 // Use cached values
                 $availableQty = $productStockCache[$sku]['available'];
+                $stockBeforeBlock = $availableQty;
 
-                // Block only requested quantity and purchase only the remainder.
+                // Block only the requested quantity. Do not create a purchase order
+                // just because PO quantity is higher than the intentionally blocked quantity.
                 $actualBlockQty = min($blockQty, $poQty, $availableQty);
-                $shortQty = max(0, $poQty - $actualBlockQty);
+                $shortQty = $stockBeforeBlock > 0
+                    ? max(0, min($blockQty, $poQty) - $actualBlockQty)
+                    : $poQty;
                 $productStockCache[$sku]['available'] = max(0, $availableQty - $actualBlockQty);
                 $availableQty = $actualBlockQty;
 
