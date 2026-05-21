@@ -354,7 +354,7 @@ i. approve order                                                                
 j. change status from ready to ship - shipped                                        - done
 k. generate invoice                                                                  - done
 l. generate e-invoice 
-m. generate e-way bill
+m. generate e-way bill 
 n. upload other documents                                                            - done
 o. change status to complete sales order.                                            - done
 

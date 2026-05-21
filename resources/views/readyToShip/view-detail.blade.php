@@ -229,7 +229,7 @@
                                                         $totalDispatchedQty =
                                                             $order->warehouse->name .
                                                                 ' :' .
-                                                                $order->allocated_quantity ??
+                                                                $order->final_dispatched_quantity ??
                                                             0;
 
                                                         // final dispatched qty
@@ -253,7 +253,7 @@
                                                                 $user->warehouse->name .
                                                                 ' :' .
                                                                 $order->allocated_quantity;
-                                                            $totalDispatchedQty = $order->allocated_quantity ?? 0;
+                                                            $totalDispatchedQty = $order->final_dispatched_quantity ?? 0;
                                                             $finalDispatchedQty =
                                                                 $order->final_final_dispatched_quantity ?? 0;
                                                             $boxCount = $order->box_count ?? 0;
