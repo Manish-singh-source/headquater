@@ -52,6 +52,22 @@
         'completed' => 'Ready to Ship',
         'cancelled' => 'Cancelled',
     ];
+
+    $allProductsReadyToShip =
+        // Primary truth from sales_orders table
+        ($salesOrder->status === 'ready_to_ship') ||
+        // Fallback: all products are at RTS level (or already shipped)
+        ($salesOrder->orderedProducts->isNotEmpty() &&
+            $salesOrder->orderedProducts->every(function ($product) {
+                if (($product->warehouseAllocations ?? collect())->count() > 0) {
+                    return $product->warehouseAllocations->every(function ($allocation) {
+                        return in_array($allocation->product_status, ['completed', 'shipped'], true) ||
+                            $allocation->shipping_status === 'shipped';
+                    });
+                }
+
+                return in_array($product->status, ['ready_to_ship', 'shipped'], true);
+            }));
 @endphp
 
 @section('main-content')
@@ -164,7 +180,7 @@
                                 </select>
                             </div>
 
-                            @if (!($isAdmin ?? false))
+                            @if (!($isAdmin ?? false) && !($allProductsReadyToShip ?? false))
                                 <button class="btn btn-sm border-2 border-primary" data-bs-toggle="modal"
                                     data-bs-target="#staticBackdrop1" class="btn btn-sm border-2 border-primary">
                                     Update PO
