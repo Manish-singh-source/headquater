@@ -2274,15 +2274,39 @@ class SalesOrderController extends Controller
                 $invoice->save();
 
                 // Process invoice details
+                // Merge multiple warehouse allocation batches for the same sales_order_product into one invoice row.
                 $taxable_amount = 0;
+                $mergedInvoiceRows = [];
                 foreach ($invoiceData as $item) {
                     $detail = $item['detail'];
                     $allocation = $item['allocation'];
+                    $detailKey = (string) $detail->id;
 
-                    // Use allocated quantity instead of ordered quantity
-                    $quantity = (int) $allocation->final_final_dispatched_quantity;
-                    $unitPrice = (float) $detail->tempOrder->basic_rate;
+                    if (! isset($mergedInvoiceRows[$detailKey])) {
+                        $mergedInvoiceRows[$detailKey] = [
+                            'detail' => $detail,
+                            'quantity' => 0,
+                            'box_count' => 0,
+                            'weight' => 0,
+                        ];
+                    }
+
+                    $mergedInvoiceRows[$detailKey]['quantity'] += (int) ($allocation->final_final_dispatched_quantity ?? 0);
+                    $mergedInvoiceRows[$detailKey]['box_count'] += (float) ($allocation->box_count ?? 0);
+                    $mergedInvoiceRows[$detailKey]['weight'] += (float) ($allocation->weight ?? 0);
+                }
+
+                foreach ($mergedInvoiceRows as $mergedRow) {
+                    $detail = $mergedRow['detail'];
+                    $quantity = (int) $mergedRow['quantity'];
+                    if ($quantity <= 0) {
+                        continue;
+                    }
+
+                    $unitPrice = (float) ($detail->tempOrder->basic_rate ?? 0);
                     $lineTotal = $quantity * $unitPrice;
+                    $gstPercent = intval($detail->tempOrder?->gst) ?? 0;
+                    $lineTaxAmount = ($lineTotal * $gstPercent) / 100;
 
                     $invoiceTotal += $lineTotal;
 
@@ -2291,24 +2315,22 @@ class SalesOrderController extends Controller
                     $invoiceDetail->invoice_id = $invoice->id;
                     $invoiceDetail->product_id = $detail->product_id;
                     $invoiceDetail->temp_order_id = $detail->temp_order_id;
-                    $invoiceDetail->warehouse_id = $allocation->warehouse_id;
+                    // Merged row may represent multiple warehouses; keep invoice warehouse reference.
+                    $invoiceDetail->warehouse_id = $invoice->warehouse_id;
                     $invoiceDetail->quantity = $quantity;
                     $invoiceDetail->unit_price = $unitPrice;
-                    $invoiceDetail->box_count = $allocation->box_count;
-                    $invoiceDetail->weight = $allocation->weight;
+                    $invoiceDetail->box_count = (float) $mergedRow['box_count'];
+                    $invoiceDetail->weight = (float) $mergedRow['weight'];
                     $invoiceDetail->discount = 0;
                     $invoiceDetail->hsn = $detail->hsn;
                     $invoiceDetail->amount = $lineTotal;
-                    $invoiceDetail->tax = intval($detail->tempOrder?->gst) ?? 0;
-                    $invoiceDetail->total_price = intval($lineTotal) + ((intval($detail->tempOrder?->gst) / 100) * intval($lineTotal)); // After discount (currently 0)
+                    $invoiceDetail->tax = $gstPercent;
+                    $invoiceDetail->total_price = $lineTotal + $lineTaxAmount;
                     $invoiceDetail->description = $detail->tempOrder?->description ?? null;
                     $invoiceDetail->po_number = $detail->tempOrder?->po_number ?? null;
                     $invoiceDetail->save();
 
-                    // Update sales order product status only if all allocations are processed
-                    // We'll handle this separately after all invoices are created
-
-                    $taxable_amount += (($unitPrice * $quantity) * (intval($detail->tempOrder?->gst) / 100));
+                    $taxable_amount += $lineTaxAmount;
                 }
 
                 // Update invoice with calculated total
