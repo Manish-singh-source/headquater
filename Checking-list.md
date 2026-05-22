@@ -714,3 +714,6 @@ q. generate e-way bill
 r. upload other documents 
 s. change status to complete sales order. 
 
+
+
+po quantity | available quantity (in warehouse) | purchase order | block quantity

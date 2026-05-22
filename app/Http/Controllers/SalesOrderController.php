@@ -959,10 +959,71 @@ class SalesOrderController extends Controller
                 return redirect()->back()->with(['error' => $duplicateCheck]);
             }
 
+            // 🔹 Step 2: Validate total block per SKU does not exceed total available stock.
+            // If total block == total available, allow and continue (PO logic will run normally).
+            $totalBlockBySku = [];
+            foreach ($rows as $key => $record) {
+                $skuInput = trim($record['SKU Code'] ?? '');
+                $poQtyForCheck = max(0, (int) ($record['PO Quantity'] ?? 0));
+                $rawBlockQtyForCheck = $record['Block'] ?? null;
+
+                if (! is_numeric($rawBlockQtyForCheck)) {
+                    DB::rollBack();
+
+                    return redirect()->back()
+                        ->with(['error' => 'Block quantity must be numeric for row ' . ($key + 2) . " (SKU: {$skuInput})."])
+                        ->withInput();
+                }
+
+                $blockQtyForCheck = (int) $rawBlockQtyForCheck;
+
+                if ($blockQtyForCheck < 0) {
+                    DB::rollBack();
+
+                    return redirect()->back()
+                        ->with(['error' => 'Block quantity cannot be less than 0 for row ' . ($key + 2) . " (SKU: {$skuInput})."])
+                        ->withInput();
+                }
+
+                if ($blockQtyForCheck > $poQtyForCheck) {
+                    DB::rollBack();
+
+                    return redirect()->back()
+                        ->with(['error' => 'Block quantity cannot be greater than PO Quantity for row ' . ($key + 2) . " (SKU: {$skuInput}, PO Quantity: {$poQtyForCheck}, Block: {$blockQtyForCheck})."])
+                        ->withInput();
+                }
+
+                $skuMappingForCheck = $this->mapSku($skuInput);
+                $normalizedSku = $skuMappingForCheck ? $skuMappingForCheck->product_sku : $skuInput;
+                $totalBlockBySku[$normalizedSku] = ($totalBlockBySku[$normalizedSku] ?? 0) + $blockQtyForCheck;
+            }
+
+            foreach ($totalBlockBySku as $normalizedSku => $totalBlockQty) {
+                if ($isAutoAllocation) {
+                    $totalAvailableQty = WarehouseStock::where('sku', $normalizedSku)
+                        ->whereHas('warehouse', function ($q) {
+                            $q->where('status', '1');
+                        })
+                        ->sum('available_quantity');
+                } else {
+                    $totalAvailableQty = WarehouseStock::where('sku', $normalizedSku)
+                        ->where('warehouse_id', $warehouse_id)
+                        ->sum('available_quantity');
+                }
+
+                if ($totalBlockQty > (int) $totalAvailableQty) {
+                    DB::rollBack();
+
+                    return redirect()->back()->with([
+                        'error' => "Total block quantity cannot be greater than total available quantity for SKU {$normalizedSku}. Total Block: {$totalBlockQty}, Total Available: {$totalAvailableQty}.",
+                    ])->withInput();
+                }
+            }
+
             // Sort rows by 'Block' in descending order (high to low)
-            usort($rows, function ($a, $b) {
-                return intval($b['Block']) <=> intval($a['Block']);
-            });
+            // usort($rows, function ($a, $b) {
+            //     return intval($b['Block']) <=> intval($a['Block']);
+            // });
 
             $productStockCache = [];
             $insertedRows = [];
@@ -1204,13 +1265,9 @@ class SalesOrderController extends Controller
                 $availableQty = $productStockCache[$sku]['available'];
                 $stockBeforeBlock = $availableQty;
 
-                // Block only the requested quantity. Do not create a purchase order
-                // just because PO quantity is higher than the intentionally blocked quantity.
-                $actualBlockQty = min($blockQty, $poQty, $availableQty);
-                $shortQty = $stockBeforeBlock > 0
-                    ? max(0, min($blockQty, $poQty) - $actualBlockQty)
-                    : $poQty;
-                $productStockCache[$sku]['available'] = max(0, $availableQty - $actualBlockQty);
+                $actualBlockQty = min($blockQty, $poQty, $stockBeforeBlock);
+                $shortQty = max(0, $poQty - $actualBlockQty);
+                $productStockCache[$sku]['available'] = max(0, $stockBeforeBlock - $actualBlockQty);
                 $availableQty = $actualBlockQty;
 
                 if ($product) {
