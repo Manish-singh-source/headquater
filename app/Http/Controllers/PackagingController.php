@@ -498,14 +498,6 @@ class PackagingController extends Controller
                 $weight = (string) ($order->weight ?? 0);
             }
 
-            // Admin correction export must provide numeric editable values.
-            if ($isAdmin) {
-                $totalDispatchQty = (string) (int) ($order->final_dispatched_quantity ?? 0);
-                $finalDispatchQty = (string) (int) ($order->final_final_dispatched_quantity ?? 0);
-                $boxCount = (string) (float) ($order->box_count ?? 0);
-                $weight = (string) (float) ($order->weight ?? 0);
-            }
-
             $statusText = '';
             if ($order->warehouseAllocations->count() >= 1) {
                 $statuses = [];
@@ -627,6 +619,7 @@ class PackagingController extends Controller
             }
 
             $insertCount = 0;
+            $skippedApprovedRows = 0;
             $batchId = DB::table('packaging_upload_batches')->insertGetId([
                 'sales_order_id' => $request->salesOrderId,
                 'uploaded_by' => $user->id,
@@ -652,51 +645,82 @@ class PackagingController extends Controller
                 $finalDispatchQtyRaw = trim((string) ($record['Final Dispatch Qty'] ?? ''));
                 $boxCountRaw = trim((string) ($record['Box Count'] ?? ''));
                 $weightRaw = trim((string) ($record['Weight'] ?? ''));
+                $adminAllocationValues = null;
 
-                if ($finalDispatchQtyRaw === '' || ! is_numeric($finalDispatchQtyRaw)) {
-                    DB::rollBack();
+                if ($uploadMode === 'admin_correction') {
+                    $qtyMap = $this->parseWarehouseWiseValues($finalDispatchQtyRaw, true);
+                    $boxMap = $this->parseWarehouseWiseValues($boxCountRaw, false);
+                    $weightMap = $this->parseWarehouseWiseValues($weightRaw, false);
 
-                    return redirect()->back()->with([
-                        'error' => 'Final Dispatch Qty must be numeric (no warehouse text prefix). Please check row ' . ($rowIndex + 2) . '.',
-                    ])->withInput();
+                    if ($qtyMap['error']) {
+                        DB::rollBack();
+
+                        return redirect()->back()->with(['error' => $qtyMap['error'] . ' Please check row ' . ($rowIndex + 2) . '.'])->withInput();
+                    }
+                    if ($boxMap['error']) {
+                        DB::rollBack();
+
+                        return redirect()->back()->with(['error' => $boxMap['error'] . ' Please check row ' . ($rowIndex + 2) . '.'])->withInput();
+                    }
+                    if ($weightMap['error']) {
+                        DB::rollBack();
+
+                        return redirect()->back()->with(['error' => $weightMap['error'] . ' Please check row ' . ($rowIndex + 2) . '.'])->withInput();
+                    }
+
+                    $adminAllocationValues = [
+                        'final_qty' => $qtyMap['values'],
+                        'box_count' => $boxMap['values'],
+                        'weight' => $weightMap['values'],
+                    ];
+                    $finalDispatchQty = 0;
+                    $boxCount = null;
+                    $weight = null;
+                } else {
+                    if ($finalDispatchQtyRaw === '' || ! is_numeric($finalDispatchQtyRaw)) {
+                        DB::rollBack();
+
+                        return redirect()->back()->with([
+                            'error' => 'Final Dispatch Qty must be numeric. Please check row ' . ($rowIndex + 2) . '.',
+                        ])->withInput();
+                    }
+
+                    $finalDispatchQty = (int) $finalDispatchQtyRaw;
+                    $boxCount = $boxCountRaw;
+                    $weight = $weightRaw;
+
+                    if ($finalDispatchQty !== 0) {
+                        $boxCountMissing = $boxCountRaw === '';
+                        $weightMissing = $weightRaw === '';
+
+                        if ($boxCountMissing || $weightMissing) {
+                            DB::rollBack();
+
+                            return redirect()->back()->with([
+                                'error' => 'Box Count and Weight are required when Final Dispatch Qty is not 0. Please check row ' . ($rowIndex + 2) . '.',
+                            ])->withInput();
+                        }
+
+                        if (! is_numeric($boxCountRaw) || ! is_numeric($weightRaw)) {
+                            DB::rollBack();
+
+                            return redirect()->back()->with([
+                                'error' => 'Box Count and Weight must be numeric values. Please check row ' . ($rowIndex + 2) . '.',
+                            ])->withInput();
+                        }
+
+                        if ((float) $boxCountRaw <= 0 || (float) $weightRaw <= 0) {
+                            DB::rollBack();
+
+                            return redirect()->back()->with([
+                                'error' => 'Box Count and Weight must be greater than 0 when Final Dispatch Qty is not 0. Please check row ' . ($rowIndex + 2) . '.',
+                            ])->withInput();
+                        }
+                    }
+
+                    $boxCount = $boxCountRaw === '' ? null : (float) $boxCountRaw;
+                    $weight = $weightRaw === '' ? null : (float) $weightRaw;
                 }
-
-                $finalDispatchQty = (int) $finalDispatchQtyRaw;
-                $boxCount = $boxCountRaw;
-                $weight = $weightRaw;
-
-                // If final dispatch is entered, box count and weight must be provided and greater than zero.
-                if ($finalDispatchQty !== 0) {
-                    $boxCountMissing = $boxCountRaw === '';
-                    $weightMissing = $weightRaw === '';
-
-                    if ($boxCountMissing || $weightMissing) {
-                        DB::rollBack();
-
-                        return redirect()->back()->with([
-                            'error' => 'Box Count and Weight are required when Final Dispatch Qty is not 0. Please check row ' . ($rowIndex + 2) . '.',
-                        ])->withInput();
-                    }
-
-                    if (! is_numeric($boxCountRaw) || ! is_numeric($weightRaw)) {
-                        DB::rollBack();
-
-                        return redirect()->back()->with([
-                            'error' => 'Box Count and Weight must be numeric values. Please check row ' . ($rowIndex + 2) . '.',
-                        ])->withInput();
-                    }
-
-                    if ((float) $boxCountRaw <= 0 || (float) $weightRaw <= 0) {
-                        DB::rollBack();
-
-                        return redirect()->back()->with([
-                            'error' => 'Box Count and Weight must be greater than 0 when Final Dispatch Qty is not 0. Please check row ' . ($rowIndex + 2) . '.',
-                        ])->withInput();
-                    }
-                }
-
-                $boxCount = $boxCountRaw === '' ? null : (float) $boxCountRaw;
-                $weight = $weightRaw === '' ? null : (float) $weightRaw;
                 // // Skip empty SKU records
                 // if (empty($record['SKU Code'])) {
                 //     continue;
@@ -732,6 +756,39 @@ class PackagingController extends Controller
                     continue;
                 }
 
+                if ($uploadMode === 'admin_correction' && $adminAllocationValues !== null && $order->warehouseAllocations->count() > 0) {
+                    $order->loadMissing('warehouseAllocations.warehouse');
+                    $expectedNames = $order->warehouseAllocations
+                        ->filter(function ($allocation) {
+                            return ! ($allocation->approval_status === 'approved' || $allocation->shipping_status === 'shipped');
+                        })
+                        ->map(function ($allocation) {
+                            return strtolower(trim((string) ($allocation->warehouse->name ?? '')));
+                        })
+                        ->filter()
+                        ->values()
+                        ->all();
+                    sort($expectedNames);
+
+                    // If all allocations are locked (approved/shipped), skip this row quietly.
+                    if (empty($expectedNames)) {
+                        $skippedApprovedRows++;
+                        continue;
+                    }
+
+                    foreach (['final_qty', 'box_count', 'weight'] as $key) {
+                        $providedNames = array_keys($adminAllocationValues[$key]);
+                        $missingEditableWarehouses = array_values(array_diff($expectedNames, $providedNames));
+
+                        // Allow extra (locked) warehouse names in file, but require all editable warehouses.
+                        if (! empty($missingEditableWarehouses)) {
+                            DB::rollBack();
+
+                            return redirect()->back()->with('error', 'For admin correction, provide explicit values for every warehouse in Final Dispatch Qty, Box Count, and Weight. Please check row ' . ($rowIndex + 2) . '.')->withInput();
+                        }
+                    }
+                }
+
                 $currentState = $this->normalizePackagingDataState($order->packaging_data_state ?? null);
 
                 // Use warehouse-allocation state for warehouse uploads (multi-warehouse safe).
@@ -751,9 +808,8 @@ class PackagingController extends Controller
                     });
 
                     if ($hasApprovedAllocation) {
-                        DB::rollBack();
-
-                        return redirect()->back()->with('error', 'Approved allocation rows cannot be updated. Please check row ' . ($rowIndex + 2) . '.')->withInput();
+                        $skippedApprovedRows++;
+                        continue;
                     }
 
                     $hasPendingAllocation = $userAllocations->contains(function ($allocation) {
@@ -772,10 +828,33 @@ class PackagingController extends Controller
                         return redirect()->back()->with('error', 'Approved products cannot be updated. Please check row ' . ($rowIndex + 2) . '.')->withInput();
                     }
 
-                    if ($uploadMode === 'admin_correction' && $currentState !== 'submitted_for_approval') {
-                        DB::rollBack();
+                    if ($uploadMode === 'admin_correction') {
+                        $order->loadMissing('warehouseAllocations');
+                        $hasLockedAllocation = $order->warehouseAllocations->contains(function ($allocation) {
+                            return $allocation->approval_status === 'approved' || $allocation->shipping_status === 'shipped';
+                        });
+                        $hasEditableAllocation = $order->warehouseAllocations->contains(function ($allocation) {
+                            return ! ($allocation->approval_status === 'approved' || $allocation->shipping_status === 'shipped');
+                        });
 
-                        return redirect()->back()->with('error', 'Admin correction is allowed only after warehouse submits for approval. Please check row ' . ($rowIndex + 2) . '.')->withInput();
+                        if (! $hasEditableAllocation && $hasLockedAllocation) {
+                            $skippedApprovedRows++;
+                            continue;
+                        }
+
+                        $hasPendingOrPackagedAllocation = $order->warehouseAllocations->contains(function ($allocation) {
+                            if ($allocation->approval_status === 'approved' || $allocation->shipping_status === 'shipped') {
+                                return false;
+                            }
+                            return in_array((string) $allocation->product_status, ['packaged', 'approval_pending'], true)
+                                || in_array((string) $allocation->approval_status, ['draft', 'pending'], true);
+                        });
+
+                        if (! $hasPendingOrPackagedAllocation) {
+                            DB::rollBack();
+
+                            return redirect()->back()->with('error', 'Admin correction is allowed only for uploaded/pending warehouse allocations. Please check row ' . ($rowIndex + 2) . '.')->withInput();
+                        }
                     }
                 }
 
@@ -788,6 +867,7 @@ class PackagingController extends Controller
                         'Final Dispatch Qty' => $finalDispatchQty,
                         'Box Count' => $boxCount,
                         'Weight' => $weight,
+                        '_admin_allocation_values' => $adminAllocationValues,
                     ]),
                     $request->salesOrderId,
                     $isAdmin,
@@ -823,13 +903,59 @@ class PackagingController extends Controller
                 ->log('Packaging products updated');
 
             return redirect()->route('packing.products.view', $request->salesOrderId)
-                ->with('success', 'Packaging products updated successfully. ' . $insertCount . ' records processed.');
+                ->with('success', 'Packaging products updated successfully. ' . $insertCount . ' records processed.' . ($skippedApprovedRows > 0 ? ' Skipped approved rows: ' . $skippedApprovedRows . '.' : ''));
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Error updating packaging products: ' . $e->getMessage());
 
             return redirect()->back()->with('error', 'Error processing file: ' . $e->getMessage());
         }
+    }
+
+    private function parseWarehouseWiseValues(string $rawValue, bool $asInt = true): array
+    {
+        $rawValue = trim($rawValue);
+        if ($rawValue === '') {
+            return ['values' => [], 'error' => 'Value cannot be empty'];
+        }
+
+        $lines = preg_split('/\r\n|\r|\n/', $rawValue);
+        if (! is_array($lines) || count($lines) <= 1) {
+            $lines = preg_split('/\s*,\s*/', $rawValue);
+        }
+
+        $values = [];
+        foreach ($lines as $line) {
+            $line = trim((string) $line);
+            if ($line === '') {
+                continue;
+            }
+
+            if (strpos($line, ':') === false) {
+                return ['values' => [], 'error' => 'Warehouse-wise format must be "Warehouse Name: value"'];
+            }
+
+            [$warehouseName, $value] = explode(':', $line, 2);
+            $warehouseKey = strtolower(trim((string) $warehouseName));
+            $value = trim((string) $value);
+
+            if ($warehouseKey === '' || $value === '' || ! is_numeric($value)) {
+                return ['values' => [], 'error' => 'Invalid warehouse-wise value, expected numeric value for each warehouse'];
+            }
+
+            $numericValue = $asInt ? (int) $value : (float) $value;
+            if ($numericValue < 0) {
+                return ['values' => [], 'error' => 'Warehouse-wise values cannot be negative'];
+            }
+
+            $values[$warehouseKey] = $numericValue;
+        }
+
+        if (empty($values)) {
+            return ['values' => [], 'error' => 'No warehouse-wise values found'];
+        }
+
+        return ['values' => $values, 'error' => null];
     }
 
     private function normalizePackagingDataState(?string $state): string
@@ -937,7 +1063,8 @@ class PackagingController extends Controller
     private function updateSalesOrderProduct($order, $record, $salesOrderId, $isAdmin, $userWarehouseId, $uploadMode = 'warehouse_submit')
     {
         $finalDispatchQty = (int) ($record['Final Dispatch Qty'] ?? 0);
-        if ($finalDispatchQty == 0) {
+        $adminAllocationValues = $record['_admin_allocation_values'] ?? null;
+        if ($finalDispatchQty == 0 && ! ($uploadMode === 'admin_correction' && ! empty($adminAllocationValues))) {
             return;
         }
         $boxCount = (float) ($record['Box Count'] ?? 0);
@@ -956,41 +1083,63 @@ class PackagingController extends Controller
         if ($hasAllocations) {
             // Update warehouse allocations table
             if ($isAdmin) {
-                // Admin: Update all warehouse allocations proportionally or set total
-                // For simplicity, we'll update the final_dispatched_quantity as total
-                // You can distribute proportionally if needed
-                if ($order->warehouseAllocations->count() > 1) {
-                    $totalAllocated = $order->warehouseAllocations->sum('allocated_quantity');
-                } else {
-                    $totalAllocated = $order->warehouseAllocations->first()->allocated_quantity;
-                }
-                foreach ($order->warehouseAllocations as $allocation) {
+                if ($uploadMode === 'admin_correction' && ! empty($adminAllocationValues)) {
+                    $order->loadMissing('warehouseAllocations.warehouse');
+                    $totalFinalQty = 0;
+                    $totalBox = 0;
+                    $totalWeight = 0;
 
-                    if ($totalAllocated > 0) {
-                        $productInfo = Product::where('sku', $allocation->sku)->first();
-                        $casePackQuantity = $productInfo->case_pack_quantity ?? 1;
-
-                        // Distribute final dispatch quantity proportionally
-                        $proportion = $allocation->allocated_quantity / $totalAllocated;
-                        // $allocation->final_dispatched_quantity = (int) ($finalDispatchQty * $proportion);
-                        $allocation->final_final_dispatched_quantity = (int) ($finalDispatchQty * $proportion);
-                        // $allocation->box_count = (int) ($boxCount * $proportion);
-                        // if ($casePackQuantity > 0) {
-                        //     $allocation->box_count = ceil($allocation->final_final_dispatched_quantity / $casePackQuantity);
-                        // } else {
-                        //     $allocation->box_count = 0;
-                        // }
-                        $allocation->box_count = (float) ($boxCount * $proportion);
-                        $allocation->weight = (float) ($weight * $proportion);
-                        if ($uploadMode !== 'admin_correction') {
-                            $allocation->product_status = 'packaged';
+                    foreach ($order->warehouseAllocations as $allocation) {
+                        if ($allocation->approval_status === 'approved' || $allocation->shipping_status === 'shipped') {
+                            // Keep locked allocations unchanged.
+                            $totalFinalQty += max(0, (int) ($allocation->final_final_dispatched_quantity ?? 0));
+                            $totalBox += max(0, (float) ($allocation->box_count ?? 0));
+                            $totalWeight += max(0, (float) ($allocation->weight ?? 0));
+                            continue;
                         }
-                    } else {
-                        $allocation->final_final_dispatched_quantity = 0;
-                        $allocation->box_count = 0;
-                        $allocation->weight = 0;
+
+                        $warehouseKey = strtolower(trim((string) ($allocation->warehouse->name ?? '')));
+                        $allocQty = max(0, (int) ($adminAllocationValues['final_qty'][$warehouseKey] ?? 0));
+                        $allocBox = max(0, (float) ($adminAllocationValues['box_count'][$warehouseKey] ?? 0));
+                        $allocWeight = max(0, (float) ($adminAllocationValues['weight'][$warehouseKey] ?? 0));
+
+                        $allocation->final_final_dispatched_quantity = $allocQty;
+                        $allocation->box_count = $allocBox;
+                        $allocation->weight = $allocWeight;
+                        $allocation->save();
+
+                        $totalFinalQty += $allocQty;
+                        $totalBox += $allocBox;
+                        $totalWeight += $allocWeight;
                     }
-                    $allocation->save();
+
+                    $order->final_final_dispatched_quantity = $totalFinalQty;
+                    $order->box_count = $totalBox;
+                    $order->weight = $totalWeight;
+                } else {
+                    // Admin non-correction upload: keep existing proportional behavior.
+                    if ($order->warehouseAllocations->count() > 1) {
+                        $totalAllocated = $order->warehouseAllocations->sum('allocated_quantity');
+                    } else {
+                        $totalAllocated = $order->warehouseAllocations->first()->allocated_quantity;
+                    }
+                    foreach ($order->warehouseAllocations as $allocation) {
+
+                        if ($totalAllocated > 0) {
+                            $proportion = $allocation->allocated_quantity / $totalAllocated;
+                            $allocation->final_final_dispatched_quantity = (int) ($finalDispatchQty * $proportion);
+                            $allocation->box_count = (float) ($boxCount * $proportion);
+                            $allocation->weight = (float) ($weight * $proportion);
+                            if ($uploadMode !== 'admin_correction') {
+                                $allocation->product_status = 'packaged';
+                            }
+                        } else {
+                            $allocation->final_final_dispatched_quantity = 0;
+                            $allocation->box_count = 0;
+                            $allocation->weight = 0;
+                        }
+                        $allocation->save();
+                    }
                 }
             } else {
                 // Warehouse user: Update only their warehouse allocation
@@ -1017,7 +1166,7 @@ class PackagingController extends Controller
             }
 
             // Update sales_order_products table with aggregated values
-            if ($isAdmin) {
+            if ($isAdmin && ! ($uploadMode === 'admin_correction' && ! empty($adminAllocationValues))) {
                 $order->final_final_dispatched_quantity = $finalDispatchQty;
                 $order->box_count = $boxCount;
                 $order->weight = $weight;
