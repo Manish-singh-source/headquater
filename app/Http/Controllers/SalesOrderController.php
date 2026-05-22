@@ -1480,10 +1480,16 @@ class SalesOrderController extends Controller
                 $salesOrderProducts = SalesOrderProduct::where('sales_order_id', $salesOrder->id)->get();
 
                 foreach ($salesOrderProducts as $orderProduct) {
+                    // Auto allocation should follow blocked/dispatched quantity first.
+                    $requiredAllocationQty = (int) ($orderProduct->dispatched_quantity ?? 0);
+                    if ($requiredAllocationQty <= 0) {
+                        $requiredAllocationQty = (int) ($orderProduct->ordered_quantity ?? 0);
+                    }
+
                     // Auto allocate stock for each product
                     $allocationResult = $allocationService->autoAllocateStock(
                         $orderProduct->sku,
-                        $orderProduct->ordered_quantity,
+                        $requiredAllocationQty,
                         $salesOrder->id,
                         $orderProduct->id
                     );

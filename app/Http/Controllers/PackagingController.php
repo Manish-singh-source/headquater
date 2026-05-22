@@ -96,12 +96,19 @@ class PackagingController extends Controller
                 $query->whereIn('product_status', $packagingStatuses);
             };
 
-            $productPackagingFilter = function ($query) use ($packagingStatuses, $allocationPackagingFilter) {
+            $productPackagingFilter = function ($query) use ($packagingStatuses, $allocationPackagingFilter, $isAdmin, $userWarehouseId) {
                 $query->where(function ($productQuery) use ($packagingStatuses, $allocationPackagingFilter) {
                     $productQuery->whereIn('status', $packagingStatuses)
                         ->orWhereIn('product_status', $packagingStatuses)
                         ->orWhereHas('warehouseAllocations', $allocationPackagingFilter);
                 });
+
+                // Warehouse users can only access products mapped to their own warehouse allocations.
+                if (! $isAdmin && $userWarehouseId) {
+                    $query->whereHas('warehouseAllocations', function ($allocationQuery) use ($userWarehouseId) {
+                        $allocationQuery->where('warehouse_id', $userWarehouseId);
+                    });
+                }
             };
 
             $salesOrder = SalesOrder::with([
@@ -395,7 +402,7 @@ class PackagingController extends Controller
             $query->whereIn('product_status', $selectedStatuses);
         };
 
-        $productDownloadFilter = function ($query) use ($selectedStatuses, $isShippedFilter, $allocationDownloadFilter) {
+        $productDownloadFilter = function ($query) use ($selectedStatuses, $isShippedFilter, $allocationDownloadFilter, $isAdmin, $userWarehouseId) {
             $query->where(function ($productQuery) use ($selectedStatuses, $isShippedFilter, $allocationDownloadFilter) {
                 if ($isShippedFilter) {
                     $productQuery->where('status', 'shipped')
@@ -409,6 +416,13 @@ class PackagingController extends Controller
                     ->orWhereIn('product_status', $selectedStatuses)
                     ->orWhereHas('warehouseAllocations', $allocationDownloadFilter);
             });
+
+            // Warehouse users can only export products mapped to their own warehouse allocations.
+            if (! $isAdmin && $userWarehouseId) {
+                $query->whereHas('warehouseAllocations', function ($allocationQuery) use ($userWarehouseId) {
+                    $allocationQuery->where('warehouse_id', $userWarehouseId);
+                });
+            }
         };
 
         // Fetch data with same relationships as view() method
@@ -457,13 +471,13 @@ class PackagingController extends Controller
             if ($order->warehouseAllocations->count() >= 1) {
                 foreach ($order->warehouseAllocations as $allocation) {
                     if ($isSuperAdmin ?? false) {
-                        $warehouseAllocation .= $allocation->warehouse->name . ': ' . ($allocation->final_dispatched_quantity ?? 0) . "`n";
-                        $totalDispatchQty .= $allocation->warehouse->name . ': ' . ($allocation->final_dispatched_quantity ?? 0) . "`n";
-                        $finalDispatchQty .= $allocation->warehouse->name . ': ' . ($allocation->final_final_dispatched_quantity ?? 0) . "`n";
-                        $boxCount .= $allocation->warehouse->name . ': ' . ($allocation->box_count ?? 0) . "`n";
-                        $weight .= $allocation->warehouse->name . ': ' . ($allocation->weight ?? 0) . "`n";
+                        $warehouseAllocation .= $allocation->warehouse->name . ': ' . ($allocation->final_dispatched_quantity ?? 0) . "\n";
+                        $totalDispatchQty .= $allocation->warehouse->name . ': ' . ($allocation->final_dispatched_quantity ?? 0) . "\n";
+                        $finalDispatchQty .= $allocation->warehouse->name . ': ' . ($allocation->final_final_dispatched_quantity ?? 0) . "\n";
+                        $boxCount .= $allocation->warehouse->name . ': ' . ($allocation->box_count ?? 0) . "\n";
+                        $weight .= $allocation->warehouse->name . ': ' . ($allocation->weight ?? 0) . "\n";
                     } elseif ($user->warehouse_id == $allocation->warehouse_id) {
-                        $warehouseAllocation .= $user->warehouse->name . ': ' . ($allocation->final_dispatched_quantity ?? 0) . "`n";
+                        $warehouseAllocation .= $user->warehouse->name . ': ' . ($allocation->final_dispatched_quantity ?? 0) . "\n";
                         $totalDispatchQty .= ($allocation->final_dispatched_quantity ?? 0) . ' ';
                         $finalDispatchQty .= ($allocation->final_final_dispatched_quantity ?? 0) . ' ';
                         $boxCount .= ($allocation->box_count ?? 0) . ' ';
@@ -471,11 +485,11 @@ class PackagingController extends Controller
                     }
                 }
 
-                $warehouseAllocation = rtrim($warehouseAllocation, "`n");
-                $totalDispatchQty = rtrim($totalDispatchQty, "`n ");
-                $finalDispatchQty = rtrim($finalDispatchQty, "`n ");
-                $boxCount = rtrim($boxCount, "`n ");
-                $weight = rtrim($weight, "`n ");
+                $warehouseAllocation = rtrim($warehouseAllocation, "\n");
+                $totalDispatchQty = rtrim($totalDispatchQty, "\n ");
+                $finalDispatchQty = rtrim($finalDispatchQty, "\n ");
+                $boxCount = rtrim($boxCount, "\n ");
+                $weight = rtrim($weight, "\n ");
             } else {
                 $warehouseAllocation = (string) ($order->final_dispatched_quantity ?? 0);
                 $totalDispatchQty = (string) ($order->final_dispatched_quantity ?? 0);
@@ -701,6 +715,11 @@ class PackagingController extends Controller
                     ->where('customer_id', $customer->id)
                     ->where('sales_order_id', $request->salesOrderId)
                     ->where('sku', $record['SKU Code'])
+                    ->when(! $isAdmin && $userWarehouseId, function ($query) use ($userWarehouseId) {
+                        $query->whereHas('warehouseAllocations', function ($allocationQuery) use ($userWarehouseId) {
+                            $allocationQuery->where('warehouse_id', $userWarehouseId);
+                        });
+                    })
                     ->with(['tempOrder' => function ($query) use ($record) {
                         $query->where('po_number', $record['Purchase Order No']);
                     }])
@@ -715,22 +734,49 @@ class PackagingController extends Controller
 
                 $currentState = $this->normalizePackagingDataState($order->packaging_data_state ?? null);
 
-                if ($currentState === 'approved') {
-                    DB::rollBack();
+                // Use warehouse-allocation state for warehouse uploads (multi-warehouse safe).
+                if (! $isAdmin && $uploadMode === 'warehouse_submit') {
+                    $userAllocations = $order->warehouseAllocations
+                        ->where('warehouse_id', $userWarehouseId)
+                        ->values();
 
-                    return redirect()->back()->with('error', 'Approved products cannot be updated. Please check row ' . ($rowIndex + 2) . '.')->withInput();
-                }
+                    if ($userAllocations->isEmpty()) {
+                        DB::rollBack();
 
-                if ($uploadMode === 'warehouse_submit' && $currentState !== 'draft') {
-                    DB::rollBack();
+                        return redirect()->back()->with('error', 'This row does not belong to your warehouse. Please check row ' . ($rowIndex + 2) . '.')->withInput();
+                    }
 
-                    return redirect()->back()->with('error', 'Warehouse upload is allowed only for draft rows. Please check row ' . ($rowIndex + 2) . '.')->withInput();
-                }
+                    $hasApprovedAllocation = $userAllocations->contains(function ($allocation) {
+                        return $allocation->approval_status === 'approved';
+                    });
 
-                if ($uploadMode === 'admin_correction' && $currentState !== 'submitted_for_approval') {
-                    DB::rollBack();
+                    if ($hasApprovedAllocation) {
+                        DB::rollBack();
 
-                    return redirect()->back()->with('error', 'Admin correction is allowed only after warehouse submits for approval. Please check row ' . ($rowIndex + 2) . '.')->withInput();
+                        return redirect()->back()->with('error', 'Approved allocation rows cannot be updated. Please check row ' . ($rowIndex + 2) . '.')->withInput();
+                    }
+
+                    $hasPendingAllocation = $userAllocations->contains(function ($allocation) {
+                        return $allocation->approval_status === 'pending' || $allocation->product_status === 'approval_pending';
+                    });
+
+                    if ($hasPendingAllocation) {
+                        DB::rollBack();
+
+                        return redirect()->back()->with('error', 'Your warehouse has already submitted this row for approval. Please check row ' . ($rowIndex + 2) . '.')->withInput();
+                    }
+                } else {
+                    if ($currentState === 'approved') {
+                        DB::rollBack();
+
+                        return redirect()->back()->with('error', 'Approved products cannot be updated. Please check row ' . ($rowIndex + 2) . '.')->withInput();
+                    }
+
+                    if ($uploadMode === 'admin_correction' && $currentState !== 'submitted_for_approval') {
+                        DB::rollBack();
+
+                        return redirect()->back()->with('error', 'Admin correction is allowed only after warehouse submits for approval. Please check row ' . ($rowIndex + 2) . '.')->withInput();
+                    }
                 }
 
                 $beforeSnapshot = $this->snapshotPackagingRecord($order);
