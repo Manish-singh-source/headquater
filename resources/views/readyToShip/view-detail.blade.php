@@ -134,6 +134,7 @@
                                 <span><b>Batch Facilities</b></span>
                                 <span>{{ $batchFacilityNames ?: 'NA' }}</span>
                             </li>
+                            {{-- 
                             <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                                 <span><b>Ordered Date</b></span>
                                 <span> NA</span>
@@ -149,7 +150,7 @@
                             <li class="list-group-item d-flex justify-content-between align-items-center  mb-2 pe-3">
                                 <span><b>Primary Email</b></span>
                                 <span>{{ $primaryCustomer?->email ?? 'NA' }}</span>
-                            </li>
+                            </li> --}}
                             {{-- 
                             <li class="list-group-item d-flex justify-content-between align-items-center  mb-2 pe-3">
                                 <span><b>Actions</b></span>

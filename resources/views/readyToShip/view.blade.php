@@ -71,14 +71,14 @@
                                                 </p>
                                             </td>
                                             <td>
-                                                {{ $allocation?->salesOrderProduct->customer?->facility_name }}
+                                                {{ $allocation->facility_names ?? $allocation?->salesOrderProduct->customer?->facility_name }}
                                             </td>
-                                            <td>{{ $allocation?->salesOrderProduct->customer?->client_name }}</td>
+                                            <td>{{ $allocation->client_names ?? $allocation?->salesOrderProduct->customer?->client_name }}</td>
                                             <td>
-                                                {{ $allocation?->salesOrderProduct->customer?->contact_name }}
+                                                {{ $allocation->contact_names ?? $allocation?->salesOrderProduct->customer?->contact_name }}
                                             </td>
                                             <td>
-                                                {{ $allocation->approved_at->format('d M Y') }}
+                                                {{ optional($allocation->approved_at_batch ?? $allocation->approved_at)->format('d M Y') }}
                                             </td>
                                             <td>
                                                 {{ $statuses[$allocation->shipping_status] }}
@@ -86,7 +86,7 @@
                                             {{-- @if ($allocation->salesOrder?->id && $allocation?->salesOrderProduct->customer?->id) --}}
                                                 <td>
                                                     <a aria-label="anchor"
-                                                        href="{{ route('readyToShip.view.detail', ['id' => $allocation->salesOrder->id, 'c_id' => $allocation->salesOrderProduct->customer?->id, 'rts_count_id' => $allocation->rts_count_id]) }}"
+                                                        href="{{ route('readyToShip.view.detail', ['id' => $allocation->salesOrder->id, 'c_id' => $allocation->batch_customer_id ?? $allocation->salesOrderProduct->customer?->id, 'rts_count_id' => $allocation->rts_count_id]) }}"
                                                         class="btn btn-icon btn-sm bg-primary-subtle me-1"
                                                         data-bs-toggle="tooltip" data-bs-original-title="View">
                                                         <svg xmlns="http://www.w3.org/2000/svg" width="13"

@@ -78,29 +78,43 @@ class ReadyToShip extends Controller
             $isAdmin = $user->hasRole(['Super Admin', 'Admin']) || ! $user->warehouse_id;
             $userWarehouseId = $user->warehouse_id;
 
-            $status = $request->query('status', 'all');
-
-            $allocationReadyFilter = function ($q) use ($isAdmin, $userWarehouseId) {
-                if (! $isAdmin) {
-                    $q->where('warehouse_id', $userWarehouseId);
-                }
-                $q->where('product_status', 'completed');
-            };
-
-            $sub = WarehouseAllocation::where('sales_order_id', $id)
-                ->where('product_status', 'completed')
-                ->selectRaw('MAX(id) as id')
-                ->groupBy('sales_order_id', 'rts_count_id')->get();
-
-            $warehouseAllocations = WarehouseAllocation::with(
+            $warehouseAllocationsRaw = WarehouseAllocation::with(
                 'salesOrder.customerGroup',
                 'customer',
                 'salesOrderProduct.customer'
             )
-                ->whereIn('id', $sub)
+                ->where('sales_order_id', $id)
+                ->where('product_status', 'completed')
+                ->when(! $isAdmin && $userWarehouseId, function ($query) use ($userWarehouseId) {
+                    $query->where('warehouse_id', $userWarehouseId);
+                })
                 ->get();
 
-            // dd($sub);
+            $warehouseAllocations = $warehouseAllocationsRaw
+                ->groupBy('rts_count_id')
+                ->map(function ($batchAllocations) {
+                    $representative = $batchAllocations->sortByDesc('id')->first();
+
+                    $customers = $batchAllocations
+                        ->pluck('salesOrderProduct.customer')
+                        ->filter()
+                        ->unique('id')
+                        ->values();
+
+                    $representative->facility_names = $customers->pluck('facility_name')->filter()->unique()->implode(', ');
+                    $representative->client_names = $customers->pluck('client_name')->filter()->unique()->implode(', ');
+                    $representative->contact_names = $customers->pluck('contact_name')->filter()->unique()->implode(', ');
+                    $representative->batch_customer_id = optional($customers->first())->id;
+                    $representative->approved_at_batch = $batchAllocations
+                        ->pluck('approved_at')
+                        ->filter()
+                        ->sortDesc()
+                        ->first();
+
+                    return $representative;
+                })
+                ->values();
+
             return view('readyToShip.view', compact('warehouseAllocations'));
         } catch (\Exception $e) {
             return redirect()->route('readyToShip.index')
@@ -893,4 +907,3 @@ class ReadyToShip extends Controller
         }
     }
 }
-
