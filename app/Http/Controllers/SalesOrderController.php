@@ -998,6 +998,7 @@ class SalesOrderController extends Controller
                 $totalBlockBySku[$normalizedSku] = ($totalBlockBySku[$normalizedSku] ?? 0) + $blockQtyForCheck;
             }
 
+            $skipPurchaseOrderBySku = [];
             foreach ($totalBlockBySku as $normalizedSku => $totalBlockQty) {
                 if ($isAutoAllocation) {
                     $totalAvailableQty = WarehouseStock::where('sku', $normalizedSku)
@@ -1018,6 +1019,9 @@ class SalesOrderController extends Controller
                         'error' => "Total block quantity cannot be greater than total available quantity for SKU {$normalizedSku}. Total Block: {$totalBlockQty}, Total Available: {$totalAvailableQty}.",
                     ])->withInput();
                 }
+
+                // If total available >= total block, skip PO generation for this SKU.
+                $skipPurchaseOrderBySku[$normalizedSku] = ((int) $totalAvailableQty > (int) $totalBlockQty);
             }
 
             // Sort rows by 'Block' in descending order (high to low)
@@ -1269,6 +1273,7 @@ class SalesOrderController extends Controller
                 $shortQty = max(0, $poQty - $actualBlockQty);
                 $productStockCache[$sku]['available'] = max(0, $stockBeforeBlock - $actualBlockQty);
                 $availableQty = $actualBlockQty;
+                $poQtyToCreate = (! empty($skipPurchaseOrderBySku[$sku])) ? 0 : $shortQty;
 
                 if ($product) {
                     $casePackQty = (int) ($product->product->pcs_set ?? 0) * (int) ($product->product->sets_ctn ?? 0);
@@ -1311,7 +1316,7 @@ class SalesOrderController extends Controller
 
                     'case_pack_quantity' => $casePackQty ?? '',
                     // 'purchase_order_quantity' => (int) ($record['Purchase Order Quantity'] ?? 0),
-                    'purchase_order_quantity' => (int) ($shortQty ?? 0),
+                    'purchase_order_quantity' => (int) ($poQtyToCreate ?? 0),
                     'vendor_code' => $record['Vendor Code'] ?? '',
                     'customer_status' => 'Found',
                     'vendor_status' => 'Found',
@@ -1344,7 +1349,7 @@ class SalesOrderController extends Controller
                 // For auto-allocation, set purchase_ordered_quantity to 0 initially (will be updated later)
                 // For single warehouse, use Excel value
                 // $saveOrderProduct->purchase_ordered_quantity = $isAutoAllocation ? 0 : ($record['Purchase Order Quantity'] ?? 0);
-                $saveOrderProduct->purchase_ordered_quantity = $isAutoAllocation ? 0 : ($shortQty ?? 0);
+                $saveOrderProduct->purchase_ordered_quantity = $isAutoAllocation ? 0 : ($poQtyToCreate ?? 0);
                 $saveOrderProduct->product_id = $product->product->id ?? null;
                 // For auto allocation, warehouse_stock_id is null (multiple warehouses)
                 $saveOrderProduct->warehouse_stock_id = $isAutoAllocation ? null : ($product->id ?? null);
@@ -1395,7 +1400,7 @@ class SalesOrderController extends Controller
                 }
 
                 // Make a purchase order if one or more than one products have less quantity in warehouse
-                if ($shortQty > 0) {
+                if ($poQtyToCreate > 0) {
                     if (! isset($productStockCache[$vendorCode])) {
                         $productStockCache[$vendorCode] = [
                             'vendor_code' => $vendorCode,
@@ -1440,7 +1445,7 @@ class SalesOrderController extends Controller
 
                     if ($existingProduct) {
                         // Combine quantities if match found
-                        $existingProduct->ordered_quantity += $shortQty;
+                        $existingProduct->ordered_quantity += $poQtyToCreate;
                         $existingProduct->save();
                     } else {
                         // Create a new record
@@ -1452,7 +1457,7 @@ class SalesOrderController extends Controller
                         $purchaseOrderProduct->product_id = $product->product->id ?? null;
                         $purchaseOrderProduct->sku = $sku;
                         $purchaseOrderProduct->vendor_code = $vendorCode;
-                        $purchaseOrderProduct->ordered_quantity = $shortQty;
+                        $purchaseOrderProduct->ordered_quantity = $poQtyToCreate;
                         $purchaseOrderProduct->save();
                     }
                 }
