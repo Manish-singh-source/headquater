@@ -484,6 +484,14 @@ class PackagingController extends Controller
                 $weight = (string) ($order->weight ?? 0);
             }
 
+            // Admin correction export must provide numeric editable values.
+            if ($isAdmin) {
+                $totalDispatchQty = (string) (int) ($order->final_dispatched_quantity ?? 0);
+                $finalDispatchQty = (string) (int) ($order->final_final_dispatched_quantity ?? 0);
+                $boxCount = (string) (float) ($order->box_count ?? 0);
+                $weight = (string) (float) ($order->weight ?? 0);
+            }
+
             $statusText = '';
             if ($order->warehouseAllocations->count() >= 1) {
                 $statuses = [];
@@ -554,6 +562,7 @@ class PackagingController extends Controller
         $validator = Validator::make($request->all(), [
             'pi_excel' => 'required|file|mimes:xlsx,csv,xls',
             'salesOrderId' => 'required|integer|min:1|exists:sales_orders,id',
+            'upload_mode' => 'nullable|in:warehouse_submit,admin_correction',
         ]);
 
         if ($validator->fails()) {
@@ -572,6 +581,20 @@ class PackagingController extends Controller
             // Check if user is admin (Super Admin or Admin role, or warehouse_id is null/0)
             $isAdmin = $user->hasRole(['Super Admin', 'Admin']) || ! $user->warehouse_id;
             $userWarehouseId = $user->warehouse_id;
+            $uploadMode = $request->input('upload_mode', $isAdmin ? 'admin_correction' : 'warehouse_submit');
+
+            if (! $isAdmin && $uploadMode === 'admin_correction') {
+                DB::rollBack();
+
+                return redirect()->back()->with('error', 'Only admin can upload correction files.');
+            }
+
+            $salesOrder = SalesOrder::findOrFail($request->salesOrderId);
+            if (in_array($salesOrder->status, ['ready_to_ship', 'shipped'], true)) {
+                DB::rollBack();
+
+                return redirect()->back()->with('error', 'This order is already locked for packaging updates.');
+            }
 
             $reader = SimpleExcelReader::create($filepath, $extension);
 
@@ -590,6 +613,15 @@ class PackagingController extends Controller
             }
 
             $insertCount = 0;
+            $batchId = DB::table('packaging_upload_batches')->insertGetId([
+                'sales_order_id' => $request->salesOrderId,
+                'uploaded_by' => $user->id,
+                'mode' => $uploadMode,
+                'file_name' => $file->getClientOriginalName(),
+                'file_hash' => hash_file('sha256', $filepath),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
 
             $mandatoryFields = ['Customer Name', 'SKU Code', 'Facility Name', 'Facility Location', 'PO Date', 'PO Expiry Date', 'HSN', 'Item Code', 'Description', 'GST', 'Basic Rate', 'Net Landing Rate', 'MRP', 'PO Quantity', 'Purchase Order Quantity', 'Vendor PI Fulfillment Quantity', 'Vendor PI Received Quantity', 'Warehouse Name', 'Warehouse Allocation', 'Purchase Order No', 'Total Dispatch Qty', 'Final Dispatch Qty', 'Case Pack Quantity'];
 
@@ -603,14 +635,26 @@ class PackagingController extends Controller
                     }
                 }
 
-                $finalDispatchQty = (int) ($record['Final Dispatch Qty'] ?? 0);
-                $boxCount = $record['Box Count'] ?? null;
-                $weight = $record['Weight'] ?? null;
+                $finalDispatchQtyRaw = trim((string) ($record['Final Dispatch Qty'] ?? ''));
+                $boxCountRaw = trim((string) ($record['Box Count'] ?? ''));
+                $weightRaw = trim((string) ($record['Weight'] ?? ''));
+
+                if ($finalDispatchQtyRaw === '' || ! is_numeric($finalDispatchQtyRaw)) {
+                    DB::rollBack();
+
+                    return redirect()->back()->with([
+                        'error' => 'Final Dispatch Qty must be numeric (no warehouse text prefix). Please check row ' . ($rowIndex + 2) . '.',
+                    ])->withInput();
+                }
+
+                $finalDispatchQty = (int) $finalDispatchQtyRaw;
+                $boxCount = $boxCountRaw;
+                $weight = $weightRaw;
 
                 // If final dispatch is entered, box count and weight must be provided and greater than zero.
                 if ($finalDispatchQty !== 0) {
-                    $boxCountMissing = is_null($boxCount) || trim((string) $boxCount) === '';
-                    $weightMissing = is_null($weight) || trim((string) $weight) === '';
+                    $boxCountMissing = $boxCountRaw === '';
+                    $weightMissing = $weightRaw === '';
 
                     if ($boxCountMissing || $weightMissing) {
                         DB::rollBack();
@@ -620,7 +664,15 @@ class PackagingController extends Controller
                         ])->withInput();
                     }
 
-                    if ((float) $boxCount <= 0 || (float) $weight <= 0) {
+                    if (! is_numeric($boxCountRaw) || ! is_numeric($weightRaw)) {
+                        DB::rollBack();
+
+                        return redirect()->back()->with([
+                            'error' => 'Box Count and Weight must be numeric values. Please check row ' . ($rowIndex + 2) . '.',
+                        ])->withInput();
+                    }
+
+                    if ((float) $boxCountRaw <= 0 || (float) $weightRaw <= 0) {
                         DB::rollBack();
 
                         return redirect()->back()->with([
@@ -628,6 +680,9 @@ class PackagingController extends Controller
                         ])->withInput();
                     }
                 }
+
+                $boxCount = $boxCountRaw === '' ? null : (float) $boxCountRaw;
+                $weight = $weightRaw === '' ? null : (float) $weightRaw;
                 // // Skip empty SKU records
                 // if (empty($record['SKU Code'])) {
                 //     continue;
@@ -658,14 +713,51 @@ class PackagingController extends Controller
                     continue;
                 }
 
+                $currentState = $this->normalizePackagingDataState($order->packaging_data_state ?? null);
+
+                if ($currentState === 'approved') {
+                    DB::rollBack();
+
+                    return redirect()->back()->with('error', 'Approved products cannot be updated. Please check row ' . ($rowIndex + 2) . '.')->withInput();
+                }
+
+                if ($uploadMode === 'warehouse_submit' && $currentState !== 'draft') {
+                    DB::rollBack();
+
+                    return redirect()->back()->with('error', 'Warehouse upload is allowed only for draft rows. Please check row ' . ($rowIndex + 2) . '.')->withInput();
+                }
+
+                if ($uploadMode === 'admin_correction' && $currentState !== 'submitted_for_approval') {
+                    DB::rollBack();
+
+                    return redirect()->back()->with('error', 'Admin correction is allowed only after warehouse submits for approval. Please check row ' . ($rowIndex + 2) . '.')->withInput();
+                }
+
+                $beforeSnapshot = $this->snapshotPackagingRecord($order);
+
                 // Process the packaging update
                 $this->updateSalesOrderProduct(
                     $order,
-                    $record,
+                    array_merge($record, [
+                        'Final Dispatch Qty' => $finalDispatchQty,
+                        'Box Count' => $boxCount,
+                        'Weight' => $weight,
+                    ]),
                     $request->salesOrderId,
                     $isAdmin,
-                    $userWarehouseId
+                    $userWarehouseId,
+                    $uploadMode
                 );
+                $order->refresh()->load('warehouseAllocations');
+                if ($uploadMode === 'admin_correction') {
+                    $order->packaging_data_state = 'submitted_for_approval';
+                    $order->save();
+                } else {
+                    $order->packaging_data_state = 'draft';
+                    $order->save();
+                }
+                $afterSnapshot = $this->snapshotPackagingRecord($order);
+                $this->logPackagingChanges($batchId, $request->salesOrderId, $user->id, $beforeSnapshot, $afterSnapshot);
 
                 $insertCount++;
             }
@@ -694,6 +786,98 @@ class PackagingController extends Controller
         }
     }
 
+    private function normalizePackagingDataState(?string $state): string
+    {
+        $state = trim((string) $state);
+        if ($state === '') {
+            return 'draft';
+        }
+
+        return $state;
+    }
+
+    private function snapshotPackagingRecord(SalesOrderProduct $order): array
+    {
+        $allocations = ($order->warehouseAllocations ?? collect())->map(function ($allocation) {
+            return [
+                'id' => $allocation->id,
+                'final_final_dispatched_quantity' => (int) ($allocation->final_final_dispatched_quantity ?? 0),
+                'box_count' => (float) ($allocation->box_count ?? 0),
+                'weight' => (float) ($allocation->weight ?? 0),
+                'product_status' => (string) ($allocation->product_status ?? ''),
+                'approval_status' => (string) ($allocation->approval_status ?? ''),
+            ];
+        })->keyBy('id')->toArray();
+
+        return [
+            'order' => [
+                'id' => $order->id,
+                'final_final_dispatched_quantity' => (int) ($order->final_final_dispatched_quantity ?? 0),
+                'box_count' => (float) ($order->box_count ?? 0),
+                'weight' => (float) ($order->weight ?? 0),
+                'status' => (string) ($order->status ?? ''),
+                'product_status' => (string) ($order->product_status ?? ''),
+                'packaging_data_state' => (string) ($order->packaging_data_state ?? 'draft'),
+            ],
+            'allocations' => $allocations,
+        ];
+    }
+
+    private function logPackagingChanges(int $batchId, int $salesOrderId, int $userId, array $before, array $after): void
+    {
+        $changeRows = [];
+        $now = now();
+        $orderId = $before['order']['id'] ?? $after['order']['id'] ?? null;
+
+        if ($orderId) {
+            foreach ($after['order'] as $field => $newValue) {
+                $oldValue = $before['order'][$field] ?? null;
+                if ((string) $oldValue !== (string) $newValue) {
+                    $changeRows[] = [
+                        'batch_id' => $batchId,
+                        'sales_order_id' => $salesOrderId,
+                        'sales_order_product_id' => $orderId,
+                        'warehouse_allocation_id' => null,
+                        'field_name' => 'sales_order_product.' . $field,
+                        'old_value' => is_null($oldValue) ? null : (string) $oldValue,
+                        'new_value' => is_null($newValue) ? null : (string) $newValue,
+                        'changed_by' => $userId,
+                        'changed_at' => $now,
+                        'created_at' => $now,
+                        'updated_at' => $now,
+                    ];
+                }
+            }
+        }
+
+        $afterAllocations = $after['allocations'] ?? [];
+        foreach ($afterAllocations as $allocationId => $allocationValues) {
+            $beforeValues = $before['allocations'][$allocationId] ?? [];
+            foreach ($allocationValues as $field => $newValue) {
+                $oldValue = $beforeValues[$field] ?? null;
+                if ((string) $oldValue !== (string) $newValue) {
+                    $changeRows[] = [
+                        'batch_id' => $batchId,
+                        'sales_order_id' => $salesOrderId,
+                        'sales_order_product_id' => $orderId,
+                        'warehouse_allocation_id' => $allocationId,
+                        'field_name' => 'warehouse_allocation.' . $field,
+                        'old_value' => is_null($oldValue) ? null : (string) $oldValue,
+                        'new_value' => is_null($newValue) ? null : (string) $newValue,
+                        'changed_by' => $userId,
+                        'changed_at' => $now,
+                        'created_at' => $now,
+                        'updated_at' => $now,
+                    ];
+                }
+            }
+        }
+
+        if (! empty($changeRows)) {
+            DB::table('packaging_upload_changes')->insert($changeRows);
+        }
+    }
+
     /**
      * Update individual sales order product with packaging details
      *
@@ -704,7 +888,7 @@ class PackagingController extends Controller
      * @param  int|null  $userWarehouseId
      * @return void
      */
-    private function updateSalesOrderProduct($order, $record, $salesOrderId, $isAdmin, $userWarehouseId)
+    private function updateSalesOrderProduct($order, $record, $salesOrderId, $isAdmin, $userWarehouseId, $uploadMode = 'warehouse_submit')
     {
         $finalDispatchQty = (int) ($record['Final Dispatch Qty'] ?? 0);
         if ($finalDispatchQty == 0) {
@@ -752,7 +936,9 @@ class PackagingController extends Controller
                         // }
                         $allocation->box_count = (float) ($boxCount * $proportion);
                         $allocation->weight = (float) ($weight * $proportion);
-                        $allocation->product_status = 'packaged';
+                        if ($uploadMode !== 'admin_correction') {
+                            $allocation->product_status = 'packaged';
+                        }
                     } else {
                         $allocation->final_final_dispatched_quantity = 0;
                         $allocation->box_count = 0;
@@ -777,7 +963,9 @@ class PackagingController extends Controller
                     // }
                     $userAllocation->box_count = $boxCount;
                     $userAllocation->weight = $weight;
-                    $userAllocation->product_status = 'packaged';
+                    if ($uploadMode !== 'admin_correction') {
+                        $userAllocation->product_status = 'packaged';
+                    }
                     $userAllocation->save();
                 }
             }
@@ -800,9 +988,11 @@ class PackagingController extends Controller
             $order->weight = $weight;
         }
 
-        // Update status
-        $order->status = 'packaged';
-        $order->product_status = 'packaged';
+        // Keep approval workflow status intact during admin correction uploads.
+        if ($uploadMode !== 'admin_correction') {
+            $order->status = 'packaged';
+            $order->product_status = 'packaged';
+        }
 
         // Handle shortage: dispatched > final
         if ($order->dispatched_quantity > $finalDispatchQty) {
@@ -917,6 +1107,9 @@ class PackagingController extends Controller
                     $allocation->approval_status = 'pending';
                     $allocation->product_status = 'approval_pending';
                     $allocation->save();
+
+                    SalesOrderProduct::where('id', $allocation->sales_order_product_id)
+                        ->update(['packaging_data_state' => 'submitted_for_approval']);
                     $allocationsUpdated++;
 
                     activity()
@@ -1023,6 +1216,9 @@ class PackagingController extends Controller
                     $product = SalesOrderProduct::whereIn('id', $productsToUpdate)
                         ->where('status', '!=', 'shipped')
                         ->update(['status' => 'ready_to_ship', 'rts_count_id' => $highestRtsCountId]);
+
+                    SalesOrderProduct::whereIn('id', $productsToUpdate)
+                        ->update(['packaging_data_state' => 'approved']);
 
                     // Log activity for each product
                     // foreach ($productsToUpdate as $productId) {

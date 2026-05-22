@@ -180,10 +180,10 @@
                                 </select>
                             </div>
 
-                            @if (!($isAdmin ?? false) && !($allProductsReadyToShip ?? false))
+                            @if (!($allProductsReadyToShip ?? false))
                                 <button class="btn btn-sm border-2 border-primary" data-bs-toggle="modal"
                                     data-bs-target="#staticBackdrop1" class="btn btn-sm border-2 border-primary">
-                                    Update PO
+                                    {{ ($isAdmin ?? false) ? 'Update PO (Admin Correction)' : 'Update PO' }}
                                 </button>
 
                                 <!-- Modal -->
@@ -207,6 +207,8 @@
                                                     <div class="col-12 mb-3">
                                                         <input type="hidden" name="salesOrderId"
                                                             value="{{ $salesOrder->id }}">
+                                                        <input type="hidden" name="upload_mode"
+                                                            value="{{ ($isAdmin ?? false) ? 'admin_correction' : 'warehouse_submit' }}">
                                                     </div>
 
                                                     <div class="col-12 mb-3">
