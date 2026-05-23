@@ -293,7 +293,8 @@
 
                                 <div class="tab-pane fade {{ $passwordErrors ? 'show active' : '' }}"
                                     id="change-password-pane" role="tabpanel">
-                                    <form action="{{ route('profile.change-password') }}" method="POST" class="row g-4">
+                                    <form action="{{ route('profile.change-password') }}" method="POST" class="row g-4"
+                                        id="changePasswordForm" novalidate>
                                         @csrf
                                         @method('PUT')
 
@@ -315,12 +316,14 @@
                                             @error('password')
                                                 <div class="invalid-feedback">{{ $message }}</div>
                                             @enderror
+                                            <div id="passwordStrengthError" class="invalid-feedback d-none"></div>
                                         </div>
 
                                         <div class="col-md-6">
                                             <label for="password_confirmation" class="form-label">Confirm Password</label>
                                             <input type="password" name="password_confirmation" id="password_confirmation"
                                                 class="form-control" placeholder="Confirm Password">
+                                            <div id="passwordMatchError" class="invalid-feedback d-none"></div>
                                         </div>
 
                                         <div class="col-12">
@@ -329,6 +332,85 @@
                                             </button>
                                         </div>
                                     </form>
+                                    <script>
+                                        (function() {
+                                            const form = document.getElementById('changePasswordForm');
+                                            const passwordInput = document.getElementById('password');
+                                            const confirmInput = document.getElementById('password_confirmation');
+                                            const strengthError = document.getElementById('passwordStrengthError');
+                                            const matchError = document.getElementById('passwordMatchError');
+
+                                            if (!form || !passwordInput || !confirmInput || !strengthError || !matchError) {
+                                                return;
+                                            }
+
+                                            function setInvalid(input, errorEl, message) {
+                                                input.classList.add('is-invalid');
+                                                errorEl.textContent = message;
+                                                errorEl.classList.remove('d-none');
+                                            }
+
+                                            function clearInvalid(input, errorEl) {
+                                                input.classList.remove('is-invalid');
+                                                errorEl.textContent = '';
+                                                errorEl.classList.add('d-none');
+                                            }
+
+                                            function isStrongPassword(value) {
+                                                if (!value) return true;
+                                                const minLength = value.length >= 8;
+                                                const hasUpper = /[A-Z]/.test(value);
+                                                const hasLower = /[a-z]/.test(value);
+                                                const hasNumber = /\d/.test(value);
+                                                const hasSpecial = /[^A-Za-z0-9]/.test(value);
+                                                return minLength && hasUpper && hasLower && hasNumber && hasSpecial;
+                                            }
+
+                                            function validateStrength() {
+                                                const value = passwordInput.value.trim();
+                                                if (!isStrongPassword(value)) {
+                                                    setInvalid(
+                                                        passwordInput,
+                                                        strengthError,
+                                                        'Password must be at least 8 characters and include uppercase, lowercase, number, and special character.'
+                                                    );
+                                                    return false;
+                                                }
+
+                                                clearInvalid(passwordInput, strengthError);
+                                                return true;
+                                            }
+
+                                            function validateMatch() {
+                                                const password = passwordInput.value;
+                                                const confirmation = confirmInput.value;
+
+                                                if (confirmation && password !== confirmation) {
+                                                    setInvalid(confirmInput, matchError, 'Password confirmation does not match.');
+                                                    return false;
+                                                }
+
+                                                clearInvalid(confirmInput, matchError);
+                                                return true;
+                                            }
+
+                                            passwordInput.addEventListener('input', function() {
+                                                validateStrength();
+                                                validateMatch();
+                                            });
+
+                                            confirmInput.addEventListener('input', validateMatch);
+
+                                            form.addEventListener('submit', function(e) {
+                                                const strengthOk = validateStrength();
+                                                const matchOk = validateMatch();
+
+                                                if (!strengthOk || !matchOk) {
+                                                    e.preventDefault();
+                                                }
+                                            });
+                                        })();
+                                    </script>
                                 </div>
                             </div>
                         </div>

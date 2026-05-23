@@ -1,129 +1,114 @@
 1. Login:
-    - login using email, password
-    - remember me functionality 
+    - login using email, password        - passed - tested 
+    - remember me functionality          - passed - tested 
     - forgot password functionality 
-    - show proper errors 
-    - throttling 
 
-    - done
-
-2. Dashboard: 
-
-    - sales analytics reports 
-    - purchase analytics reports 
-    - brand wise orders 
-    - dispatch status 
-    - delivery confirmation 
-    - grn status 
-    - payment status 
-    - warehouse inventory 
-
-    - date filter 
 
 3. Profile page: 
-    - display staff/admin details
-    - edit data option
-    - change password option
-    - logout option
-
-    - done
+    - display staff/admin details            - passed - tested 
+    - edit data option                       - passed - tested 
+    - change password option                 - passed - tested 
+    - logout option                          - passed - tested 
 
 4. Logout button: 
-    - logout functionality 
+    - logout functionality                   - passed - tested 
 
-    - done
-
-5. permissions: 
-
-    - list permissions 
-    - create permission 
-    - update permission 
-    - delete permission 
 
 6. roles: 
 
-    - list roles 
-    - create role 
-    - update role 
-    - delete role 
+    - list roles                             - passed - tested 
+    - create role                            - passed - tested 
+    - update role                            - passed - tested 
+    - delete role                            - passed - tested 
 
-    - proper pagination 
-    - sorting properly 
+    - proper pagination                      - passed - tested 
+    - sorting properly                       - passed - tested 
 
-    - done
 
 7. warehouses: 
 
-    - list warehouses 
-    - create warehouse 
-    - update warehouse 
-    - delete warehouse 
-    - view warehouse
-        - products list                  - pending
-        - export products functionality  - pending
+    - list warehouses                       - passed - tested 
+    - create warehouse                      - passed - tested 
+    - update warehouse                      - passed - tested 
+    - delete warehouse                      - passed - tested 
+    - view warehouse                        - passed - tested 
+        - products list                     - passed - tested 
+        - export products functionality     - passed - tested 
 
-    - proper pagination
-    - sorting properly 
-    - tabs switching 
-    - multi delete functionality
-    - multi toggle status functionality
+    - proper pagination                     - passed - tested 
+    - sorting properly                      - passed - tested 
+    - tabs switching                        - passed - tested 
+    - toggle status functionality           - passed - tested
+    - multi delete functionality            - passed - tested 
+    - multi toggle status functionality     - passed - tested 
 
-    - done
+    - Validations: 
+        - if stock is present in that warehouse then delete not possible    - passed - tested 
 
 8. staff: 
 
-    - list staff 
-    - create staff 
-    - update staff 
-    - delete staff 
-    - view staff
-        - staff details all     
-        - edit button for redirect to edit page
-        - permissions list  
+    - list staff                            - passed - tested 
+    - create staff                          - passed - tested 
+    - update staff                          - passed - tested 
+    - delete staff                          - passed - tested
+    - view staff                            - passed - tested
+        - staff details all                 - passed - tested
+        - edit button for redirect to edit page                          - passed - tested
+        - permissions list                  - passed - tested
 
-    - proper pagination
-    - sorting properly 
-    - tabs switching 
-    - multi delete functionality
-    - multi toggle status functionality
+    - proper pagination                     - passed - tested
+    - sorting properly                      - passed - tested
+    - tabs switching                        - passed - tested
+    - toggle status functionality           - passed - tested
+    - multi delete functionality            - passed - tested
+    - multi toggle status functionality     - passed - tested
 
-    - done
 
 9. customer groups: 
-    - list customer groups  - done  
-    - create customer groups  - done
-    - update customer groups  - done
-    - delete customer groups  - done
-    - view customer groups
-        - list customers in that group  - done
-        - add customer (single)         - commented 
-        - add customer (bulk)           - done
-        - export customers              - done
-        - update via excel              - done
-        - update via form               - done
-        - delete customer               - done
-        - multi delete functionality    - done
-        - toggle status functionality   - done
-        - multi toggle status functionality - done
+    - list customer groups                     - passed - tested
+    - create customer groups                   - passed - tested
+    - update customer groups                   - passed - tested
+    
+    - view customer groups                     - passed - tested
+        - list customers in that group         - passed - tested
+        - add customer (bulk)                  - passed - tested
+        - export customers                     - passed - tested
+        - update via excel                     - passed - tested
+        - update via form                      - passed - tested
+        - delete customer                      - passed - tested
+        - multi delete functionality           - passed - tested
+        - toggle status functionality          - passed - tested
+        - multi toggle status functionality    - passed - tested
 
         - view customer: 
-            - display customer information  - done
-            - invoices list 
-            - sales orders list 
-            - payments list 
-            - returns list 
+            - display customer information         - passed - tested
+            - invoices list             - pending - not tested
+            - sales orders list         - pending - not tested
+            - payments list             - pending - not tested
+            - returns list              - pending - not tested
 
-        - tabs switching            - done
-        - proper pagination         - done
-        - sorting properly          - done          
+        - tabs switching                - passed - tested
+        - proper pagination             - passed - tested
+        - sorting properly              - passed - tested 
 
-    - proper pagination             - done
-    - sorting properly              - done
-    - tabs switching                - done
-    - delete customer group         - done
-    - multi delete functionality    - done
-    - toggle status functionality   - done
-    - multi toggle status functionality   - done
+    - proper pagination                 - passed - tested
+    - sorting properly                  - passed - tested
+    - tabs switching                    - passed - tested
+    - delete customer group             - passed - tested
+    - multi delete functionality        - passed - tested
+    - toggle status functionality       - passed - tested
+    - multi toggle status functionality - passed - tested
+
+    Validations: 
+        - when delete check if customers exists if yes then throw error
+        - if customers group have any sales order then check what happens
+        - check proper columns errors and all fill errors
+            - create customer group
+            - after view customer group: 
+                - update customers 
+                - add customer (extra in same group)
+
+
 
 
 10. customers (optional): 
@@ -161,9 +146,10 @@
     - proper pagination  - done
     - sorting properly   - done
 
-    Logics: 
+    Validations: 
+        - check vendor is present or not when adding product - done
 
-    - check vendor is present or not when adding product - done
+
 
 13. sku mapping:
     - list sku mapping           - done
@@ -208,10 +194,9 @@ update via excel functionality (if available)
     - export file
 
     Logics:
-    - display customer groups and warehouse list (both required)
+    - display customer groups and warehouse list (both required) - only active
     - upload excel (proper format) (required)
     - validate all required columns in file (check all column names present and all values filled)
-    - 
 
 15. create sales order (block order):
     - fill block quantity column in above exported file
@@ -331,6 +316,20 @@ update via excel functionality (if available)
     - search order by sales order id / purchase order id 
 
 
+
+
+2. Dashboard: 
+
+    - sales analytics reports 
+    - purchase analytics reports 
+    - brand wise orders 
+    - dispatch status 
+    - delivery confirmation 
+    - grn status 
+    - payment status 
+    - warehouse inventory 
+
+    - date filter 
 
 
 
