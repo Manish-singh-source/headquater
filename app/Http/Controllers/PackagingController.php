@@ -146,6 +146,7 @@ class PackagingController extends Controller
                 ->where('sales_order_id', $id)
                 ->where('product_status', 'approval_pending')
                 ->where('approval_status', 'pending')
+                ->where('final_final_dispatched_quantity', '>', '0')
                 ->get();
 
             foreach ($pendingAllocations as $allocation) {
