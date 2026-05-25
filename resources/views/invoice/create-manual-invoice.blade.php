@@ -146,7 +146,7 @@
                                                     <th style="width: 6%;">Weight</th>
                                                     <th style="width: 9%;">Rate <span class="text-danger">*</span></th>
                                                     <th style="width: 7%;">Discount</th>
-                                                    <th style="width: 7%;">Tax</th>
+                                                    <th style="width: 7%;">Tax (Rs.)</th>
                                                     <th style="width: 10%;">Total</th>
                                                     <th style="width: 10%;">Action</th>
                                                 </tr>
@@ -628,7 +628,8 @@
 
             if (productId) {
                 const price = selectedOption.dataset.price;
-                document.querySelector(`input[name="products[${rowId}][unit_price]"]`).value = price;
+                // document.querySelector(`input[name="products[${rowId}][unit_price]"]`).value = price;
+                document.querySelector(`input[name="products[${rowId}][unit_price]"]`).value = 0;
 
                 // Check stock and get product details
                 fetch('{{ route('invoices.check-stock') }}', {
