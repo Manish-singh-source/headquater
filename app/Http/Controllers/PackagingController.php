@@ -1346,6 +1346,7 @@ class PackagingController extends Controller
                 $allocations = (clone $baseAllocationQuery)
                     ->where('product_status', 'approval_pending')
                     ->where('approval_status', 'pending')
+                    ->where('final_final_dispatched_quantity', '>', 0)
                     ->get();
 
                 // get highest rts_count_id from all allocations for this sales order
@@ -1380,14 +1381,15 @@ class PackagingController extends Controller
 
                 if ($allocationsApproved === 0) {
                     return redirect()->back()
-                        ->with('error', 'No approval-pending products found to approve.');
+                        ->with('error', 'No approval-pending products with final dispatch quantity greater than 0 found to approve.');
                 }
 
                 $productsToUpdate = [];
                 foreach ($salesOrder->orderedProducts as $product) {
                     $allocationsForProduct = $product->warehouseAllocations ?? collect();
                     $allocationsNeedingApproval = $allocationsForProduct->filter(function ($allocation) {
-                        return $allocation->allocated_quantity > 0;
+                        return $allocation->allocated_quantity > 0
+                            && (float) $allocation->final_final_dispatched_quantity > 0;
                     });
 
                     if ($allocationsNeedingApproval->isEmpty()) {
