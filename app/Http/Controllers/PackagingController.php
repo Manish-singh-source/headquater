@@ -643,9 +643,15 @@ class PackagingController extends Controller
                 }
 
                 $finalDispatchQtyRaw = trim((string) ($record['Final Dispatch Qty'] ?? ''));
+                $totalDispatchQtyRaw = trim((string) ($record['Total Dispatch Qty'] ?? ''));
                 $boxCountRaw = trim((string) ($record['Box Count'] ?? ''));
                 $weightRaw = trim((string) ($record['Weight'] ?? ''));
                 $adminAllocationValues = null;
+
+                // If total dispatch quantity is 0, this row should not update final dispatch data.
+                if ($totalDispatchQtyRaw !== '' && is_numeric($totalDispatchQtyRaw) && (float) $totalDispatchQtyRaw == 0.0) {
+                    continue;
+                }
 
                 if ($uploadMode === 'admin_correction') {
                     $qtyMap = $this->parseWarehouseWiseValues($finalDispatchQtyRaw, true);
@@ -760,7 +766,8 @@ class PackagingController extends Controller
                     $order->loadMissing('warehouseAllocations.warehouse');
                     $expectedNames = $order->warehouseAllocations
                         ->filter(function ($allocation) {
-                            return ! ($allocation->approval_status === 'approved' || $allocation->shipping_status === 'shipped');
+                            return ! ($allocation->approval_status === 'approved' || $allocation->shipping_status === 'shipped')
+                                && (string) $allocation->product_status === 'approval_pending';
                         })
                         ->map(function ($allocation) {
                             return strtolower(trim((string) ($allocation->warehouse->name ?? '')));
@@ -842,18 +849,17 @@ class PackagingController extends Controller
                             continue;
                         }
 
-                        $hasPendingOrPackagedAllocation = $order->warehouseAllocations->contains(function ($allocation) {
+                        $hasApprovalPendingAllocation = $order->warehouseAllocations->contains(function ($allocation) {
                             if ($allocation->approval_status === 'approved' || $allocation->shipping_status === 'shipped') {
                                 return false;
                             }
-                            return in_array((string) $allocation->product_status, ['packaged', 'approval_pending'], true)
-                                || in_array((string) $allocation->approval_status, ['draft', 'pending'], true);
+                            return (string) $allocation->product_status === 'approval_pending';
                         });
 
-                        if (! $hasPendingOrPackagedAllocation) {
+                        if (! $hasApprovalPendingAllocation) {
                             DB::rollBack();
 
-                            return redirect()->back()->with('error', 'Admin correction is allowed only for uploaded/pending warehouse allocations. Please check row ' . ($rowIndex + 2) . '.')->withInput();
+                            return redirect()->back()->with('error', 'Admin correction is allowed only for Ready to Ship Approval Pending rows. Please check row ' . ($rowIndex + 2) . '.')->withInput();
                         }
                     }
                 }
@@ -1092,6 +1098,13 @@ class PackagingController extends Controller
                     foreach ($order->warehouseAllocations as $allocation) {
                         if ($allocation->approval_status === 'approved' || $allocation->shipping_status === 'shipped') {
                             // Keep locked allocations unchanged.
+                            $totalFinalQty += max(0, (int) ($allocation->final_final_dispatched_quantity ?? 0));
+                            $totalBox += max(0, (float) ($allocation->box_count ?? 0));
+                            $totalWeight += max(0, (float) ($allocation->weight ?? 0));
+                            continue;
+                        }
+                        if ((string) $allocation->product_status !== 'approval_pending') {
+                            // Admin correction is only for Ready to Ship Approval Pending allocations.
                             $totalFinalQty += max(0, (int) ($allocation->final_final_dispatched_quantity ?? 0));
                             $totalBox += max(0, (float) ($allocation->box_count ?? 0));
                             $totalWeight += max(0, (float) ($allocation->weight ?? 0));
