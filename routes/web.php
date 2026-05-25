@@ -373,6 +373,9 @@ Route::middleware(['auth'])->group(function () {
             return view('create-invoice');
         })->name('create-invoice');
         Route::get('/invoices-details/{id}', 'invoiceDetails')->name('invoices-details');
+        Route::get('/invoice-edit/{id}', 'editInvoice')->name('invoice.edit');
+        Route::put('/invoice-update/{id}', 'updateInvoice')->name('invoice.update');
+        Route::delete('/invoice-delete/{id}', 'deleteInvoice')->name('invoice.delete');
 
         // Manual Invoice Routes
         Route::get('/invoices/manual/create', 'createManualInvoice')->name('invoices.manual.create');

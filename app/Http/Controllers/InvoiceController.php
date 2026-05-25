@@ -17,6 +17,7 @@ use App\Models\SalesOrder;
 use App\Models\SalesOrderProduct;
 use App\Models\State;
 use App\Models\Warehouse;
+use App\Models\WarehouseAllocation;
 use App\Models\WarehouseStock;
 use Endroid\QrCode\QrCode;
 use Endroid\QrCode\Writer\PngWriter;
@@ -436,6 +437,247 @@ class InvoiceController extends Controller
         $total_ewaybills = $invoiceDetails->ewaybills->count();
 
         return view('invoice.invoice-details', compact('invoiceDetails', 'total_einvoices', 'total_ewaybills'));
+    }
+
+    public function editInvoice($id)
+    {
+        $user = Auth::user();
+        $isSuperAdmin = $user->hasRole('Super Admin');
+        $isAdmin = $user->hasRole(['Super Admin', 'Admin']) || ! $user->warehouse_id;
+        $userWarehouseId = $user->warehouse_id;
+
+        $query = Invoice::with(['details.product', 'details.tempOrder', 'customer', 'warehouse', 'salesOrder', 'payments'])
+            ->where('id', $id);
+
+        if (! $isSuperAdmin && ! $isAdmin && $userWarehouseId) {
+            $query->where('warehouse_id', $userWarehouseId);
+        }
+
+        $invoice = $query->firstOrFail();
+
+        return view('invoice.edit', compact('invoice'));
+    }
+
+    public function updateInvoice(Request $request, $id)
+    {
+        $validator = Validator::make($request->all(), [
+            'invoice_date' => 'required|date',
+            'po_number' => 'nullable|string|max:255',
+            'po_date' => 'nullable|date',
+            'round_off' => 'nullable|numeric',
+            'notes' => 'nullable|string',
+            'details' => 'required|array|min:1',
+            'details.*.id' => 'required|integer|exists:invoice_details,id',
+            'details.*.hsn' => 'nullable|string|max:255',
+            'details.*.quantity' => 'required|numeric|min:0.01',
+            'details.*.box_count' => 'nullable|numeric|min:0',
+            'details.*.weight' => 'nullable|numeric|min:0',
+            'details.*.unit_price' => 'required|numeric|min:0',
+            'details.*.discount' => 'nullable|numeric|min:0',
+            'details.*.tax' => 'nullable|numeric|min:0',
+            'details.*.description' => 'nullable|string|max:1000',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator)->withInput();
+        }
+
+        DB::beginTransaction();
+        try {
+            $invoice = Invoice::with(['details', 'payments'])->findOrFail($id);
+            $detailIds = collect($request->details)->pluck('id')->map(fn ($detailId) => (int) $detailId)->all();
+
+            $details = InvoiceDetails::where('invoice_id', $invoice->id)
+                ->whereIn('id', $detailIds)
+                ->get()
+                ->keyBy('id');
+
+            if ($details->count() !== count($detailIds)) {
+                DB::rollBack();
+
+                return redirect()->back()->with('error', 'One or more invoice lines are invalid.')->withInput();
+            }
+
+            $subtotal = 0;
+            $taxableAmount = 0;
+            $totalDiscount = 0;
+            $totalTax = 0;
+
+            foreach ($request->details as $line) {
+                $detail = $details[(int) $line['id']];
+
+                $quantity = (float) $line['quantity'];
+                $unitPrice = (float) $line['unit_price'];
+                $discount = (float) ($line['discount'] ?? 0);
+                $taxPercent = (float) ($line['tax'] ?? 0);
+                $amount = $quantity * $unitPrice;
+                $lineTaxable = max($amount - $discount, 0);
+                $taxAmount = ($lineTaxable * $taxPercent) / 100;
+                $totalPrice = $lineTaxable + $taxAmount;
+
+                $subtotal += $amount;
+                $taxableAmount += $lineTaxable;
+                $totalDiscount += $discount;
+                $totalTax += $taxAmount;
+
+                $detail->update([
+                    'hsn' => $line['hsn'] ?? $detail->hsn,
+                    'quantity' => $quantity,
+                    'box_count' => $line['box_count'] ?? 0,
+                    'weight' => $line['weight'] ?? 0,
+                    'unit_price' => $unitPrice,
+                    'discount' => $discount,
+                    'tax' => $taxPercent,
+                    'amount' => $amount,
+                    'total_price' => $totalPrice,
+                    'description' => $line['description'] ?? $detail->description,
+                ]);
+            }
+
+            $roundOff = (float) ($request->round_off ?? 0);
+            $totalAmount = $taxableAmount + $totalTax + $roundOff;
+            $paidAmount = (float) $invoice->payments->sum('amount');
+            $balanceDue = $totalAmount - $paidAmount;
+
+            if ($balanceDue <= 0) {
+                $paymentStatus = 'paid';
+            } elseif ($paidAmount > 0) {
+                $paymentStatus = 'partial';
+            } else {
+                $paymentStatus = 'unpaid';
+            }
+
+            $invoice->update([
+                'invoice_date' => $request->invoice_date,
+                'po_number' => $request->po_number,
+                'po_date' => $request->po_date,
+                'subtotal' => $subtotal,
+                'taxable_amount' => $taxableAmount,
+                'tax_amount' => $totalTax,
+                'discount_amount' => $totalDiscount,
+                'round_off' => $roundOff,
+                'total_amount' => $totalAmount,
+                'paid_amount' => $paidAmount,
+                'balance_due' => $balanceDue,
+                'payment_status' => $paymentStatus,
+                'notes' => $request->notes,
+            ]);
+
+            DB::commit();
+            activity()->performedOn($invoice)->causedBy(Auth::user())->log('Invoice updated');
+
+            return redirect()->route('invoices-details', $invoice->id)->with('success', 'Invoice updated successfully.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Invoice Update Error: ' . $e->getMessage());
+
+            return redirect()->back()->with('error', 'Failed to update invoice: ' . $e->getMessage())->withInput();
+        }
+    }
+
+    public function deleteInvoice($id)
+    {
+        DB::beginTransaction();
+        try {
+            $invoice = Invoice::with([
+                'details',
+                'payments',
+                'appointment',
+                'dns',
+                'einvoices.ewaybills',
+                'ewaybills',
+            ])->findOrFail($id);
+
+            if ($invoice->sales_order_id) {
+                $salesOrderProductIds = $invoice->details
+                    ->pluck('sales_order_product_id')
+                    ->filter()
+                    ->unique()
+                    ->values();
+
+                foreach ($invoice->details as $detail) {
+                    if (! $detail->sales_order_product_id) {
+                        continue;
+                    }
+
+                    $remainingQty = (float) $detail->quantity;
+                    $allocations = WarehouseAllocation::where('sales_order_product_id', $detail->sales_order_product_id)
+                        ->where('shipping_status', 'shipped')
+                        ->where('invoice_status', 'completed')
+                        ->orderByDesc('id')
+                        ->get();
+
+                    foreach ($allocations as $allocation) {
+                        if ($remainingQty <= 0) {
+                            break;
+                        }
+
+                        $allocationQty = (float) ($allocation->final_final_dispatched_quantity ?? $allocation->final_dispatched_quantity ?? 0);
+                        if ($allocationQty <= 0) {
+                            continue;
+                        }
+
+                        $allocation->invoice_status = 'pending';
+                        $allocation->save();
+                        $remainingQty -= $allocationQty;
+                    }
+                }
+
+                foreach ($salesOrderProductIds as $salesOrderProductId) {
+                    $salesOrderProduct = SalesOrderProduct::find($salesOrderProductId);
+                    if (! $salesOrderProduct) {
+                        continue;
+                    }
+
+                    $hasCompletedAllocations = WarehouseAllocation::where('sales_order_product_id', $salesOrderProductId)
+                        ->where('shipping_status', 'shipped')
+                        ->where('invoice_status', 'completed')
+                        ->exists();
+
+                    if ($hasCompletedAllocations) {
+                        $salesOrderProduct->invoice_status = 'completed';
+                        $salesOrderProduct->status = 'dispatched';
+                    } else {
+                        $salesOrderProduct->invoice_status = 'pending';
+                        if ($salesOrderProduct->status === 'dispatched') {
+                            $salesOrderProduct->status = 'shipped';
+                        }
+                    }
+
+                    $salesOrderProduct->save();
+                }
+            }
+
+            $allEwaybillIds = collect();
+            $allEwaybillIds = $allEwaybillIds->merge($invoice->ewaybills->pluck('id'));
+            foreach ($invoice->einvoices as $einvoice) {
+                $allEwaybillIds = $allEwaybillIds->merge($einvoice->ewaybills->pluck('id'));
+            }
+            $allEwaybillIds = $allEwaybillIds->unique()->values();
+
+            if ($allEwaybillIds->isNotEmpty()) {
+                EwayTransportDetail::whereIn('ewaybill_id', $allEwaybillIds)->delete();
+                Ewaybill::whereIn('id', $allEwaybillIds)->delete();
+            }
+
+            EInvoice::where('invoice_id', $invoice->id)->delete();
+            Payment::where('invoice_id', $invoice->id)->delete();
+            Dn::where('invoice_id', $invoice->id)->delete();
+            Appointment::where('invoice_id', $invoice->id)->delete();
+            InvoiceDetails::where('invoice_id', $invoice->id)->delete();
+
+            $invoice->delete();
+
+            DB::commit();
+            activity()->performedOn($invoice)->causedBy(Auth::user())->log('Invoice deleted');
+
+            return redirect()->back()->with('success', 'Invoice deleted successfully.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Invoice Delete Error: ' . $e->getMessage());
+
+            return redirect()->back()->with('error', 'Failed to delete invoice: ' . $e->getMessage());
+        }
     }
 
     // Manual Invoice Methods
