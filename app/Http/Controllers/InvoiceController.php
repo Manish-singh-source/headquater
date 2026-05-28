@@ -430,7 +430,20 @@ class InvoiceController extends Controller
 
     public function invoiceDetails($id)
     {
-        $invoiceDetails = Invoice::with(['appointment', 'dns', 'payments', 'customer', 'warehouse', 'einvoices.ewaybills', 'ewaybills'])->find($id);
+        $invoiceDetails = Invoice::with([
+            'appointment',
+            'dns',
+            'payments',
+            'customer',
+            'warehouse',
+            'einvoices.ewaybills' => function ($query) {
+                $query->where('ewaybill_status', 'ACT');
+            },
+
+            'ewaybills' => function ($query) {
+                $query->where('ewaybill_status', 'ACT');
+            }
+        ])->find($id);
         // dd($invoiceDetails);
         // count total active einvoices
         $total_einvoices = $invoiceDetails->einvoices->where('einvoice_status', 'ACT')->count();
@@ -485,7 +498,7 @@ class InvoiceController extends Controller
         DB::beginTransaction();
         try {
             $invoice = Invoice::with(['details', 'payments'])->findOrFail($id);
-            $detailIds = collect($request->details)->pluck('id')->map(fn ($detailId) => (int) $detailId)->all();
+            $detailIds = collect($request->details)->pluck('id')->map(fn($detailId) => (int) $detailId)->all();
 
             $details = InvoiceDetails::where('invoice_id', $invoice->id)
                 ->whereIn('id', $detailIds)
