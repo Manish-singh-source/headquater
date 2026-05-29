@@ -441,6 +441,17 @@
                                     {{-- <small class="text-muted">Required only when transport mode is Road.</small> --}}
                                 </div>
                             </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="distance" class="form-label">Distance (Optional)</label>
+                                    <input type="text" class="form-control" id="distance" name="distance"
+                                        placeholder="Distance">
+                                    <small class="text-muted">Enter Only When You Will Get Below Error:</small>
+                                    <small class="text-muted">Failed to generate e-way bill: 4030: The distance between the
+                                        pincodes 421302 and 227101 is not available in the system, you need to pass the
+                                        actual distance.</small>
+                                </div>
+                            </div>
                             {{-- 
                             <div class="col-md-6">
                                 <div class="mb-3">
@@ -484,7 +495,8 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        <button type="submit" class="btn btn-success" id="ewayBillSubmitBtn">Generate E-Way Bill</button>
+                        <button type="submit" class="btn btn-success" id="ewayBillSubmitBtn">Generate E-Way
+                            Bill</button>
                     </div>
                 </form>
             </div>
@@ -507,9 +519,12 @@
                         return;
                     }
 
-                    ewayBillModal.querySelector('#invoice_id').value = button.getAttribute('data-invoiceid') || '';
-                    ewayBillModal.querySelector('#einvoice_id').value = button.getAttribute('data-einvoiceid') || '';
-                    ewayBillModal.querySelector('#einvoice_irn').value = button.getAttribute('data-irn') || '';
+                    ewayBillModal.querySelector('#invoice_id').value = button.getAttribute(
+                        'data-invoiceid') || '';
+                    ewayBillModal.querySelector('#einvoice_id').value = button.getAttribute(
+                        'data-einvoiceid') || '';
+                    ewayBillModal.querySelector('#einvoice_irn').value = button.getAttribute('data-irn') ||
+                        '';
                 });
 
                 var ewayBillForm = document.getElementById('ewayBillForm');

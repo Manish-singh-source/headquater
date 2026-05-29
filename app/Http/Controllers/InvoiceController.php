@@ -1483,6 +1483,7 @@ class InvoiceController extends Controller
                 // 'state_of_consignor' => 'nullable|string',
                 'transporter_id' => 'nullable|string',
                 'transporter_name' => 'nullable|string|required_with:transporter_id',
+                'distance' => 'nullable|string',
                 // 'transportation_mode' => 'nullable|string',
                 // 'transporter_document_number' => 'nullable|string',
                 // 'transporter_document_date' => 'nullable|string',
@@ -1561,6 +1562,8 @@ class InvoiceController extends Controller
 
             if ($isSamePincodeMove) {
                 $requestData['distance'] = '54';
+            } else if (isset($validated['distance']) && $validated['distance'] > 0) {
+                $requestData['distance'] = $validated['distance'];
             }
 
             // Make API call with JSON body
