@@ -520,7 +520,7 @@
                                                         {{ $subtotal + $gstAmount }}
                                                     </td>
                                                     <td>
-                                                        {{ ucwords(str_replace('_', ' ', $allocation->shipping_status)) }}
+                                                        {{ (($allocation->product_status == 'completed') ? 'Shipped' : ucwords(str_replace('_', ' ', $allocation->product_status) ?? 'Pending'))  }}
                                                     </td>
                                                 </tr>
                                             @endforeach
