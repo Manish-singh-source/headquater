@@ -462,6 +462,7 @@
                                     <th>GST&nbsp;Amount</th>
                                     <th>Total&nbsp;Amount</th>
                                     <th>Product&nbsp;Status</th>
+                                    <th>Invoice&nbsp;Status</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -521,6 +522,9 @@
                                                     </td>
                                                     <td>
                                                         {{ (($allocation->product_status == 'completed') ? 'Shipped' : ucwords(str_replace('_', ' ', $allocation->product_status) ?? 'Pending'))  }}
+                                                    </td>
+                                                    <td>
+                                                        {{ ucwords(str_replace('_', ' ', $allocation?->invoice_status ?? 'N/A'))  }}
                                                     </td>
                                                 </tr>
                                             @endforeach

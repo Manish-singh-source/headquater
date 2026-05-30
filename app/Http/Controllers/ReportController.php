@@ -1910,6 +1910,7 @@ class ReportController extends Controller
                                 // Total Purchase Amount
                                 'Total Amount' => $product->vendorPIProduct && $product->purchase_ordered_quantity > 0 ? ($subtotal + $gstAmount) : 0,
                                 'Product Status' => ucwords(str_replace('_', ' ', (($allocation->product_status == 'completed') ? 'Shipped' : $allocation->product_status) ?? 'Pending')) ?? 'N/A',
+                                'Invoice Status' => ucwords(str_replace('_', ' ', $allocation?->invoice_status ?? 'N/A'))
                             ]);
                         }
                     }
@@ -1959,6 +1960,7 @@ class ReportController extends Controller
                 'GST Amount',
                 'Total Amount',
                 'Product Status',
+                'Invoice Status',
             ]);
 
             // Add data rows
