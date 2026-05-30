@@ -446,7 +446,7 @@
                                     <label for="distance" class="form-label">Distance (Optional)</label>
                                     <input type="text" class="form-control" id="distance" name="distance"
                                         placeholder="Distance">
-                                    <small class="text-muted">Enter Only When You Will Get Below Error:</small>
+                                    <small class="text-muted text-danger">Enter Only When You Will Get Below Error:</small>
                                     <small class="text-muted">Failed to generate e-way bill: 4030: The distance between the
                                         pincodes 421302 and 227101 is not available in the system, you need to pass the
                                         actual distance.</small>

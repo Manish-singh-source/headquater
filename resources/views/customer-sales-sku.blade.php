@@ -461,6 +461,7 @@
                                     <th>GST</th>
                                     <th>GST&nbsp;Amount</th>
                                     <th>Total&nbsp;Amount</th>
+                                    <th>Product&nbsp;Status</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -517,6 +518,9 @@
                                                     </td>
                                                     <td>
                                                         {{ $subtotal + $gstAmount }}
+                                                    </td>
+                                                    <td>
+                                                        {{ ucwords(str_replace('_', ' ', $allocation->shipping_status)) }}
                                                     </td>
                                                 </tr>
                                             @endforeach
