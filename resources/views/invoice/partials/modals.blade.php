@@ -17,6 +17,11 @@
                                value="{{ $invoice->appointment->appointment_date ?? '' }}">
                     </div>
                     <div class="col-12 mb-3">
+                        <label for="grn_date" class="form-label">GRN Date</label>
+                        <input type="date" name="grn_date" id="grn_date" class="form-control"
+                               value="{{ $invoice->appointment->grn_date ?? '' }}">
+                    </div>
+                    <div class="col-12 mb-3">
                         <label for="pod" class="form-label">Upload POD</label>
                         <input type="file" name="pod" id="pod" class="form-control">
                         @if ($invoice->appointment && $invoice->appointment->pod)

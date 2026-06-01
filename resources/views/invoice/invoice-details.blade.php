@@ -210,7 +210,14 @@
                                         <li
                                             class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                                             <span><b>Appointment Date</b></span>
-                                            <span>{{ $invoiceDetails->appointment->appointment_date }}</span>
+                                            <span>{{ $invoiceDetails->appointment->appointment_date ?? 'N/A' }}</span>
+                                        </li>
+                                    @endif
+                                    @if ($invoiceDetails->appointment->grn_date)
+                                        <li
+                                            class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
+                                            <span><b>GRN Date</b></span>
+                                            <span>{{ $invoiceDetails->appointment->grn_date ?? 'N/A' }}</span>
                                         </li>
                                     @endif
                                     @if ($invoiceDetails->appointment->pod)

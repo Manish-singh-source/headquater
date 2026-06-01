@@ -10,6 +10,7 @@ class Appointment extends Model
 
     protected $casts = [
         'appointment_date' => 'date',
+        'grn_date' => 'date',
     ];
 
     public function invoice()

@@ -255,12 +255,14 @@ class InvoiceController extends Controller
 
         $validated = Validator::make($request->all(), [
             'appointment_date' => 'nullable|date',
+            'grn_date' => 'nullable|date',
             'pod' => 'nullable|file|mimes:jpg,jpeg,png,pdf',
             'grn' => 'nullable|file|mimes:jpg,jpeg,png,pdf',
         ]);
 
         if (
             ! $request->filled('appointment_date') &&
+            ! $request->filled('grn_date') &&
             ! $request->hasFile('pod') &&
             ! $request->hasFile('grn')
         ) {
@@ -282,6 +284,9 @@ class InvoiceController extends Controller
 
             if ($request->filled('appointment_date')) {
                 $appointment->appointment_date = $request->input('appointment_date');
+            }
+            if ($request->filled('grn_date')) {
+                $appointment->grn_date = $request->input('grn_date');
             }
 
             if ($request->hasFile('pod')) {
