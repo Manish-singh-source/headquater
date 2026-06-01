@@ -356,6 +356,14 @@
                                 <div class="row mb-3">
                                     <!-- Total Delivered section removed as per requirement -->
                                     <div class="col-6">
+                                        <div class="card bg-primary text-white">
+                                            <div class="card-body text-center p-3">
+                                                <h6 class="mb-1">Total POD</h6>
+                                                <h4 class="mb-0">{{ $deliveryData['total_pod_received'] }}</h4>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
                                         <div class="card bg-success text-white">
                                             <div class="card-body text-center p-3">
                                                 <h6 class="mb-1">POD Received</h6>
@@ -392,6 +400,14 @@
                             <div class="card-body">
                                 <div class="row mb-3">
                                     <!-- Total GRN section removed as per new requirements -->
+                                    <div class="col-6">
+                                        <div class="card bg-primary text-white">
+                                            <div class="card-body text-center p-3">
+                                                <h6 class="mb-1">Total GRN</h6>
+                                                <h4 class="mb-0">{{ $grnData['total'] }}</h4>
+                                            </div>
+                                        </div>
+                                    </div>
                                     <div class="col-6">
                                         <div class="card bg-success text-white">
                                             <div class="card-body text-center p-3">
@@ -449,8 +465,8 @@
                                     <div class="col-6">
                                         <div class="card bg-danger text-dark">
                                             <div class="card-body text-center p-3">
-                                                <h6 class="mb-1">Due</h6>
-                                                <h5 class="mb-0">
+                                                <h6 class="mb-1">Overdue Due</h6>
+                                                <h5 class="mb-0" id="paymentDueOutstanding">
                                                     ₹{{ number_format($paymentData['total_outstanding'] - $paymentData['monthly_received'], 2) }}
                                                 </h5>
                                             </div>
@@ -848,6 +864,14 @@
                             }
                         }
                     }
+                });
+            }
+
+            const paymentDueOutstandingEl = document.getElementById('paymentDueOutstanding');
+            if (paymentDueOutstandingEl) {
+                paymentDueOutstandingEl.innerHTML = '&#8377;' + Number(@json($paymentData['payment_due_outstanding'])).toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
                 });
             }
         </script>

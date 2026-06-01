@@ -179,6 +179,7 @@ class DashboardController extends Controller
         $totalSalesByBrand = $totalSalesQuery
             ->select('products.brand', DB::raw('SUM(invoice_details.total_price) as total_sales'))
             ->groupBy('products.brand')
+            ->orderByDesc(DB::raw('SUM(invoice_details.total_price)'))
             ->get();
 
         $monthlyTrend = [];
@@ -306,8 +307,8 @@ class DashboardController extends Controller
     {
         // Only consider sales orders with status 'ready_to_ship'
         $orders = SalesOrder::with(['invoices.appointment'])
-            ->whereBetween('created_at', [$startDate, $endDate])
-            ->where('status', 'ready_to_ship');
+            ->whereBetween('created_at', [$startDate, $endDate]);
+            // ->where('status', 'ready_to_ship');
 
         $this->applySalesOrderBrandFilter($orders, $selectedBrands);
 
@@ -371,14 +372,18 @@ class DashboardController extends Controller
         $podReceived = $podReceivedQuery->count();
 
         // Count POD not received for ready to ship orders
-        $podNotReceivedQuery = SalesOrder::where('status', 'ready_to_ship')
-            ->whereBetween('created_at', [$startDate, $endDate]);
+        $totalPodReceivedQuery = SalesOrder::
+            // where('status', 'ready_to_ship')
+            whereBetween('created_at', [$startDate, $endDate]);
 
-        $this->applySalesOrderBrandFilter($podNotReceivedQuery, $selectedBrands);
+        $this->applySalesOrderBrandFilter($totalPodReceivedQuery, $selectedBrands);
 
-        $podNotReceived = $podNotReceivedQuery->count();
+        $totalPodReceived = $totalPodReceivedQuery->count();
+
+        $podNotReceived = max(0, $totalPodReceived - $podReceived);
 
         return [
+            'total_pod_received' => $totalPodReceived,
             'pod_received' => $podReceived,
             'pod_not_received' => $podNotReceived,
         ];
@@ -388,16 +393,18 @@ class DashboardController extends Controller
     private function getGRNData($startDate, $endDate, $selectedBrands)
     {
         // Total = Sales Orders with status complete
-        $totalQuery = SalesOrder::where('status', 'completed')
-            ->whereBetween('created_at', [$startDate, $endDate]);
+        $totalQuery = SalesOrder::
+            // where('status', 'completed')
+            whereBetween('created_at', [$startDate, $endDate]);
 
         $this->applySalesOrderBrandFilter($totalQuery, $selectedBrands);
 
         $total = $totalQuery->count();
 
         // GRN Complete = GRN uploaded in Appointment via Invoice
-        $grnDoneQuery = SalesOrder::where('status', 'completed')
-            ->whereHas('invoices.appointment', function ($query) {
+        $grnDoneQuery = SalesOrder::
+            // where('status', 'completed')
+            whereHas('invoices.appointment', function ($query) {
                 $query->whereNotNull('grn');
             })
             ->whereBetween('created_at', [$startDate, $endDate]);
@@ -419,13 +426,14 @@ class DashboardController extends Controller
     // done
     private function getPaymentData($startDate, $endDate, $selectedBrands)
     {
-        // Total Payment Outstanding (all unpaid invoices)
-        $totalOutstandingQuery = Invoice::whereDoesntHave('payments');
+        $overdueCutoff = Carbon::now()->subDays(30);
+
+        // Total Payment Outstanding (unpaid + partially paid invoices)
+        $totalOutstandingQuery = Invoice::with('payments');
         $this->applyInvoiceBrandFilter($totalOutstandingQuery, $selectedBrands);
-        $totalOutstanding = $totalOutstandingQuery->sum('total_amount');
-        // $totalOutstanding = Invoice::whereDoesntHave('payments', function ($query) {
-        //     $query->where('payment_status', 'paid');
-        // })->sum('total_amount');
+        $totalOutstanding = $totalOutstandingQuery->get()->sum(function ($invoice) {
+            return max(0, (float) $invoice->total_amount - $invoice->payments->sum('amount'));
+        });
 
         $monthlyReceivedQuery = Payment::whereBetween('created_at', [$startDate, $endDate]);
         $this->applyPaymentBrandFilter($monthlyReceivedQuery, $selectedBrands);
@@ -434,15 +442,13 @@ class DashboardController extends Controller
         //     ->where('payment_status', 'paid')
         //     ->sum('amount');
 
-        // Payment Due Outstanding (overdue payments)
-        $paymentDueOutstandingQuery = Invoice::where('invoice_date', '<', Carbon::now()->subDays(30))
-            ->whereDoesntHave('payments');
+        // Payment Due Outstanding (overdue unpaid balance, including partial payments)
+        $paymentDueOutstandingQuery = Invoice::with('payments')
+            ->where('invoice_date', '<', $overdueCutoff);
         $this->applyInvoiceBrandFilter($paymentDueOutstandingQuery, $selectedBrands);
-        $paymentDueOutstanding = $paymentDueOutstandingQuery->sum('total_amount');
-        // $paymentDueOutstanding = Invoice::where('invoice_date', '<', Carbon::now()->subDays(30))
-        //     ->whereDoesntHave('payments', function ($query) {
-        //         $query->where('payment_status', 'paid');
-        //     })->sum('total_amount');
+        $paymentDueOutstanding = $paymentDueOutstandingQuery->get()->sum(function ($invoice) {
+            return max(0, (float) $invoice->total_amount - $invoice->payments->sum('amount'));
+        });
 
         $monthlyTrend = [];
         foreach ($this->monthlyPeriods($startDate, $endDate) as $period) {
@@ -483,7 +489,7 @@ class DashboardController extends Controller
                 'products.brand',
                 DB::raw('SUM(warehouse_stocks.available_quantity) as total_units'),
                 DB::raw('SUM(warehouse_stocks.available_quantity * products.mrp) as total_value'),
-                DB::raw('SUM(warehouse_stocks.available_quantity * products.mrp * warehouse_stocks.available_quantity) as total_cost')
+                DB::raw('SUM(warehouse_stocks.available_quantity * products.mrp) as total_cost')
             )
             ->groupBy('products.brand')
             ->get();
