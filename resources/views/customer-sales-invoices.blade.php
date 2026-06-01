@@ -514,6 +514,7 @@
                                     <th>GRN&nbsp;Date</th>
                                     <th>GRN</th>
                                     <th>POD</th>
+                                    <th>DN&nbsp;Number</th>
                                     <th>DN&nbsp;Amount</th>
                                     <th>DN&nbsp;Reciept</th>
                                     {{-- <th>LR</th> --}}
@@ -641,6 +642,7 @@
                                             </td>
                                             <td>{{ $invoice->appointment?->grn ? 'Yes' : 'No' }}</td>
                                             <td>{{ $invoice->appointment?->pod ? 'Yes' : 'No' }}</td>
+                                            <td>{{ $invoice->dns?->first()?->dn_number ?? 'N/A' }}</td>
                                             <td>{{ $invoice->dns?->first()?->dn_amount ? $invoice->dns?->first()?->dn_amount : 0 }}</td>
                                             <td>{{ $invoice->dns?->first()?->dn_receipt ? 'Yes' : 'No' }}</td>
                                             {{-- <td>{{ $invoice->lr ? 'Yes' : 'No' }}</td> --}}

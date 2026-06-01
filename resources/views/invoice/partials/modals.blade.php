@@ -59,6 +59,11 @@
                 @method('POST')
                 <div class="modal-body">
                     <div class="col-12 mb-3">
+                        <label for="dn_number" class="form-label">DN Number<span class="text-danger">*</span></label>
+                        <input type="text" name="dn_number" id="dn_number" class="form-control"
+                               value="" required placeholder="Enter DN Number">
+                    </div>
+                    <div class="col-12 mb-3">
                         <label for="dn_amount" class="form-label">DN Amount<span class="text-danger">*</span></label>
                         <input type="text" name="dn_amount" id="dn_amount" class="form-control"
                                value="" required placeholder="Upload Amount">

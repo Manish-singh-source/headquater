@@ -246,6 +246,10 @@
                                 <ul class="col-12 list-group list-group-flush">
                                     {{-- <li>DN Details</li> --}}
                                     <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
+                                        <span><b>DN Number</b></span>
+                                        <span>{{ $invoiceDetails->dns->dn_number }}</span>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                                         <span><b>DN Amount</b></span>
                                         <span>{{ $invoiceDetails->dns->dn_amount }}</span>
                                     </li>

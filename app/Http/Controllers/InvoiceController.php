@@ -321,6 +321,7 @@ class InvoiceController extends Controller
     {
         // Logic to update invoice DN details
         $validated = Validator::make($request->all(), [
+            'dn_number' => 'required|string|max:255|unique:dns,dn_number,' . $id . ',invoice_id',
             'dn_amount' => 'required|numeric|min:0',
             'dn_reason' => 'required|string|max:255',
             'dn_receipt' => 'required|file|mimes:jpg,jpeg,png,pdf',
@@ -339,7 +340,7 @@ class InvoiceController extends Controller
             $dn->invoice_id = $id;
             $dn->dn_amount = $request->input('dn_amount');
             $dn->dn_reason = $request->input('dn_reason');
-
+            $dn->dn_number = $request->input('dn_number');
             if ($request->hasFile('dn_receipt')) {
                 $dnReceipt = $request->file('dn_receipt');
                 $ext = $dnReceipt->getClientOriginalExtension();
