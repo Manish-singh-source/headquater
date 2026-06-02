@@ -1567,8 +1567,18 @@ class ReportController extends Controller
                 ->values();
 
             // dd($salesOrders);
+            
+            $invoicesData = Invoice::with('details.product')
+                ->where('invoice_type', 'sales_order')
+                ->get();
+
+            $total_sales_overall = $invoicesData->sum(function ($invoice) {
+                return $invoice->details->sum('total_price');
+            });
+
 
             $data = [
+                'total_sales_overall' => $total_sales_overall,
                 'title' => 'Customer Sales Summary',
                 'warehouses' => $warehouses,
                 'invoices' => $salesOrders, // Keep variable name for view compatibility
@@ -2095,16 +2105,24 @@ class ReportController extends Controller
 
     public function customerSalesHistory(Request $request)
     {
+        $salesOrderInvoiceFilter = function ($q) {
+            $q->where('invoice_type', 'sales_order');
+        };
 
         $query = SalesOrder::with([
             'customerGroup',
-            'invoices.payments',
-            'invoices.details.tempOrder',
-            'invoices.details.salesOrderProduct.tempOrder',
-            'invoices.appointment',
-            'invoices.customer',
-            'invoices.dns',
-            'invoices.warehouse',
+            'invoices' => function ($q) use ($salesOrderInvoiceFilter) {
+                $salesOrderInvoiceFilter($q);
+                $q->with([
+                    'payments',
+                    'details.tempOrder',
+                    'details.salesOrderProduct.tempOrder',
+                    'appointment',
+                    'customer',
+                    'dns',
+                    'warehouse',
+                ]);
+            },
             'orderedProducts',
             'orderedProducts.tempOrder',
         ]);
@@ -2116,12 +2134,14 @@ class ReportController extends Controller
             $invoiceNos = (array) $request->invoice_no;
 
             $query->with([
-                'invoices' => function ($q) use ($invoiceNos) {
+                'invoices' => function ($q) use ($invoiceNos, $salesOrderInvoiceFilter) {
+                    $salesOrderInvoiceFilter($q);
                     $q->whereIn('invoice_number', $invoiceNos);
                 }
             ]);
 
-            $query->whereHas('invoices', function ($q) use ($invoiceNos) {
+            $query->whereHas('invoices', function ($q) use ($invoiceNos, $salesOrderInvoiceFilter) {
+                $salesOrderInvoiceFilter($q);
                 $q->whereIn('invoice_number', $invoiceNos);
             });
         }
@@ -2131,13 +2151,29 @@ class ReportController extends Controller
             $appointmentDates = (array) $request->appointment_date;
 
             $query->with([
-                'invoices.appointment' => function ($q) use ($appointmentDates) {
-                    $q->whereIn('appointment_date', $appointmentDates);
-                }
+                'invoices' => function ($q) use ($appointmentDates, $salesOrderInvoiceFilter) {
+                    $salesOrderInvoiceFilter($q);
+                    $q->whereHas('appointment', function ($appointmentQuery) use ($appointmentDates) {
+                        $appointmentQuery->whereIn('appointment_date', $appointmentDates);
+                    })->with([
+                        'appointment' => function ($appointmentQuery) use ($appointmentDates) {
+                            $appointmentQuery->whereIn('appointment_date', $appointmentDates);
+                        },
+                        'payments',
+                        'details.tempOrder',
+                        'details.salesOrderProduct.tempOrder',
+                        'customer',
+                        'dns',
+                        'warehouse',
+                    ]);
+                },
             ]);
 
-            $query->whereHas('invoices.appointment', function ($q) use ($appointmentDates) {
-                $q->whereIn('appointment_date', $appointmentDates);
+            $query->whereHas('invoices', function ($q) use ($appointmentDates, $salesOrderInvoiceFilter) {
+                $salesOrderInvoiceFilter($q);
+                $q->whereHas('appointment', function ($appointmentQuery) use ($appointmentDates) {
+                    $appointmentQuery->whereIn('appointment_date', $appointmentDates);
+                });
             });
         }
 
@@ -2202,6 +2238,8 @@ class ReportController extends Controller
         }
 
         $this->applyCustomerSalesInvoiceFilters($query, $request);
+
+        $query->whereHas('invoices', $salesOrderInvoiceFilter);
 
         // Final result
         $salesOrders = $query->latest('created_at')->get();
@@ -2269,6 +2307,7 @@ class ReportController extends Controller
         // Get unique invoice numbers for filter dropdown (from sales orders' invoices)
         $invoiceNumbers = Invoice::distinct('invoice_number')
             ->whereNotNull('invoice_number')
+            ->where('invoice_type', 'sales_order')
             ->whereNotNull('sales_order_id')
             ->pluck('invoice_number')
             ->sort()
@@ -2316,7 +2355,21 @@ class ReportController extends Controller
             'appointment_date' => $request->input('appointment_date', []),
         ];
 
+        $invoicesData = Invoice::with('details.product')
+            ->where('invoice_type', 'sales_order')
+            ->get();
+
+        $total_sales_overall = $invoicesData->sum(function ($invoice) {
+            return $invoice->details->sum('total_price');
+        });
+
+        $paid_amount_overall = $invoicesData->sum('paid_amount');
+        $balance_due_overall = $total_sales_overall - $paid_amount_overall;
+
         return view('customer-sales-invoices', compact(
+            'total_sales_overall',
+            'paid_amount_overall',
+            'balance_due_overall',
             'salesOrders',
             'customerGroups',
             'customers',

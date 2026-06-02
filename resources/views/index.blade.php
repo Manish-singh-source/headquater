@@ -302,10 +302,10 @@
                                             <div class="card-body text-center p-3">
                                                 <h6 class="mb-1">LR Pending</h6>
                                                 <h4 class="mb-0">
-                                                    <a href="{{ route('report.lr-pending') }}"
+                                                    {{ $dispatchData['lr_pending'] }}
+                                                    {{-- <a href="{{ route('report.lr-pending') }}"
                                                         style="color: white; text-decoration: underline;">
-                                                        {{ $dispatchData['lr_pending'] }}
-                                                    </a>
+                                                    </a> --}}
                                                 </h4>
                                             </div>
                                         </div>
@@ -315,10 +315,10 @@
                                             <div class="card-body text-center p-3">
                                                 <h6 class="mb-1">Appointment Received &amp; GRN Pending</h6>
                                                 <h4 class="mb-0">
-                                                    <a href="{{ route('report.appt-grn-pending') }}"
+                                                    {{ $dispatchData['appt_received_grn_pending'] }}
+                                                    {{-- <a href="{{ route('report.appt-grn-pending') }}"
                                                         style="color: #212529; text-decoration: underline;">
-                                                        {{ $dispatchData['appt_received_grn_pending'] }}
-                                                    </a>
+                                                    </a> --}}
                                                 </h4>
                                             </div>
                                         </div>
@@ -328,10 +328,10 @@
                                             <div class="card-body text-center p-3">
                                                 <h6 class="mb-1">Appointment Pending</h6>
                                                 <h4 class="mb-0">
-                                                    <a href="{{ route('report.appt-pending') }}"
+                                                    {{ $dispatchData['appt_pending'] }}
+                                                    {{-- <a href="{{ route('report.appt-pending') }}"
                                                         style="color:white; text-decoration: underline;">
-                                                        {{ $dispatchData['appt_pending'] }}
-                                                    </a>
+                                                    </a> --}}
                                                 </h4>
                                             </div>
                                         </div>
@@ -445,9 +445,9 @@
                                         <div class="card bg-danger text-white"
                                             style="background-color: rgb(187 214 255) !important;">
                                             <div class="card-body text-center p-3">
-                                                <h6 class="mb-1">Total Outstanding</h6>
+                                                <h6 class="mb-1">Total Invoice Value</h6>
                                                 <h4 class="mb-0">
-                                                    ₹{{ number_format($paymentData['total_outstanding'], 2) }}
+                                                    ₹{{ number_format($paymentData['total_invoice_value'], 2) }}
                                                 </h4>
                                             </div>
                                         </div>
@@ -455,9 +455,9 @@
                                     <div class="col-6">
                                         <div class="card bg-success text-white">
                                             <div class="card-body text-center p-3">
-                                                <h6 class="mb-1">Received</h6>
+                                                <h6 class="mb-1">Paid Value</h6>
                                                 <h5 class="mb-0">
-                                                    ₹{{ number_format($paymentData['monthly_received'], 2) }}
+                                                    ₹{{ number_format($paymentData['total_paid_value'], 2) }}
                                                 </h5>
                                             </div>
                                         </div>
@@ -465,9 +465,9 @@
                                     <div class="col-6">
                                         <div class="card bg-danger text-dark">
                                             <div class="card-body text-center p-3">
-                                                <h6 class="mb-1">Overdue Due</h6>
+                                                <h6 class="mb-1">Unpaid Value</h6>
                                                 <h5 class="mb-0" id="paymentDueOutstanding">
-                                                    ₹{{ number_format($paymentData['total_outstanding'] - $paymentData['monthly_received'], 2) }}
+                                                    ₹{{ number_format($paymentData['total_unpaid_value'], 2) }}
                                                 </h5>
                                             </div>
                                         </div>
@@ -493,7 +493,7 @@
                             </div>
                             <div class="card-body">
                                 <div class="row mb-4">
-                                    <div class="col-md-4">
+                                    <div class="col-md-12">
                                         <div class="card bg-light">
                                             <div class="card-body text-center">
                                                 <h6 class="text-muted">Total Inventory Units</h6>
@@ -506,6 +506,7 @@
                                             </div>
                                         </div>
                                     </div>
+                                    {{-- 
                                     <div class="col-md-6">
                                         <div class="card bg-light">
                                             <div class="card-body text-center">
@@ -518,7 +519,8 @@
                                                 </h3>
                                             </div>
                                         </div>
-                                    </div>
+                                    </div> 
+                                    --}}
                                 </div>
 
                                 <!-- Brand-wise breakdown -->
@@ -531,7 +533,7 @@
                                                     <tr>
                                                         <th>Brand</th>
                                                         <th>Inventory Units</th>
-                                                        <th>Inventory Value</th>
+                                                        {{-- <th>Inventory Value</th> --}}
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -544,7 +546,7 @@
                                                                     {{ number_format($brandInventory->total_units) }}
                                                                 </a>
                                                             </td>
-                                                            <td>₹{{ number_format($brandInventory->total_value, 2) }}</td>
+                                                            {{-- <td>₹{{ number_format($brandInventory->total_value, 2) }}</td> --}}
                                                         </tr>
                                                     @empty
                                                         <tr>
@@ -867,13 +869,6 @@
                 });
             }
 
-            const paymentDueOutstandingEl = document.getElementById('paymentDueOutstanding');
-            if (paymentDueOutstandingEl) {
-                paymentDueOutstandingEl.innerHTML = '&#8377;' + Number(@json($paymentData['payment_due_outstanding'])).toLocaleString(undefined, {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2
-                });
-            }
         </script>
     @endif
 @endsection

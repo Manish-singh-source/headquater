@@ -119,7 +119,7 @@
                             <div class="ms-2">
                                 <p class="text-dark mb-1">Total Invoice Amount</p>
                                 <div class="d-inline-flex align-items-center flex-wrap gap-2">
-                                    <h4 class="mb-0 fw-bold">₹{{ number_format($totalInvoiceAmount, 2) }}</h4>
+                                    <h4 class="mb-0 fw-bold">₹{{ number_format($total_sales_overall, 2) }}</h4>
                                 </div>
                             </div>
                         </div>

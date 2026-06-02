@@ -71,7 +71,7 @@
                             <div class="ms-2">
                                 <p class="text-dark mb-1">Total Amount</p>
                                 <div class="d-inline-flex align-items-center flex-wrap gap-2">
-                                    <h4 class="text-dark">₹{{ number_format($totalAmount, 2) }}</h4>
+                                    <h4 class="text-dark">₹{{ number_format($total_sales_overall, 2) }}</h4>
                                 </div>
                             </div>    
                         </div>
@@ -87,7 +87,7 @@
                             <div class="ms-2">
                                 <p class="text-dark mb-1">Total Amount Paid</p>
                                 <div class="d-inline-flex align-items-center flex-wrap gap-2">
-                                    <h4 class="text-dark">₹{{ number_format($totalAmountPaid, 2) }}</h4>
+                                    <h4 class="text-dark">₹{{ number_format($paid_amount_overall, 2) }}</h4>
                                 </div>
                             </div>
                         </div>
@@ -103,7 +103,7 @@
                             <div class="ms-2"> 
                                 <p class="text-dark mb-1">Total Balance Amount</p>
                                 <div class="d-inline-flex align-items-center flex-wrap gap-2">
-                                    <h4 class="text-dark">₹{{ number_format($totalBalanceAmount, 2) }}</h4>
+                                    <h4 class="text-dark">₹{{ number_format($balance_due_overall, 2) }}</h4>
                                 </div>
                             </div>
                         </div>

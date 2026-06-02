@@ -172,6 +172,11 @@ class DashboardController extends Controller
             ->whereNotNull('products.brand')
             ->where('products.brand', '!=', '');
 
+        $overallSalesQuery = Invoice::whereBetween('invoice_date', [
+            $startDate->toDateString(),
+            $endDate->toDateString(),
+        ]);
+
         if (! empty($selectedBrands)) {
             $totalSalesQuery->whereIn('products.brand', $selectedBrands);
         }
@@ -205,10 +210,19 @@ class DashboardController extends Controller
             ];
         }
 
+        $invoicesData = Invoice::with('details.product')
+            ->where('invoice_type', 'sales_order')
+            ->whereBetween('invoice_date', [$startDate->toDateString(), $endDate->toDateString()])
+            ->get();
+
+        $total_sales_overall = $invoicesData->sum(function ($invoice) {
+            return $invoice->details->sum('total_price');
+        });
+
         return [
             'total_sales_by_brand' => $totalSalesByBrand,
             'monthly_trend' => $monthlyTrend,
-            'total_sales_overall' => $totalSalesByBrand->sum('total_sales'),
+            'total_sales_overall' => (float) $total_sales_overall,
         ];
     }
 
@@ -428,14 +442,33 @@ class DashboardController extends Controller
     {
         $overdueCutoff = Carbon::now()->subDays(30);
 
-        // Total Payment Outstanding (unpaid + partially paid invoices)
-        $totalOutstandingQuery = Invoice::with('payments');
-        $this->applyInvoiceBrandFilter($totalOutstandingQuery, $selectedBrands);
-        $totalOutstanding = $totalOutstandingQuery->get()->sum(function ($invoice) {
-            return max(0, (float) $invoice->total_amount - $invoice->payments->sum('amount'));
+        $invoiceQuery = Invoice::with(['details.product', 'payments'])
+            ->where('invoice_type', 'sales_order')
+            ->whereBetween('invoice_date', [$startDate->toDateString(), $endDate->toDateString()]);
+        $this->applyInvoiceBrandFilter($invoiceQuery, $selectedBrands);
+
+        $invoiceTotals = $invoiceQuery->get();
+
+        $totalInvoiceValue = $invoiceTotals->sum(function ($invoice) {
+            return (float) $invoice->details->sum('total_price');
         });
 
-        $monthlyReceivedQuery = Payment::whereBetween('created_at', [$startDate, $endDate]);
+        $totalPaidValue = $invoiceTotals->sum(function ($invoice) {
+            $invoiceTotal = (float) $invoice->details->sum('total_price');
+
+            return min($invoiceTotal, (float) $invoice->payments->sum('amount'));
+        });
+
+        $totalUnpaidValue = $invoiceTotals->sum(function ($invoice) {
+            $invoiceTotal = (float) $invoice->details->sum('total_price');
+
+            return max(0, $invoiceTotal - (float) $invoice->payments->sum('amount'));
+        });
+
+        $monthlyReceivedQuery = Payment::whereBetween('created_at', [$startDate, $endDate])
+            ->whereHas('invoice', function ($query) {
+                $query->where('invoice_type', 'sales_order');
+            });
         $this->applyPaymentBrandFilter($monthlyReceivedQuery, $selectedBrands);
         $monthlyReceived = $monthlyReceivedQuery->sum('amount');
         // $monthlyReceived = Payment::whereBetween('created_at', [$monthStart, $monthEnd])
@@ -443,16 +476,22 @@ class DashboardController extends Controller
         //     ->sum('amount');
 
         // Payment Due Outstanding (overdue unpaid balance, including partial payments)
-        $paymentDueOutstandingQuery = Invoice::with('payments')
+        $paymentDueOutstandingQuery = Invoice::with(['details.product', 'payments'])
+            ->where('invoice_type', 'sales_order')
             ->where('invoice_date', '<', $overdueCutoff);
         $this->applyInvoiceBrandFilter($paymentDueOutstandingQuery, $selectedBrands);
         $paymentDueOutstanding = $paymentDueOutstandingQuery->get()->sum(function ($invoice) {
-            return max(0, (float) $invoice->total_amount - $invoice->payments->sum('amount'));
+            $invoiceTotal = (float) $invoice->details->sum('total_price');
+
+            return max(0, $invoiceTotal - $invoice->payments->sum('amount'));
         });
 
         $monthlyTrend = [];
         foreach ($this->monthlyPeriods($startDate, $endDate) as $period) {
-            $monthlyPaymentQuery = Payment::whereBetween('created_at', [$period['start'], $period['end']]);
+            $monthlyPaymentQuery = Payment::whereBetween('created_at', [$period['start'], $period['end']])
+                ->whereHas('invoice', function ($query) {
+                    $query->where('invoice_type', 'sales_order');
+                });
             $this->applyPaymentBrandFilter($monthlyPaymentQuery, $selectedBrands);
             $monthlyPayment = $monthlyPaymentQuery->sum('amount');
             // $monthlyPayment = Payment::whereBetween('created_at', [$monthStart, $monthEnd])
@@ -466,7 +505,10 @@ class DashboardController extends Controller
         }
 
         return [
-            'total_outstanding' => $totalOutstanding,
+            'total_invoice_value' => $totalInvoiceValue,
+            'total_paid_value' => $totalPaidValue,
+            'total_unpaid_value' => $totalUnpaidValue,
+            'total_outstanding' => $totalUnpaidValue,
             'monthly_received' => $monthlyReceived,
             'payment_due_outstanding' => $paymentDueOutstanding,
             'monthly_trend' => $monthlyTrend,
