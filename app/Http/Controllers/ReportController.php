@@ -12,6 +12,7 @@ use App\Models\TempOrder;
 use App\Models\VendorPI;
 use App\Models\Warehouse;
 use App\Models\WarehouseStock;
+use App\Models\State;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -2101,6 +2102,193 @@ class ReportController extends Controller
         }
 
         return 'N/A';
+    }
+
+    private function buildGstReportQuery(Request $request)
+    {
+        $query = Invoice::with([
+            'customer',
+            'details',
+            'einvoices' => function ($q) {
+                $q->latest('id');
+            },
+            'ewaybills' => function ($q) {
+                $q->latest('id');
+            },
+            'warehouse',
+        ])->whereHas('einvoices');
+
+        if ($request->filled('from_date')) {
+            $query->whereDate('invoice_date', '>=', $request->from_date);
+        }
+
+        if ($request->filled('to_date')) {
+            $query->whereDate('invoice_date', '<=', $request->to_date);
+        }
+
+        if ($request->filled('invoice_no')) {
+            $query->whereIn('invoice_number', (array) $request->input('invoice_no'));
+        }
+
+        return $query;
+    }
+
+    private function buildGstReportRows($invoices)
+    {
+        $rows = collect();
+
+        foreach ($invoices as $invoice) {
+            $customer = $invoice->customer;
+            $invoiceDate = $invoice->invoice_date ?? $invoice->created_at;
+            $invoiceValue = (float) ($invoice->total_amount ?? 0);
+            $placeOfSupply = $this->resolvePlaceOfSupply(
+                $customer?->shipping_state ?: $customer?->billing_state
+            );
+            $invoiceType = $invoice->invoice_type
+                ? ucwords(str_replace('_', ' ', $invoice->invoice_type))
+                : 'Regular';
+            $detailGroups = $invoice->details->groupBy(function ($detail) {
+                return number_format((float) ($detail->tax ?? 0), 2, '.', '');
+            });
+
+            if ($detailGroups->isEmpty()) {
+                $detailGroups = collect(['0.00' => collect()]);
+            }
+
+            foreach ($detailGroups as $rate => $details) {
+                $taxableValue = $details->sum(function ($detail) {
+                    return (float) ($detail->amount ?? 0);
+                });
+
+                if ($taxableValue <= 0 && $details->isNotEmpty()) {
+                    $taxableValue = $details->sum(function ($detail) {
+                        return (float) ($detail->total_price ?? 0);
+                    });
+                }
+
+                $cessAmount = $details->sum(function ($detail) {
+                    return (float) ($detail->cess ?? 0);
+                });
+
+                $rows->push([
+                    'GSTIN/UIN of Recipient' => $customer?->gstin ?: 'URP',
+                    'Name of Recipient' => $customer?->client_name ?? 'N/A',
+                    'Invoice Number' => $invoice->invoice_number ?? 'N/A',
+                    'Invoice date' => $invoiceDate ? \Carbon\Carbon::parse($invoiceDate)->format('d-m-Y') : 'N/A',
+                    'Invoice Value' => round($invoiceValue, 2),
+                    'Place Of Supply' => $placeOfSupply,
+                    'Reverse Charge' => 'N',
+                    'Applicable % of Tax Rate' => (float) $rate,
+                    'Invoice Type' => $invoiceType == 'Sales Order' ? 'Regular B2B' : 'N/A',
+                    'E-Commerce GSTIN' => '',
+                    'Rate' => (float) $rate,
+                    'Taxable Value' => round((float) $taxableValue, 2),
+                    'Cess Amount' => round((float) $cessAmount, 2),
+                ]);
+            }
+        }
+
+        return $rows;
+    }
+
+    private function resolvePlaceOfSupply(?string $stateName): string
+    {
+        if (empty($stateName)) {
+            return 'N/A';
+        }
+
+        $state = State::whereRaw('LOWER(name) = ?', [mb_strtolower(trim($stateName))])->first();
+
+        if ($state && ! empty($state->code)) {
+            return str_pad((string) $state->code, 2, '0', STR_PAD_LEFT) . '-' . strtoupper($stateName);
+        }
+
+        return $stateName;
+    }
+
+    /**
+     * Display GST report based on invoice, invoice detail, e-invoice and e-way bill data.
+     */
+    public function gstReport(Request $request)
+    {
+        try {
+            $query = $this->buildGstReportQuery($request);
+            $invoices = $query->latest('invoice_date')->latest('id')->get();
+            $gstRows = $this->buildGstReportRows($invoices);
+
+            if ($gstRows->isEmpty()) {
+                return redirect()->back()->with('error', 'No GST report records found for the selected criteria.');
+            }
+
+            return view('gst-report', [
+                'gstRows' => $gstRows,
+                'totalRows' => $gstRows->count(),
+                'totalInvoiceValue' => $invoices->sum('total_amount'),
+                'totalTaxableValue' => $gstRows->sum('taxable_value'),
+                'filters' => $request->only(['from_date', 'to_date', 'invoice_no']),
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error retrieving GST report: ' . $e->getMessage());
+
+            return redirect()->back()->with('error', 'Error retrieving GST report: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Download GST report as Excel.
+     */
+    public function gstReportExcel(Request $request)
+    {
+        DB::beginTransaction();
+
+        try {
+            $query = $this->buildGstReportQuery($request);
+            $invoices = $query->latest('invoice_date')->latest('id')->get();
+            $gstRows = $this->buildGstReportRows($invoices);
+
+            if ($gstRows->isEmpty()) {
+                return redirect()->back()->with('error', 'No GST report records found for the selected criteria.');
+            }
+
+            $tempXlsxPath = storage_path('app/gst_report_' . Str::random(8) . '.xlsx');
+            $writer = \Spatie\SimpleExcel\SimpleExcelWriter::create($tempXlsxPath);
+            $writer->noHeaderRow();
+
+            $writer->addRow([
+                'GSTIN/UIN of Recipient',
+                'Name of Recipient',
+                'Invoice Number',
+                'Invoice date',
+                'Invoice Value',
+                'Place Of Supply',
+                'Reverse Charge',
+                'Applicable % of Tax Rate',
+                'Invoice Type',
+                'E-Commerce GSTIN',
+                'Rate',
+                'Taxable Value',
+                'Cess Amount',
+            ]);
+
+            foreach ($gstRows as $row) {
+                $writer->addRow($row);
+            }
+
+            $writer->close();
+
+            DB::commit();
+
+            $fileName = 'GST-Report-' . date('d-m-Y') . '.xlsx';
+
+            return response()->download($tempXlsxPath, $fileName, [
+                'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            ])->deleteFileAfterSend(true);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error generating GST report: ' . $e->getMessage());
+
+            return redirect()->back()->with('error', 'Error generating GST report: ' . $e->getMessage());
+        }
     }
 
     public function customerSalesHistory(Request $request)

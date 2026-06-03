@@ -284,6 +284,13 @@ class PermissionsSeeder extends Seeder
         );
         $this->updateOrCreatePermission('View Customer Sales History Report', $customerSalesHistoryGroup->id);
 
+        // Manage GST Report
+        $gstReportGroup = PermissionGroup::firstOrCreate(
+            ['name' => 'Manage GST Report'],
+            ['description' => 'GST report management permissions', 'status' => 1]
+        );
+        $this->updateOrCreatePermission('View GST Report', $gstReportGroup->id);
+
         // Excel File Formats
         $excelFileFormatsGroup = PermissionGroup::firstOrCreate(
             ['name' => 'Excel File Formats'],

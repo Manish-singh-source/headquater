@@ -360,6 +360,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/customer.sales.history.excel1', 'customerSalesHistoryExcel1')->name('customer.sales.history.excel1');
 
         Route::get('/customer-sales-history-pdf', 'customerSalesHistoryPdf')->name('customer.sales.history.pdf');
+        Route::get('/gst-report', 'gstReport')->name('gst-report');
+        Route::get('/gst-report-excel', 'gstReportExcel')->name('gst-report.excel');
     });
 
     // invoice

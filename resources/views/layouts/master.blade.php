@@ -539,8 +539,8 @@
                   @canany([
                       'View Vendor Purchase History Report',
                       'View Inventory Stock History Report',
-                      'View Customer
-                      Sales History Report',
+                      'View Customer Sales History Report',
+                      'View GST Report',
                       ])
                       <li class="menu-label">Reports</li>
                   @endcanany
@@ -592,6 +592,16 @@
                                   </a>
                               </li>
                           </ul>
+                      </li>
+                  @endcan
+
+                  @can('View GST Report')
+                      <li>
+                          <a href="{{ route('gst-report') }}">
+                              <div class="parent-icon"><i class="material-icons-outlined">receipt_long</i>
+                              </div>
+                              <div class="menu-title">GST Report</div>
+                          </a>
                       </li>
                   @endcan
 
@@ -899,6 +909,8 @@
               });
           }
       </script>
+
+      @stack('scripts')
 
       @yield('script')
   </body>

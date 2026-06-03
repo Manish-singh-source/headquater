@@ -716,3 +716,33 @@ s. change status to complete sales order.
 
 
 po quantity | available quantity (in warehouse) | purchase order | block quantity
+
+
+
+
+
+
+
+
+
+
+ALTER TABLE invoices
+MODIFY taxable_amount DECIMAL(15,2) NOT NULL;
+
+UPDATE invoices i
+JOIN (
+    SELECT
+        invoice_id,
+        SUM(amount) AS taxable_amount,
+        SUM(amount * tax / 100) AS tax_amount,
+        SUM(total_price) AS total_amount
+    FROM invoice_details
+    GROUP BY invoice_id
+) d ON d.invoice_id = i.id
+SET
+    i.taxable_amount = d.taxable_amount,
+    i.subtotal = d.taxable_amount,
+    i.tax_amount = d.tax_amount,
+    i.total_amount = d.total_amount,
+    i.balance_due = d.total_amount - i.paid_amount;
+
