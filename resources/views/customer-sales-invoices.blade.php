@@ -500,13 +500,13 @@
                                     <th>Sales&nbsp;Order&nbsp;No</th>
                                     <th>Customer&nbsp;Group&nbsp;Name</th>
                                     <th>Customer&nbsp;Name</th>
+                                    <th>GSTIN/UIN&nbsp;of&nbsp;Recipient</th>
                                     <th>Invoice&nbsp;No</th>
                                     <th>Invoice&nbsp;Date</th>
                                     <th>Customer&nbsp;Phone&nbsp;No</th>
                                     <th>Customer&nbsp;Email</th>
                                     <th>Customer&nbsp;City</th>
                                     <th>Customer&nbsp;State</th>
-
                                     <th>PO&nbsp;No</th>
                                     <th>PO&nbsp;Date</th>
                                     <th>Appointment&nbsp;Date</th>
@@ -519,7 +519,7 @@
                                     <th>DN&nbsp;Reciept</th>
                                     {{-- <th>LR</th> --}}
                                     <th>Currency</th>
-                                    {{-- <th>HSN</th> --}}
+                                    <th>HSN</th>
                                     <th>Ordered&nbsp;Quantity</th>
                                     <th>Dispatched&nbsp;Quantity</th>
                                     <th>Box&nbsp;Count</th>
@@ -626,6 +626,7 @@
                                             <td>{{ $salesOrder->order_number ?? 'N/A' }}</td>
                                             <td>{{ $salesOrder->customerGroup->name ?? 'N/A' }}</td>
                                             <td>{{ $invoice->customer->client_name ?? 'N/A' }}</td>
+                                            <td>{{ $invoice->customer->gstin ?? 'N/A' }}</td>
                                             <td>{{ $invoice->invoice_number ?? 'N/A' }}</td>
                                             <td>{{ $invoice->created_at?->format('d-m-Y') ?? 'N/A' }}</td>
                                             <td>{{ $invoice->customer->contact_no ?? 'N/A' }}</td>
@@ -647,7 +648,7 @@
                                             <td>{{ $invoice->dns?->first()?->dn_receipt ? 'Yes' : 'No' }}</td>
                                             {{-- <td>{{ $invoice->lr ? 'Yes' : 'No' }}</td> --}}
                                             <td>{{ $invoice->currency ?? 'INR' }}</td>
-                                            {{-- <td>{{ $invoice->details->first()->hsn ?? 'N/A' }}</td> --}}
+                                            <td>{{ $invoice->details->first()->hsn ?? $invoice->details->first()?->product?->hsn ??'N/A' }}</td>
                                             <td>{{ $invoice->details->sum('quantity') ?? 0 }}</td>
                                             <td>{{ $invoice->details->sum('quantity') ?? 0 }}</td>
                                             <td>{{ number_format($totalBoxCount, 0) }}</td>

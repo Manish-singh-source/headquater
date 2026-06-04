@@ -595,6 +595,7 @@
                       </li>
                   @endcan
 
+                  {{-- 
                   @can('View GST Report')
                       <li>
                           <a href="{{ route('gst-report') }}">
@@ -603,7 +604,8 @@
                               <div class="menu-title">GST Report</div>
                           </a>
                       </li>
-                  @endcan
+                  @endcan 
+                  --}}
 
                   @can('View Excel File Formats')
                       <li class="menu-label">Excel Formats</li>
