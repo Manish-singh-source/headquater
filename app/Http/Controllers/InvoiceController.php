@@ -1192,7 +1192,7 @@ class InvoiceController extends Controller
 
     private function prepareEInvoiceData($invoice)
     {
-        // $warehouse = $invoice->warehouse;
+        $dispatchWarehouse = $invoice->warehouse;
         $warehouse = Warehouse::where('id', 3)->first();
         $customer = $invoice->customer;
 
@@ -1201,10 +1201,12 @@ class InvoiceController extends Controller
         // $buyerGstin = '05AAAPG7885R002'; // Test GSTIN for buyer
 
         $sellerGstin = $warehouse ? $warehouse->gst_number : env('DEFAULT_COMPANY_GSTIN', '27AAGCI3319H1ZM'); // Default GSTIN for manual invoices
+        $dispatchWarehouseGstin = $dispatchWarehouse ? $dispatchWarehouse->gst_number : null;
         $buyerGstin = $customer ? $customer->gstin : null;
 
         // Extract state codes from GSTINs (first 2 digits)
         $sellerStateCode = substr($sellerGstin, 0, 2);
+        $dispatchWarehouseStateCode = $dispatchWarehouseGstin ? substr($dispatchWarehouseGstin, 0, 2) : null;
         $buyerStateCode = substr($buyerGstin, 0, 2);
 
         // Fetch GST State Code
@@ -1216,6 +1218,7 @@ class InvoiceController extends Controller
 
         // Fetch pincode from warehouse and customer
         $sellerPincode = (int) ($warehouse ? $warehouse->pincode : '421302'); // Default pincode
+        $dispatchWarehousePincode = $dispatchWarehouse ? (int) $dispatchWarehouse->pincode : null;
         $buyerPincode = (int) ($customer ? ($customer->shipping_zip ?? $customer->billing_zip ?? 0) : 0);
 
         $checkIntraState = $sellerStateCode === $buyerStateCode;
@@ -1290,12 +1293,12 @@ class InvoiceController extends Controller
                 'state_code' => $buyerStateCode,
             ],
             'dispatch_details' => [
-                'company_name' => $this->sanitizeEInvoiceText($warehouse ? $warehouse->name : 'Default Company', 60),
-                'address1' => $this->sanitizeEInvoiceAddress($warehouse ? $warehouse->address_line_1 : 'Default Address', 100),
-                'location' => $this->sanitizeEInvoiceText($warehouse ? ($warehouse->cities->name ?? 'Default City') : 'Default City', 50),
-                'pincode' => $sellerPincode,
+                'company_name' => $this->sanitizeEInvoiceText($dispatchWarehouse ? $dispatchWarehouse->name : 'Default Company', 60),
+                'address1' => $this->sanitizeEInvoiceAddress($dispatchWarehouse ? $dispatchWarehouse->address_line_1 : 'Default Address', 100),
+                'location' => $this->sanitizeEInvoiceText($dispatchWarehouse ? ($dispatchWarehouse->cities->name ?? 'Default City') : 'Default City', 50),
+                'pincode' => $dispatchWarehousePincode,
                 // 'pincode' => 201301,
-                'state_code' => $sellerStateCode,
+                'state_code' => $dispatchWarehouseStateCode,
             ],
             'ship_details' => [
                 'gstin' => $buyerGstin,
@@ -1514,7 +1517,10 @@ class InvoiceController extends Controller
             }
 
             // Use the invoice warehouse GSTIN so the e-way bill request stays in the same account context as the e-invoice.
-            $sellerGstin = $invoice->warehouse?->gst_number ?: env('DEFAULT_COMPANY_GSTIN', '27AAGCI3319H1ZM');
+            $warehouse = $warehouse = Warehouse::where('id', 3)->first();
+            $dispatchWarehouse = $invoice->warehouse;
+
+            $sellerGstin = $warehouse?->gst_number ?: env('DEFAULT_COMPANY_GSTIN', '27AAGCI3319H1ZM');
 
             // For test GSTIN 05AAAPG7885R002, state is Uttarakhand
             // $stateOfConsignor = $validated['state_of_consignor'];
@@ -1524,15 +1530,12 @@ class InvoiceController extends Controller
             // $vehicleUpdateDate = date('Y-m-d', strtotime(str_replace('/', '-', $validated['vehicle_number_update_date'])));
             // $transporterDocDate = $validated['transporter_document_date'];
 
-            // Warehouse Details
-            // $warehouse = $warehouse = Warehouse::where('id', 3)->first();
-            $warehouse = $invoice->warehouse;
             // Customer Details
             $customer = $invoice->customer;
-            $warehousePincode = $this->normalizePincode($warehouse->pincode);
+            $warehousePincode = $this->normalizePincode($dispatchWarehouse->pincode);
             $customerPincode = $this->normalizePincode($customer->shipping_zip ?? $customer->billing_zip);
             $isSamePincodeMove = $warehousePincode && $customerPincode && $warehousePincode === $customerPincode;
-            $sellerStateCode = $this->normalizeStateCode($warehouse ? $this->getStateCode($warehouse->state->name) : '27'); // Default state code
+            $sellerStateCode = $this->normalizeStateCode($dispatchWarehouse ? $this->getStateCode($dispatchWarehouse->state->name) : '27'); // Default state code
             // $buyerStateCode = $this->normalizeStateCode($this->getStateCode($customer->billing_state ?? $customer->shipping_state));
 
             $requestData = [
@@ -1549,10 +1552,10 @@ class InvoiceController extends Controller
                 // 'state_of_consignor' => $stateOfConsignor ?? null,
                 'data_source' => 'erp',
                 'dispatch_details' => [
-                    'company_name' => $this->sanitizeEInvoiceText($warehouse ? $warehouse->name : 'Default Company', 60),
-                    'address1' => $this->sanitizeEInvoiceAddress($warehouse ? $warehouse->address_line_1 : 'Default Address', 100),
-                    'location' => $this->sanitizeEInvoiceText($warehouse ? ($warehouse->cities->name ?? 'Default City') : 'Default City', 50),
-                    'pincode' => $warehouse->pincode,
+                    'company_name' => $this->sanitizeEInvoiceText($dispatchWarehouse ? $dispatchWarehouse->name : 'Default Company', 60),
+                    'address1' => $this->sanitizeEInvoiceAddress($dispatchWarehouse ? $dispatchWarehouse->address_line_1 : 'Default Address', 100),
+                    'location' => $this->sanitizeEInvoiceText($dispatchWarehouse ? ($dispatchWarehouse->cities->name ?? 'Default City') : 'Default City', 50),
+                    'pincode' => $dispatchWarehouse->pincode,
                     // 'pincode' => 201301,
                     'state_code' => $sellerStateCode,
                 ],
