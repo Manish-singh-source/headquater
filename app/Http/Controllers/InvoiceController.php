@@ -1206,7 +1206,7 @@ class InvoiceController extends Controller
 
         // Extract state codes from GSTINs (first 2 digits)
         $sellerStateCode = substr($sellerGstin, 0, 2);
-        $dispatchWarehouseStateCode = $dispatchWarehouseGstin ? substr($dispatchWarehouseGstin, 0, 2) : null;
+        $dispatchWarehouseStateCode = $dispatchWarehouseGstin ? substr($dispatchWarehouse->state->code, 0, 2) : null;
         $buyerStateCode = substr($buyerGstin, 0, 2);
 
         // Fetch GST State Code
