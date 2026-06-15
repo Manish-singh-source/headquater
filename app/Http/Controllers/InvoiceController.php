@@ -1611,6 +1611,8 @@ class InvoiceController extends Controller
             if ($response->successful() && isset($data['results'])) {
                 $results = $data['results'];
                 // dd($results);
+                Log::error('E-Way Bill API Response: ' . json_encode($results));
+                
                 if (isset($results['status']) && $results['status'] === 'Success' && isset($results['message'])) {
                     $message = $results['message'];
 
