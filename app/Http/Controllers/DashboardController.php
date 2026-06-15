@@ -232,6 +232,9 @@ class DashboardController extends Controller
         $grossPurchaseAmount = "SUM(vendor_p_i_products.quantity_received * vendor_p_i_products.purchase_rate * (1 + COALESCE(NULLIF(vendor_p_i_products.gst, ''), 0) / 100)) as total_cost";
 
         $totalPurchasesQuery = VendorPIProduct::join('products', 'vendor_p_i_products.vendor_sku_code', '=', 'products.sku')
+            ->whereHas('order', function ($query) {
+                $query->where('status', 'completed');
+            })
             ->where('vendor_p_i_products.quantity_received', '>', 0)
             ->whereBetween('vendor_p_i_products.created_at', [$startDate, $endDate])
             ->whereNotNull('products.brand')
@@ -254,6 +257,9 @@ class DashboardController extends Controller
         $monthlyTrend = [];
         foreach ($this->monthlyPeriods($startDate, $endDate) as $period) {
             $monthlyPurchasesQuery = VendorPIProduct::join('products', 'vendor_p_i_products.vendor_sku_code', '=', 'products.sku')
+                ->whereHas('order', function ($query) {
+                    $query->where('status', 'completed');
+                })
                 ->where('vendor_p_i_products.quantity_received', '>', 0)
                 ->whereBetween('vendor_p_i_products.created_at', [$period['start'], $period['end']])
                 ->whereNotNull('products.brand')

@@ -148,7 +148,7 @@
                                             <div class="card-body text-center">
                                                 <h6 class="text-muted">Total Purchases</h6>
                                                 <h3 class="text-info">
-                                                    ₹{{ number_format($purchaseData['total_amount_overall'], 2) }}</h3>
+                                                    ₹{{ number_format(($purchaseData['total_amount_overall']/2), 2) }}</h3>
                                                 <small class="text-muted">Selected Period</small>
                                             </div>
                                         </div>
@@ -175,7 +175,7 @@
                                                     @forelse($purchaseData['total_purchases_by_brand'] as $brandPurchase)
                                                         <tr>
                                                             <td>{{ $brandPurchase->brand }}</td>
-                                                            <td>₹{{ number_format($brandPurchase->total_cost, 2) }}</td>
+                                                            <td>₹{{ number_format(($brandPurchase->total_cost/2), 2) }}</td>
                                                         </tr>
                                                     @empty
                                                         <tr>
