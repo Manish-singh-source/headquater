@@ -525,7 +525,7 @@ class ReportController extends Controller
                     foreach ($vendorPI->products as $product) {
                         $totalPIQuantity += $product->available_quantity ?? 0;
                         $totalPIReceivedQuantity += $product->quantity_received ?? 0;
-                        $totalTaxableAmount += ($product->mrp ?? 0) * ($product->quantity_received ?? 0);
+                        $totalTaxableAmount += ($product->purchase_rate ?? 0) * ($product->quantity_received ?? 0);
                     }
                 }
             }
