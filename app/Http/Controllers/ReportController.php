@@ -129,7 +129,7 @@ class ReportController extends Controller
             // Get unique purchase order IDs from all completed purchase orders for dropdown
             $purchaseOrderNumbers = PurchaseOrder::whereHas('vendorPI', function ($q) {
                 $q->where('status', 'completed');
-            })->whereNotNull('order_number')->distinct()->orderBy('id', 'desc')->pluck('order_number');
+            })->whereNotNull('order_number')->orderByDesc('id')->pluck('order_number')->unique()->values();
 
             // Get unique vendors (non-null) from completed purchase orders for dropdown
             $purchaseOrdersVendors = PurchaseOrder::whereHas('vendorPI', function ($q) {
@@ -268,7 +268,7 @@ class ReportController extends Controller
             // Get unique purchase order IDs from all completed purchase orders for dropdown
             $purchaseOrderNumbers = PurchaseOrder::whereHas('vendorPI', function ($q) {
                 $q->where('status', 'completed');
-            })->whereNotNull('order_number')->distinct()->orderBy('id', 'desc')->pluck('order_number');
+            })->whereNotNull('order_number')->orderByDesc('id')->pluck('order_number')->unique()->values();
 
             // Get unique vendor codes from all completed purchase orders for dropdown
             $purchaseOrdersVendors = PurchaseOrder::whereHas('vendorPI', function ($q) {
