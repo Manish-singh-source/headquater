@@ -93,8 +93,8 @@ class ReportController extends Controller
             // Clone for stats before pagination
             $statsQuery = clone $query;
 
-            // Get paginated purchase orders (15 per page)
-            $vendorPIProducts = $query->latest('id')->paginate(15)->appends($request->all());
+            // Get all filtered purchase orders so the on-screen table matches the export
+            $vendorPIProducts = $query->latest('id')->get();
 
             // dd($vendorPIProducts);
             // Calculate statistics based on filtered results
@@ -491,8 +491,8 @@ class ReportController extends Controller
             // Clone for stats before pagination
             $statsQuery = clone $query;
 
-            // Get paginated purchase orders (15 per page)
-            $vendorPIProducts = $query->latest('id')->paginate(15)->appends($request->all());
+            // Get all filtered purchase orders so the view matches the export
+            $vendorPIProducts = $query->latest('id')->get();
             // dd($vendorPIProducts);
             // Calculate statistics based on filtered results
             $purchaseOrdersTotal = $statsQuery->sum('total_amount');

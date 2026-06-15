@@ -372,7 +372,7 @@
                             @endforeach
                         </div>
                         <div class="mt-2 text-muted">Total matching records:
-                            <strong>{{ $vendorPIProducts->total() }}</strong>
+                            <strong>{{ $vendorPIProducts->count() }}</strong>
                         </div>
                     </div>
                 </div>

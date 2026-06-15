@@ -663,7 +663,7 @@
                     label: brand,
                     data: purchaseTrendData.map(month => {
                         const brandData = month.data.find(d => d.brand === brand);
-                        return brandData ? brandData.total_cost : 0;
+                        return brandData ? (brandData.total_cost/2) : 0;
                     }),
                     borderColor: colors[index % colors.length],
                     backgroundColor: colors[index % colors.length] + '20',
@@ -873,3 +873,4 @@
         </script>
     @endif
 @endsection
+
