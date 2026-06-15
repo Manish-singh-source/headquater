@@ -716,11 +716,11 @@ class PackagingController extends Controller
                             ])->withInput();
                         }
 
-                        if ((float) $boxCountRaw <= 0 || (float) $weightRaw <= 0) {
+                        if ((float) $boxCountRaw < 0 || (float) $weightRaw < 0) {
                             DB::rollBack();
 
                             return redirect()->back()->with([
-                                'error' => 'Box Count and Weight must be greater than 0 when Final Dispatch Qty is not 0. Please check row ' . ($rowIndex + 2) . '.',
+                                'error' => 'Box Count and Weight cannot be negative when Final Dispatch Qty is not 0. Please check row ' . ($rowIndex + 2) . '.',
                             ])->withInput();
                         }
                     }
