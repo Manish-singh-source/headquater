@@ -229,6 +229,8 @@ class DashboardController extends Controller
     // done
     private function getPurchaseData($startDate, $endDate, $selectedBrands)
     {
+        $grossPurchaseAmount = "SUM(vendor_p_i_products.quantity_received * vendor_p_i_products.purchase_rate * (1 + COALESCE(NULLIF(vendor_p_i_products.gst, ''), 0) / 100)) as total_cost";
+
         $totalPurchasesQuery = VendorPIProduct::join('products', 'vendor_p_i_products.vendor_sku_code', '=', 'products.sku')
             ->where('vendor_p_i_products.quantity_received', '>', 0)
             ->whereBetween('vendor_p_i_products.created_at', [$startDate, $endDate])
@@ -243,7 +245,7 @@ class DashboardController extends Controller
             'products.brand',
             \DB::raw('SUM(vendor_p_i_products.quantity_received) as total_quantity'),
             \DB::raw('SUM(vendor_p_i_products.purchase_rate) as total_mrp'),
-            \DB::raw('SUM(vendor_p_i_products.quantity_received * vendor_p_i_products.purchase_rate) as total_cost')
+            \DB::raw($grossPurchaseAmount)
         )
             ->groupBy('products.brand');
 
@@ -265,7 +267,7 @@ class DashboardController extends Controller
                 'products.brand',
                 \DB::raw('SUM(vendor_p_i_products.quantity_received) as total_quantity'),
                 \DB::raw('SUM(vendor_p_i_products.purchase_rate) as total_mrp'),
-                \DB::raw('SUM(vendor_p_i_products.quantity_received * vendor_p_i_products.purchase_rate) as total_cost')
+                \DB::raw($grossPurchaseAmount)
             )
                 ->groupBy('products.brand');
 
