@@ -242,8 +242,8 @@ class DashboardController extends Controller
         $totalPurchasesQuery->select(
             'products.brand',
             \DB::raw('SUM(vendor_p_i_products.quantity_received) as total_quantity'),
-            \DB::raw('SUM(vendor_p_i_products.mrp) as total_mrp'),
-            \DB::raw('SUM(vendor_p_i_products.quantity_received * vendor_p_i_products.mrp) as total_cost')
+            \DB::raw('SUM(vendor_p_i_products.purchase_rate) as total_mrp'),
+            \DB::raw('SUM(vendor_p_i_products.quantity_received * vendor_p_i_products.purchase_rate) as total_cost')
         )
             ->groupBy('products.brand');
 
@@ -264,8 +264,8 @@ class DashboardController extends Controller
             $monthlyPurchasesQuery->select(
                 'products.brand',
                 \DB::raw('SUM(vendor_p_i_products.quantity_received) as total_quantity'),
-                \DB::raw('SUM(vendor_p_i_products.mrp) as total_mrp'),
-                \DB::raw('SUM(vendor_p_i_products.quantity_received * vendor_p_i_products.mrp) as total_cost')
+                \DB::raw('SUM(vendor_p_i_products.purchase_rate) as total_mrp'),
+                \DB::raw('SUM(vendor_p_i_products.quantity_received * vendor_p_i_products.purchase_rate) as total_cost')
             )
                 ->groupBy('products.brand');
 
