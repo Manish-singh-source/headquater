@@ -743,11 +743,15 @@ class ReportController extends Controller
                         return 0.0;
                     };
 
+                    $vendorPIProduct = $vendorPI?->products->firstWhere('vendor_sku_code', $product->sku);
+
                     $gstRate = $toNumber($productDetails?->gst);
-                    $quantity = $toNumber($product->ordered_quantity);
-                    $mrp = $toNumber($productDetails?->mrp);
+                    $quantityRequirement = $toNumber($vendorPIProduct?->quantity_requirement);
+                    $availableQuantity = $toNumber($vendorPIProduct?->available_quantity);
+                    $receivedQuantity = $toNumber($vendorPIProduct?->quantity_received);
+                    $purchaseRate = $toNumber($vendorPIProduct?->purchase_rate);
                     $discountPerUnit = $toNumber($product->discount_per_unit);
-                    $taxableValue = $mrp * $quantity;
+                    $taxableValue = $purchaseRate * $receivedQuantity;
                     $gstAmount = ($taxableValue * $gstRate) / 100;
                     $totalAmount = $taxableValue + $gstAmount;
 
@@ -766,11 +770,11 @@ class ReportController extends Controller
                         $productDetails->hsn ?? 'N/A',
                         $purchaseOrder->created_at ? $purchaseOrder->created_at : 'N/A',
                         $vendorPI?->updated_at ? $vendorPI->updated_at->copy()->addMonth()->format('d-m-Y') : 'N/A',
-                        $product->ordered_quantity ?? 'N/A',
-                        $product->ordered_quantity ?? 'N/A',
-                        $product->ordered_quantity ?? 'N/A',
+                        $quantityRequirement,
+                        $availableQuantity,
+                        $receivedQuantity,
                         'PCS',
-                        number_format($mrp, 2, '.', ''),
+                        number_format($purchaseRate, 2, '.', ''),
                         number_format($discountPerUnit, 2, '.', ''),
                         number_format($taxableValue, 2, '.', ''),
                         number_format($gstRate, 2, '.', ''),
