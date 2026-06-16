@@ -1897,7 +1897,7 @@ class InvoiceController extends Controller
             );
 
             if ($isSuccess) {
-                // Update the e-way bill row and the parent invoice so both records stay in sync.
+                // Update only the e-way bill row; the invoices table no longer has e-way bill fields.
                 $ewaybillUpdated = $ewaybill->update([
                     'ewb_valid_till' => null,
                     'ewaybill_status' => 'CAN',
@@ -1909,17 +1909,6 @@ class InvoiceController extends Controller
                     'ewaybill_id' => $ewaybill->id,
                     'ewaybill_updated' => $ewaybillUpdated,
                 ]);
-
-                if ($ewaybill->invoice) {
-                    $invoiceUpdated = $ewaybill->invoice->update([
-                        'ewb_valid_till' => null,
-                    ]);
-
-                    Log::info('E-Way Bill cancel parent invoice update result', [
-                        'invoice_id' => $ewaybill->invoice->id,
-                        'invoice_updated' => $invoiceUpdated,
-                    ]);
-                }
 
                 DB::commit();
                 activity()->performedOn($ewaybill)->causedBy(Auth::user())->log('E-Way Bill cancelled: ' . $ewaybill->ewb_no);
