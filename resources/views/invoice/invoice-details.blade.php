@@ -166,6 +166,11 @@
                                         </tr>
 
                                         @foreach ($invoiceDetails->ewaybills as $ewaybill)
+                                            @php
+                                                $cancelBefore = $ewaybill->ewb_dt
+                                                    ? $ewaybill->ewb_dt->copy()->addDay()
+                                                    : $ewaybill->created_at->copy()->addDay();
+                                            @endphp
                                             <tr>
                                                 <td>{{ $ewaybill->einvoice->irn }}</td>
                                                 <td>{{ $ewaybill->ewb_no }}</td>
@@ -177,10 +182,10 @@
                                                 </td>
                                                 <td>
                                                     <span class="badge bg-warning me-2">
-                                                        {{ $ewaybill->created_at->addDays(1)->format('d/m/Y H:i') }}</span>
+                                                        {{ $cancelBefore->format('d/m/Y H:i') }}</span>
                                                 </td>
                                                 <td>
-                                                    @if ($ewaybill->created_at->addDays(1) > now())
+                                                    @if ($cancelBefore > now())
                                                         <form action="{{ route('invoice.cancelEWayBill', $ewaybill->id) }}"
                                                             method="POST" style="display: inline;"
                                                             onsubmit="return confirm('Are you sure you want to cancel this E-Way Bill? This action cannot be undone.')">
