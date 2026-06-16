@@ -1788,8 +1788,8 @@ class InvoiceController extends Controller
             ]);
 
             $tokenUrl = $this->getEInvoiceApiBaseUrl() . '/token-auth';
-            $username = trim((string) config('services.einvoice.username', ''));
-            $password = trim((string) config('services.einvoice.password', ''));
+            $username = trim((string) "support@technofra.com");
+            $password = trim((string) "Support@0987#!");
 
             if ($username === '' || $password === '') {
                 Log::error('E-Way Bill Cancel Token Configuration Missing', [
