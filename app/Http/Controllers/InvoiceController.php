@@ -1757,7 +1757,16 @@ class InvoiceController extends Controller
                 return redirect()->back()->with('error', 'No E-Way Bill found for this invoice.');
             }
 
-            // Check if already cancelled or expired
+            $cancelBefore = $ewaybill->ewb_dt
+                ? $ewaybill->ewb_dt->copy()->addDay()
+                : ($ewaybill->created_at ? $ewaybill->created_at->copy()->addDay() : null);
+
+            // Check if already cancelled or outside the cancellation window
+            if ($cancelBefore && now()->greaterThanOrEqualTo($cancelBefore)) {
+                return redirect()->back()->with('error', 'E-Way Bill can no longer be cancelled.');
+            }
+
+            // Check if already expired
             if ($ewaybill->ewb_valid_till && $ewaybill->ewb_valid_till <= now()) {
                 return redirect()->back()->with('error', 'E-Way Bill is already expired.');
             }
