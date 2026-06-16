@@ -1748,20 +1748,17 @@ class InvoiceController extends Controller
 
         DB::beginTransaction();
         try {
-            // $invoice = Invoice::findOrFail($id);
-            $invoice = Ewaybill::with('invoice.customer', 'invoice.warehouse')->find($id);
+            $ewaybill = Ewaybill::with('invoice.customer', 'invoice.warehouse')->findOrFail($id);
 
-            // $sellerGstin = $invoice->invoice->warehouse ? $invoice->invoice->warehouse->gst_number : '27AAGCI3319H1ZM'; // Test GSTIN for e-waybill consignor
             $sellerGstin = '27AAGCI3319H1ZM'; // Test GSTIN for e-waybill consignor
-            $customerGstin = $invoice->invoice->customer->gst_number ?? '05AAAPG7885R002'; // Test GSTIN for e-waybill consignee
 
             // Check if e-waybill exists
-            if (! $invoice->ewb_no) {
+            if (! $ewaybill->ewb_no) {
                 return redirect()->back()->with('error', 'No E-Way Bill found for this invoice.');
             }
 
             // Check if already cancelled or expired
-            if ($invoice->ewb_valid_till && $invoice->ewb_valid_till <= now()) {
+            if ($ewaybill->ewb_valid_till && $ewaybill->ewb_valid_till <= now()) {
                 return redirect()->back()->with('error', 'E-Way Bill is already expired.');
             }
 
@@ -1774,7 +1771,7 @@ class InvoiceController extends Controller
             // Prepare API request data
             $requestData = [
                 'userGstin' => $sellerGstin, // Using test GSTIN
-                'eway_bill_number' => $invoice->ewb_no,
+                'eway_bill_number' => $ewaybill->ewb_no,
                 'reason_of_cancel' => 'Others',
                 'cancel_remark' => 'Cancelled by user',
                 'data_source' => 'erp',
@@ -1806,30 +1803,36 @@ class InvoiceController extends Controller
 
             if ($response->successful() && isset($data['results'])) {
                 $results = $data['results'];
+                $status = data_get($results, 'status');
 
-                if (isset($results['status']) && $results['status'] === 'Success' && isset($results['message'])) {
-                    $message = $results['message'];
+                if ($status === 'Success') {
+                    $message = data_get($results, 'message');
 
-                    // Update invoice with cancellation details
-                    $invoice->update([
-                        'ewb_valid_till' => null, // Clear valid till to indicate cancelled
+                    // Update the e-way bill row and the parent invoice so both records stay in sync.
+                    $ewaybill->update([
+                        'ewb_valid_till' => null,
                         'ewaybill_status' => 'CAN',
                         'ewaybill_cancel_reason' => 'Others',
                         'ewaybill_cancel_remarks' => 'Cancelled by user',
-                        // Keep other fields as they are, or clear them if needed
                     ]);
 
+                    if ($ewaybill->invoice) {
+                        $ewaybill->invoice->update([
+                            'ewb_valid_till' => null,
+                        ]);
+                    }
+
                     DB::commit();
-                    activity()->performedOn($invoice)->causedBy(Auth::user())->log('E-Way Bill cancelled: ' . $invoice->ewb_no);
+                    activity()->performedOn($ewaybill)->causedBy(Auth::user())->log('E-Way Bill cancelled: ' . $ewaybill->ewb_no);
 
-                    return redirect()->back()->with('success', 'E-Way Bill cancelled successfully.');
-                } else {
-                    $errorMessage = $results['errorMessage'] ?? $results['InfoDtls'] ?? 'Unknown error occurred';
-                    Log::error('E-Way Bill Cancel API Error Response: ' . json_encode($data));
-                    DB::rollBack();
-
-                    return redirect()->back()->with('error', 'Failed to cancel e-way bill: ' . $errorMessage);
+                    return redirect()->back()->with('success', $message ?: 'E-Way Bill cancelled successfully.');
                 }
+
+                $errorMessage = $results['errorMessage'] ?? $results['InfoDtls'] ?? 'Unknown error occurred';
+                Log::error('E-Way Bill Cancel API Error Response: ' . json_encode($data));
+                DB::rollBack();
+
+                return redirect()->back()->with('error', 'Failed to cancel e-way bill: ' . $errorMessage);
             } else {
                 Log::error('E-Way Bill Cancel API Invalid Response: ' . json_encode($data));
                 DB::rollBack();
