@@ -22,6 +22,13 @@ class Ewaybill extends Model
         'ewaybill_cancel_remarks',
     ];
 
+    protected $casts = [
+        'ewb_dt' => 'datetime',
+        'ewb_valid_till' => 'datetime',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+    ];
+
     public function invoice()
     {
         return $this->belongsTo(Invoice::class);
