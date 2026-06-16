@@ -1787,8 +1787,44 @@ class InvoiceController extends Controller
                 'password_present' => filled(config('services.einvoice.password')),
             ]);
 
-            $token = $this->getEInvoiceToken();
+            $tokenUrl = $this->getEInvoiceApiBaseUrl() . '/token-auth';
+            $username = trim((string) config('services.einvoice.username', ''));
+            $password = trim((string) config('services.einvoice.password', ''));
+
+            if ($username === '' || $password === '') {
+                Log::error('E-Way Bill Cancel Token Configuration Missing', [
+                    'url' => $tokenUrl,
+                    'username_present' => $username !== '',
+                    'password_present' => $password !== '',
+                ]);
+
+                return redirect()->back()->with('error', 'Failed to authenticate with e-invoice API.');
+            }
+
+            $tokenResponse = Http::asForm()->timeout(30)->post($tokenUrl, [
+                'username' => $username,
+                'password' => $password,
+            ]);
+
+            $tokenData = $tokenResponse->json();
+
+            Log::debug('E-Way Bill Cancel Token API Response', [
+                'url' => $tokenUrl,
+                'status' => $tokenResponse->status(),
+                'body' => $tokenResponse->body(),
+                'data' => $tokenData,
+            ]);
+
+            $token = data_get($tokenData, 'token');
             if (! $token) {
+                Log::error('E-Way Bill Cancel Token API Error', [
+                    'url' => $tokenUrl,
+                    'status' => $tokenResponse->status(),
+                    'body' => $tokenResponse->body(),
+                    'username_present' => $username !== '',
+                    'password_present' => $password !== '',
+                ]);
+
                 return redirect()->back()->with('error', 'Failed to authenticate with e-invoice API.');
             }
 
