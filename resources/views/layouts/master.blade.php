@@ -635,6 +635,7 @@
 
       <!-- Notification Container -->
       <div id="notification-container"></div>
+      @flasher_render
 
       <!--start footer-->
       <!--start overlay-->
