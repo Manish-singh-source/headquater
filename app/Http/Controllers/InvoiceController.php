@@ -446,9 +446,10 @@ class InvoiceController extends Controller
                 $query->where('ewaybill_status', 'ACT');
             },
 
-            'ewaybills' => function ($query) {
-                $query->where('ewaybill_status', 'ACT');
-            }
+            // 'ewaybills' => function ($query) {
+            //     $query->where('ewaybill_status', 'ACT');
+            // }
+            'ewaybills'
         ])->find($id);
         // dd($invoiceDetails);
         // count total active einvoices
