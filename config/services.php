@@ -35,4 +35,10 @@ return [
         ],
     ],
 
+    'einvoice' => [
+        'url' => env('EINVOICE_API_URL', 'https://prod-api.mastersindia.co/api/v1/'),
+        'username' => env('EINVOICE_API_USERNAME'),
+        'password' => env('EINVOICE_API_PASSWORD'),
+    ],
+
 ];

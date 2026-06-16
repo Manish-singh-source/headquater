@@ -1917,7 +1917,7 @@ class InvoiceController extends Controller
                 DB::commit();
                 activity()->performedOn($ewaybill)->causedBy(Auth::user())->log('E-Way Bill cancelled: ' . $ewaybill->ewb_no);
 
-                return redirect()->route('invoices-details', $ewaybill->invoice_id)
+                return redirect()->route('invoices-details', $invoiceId)
                     ->with('success', $apiMessage ?: 'E-Way Bill cancelled successfully.');
             }
 
@@ -1925,14 +1925,14 @@ class InvoiceController extends Controller
                 Log::error('E-Way Bill Cancel API Unexpected Success Response: ' . json_encode($data));
                 DB::rollBack();
 
-                return redirect()->route('invoices-details', $ewaybill->invoice_id)
+                return redirect()->route('invoices-details', $invoiceId)
                     ->with('error', 'E-Way bill API returned an unexpected success response. Please check the logs.');
             }
 
             Log::error('E-Way Bill Cancel API Invalid Response: ' . json_encode($data));
             DB::rollBack();
 
-            return redirect()->route('invoices-details', $ewaybill->invoice_id)
+            return redirect()->route('invoices-details', $invoiceId)
                 ->with('error', 'Invalid response from e-way bill API');
         } catch (\Exception $e) {
             DB::rollBack();
