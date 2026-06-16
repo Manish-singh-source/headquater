@@ -1738,6 +1738,11 @@ class InvoiceController extends Controller
 
     public function cancelEWayBill($id)
     {
+        Log::info('E-Way Bill cancel request started', [
+            'ewaybill_id' => $id,
+            'user_id' => Auth::id(),
+        ]);
+
         $validator = Validator::make(['id' => $id], [
             'id' => 'required|exists:ewaybills,id',
         ]);
@@ -1749,6 +1754,15 @@ class InvoiceController extends Controller
         DB::beginTransaction();
         try {
             $ewaybill = Ewaybill::with('invoice.customer', 'invoice.warehouse')->findOrFail($id);
+
+            Log::info('E-Way Bill cancel record loaded', [
+                'ewaybill_id' => $ewaybill->id,
+                'invoice_id' => $ewaybill->invoice_id,
+                'ewb_no' => $ewaybill->ewb_no,
+                'ewb_dt' => optional($ewaybill->ewb_dt)->toDateTimeString(),
+                'ewb_valid_till' => optional($ewaybill->ewb_valid_till)->toDateTimeString(),
+                'status' => $ewaybill->ewaybill_status,
+            ]);
 
             $sellerGstin = '27AAGCI3319H1ZM'; // Test GSTIN for e-waybill consignor
 
@@ -1772,10 +1786,21 @@ class InvoiceController extends Controller
             }
 
             // Get JWT token
+            Log::info('E-Way Bill cancel token request starting', [
+                'token_url' => $this->getEInvoiceApiBaseUrl() . '/token-auth',
+                'username_present' => filled(config('services.einvoice.username')),
+                'password_present' => filled(config('services.einvoice.password')),
+            ]);
+
             $token = $this->getEInvoiceToken();
             if (! $token) {
                 return redirect()->back()->with('error', 'Failed to authenticate with e-invoice API.');
             }
+
+            Log::info('E-Way Bill cancel token received', [
+                'ewaybill_id' => $ewaybill->id,
+                'token_length' => strlen($token),
+            ]);
 
             // Prepare API request data
             $requestData = [
@@ -1785,6 +1810,11 @@ class InvoiceController extends Controller
                 'cancel_remark' => 'Cancelled by user',
                 'data_source' => 'erp',
             ];
+
+            Log::info('E-Way Bill cancel API request payload prepared', [
+                'ewaybill_id' => $ewaybill->id,
+                'request' => $requestData,
+            ]);
 
             // Make API call with JSON body
             $response = Http::withHeaders($this->getEInvoiceAuthHeaders($token))
@@ -1798,6 +1828,16 @@ class InvoiceController extends Controller
                 'status' => $response->status(),
                 'body' => $response->body(),
                 'request' => $requestData,
+            ]);
+
+            Log::info('E-Way Bill cancel API response received', [
+                'ewaybill_id' => $ewaybill->id,
+                'http_status' => $response->status(),
+                'response_successful' => $response->successful(),
+                'results_status' => data_get($data, 'results.status'),
+                'results_code' => data_get($data, 'results.code'),
+                'results_message' => data_get($data, 'results.message'),
+                'top_level_success' => data_get($data, 'success'),
             ]);
 
             // Check for different response structures
@@ -1827,16 +1867,26 @@ class InvoiceController extends Controller
 
             if ($isSuccess) {
                 // Update the e-way bill row and the parent invoice so both records stay in sync.
-                $ewaybill->update([
+                $ewaybillUpdated = $ewaybill->update([
                     'ewb_valid_till' => null,
                     'ewaybill_status' => 'CAN',
                     'ewaybill_cancel_reason' => 'Others',
                     'ewaybill_cancel_remarks' => 'Cancelled by user',
                 ]);
 
+                Log::info('E-Way Bill cancel local update result', [
+                    'ewaybill_id' => $ewaybill->id,
+                    'ewaybill_updated' => $ewaybillUpdated,
+                ]);
+
                 if ($ewaybill->invoice) {
-                    $ewaybill->invoice->update([
+                    $invoiceUpdated = $ewaybill->invoice->update([
                         'ewb_valid_till' => null,
+                    ]);
+
+                    Log::info('E-Way Bill cancel parent invoice update result', [
+                        'invoice_id' => $ewaybill->invoice->id,
+                        'invoice_updated' => $invoiceUpdated,
                     ]);
                 }
 
@@ -2059,8 +2109,8 @@ class InvoiceController extends Controller
     {
         try {
             $tokenUrl = $this->getEInvoiceApiBaseUrl() . '/token-auth';
-            $username = trim((string) env('EINVOICE_API_USERNAME', ''));
-            $password = trim((string) env('EINVOICE_API_PASSWORD', ''));
+            $username = trim((string) config('services.einvoice.username', ''));
+            $password = trim((string) config('services.einvoice.password', ''));
 
             if ($username === '' || $password === '') {
                 Log::error('E-Invoice Token Configuration Missing', [
@@ -2106,7 +2156,7 @@ class InvoiceController extends Controller
 
     private function getEInvoiceApiBaseUrl()
     {
-        return rtrim(env('EINVOICE_API_URL', 'https://prod-api.mastersindia.co/api/v1/'), '/');
+        return rtrim((string) config('services.einvoice.url', 'https://prod-api.mastersindia.co/api/v1/'), '/');
     }
 
     private function getEInvoiceAuthHeaders($token)
