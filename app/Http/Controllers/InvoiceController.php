@@ -1765,32 +1765,6 @@ class InvoiceController extends Controller
             ]);
 
             $sellerGstin = '27AAGCI3319H1ZM'; // Test GSTIN for e-waybill consignor
-            $applyLocalCancellation = function (string $source, ?string $note = null) use ($ewaybill) {
-                $ewaybillUpdated = $ewaybill->update([
-                    'ewb_valid_till' => null,
-                    'ewaybill_status' => 'CAN',
-                    'ewaybill_cancel_reason' => 'Others',
-                    'ewaybill_cancel_remarks' => $note ?: 'Cancelled by user',
-                ]);
-
-                Log::info('E-Way Bill local cancellation sync complete', [
-                    'ewaybill_id' => $ewaybill->id,
-                    'source' => $source,
-                    'ewaybill_updated' => $ewaybillUpdated,
-                ]);
-
-                if ($ewaybill->invoice) {
-                    $invoiceUpdated = $ewaybill->invoice->update([
-                        'ewb_valid_till' => null,
-                    ]);
-
-                    Log::info('E-Way Bill parent invoice sync complete', [
-                        'invoice_id' => $ewaybill->invoice->id,
-                        'source' => $source,
-                        'invoice_updated' => $invoiceUpdated,
-                    ]);
-                }
-            };
 
             // Check if e-waybill exists
             if (! $ewaybill->ewb_no) {
@@ -1815,14 +1789,7 @@ class InvoiceController extends Controller
 
             $token = $this->getEInvoiceToken();
             if (! $token) {
-                Log::warning('E-Way Bill cancel token missing, applying local fallback cancellation', [
-                    'ewaybill_id' => $ewaybill->id,
-                ]);
-
-                $applyLocalCancellation('token-missing', 'Cancelled locally because API authentication failed');
-                DB::commit();
-
-                return redirect()->back()->with('warning', 'Cancelled locally because the e-invoice API was unavailable. Local database updated.');
+                return redirect()->back()->with('error', 'Failed to authenticate with e-invoice API.');
             }
 
             Log::info('E-Way Bill cancel token received', [
@@ -1873,15 +1840,9 @@ class InvoiceController extends Controller
                 // Handle error response with 'success' field
                 $errorMessage = $data['message'] ?? 'Invalid response from e-way bill API';
                 Log::error('E-Way Bill Cancel API Invalid Response: ' . json_encode($data));
-                Log::warning('E-Way Bill API rejected cancel, applying local fallback cancellation', [
-                    'ewaybill_id' => $ewaybill->id,
-                    'error_message' => $errorMessage,
-                ]);
+                DB::rollBack();
 
-                $applyLocalCancellation('api-error', 'Cancelled locally because API cancellation failed');
-                DB::commit();
-
-                return redirect()->back()->with('warning', 'API cancel failed: ' . $errorMessage . ' Local database was updated.');
+                return redirect()->back()->with('error', 'Failed to cancel e-way bill: ' . $errorMessage);
             }
 
             $results = (array) data_get($data, 'results', []);
@@ -1900,7 +1861,30 @@ class InvoiceController extends Controller
             );
 
             if ($isSuccess) {
-                $applyLocalCancellation('api-success', $apiMessage ?: 'Cancelled by API');
+                // Update the e-way bill row and the parent invoice so both records stay in sync.
+                $ewaybillUpdated = $ewaybill->update([
+                    'ewb_valid_till' => null,
+                    'ewaybill_status' => 'CAN',
+                    'ewaybill_cancel_reason' => 'Others',
+                    'ewaybill_cancel_remarks' => 'Cancelled by user',
+                ]);
+
+                Log::info('E-Way Bill cancel local update result', [
+                    'ewaybill_id' => $ewaybill->id,
+                    'ewaybill_updated' => $ewaybillUpdated,
+                ]);
+
+                if ($ewaybill->invoice) {
+                    $invoiceUpdated = $ewaybill->invoice->update([
+                        'ewb_valid_till' => null,
+                    ]);
+
+                    Log::info('E-Way Bill cancel parent invoice update result', [
+                        'invoice_id' => $ewaybill->invoice->id,
+                        'invoice_updated' => $invoiceUpdated,
+                    ]);
+                }
+
                 DB::commit();
                 activity()->performedOn($ewaybill)->causedBy(Auth::user())->log('E-Way Bill cancelled: ' . $ewaybill->ewb_no);
 
@@ -1909,46 +1893,18 @@ class InvoiceController extends Controller
 
             if ($response->successful()) {
                 Log::error('E-Way Bill Cancel API Unexpected Success Response: ' . json_encode($data));
-                Log::warning('E-Way Bill API returned unexpected success payload, applying local fallback cancellation', [
-                    'ewaybill_id' => $ewaybill->id,
-                ]);
+                DB::rollBack();
 
-                $applyLocalCancellation('unexpected-success-payload', 'Cancelled locally because API returned an unexpected payload');
-                DB::commit();
-
-                return redirect()->back()->with('warning', 'API response was unexpected. Local database was updated.');
+                return redirect()->back()->with('error', 'E-Way bill API returned an unexpected success response. Please check the logs.');
             }
 
             Log::error('E-Way Bill Cancel API Invalid Response: ' . json_encode($data));
-            Log::warning('E-Way Bill API did not cancel, applying local fallback cancellation', [
-                'ewaybill_id' => $ewaybill->id,
-                'http_status' => $response->status(),
-            ]);
-
-            $applyLocalCancellation('api-non-success', 'Cancelled locally because API did not confirm cancellation');
-            DB::commit();
-
-            return redirect()->back()->with('warning', 'API did not confirm cancellation. Local database was updated.');
-        } catch (\Exception $e) {
-            Log::error('E-Way Bill Cancellation Error: ' . $e->getMessage());
-            try {
-                if (isset($ewaybill) && $ewaybill instanceof Ewaybill) {
-                    Log::warning('E-Way Bill exception fallback cancellation applied', [
-                        'ewaybill_id' => $ewaybill->id,
-                        'error' => $e->getMessage(),
-                    ]);
-
-                    $applyLocalCancellation('exception-fallback', 'Cancelled locally after exception: ' . $e->getMessage());
-                    DB::commit();
-
-                    return redirect()->back()->with('warning', 'API cancel failed, but local database was updated: ' . $e->getMessage());
-                }
-            } catch (\Exception $fallbackException) {
-                Log::error('E-Way Bill Local Fallback Cancellation Error: ' . $fallbackException->getMessage());
-                DB::rollBack();
-            }
-
             DB::rollBack();
+
+            return redirect()->back()->with('error', 'Invalid response from e-way bill API');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('E-Way Bill Cancellation Error: ' . $e->getMessage());
 
             return redirect()->back()->with('error', 'An error occurred while cancelling e-way bill: ' . $e->getMessage());
         }
