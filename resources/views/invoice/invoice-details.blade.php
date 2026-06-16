@@ -171,36 +171,56 @@
                                                     ? $ewaybill->ewb_dt->copy()->addDay()
                                                     : $ewaybill->created_at->copy()->addDay();
                                             @endphp
-                                            <tr>
-                                                <td>{{ $ewaybill->einvoice->irn }}</td>
-                                                <td>{{ $ewaybill->ewb_no }}</td>
-                                                <td>{{ $ewaybill->ewb_dt }}</td>
-                                                <td>{{ $ewaybill->ewb_valid_till }}</td>
-                                                <td>
-                                                    <a href="{{ route('invoice.downloadEWayBillPdf', $ewaybill->id) }}"
-                                                        class="btn btn-icon btn-sm bg-primary-subtle me-1">Download</a>
-                                                </td>
-                                                <td>
-                                                    <span class="badge bg-warning me-2">
-                                                        {{ $cancelBefore->format('d/m/Y H:i') }}</span>
-                                                </td>
-                                                <td>
-                                                    @if ($cancelBefore > now())
-                                                        <form action="{{ route('invoice.cancelEWayBill', $ewaybill->id) }}"
-                                                            method="POST" style="display: inline;"
-                                                            onsubmit="return confirm('Are you sure you want to cancel this E-Way Bill? This action cannot be undone.')">
-                                                            @csrf
-                                                            @method('DELETE')
-                                                            <button type="submit"
-                                                                class="btn btn-icon btn-sm bg-danger-subtle me-1">Cancel
-                                                                E-Way
-                                                                Bill</button>
-                                                        </form>
-                                                    @else
-                                                        <span class="badge bg-success me-2">Cannot Cancel</span>
-                                                    @endif
-                                                </td>
-                                            </tr>
+                                            @if ($ewaybill->ewaybill_status !== 'CAN')
+                                                <tr>
+                                                    <td>{{ $ewaybill->einvoice->irn }}</td>
+                                                    <td>{{ $ewaybill->ewb_no }}</td>
+                                                    <td>{{ $ewaybill->ewb_dt }}</td>
+                                                    <td>{{ $ewaybill->ewb_valid_till }}</td>
+                                                    <td>
+                                                        <a href="{{ route('invoice.downloadEWayBillPdf', $ewaybill->id) }}"
+                                                            class="btn btn-icon btn-sm bg-primary-subtle me-1">Download</a>
+                                                    </td>
+                                                    <td>
+                                                        <span class="badge bg-warning me-2">
+                                                            {{ $cancelBefore->format('d/m/Y H:i') }}</span>
+                                                    </td>
+                                                    <td>
+                                                        @if ($cancelBefore > now())
+                                                            <form
+                                                                action="{{ route('invoice.cancelEWayBill', $ewaybill->id) }}"
+                                                                method="POST" style="display: inline;"
+                                                                onsubmit="return confirm('Are you sure you want to cancel this E-Way Bill? This action cannot be undone.')">
+                                                                @csrf
+                                                                @method('DELETE')
+                                                                <button type="submit"
+                                                                    class="btn btn-icon btn-sm bg-danger-subtle me-1">Cancel
+                                                                    E-Way
+                                                                    Bill</button>
+                                                            </form>
+                                                        @else
+                                                            <span class="badge bg-success me-2">Cannot Cancel</span>
+                                                        @endif
+                                                    </td>
+                                                </tr>
+                                            @else
+                                                <tr>
+                                                    <td>{{ $ewaybill->einvoice->irn }}</td>
+                                                    <td>{{ $ewaybill->ewb_no }}</td>
+                                                    <td>{{ $ewaybill->ewb_dt }}</td>
+                                                    <td>{{ $ewaybill->ewb_valid_till }}</td>
+                                                    <td>
+                                                        <a href="{{ route('invoice.downloadEWayBillPdf', $ewaybill->id) }}"
+                                                            class="btn btn-icon btn-sm bg-primary-subtle me-1">Download</a>
+                                                    </td>
+                                                    <td>
+                                                        cancelled
+                                                    </td>
+                                                    <td>
+                                                        cancelled
+                                                    </td>
+                                                </tr>
+                                            @endif
                                         @endforeach
                                     </table>
                                 </div>
