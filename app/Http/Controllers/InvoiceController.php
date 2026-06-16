@@ -1780,11 +1780,6 @@ class InvoiceController extends Controller
                 return redirect()->back()->with('error', 'E-Way Bill can no longer be cancelled.');
             }
 
-            // Check if already expired
-            if ($ewaybill->ewb_valid_till && $ewaybill->ewb_valid_till <= now()) {
-                return redirect()->back()->with('error', 'E-Way Bill is already expired.');
-            }
-
             // Get JWT token
             Log::info('E-Way Bill cancel token request starting', [
                 'token_url' => $this->getEInvoiceApiBaseUrl() . '/token-auth',
