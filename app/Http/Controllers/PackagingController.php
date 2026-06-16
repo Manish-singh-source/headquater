@@ -65,7 +65,7 @@ class PackagingController extends Controller
                 $query->where('warehouse_id', $userWarehouseId);
             }
         });
-        $orders = $orders->get();
+        $orders = $orders->latest()->get();
 
         // dd($orders);
 

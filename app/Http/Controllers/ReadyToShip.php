@@ -45,6 +45,7 @@ class ReadyToShip extends Controller
             $orders = SalesOrder::with('customerGroup')
                 ->with(['orderedProducts.warehouseAllocations' => $allocationReadyFilter])
                 ->whereHas('orderedProducts.warehouseAllocations', $allocationReadyFilter)
+                ->latest()
                 ->get();
             
             // dd($orders);
