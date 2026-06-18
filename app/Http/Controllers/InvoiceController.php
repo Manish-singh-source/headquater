@@ -57,6 +57,25 @@ class InvoiceController extends Controller
 
         $applyInvoiceFilters($query);
 
+        if ($filters['invoice_no'] !== '') {
+            $invoice = (clone $query)
+                ->with(['salesOrder'])
+                ->first();
+
+            if (! $invoice) {
+                return redirect()->route('invoices')->with('error', 'No invoice found for the entered invoice number.');
+            }
+
+            if ($invoice->sales_order_id) {
+                return redirect()->route('invoices.view', [
+                    'id' => $invoice->sales_order_id,
+                    'invoice_no' => $filters['invoice_no'],
+                ]);
+            }
+
+            return redirect()->route('invoices-details', $invoice->id);
+        }
+
         $invoices = $query->get();
 
         // Separate manual and sales order invoices

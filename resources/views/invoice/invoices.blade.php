@@ -33,7 +33,21 @@
             <div class="card mt-4">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h5 class="mb-0">Invoice List</h5>
+                        <div class="d-flex align-items-center gap-2">
+                            <h5 class="mb-0">Invoice List</h5>
+                            @if (request()->filled('invoice_no'))
+                                <span class="badge bg-primary">
+                                    Filter: {{ request('invoice_no') }}
+                                </span>
+                            @endif
+                        </div>
+
+                        @if (request()->filled('invoice_no'))
+                            <a href="{{ route('invoices.view', ['id' => request()->route('id')]) }}"
+                                class="btn btn-outline-secondary btn-sm">
+                                Clear
+                            </a>
+                        @endif
 
                     </div>
                     <div class="customer-table">
@@ -201,12 +215,19 @@
         $(document).ready(function() {
             // DataTable is already initialized in master.blade.php for #example table
             // This script adds additional functionality
-            $('#example').DataTable().order([]).draw();
+            var invoiceNo = @json(trim((string) request('invoice_no', '')));
+            var table = $('#example').DataTable().order([]);
+
+            if (invoiceNo) {
+                table.column(2).search(invoiceNo).draw();
+            } else {
+                table.draw();
+            }
 
             // Export to Excel functionality
             $('#exportInvoices').on('click', function() {
                 // Trigger the hidden Excel export button from DataTable
-                $('#example').DataTable().button('.buttons-excel').trigger();
+                table.button('.buttons-excel').trigger();
             });
 
             // Select All checkbox functionality
