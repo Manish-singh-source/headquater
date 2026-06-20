@@ -635,7 +635,6 @@
 
       <!-- Notification Container -->
       <div id="notification-container"></div>
-      @flasher_render
 
       <!--start footer-->
       <!--start overlay-->
@@ -916,6 +915,58 @@
       @stack('scripts')
 
       @yield('script')
+
+      <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+      @if (session('success') || session('error') || session('warning') || session('info'))
+          <script>
+              document.addEventListener('DOMContentLoaded', function () {
+                  @if (session('success'))
+                      Swal.fire({
+                          icon: 'success',
+                          title: 'Success',
+                          text: @json(session('success')),
+                          timer: 2500,
+                          showConfirmButton: false
+                      });
+                  @endif
+
+                  @if (session('error'))
+                      Swal.fire({
+                          icon: 'error',
+                          title: 'Error',
+                          text: @json(session('error')),
+                          timer: 2500,
+                          showConfirmButton: false
+                      });
+                  @endif
+
+                  @if (session('warning'))
+                      Swal.fire({
+                          icon: 'warning',
+                          title: 'Warning',
+                          text: @json(session('warning')),
+                          timer: 2500,
+                          showConfirmButton: false
+                      });
+                  @endif
+
+                  @if (session('info'))
+                      Swal.fire({
+                          icon: 'info',
+                          title: 'Info',
+                          text: @json(session('info')),
+                          timer: 2500,
+                          showConfirmButton: false
+                      });
+                  @endif
+              });
+          </script>
+      @endif
   </body>
 
   </html>
+
+
+
+

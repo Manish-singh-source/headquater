@@ -441,7 +441,7 @@ class SalesOrderController extends Controller
     {
         $file = $request->file('csv_file');
         if (! $file) {
-            return redirect()->back()->with(['csv_file' => 'Please upload a CSV file.']);
+            return redirect()->back()->with('error', 'Please upload a CSV file.');
         }
 
         $file = $request->file('csv_file')->getPathname();
@@ -477,13 +477,13 @@ class SalesOrderController extends Controller
         $missingHeaders = array_diff($requiredHeaders, $fileHeaders);
 
         if (! empty($missingHeaders)) {
-            return redirect()->back()->with(['error' => 'Missing required columns: ' . implode(', ', $missingHeaders)]);
+            return redirect()->back()->with('error', 'Missing required columns: ' . implode(', ', $missingHeaders));
         }
 
         // 🔹 Step 1: Check for duplicates (Customer + SKU)
         $duplicateCheck = $this->checkDuplicateSkuInExcel($rows);
         if ($duplicateCheck) {
-            return redirect()->back()->with(['error' => $duplicateCheck]);
+            return redirect()->back()->with('error', $duplicateCheck);
         }
 
         // Check if auto allocation is selected
@@ -516,13 +516,13 @@ class SalesOrderController extends Controller
                     if (! isset($record[$field]) || (is_string($record[$field]) && trim($record[$field]) === '')) {
                         DB::rollBack();
 
-                        return redirect()->back()->with(['error' => "{$field} is required for all rows. Please check your CSV file."])->withInput();
+                        return redirect()->back()->with('error', "{$field} is required for all rows. Please check your CSV file.")->withInput();
                     }
 
                     if ($record['PO Quantity'] <= 0) {
                         DB::rollBack();
 
-                        return redirect()->back()->with(['error' => "For SKU: {$record['SKU Code']}, PO Quantity Must be greater than 0."])->withInput();
+                        return redirect()->back()->with('error', "For SKU: {$record['SKU Code']}, PO Quantity Must be greater than 0.")->withInput();
                     }
                 }
 
@@ -547,7 +547,7 @@ class SalesOrderController extends Controller
                     if (! $product) {
                         $productMaster = Product::where('sku', $sku)->first();
                         if (! $productMaster) {
-                            return redirect()->back()->with(['error' => 'Product Not Found For ' . $sku])->withInput();
+                            return redirect()->back()->with('error', 'Product Not Found For ' . $sku)->withInput();
                         }
                         if ($productMaster) {
                             // Create a pseudo product object for consistency
@@ -738,7 +738,7 @@ class SalesOrderController extends Controller
                 $productMapping = ProductMapping::where('sku', $sku)->where('item_code', $record['Item Code'])->first();
 
                 if (! $productMapping) {
-                    return redirect()->back()->with(['error' => 'No sku mapping found for SKU: ' . $record['SKU Code'] . ' and Item Code: ' . $record['Item Code'] . '. Please check the data and try again.']);
+                    return redirect()->back()->with('error', 'No sku mapping found for SKU: ' . $record['SKU Code'] . ' and Item Code: ' . $record['Item Code'] . '. Please check the data and try again.');
                 }
                 // Case pack quantity
                 $casePackQty = (int) ($productObj->pcs_set ?? 0) * (int) ($productObj->sets_ctn ?? 0);
@@ -811,7 +811,7 @@ class SalesOrderController extends Controller
             }
 
             if (empty($insertedRows)) {
-                return redirect()->back()->with(['csv_file' => 'No valid data found in the CSV file.']);
+                return redirect()->back()->with('error', 'No valid data found in the CSV file.');
             }
 
             $filteredRows = collect($insertedRows)->map(function ($row) {
@@ -828,7 +828,7 @@ class SalesOrderController extends Controller
 
             $customerGroup = CustomerGroup::all();
             $warehouses = Warehouse::all();
-
+            session()->flash('success', 'CSV file processed successfully.');
             return view('salesOrder.process-order', ['customerGroup' => $customerGroup, 'warehouses' => $warehouses, 'fileData' => $insertedRows]);
         } catch (\Exception $e) {
 
@@ -928,7 +928,7 @@ class SalesOrderController extends Controller
         $file = $request->file('csv_file');
 
         if (! $file) {
-            return redirect()->back()->with(['csv_file' => 'Please upload a CSV file.']);
+            return redirect()->back()->with('error', 'Please upload a CSV file.');
         }
 
         // Check if auto allocation is selected
@@ -950,13 +950,13 @@ class SalesOrderController extends Controller
             $missingHeaders = array_diff($requiredHeaders, $fileHeaders);
 
             if (! empty($missingHeaders)) {
-                return redirect()->back()->with(['error' => 'Missing required columns: ' . implode(', ', $missingHeaders)]);
+                return redirect()->back()->with('error', 'Missing required columns: ' . implode(', ', $missingHeaders));
             }
 
             // 🔹 Step 1: Check for duplicates (Customer + SKU)
             $duplicateCheck = $this->checkDuplicateSkuInExcel($rows);
             if ($duplicateCheck) {
-                return redirect()->back()->with(['error' => $duplicateCheck]);
+                return redirect()->back()->with('error', $duplicateCheck);
             }
 
             // 🔹 Step 2: Validate total block per SKU does not exceed total available stock.
@@ -1069,7 +1069,7 @@ class SalesOrderController extends Controller
                     if (! isset($record[$field]) || (is_string($record[$field]) && trim($record[$field]) === '')) {
                         DB::rollBack();
 
-                        return redirect()->back()->with(['error' => "{$field} is required for all rows. Please check your CSV file."])->withInput();
+                        return redirect()->back()->with('error', "{$field} is required for all rows. Please check your CSV file.")->withInput();
                     }
                 }
 
@@ -1821,7 +1821,7 @@ class SalesOrderController extends Controller
             if (! empty($missingHeaders)) {
                 DB::rollBack();
 
-                return redirect()->back()->with(['error' => 'Missing required columns: ' . implode(', ', $missingHeaders)]);
+                return redirect()->back()->with('error', 'Missing required columns: ' . implode(', ', $missingHeaders));
             }
 
             // 🔹 Step 1: Check for duplicates (Customer + SKU)
@@ -1830,7 +1830,7 @@ class SalesOrderController extends Controller
             // 🔹 Step 1: Check for duplicates (Customer + SKU)
             $duplicateCheck = $this->checkDuplicateSkuInExcel($rows);
             if ($duplicateCheck) {
-                return redirect()->back()->with(['error' => $duplicateCheck]);
+                return redirect()->back()->with('error', $duplicateCheck);
             }
 
             $products = [];
@@ -1844,7 +1844,7 @@ class SalesOrderController extends Controller
                     if (! isset($record[$field]) || (is_string($record[$field]) && trim($record[$field]) === '')) {
                         DB::rollBack();
 
-                        return redirect()->back()->with(['error' => "{$field} is required for all rows. Please check your CSV file."])->withInput();
+                        return redirect()->back()->with('error', "{$field} is required for all rows. Please check your CSV file.")->withInput();
                     }
                 }
                 // if (empty($record['SKU Code'])) {
@@ -3085,3 +3085,7 @@ class SalesOrderController extends Controller
         }
     }
 }
+
+
+
+

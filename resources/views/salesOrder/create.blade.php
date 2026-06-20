@@ -1,5 +1,6 @@
 @extends('layouts.master')
 @section('main-content')
+
     <main class="main-wrapper">
         <div class="main-content">
             <div class="row">
