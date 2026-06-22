@@ -853,16 +853,16 @@ class SalesOrderController extends Controller
         // Add rows while transforming
         SimpleExcelReader::create($originalPath)->getRows()->each(function (array $row) use ($writer) {
             $product = Product::where('sku', $row['SKU Code'])->first();
-            if (! $product) {
-                return redirect()->back()->with(['error' => 'Product Not Found For This SKU: ' . $row['SKU Code'] . ' and Item Code: ' . $row['Item Code'] . '. Please check the data and try again.']);
-            }
-            //
-            $productMapping = ProductMapping::where('sku', $row['SKU Code'])
-                ->where('item_code', trim($row['Item Code']))
-                ->first();
-            if (! $productMapping) {
-                return redirect()->back()->with(['error' => 'No sku mapping found for SKU: ' . $row['SKU Code'] . ' and Item Code: ' . $row['Item Code'] . '. Please check the data and try again.']);
-            }
+            // if (! $product) {
+            //     return redirect()->back()->with(['error' => 'Product Not Found For This SKU: ' . $row['SKU Code'] . ' and Item Code: ' . $row['Item Code'] . '. Please check the data and try again.']);
+            // }
+            // //
+            // $productMapping = ProductMapping::where('sku', $row['SKU Code'])
+            //     ->where('item_code', trim($row['Item Code']))
+            //     ->first();
+            // if (! $productMapping) {
+            //     return redirect()->back()->with(['error' => 'No sku mapping found for SKU: ' . $row['SKU Code'] . ' and Item Code: ' . $row['Item Code'] . '. Please check the data and try again.']);
+            // }
             $writer->addRow([
                 'Customer Name' => $row['Customer Name'] ?? '',
                 'PO Number' => $row['PO Number'] ?? '',
@@ -873,7 +873,7 @@ class SalesOrderController extends Controller
                 'PO Expiry Date' => $row['PO Expiry Date'] ?? '',
                 'HSN' => $row['HSN'] ?? '',
                 'GST' => $row['GST'] ?? '',
-                'Portal Code' => $productMapping && $productMapping->portal_code ? $productMapping->portal_code ?? $row['Portal Code'] : '',
+                'Portal Code' => $row['Portal Code'] ?? '',
                 'Item Code' => $row['Item Code'] ?? '',
                 'Description' => $row['Description'] ?? '',
 
