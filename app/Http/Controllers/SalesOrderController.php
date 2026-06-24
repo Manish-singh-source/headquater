@@ -91,6 +91,45 @@ class SalesOrderController extends Controller
         return null;
     }
 
+    protected function getSkuWiseAvailableQuantity(string $sku, float|int $requestedQuantity, array &$productStockCache, bool $isAutoAllocation, $warehouseId): float|int
+    {
+        $sku = trim($sku);
+        $requestedQuantity = (float) $requestedQuantity;
+
+        if (! isset($productStockCache[$sku])) {
+            if ($isAutoAllocation) {
+                $productStockCache[$sku] = [
+                    'available' => (float) WarehouseStock::where('sku', $sku)
+                        ->whereHas('warehouse', function ($query) {
+                            $query->where('status', '1');
+                        })
+                        ->sum('available_quantity'),
+                ];
+            } else {
+                $productStockCache[$sku] = [
+                    'available' => (float) (WarehouseStock::where('sku', $sku)
+                        ->where('warehouse_id', $warehouseId)
+                        ->value('available_quantity') ?? 0),
+                ];
+            }
+        }
+
+        $availableQty = $productStockCache[$sku]['available'];
+
+        if ($availableQty >= $requestedQuantity) {
+            $productStockCache[$sku]['available'] -= $requestedQuantity;
+
+            return $requestedQuantity;
+        }
+
+        $productStockCache[$sku]['available'] = 0;
+
+        return $availableQty;
+    }
+
+
+
+
     // ========================================= Re-Used Methods End ================================================
     
     
@@ -1642,7 +1681,8 @@ class SalesOrderController extends Controller
 
         // Create writer
         $writer = SimpleExcelWriter::create($tempXlsxPath);
-
+        $isAutoAllocation = ($salesOrderDetails->whereNull('warehouse_stock_id')->count() > 0);
+        $productStockCache = [];
         foreach ($filteredOrders as $order) {
             $fulfilledQuantity = 0;
 
@@ -1778,10 +1818,11 @@ class SalesOrderController extends Controller
                 'Quantity Fulfilled' => $order->dispatched_quantity ?? (float) $qtyFullfilled ?? 0,
                 'Final Fulfilled Quantity' => (float) ($order->final_dispatched_quantity ?? 0),
                 'Final Shipped Quantity' => (float) ($order->final_final_dispatched_quantity ?? 0),
+                'Available Quantity' => $this->getSkuWiseAvailableQuantity((string) ($order->tempOrder?->sku ?? ''), (float) ($order->ordered_quantity ?? 0), $productStockCache, $isAutoAllocation, $salesOrder->warehouse_id),
                 'Warehouse Allocation' => $this->sanitizeExcelValue($warehouseAllocation),
                 'Invoice Status' => ucfirst($order->invoice_status),
-            ];
 
+            ];
             $writer->addRow($rowData);
         }
 
