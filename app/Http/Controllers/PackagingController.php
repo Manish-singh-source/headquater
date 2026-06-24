@@ -642,6 +642,19 @@ class PackagingController extends Controller
                         return redirect()->back()->with(['error' => "{$field} is required for all rows. Please check your CSV file."])->withInput();
                     }
                 }
+                
+                if ($record['Final Dispatch Qty'] > $record['PO Quantity']) {
+                    DB::rollBack();
+
+                    return redirect()->back()->with('error', 'Final Dispatch Quantity cannot be greater than PO Quantity for SKU ' . trim($record['SKU Code'] ?? '') . ' (PO Quantity: ' . $record['PO Quantity'] . ', Block: ' . $record['Final Dispatch Qty'] . ').')->withInput();
+                }
+                
+                if ($record['Total Dispatch Qty'] > $record['PO Quantity']) {
+                    DB::rollBack();
+
+                    return redirect()->back()->with('error', 'Total Dispatch Quantity cannot be greater than PO Quantity for SKU ' . trim($record['SKU Code'] ?? '') . ' (PO Quantity: ' . $record['PO Quantity'] . ', Block: ' . $record['Total Dispatch Qty'] . ').')->withInput();
+                }
+
 
                 $finalDispatchQtyRaw = trim((string) ($record['Final Dispatch Qty'] ?? ''));
                 $totalDispatchQtyRaw = trim((string) ($record['Total Dispatch Qty'] ?? ''));
