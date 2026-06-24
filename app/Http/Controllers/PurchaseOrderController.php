@@ -798,6 +798,7 @@ class PurchaseOrderController extends Controller
                                         'sales_order_id' => $salesOrderProduct->sales_order_id,
                                         'sales_order_product_id' => $salesOrderProduct->id,
                                         'warehouse_id' => $warehouseId,
+                                        'customer_id' => $salesOrderProduct->customer_id,
                                         'sku' => $product->vendor_sku_code,
                                         'allocated_quantity' => $allocatedQty,
                                         'sequence' => $maxSequence + 1,

@@ -2178,7 +2178,10 @@ class SalesOrderController extends Controller
                     }
 
                     // Build dynamic grouping key: po_number + facility_name
-                    $groupKey = $poNumber . '|' . $facilityName;
+                    // $groupKey = $poNumber . '|' . $facilityName;
+                    // This keeps same-customer allocations split into separate invoices per warehouse.
+                    $groupKey = $poNumber . '|' . $facilityName . '|' . ($allocation->warehouse_id ?? '');
+
 
                     if ($request->filled('brand')) {
                         $brand = $detail->product->brand ?? '';
@@ -3085,6 +3088,7 @@ class SalesOrderController extends Controller
         }
     }
 }
+
 
 
 
