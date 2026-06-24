@@ -1892,6 +1892,19 @@ class SalesOrderController extends Controller
                     'updated_at' => now(),
                 ];
 
+                if ($record['Block Quantity'] > $record['PO Quantity']) {
+                    DB::rollBack();
+
+                    return redirect()->back()->with('error', 'Block quantity cannot be greater than PO Quantity for SKU ' . trim($record['SKU Code'] ?? '') . ' (PO Quantity: ' . $record['PO Quantity'] . ', Block: ' . $record['Block Quantity'] . ').')->withInput();
+                }
+                
+                if ($record['Final Fulfilled Quantity'] > $record['PO Quantity']) {
+                    DB::rollBack();
+
+                    return redirect()->back()->with('error', 'Final Fulfilled Quantity cannot be greater than PO Quantity for SKU ' . trim($record['SKU Code'] ?? '') . ' (PO Quantity: ' . $record['PO Quantity'] . ', Block: ' . $record['Final Fulfilled Quantity'] . ').')->withInput();
+                }
+
+
                 // 4. Update SalesOrderProduct
                 $salesOrderProductUpdate->price = $record['PO MRP'] ?? 0;
                 $salesOrderProductUpdate->subtotal = ($record['Basic Rate'] ?? 0) * ($record['PO Quantity'] ?? 0);
