@@ -330,7 +330,7 @@ class PurchaseOrderController extends Controller
     {
         $purchaseOrders = PurchaseOrder::with(['purchaseOrderProducts', 'vendorPI', 'salesOrder'])
             ->withSum('purchaseOrderProducts', 'ordered_quantity')
-            ->withCount('purchaseOrderProducts')->get();
+            ->withCount('purchaseOrderProducts')->latest()->get();
 
         return view('purchaseOrder.index', compact('purchaseOrders'));
     }
