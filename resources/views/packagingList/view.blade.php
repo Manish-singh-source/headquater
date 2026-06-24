@@ -253,14 +253,17 @@
                                         <th>Description</th>
                                         <th>GST</th>
                                         <th>Basic&nbsp;Rate</th>
-                                        <th>Net&nbsp;Landing&nbsp;Rate</th>
+                                        @if ($isAdmin ?? false)
+                                            <th>Net&nbsp;Landing&nbsp;Rate</th>
+                                        @endif
                                         <th>MRP</th>
                                         <th>PO&nbsp;Quantity</th>
-                                        <th>Purchase&nbsp;Order&nbsp;Quantity</th>
-                                        <th>Vendor&nbsp;PI&nbsp;Fulfillment&nbsp;Quantity</th>
-                                        <th>Vendor&nbsp;PI&nbsp;Received&nbsp;Quantity</th>
-
-                                        <th>Warehouse&nbsp;Name</th>
+                                        @if ($isAdmin ?? false)
+                                            <th>Purchase&nbsp;Order&nbsp;Quantity</th>
+                                            <th>Vendor&nbsp;PI&nbsp;Fulfillment&nbsp;Quantity</th>
+                                            <th>Vendor&nbsp;PI&nbsp;Received&nbsp;Quantity</th>
+                                            <th>Warehouse&nbsp;Name</th>
+                                        @endif
                                         <th>Warehouse&nbsp;Allocation</th>
                                         {{-- <th>PI&nbsp;Quantity</th> --}}
                                         <th>Purchase&nbsp;Order&nbsp;No</th>
@@ -348,13 +351,17 @@
                                             <td>{{ $order->tempOrder->description }}</td>
                                             <td>{{ $order->tempOrder->gst }}</td>
                                             <td>{{ $order->tempOrder->basic_rate }}</td>
-                                            <td>{{ $order->tempOrder->net_landing_rate }}</td>
+                                            @if ($isAdmin ?? false)
+                                                <td>{{ $order->tempOrder->net_landing_rate }}</td>
+                                            @endif
                                             <td>{{ $order->tempOrder->mrp }}</td>
                                             <td>{{ $order->tempOrder->po_qty }}</td>
-                                            <td>{{ $order->tempOrder?->purchase_order_quantity }}</td>
-                                            <td>{{ $order->tempOrder?->vendor_pi_fulfillment_quantity }}</td>
-                                            <td>{{ $order->tempOrder?->vendor_pi_received_quantity }}</td>
-                                            <td>{{ $warehouseName }}</td>
+                                            @if ($isAdmin ?? false)
+                                                <td>{{ $order->tempOrder?->purchase_order_quantity }}</td>
+                                                <td>{{ $order->tempOrder?->vendor_pi_fulfillment_quantity }}</td>
+                                                <td>{{ $order->tempOrder?->vendor_pi_received_quantity }}</td>
+                                                <td>{{ $warehouseName }}</td>
+                                            @endif
                                             <td>
                                                 @if ($order->warehouseAllocations->count() >= 1)
                                                     @foreach ($order->warehouseAllocations as $allocation)
@@ -495,7 +502,7 @@
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="23" class="text-center">No records found. Please update or
+                                            <td colspan="{{ ($isAdmin ?? false) ? 26 : 21 }}" class="text-center">No records found. Please update or
                                                 upload
                                                 a PO to see data.</td>
                                         </tr>
