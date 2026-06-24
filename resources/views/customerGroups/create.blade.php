@@ -4,7 +4,7 @@
         <div class="main-content">
 
             <!-- Error Display at Top -->
-            @if(session('error'))
+            @if (session('error'))
                 <div class="alert alert-danger border-0 bg-danger text-white shadow-sm mb-4" role="alert">
                     <div class="d-flex align-items-center">
                         <i class="bi bi-exclamation-triangle-fill me-3 fs-4"></i>
@@ -22,7 +22,8 @@
                     <nav aria-label="breadcrumb">
                         <ol class="breadcrumb mb-0">
                             <li class="breadcrumb-item">
-                                <a href="{{ route('index') }}" class="d-inline-flex align-items-center" aria-label="Dashboard">
+                                <a href="{{ route('index') }}" class="d-inline-flex align-items-center"
+                                    aria-label="Dashboard">
                                     <div class="parent-icon"><i class="bi bi-house-fill"></i></div>
                                     <span>Dashboard</span>
                                 </a>
@@ -93,6 +94,10 @@
                                         </button>
                                         <a href="{{ route('customer.groups.index') }}" class="btn btn-secondary">
                                             <i class="bi bi-x-circle me-2"></i>Cancel
+                                        </a>
+                                        <a href="{{ asset('uploads/excel-formats/customers-group.xlsx') }}"
+                                            class="btn btn-outline-success" download="customers-group.xlsx">
+                                            Export Format
                                         </a>
                                     </div>
                                 </div>

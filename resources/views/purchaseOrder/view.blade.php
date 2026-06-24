@@ -99,7 +99,7 @@
                                     <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                                         <span><b>Sales Order Id</b></span>
                                         <span id="sales-order-id" class="d-none">{{ $purchaseOrder->sales_order_id }}</span>
-                                        <span>{{ $purchaseOrder->salesOrder?->order_number ?? 'NA'}}</span>
+                                        <span>{{ $purchaseOrder->salesOrder?->order_number ?? 'NA' }}</span>
                                     </li>
                                 @endisset
                                 <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
@@ -132,8 +132,7 @@
                                 @if (isset($purchaseOrder->vendorPI[0]->total_amount) && $purchaseOrder->vendorPI[0]->total_amount > 0)
                                     <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                                         <span><b>Total Amount</b></span>
-                                        <span class="fw-bold"
-                                            >{{ $purchaseOrder->vendorPI[0]->total_amount ?? 0 }}
+                                        <span class="fw-bold">{{ $purchaseOrder->vendorPI[0]->total_amount ?? 0 }}
                                             Rs.</span>
                                     </li>
                                 @endif
@@ -141,8 +140,7 @@
                                 @if (isset($purchaseOrder->vendorPI[0]->total_paid_amount) && $purchaseOrder->vendorPI[0]->total_paid_amount > 0)
                                     <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                                         <span><b>Total Paid Amount</b></span>
-                                        <span class="fw-bold"
-                                            >{{ $purchaseOrder->vendorPI[0]->total_paid_amount ?? 0 }}
+                                        <span class="fw-bold">{{ $purchaseOrder->vendorPI[0]->total_paid_amount ?? 0 }}
                                             Rs.</span>
                                     </li>
                                 @endif
@@ -150,8 +148,7 @@
                                 @if (isset($purchaseOrder->vendorPI[0]->total_due_amount) && $purchaseOrder->vendorPI[0]->total_due_amount > 0)
                                     <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                                         <span><b>Total Due Amount</b></span>
-                                        <span class="fw-bold"
-                                            >{{ $purchaseOrder->vendorPI[0]->total_due_amount ?? 0 }}
+                                        <span class="fw-bold">{{ $purchaseOrder->vendorPI[0]->total_due_amount ?? 0 }}
                                             Rs.</span>
                                     </li>
                                 @endif
@@ -159,8 +156,8 @@
                                 @if (isset($purchaseOrder->vendorPI[0]->payment_status))
                                     <li class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
                                         <span><b>Payment Status</b></span>
-                                        <span class="fw-bold"
-                                            >{{ $payment_statuses[$purchaseOrder->vendorPI[0]->payment_status] }}</span>
+                                        <span
+                                            class="fw-bold">{{ $payment_statuses[$purchaseOrder->vendorPI[0]->payment_status] }}</span>
                                     </li>
                                 @endif
 
@@ -459,11 +456,15 @@
                                                 @endisset
 
                                                 <div class="col-12 mb-3">
-                                                    <label for="warehouse_id" class="form-label">Select Warehouse <span class="text-danger">*</span></label>
-                                                    <select name="warehouse_id" id="warehouse_id" class="form-select @error('warehouse_id') is-invalid @enderror" required>
+                                                    <label for="warehouse_id" class="form-label">Select Warehouse
+                                                        <span class="text-danger">*</span></label>
+                                                    <select name="warehouse_id" id="warehouse_id"
+                                                        class="form-select @error('warehouse_id') is-invalid @enderror"
+                                                        required>
                                                         <option value="">-- Select Warehouse --</option>
-                                                        @foreach($warehouses as $warehouse)
-                                                            <option value="{{ $warehouse->id }}" {{ old('warehouse_id') == $warehouse->id ? 'selected' : '' }}>
+                                                        @foreach ($warehouses as $warehouse)
+                                                            <option value="{{ $warehouse->id }}"
+                                                                {{ old('warehouse_id') == $warehouse->id ? 'selected' : '' }}>
                                                                 {{ $warehouse->name }}
                                                             </option>
                                                         @endforeach
@@ -481,6 +482,11 @@
                                                 </div>
                                             </div>
                                             <div class="modal-footer">
+                                                <a href="{{ asset('uploads/excel-formats/vendor-pi.xlsx') }}"
+                                                    class="btn btn-outline-success"
+                                                    download="vendor-pi.xlsx">
+                                                    Export Format
+                                                </a>
                                                 <button type="button" class="btn btn-secondary"
                                                     data-bs-dismiss="modal">Close</button>
                                                 <button type="submit" class="btn btn-primary">Submit</button>
@@ -513,11 +519,15 @@
                                                     value="{{ $purchaseOrder->vendor_code }}">
 
                                                 <div class="col-12 mb-3">
-                                                    <label for="warehouse_id_custom" class="form-label">Select Warehouse <span class="text-danger">*</span></label>
-                                                    <select name="warehouse_id" id="warehouse_id_custom" class="form-select @error('warehouse_id') is-invalid @enderror" required>
+                                                    <label for="warehouse_id_custom" class="form-label">Select
+                                                        Warehouse <span class="text-danger">*</span></label>
+                                                    <select name="warehouse_id" id="warehouse_id_custom"
+                                                        class="form-select @error('warehouse_id') is-invalid @enderror"
+                                                        required>
                                                         <option value="">-- Select Warehouse --</option>
-                                                        @foreach($warehouses as $warehouse)
-                                                            <option value="{{ $warehouse->id }}" {{ old('warehouse_id') == $warehouse->id ? 'selected' : '' }}>
+                                                        @foreach ($warehouses as $warehouse)
+                                                            <option value="{{ $warehouse->id }}"
+                                                                {{ old('warehouse_id') == $warehouse->id ? 'selected' : '' }}>
                                                                 {{ $warehouse->name }}
                                                             </option>
                                                         @endforeach
@@ -711,7 +721,6 @@
                                                     @if (floor(floatval($product->purchase_rate)) == floor(floatval($product->product?->vendor_purchase_rate)))
                                                         <span class="badge text-success bg-success-subtle">Correct</span>
                                                     @else
-
                                                         <span class="badge text-danger bg-danger-subtle">Incorrect</span>
                                                     @endif
                                                 </td>

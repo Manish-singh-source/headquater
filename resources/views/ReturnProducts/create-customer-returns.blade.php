@@ -32,7 +32,8 @@
                                                         <option selected="" disabled="" value="">-- Select --
                                                         </option>
                                                         @foreach ($salesOrders as $salesOrder)
-                                                            <option value="{{ $salesOrder->id }}">{{ $salesOrder->order_number }}
+                                                            <option value="{{ $salesOrder->id }}">
+                                                                {{ $salesOrder->order_number }}
                                                             </option>
                                                         @endforeach
                                                     </select>
@@ -56,6 +57,11 @@
                                                         class="form-control" value="" required="">
                                                 </div>
                                                 <div class="col-12 col-lg-3">
+                                                    <a href="{{ asset('uploads/excel-formats/customer-return.xlsx') }}"
+                                                        class="btn btn-outline-success"
+                                                        download="customer-return.xlsx">
+                                                        Export Format
+                                                    </a>
                                                     <button class="btn btn-primary">Submit</button>
                                                 </div>
                                             </div>

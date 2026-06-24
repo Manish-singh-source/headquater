@@ -63,11 +63,16 @@
                                                         <input type="file" name="csv_file" id="csv_file"
                                                             class="form-control" accept=".xlsx,.xls, .csv" required="">
                                                         <small class="text-muted">Please upload an Excel file (.xlsx or
-                                                            .xls or .csv) with customer data. Make sure the first row contains
+                                                            .xls or .csv) with customer data. Make sure the first row
+                                                            contains
                                                             column headers including "Facility Name".</small>
                                                     </div>
                                                 </div>
                                                 <div class="modal-footer">
+                                                    <a href="{{ asset('uploads/excel-formats/customers-bulk.xlsx') }}"
+                                                        class="btn btn-outline-success" download="customers-bulk.xlsx">
+                                                        Export Format
+                                                    </a>
                                                     <button type="button" class="btn btn-secondary"
                                                         data-bs-dismiss="modal">Close</button>
                                                     <button type="submit" id="holdOrder"
@@ -88,12 +93,14 @@
                                     aria-hidden="true">
                                     <div class="modal-dialog">
                                         <div class="modal-content">
-                                            <form action="{{ route('customer.group.import.excel.update', $customerGroup->id) }}"
+                                            <form
+                                                action="{{ route('customer.group.import.excel.update', $customerGroup->id) }}"
                                                 method="POST" enctype="multipart/form-data">
                                                 @csrf
                                                 @method('POST')
                                                 <div class="modal-header">
-                                                    <h1 class="modal-title fs-5" id="updateCustomerBulkLabel">Update Customers (Bulk)</h1>
+                                                    <h1 class="modal-title fs-5" id="updateCustomerBulkLabel">Update
+                                                        Customers (Bulk)</h1>
                                                     <button type="button" class="btn-close" data-bs-dismiss="modal"
                                                         aria-label="Close"></button>
                                                 </div>
@@ -102,8 +109,9 @@
                                                     <div class="col-12 mb-3">
                                                         <label for="customers_bulk_file" class="form-label">Customers
                                                             List (XLSX/XLS) <span class="text-danger">*</span></label>
-                                                        <input type="file" name="customers_bulk_file" id="customers_bulk_file"
-                                                            class="form-control" accept=".xlsx,.xls" required="">
+                                                        <input type="file" name="customers_bulk_file"
+                                                            id="customers_bulk_file" class="form-control"
+                                                            accept=".xlsx,.xls" required="">
                                                     </div>
                                                 </div>
                                                 <div class="modal-footer">
@@ -127,14 +135,16 @@
                                         <button type="button" class="btn btn-outline-primary">Action</button>
                                         <button type="button"
                                             class="btn btn-outline-primary split-bg-primary dropdown-toggle dropdown-toggle-split"
-                                            data-bs-toggle="dropdown"> <span class="visually-hidden">Toggle Dropdown</span>
+                                            data-bs-toggle="dropdown"> <span class="visually-hidden">Toggle
+                                                Dropdown</span>
                                         </button>
                                         <div class="dropdown-menu dropdown-menu-right dropdown-menu-lg-end">
                                             <a class="dropdown-item cursor-pointer" id="activate-selected">Activate
                                                 Selected</a>
                                             <a class="dropdown-item cursor-pointer" id="deactivate-selected">Deactivate
                                                 Selected</a>
-                                            <a class="dropdown-item cursor-pointer" id="delete-selected">Delete Selected</a>
+                                            <a class="dropdown-item cursor-pointer" id="delete-selected">Delete
+                                                Selected</a>
                                         </div>
                                     </div>
                                 </div>
@@ -398,7 +408,9 @@
             const groupId = $('#customerGroupId').text();
 
             const table = $('#customerGroupTable').DataTable({
-                "order": [[8, "desc"]],
+                "order": [
+                    [8, "desc"]
+                ],
                 'columnDefs': [{
                     'orderable': false,
                     'targets': [0, 10] // Disable ordering on the first and last columns

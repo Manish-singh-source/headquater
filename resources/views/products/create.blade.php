@@ -15,8 +15,13 @@
                                             </h5>
                                         </div>
                                         <div>
+                                            <a href="{{ asset('uploads/excel-formats/product-master.xlsx') }}"
+                                                class="btn btn-outline-success " download="product-master.xlsx">
+                                                Export Format
+                                            </a>
+
                                             <a href="{{ url()->previous() }}"
-                                                class="btn btn-primary float-end mt-n1">Back</a>
+                                                class="btn btn-primary float-end mt-n1 mx-2">Back</a>
                                         </div>
                                     </div>
                                 </div>
@@ -43,7 +48,7 @@
                                                         class="text-danger">*</span></label>
                                                 <input type="file" name="products_excel" id="products_excel"
                                                     class="form-control" multiple>
-                                                @error ('products_excel')
+                                                @error('products_excel')
                                                     <div class="text-danger">{{ $message }}</div>
                                                 @enderror
                                             </div>

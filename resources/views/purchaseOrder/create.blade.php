@@ -11,6 +11,7 @@
                             <li class="breadcrumb-item"><a href="javascript:;"><i class="bx bx-home-alt"></i></a>
                             </li>
                             <li class="breadcrumb-item active" aria-current="page">Create Purchase Order</li>
+
                         </ol>
                     </nav>
                 </div>
@@ -44,7 +45,7 @@
                                     </ul>
                                 </div>
                             @endif
-                           
+
                             <form class="row g-3" action="{{ route('store.purchase.order') }}" method="POST"
                                 enctype="multipart/form-data">
                                 @csrf
@@ -93,10 +94,13 @@
                                     <label for="input9" class="form-label">Purchase Order</label>
                                     <input type="file" name="purchase_excel" class="form-control">
                                 </div>
-
                                 <div class="col-md-4">
                                     <div class="d-md-flex d-grid align-items-center gap-3 mt-4">
                                         <button type="submit" class="btn btn-primary px-4">Submit</button>
+                                        <a href="{{ asset('uploads/excel-formats/custom-purchase-order.xlsx') }}"
+                                            class="btn btn-outline-success" download="custom-purchase-order.xlsx">
+                                            Export Format
+                                        </a>
                                     </div>
                                 </div>
                             </form>

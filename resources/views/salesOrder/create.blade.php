@@ -86,6 +86,11 @@
                                                                 </div> --}}
                                                             </div>
                                                             <div class="modal-footer">
+                                                                <a href="{{ asset('uploads/excel-formats/customers-po.xlsx') }}"
+                                                                    class="btn btn-outline-success"
+                                                                    download="customers-po.xlsx">
+                                                                    Export Format
+                                                                </a>
                                                                 <button type="button" class="btn btn-secondary"
                                                                     data-bs-dismiss="modal">Close</button>
                                                                 <button type="submit" id="holdOrder"
