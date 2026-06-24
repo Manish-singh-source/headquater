@@ -103,7 +103,8 @@
                                                     <a aria-label="anchor"
                                                         href="{{ route('invoices-details', $invoice->id) }}"
                                                         class="btn btn-icon btn-sm bg-primary-subtle me-1"
-                                                        data-bs-toggle="tooltip" data-bs-original-title="View">
+                                                        data-bs-toggle="tooltip" data-bs-original-title="View"
+                                                        title="View Invoice Details">
                                                         <svg xmlns="http://www.w3.org/2000/svg" width="13"
                                                             height="13" viewBox="0 0 24 24" fill="none"
                                                             stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -162,7 +163,8 @@
                                                             !$invoice->appointment->grn)
                                                         <a type="button" class="btn btn-icon btn-sm bg-success-subtle me-1"
                                                             data-bs-toggle="modal"
-                                                            data-bs-target="#appointmentView-{{ $invoice->id }}">
+                                                            data-bs-target="#appointmentView-{{ $invoice->id }}"
+                                                            title="Update Appointment / POD / GRN">
                                                             <img width="15" height="15"
                                                                 src="https://img.icons8.com/ios/50/calendar--v1.png"
                                                                 alt="calendar" />
@@ -171,7 +173,8 @@
                                                     @if (!$invoice->dns)
                                                         <a type="button" class="btn btn-icon btn-sm bg-success-subtle me-1"
                                                             data-bs-toggle="modal"
-                                                            data-bs-target="#dnView-{{ $invoice->id }}">
+                                                            data-bs-target="#dnView-{{ $invoice->id }}"
+                                                            title="Update Delivery Note">
                                                             <img width="15" height="15"
                                                                 src="https://img.icons8.com/ios/50/document--v1.png"
                                                                 alt="document" />
@@ -180,7 +183,8 @@
                                                     @if ($invoice->payments->sum('amount') < $invoice->total_amount)
                                                         <a type="button" class="btn btn-icon btn-sm bg-success-subtle me-1"
                                                             data-bs-toggle="modal"
-                                                            data-bs-target="#paymentView-{{ $invoice->id }}">
+                                                            data-bs-target="#paymentView-{{ $invoice->id }}"
+                                                            title="Update Payment Details">
                                                             <img width="15" height="15"
                                                                 src="https://img.icons8.com/ios/50/bank-card-back-side--v1.png"
                                                                 alt="payment" />
