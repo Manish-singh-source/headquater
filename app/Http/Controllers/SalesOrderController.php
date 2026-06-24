@@ -91,6 +91,45 @@ class SalesOrderController extends Controller
         return null;
     }
 
+    protected function getSkuWiseAvailableQuantity(string $sku, float|int $requestedQuantity, array &$productStockCache, bool $isAutoAllocation, $warehouseId): float|int
+    {
+        $sku = trim($sku);
+        $requestedQuantity = (float) $requestedQuantity;
+
+        if (! isset($productStockCache[$sku])) {
+            if ($isAutoAllocation) {
+                $productStockCache[$sku] = [
+                    'available' => (float) WarehouseStock::where('sku', $sku)
+                        ->whereHas('warehouse', function ($query) {
+                            $query->where('status', '1');
+                        })
+                        ->sum('available_quantity'),
+                ];
+            } else {
+                $productStockCache[$sku] = [
+                    'available' => (float) (WarehouseStock::where('sku', $sku)
+                        ->where('warehouse_id', $warehouseId)
+                        ->value('available_quantity') ?? 0),
+                ];
+            }
+        }
+
+        $availableQty = $productStockCache[$sku]['available'];
+
+        if ($availableQty >= $requestedQuantity) {
+            $productStockCache[$sku]['available'] -= $requestedQuantity;
+
+            return $requestedQuantity;
+        }
+
+        $productStockCache[$sku]['available'] = 0;
+
+        return $availableQty;
+    }
+
+
+
+
     // ========================================= Re-Used Methods End ================================================
     
     
@@ -1642,7 +1681,8 @@ class SalesOrderController extends Controller
 
         // Create writer
         $writer = SimpleExcelWriter::create($tempXlsxPath);
-
+        $isAutoAllocation = ($salesOrderDetails->whereNull('warehouse_stock_id')->count() > 0);
+        $productStockCache = [];
         foreach ($filteredOrders as $order) {
             $fulfilledQuantity = 0;
 
@@ -1778,10 +1818,11 @@ class SalesOrderController extends Controller
                 'Quantity Fulfilled' => $order->dispatched_quantity ?? (float) $qtyFullfilled ?? 0,
                 'Final Fulfilled Quantity' => (float) ($order->final_dispatched_quantity ?? 0),
                 'Final Shipped Quantity' => (float) ($order->final_final_dispatched_quantity ?? 0),
+                'Available Quantity' => $this->getSkuWiseAvailableQuantity((string) ($order->tempOrder?->sku ?? ''), (float) ($order->ordered_quantity ?? 0), $productStockCache, $isAutoAllocation, $salesOrder->warehouse_id),
                 'Warehouse Allocation' => $this->sanitizeExcelValue($warehouseAllocation),
                 'Invoice Status' => ucfirst($order->invoice_status),
-            ];
 
+            ];
             $writer->addRow($rowData);
         }
 
@@ -1891,6 +1932,19 @@ class SalesOrderController extends Controller
                     'purchase_order_quantity' => Arr::get($record, 'Purchase Order Quantity', 0),
                     'updated_at' => now(),
                 ];
+
+                if ($record['Block Quantity'] > $record['PO Quantity']) {
+                    DB::rollBack();
+
+                    return redirect()->back()->with('error', 'Block quantity cannot be greater than PO Quantity for SKU ' . trim($record['SKU Code'] ?? '') . ' (PO Quantity: ' . $record['PO Quantity'] . ', Block: ' . $record['Block Quantity'] . ').')->withInput();
+                }
+                
+                if ($record['Final Fulfilled Quantity'] > $record['PO Quantity']) {
+                    DB::rollBack();
+
+                    return redirect()->back()->with('error', 'Final Fulfilled Quantity cannot be greater than PO Quantity for SKU ' . trim($record['SKU Code'] ?? '') . ' (PO Quantity: ' . $record['PO Quantity'] . ', Block: ' . $record['Final Fulfilled Quantity'] . ').')->withInput();
+                }
+
 
                 // 4. Update SalesOrderProduct
                 $salesOrderProductUpdate->price = $record['PO MRP'] ?? 0;
@@ -2178,7 +2232,10 @@ class SalesOrderController extends Controller
                     }
 
                     // Build dynamic grouping key: po_number + facility_name
-                    $groupKey = $poNumber . '|' . $facilityName;
+                    // $groupKey = $poNumber . '|' . $facilityName;
+                    // This keeps same-customer allocations split into separate invoices per warehouse.
+                    $groupKey = $poNumber . '|' . $facilityName . '|' . ($allocation->warehouse_id ?? '');
+
 
                     if ($request->filled('brand')) {
                         $brand = $detail->product->brand ?? '';
@@ -3085,6 +3142,7 @@ class SalesOrderController extends Controller
         }
     }
 }
+
 
 
 

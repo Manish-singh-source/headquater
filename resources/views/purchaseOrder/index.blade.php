@@ -94,6 +94,7 @@
                                         <th>Order&nbsp;Status</th>
                                         <th>Recieved&nbsp;PI</th>
                                         <th>Total&nbsp;Product</th>
+                                        <th>Total&nbsp;Quantity</th>
                                         <th>Total&nbsp;Amount</th>
                                         <th>Total&nbsp;Paid&nbsp;Amount</th>
                                         <th>Total&nbsp;Due&nbsp;Amount</th>
@@ -138,6 +139,7 @@
                                                 @endif
                                             </td>
                                             <td>{{ $order->purchase_order_products_count ?? 0 }}</td>
+                                            <td>{{ $order->purchase_order_products_sum_ordered_quantity ?? 0 }}</td>
                                             <td>{{ $order->vendorPI[0]->total_amount ?? 0 }}</td>
                                             <td>{{ $order->vendorPI[0]->total_paid_amount ?? 0 }}</td>
                                             <td>{{ $order->vendorPI[0]->total_due_amount ?? 0 }}</td>
