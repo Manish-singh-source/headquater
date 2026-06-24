@@ -331,7 +331,7 @@ class PurchaseOrderController extends Controller
         $purchaseOrders = PurchaseOrder::with(['purchaseOrderProducts', 'vendorPI', 'salesOrder'])
             ->withSum('purchaseOrderProducts', 'ordered_quantity')
             ->withCount('purchaseOrderProducts')->latest()->get();
-
+        // dd($purchaseOrders);
         return view('purchaseOrder.index', compact('purchaseOrders'));
     }
 
