@@ -661,7 +661,7 @@ class PackagingController extends Controller
             $rows = $reader->getRows()->toArray();
 
             // Check Columns Headers
-            $requiredHeaders = ['Customer Name', 'SKU Code', 'Facility Name', 'Facility Location', 'PO Date', 'PO Expiry Date', 'HSN', 'Item Code', 'Description', 'GST', 'Basic Rate', 'Net Landing Rate', 'MRP', 'PO Quantity', 'Purchase Order Quantity', 'Vendor PI Fulfillment Quantity', 'Vendor PI Received Quantity', 'Warehouse Name', 'Warehouse Allocation', 'Purchase Order No', 'Total Dispatch Qty', 'Final Dispatch Qty', 'Case Pack Quantity', 'Box Count', 'Weight'];
+            $requiredHeaders = ['Customer Name', 'SKU Code', 'Facility Name', 'Facility Location', 'PO Date', 'PO Expiry Date', 'HSN', 'Item Code', 'Description', 'GST', 'Basic Rate', 'MRP', 'PO Quantity', 'Warehouse Allocation', 'Purchase Order No', 'Total Dispatch Qty', 'Final Dispatch Qty', 'Case Pack Quantity', 'Box Count', 'Weight'];
 
             $fileHeaders = array_map('trim', array_keys($rows[0] ?? []));
             $missingHeaders = array_diff($requiredHeaders, $fileHeaders);
@@ -684,7 +684,7 @@ class PackagingController extends Controller
                 'updated_at' => now(),
             ]);
 
-            $mandatoryFields = ['Customer Name', 'SKU Code', 'Facility Name', 'Facility Location', 'PO Date', 'PO Expiry Date', 'HSN', 'Item Code', 'Description', 'GST', 'Basic Rate', 'Net Landing Rate', 'MRP', 'PO Quantity', 'Purchase Order Quantity', 'Vendor PI Fulfillment Quantity', 'Vendor PI Received Quantity', 'Warehouse Name', 'Warehouse Allocation', 'Purchase Order No', 'Total Dispatch Qty', 'Final Dispatch Qty', 'Case Pack Quantity'];
+            $mandatoryFields = ['Customer Name', 'SKU Code', 'Facility Name', 'Facility Location', 'PO Date', 'PO Expiry Date', 'HSN', 'Item Code', 'Description', 'GST', 'Basic Rate', 'MRP', 'PO Quantity', 'Warehouse Allocation', 'Purchase Order No', 'Total Dispatch Qty', 'Final Dispatch Qty', 'Case Pack Quantity'];
 
             foreach ($rows as $rowIndex => $record) {
                 // Validate all required fields are not empty

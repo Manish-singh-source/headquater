@@ -232,6 +232,9 @@ Route::middleware(['auth'])->group(function () {
         // Step 5: generate invoice where status is shipped.
         Route::post('/generate-invoice', 'generateInvoice')->name('generate.invoice');
 
+        // Release blocked quantity
+        Route::post('/release-blocked-quantity/{id}', 'releaseBlockedQuantity')->name('sales.order.release.blocked.quantity');
+
         // Step 6: change sales order status to complete
         Route::put('/change-status', 'changeStatus')->name('change.sales.order.status');
 
@@ -477,3 +480,4 @@ Route::get('/test-notification-delete', function () {
         }),
     ]);
 })->name('test.notification.delete');
+

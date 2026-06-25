@@ -7,4 +7,6 @@ use Illuminate\Database\Eloquent\Model;
 class WarehouseStockLog extends Model
 {
     //
+
+    protected $guarded = [];
 }

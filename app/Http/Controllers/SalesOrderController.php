@@ -12,6 +12,7 @@ use App\Models\ProductMapping;
 use App\Models\PurchaseOrder;
 use App\Models\PurchaseOrderProduct;
 use App\Models\SalesOrder;
+use App\Models\SalesOrderReleaseButtonStatus;
 use App\Models\SalesOrderProduct;
 use App\Models\SkuMapping;
 use App\Models\TempOrder;
@@ -178,6 +179,9 @@ class SalesOrderController extends Controller
             ->withCount('notFoundTempOrderByVendor')
             ->findOrFail($id);
 
+        $releaseButtonStatus = SalesOrderReleaseButtonStatus::where('sales_order_id', $salesOrder->id)->first();
+
+
         $blockQuantity = 0;
         $vendorPiFulfillmentTotal = 0;
         $vendorPiReceivedTotal = 0;
@@ -297,7 +301,7 @@ class SalesOrderController extends Controller
         $paidInvoiceCount = Invoice::where('sales_order_id', $id)->where('payment_status', 'paid')->count();
         $unpaidInvoiceCount = $invoiceCount - $paidInvoiceCount;
 
-        return view('salesOrder.view', compact('invoiceCount', 'unpaidInvoiceCount', 'uniqueBrands', 'uniquePONumbers', 'remainingQuantity', 'blockQuantity', 'salesOrder', 'vendorPiFulfillmentTotal', 'availableQuantity', 'orderedQuantity', 'unavailableQuantity', 'vendorPiReceivedTotal', 'warehouseAllocations', 'displayProducts', 'facilityNames', 'isSuperAdmin'));
+        return view('salesOrder.view', compact('invoiceCount', 'unpaidInvoiceCount', 'uniqueBrands', 'uniquePONumbers', 'remainingQuantity', 'blockQuantity', 'salesOrder', 'vendorPiFulfillmentTotal', 'availableQuantity', 'orderedQuantity', 'unavailableQuantity', 'vendorPiReceivedTotal', 'warehouseAllocations', 'displayProducts', 'facilityNames', 'isSuperAdmin', 'releaseButtonStatus'));
     }
 
     
@@ -360,6 +364,99 @@ class SalesOrderController extends Controller
             Log::error('Error deleting sales order: ' . $e->getMessage());
 
             return redirect()->back()->with('error', 'Something went wrong: Please Try Again.');
+        }
+    }
+
+
+    public function releaseBlockedQuantity(Request $request, $id)
+    {
+        DB::beginTransaction();
+
+        try {
+            $salesOrder = SalesOrder::with([
+                "orderedProducts.tempOrder",
+                "orderedProducts.warehouseStock",
+                "orderedProducts.warehouseAllocations",
+                "orderedProducts.warehouseAllocations.warehouse",
+            ])->findOrFail($id);
+
+            foreach ($salesOrder->orderedProducts as $salesOrderProduct) {
+                $orderedQuantity = (float) ($salesOrderProduct->ordered_quantity ?? 0);
+                $dispatchedQuantity = (float) ($salesOrderProduct->final_final_dispatched_quantity ?? 0);
+                $releaseQuantity = max(0, $orderedQuantity - $dispatchedQuantity);
+
+                if ($releaseQuantity <= 0) {
+                    continue;
+                }
+
+                // $warehouseStock = $salesOrderProduct->warehouseStock;
+
+                // if ($warehouseStock) {
+                //     $warehouseStock->block_quantity = max(0, (float) ($warehouseStock->block_quantity ?? 0) - $releaseQuantity);
+                //     $warehouseStock->available_quantity = (float) ($warehouseStock->available_quantity ?? 0) + $releaseQuantity;
+                //     $warehouseStock->save();
+
+                //     WarehouseStockLog::create([
+                //         'warehouse_id' => $warehouseStock->warehouse_id,
+                //         'sales_order_id' => $salesOrder->id,
+                //         'customer_id' => $salesOrderProduct->customer_id ?? null,
+                //         'sku' => $salesOrderProduct->sku,
+                //         'block_quantity' => -$releaseQuantity,
+                //         'reason' => 'Released blocked quantity from sales order',
+                //     ]);
+                // }
+
+                foreach ($salesOrderProduct->warehouseAllocations as $allocation) {
+                    $allocationDispatchedQuantity = (float) ($allocation->final_final_dispatched_quantity ?? 0);
+                    $allocationReleaseQuantity = max(0, (float) ($allocation->allocated_quantity ?? 0) - $allocationDispatchedQuantity);
+
+                    if ($allocationReleaseQuantity <= 0) {
+                        continue;
+                    }
+
+                    $allocationWarehouseStock = WarehouseStock::where('warehouse_id', $allocation->warehouse_id)
+                        ->where('sku', $allocation->sku)
+                        ->first();
+
+                    if ($allocationWarehouseStock) {
+                        $allocationWarehouseStock->block_quantity = max(0, (float) ($allocationWarehouseStock->block_quantity ?? 0) - $allocationReleaseQuantity);
+                        $allocationWarehouseStock->available_quantity = (float) ($allocationWarehouseStock->available_quantity ?? 0) + $allocationReleaseQuantity;
+                        $allocationWarehouseStock->save();
+
+                        WarehouseStockLog::create([
+                            'warehouse_id' => $allocationWarehouseStock->warehouse_id,
+                            'sales_order_id' => $salesOrder->id,
+                            'customer_id' => $salesOrderProduct->customer_id ?? null,
+                            'sku' => $allocation->sku,
+                            'block_quantity' => -$allocationReleaseQuantity,
+                            'reason' => 'Released blocked quantity from warehouse allocation',
+                        ]);
+                    }
+                }
+            }
+
+            SalesOrderReleaseButtonStatus::updateOrCreate(
+                ['sales_order_id' => $salesOrder->id],
+                [
+                    'is_clicked' => true,
+                    'clicked_at' => now(),
+                    'clicked_by' => Auth::id(),
+                ]
+            );
+
+            DB::commit();
+
+            activity()
+                ->causedBy(Auth::user())
+                ->withProperties(['sales_order_id' => $salesOrder->id])
+                ->log('Blocked quantity released for sales order');
+
+            return redirect()->back()->with('success', 'Blocked quantity released successfully.');
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            Log::error('Error releasing blocked quantity: ' . $e->getMessage());
+
+            return redirect()->back()->with('error', 'Something went wrong while releasing blocked quantity.' . $e->getMessage());
         }
     }
 
@@ -3142,6 +3239,11 @@ class SalesOrderController extends Controller
         }
     }
 }
+
+
+
+
+
 
 
 

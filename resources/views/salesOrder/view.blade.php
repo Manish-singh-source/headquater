@@ -64,7 +64,14 @@
                                     </ul>
                                 @endif
                                 <div>
-                                    <button class="btn btn-primary">Release Blocked Qty</button>
+                                    @if ($releaseButtonStatus?->is_clicked)
+                                        <button type="button" class="btn btn-secondary" disabled>Release Blocked Qty</button>
+                                    @else
+                                        <form action="{{ route('sales.order.release.blocked.quantity', $salesOrder->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to release blocked quantity?');">
+                                            @csrf
+                                            <button type="submit" class="btn btn-primary">Release Blocked Qty</button>
+                                        </form>
+                                    @endif
                                 </div>
                             </div>
                         </div>
@@ -897,3 +904,6 @@
         });
     </script>
 @endsection
+
+
+
