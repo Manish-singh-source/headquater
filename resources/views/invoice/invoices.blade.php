@@ -114,7 +114,6 @@
                                                             <circle cx="12" cy="12" r="3"></circle>
                                                         </svg>
                                                     </a>
-                                                    {{-- 
                                                     <a aria-label="anchor"
                                                         href="{{ route('invoice.edit', $invoice->id) }}"
                                                         class="btn btn-icon btn-sm bg-warning-subtle me-1"
@@ -131,6 +130,7 @@
                                                             </path>
                                                         </svg>
                                                     </a>
+                                                    <!--
                                                     <form action="{{ route('invoice.delete', $invoice->id) }}"
                                                         method="POST" class="d-inline"
                                                         onsubmit="return confirm('Are you sure you want to delete this invoice? This will remove linked appointment, DN, payments and invoice lines.');">
@@ -154,8 +154,8 @@
                                                                     y2="17"></line>
                                                             </svg>
                                                         </button>
-                                                    </form> 
-                                                    --}}
+                                                    </form>
+                                                    -->
                                                     @if (
                                                         !$invoice->appointment ||
                                                             !$invoice->appointment->appointment_date ||

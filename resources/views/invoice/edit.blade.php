@@ -49,24 +49,32 @@
                         <div class="row g-3 mb-4">
                             <div class="col-md-3">
                                 <label class="form-label">Invoice Date</label>
-                                <input type="date" class="form-control" name="invoice_date"
-                                    value="{{ old('invoice_date', optional($invoice->invoice_date)->format('Y-m-d')) }}" required>
+                                <input type="date" class="form-control"
+                                    value="{{ old('invoice_date', optional($invoice->invoice_date)->format('Y-m-d')) }}"
+                                    disabled>
+                                <input type="hidden" name="invoice_date"
+                                    value="{{ old('invoice_date', optional($invoice->invoice_date)->format('Y-m-d')) }}">
                             </div>
                             <div class="col-md-3">
                                 <label class="form-label">PO Number</label>
-                                <input type="text" class="form-control" name="po_number"
+                                <input type="text" class="form-control"
+                                    value="{{ old('po_number', $invoice->po_number) }}" disabled>
+                                <input type="hidden" name="po_number"
                                     value="{{ old('po_number', $invoice->po_number) }}">
                             </div>
                             <div class="col-md-3">
                                 <label class="form-label">PO Date</label>
-                                <input type="date" class="form-control" name="po_date"
+                                <input type="date" class="form-control"
+                                    value="{{ old('po_date', optional($invoice->po_date)->format('Y-m-d')) }}"
+                                    disabled>
+                                <input type="hidden" name="po_date"
                                     value="{{ old('po_date', optional($invoice->po_date)->format('Y-m-d')) }}">
                             </div>
-                            <div class="col-md-3">
+                            {{-- <div class="col-md-3">
                                 <label class="form-label">Round Off</label>
                                 <input type="number" step="0.01" class="form-control" name="round_off"
                                     value="{{ old('round_off', $invoice->round_off ?? 0) }}">
-                            </div>
+                            </div> --}}
                         </div>
 
                         <div class="table-responsive">
@@ -81,22 +89,23 @@
                                         <th>Unit Price</th>
                                         <th>Discount</th>
                                         <th>Tax %</th>
-                                        <th>Description</th>
+                                        {{-- <th>Description</th> --}}
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @foreach ($invoice->details as $index => $detail)
                                         <tr>
                                             <td>
-                                                {{ $detail->product->product_name ?? $detail->service_title ?? 'N/A' }}<br>
-                                                <small class="text-muted">{{ $detail->product->sku ?? $detail->item_code ?? '-' }}</small>
+                                                <strong>{{ $detail->tempOrder?->item_code ?? $detail->item_code }}</strong><br>
+                                                <small class="text-muted">{{ $detail->product->sku ?? '-' }}</small><br>
+                                                <span>{{ $detail->tempOrder?->description ?? $detail->product?->brand_title }}</span>
                                                 <input type="hidden" name="details[{{ $index }}][id]"
                                                     value="{{ $detail->id }}">
                                             </td>
                                             <td>
-                                                <input type="text" class="form-control"
-                                                    name="details[{{ $index }}][hsn]"
-                                                    value="{{ old("details.$index.hsn", $detail->hsn) }}">
+                                                <span>{{ old("details.$index.hsn", $detail->hsn ?? $detail->tempOrder?->hsn) }}</span>
+                                                <input type="hidden" name="details[{{ $index }}][hsn]"
+                                                    value="{{ old("details.$index.hsn", $detail->hsn ?? $detail->tempOrder?->hsn) }}">
                                             </td>
                                             <td>
                                                 <input type="number" step="0.01" min="0.01" class="form-control"
@@ -114,35 +123,35 @@
                                                     value="{{ old("details.$index.weight", $detail->weight ?? 0) }}">
                                             </td>
                                             <td>
-                                                <input type="number" step="0.01" min="0" class="form-control"
-                                                    name="details[{{ $index }}][unit_price]"
-                                                    value="{{ old("details.$index.unit_price", $detail->unit_price) }}" required>
+                                                <span>{{ number_format(old("details.$index.unit_price", $detail->unit_price), 2) }}</span>
+                                                <input type="hidden" name="details[{{ $index }}][unit_price]"
+                                                    value="{{ old("details.$index.unit_price", $detail->unit_price) }}">
                                             </td>
                                             <td>
-                                                <input type="number" step="0.01" min="0" class="form-control"
-                                                    name="details[{{ $index }}][discount]"
+                                                <span>{{ number_format(old("details.$index.discount", $detail->discount ?? 0), 2) }}</span>
+                                                <input type="hidden" name="details[{{ $index }}][discount]"
                                                     value="{{ old("details.$index.discount", $detail->discount ?? 0) }}">
                                             </td>
                                             <td>
-                                                <input type="number" step="0.01" min="0" class="form-control"
-                                                    name="details[{{ $index }}][tax]"
+                                                <span>{{ number_format(old("details.$index.tax", $detail->tax ?? 0), 2) }}</span>
+                                                <input type="hidden" name="details[{{ $index }}][tax]"
                                                     value="{{ old("details.$index.tax", $detail->tax ?? 0) }}">
                                             </td>
-                                            <td>
-                                                <input type="text" class="form-control"
-                                                    name="details[{{ $index }}][description]"
-                                                    value="{{ old("details.$index.description", $detail->description) }}">
-                                            </td>
+                                            {{-- <td>
+                                                <span>{{ old("details.$index.description", $detail->tempOrder?->description ?? $detail->product?->brand_title ?? $detail->description) }}</span>
+                                                <input type="hidden" name="details[{{ $index }}][description]"
+                                                    value="{{ old("details.$index.description", $detail->tempOrder?->description ?? $detail->product?->brand_title ?? $detail->description) }}">
+                                            </td> --}}
                                         </tr>
                                     @endforeach
                                 </tbody>
                             </table>
                         </div>
 
-                        <div class="mb-3">
+                        {{-- <div class="mb-3">
                             <label class="form-label">Notes</label>
                             <textarea class="form-control" rows="3" name="notes">{{ old('notes', $invoice->notes) }}</textarea>
-                        </div>
+                        </div> --}}
 
                         <div class="d-flex gap-2">
                             <button type="submit" class="btn btn-primary">Update Invoice</button>
