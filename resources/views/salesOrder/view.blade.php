@@ -30,12 +30,11 @@
                     </nav>
                 </div>
 
-                @if ($invoiceCount > 0 && $unpaidInvoiceCount == 0)
-                    <div class="justify-end">
-                        <div class="row g-3 justify-content-end">
-                            <div class="col-12 col-md-auto">
-                                <div class="d-flex align-items-center gap-2 justify-content-lg-end">
-
+                <div class="justify-end">
+                    <div class="row g-3 justify-content-end">
+                        <div class="col-12 col-md-auto">
+                            <div class="d-flex align-items-center gap-2 justify-content-lg-end">
+                                @if ($invoiceCount > 0 && $unpaidInvoiceCount == 0)
                                     <ul class="nav nav-tabs" id="vendorTabs" role="tablist">
                                         <form id="statusForm" action="{{ route('change.sales.order.status') }}"
                                             method="POST">
@@ -63,11 +62,14 @@
                                             </select>
                                         </form>
                                     </ul>
+                                @endif
+                                <div>
+                                    <button class="btn btn-primary">Release Blocked Qty</button>
                                 </div>
                             </div>
                         </div>
                     </div>
-                @endif
+                </div>
             </div>
 
 
