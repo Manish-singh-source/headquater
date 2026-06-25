@@ -410,6 +410,10 @@ Route::middleware(['auth'])->group(function () {
 
         // Check PO Number
         Route::post('/check-po-number', 'checkPoNumber')->name('check.po.number');
+
+        // E-Invoices List
+        Route::get('/e-invoices', 'einvoicesList')->name('einvoices.index');
+        Route::get('/e-way-bills', 'eWayBillList')->name('ewaybill.index');
     });
 
     Route::view('/excel-file-formats', 'excel-file-formats')->name('excel-file-formats');

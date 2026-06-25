@@ -2215,4 +2215,27 @@ class InvoiceController extends Controller
             'Accept' => 'application/json',
         ];
     }
+
+
+    public function einvoicesList() {
+        $eInvoice = EInvoice::with('invoice', 'invoice.salesOrder', 'invoice.customer')
+            ->get()
+            ->sortByDesc(function ($eInvoice) {
+                return $eInvoice->invoice->invoice_number ?? '';
+            })
+            ->values();
+        return view('einvoice.index', compact('eInvoice'));
+    }
+
+    public function eWayBillList() {
+        $eWayBill = Ewaybill::with('invoice', 'invoice.salesOrder', 'invoice.customer')
+            ->get()
+            ->sortByDesc(function ($eWayBill) {
+                return $eWayBill->invoice->invoice_number ?? '';
+            })
+            ->values();
+        return view('ewaybill.index', compact('eWayBill'));
+    }
 }
+
+

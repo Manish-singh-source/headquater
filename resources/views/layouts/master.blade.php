@@ -440,6 +440,26 @@
                           </a>
                       </li>
                   @endcan
+                  
+                  @can('View Invoices')
+                      <li>
+                          <a href="{{ route('einvoices.index') }}">
+                              <div class="parent-icon"><i class="material-icons-outlined">receipt_long</i>
+                              </div>
+                              <div class="menu-title">E-Invoices</div>
+                          </a>
+                      </li>
+                  @endcan
+                  
+                  @can('View Invoices')
+                      <li>
+                          <a href="{{ route('ewaybill.index') }}">
+                              <div class="parent-icon"><i class="material-icons-outlined">receipt_long</i>
+                              </div>
+                              <div class="menu-title">E-Way Bills</div>
+                          </a>
+                      </li>
+                  @endcan
 
                   @canany([
                       'View Received Products List',
