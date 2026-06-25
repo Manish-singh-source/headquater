@@ -52,7 +52,7 @@
                     </div>
                     <div class="customer-table">
                         <div class="table-responsive white-space-nowrap">
-                            <table id="example" class="table table-striped table-hover">
+                            <table id="invoicesList" class="table table-striped table-hover">
                                 <thead class="table-light">
                                     <tr>
                                         <th style="width:40px;"><input class="form-check-input" type="checkbox"
@@ -220,7 +220,9 @@
             // DataTable is already initialized in master.blade.php for #example table
             // This script adds additional functionality
             var invoiceNo = @json(trim((string) request('invoice_no', '')));
-            var table = $('#example').DataTable().order([]);
+            var table = $('#invoicesList').DataTable({
+                stateSave: true,
+            }).order([]);
 
             if (invoiceNo) {
                 table.column(2).search(invoiceNo).draw();
@@ -250,3 +252,5 @@
         });
     </script>
 @endsection
+
+
