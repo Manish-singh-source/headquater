@@ -2053,21 +2053,32 @@ class SalesOrderController extends Controller
                     ->first();
                 // Step 1: for update - check old block quantity
                 // Step 2: if block quantity is greater than db block
-                if ($salesOrderProductUpdate2->tempOrder->block < $record['Block Quantity']) {
+                if ($salesOrderProductUpdate2->tempOrder->block < (int) $record['Block Quantity']) {
                     // check if available quantity present in warehouse stock 
                     $availableQty = WarehouseStock::find($salesOrderProductUpdate2->warehouse_stock_id);
+                    $qty = (int) $record['Block Quantity'] - $availableQty->available_quantity;
 
-                    if ($availableQty->available_quantity > $record['Block Quantity']) {
-                        $updateBlock = $record['Block Quantity'];
-                    } else {
+                    if ($availableQty->available_quantity >= $qty) {
+                        $updateBlock = (int) $record['Block Quantity'];
+                    } elseif ($availableQty->available_quantity < $qty && $availableQty->available_quantity > 0) {
                         $updateBlock = $availableQty->available_quantity;
                         // make purchase order 
+                        DB::rollBack();
+                        $qty = $record['Block Quantity'] - $availableQty->available_quantity;
+                        return redirect()->back()->with('error', "Warehouse Don't have quantity " . $qty .  " for SKU " . trim($record['SKU Code'] ?? ''))->withInput();
+                    } elseif ($availableQty->available_quantity < 0) {
+                        DB::rollBack();
+
+                        return redirect()->back()->with('error', "Warehouse Don't have quantity " . $qty .  " for SKU2 " . trim($record['SKU Code'] ?? ''))->withInput();
+
+                        $updateBlock = 0;
                     }
+
                     // update warehouse stock
-                    $blockDiff2 = $record['Block Quantity'] - $salesOrderProductUpdate2->tempOrder->block;
+                    $blockDiff2 = $updateBlock - $salesOrderProductUpdate2->tempOrder->block;
                     $availableQty->available_quantity -= $blockDiff2;
                     $availableQty->block_quantity += $blockDiff2;
-                    
+
                     if ($salesOrderProductUpdate2->dispatched_quantity != $updateBlock) {
                         $salesOrderProductUpdate2->dispatched_quantity = $updateBlock;
                     }
