@@ -203,7 +203,7 @@ class ReceivedProductsController extends Controller
 
             $writer->close();
 
-            return response()->download($tempXlsxPath, 'Received-Products-'.$request->vendorCode.'.xlsx', [
+            return response()->download($tempXlsxPath, 'Received-Products-'. $vendorPI->purchaseOrder->order_number . '-' .$request->vendorCode.'.xlsx', [
                 'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
             ])->deleteFileAfterSend(true);
         } catch (\Exception $e) {

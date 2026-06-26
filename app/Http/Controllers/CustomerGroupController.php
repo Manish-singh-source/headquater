@@ -512,7 +512,7 @@ class CustomerGroupController extends Controller
 
             $writer->close();
 
-            return response()->download($tempXlsxPath, 'customers_group_' . $customerGroup->id . '.xlsx', [
+            return response()->download($tempXlsxPath, 'customers_group_' . $customerGroup->name . '.xlsx', [
                 'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
             ])->deleteFileAfterSend(true);
         } catch (\Exception $e) {

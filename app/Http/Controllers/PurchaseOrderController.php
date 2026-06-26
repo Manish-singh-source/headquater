@@ -991,7 +991,7 @@ class PurchaseOrderController extends Controller
         // Close the writer
         $writer->close();
 
-        return response()->download($tempXlsxPath, $request->vendorCode . '_PO.xlsx', [
+        return response()->download($tempXlsxPath, $order->purchaseOrder->order_number . '-' .$request->vendorCode . '-PO.xlsx', [
             'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         ])->deleteFileAfterSend(true);
     }

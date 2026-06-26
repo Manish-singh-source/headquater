@@ -379,7 +379,7 @@ class PackagingController extends Controller
         // Close the writer
         $writer->close();
 
-        return response()->download($tempXlsxPath, 'Packaging-Products.xlsx', [
+        return response()->download($tempXlsxPath, 'Packaging-Products-' . $salesOrder->order_number .'.xlsx', [
             'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         ])->deleteFileAfterSend(true);
     }
@@ -607,7 +607,7 @@ class PackagingController extends Controller
         // Close the writer
         $writer->close();
 
-        return response()->download($tempXlsxPath, 'Packaging-Products.xlsx', [
+        return response()->download($tempXlsxPath, 'Packaging-Products-' . $salesOrder->order_number .'.xlsx', [
             'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         ])->deleteFileAfterSend(true);
     }

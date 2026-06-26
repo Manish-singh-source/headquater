@@ -1926,7 +1926,7 @@ class SalesOrderController extends Controller
         // Close the writer
         $writer->close();
 
-        return response()->download($tempXlsxPath, 'update_sales_order_po_' . $salesOrder->id . '.xlsx', [
+        return response()->download($tempXlsxPath, 'update_sales_order_po_' . $salesOrder->order_number . '.xlsx', [
             'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         ])->deleteFileAfterSend(true);
     }
