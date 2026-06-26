@@ -2087,6 +2087,15 @@ class SalesOrderController extends Controller
                             }
                         }
                     }
+
+                    // Update temp order 
+                    if ($salesOrderProductUpdate2->tempOrder->block != $updateBlock) {
+                        $salesOrderProductUpdate2->tempOrder->block = $updateBlock;
+                        $salesOrderProductUpdate2->tempOrder->available_quantity = $updateBlock;
+                        $salesOrderProductUpdate2->tempOrder->available_quantity_track = $updateBlock;
+                        $salesOrderProductUpdate2->tempOrder->unavailable_quantity -= $updateBlock;
+                        $salesOrderProductUpdate2->tempOrder->unavailable_quantity_track -= $updateBlock;
+                    }
                 } elseif ($salesOrderProductUpdate2->tempOrder->block > $record['Block Quantity']) {
                     // check if available quantity present in warehouse stock 
                     $availableQty = WarehouseStock::find($salesOrderProductUpdate2->warehouse_stock_id);
@@ -2097,7 +2106,7 @@ class SalesOrderController extends Controller
                     $availableQty->save();
 
                     $updateBlock = $record['Block Quantity'];
-                    
+
                     if ($salesOrderProductUpdate2->dispatched_quantity != $updateBlock) {
                         $salesOrderProductUpdate2->dispatched_quantity = $updateBlock;
                     }
@@ -2127,9 +2136,19 @@ class SalesOrderController extends Controller
                             }
                         }
                     }
+
+                     // Update temp order 
+                    if ($salesOrderProductUpdate2->tempOrder->block != $updateBlock) {
+                        $salesOrderProductUpdate2->tempOrder->block = $updateBlock;
+                        $salesOrderProductUpdate2->tempOrder->available_quantity = $updateBlock;
+                        $salesOrderProductUpdate2->tempOrder->available_quantity_track = $updateBlock;
+                        $salesOrderProductUpdate2->tempOrder->unavailable_quantity -= $updateBlock;
+                        $salesOrderProductUpdate2->tempOrder->unavailable_quantity_track -= $updateBlock;
+                    }
                 }
+                $salesOrderProductUpdate2->tempOrder->save();
                 $salesOrderProductUpdate2->save();
-                
+
                 // 3. Build products array for TempOrder::upsert()
                 $products[] = [
                     'id' => $salesOrderProductUpdate->temp_order_id,
