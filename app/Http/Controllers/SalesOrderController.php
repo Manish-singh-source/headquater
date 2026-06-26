@@ -161,7 +161,7 @@ class SalesOrderController extends Controller
         return view('salesOrder.create', ['customerGroup' => $customerGroup, 'warehouses' => $warehouses]);
     }
 
-    
+
     public function view($id)
     {
         $salesOrder = SalesOrder::with([
@@ -304,7 +304,7 @@ class SalesOrderController extends Controller
         return view('salesOrder.view', compact('invoiceCount', 'unpaidInvoiceCount', 'uniqueBrands', 'uniquePONumbers', 'remainingQuantity', 'blockQuantity', 'salesOrder', 'vendorPiFulfillmentTotal', 'availableQuantity', 'orderedQuantity', 'unavailableQuantity', 'vendorPiReceivedTotal', 'warehouseAllocations', 'displayProducts', 'facilityNames', 'isSuperAdmin', 'releaseButtonStatus'));
     }
 
-    
+
     public function destroy($id)
     {
         DB::beginTransaction();
@@ -1667,7 +1667,7 @@ class SalesOrderController extends Controller
         }
     }
     // ===================================== Block Order / Create Sales Order End ======================================
-    
+
     // ===================================== Download Excel Start ======================================
     public function downloadPoExcel(Request $request)
     {
@@ -1932,7 +1932,7 @@ class SalesOrderController extends Controller
     }
 
     // ===================================== Download Excel End ======================================
-    
+
     // ===================================== Update final quantity fulfilled Start ======================================
     public function update(Request $request)
     {
@@ -2010,6 +2010,126 @@ class SalesOrderController extends Controller
                     continue;
                 }
 
+                // Condition to check if block quantity is not 0 and not greater than po quantity
+                $blockQtyForCheck = (int) $record['Block Quantity'];
+
+                if ($blockQtyForCheck < 0) {
+                    DB::rollBack();
+
+                    return redirect()->back()
+                        ->with(['error' => "Block quantity cannot be less than 0 for (SKU: {$record['SKU Code']})."])
+                        ->withInput();
+                }
+
+                if ($blockQtyForCheck > $record['PO Quantity']) {
+                    DB::rollBack();
+
+                    return redirect()->back()
+                        ->with(['error' => "Block quantity cannot be greater than PO Quantity for (SKU: {$record['SKU Code']}, PO Quantity: {$record['PO Quantity']}, Block: {$blockQtyForCheck})."])
+                        ->withInput();
+                }
+
+
+                if ($record['Final Fulfilled Quantity'] > $record['PO Quantity']) {
+                    DB::rollBack();
+
+                    return redirect()->back()->with('error', 'Final Fulfilled Quantity cannot be greater than PO Quantity for SKU ' . trim($record['SKU Code'] ?? '') . ' (PO Quantity: ' . $record['PO Quantity'] . ', Block: ' . $record['Final Fulfilled Quantity'] . ').')->withInput();
+                }
+
+
+                $salesOrderProductUpdate2 = SalesOrderProduct::with('product', 'productMapping', 'tempOrder.purchaseOrderProduct')
+                    ->where('sku', trim($record['SKU Code'] ?? ''))
+                    ->where('sales_order_id', $request->sales_order_id)
+                    ->where('customer_id', $customerInfo->id)
+                    ->whereHas('tempOrder', function ($query) use ($record) {
+                        $query->where('po_number', trim($record['PO Number'] ?? ''));
+                    })
+                    ->first();
+                // Step 1: for update - check old block quantity
+                // Step 2: if block quantity is greater than db block
+                if ($salesOrderProductUpdate2->tempOrder->block < $record['Block Quantity']) {
+                    // check if available quantity present in warehouse stock 
+                    $availableQty = WarehouseStock::find($salesOrderProductUpdate2->warehouse_stock_id);
+
+                    if ($availableQty->available_quantity > $record['Block Quantity']) {
+                        $updateBlock = $record['Block Quantity'];
+                    } else {
+                        $updateBlock = $availableQty->available_quantity;
+                        // make purchase order 
+                    }
+
+                    if ($salesOrderProductUpdate2->dispatched_quantity != $updateBlock) {
+                        $salesOrderProductUpdate2->dispatched_quantity = $updateBlock;
+                    }
+
+                    // check warehouse allocation for updating allocated_quantity same as $updateBlock
+                    $allocationsCount = $salesOrderProductUpdate2->warehouseAllocations()->count();
+                    if ($allocationsCount > 0) {
+                        if ($allocationsCount == 1) {
+                            foreach ($salesOrderProductUpdate2->warehouseAllocations as $allocation) {
+                                $allocation->allocated_quantity = $updateBlock;
+                                $allocation->save();
+                            }
+                        } else {
+                            // Distribute entered final fulfilled quantity across allocations in sequence.
+                            $remainingQty = $updateBlock;
+                            foreach ($salesOrderProductUpdate2->warehouseAllocations as $allocation) {
+                                if ($remainingQty <= 0) {
+                                    $allocation->allocated_quantity = 0;
+                                } elseif ($allocation->allocated_quantity <= $remainingQty) {
+                                    $allocation->allocated_quantity = $allocation->allocated_quantity;
+                                    $remainingQty -= $allocation->allocated_quantity;
+                                } else {
+                                    $allocation->allocated_quantity = $remainingQty;
+                                    $remainingQty = 0;
+                                }
+                                $allocation->save();
+                            }
+                        }
+                    }
+                } elseif ($salesOrderProductUpdate2->tempOrder->block > $record['Block Quantity']) {
+                    // check if available quantity present in warehouse stock 
+                    $availableQty = WarehouseStock::find($salesOrderProductUpdate2->warehouse_stock_id);
+                    $blockDiff = $salesOrderProductUpdate2->tempOrder->block - $record['Block Quantity'];
+
+                    $availableQty->available_quantity += $blockDiff;
+                    $availableQty->block_quantity -= $blockDiff;
+                    $availableQty->save();
+
+                    $updateBlock = $record['Block Quantity'];
+                    
+                    if ($salesOrderProductUpdate2->dispatched_quantity != $updateBlock) {
+                        $salesOrderProductUpdate2->dispatched_quantity = $updateBlock;
+                    }
+
+                    // check warehouse allocation for updating allocated_quantity same as $updateBlock
+                    $allocationsCount = $salesOrderProductUpdate2->warehouseAllocations()->count();
+                    if ($allocationsCount > 0) {
+                        if ($allocationsCount == 1) {
+                            foreach ($salesOrderProductUpdate2->warehouseAllocations as $allocation) {
+                                $allocation->allocated_quantity = $updateBlock;
+                                $allocation->save();
+                            }
+                        } else {
+                            // Distribute entered final fulfilled quantity across allocations in sequence.
+                            $remainingQty = $updateBlock;
+                            foreach ($salesOrderProductUpdate2->warehouseAllocations as $allocation) {
+                                if ($remainingQty <= 0) {
+                                    $allocation->allocated_quantity = 0;
+                                } elseif ($allocation->allocated_quantity <= $remainingQty) {
+                                    $allocation->allocated_quantity = $allocation->allocated_quantity;
+                                    $remainingQty -= $allocation->allocated_quantity;
+                                } else {
+                                    $allocation->allocated_quantity = $remainingQty;
+                                    $remainingQty = 0;
+                                }
+                                $allocation->save();
+                            }
+                        }
+                    }
+                }
+                $salesOrderProductUpdate2->save();
+                
                 // 3. Build products array for TempOrder::upsert()
                 $products[] = [
                     'id' => $salesOrderProductUpdate->temp_order_id,
@@ -2029,18 +2149,6 @@ class SalesOrderController extends Controller
                     'purchase_order_quantity' => Arr::get($record, 'Purchase Order Quantity', 0),
                     'updated_at' => now(),
                 ];
-
-                if ($record['Block Quantity'] > $record['PO Quantity']) {
-                    DB::rollBack();
-
-                    return redirect()->back()->with('error', 'Block quantity cannot be greater than PO Quantity for SKU ' . trim($record['SKU Code'] ?? '') . ' (PO Quantity: ' . $record['PO Quantity'] . ', Block: ' . $record['Block Quantity'] . ').')->withInput();
-                }
-                
-                if ($record['Final Fulfilled Quantity'] > $record['PO Quantity']) {
-                    DB::rollBack();
-
-                    return redirect()->back()->with('error', 'Final Fulfilled Quantity cannot be greater than PO Quantity for SKU ' . trim($record['SKU Code'] ?? '') . ' (PO Quantity: ' . $record['PO Quantity'] . ', Block: ' . $record['Final Fulfilled Quantity'] . ').')->withInput();
-                }
 
 
                 // 4. Update SalesOrderProduct
@@ -2182,9 +2290,9 @@ class SalesOrderController extends Controller
         }
     }
     // ===================================== Update final quantity fulfilled End ======================================
-    
-    
-    
+
+
+
     // ===================================== Send To Packaging Start ======================================
     public function sendToPackaging(Request $request)
     {
@@ -2247,8 +2355,8 @@ class SalesOrderController extends Controller
         }
     }
     // ===================================== Send To Packaging End ======================================
-    
-    
+
+
     // ===================================== Generate Invoice Start ======================================
     public function generateInvoice(Request $request)
     {
@@ -2555,9 +2663,9 @@ class SalesOrderController extends Controller
         }
     }
     // ===================================== Generate Invoice End ======================================
-    
-    
-    
+
+
+
     // ===================================== Generate Invoice Start ======================================
     public function changeStatus(Request $request)
     {
@@ -3239,13 +3347,3 @@ class SalesOrderController extends Controller
         }
     }
 }
-
-
-
-
-
-
-
-
-
-

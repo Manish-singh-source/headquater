@@ -65,6 +65,10 @@
 
                                 <a href="{{ route('products.create') }}" class="btn border-2 border-primary px-4"></i>Add
                                     Product</a>
+                                <a href="{{ asset('uploads/excel-formats/product-master.xlsx') }}"
+                                        class="btn border-2 border-primary px-4" download="product-master.xlsx">
+                                    Export Format
+                                </a>
                                 <div class="ms-auto">
                                     <div class="btn-group">
                                         <button type="button" class="btn border-2 border-primary">Action</button>
