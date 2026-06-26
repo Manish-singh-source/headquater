@@ -2096,6 +2096,11 @@ class SalesOrderController extends Controller
                         $salesOrderProductUpdate2->tempOrder->unavailable_quantity -= $updateBlock;
                         $salesOrderProductUpdate2->tempOrder->unavailable_quantity_track -= $updateBlock;
                     }
+
+                    // update warehouse stock
+                    $availableQty->available_quantity -= $updateBlock;
+                    $availableQty->block_quantity += $updateBlock;
+                    $availableQty->save();
                 } elseif ($salesOrderProductUpdate2->tempOrder->block > $record['Block Quantity']) {
                     // check if available quantity present in warehouse stock 
                     $availableQty = WarehouseStock::find($salesOrderProductUpdate2->warehouse_stock_id);
