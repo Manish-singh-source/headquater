@@ -2033,7 +2033,13 @@ class SalesOrderController extends Controller
                 if ($record['Final Fulfilled Quantity'] > $record['PO Quantity']) {
                     DB::rollBack();
 
-                    return redirect()->back()->with('error', 'Final Fulfilled Quantity cannot be greater than PO Quantity for SKU ' . trim($record['SKU Code'] ?? '') . ' (PO Quantity: ' . $record['PO Quantity'] . ', Block: ' . $record['Final Fulfilled Quantity'] . ').')->withInput();
+                    return redirect()->back()->with('error', 'Final Fulfilled Quantity cannot be greater than PO Quantity for SKU ' . trim($record['SKU Code'] ?? '') . ' (PO Quantity: ' . $record['PO Quantity'] . ', Final Fulfilled Quantity: ' . $record['Final Fulfilled Quantity'] . ').')->withInput();
+                }
+
+                if ($record['Final Fulfilled Quantity'] > $record['Block Quantity']) {
+                    DB::rollBack();
+
+                    return redirect()->back()->with('error', 'Final Fulfilled Quantity cannot be greater than Block Quantity for SKU ' . trim($record['SKU Code'] ?? '') . ' (Block Quantity: ' . $record['Block Quantity'] . ', Final Fulfilled Quantity: ' . $record['Final Fulfilled Quantity'] . ').')->withInput();
                 }
 
 
@@ -2057,7 +2063,11 @@ class SalesOrderController extends Controller
                         $updateBlock = $availableQty->available_quantity;
                         // make purchase order 
                     }
-
+                    // update warehouse stock
+                    $blockDiff2 = $record['Block Quantity'] - $salesOrderProductUpdate2->tempOrder->block;
+                    $availableQty->available_quantity -= $blockDiff2;
+                    $availableQty->block_quantity += $blockDiff2;
+                    
                     if ($salesOrderProductUpdate2->dispatched_quantity != $updateBlock) {
                         $salesOrderProductUpdate2->dispatched_quantity = $updateBlock;
                     }
@@ -2097,9 +2107,6 @@ class SalesOrderController extends Controller
                         $salesOrderProductUpdate2->tempOrder->unavailable_quantity_track -= $updateBlock;
                     }
 
-                    // update warehouse stock
-                    $availableQty->available_quantity -= $updateBlock;
-                    $availableQty->block_quantity += $updateBlock;
                     $availableQty->save();
                 } elseif ($salesOrderProductUpdate2->tempOrder->block > $record['Block Quantity']) {
                     // check if available quantity present in warehouse stock 
@@ -2142,7 +2149,7 @@ class SalesOrderController extends Controller
                         }
                     }
 
-                     // Update temp order 
+                    // Update temp order 
                     if ($salesOrderProductUpdate2->tempOrder->block != $updateBlock) {
                         $salesOrderProductUpdate2->tempOrder->block = $updateBlock;
                         $salesOrderProductUpdate2->tempOrder->available_quantity = $updateBlock;
