@@ -2043,7 +2043,7 @@ class SalesOrderController extends Controller
                 }
 
 
-                $salesOrderProductUpdate2 = SalesOrderProduct::with('product', 'productMapping', 'tempOrder.purchaseOrderProduct')
+                $salesOrderProductUpdate2 = SalesOrderProduct::with('product', 'productMapping', 'tempOrder.purchaseOrderProduct', 'salesOrder')
                     ->where('sku', trim($record['SKU Code'] ?? ''))
                     ->where('sales_order_id', $request->sales_order_id)
                     ->where('customer_id', $customerInfo->id)
@@ -2053,11 +2053,12 @@ class SalesOrderController extends Controller
                     ->first();
                 // Step 1: for update - check old block quantity
                 // Step 2: if block quantity is greater than db block
+                $updateBlock = 0;
                 if ($salesOrderProductUpdate2->tempOrder->block < (int) $record['Block Quantity']) {
                     // check if available quantity present in warehouse stock 
                     $availableQty = WarehouseStock::find($salesOrderProductUpdate2->warehouse_stock_id);
                     $qty = (int) $record['Block Quantity'] - $availableQty->available_quantity;
-
+                    // $qty = (int) $record['Block Quantity'];
                     if ($availableQty->available_quantity >= $qty) {
                         $updateBlock = (int) $record['Block Quantity'];
                     } elseif ($availableQty->available_quantity < $qty && $availableQty->available_quantity > 0) {
@@ -2066,12 +2067,30 @@ class SalesOrderController extends Controller
                         DB::rollBack();
                         $qty = $record['Block Quantity'] - $availableQty->available_quantity;
                         return redirect()->back()->with('error', "Warehouse Don't have quantity " . $qty .  " for SKU " . trim($record['SKU Code'] ?? ''))->withInput();
-                    } elseif ($availableQty->available_quantity < 0) {
-                        DB::rollBack();
+                    } elseif ($availableQty->available_quantity <= 0) {
+                        if (!is_null($salesOrderProductUpdate2->salesOrder->warehouse_id)) {
 
-                        return redirect()->back()->with('error', "Warehouse Don't have quantity " . $qty .  " for SKU2 " . trim($record['SKU Code'] ?? ''))->withInput();
+                            DB::rollBack();
 
-                        $updateBlock = 0;
+                            return redirect()->back()->with('error', "Warehouse Don't have quantity " . $qty .  " for SKU " . trim($record['SKU Code'] ?? ''))->withInput();
+                        } else {
+                            $availableQty = WarehouseStock::where('sku', trim($record['SKU Code'] ?? ''))->where('available_quantity', '>', 0)->first();
+                            // difference
+                            $allocationEntryDiff = $record['Block Quantity'] - $salesOrderProductUpdate2->tempOrder->block;
+                            $updateBlock = $salesOrderProductUpdate2->tempOrder->block + $allocationEntryDiff;
+
+                            $allocationsCount = $salesOrderProductUpdate2->warehouseAllocations()->count();
+                            if ($allocationsCount > 0) {
+                                if ($allocationsCount == 1) {
+                                    foreach ($salesOrderProductUpdate2->warehouseAllocations as $allocation) {
+                                        $newAllocation = $allocation->replicate();
+                                        $newAllocation->warehouse_id = $availableQty->warehouse_id;
+                                        $newAllocation->allocated_quantity = $allocationEntryDiff;
+                                        $newAllocation->save();
+                                    }
+                                }
+                            }
+                        }
                     }
 
                     // update warehouse stock
@@ -2114,8 +2133,13 @@ class SalesOrderController extends Controller
                         $salesOrderProductUpdate2->tempOrder->block = $updateBlock;
                         $salesOrderProductUpdate2->tempOrder->available_quantity = $updateBlock;
                         $salesOrderProductUpdate2->tempOrder->available_quantity_track = $updateBlock;
-                        $salesOrderProductUpdate2->tempOrder->unavailable_quantity -= $updateBlock;
-                        $salesOrderProductUpdate2->tempOrder->unavailable_quantity_track -= $updateBlock;
+                        if (isset($allocationEntryDiff)) {
+                            $salesOrderProductUpdate2->tempOrder->unavailable_quantity -= $allocationEntryDiff;
+                            $salesOrderProductUpdate2->tempOrder->unavailable_quantity_track -= $allocationEntryDiff;
+                        } else {
+                            $salesOrderProductUpdate2->tempOrder->unavailable_quantity -= $updateBlock;
+                            $salesOrderProductUpdate2->tempOrder->unavailable_quantity_track -= $updateBlock;
+                        }
                     }
 
                     $availableQty->save();
@@ -2163,10 +2187,13 @@ class SalesOrderController extends Controller
                     // Update temp order 
                     if ($salesOrderProductUpdate2->tempOrder->block != $updateBlock) {
                         $salesOrderProductUpdate2->tempOrder->block = $updateBlock;
+
+                        $salesOrderProductUpdate2->tempOrder->unavailable_quantity = $salesOrderProductUpdate2->tempOrder->available_quantity - $updateBlock;
+                        $salesOrderProductUpdate2->tempOrder->unavailable_quantity_track = $salesOrderProductUpdate2->tempOrder->available_quantity - $updateBlock;
+
                         $salesOrderProductUpdate2->tempOrder->available_quantity = $updateBlock;
                         $salesOrderProductUpdate2->tempOrder->available_quantity_track = $updateBlock;
-                        $salesOrderProductUpdate2->tempOrder->unavailable_quantity -= $updateBlock;
-                        $salesOrderProductUpdate2->tempOrder->unavailable_quantity_track -= $updateBlock;
+                        
                     }
                 }
                 $salesOrderProductUpdate2->tempOrder->save();
