@@ -2153,8 +2153,8 @@ class SalesOrderController extends Controller
                         $salesOrderProductUpdate2->tempOrder->block = $updateBlock;
                         $salesOrderProductUpdate2->tempOrder->available_quantity = $updateBlock;
                         $salesOrderProductUpdate2->tempOrder->available_quantity_track = $updateBlock;
-                        $salesOrderProductUpdate2->tempOrder->unavailable_quantity = max(0, (int) ($salesOrderProductUpdate2->tempOrder->po_qty - $updateBlock ?? 0));
-                        $salesOrderProductUpdate2->tempOrder->unavailable_quantity_track = max(0, (int) ($salesOrderProductUpdate2->tempOrder->po_qty - $updateBlock ?? 0));
+                        $salesOrderProductUpdate2->tempOrder->unavailable_quantity = max(0, (int) ($salesOrderProductUpdate2->tempOrder->po_qty ?? 0) - (int) $updateBlock);
+                        $salesOrderProductUpdate2->tempOrder->unavailable_quantity_track = max(0, (int) ($salesOrderProductUpdate2->tempOrder->po_qty ?? 0) - (int) $updateBlock);
                     }
 
                     $availableQty->save();
@@ -2203,8 +2203,8 @@ class SalesOrderController extends Controller
                         $salesOrderProductUpdate2->tempOrder->block = $updateBlock;
                         $salesOrderProductUpdate2->tempOrder->available_quantity = $updateBlock;
                         $salesOrderProductUpdate2->tempOrder->available_quantity_track = $updateBlock;
-                        $salesOrderProductUpdate2->tempOrder->unavailable_quantity = max(0, (int) ($salesOrderProductUpdate2->tempOrder->po_qty - $updateBlock ?? 0));
-                        $salesOrderProductUpdate2->tempOrder->unavailable_quantity_track = max(0, (int) ($salesOrderProductUpdate2->tempOrder->po_qty - $updateBlock ?? 0));
+                        $salesOrderProductUpdate2->tempOrder->unavailable_quantity = max(0, (int) ($salesOrderProductUpdate2->tempOrder->po_qty ?? 0) - (int) $updateBlock);
+                        $salesOrderProductUpdate2->tempOrder->unavailable_quantity_track = max(0, (int) ($salesOrderProductUpdate2->tempOrder->po_qty ?? 0) - (int) $updateBlock);
                     }
                 }
                 $salesOrderProductUpdate2->tempOrder->save();
@@ -3427,6 +3427,7 @@ class SalesOrderController extends Controller
         }
     }
 }
+
 
 
 
