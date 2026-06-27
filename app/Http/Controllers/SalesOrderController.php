@@ -2030,16 +2030,20 @@ class SalesOrderController extends Controller
                 }
 
 
-                if ($record['Final Fulfilled Quantity'] > $record['PO Quantity']) {
+                $poQuantity = (int) ($record['PO Quantity'] ?? 0);
+                $blockQuantity = (int) ($record['Block Quantity'] ?? 0);
+                $finalFulfilledQuantity = (int) ($record['Final Fulfilled Quantity'] ?? 0);
+
+                if ($finalFulfilledQuantity > $poQuantity) {
                     DB::rollBack();
 
-                    return redirect()->back()->with('error', 'Final Fulfilled Quantity cannot be greater than PO Quantity for SKU ' . trim($record['SKU Code'] ?? '') . ' (PO Quantity: ' . $record['PO Quantity'] . ', Final Fulfilled Quantity: ' . $record['Final Fulfilled Quantity'] . ').')->withInput();
+                    return redirect()->back()->with('error', 'Final Fulfilled Quantity cannot be greater than PO Quantity for SKU ' . trim($record['SKU Code'] ?? '') . ' (PO Quantity: ' . $poQuantity . ', Final Fulfilled Quantity: ' . $finalFulfilledQuantity . ').')->withInput();
                 }
 
-                if ($record['Final Fulfilled Quantity'] > $record['Block Quantity']) {
+                if ($finalFulfilledQuantity > $blockQuantity) {
                     DB::rollBack();
 
-                    return redirect()->back()->with('error', 'Final Fulfilled Quantity cannot be greater than Block Quantity for SKU ' . trim($record['SKU Code'] ?? '') . ' (Block Quantity: ' . $record['Block Quantity'] . ', Final Fulfilled Quantity: ' . $record['Final Fulfilled Quantity'] . ').')->withInput();
+                    return redirect()->back()->with('error', 'Final Fulfilled Quantity cannot be greater than Block Quantity for SKU ' . trim($record['SKU Code'] ?? '') . ' (Block Quantity: ' . $blockQuantity . ', Final Fulfilled Quantity: ' . $finalFulfilledQuantity . ').')->withInput();
                 }
 
 
@@ -2053,19 +2057,31 @@ class SalesOrderController extends Controller
                     ->first();
                 // Step 1: for update - check old block quantity
                 // Step 2: if block quantity is greater than db block
+                if (! $salesOrderProductUpdate2 || ! $salesOrderProductUpdate2->tempOrder) {
+                    DB::rollBack();
+
+                    return redirect()->back()->with('error', 'Sales order product or temp order not found for SKU ' . trim($record['SKU Code'] ?? '') . '.')->withInput();
+                }
+
                 $updateBlock = 0;
-                if ($salesOrderProductUpdate2->tempOrder->block < (int) $record['Block Quantity']) {
+                if ($salesOrderProductUpdate2->tempOrder->block < $blockQuantity) {
                     // check if available quantity present in warehouse stock 
                     $availableQty = WarehouseStock::find($salesOrderProductUpdate2->warehouse_stock_id);
-                    $qty = (int) $record['Block Quantity'] - $availableQty->available_quantity;
+                    if (! $availableQty) {
+                        DB::rollBack();
+
+                        return redirect()->back()->with('error', 'Warehouse stock not found for SKU ' . trim($record['SKU Code'] ?? '') . '.')->withInput();
+                    }
+
+                    $qty = $blockQuantity - $availableQty->available_quantity;
                     // $qty = (int) $record['Block Quantity'];
                     if ($availableQty->available_quantity >= $qty) {
-                        $updateBlock = (int) $record['Block Quantity'];
+                        $updateBlock = $blockQuantity;
                     } elseif ($availableQty->available_quantity < $qty && $availableQty->available_quantity > 0) {
                         $updateBlock = $availableQty->available_quantity;
                         // make purchase order 
                         DB::rollBack();
-                        $qty = $record['Block Quantity'] - $availableQty->available_quantity;
+                        $qty = $blockQuantity - $availableQty->available_quantity;
                         return redirect()->back()->with('error', "Warehouse Don't have quantity " . $qty .  " for SKU " . trim($record['SKU Code'] ?? ''))->withInput();
                     } elseif ($availableQty->available_quantity <= 0) {
                         if (!is_null($salesOrderProductUpdate2->salesOrder->warehouse_id)) {
@@ -2075,8 +2091,13 @@ class SalesOrderController extends Controller
                             return redirect()->back()->with('error', "Warehouse Don't have quantity " . $qty .  " for SKU " . trim($record['SKU Code'] ?? ''))->withInput();
                         } else {
                             $availableQty = WarehouseStock::where('sku', trim($record['SKU Code'] ?? ''))->where('available_quantity', '>', 0)->first();
+                            if (! $availableQty) {
+                                DB::rollBack();
+
+                                return redirect()->back()->with('error', 'No available warehouse stock found for SKU ' . trim($record['SKU Code'] ?? '') . '.')->withInput();
+                            }
                             // difference
-                            $allocationEntryDiff = $record['Block Quantity'] - $salesOrderProductUpdate2->tempOrder->block;
+                            $allocationEntryDiff = $blockQuantity - $salesOrderProductUpdate2->tempOrder->block;
                             $updateBlock = $salesOrderProductUpdate2->tempOrder->block + $allocationEntryDiff;
 
                             $allocationsCount = $salesOrderProductUpdate2->warehouseAllocations()->count();
@@ -2117,7 +2138,6 @@ class SalesOrderController extends Controller
                                 if ($remainingQty <= 0) {
                                     $allocation->allocated_quantity = 0;
                                 } elseif ($allocation->allocated_quantity <= $remainingQty) {
-                                    $allocation->allocated_quantity = $allocation->allocated_quantity;
                                     $remainingQty -= $allocation->allocated_quantity;
                                 } else {
                                     $allocation->allocated_quantity = $remainingQty;
@@ -2133,26 +2153,21 @@ class SalesOrderController extends Controller
                         $salesOrderProductUpdate2->tempOrder->block = $updateBlock;
                         $salesOrderProductUpdate2->tempOrder->available_quantity = $updateBlock;
                         $salesOrderProductUpdate2->tempOrder->available_quantity_track = $updateBlock;
-                        if (isset($allocationEntryDiff)) {
-                            $salesOrderProductUpdate2->tempOrder->unavailable_quantity -= $allocationEntryDiff;
-                            $salesOrderProductUpdate2->tempOrder->unavailable_quantity_track -= $allocationEntryDiff;
-                        } else {
-                            $salesOrderProductUpdate2->tempOrder->unavailable_quantity -= $updateBlock;
-                            $salesOrderProductUpdate2->tempOrder->unavailable_quantity_track -= $updateBlock;
-                        }
+                        $salesOrderProductUpdate2->tempOrder->unavailable_quantity = max(0, (int) ($salesOrderProductUpdate2->tempOrder->po_qty - $updateBlock ?? 0));
+                        $salesOrderProductUpdate2->tempOrder->unavailable_quantity_track = max(0, (int) ($salesOrderProductUpdate2->tempOrder->po_qty - $updateBlock ?? 0));
                     }
 
                     $availableQty->save();
-                } elseif ($salesOrderProductUpdate2->tempOrder->block > $record['Block Quantity']) {
+                } elseif ($salesOrderProductUpdate2->tempOrder->block > $blockQuantity) {
                     // check if available quantity present in warehouse stock 
                     $availableQty = WarehouseStock::find($salesOrderProductUpdate2->warehouse_stock_id);
-                    $blockDiff = $salesOrderProductUpdate2->tempOrder->block - $record['Block Quantity'];
+                    $blockDiff = $salesOrderProductUpdate2->tempOrder->block - $blockQuantity;
 
                     $availableQty->available_quantity += $blockDiff;
                     $availableQty->block_quantity -= $blockDiff;
                     $availableQty->save();
 
-                    $updateBlock = $record['Block Quantity'];
+                    $updateBlock = $blockQuantity;
 
                     if ($salesOrderProductUpdate2->dispatched_quantity != $updateBlock) {
                         $salesOrderProductUpdate2->dispatched_quantity = $updateBlock;
@@ -2173,7 +2188,6 @@ class SalesOrderController extends Controller
                                 if ($remainingQty <= 0) {
                                     $allocation->allocated_quantity = 0;
                                 } elseif ($allocation->allocated_quantity <= $remainingQty) {
-                                    $allocation->allocated_quantity = $allocation->allocated_quantity;
                                     $remainingQty -= $allocation->allocated_quantity;
                                 } else {
                                     $allocation->allocated_quantity = $remainingQty;
@@ -2187,13 +2201,10 @@ class SalesOrderController extends Controller
                     // Update temp order 
                     if ($salesOrderProductUpdate2->tempOrder->block != $updateBlock) {
                         $salesOrderProductUpdate2->tempOrder->block = $updateBlock;
-
-                        $salesOrderProductUpdate2->tempOrder->unavailable_quantity = $salesOrderProductUpdate2->tempOrder->available_quantity - $updateBlock;
-                        $salesOrderProductUpdate2->tempOrder->unavailable_quantity_track = $salesOrderProductUpdate2->tempOrder->available_quantity - $updateBlock;
-
                         $salesOrderProductUpdate2->tempOrder->available_quantity = $updateBlock;
                         $salesOrderProductUpdate2->tempOrder->available_quantity_track = $updateBlock;
-                        
+                        $salesOrderProductUpdate2->tempOrder->unavailable_quantity = max(0, (int) ($salesOrderProductUpdate2->tempOrder->po_qty - $updateBlock ?? 0));
+                        $salesOrderProductUpdate2->tempOrder->unavailable_quantity_track = max(0, (int) ($salesOrderProductUpdate2->tempOrder->po_qty - $updateBlock ?? 0));
                     }
                 }
                 $salesOrderProductUpdate2->tempOrder->save();
@@ -2206,13 +2217,13 @@ class SalesOrderController extends Controller
                     'description' => Arr::get($record, 'Title', ''),
                     'basic_rate' => Arr::get($record, 'Basic Rate', 0),
                     'product_basic_rate' => Arr::get($record, 'Product Basic Rate', 0),
-                    'rate_confirmation' => ($record['Basic Rate'] == ($salesOrderProductUpdate->productMapping->basic_rate ?? 0)) ? 'Correct' : 'Incorrect',
+                    'rate_confirmation' => ((int) ($record['Basic Rate'] ?? 0) == (int) ($salesOrderProductUpdate->productMapping->basic_rate ?? 0)) ? 'Correct' : 'Incorrect',
                     'net_landing_rate' => Arr::get($record, 'Net Landing Rate', 0),
                     'product_net_landing_rate' => Arr::get($record, 'Product Net Landing Rate', 0),
-                    'net_landing_rate_confirmation' => ($record['Net Landing Rate'] == ($salesOrderProductUpdate->productMapping->net_landing_rate ?? 0)) ? 'Correct' : 'Incorrect',
+                    'net_landing_rate_confirmation' => ((int) ($record['Net Landing Rate'] ?? 0) == (int) ($salesOrderProductUpdate->productMapping->net_landing_rate ?? 0)) ? 'Correct' : 'Incorrect',
                     'mrp' => Arr::get($record, 'PO MRP', 0),
                     'product_mrp' => Arr::get($record, 'Product MRP', 0),
-                    'mrp_confirmation' => ($record['PO MRP'] == ($salesOrderProductUpdate->product->mrp ?? 0)) ? 'Correct' : 'Incorrect',
+                    'mrp_confirmation' => ((int) ($record['PO MRP'] ?? 0) == (int) ($salesOrderProductUpdate->product->mrp ?? 0)) ? 'Correct' : 'Incorrect',
                     'po_qty' => Arr::get($record, 'PO Quantity', 0),
                     'block' => Arr::get($record, 'Block Quantity', 0),
                     'purchase_order_quantity' => Arr::get($record, 'Purchase Order Quantity', 0),
@@ -2221,10 +2232,10 @@ class SalesOrderController extends Controller
 
 
                 // 4. Update SalesOrderProduct
-                $salesOrderProductUpdate->price = $record['PO MRP'] ?? 0;
-                $salesOrderProductUpdate->subtotal = ($record['Basic Rate'] ?? 0) * ($record['PO Quantity'] ?? 0);
-                $salesOrderProductUpdate->ordered_quantity = $record['PO Quantity'] ?? 0;
-                $salesOrderProductUpdate->purchase_ordered_quantity = $record['Purchase Order Quantity'] ?? 0;
+                $salesOrderProductUpdate->price = (int) ($record['PO MRP'] ?? 0);
+                $salesOrderProductUpdate->subtotal = (int) ($record['Basic Rate'] ?? 0) * (int) ($record['PO Quantity'] ?? 0);
+                $salesOrderProductUpdate->ordered_quantity = $poQuantity;
+                $salesOrderProductUpdate->purchase_ordered_quantity = (int) ($record['Purchase Order Quantity'] ?? 0);
 
                 // 5. Update warehouse stock if PO quantity changed
                 if ($salesOrderProductUpdate->tempOrder && $salesOrderProductUpdate->tempOrder->purchase_order_quantity != $record['Purchase Order Quantity']) {
@@ -3416,3 +3427,9 @@ class SalesOrderController extends Controller
         }
     }
 }
+
+
+
+
+
+
