@@ -392,6 +392,8 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/invoice-appointment-update/{id}', 'invoiceAppointmentUpdate')->name('invoices.appointment.update');
         Route::post('/invoice-dn-update/{id}', 'invoiceDnUpdate')->name('invoice.dn.update');
         Route::post('/invoice-payment-update/{id}', 'invoicePaymentUpdate')->name('invoice.payment.update');
+        Route::post('/invoice-bulk-import', 'bulkUpdateFromExcel')->name('invoice.bulk.import');
+        Route::get('/invoice-bulk-template', 'downloadBulkInvoiceTemplate')->name('invoice.bulk.template');
 
         // Generate E-Invoice
         Route::post('/generate-e-invoice/{id}', 'generateEInvoice')->name('invoice.generateEInvoice');
@@ -480,4 +482,9 @@ Route::get('/test-notification-delete', function () {
         }),
     ]);
 })->name('test.notification.delete');
+
+
+
+
+
 

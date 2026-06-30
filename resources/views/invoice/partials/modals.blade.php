@@ -35,6 +35,11 @@
                             <a href="{{ asset('uploads/grn/' . $invoice->appointment->grn) }}" target="_blank">View GRN</a>
                         @endif
                     </div>
+                    <div class="col-12 mb-3">
+                        <label for="grn_number" class="form-label">GRN Number</label>
+                        <input type="text" name="grn_number" id="grn_number" class="form-control"
+                               value="{{ $invoice->appointment->grn_number ?? '' }}">
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>

@@ -263,6 +263,13 @@
                                             </a>
                                         </li>
                                     @endif
+                                    @if ($invoiceDetails->appointment->grn_number)
+                                        <li
+                                            class="list-group-item d-flex justify-content-between align-items-center mb-2 pe-3">
+                                            <span><b>GRN Number</b></span>
+                                            <span>{{ $invoiceDetails->appointment->grn_number ?? 'N/A' }}</span>
+                                        </li>
+                                    @endif
                                 </ul>
                             </div>
                         @endif

@@ -50,6 +50,24 @@
                         @endif
 
                     </div>
+                    {{-- 
+                    <div class="d-flex justify-content-end mb-3">
+                        <div class="d-flex align-items-center gap-2 flex-wrap">
+                            <a href="{{ route('invoice.bulk.template') }}" class="btn btn-sm btn-outline-primary d-inline-flex align-items-center gap-2">
+                                <i class="bx bx-download"></i>
+                                Download Template
+                            </a>
+                            <form action="{{ route('invoice.bulk.import') }}" method="POST" enctype="multipart/form-data" class="d-flex align-items-center gap-2">
+                                @csrf
+                                <input type="file" name="invoice_excel" accept=".xlsx,.xls,.csv" class="form-control form-control-sm" style="max-width: 260px;" required>
+                                <button type="submit" class="btn btn-sm btn-primary d-inline-flex align-items-center gap-2">
+                                    <i class="bx bx-upload"></i>
+                                    Bulk Upload Excel
+                                </button>
+                            </form>
+                        </div>
+                    </div> 
+                    --}}
                     <div class="customer-table">
                         <div class="table-responsive white-space-nowrap">
                             <table id="invoicesList" class="table table-striped table-hover">
@@ -252,5 +270,9 @@
         });
     </script>
 @endsection
+
+
+
+
 
 

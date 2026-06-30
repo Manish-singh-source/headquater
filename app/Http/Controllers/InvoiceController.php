@@ -27,6 +27,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
+use Spatie\SimpleExcel\SimpleExcelReader;
 
 class InvoiceController extends Controller
 {
@@ -277,13 +278,15 @@ class InvoiceController extends Controller
             'grn_date' => 'nullable|date',
             'pod' => 'nullable|file|mimes:jpg,jpeg,png,pdf',
             'grn' => 'nullable|file|mimes:jpg,jpeg,png,pdf',
+            'grn_number' => 'nullable|string',
         ]);
 
         if (
             ! $request->filled('appointment_date') &&
             ! $request->filled('grn_date') &&
             ! $request->hasFile('pod') &&
-            ! $request->hasFile('grn')
+            ! $request->hasFile('grn') &&
+            ! $request->filled('grn_number')
         ) {
             return redirect()->back()->with('error', 'Please provide at least one field to update.')->withInput();
         }
@@ -326,6 +329,10 @@ class InvoiceController extends Controller
                 // Store original image
                 $grn->move(public_path('uploads/grn'), $grnName);
                 $appointment->grn = $grnName;
+            }
+
+            if ($request->filled('grn_number')) {
+                $appointment->grn_number = $request->input('grn_number');
             }
 
             $appointment->save();
@@ -453,6 +460,235 @@ class InvoiceController extends Controller
         }
     }
 
+
+    public function downloadBulkInvoiceTemplate()
+    {
+        $headers = [
+            'invoice_number',
+            'appointment_date',
+            'grn_date',
+            'pod_file',
+            'grn_file',
+            'dn_number',
+            'dn_amount',
+            'dn_reason',
+            'dn_receipt_file',
+            'utr_no',
+            'pay_amount',
+            'payment_method',
+        ];
+
+        return response()->streamDownload(function () use ($headers) {
+            $handle = fopen('php://output', 'w');
+            fputcsv($handle, $headers);
+            fclose($handle);
+        }, 'invoice_bulk_upload_template.csv', [
+            'Content-Type' => 'text/csv',
+        ]);
+    }
+
+
+    public function bulkUpdateFromExcel(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'invoice_excel' => 'required|file|mimes:xlsx,xls,csv',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator)->withInput();
+        }
+
+        $file = $request->file('invoice_excel');
+        $filepath = $file->getPathname();
+        $extension = $file->getClientOriginalExtension();
+
+        $requiredHeaders = [
+            'invoice_number',
+            'appointment_date',
+            'grn_date',
+            'pod_file',
+            'grn_file',
+            'dn_number',
+            'dn_amount',
+            'dn_reason',
+            'dn_receipt_file',
+            'utr_no',
+            'pay_amount',
+            'payment_method',
+        ];
+
+        DB::beginTransaction();
+
+        try {
+            $rows = collect(SimpleExcelReader::create($filepath, $extension)->getRows()->toArray())
+                ->map(fn($row) => array_change_key_case($row, CASE_LOWER))
+                ->values()
+                ->toArray();
+
+            if (empty($rows)) {
+                DB::rollBack();
+
+                return redirect()->back()->with('error', 'The uploaded file does not contain any data rows.')->withInput();
+            }
+
+            $fileHeaders = array_keys($rows[0] ?? []);
+            $missingHeaders = array_diff($requiredHeaders, $fileHeaders);
+
+            if (! empty($missingHeaders)) {
+                DB::rollBack();
+
+                return redirect()->back()->with('error', 'Missing required columns: ' . implode(', ', $missingHeaders))->withInput();
+            }
+
+            foreach ($rows as $index => $row) {
+                $rowNumber = $index + 2;
+                $invoiceNumber = trim((string) ($row['invoice_number'] ?? ''));
+
+                if ($invoiceNumber === '') {
+                    DB::rollBack();
+
+                    return redirect()->back()->with('error', 'invoice_number is required on row ' . $rowNumber . '.')->withInput();
+                }
+
+                $invoice = Invoice::with(['appointment', 'payments'])->where('invoice_number', $invoiceNumber)->first();
+
+                if (! $invoice) {
+                    DB::rollBack();
+
+                    return redirect()->back()->with('error', 'Invoice not found for invoice_number ' . $invoiceNumber . ' on row ' . $rowNumber . '.')->withInput();
+                }
+
+                $hasAppointmentData = trim((string) ($row['appointment_date'] ?? '')) !== '' || trim((string) ($row['grn_date'] ?? '')) !== '' || trim((string) ($row['pod_file'] ?? '')) !== '' || trim((string) ($row['grn_file'] ?? '')) !== '';
+                $hasDnData = trim((string) ($row['dn_number'] ?? '')) !== '' || trim((string) ($row['dn_amount'] ?? '')) !== '' || trim((string) ($row['dn_reason'] ?? '')) !== '' || trim((string) ($row['dn_receipt_file'] ?? '')) !== '';
+                $hasPaymentData = trim((string) ($row['utr_no'] ?? '')) !== '' || trim((string) ($row['pay_amount'] ?? '')) !== '' || trim((string) ($row['payment_method'] ?? '')) !== '';
+
+                if ($hasAppointmentData) {
+                    $appointment = Appointment::firstOrNew(['invoice_id' => $invoice->id]);
+
+                    if (trim((string) ($row['appointment_date'] ?? '')) !== '') {
+                        $appointment->appointment_date = $row['appointment_date'];
+                    }
+
+                    if (trim((string) ($row['grn_date'] ?? '')) !== '') {
+                        $appointment->grn_date = $row['grn_date'];
+                    }
+
+                    if (trim((string) ($row['pod_file'] ?? '')) !== '') {
+                        $podFile = public_path('uploads/pod/' . trim((string) $row['pod_file']));
+
+                        if (! file_exists($podFile)) {
+                            DB::rollBack();
+
+                            return redirect()->back()->with('error', 'POD file not found for invoice ' . $invoiceNumber . ' on row ' . $rowNumber . '.')->withInput();
+                        }
+
+                        $appointment->pod = basename($podFile);
+                    }
+
+                    if (trim((string) ($row['grn_file'] ?? '')) !== '') {
+                        $grnFile = public_path('uploads/grn/' . trim((string) $row['grn_file']));
+
+                        if (! file_exists($grnFile)) {
+                            DB::rollBack();
+
+                            return redirect()->back()->with('error', 'GRN file not found for invoice ' . $invoiceNumber . ' on row ' . $rowNumber . '.')->withInput();
+                        }
+
+                        $appointment->grn = basename($grnFile);
+                    }
+
+                    $appointment->invoice_id = $invoice->id;
+                    $appointment->save();
+                }
+
+                if ($hasDnData) {
+                    $dnReceipt = trim((string) ($row['dn_receipt_file'] ?? ''));
+
+                    if ($dnReceipt === '') {
+                        DB::rollBack();
+
+                        return redirect()->back()->with('error', 'dn_receipt_file is required when DN data is provided on row ' . $rowNumber . '.')->withInput();
+                    }
+
+                    $dnPath = public_path('uploads/dn_receipts/' . $dnReceipt);
+
+                    if (! file_exists($dnPath)) {
+                        DB::rollBack();
+
+                        return redirect()->back()->with('error', 'DN receipt file not found for invoice ' . $invoiceNumber . ' on row ' . $rowNumber . '.')->withInput();
+                    }
+
+                    $existingDn = Dn::where('invoice_id', $invoice->id)->first();
+                    $dn = $existingDn ?: new Dn();
+                    $dn->invoice_id = $invoice->id;
+                    $dn->dn_number = trim((string) ($row['dn_number'] ?? ''));
+                    $dn->dn_amount = (float) ($row['dn_amount'] ?? 0);
+                    $dn->dn_reason = trim((string) ($row['dn_reason'] ?? ''));
+                    $dn->dn_receipt = basename($dnPath);
+                    $dn->save();
+                }
+
+                if ($hasPaymentData) {
+                    $payAmount = (float) ($row['pay_amount'] ?? 0);
+                    $paymentMethod = trim((string) ($row['payment_method'] ?? ''));
+                    $utrNo = trim((string) ($row['utr_no'] ?? ''));
+
+                    if ($utrNo === '' || $payAmount <= 0 || $paymentMethod === '') {
+                        DB::rollBack();
+
+                        return redirect()->back()->with('error', 'utr_no, pay_amount, and payment_method are required when payment data is provided on row ' . $rowNumber . '.')->withInput();
+                    }
+
+                    $currentPaidAmount = (float) $invoice->payments->sum('amount');
+                    $currentDueAmount = (float) $invoice->total_amount - $currentPaidAmount;
+
+                    if ($currentDueAmount <= 0) {
+                        DB::rollBack();
+
+                        return redirect()->back()->with('error', 'Invoice ' . $invoiceNumber . ' is already fully paid.')->withInput();
+                    }
+
+                    if ($payAmount > $currentDueAmount) {
+                        DB::rollBack();
+
+                        return redirect()->back()->with('error', 'Payment amount is greater than due amount for invoice ' . $invoiceNumber . ' on row ' . $rowNumber . '.')->withInput();
+                    }
+
+                    if (Payment::where('payment_utr_no', $utrNo)->exists()) {
+                        DB::rollBack();
+
+                        return redirect()->back()->with('error', 'UTR number already exists for invoice ' . $invoiceNumber . ' on row ' . $rowNumber . '.')->withInput();
+                    }
+
+                    $payment = new Payment();
+                    $payment->invoice_id = $invoice->id;
+                    $payment->payment_utr_no = $utrNo;
+                    $payment->amount = $payAmount;
+                    $payment->payment_method = $paymentMethod;
+                    $payment->payment_status = 'paid';
+                    $payment->save();
+
+                    $newPaidAmount = $currentPaidAmount + $payAmount;
+                    $newBalanceDue = (float) $invoice->total_amount - $newPaidAmount;
+                    $invoice->paid_amount = $newPaidAmount;
+                    $invoice->balance_due = $newBalanceDue;
+                    $invoice->payment_status = $newBalanceDue <= 0 ? 'paid' : 'partial';
+                    $invoice->save();
+                }
+            }
+
+            DB::commit();
+
+            return redirect()->back()->with('success', 'Invoice bulk update completed successfully.');
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            Log::error('Invoice bulk import error: ' . $e->getMessage());
+
+            return redirect()->back()->with('error', 'Something went wrong: ' . $e->getMessage())->withInput();
+        }
+    }
+
+    
     public function invoiceDetails($id)
     {
         $invoiceDetails = Invoice::with([
@@ -474,7 +710,6 @@ class InvoiceController extends Controller
         // count total active einvoices
         $total_einvoices = $invoiceDetails->einvoices->where('einvoice_status', 'ACT')->count();
         $total_ewaybills = $invoiceDetails->ewaybills->count();
-
         return view('invoice.invoice-details', compact('invoiceDetails', 'total_einvoices', 'total_ewaybills'));
     }
 
@@ -1633,7 +1868,7 @@ class InvoiceController extends Controller
                 $results = $data['results'];
                 // dd($results);
                 Log::error('E-Way Bill API Response: ' . json_encode($results));
-                
+
                 if (isset($results['status']) && $results['status'] === 'Success' && isset($results['message'])) {
                     $message = $results['message'];
 
@@ -2217,7 +2452,8 @@ class InvoiceController extends Controller
     }
 
 
-    public function einvoicesList() {
+    public function einvoicesList()
+    {
         $eInvoice = EInvoice::with('invoice', 'invoice.salesOrder', 'invoice.customer')
             ->get()
             ->sortByDesc(function ($eInvoice) {
@@ -2227,7 +2463,8 @@ class InvoiceController extends Controller
         return view('einvoice.index', compact('eInvoice'));
     }
 
-    public function eWayBillList() {
+    public function eWayBillList()
+    {
         $eWayBill = Ewaybill::with('invoice', 'invoice.salesOrder', 'invoice.customer')
             ->get()
             ->sortByDesc(function ($eWayBill) {
@@ -2237,5 +2474,3 @@ class InvoiceController extends Controller
         return view('ewaybill.index', compact('eWayBill'));
     }
 }
-
-
