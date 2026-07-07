@@ -119,12 +119,12 @@ class PurchaseOrderController extends Controller
             if (! $request->has('purchaseId')) {
 
                 // add prefix for purchase order 
-                $lastPurchaseOrder = PurchaseOrder::orderBy('id', 'desc')->first();
+                $lastPurchaseOrder = PurchaseOrder::where('order_type', 'manual')->orderBy('id', 'desc')->first();
                 if ($lastPurchaseOrder && $lastPurchaseOrder->order_number) {
-                    $prefix = $lastPurchaseOrder ? 'PO-' . date('Ym', strtotime($lastPurchaseOrder->created_at)) . '-' : 'PO-' . date('Ym') . '-';
+                    $prefix = $lastPurchaseOrder ? 'POM-' . date('Ym', strtotime($lastPurchaseOrder->created_at)) . '-' : 'POM-' . date('Ym') . '-';
                     $lastPurchaseOrderNumber = $lastPurchaseOrder ? intval(explode('-', $lastPurchaseOrder->order_number)[2]) : 0;
                 } else {
-                    $prefix = 'PO-' . date('Ym') . '-';
+                    $prefix = 'POM-' . date('Ym') . '-';
                     $lastPurchaseOrderNumber = 0;
                 }
                 $nextPurchaseOrderNumber = $lastPurchaseOrderNumber + 1;
@@ -137,6 +137,7 @@ class PurchaseOrderController extends Controller
                 $purchaseOrder->vendor_id = $vendor->id ?? null;
                 $purchaseOrder->vendor_code = $vendor->vendor_code ?? null;
                 $purchaseOrder->status = 'pending';
+                $purchaseOrder->order_type = 'manual';
                 $purchaseOrder->save();
             }
 
