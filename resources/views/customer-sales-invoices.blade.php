@@ -644,10 +644,10 @@
                                             </td>
                                             <td>{{ $invoice->appointment?->grn ? 'Yes' : 'No' }}</td>
                                             <td>{{ $invoice->appointment?->pod ? 'Yes' : 'No' }}</td>
-                                            <td>{{ $invoice->dns?->first()?->dn_number ?? 'N/A' }}</td>
-                                            <td>{{ $invoice->dns?->first()?->dn_amount ? $invoice->dns?->first()?->dn_amount : 0 }}</td>
-                                            <td>{{ $invoice->dns?->first()?->dn_receipt ? 'Yes' : 'No' }}</td>
-                                            <td>{{ $invoice->dns?->first()?->dn_reason ? $invoice->dns?->first()?->dn_reason : 'N/A' }}</td>
+                                            <td>{{ $invoice->dns?->dn_number ?? 'N/A' }}</td>
+                                            <td>{{ $invoice->dns?->dn_amount ? $invoice->dns->dn_amount : 0 }}</td>
+                                            <td>{{ $invoice->dns?->dn_receipt ? 'Yes' : 'No' }}</td>
+                                            <td>{{ $invoice->dns?->dn_reason ?: 'N/A' }}</td>
                                             {{-- <td>{{ $invoice->lr ? 'Yes' : 'No' }}</td> --}}
                                             <td>{{ $invoice->currency ?? 'INR' }}</td>
                                             <td>{{ $invoice->details->first()->hsn ?? $invoice->details->first()?->product?->hsn ??'N/A' }}</td>

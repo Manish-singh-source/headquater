@@ -273,7 +273,7 @@
                                 </ul>
                             </div>
                         @endif
-                        @if (!empty($invoiceDetails->dns) && $invoiceDetails->dns->count() > 0)
+                        @if (!empty($invoiceDetails->dns))
                             <div class="card w-100 d-flex  flex-sm-row flex-col">
                                 <ul class="col-12 list-group list-group-flush">
                                     {{-- <li>DN Details</li> --}}

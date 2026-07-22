@@ -64,24 +64,24 @@
                 @method('POST')
                 <div class="modal-body">
                     <div class="col-12 mb-3">
-                        <label for="dn_number" class="form-label">DN Number<span class="text-danger">*</span></label>
+                        <label for="dn_number" class="form-label">DN Number</label>
                         <input type="text" name="dn_number" id="dn_number" class="form-control"
-                               value="" required placeholder="Enter DN Number">
+                               value="" placeholder="Enter DN Number">
                     </div>
                     <div class="col-12 mb-3">
-                        <label for="dn_amount" class="form-label">DN Amount<span class="text-danger">*</span></label>
+                        <label for="dn_amount" class="form-label">DN Amount</label>
                         <input type="text" name="dn_amount" id="dn_amount" class="form-control"
-                               value="" required placeholder="Upload Amount">
+                               value="" placeholder="Upload Amount">
                     </div>
                     <div class="col-12 mb-3">
-                        <label for="dn_reason" class="form-label">DN Reason<span class="text-danger">*</span></label>
+                        <label for="dn_reason" class="form-label">DN Reason</label>
                         <input type="text" name="dn_reason" id="dn_reason" class="form-control"
-                               value="" required placeholder="DN Reason">
+                               value="" placeholder="DN Reason">
                     </div>
                     <div class="col-12 mb-3">
-                        <label for="dn_receipt" class="form-label">DN Receipt <span class="text-danger">*</span></label>
+                        <label for="dn_receipt" class="form-label">DN Receipt </label>
                         <input type="file" name="dn_receipt" id="dn_receipt" class="form-control"
-                               value="" required placeholder="Upload ID Document">
+                               value="" placeholder="Upload ID Document">
                     </div>
                 </div>
                 <div class="modal-footer">
