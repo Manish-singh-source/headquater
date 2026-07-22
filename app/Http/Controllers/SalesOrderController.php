@@ -1543,7 +1543,7 @@ class SalesOrderController extends Controller
                         ];
 
                         // handle if null
-                        $lastPurchaseOrder = PurchaseOrder::orderBy('id', 'desc')->first();
+                        $lastPurchaseOrder = PurchaseOrder::where('order_type', 'auto')->orderBy('id', 'desc')->first();
                         if ($lastPurchaseOrder && $lastPurchaseOrder->order_number) {
                             $prefix = $lastPurchaseOrder ? 'PO-' . date('Ym', strtotime($lastPurchaseOrder->created_at)) . '-' : 'PO-' . date('Ym') . '-';
                             $lastPurchaseOrderNumber = $lastPurchaseOrder ? intval(explode('-', $lastPurchaseOrder->order_number)[2]) : 0;
