@@ -441,13 +441,18 @@
                                     <th>Customer&nbsp;City</th>
                                     <th>Customer&nbsp;State</th>
 
+                                    <th>PO&nbsp;Date</th>
+                                    <th>PO&nbsp;Expiry&nbsp;Date</th>
+
                                     <th>PO&nbsp;No</th>
                                     <th>SKU&nbsp;Code</th>
                                     <th>Title</th>
                                     <th>Brand</th>
                                     <th>HSN</th>
                                     <th>Ordered&nbsp;Quantity</th>
+                                    <th>Allocation&nbsp;Quantity</th>
                                     <th>Dispatched&nbsp;Quantity</th>
+                                    <th>Dispatched&nbsp;Date</th>
                                     <th>Box&nbsp;Count</th>
                                     <th>Weight</th>
                                     <th>Unit&nbsp;Price</th>
@@ -490,6 +495,8 @@
                                                     <td>{{ $product->customer->email ?? 'N/A' }}</td>
                                                     <td>{{ $product->customer->shipping_city ?? 'N/A' }}</td>
                                                     <td>{{ $product->customer->shipping_state ?? 'N/A' }}</td>
+                                                    <td>{{ $product->tempOrder->po_date ?? 'N/A' }}</td>
+                                                    <td>{{ $product->tempOrder->po_expiry_date ?? 'N/A' }}</td>
                                                     <td>{{ $product->tempOrder->po_number ?? 'N/A' }}</td>
                                                     <td>{{ $product->tempOrder->sku ?? 'N/A' }}</td>
                                                     <td>{{ $product->product->brand_title }}</td>
@@ -497,7 +504,9 @@
                                                     <td>{{ $product->product->hsn }}</td>
                                                     <td>{{ intval($product->tempOrder->po_qty ?? ($product->ordered_quantity ?? 0)) }}
                                                     </td>
+                                                    <td>{{ $allocation->final_dispatched_quantity ?? 0 }}</td>
                                                     <td>{{ $allocation->final_final_dispatched_quantity ?? 0 }}</td>
+                                                    <td>{{ $allocation->approved_at ?? 'N/A' }}</td>
                                                     <td>{{ $allocation->box_count ?? 0 }}</td>
                                                     <td>{{ $allocation->weight ?? 0 }}</td>
                                                     <td>{{ $product->tempOrder?->basic_rate ?? 0 }}</td>

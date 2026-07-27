@@ -1888,6 +1888,8 @@ class ReportController extends Controller
                                 'Customer Email' => $customer->email ?? 'N/A',
                                 'Customer City' => $customer->shipping_city ?? 'N/A',
                                 'Customer State' => $customer->shipping_state ?? 'N/A',
+                                'PO Date' => $product->tempOrder->po_date ?? 'N/A',
+                                'PO Expiry Date' => $product->tempOrder->po_expiry_date ?? 'N/A',
                                 'PO No' => $product->tempOrder->po_number ?? 'N/A',
                                 // Product details
                                 'SKU Code' => $product->tempOrder->sku ?? 'N/A',
@@ -1898,7 +1900,9 @@ class ReportController extends Controller
 
                                 // Order quantities
                                 'Orderd Quantity' => intval($product->tempOrder?->po_qty) ?? intval($product->ordered_quantity),
+                                'Allocation Quantity' => $allocation->final_dispatched_quantity ?? 0,
                                 'Dispatched Quantity' => $allocation->final_final_dispatched_quantity ?? 0,
+                                'Dispatched Date' => $allocation->approved_at ?? 'N/A',
                                 'Box Count' => $allocation->box_count ?? 0,
                                 'Weight' => $allocation->weight ?? 0,
 
@@ -1953,6 +1957,8 @@ class ReportController extends Controller
                 'Customer Email',
                 'Customer City',
                 'Customer State',
+                'PO Date',
+                'PO Expiry Date',
                 'PO No',
                 'SKU Code',
                 'Item Code',
@@ -1960,7 +1966,9 @@ class ReportController extends Controller
                 'Brand',
                 'HSN',
                 'Orderd Quantity',
+                'Allocation Quantity',
                 'Dispatched Quantity',
+                'Dispatched Date',
                 'Box Count',
                 'Weight',
                 'Unit Price',
