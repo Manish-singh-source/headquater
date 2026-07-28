@@ -451,6 +451,7 @@
                                     <th>HSN</th>
                                     <th>Ordered&nbsp;Quantity</th>
                                     <th>Allocation&nbsp;Quantity</th>
+                                    <th>Allocation&nbsp;Date</th>
                                     <th>Dispatched&nbsp;Quantity</th>
                                     <th>Dispatched&nbsp;Date</th>
                                     <th>Box&nbsp;Count</th>
@@ -505,8 +506,32 @@
                                                     <td>{{ intval($product->tempOrder->po_qty ?? ($product->ordered_quantity ?? 0)) }}
                                                     </td>
                                                     <td>{{ $allocation->final_dispatched_quantity ?? 0 }}</td>
+                                                    <td>
+                                                        {{ $allocation->send_to_pkg_at ? \Carbon\Carbon::parse($allocation->send_to_pkg_at)->format('d-m-Y') : 'N/A' }}
+                                                    </td>
                                                     <td>{{ $allocation->final_final_dispatched_quantity ?? 0 }}</td>
-                                                    <td>{{ $allocation->approved_at ?? 'N/A' }}</td>
+                                                    <td>
+                                                        @if ($allocation->send_to_pkg_at)
+                                                            @php
+                                                                $date = \Carbon\Carbon::parse(
+                                                                    $allocation->send_to_pkg_at,
+                                                                );
+                                                                $daysAdded = 0;
+
+                                                                while ($daysAdded < 4) {
+                                                                    $date->addDay();
+
+                                                                    if (!$date->isSunday()) {
+                                                                        $daysAdded++;
+                                                                    }
+                                                                }
+                                                            @endphp
+
+                                                            {{ $date->format('d-m-Y') }}
+                                                        @else
+                                                            N/A
+                                                        @endif
+                                                    </td>
                                                     <td>{{ $allocation->box_count ?? 0 }}</td>
                                                     <td>{{ $allocation->weight ?? 0 }}</td>
                                                     <td>{{ $product->tempOrder?->basic_rate ?? 0 }}</td>
@@ -530,10 +555,10 @@
                                                         {{ $subtotal + $gstAmount }}
                                                     </td>
                                                     <td>
-                                                        {{ (($allocation->product_status == 'completed') ? 'Shipped' : ucwords(str_replace('_', ' ', $allocation->product_status) ?? 'Pending'))  }}
+                                                        {{ $allocation->product_status == 'completed' ? 'Shipped' : ucwords(str_replace('_', ' ', $allocation->product_status) ?? 'Pending') }}
                                                     </td>
                                                     <td>
-                                                        {{ ucwords(str_replace('_', ' ', $allocation?->invoice_status ?? 'N/A'))  }}
+                                                        {{ ucwords(str_replace('_', ' ', $allocation?->invoice_status ?? 'N/A')) }}
                                                     </td>
                                                 </tr>
                                             @endforeach

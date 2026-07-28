@@ -957,7 +957,7 @@ class ReportController extends Controller
                 $baseRate = $toNumber($record->productMapping?->basic_rate) ?: $toNumber($record->product?->basic_rate);
                 return $toNumber($record->available_quantity) * $baseRate;
             });
-            
+
             $totalAmountValue = $products->sum(function ($record) use ($toNumber) {
                 $baseRate = $toNumber($record->productMapping?->basic_rate) ?: $toNumber($record->product?->basic_rate);
                 $taxableValue = $toNumber($record->available_quantity) * $baseRate;
@@ -1296,8 +1296,7 @@ class ReportController extends Controller
      */
     public function customerSalesHistory1(Request $request)
     {
-        try { // Base Query with all relationships
-
+        try {
 
             $query = SalesOrder::with([
                 'warehouse',
@@ -1572,7 +1571,7 @@ class ReportController extends Controller
                 ->values();
 
             // dd($salesOrders);
-            
+
             $invoicesData = Invoice::with('details.product')
                 ->where('invoice_type', 'sales_order')
                 ->get();
@@ -1860,7 +1859,7 @@ class ReportController extends Controller
                             //         }
                             //     }
                             // }
-                            
+
                             // Get invoice details
                             $invoiceDetail = $product->invoiceDetails->first();
                             $invoice = $invoiceDetail?->invoice;
@@ -1868,12 +1867,30 @@ class ReportController extends Controller
                             $appointment = $invoice?->appointment;
                             $dns = $invoice?->dns;
                             $payment = $invoice?->payments?->first();
-    
+
                             // Calculate subtotal and total for this allocation
                             $subtotal = $allocation->final_final_dispatched_quantity * $product->tempOrder?->basic_rate;
                             $gstRate = $product->tempOrder->gst ?? 0;
                             $total = $subtotal * (1 + $gstRate / 100);
                             $gstAmount = 0;
+
+                            if ($allocation->send_to_pkg_at) {
+                                $date = \Carbon\Carbon::parse($allocation->send_to_pkg_at);
+                                $daysAdded = 0;
+
+                                while ($daysAdded < 4) {
+                                    $date->addDay();
+
+                                    if (!$date->isSunday()) {
+                                        $daysAdded++;
+                                    }
+                                }
+
+                                $dispatchDate = $date->format('d-m-Y');
+                            } else {
+                                $date = 'N/A';
+                                $dispatchDate = 'N/A';
+                            }
 
                             // dd($product->tempOrder->po_qty);
                             $exportData->push([
@@ -1901,8 +1918,9 @@ class ReportController extends Controller
                                 // Order quantities
                                 'Orderd Quantity' => intval($product->tempOrder?->po_qty) ?? intval($product->ordered_quantity),
                                 'Allocation Quantity' => $allocation->final_dispatched_quantity ?? 0,
+                                'Allocation Date' => $allocation->send_to_pkg_at ? \Carbon\Carbon::parse($allocation->send_to_pkg_at)->format('d-m-Y') : 'N/A',
                                 'Dispatched Quantity' => $allocation->final_final_dispatched_quantity ?? 0,
-                                'Dispatched Date' => $allocation->approved_at ?? 'N/A',
+                                'Dispatched Date' => $dispatchDate ?? 'N/A',
                                 'Box Count' => $allocation->box_count ?? 0,
                                 'Weight' => $allocation->weight ?? 0,
 
@@ -1967,6 +1985,7 @@ class ReportController extends Controller
                 'HSN',
                 'Orderd Quantity',
                 'Allocation Quantity',
+                'Allocation Date',
                 'Dispatched Quantity',
                 'Dispatched Date',
                 'Box Count',
@@ -2888,7 +2907,7 @@ class ReportController extends Controller
                         'DN Reason' => $invoice->dns?->dn_reason ? $invoice->dns?->dn_reason : 'N/A',
                         // 'LR' => $invoice->lr ? 'Yes' : 'No',
                         'Currency' => $invoice->currency ?? 'INR',
-                        'HSN' => $invoice->details->first()->hsn ?? $invoice->details->first()?->product?->hsn ??'N/A',
+                        'HSN' => $invoice->details->first()->hsn ?? $invoice->details->first()?->product?->hsn ?? 'N/A',
                         'Ordered Quantity' => $invoice->details->sum('quantity') ?? 'N/A',
                         'Dispatched Quantity' => $invoice->details->sum('quantity') ?? 'N/A',
                         'Box Count' => number_format($totalBoxCount, 0) ?? 'N/A',
@@ -3291,7 +3310,7 @@ class ReportController extends Controller
                     'total_pending_payments' => $totalPendingPayments,
                     'total_customers' => $customers->count(),
                     'top_customer' => $invoiceData->groupBy('customer_name')
-                        ->map(fn ($rows) => $rows->sum('total'))
+                        ->map(fn($rows) => $rows->sum('total'))
                         ->sortDesc()
                         ->keys()
                         ->first() ?? 'N/A',

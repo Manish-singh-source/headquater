@@ -17,6 +17,8 @@ class WarehouseAllocation extends Model
         'sequence' => 'integer',
         'approved_at' => 'datetime',
         'shipping_status' => 'string',
+        'final_qty_blocked_at' => 'datetime',
+        'send_to_pkg_at' => 'datetime',
     ];
     
     /**

@@ -11,6 +11,8 @@ class SalesOrderProduct extends Model
 
     protected $casts = [
         'status' => 'string',
+        'final_qty_blocked_at' => 'datetime',
+        'send_to_pkg_at' => 'datetime',
     ];
 
     // Scope methods for status filtering

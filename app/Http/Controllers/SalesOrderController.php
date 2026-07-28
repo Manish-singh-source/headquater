@@ -2107,6 +2107,7 @@ class SalesOrderController extends Controller
                                         $newAllocation = $allocation->replicate();
                                         $newAllocation->warehouse_id = $availableQty->warehouse_id;
                                         $newAllocation->allocated_quantity = $allocationEntryDiff;
+                                        $newAllocation->final_qty_blocked_at = now();
                                         $newAllocation->save();
                                     }
                                 }
@@ -2129,6 +2130,7 @@ class SalesOrderController extends Controller
                         if ($allocationsCount == 1) {
                             foreach ($salesOrderProductUpdate2->warehouseAllocations as $allocation) {
                                 $allocation->allocated_quantity = $updateBlock;
+                                $allocation->final_qty_blocked_at = now();
                                 $allocation->save();
                             }
                         } else {
@@ -2143,6 +2145,7 @@ class SalesOrderController extends Controller
                                     $allocation->allocated_quantity = $remainingQty;
                                     $remainingQty = 0;
                                 }
+                                $allocation->final_qty_blocked_at = now();
                                 $allocation->save();
                             }
                         }
@@ -2179,6 +2182,7 @@ class SalesOrderController extends Controller
                         if ($allocationsCount == 1) {
                             foreach ($salesOrderProductUpdate2->warehouseAllocations as $allocation) {
                                 $allocation->allocated_quantity = $updateBlock;
+                                $allocation->final_qty_blocked_at = now();
                                 $allocation->save();
                             }
                         } else {
@@ -2193,6 +2197,7 @@ class SalesOrderController extends Controller
                                     $allocation->allocated_quantity = $remainingQty;
                                     $remainingQty = 0;
                                 }
+                                $allocation->final_qty_blocked_at = now();
                                 $allocation->save();
                             }
                         }
@@ -2207,6 +2212,7 @@ class SalesOrderController extends Controller
                         $salesOrderProductUpdate2->tempOrder->unavailable_quantity_track = max(0, (int) ($salesOrderProductUpdate2->tempOrder->po_qty ?? 0) - (int) $updateBlock);
                     }
                 }
+                $salesOrderProductUpdate2->final_qty_blocked_at = now();
                 $salesOrderProductUpdate2->tempOrder->save();
                 $salesOrderProductUpdate2->save();
 
@@ -2321,6 +2327,7 @@ class SalesOrderController extends Controller
                     if ($allocationsCount == 1) {
                         foreach ($salesOrderProductUpdate->warehouseAllocations as $allocation) {
                             $allocation->final_dispatched_quantity = $finalFulfilledQty;
+                            $allocation->final_qty_blocked_at = now();
                             $allocation->save();
                         }
                     } else {
@@ -2336,10 +2343,12 @@ class SalesOrderController extends Controller
                                 $allocation->final_dispatched_quantity = $remainingQty;
                                 $remainingQty = 0;
                             }
+                            $allocation->final_qty_blocked_at = now();
                             $allocation->save();
                         }
                     }
                 }
+                $salesOrderProductUpdate->final_qty_blocked_at = now();
                 $salesOrderProductUpdate->save();
 
                 $insertCount++;
@@ -2399,12 +2408,14 @@ class SalesOrderController extends Controller
                 if ($order->final_dispatched_quantity > 0) {
                     $order->status = 'packaging';
                     $order->product_status = 'packaging';
+                    $order->send_to_pkg_at = now();
                 }
 
                 if ($order->warehouseAllocations->count() > 0) {
                     foreach ($order->warehouseAllocations as $allocation) {
                         if ($allocation->final_dispatched_quantity > 0) {
                             $allocation->product_status = 'packaging';
+                            $allocation->send_to_pkg_at = now();
                             $allocation->save();
                         }
                     }
