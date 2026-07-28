@@ -7,6 +7,7 @@ use App\Models\Invoice;
 use App\Models\Payment;
 use App\Models\Product;
 use App\Models\SalesOrder;
+use App\Models\SalesOrderProduct;
 use App\Models\VendorPIProduct;
 use App\Models\WarehouseStock;
 use Carbon\Carbon;
@@ -63,7 +64,17 @@ class DashboardController extends Controller
         $warehouseData = $this->getWarehouseData($selectedBrands);
 
         $user = auth()->user();
+
+
+        // Sales Order Data
+        // $totalSalesOrders = SalesOrder::count();
         
+        // $totalSalesOrderProductsOrderedQuantity = SalesOrderProduct::sum('ordered_quantity');
+        // $totalSalesOrderProductsDispatchedQuantity = SalesOrderProduct::sum('dispatched_quantity');
+        // $totalSalesOrderProductsFinalDispatchedQuantity = SalesOrderProduct::sum('final_dispatched_quantity');
+        
+        // dd($totalSalesOrderProductsOrderedQuantity, $totalSalesOrderProductsDispatchedQuantity, $totalSalesOrderProductsFinalDispatchedQuantity);
+
         // dd($warehouseData);
         return view('index', compact(
             'user',

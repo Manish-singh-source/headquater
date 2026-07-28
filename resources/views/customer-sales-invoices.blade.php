@@ -635,7 +635,8 @@
                                             <td>{{ $invoice->customer->shipping_city ?? 'N/A' }}</td>
                                             <td>{{ $invoice->customer->shipping_state ?? 'N/A' }}</td>
                                             <td>{{ $invoicePoNumber ?? 'N/A' }}</td>
-                                            <td>{{ $invoice->created_at->format('d-m-Y') ?? 'N/A' }}</td>
+                                            <td>{{ $invoice->details->first()?->tempOrder?->po_date ?? 'N/A' }}
+                                            </td>
                                             <td>{{ $invoice->appointment?->appointment_date?->format('d-m-Y') ?? 'N/A' }}
                                             </td>
                                             <td>{{ $invoice->appointment?->appointment_date?->addMonth()->format('d-m-Y') ?? 'N/A' }}

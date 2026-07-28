@@ -2895,7 +2895,7 @@ class ReportController extends Controller
                         'Customer City' => $invoice->customer->shipping_city ?? 'N/A',
                         'Customer State' => $invoice->customer->shipping_state ?? 'N/A',
                         'PO No' => $this->resolveInvoicePoNumber($invoice),
-                        'PO Date' => $invoice->created_at->format('d-m-Y') ?? 'N/A',
+                        'PO Date' => $invoice->details->first()?->tempOrder?->po_date ?? 'N/A',
                         'Appointment Date' => $invoice->appointment?->appointment_date?->format('d-m-Y') ?? 'N/A',
                         'Due Date' => $invoice->appointment?->appointment_date?->addMonth()->format('d-m-Y') ?? 'N/A',
                         'GRN Date' => $invoice->appointment?->grn_date?->format('d-m-Y') ?? 'N/A',
