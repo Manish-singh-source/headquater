@@ -29,6 +29,28 @@
             padding: 0.375rem 0.65rem;
             line-height: 1.25;
         }
+
+        .sales-order-data-table th,
+        .sales-order-data-table td {
+            white-space: nowrap;
+            vertical-align: middle;
+        }
+
+        .sales-order-data-table th {
+            font-size: 0.82rem;
+        }
+
+        .sales-order-kpi-table th,
+        .sales-order-kpi-table td {
+            text-align: center;
+            white-space: nowrap;
+            vertical-align: middle;
+        }
+
+        .sales-order-kpi-table .kpi-value {
+            font-size: 1.15rem;
+            font-weight: 700;
+        }
     </style>
 
     <!--start main wrapper-->
@@ -90,6 +112,51 @@
                 </div>
 
 
+                <!-- Sales Order Count Summary Section -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header bg-primary text-white"
+                                style="background-color: rgb(187 214 255) !important;">
+                                <h5 class="mb-0"><i class="material-icons-outlined">query_stats</i> Sales Order Counts</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-striped table-bordered align-middle mb-0 sales-order-kpi-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Total Sales Orders</th>
+                                                <th>Pending</th>
+                                                <th>Allocation Updated</th>
+                                                <th>Send To Packaging</th>
+                                                <th>Packaged</th>
+                                                <th>Admin Approval Pending</th>
+                                                <th>Admin Approved</th>
+                                                <th>Shipped</th>
+                                                <th>Invoiced</th>
+                                                <th>Completed</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td><span class="kpi-value">{{ number_format($salesOrderStatusCounts['total_sales_orders']) }}</span></td>
+                                                <td><span class="kpi-value">{{ number_format($salesOrderStatusCounts['pending']) }}</span></td>
+                                                <td><span class="kpi-value">{{ number_format($salesOrderStatusCounts['allocation_updated']) }}</span></td>
+                                                <td><span class="kpi-value">{{ number_format($salesOrderStatusCounts['send_to_packaging']) }}</span></td>
+                                                <td><span class="kpi-value">{{ number_format($salesOrderStatusCounts['packaged']) }}</span></td>
+                                                <td><span class="kpi-value">{{ number_format($salesOrderStatusCounts['admin_approval_pending']) }}</span></td>
+                                                <td><span class="kpi-value">{{ number_format($salesOrderStatusCounts['admin_approved']) }}</span></td>
+                                                <td><span class="kpi-value">{{ number_format($salesOrderStatusCounts['shipped']) }}</span></td>
+                                                <td><span class="kpi-value">{{ number_format($salesOrderStatusCounts['invoiced']) }}</span></td>
+                                                <td><span class="kpi-value">{{ number_format($salesOrderStatusCounts['completed']) }}</span></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <!-- Sales Order Data Section -->
                 <div class="row mb-4">
                     <div class="col-12">
@@ -100,14 +167,18 @@
                             </div>
                             <div class="card-body">
                                 <div class="table-responsive">
-                                    <table class="table table-striped table-bordered align-middle mb-0">
+                                    <table class="table table-striped table-bordered align-middle mb-0 sales-order-data-table">
                                         <thead>
                                             <tr>
                                                 <th>Sales Order</th>
                                                 <th>PO Qty</th>
+                                                <th>Allocation Qty</th>
+                                                <th>Packaging Qty</th>
+                                                <th>Packaged Qty</th>
+                                                <th>Admin Approval Pending Qty</th>
+                                                <th>Admin Approved Qty</th>
+                                                <th>Shipped Qty</th>
                                                 <th>Invoice Qty</th>
-                                                <th>Send To Packaging</th>
-                                                <th>Packaged</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -115,13 +186,17 @@
                                                 <tr>
                                                     <td>{{ $salesOrder->order_number ?? '-' }}</td>
                                                     <td>{{ number_format((float) $salesOrder->po_qty) }}</td>
+                                                    <td>{{ number_format((float) $salesOrder->update_po_qty) }}</td>
+                                                    <td>{{ number_format((float) $salesOrder->send_to_packaging_qty) }}</td>
+                                                    <td>{{ number_format((float) $salesOrder->packaged_qty) }}</td>
+                                                    <td>{{ number_format((float) $salesOrder->admin_approval_pending_qty) }}</td>
+                                                    <td>{{ number_format((float) $salesOrder->admin_approved_qty) }}</td>
+                                                    <td>{{ number_format((float) $salesOrder->shipped_qty) }}</td>
                                                     <td>{{ number_format((float) $salesOrder->invoice_qty) }}</td>
-                                                    <td>{{ number_format((float) $salesOrder->final_dispatched_quantity) }}</td>
-                                                    <td>{{ number_format((float) $salesOrder->final_final_dispatched_quantity) }}</td>
                                                 </tr>
                                             @empty
                                                 <tr>
-                                                    <td colspan="5" class="text-center">No data available</td>
+                                                    <td colspan="9" class="text-center">No data available</td>
                                                 </tr>
                                             @endforelse
                                         </tbody>
@@ -134,6 +209,8 @@
                         </div>
                     </div>
                 </div>
+
+
                 <!-- Sales Section -->
                 <div class="row mb-4">
                     <div class="col-12">
@@ -253,98 +330,6 @@
                     </div>
                 </div>
 
-                <!-- Order Status Section -->
-                {{-- 
-                <div class="row mb-4">
-                    <div class="col-12">
-                        <div class="card">
-                            <div class="card-header bg-warning text-dark"
-                                style="background-color: rgb(187 214 255) !important;">
-                                <h5 class="mb-0"><i class="material-icons-outlined">assignment</i> Order Status</h5>
-                            </div>
-                            <div class="card-body">
-                                <div class="row mb-4">
-                                    <div class="col-md-4">
-                                        <div class="card bg-light">
-                                            <div class="card-body text-center">
-                                                <h6 class="text-muted">Total Orders</h6>
-                                                <h3 class="text-primary">{{ $orderStatusData['total_orders'] }}</h3>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <div class="card bg-light">
-                                            <div class="card-body text-center">
-                                                <h6 class="text-muted">Open Orders</h6>
-                                                <h3 class="text-primary">{{ $orderStatusData['total_open'] }}</h3>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <div class="card bg-light">
-                                            <div class="card-body text-center">
-                                                <h6 class="text-muted">Processed Orders</h6>
-                                                <h3 class="text-success">{{ $orderStatusData['total_processed'] }}</h3>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Brand-wise breakdown -->
-                                <div class="row">
-                                    <div class="col-12">
-                                        <h6 class="mb-3">Orders by Brand</h6>
-                                        <div class="table-responsive">
-                                            <table class="table table-striped">
-                                                <thead>
-                                                    <tr>
-                                                        <th>Brand</th>
-                                                        <th>Total Orders</th>
-                                                        <th>Open Orders</th>
-                                                        <th>Processed Orders</th>
-                                                        <th>% Processed</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    @forelse($orderStatusData['orders_by_brand'] as $brandOrder)
-                                                        <tr>
-                                                            <td>{{ $brandOrder->brand }}</td>
-                                                            <td>{{ $brandOrder->total_orders }}</td>
-                                                            <td><span
-                                                                    class="badge bg-primary">{{ $brandOrder->open_orders }}</span>
-                                                            </td>
-                                                            <td><span
-                                                                    class="badge bg-success">{{ $brandOrder->processed_orders }}</span>
-                                                            </td>
-                                                            <td>
-                                                                @php
-                                                                    $percentage =
-                                                                        $brandOrder->total_orders > 0
-                                                                            ? round(
-                                                                                ($brandOrder->processed_orders /
-                                                                                    $brandOrder->total_orders) *
-                                                                                    100,
-                                                                                2,
-                                                                            )
-                                                                            : 0;
-                                                                @endphp
-                                                                {{ $percentage }}%
-                                                            </td>
-                                                        </tr>
-                                                    @empty
-                                                        <tr>
-                                                            <td colspan="5" class="text-center">No data available</td>
-                                                        </tr>
-                                                    @endforelse
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div> --}}
 
                 <!-- Dispatch, Delivery, GRN, Payment Row -->
                 <div class="row mb-4">
@@ -365,9 +350,6 @@
                                                 <h6 class="mb-1">LR Pending</h6>
                                                 <h4 class="mb-0">
                                                     {{ $dispatchData['lr_pending'] }}
-                                                    {{-- <a href="{{ route('report.lr-pending') }}"
-                                                        style="color: white; text-decoration: underline;">
-                                                    </a> --}}
                                                 </h4>
                                             </div>
                                         </div>
@@ -378,9 +360,6 @@
                                                 <h6 class="mb-1">Appointment Received &amp; GRN Pending</h6>
                                                 <h4 class="mb-0">
                                                     {{ $dispatchData['appt_received_grn_pending'] }}
-                                                    {{-- <a href="{{ route('report.appt-grn-pending') }}"
-                                                        style="color: #212529; text-decoration: underline;">
-                                                    </a> --}}
                                                 </h4>
                                             </div>
                                         </div>
@@ -391,9 +370,6 @@
                                                 <h6 class="mb-1">Appointment Pending</h6>
                                                 <h4 class="mb-0">
                                                     {{ $dispatchData['appt_pending'] }}
-                                                    {{-- <a href="{{ route('report.appt-pending') }}"
-                                                        style="color:white; text-decoration: underline;">
-                                                    </a> --}}
                                                 </h4>
                                             </div>
                                         </div>

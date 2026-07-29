@@ -41,6 +41,7 @@ class DashboardController extends Controller
         $salesData = $this->getSalesData($periodStart, $periodEnd, $selectedBrands);
 
         // SALES ORDER DATA SECTION
+        $salesOrderStatusCounts = $this->getSalesOrderStatusCounts($periodStart, $periodEnd);
         $salesOrderData = $this->getSalesOrderData($periodStart, $periodEnd);
 
         // 2. PURCHASE SECTION
@@ -85,6 +86,7 @@ class DashboardController extends Controller
             'selectedBrands',
             'startDate',
             'endDate',
+            'salesOrderStatusCounts',
             'salesOrderData',
             'salesData',
             'purchaseData',
@@ -531,6 +533,66 @@ class DashboardController extends Controller
         ];
     }
 
+    private function getSalesOrderStatusCounts($startDate, $endDate)
+    {
+        $totalSalesOrders = SalesOrder::whereBetween('created_at', [$startDate, $endDate])->count();
+
+        $warehouseOrderCount = function ($callback) use ($startDate, $endDate) {
+            $query = DB::table('warehouse_allocations')
+                ->join('sales_orders', 'warehouse_allocations.sales_order_id', '=', 'sales_orders.id')
+                ->whereBetween('sales_orders.created_at', [$startDate, $endDate]);
+
+            $callback($query);
+
+            return $query->distinct('warehouse_allocations.sales_order_id')
+                ->count('warehouse_allocations.sales_order_id');
+        };
+
+        $allocationUpdated = $warehouseOrderCount(function ($query) {
+            $query->where('warehouse_allocations.final_dispatched_quantity', '>', 0);
+        });
+
+        return [
+            'total_sales_orders' => $totalSalesOrders,
+            'pending' => max(0, $totalSalesOrders - $allocationUpdated),
+            'allocation_updated' => $allocationUpdated,
+            'send_to_packaging' => $warehouseOrderCount(function ($query) {
+                $query->where(function ($statusQuery) {
+                    $statusQuery->whereIn('warehouse_allocations.product_status', ['packaging', 'packaged', 'approval_pending', 'completed'])
+                        ->orWhere('warehouse_allocations.shipping_status', 'shipped');
+                });
+            }),
+            'packaged' => $warehouseOrderCount(function ($query) {
+                $query->where('warehouse_allocations.final_final_dispatched_quantity', '>', 0)
+                    ->where(function ($statusQuery) {
+                        $statusQuery->whereIn('warehouse_allocations.product_status', ['packaged', 'approval_pending', 'completed'])
+                            ->orWhere('warehouse_allocations.shipping_status', 'shipped');
+                    });
+            }),
+            'admin_approval_pending' => $warehouseOrderCount(function ($query) {
+                $query->where('warehouse_allocations.approval_status', 'pending')
+                    ->where('warehouse_allocations.product_status', 'approval_pending');
+            }),
+            'admin_approved' => $warehouseOrderCount(function ($query) {
+                $query->where('warehouse_allocations.approval_status', 'approved')
+                    ->whereIn('warehouse_allocations.product_status', ['completed', 'complete']);
+            }),
+            'shipped' => $warehouseOrderCount(function ($query) {
+                $query->where('warehouse_allocations.shipping_status', 'shipped');
+            }),
+            'invoiced' => DB::table('invoices')
+                ->join('invoice_details', 'invoices.id', '=', 'invoice_details.invoice_id')
+                ->join('sales_orders', 'invoices.sales_order_id', '=', 'sales_orders.id')
+                ->whereBetween('sales_orders.created_at', [$startDate, $endDate])
+                ->whereNotNull('invoices.sales_order_id')
+                ->where('invoice_details.quantity', '>', 0)
+                ->distinct('invoices.sales_order_id')
+                ->count('invoices.sales_order_id'),
+            'completed' => $warehouseOrderCount(function ($query) {
+                $query->whereIn('warehouse_allocations.product_status', ['completed', 'complete']);
+            }),
+        ];
+    }
     private function getSalesOrderData($startDate, $endDate)
     {
         $poQuantitySubquery = DB::table('sales_order_products')
@@ -544,8 +606,12 @@ class DashboardController extends Controller
         $warehouseAllocationSubquery = DB::table('warehouse_allocations')
             ->select(
                 'sales_order_id',
-                DB::raw('COALESCE(SUM(final_dispatched_quantity), 0) as final_dispatched_quantity'),
-                DB::raw('COALESCE(SUM(final_final_dispatched_quantity), 0) as final_final_dispatched_quantity')
+                DB::raw('COALESCE(SUM(final_dispatched_quantity), 0) as update_po_qty'),
+                DB::raw("COALESCE(SUM(CASE WHEN product_status IN ('packaging', 'packaged', 'approval_pending', 'completed') OR shipping_status = 'shipped' THEN final_dispatched_quantity ELSE 0 END), 0) as send_to_packaging_qty"),
+                DB::raw("COALESCE(SUM(CASE WHEN product_status IN ('packaged', 'approval_pending', 'completed') OR shipping_status = 'shipped' THEN final_final_dispatched_quantity ELSE 0 END), 0) as packaged_qty"),
+                DB::raw("COALESCE(SUM(CASE WHEN approval_status = 'pending' AND product_status = 'approval_pending' THEN final_final_dispatched_quantity ELSE 0 END), 0) as admin_approval_pending_qty"),
+                DB::raw("COALESCE(SUM(CASE WHEN approval_status = 'approved' AND product_status IN ('completed', 'complete') THEN final_final_dispatched_quantity ELSE 0 END), 0) as admin_approved_qty"),
+                DB::raw("COALESCE(SUM(CASE WHEN shipping_status = 'shipped' THEN final_final_dispatched_quantity ELSE 0 END), 0) as shipped_qty")
             )
             ->groupBy('sales_order_id');
 
@@ -573,9 +639,13 @@ class DashboardController extends Controller
             ->paginate(10, [
                 'sales_orders.order_number',
                 DB::raw('COALESCE(po_quantities.po_qty, 0) as po_qty'),
+                DB::raw('COALESCE(warehouse_quantities.update_po_qty, 0) as update_po_qty'),
+                DB::raw('COALESCE(warehouse_quantities.send_to_packaging_qty, 0) as send_to_packaging_qty'),
+                DB::raw('COALESCE(warehouse_quantities.packaged_qty, 0) as packaged_qty'),
+                DB::raw('COALESCE(warehouse_quantities.admin_approval_pending_qty, 0) as admin_approval_pending_qty'),
+                DB::raw('COALESCE(warehouse_quantities.admin_approved_qty, 0) as admin_approved_qty'),
+                DB::raw('COALESCE(warehouse_quantities.shipped_qty, 0) as shipped_qty'),
                 DB::raw('COALESCE(invoice_quantities.invoice_qty, 0) as invoice_qty'),
-                DB::raw('COALESCE(warehouse_quantities.final_dispatched_quantity, 0) as final_dispatched_quantity'),
-                DB::raw('COALESCE(warehouse_quantities.final_final_dispatched_quantity, 0) as final_final_dispatched_quantity'),
             ], 'sales_order_page')
             ->withQueryString();
     }
