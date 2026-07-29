@@ -243,7 +243,7 @@ class PurchaseOrderController extends Controller
                 $purchaseOrderProduct->sku = $productSku;
                 $purchaseOrderProduct->product_id = $product->id;
                 $purchaseOrderProduct->vendor_code = $vendor->vendor_code;
-                $purchaseOrderProduct->vendor_invoice_no = Arr::get($record, 'Vendor Invoice No.', '');
+                $purchaseOrderProduct->vendor_invoice_no = Arr::get($record, 'Vendor Invoice No', '');
                 $purchaseOrderProduct->save();
 
                 // calculate total amount and insert in vendor pi
@@ -295,6 +295,14 @@ class PurchaseOrderController extends Controller
         $file = $request->file('pi_excel');
         $filepath = $file->getPathname();
         $extension = $file->getClientOriginalExtension();
+
+        $purchaseOrder = PurchaseOrder::find($request->purchase_order_id);
+        $purchaseOrder->received_warehouse_id = $request->warehouse_id;
+        $purchaseOrder->save();
+
+        if (!$purchaseOrder) {
+            return redirect()->back()->with('error', 'Please Select Warehouse Name First.');
+        }
 
         DB::beginTransaction();
 
@@ -1000,7 +1008,7 @@ class PurchaseOrderController extends Controller
         $writer = SimpleExcelWriter::create($tempXlsxPath);
 
         // Fetch data with relationships
-        $purchaseOrderProducts = PurchaseOrderProduct::with('product', 'salesOrder')->where('purchase_order_id', $request->purchaseOrderId)
+        $purchaseOrderProducts = PurchaseOrderProduct::with('purchaseOrder', 'product', 'salesOrder')->where('purchase_order_id', $request->purchaseOrderId)
             ->where('vendor_code', $request->vendorCode)
             ->with('tempOrderFetch')->get();
         // dd($purchaseOrderProducts);
@@ -1012,6 +1020,10 @@ class PurchaseOrderController extends Controller
                 if ($order->sales_order_id) {
                     $rowsData['Sales Order No'] = $order->salesOrder->order_number ?? '';
                 }
+                if ($order->purchaseOrder->order_type == 'manual') {
+                    $rowsData['Vendor Invoice No'] = $order->vendor_invoice_no ? $order->vendor_invoice_no : 'NA';
+                }
+
                 $writer->addRow(
                     array_merge($rowsData, [
                         'Purchase Order No' => $order->purchaseOrder->order_number ?? '',
@@ -1034,7 +1046,7 @@ class PurchaseOrderController extends Controller
         // Close the writer
         $writer->close();
 
-        return response()->download($tempXlsxPath, $order->purchaseOrder->order_number . '-' .$request->vendorCode . '-PO.xlsx', [
+        return response()->download($tempXlsxPath, $order->purchaseOrder->order_number . '-' . $request->vendorCode . '-PO.xlsx', [
             'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         ])->deleteFileAfterSend(true);
     }
@@ -1172,4 +1184,3 @@ class PurchaseOrderController extends Controller
         return back()->with('success', 'Payment added successfully.');
     }
 }
-

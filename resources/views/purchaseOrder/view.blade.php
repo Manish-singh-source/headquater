@@ -483,8 +483,7 @@
                                             </div>
                                             <div class="modal-footer">
                                                 <a href="{{ asset('uploads/excel-formats/vendor-pi.xlsx') }}"
-                                                    class="btn btn-outline-success"
-                                                    download="vendor-pi.xlsx">
+                                                    class="btn btn-outline-success" download="vendor-pi.xlsx">
                                                     Export Format
                                                 </a>
                                                 <button type="button" class="btn btn-secondary"
@@ -506,7 +505,7 @@
                                             @csrf
                                             @method('POST')
                                             <div class="modal-header">
-                                                <h1 class="modal-title fs-5" id="approveBackdropLabel">Add Vekndor PI
+                                                <h1 class="modal-title fs-5" id="approveBackdropLabel">Add Vendor PI
                                                 </h1>
                                                 <button type="button" class="btn-close" data-bs-dismiss="modal"
                                                     aria-label="Close"></button>
@@ -590,6 +589,9 @@
                                         @isset($purchaseOrder->purchaseOrderProducts[0]->sales_order_id)
                                             <th>Sales&nbsp;Order&nbsp;No</th>
                                         @endisset
+                                        @if ($purchaseOrder->order_type == 'manual')
+                                            <th>Vendor&nbsp;Invoice&nbsp;No</th>
+                                        @endif
                                         <th>Purchase&nbsp;Order&nbsp;No</th>
                                         <th>Vendor&nbsp;Code</th>
                                         <th>Portal&nbsp;Code</th>
@@ -615,6 +617,9 @@
                                             @isset($order->sales_order_id)
                                                 <td>{{ $purchaseOrder->salesOrder?->order_number ?? 'NA' }}</td>
                                             @endisset
+                                            @if ($purchaseOrder->order_type == 'manual')
+                                                <td>{{ $order->vendor_invoice_no ? $order->vendor_invoice_no : 'NA' }}</td>
+                                            @endif
                                             <td>{{ $purchaseOrder->order_number }}</td>
                                             <td>{{ $order->vendor_code }}</td>
                                             <td>{{ $order->tempOrder->portal_code ?? 'NA' }}</td>
