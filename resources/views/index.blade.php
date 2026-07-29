@@ -596,6 +596,39 @@
                                             Status</h5>
                                     </div>
                                     <div class="card-body">
+                                        <div class="row g-3 mb-3">
+                                            <div class="col-12">
+                                                <div class="card bg-primary text-white mb-0"
+                                                    style="background-color: rgb(187 214 255) !important;">
+                                                    <div class="card-body text-center p-3">
+                                                        <h6 class="mb-1">Total Payment Invoices</h6>
+                                                        <h4 class="mb-0">
+                                                            {{ $paymentData['total_payment_invoices'] }}
+                                                        </h4>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="card bg-success text-white mb-0 h-100">
+                                                    <div class="card-body text-center p-3">
+                                                        <h6 class="mb-1">Payment Details Added</h6>
+                                                        <h4 class="mb-0">
+                                                            {{ $paymentData['payment_details_added'] }}
+                                                        </h4>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="card bg-danger text-white mb-0 h-100">
+                                                    <div class="card-body text-center p-3">
+                                                        <h6 class="mb-1">Payment Details Pending</h6>
+                                                        <h4 class="mb-0">
+                                                            {{ $paymentData['payment_details_pending'] }}
+                                                        </h4>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
                                         <div class="row mb-3">
                                             <div class="col-12 mb-2">
                                                 <div class="card bg-danger text-white"
@@ -687,12 +720,13 @@
                                             <div class="col-12">
                                                 <h6 class="mb-3">Inventory by Brand</h6>
                                                 <div class="table-responsive">
-                                                    <table class="table table-striped">
+                                                    <table class="table table-striped" id="example">
                                                         <thead>
                                                             <tr>
                                                                 <th>Brand</th>
                                                                 <th>Inventory Units</th>
-                                                                {{-- <th>Inventory Value</th> --}}
+                                                                {{-- <th>Inventory Value</th>
+                                                                <th>Inventory Cost</th> --}}
                                                             </tr>
                                                         </thead>
                                                         <tbody>
@@ -705,11 +739,12 @@
                                                                             {{ number_format($brandInventory->total_units) }}
                                                                         </a>
                                                                     </td>
-                                                                    {{-- <td>₹{{ number_format($brandInventory->total_value, 2) }}</td> --}}
+                                                                    {{-- <td>₹{{ number_format((float) $brandInventory->total_value, 2) }}</td>
+                                                                    <td>₹{{ number_format((float) $brandInventory->total_cost, 2) }}</td> --}}
                                                                 </tr>
                                                             @empty
                                                                 <tr>
-                                                                    <td colspan="3" class="text-center">No
+                                                                    <td colspan="4" class="text-center">No
                                                                         data available</td>
                                                                 </tr>
                                                             @endforelse

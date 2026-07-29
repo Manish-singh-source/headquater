@@ -499,6 +499,20 @@ class DashboardController extends Controller
 
         $invoiceTotals = $invoiceQuery->get();
 
+        $totalPaymentInvoicesQuery = Invoice::whereBetween('invoice_date', [
+            $startDate->toDateString(),
+            $endDate->toDateString(),
+        ]);
+        $this->applyInvoiceBrandFilter($totalPaymentInvoicesQuery, $selectedBrands);
+        $totalPaymentInvoices = $totalPaymentInvoicesQuery->count();
+
+        $paymentDetailsAddedQuery = Invoice::whereBetween('invoice_date', [
+            $startDate->toDateString(),
+            $endDate->toDateString(),
+        ])->whereHas('payments');
+        $this->applyInvoiceBrandFilter($paymentDetailsAddedQuery, $selectedBrands);
+        $paymentDetailsAdded = $paymentDetailsAddedQuery->count();
+
         $totalInvoiceValue = $invoiceTotals->sum(function ($invoice) {
             return (float) $invoice->details->sum('total_price');
         });
@@ -555,6 +569,9 @@ class DashboardController extends Controller
         }
 
         return [
+            'total_payment_invoices' => $totalPaymentInvoices,
+            'payment_details_added' => $paymentDetailsAdded,
+            'payment_details_pending' => max(0, $totalPaymentInvoices - $paymentDetailsAdded),
             'total_invoice_value' => $totalInvoiceValue,
             'total_paid_value' => $totalPaidValue,
             'total_unpaid_value' => $totalUnpaidValue,
