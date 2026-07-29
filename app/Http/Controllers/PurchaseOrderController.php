@@ -103,7 +103,7 @@ class PurchaseOrderController extends Controller
             // check for duplicate sku
             $rows = $reader->getRows()->toArray(); // convert to array so we can check duplicates easily
 
-            $requiredHeaders = ['Vendor Invoice No', 'Vendor SKU Code', 'Title', 'MRP', 'GST', 'HSN', 'PO Quantity', 'Purchase Rate Basic', 'Portal Code', 'Item Code'];
+            $requiredHeaders = ['Vendor Invoice No', 'Vendor Code', 'Vendor SKU Code', 'Title', 'MRP', 'GST', 'HSN', 'PO Quantity', 'Purchase Rate Basic', 'Portal Code', 'Item Code'];
             $fileHeaders = array_map('trim', array_keys($rows[0] ?? []));
             $missingHeaders = array_diff($requiredHeaders, $fileHeaders);
 
