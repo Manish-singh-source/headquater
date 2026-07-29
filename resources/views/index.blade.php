@@ -51,6 +51,18 @@
             font-size: 1.15rem;
             font-weight: 700;
         }
+
+        .invoice-workflow-table th,
+        .invoice-workflow-table td {
+            text-align: center;
+            white-space: nowrap;
+            vertical-align: middle;
+        }
+
+        .invoice-workflow-table .summary-value {
+            font-size: 1.15rem;
+            font-weight: 700;
+        }
     </style>
 
     <!--start main wrapper-->
@@ -330,6 +342,45 @@
                     </div>
                 </div>
 
+                <!-- Invoice Workflow Summary Section -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header bg-primary text-white"
+                                style="background-color: rgb(187 214 255) !important;">
+                                <h5 class="mb-0"><i class="material-icons-outlined">receipt</i> Invoice Workflow Summary</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-striped table-bordered align-middle mb-0 invoice-workflow-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Total Invoices</th>
+                                                <th>Appointment Date Added</th>
+                                                <th>POD File</th>
+                                                <th>GRN File</th>
+                                                <th>GRN Number</th>
+                                                <th>DN Details</th>
+                                                <th>Payment Details</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td><span class="summary-value">{{ number_format($invoiceWorkflowData['total_invoices']) }}</span></td>
+                                                <td><span class="summary-value">{{ number_format($invoiceWorkflowData['appointment_date_added']) }}</span></td>
+                                                <td><span class="summary-value">{{ number_format($invoiceWorkflowData['pod']) }}</span></td>
+                                                <td><span class="summary-value">{{ number_format($invoiceWorkflowData['grn']) }}</span></td>
+                                                <td><span class="summary-value">{{ number_format($invoiceWorkflowData['grn_number']) }}</span></td>
+                                                <td><span class="summary-value">{{ number_format($invoiceWorkflowData['dn_details']) }}</span></td>
+                                                <td><span class="summary-value">{{ number_format($invoiceWorkflowData['payment_details']) }}</span></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
                 <!-- Dispatch, Delivery, GRN, Payment Row -->
                 <div class="row mb-4">
@@ -375,9 +426,11 @@
                                         </div>
                                     </div>
                                 </div>
+                                {{-- 
                                 <div class="mt-3">
                                     <canvas id="dispatchChart" height="200"></canvas>
-                                </div>
+                                </div> 
+                                --}}
                             </div>
                         </div>
                     </div>
@@ -418,9 +471,11 @@
                                         </div>
                                     </div>
                                 </div>
+                                {{-- 
                                 <div class="mt-3">
                                     <canvas id="deliveryChart" height="200"></canvas>
-                                </div>
+                                </div> 
+                                --}}
                             </div>
                         </div>
                     </div>
@@ -463,9 +518,11 @@
                                         </div>
                                     </div>
                                 </div>
+                                {{-- 
                                 <div class="mt-3">
                                     <canvas id="grnChart" height="200"></canvas>
-                                </div>
+                                </div> 
+                                --}}
                             </div>
                         </div>
                     </div>
@@ -511,10 +568,12 @@
                                         </div>
                                     </div>
                                 </div>
+                                {{-- 
                                 <div class="mt-3">
                                     <h6 class="mb-2">Payment Trend (Selected Period)</h6>
                                     <canvas id="paymentTrendChart" height="150"></canvas>
-                                </div>
+                                </div> 
+                                --}}
                             </div>
                         </div>
                     </div>

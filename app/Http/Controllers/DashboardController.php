@@ -48,6 +48,9 @@ class DashboardController extends Controller
         $purchaseData = $this->getPurchaseData($periodStart, $periodEnd, $selectedBrands);
 
         // dd($purchaseData);
+        // INVOICE WORKFLOW SUMMARY SECTION
+        $invoiceWorkflowData = $this->getInvoiceWorkflowData($periodStart, $periodEnd);
+
         // 3. ORDER STATUS SECTION
         $orderStatusData = $this->getOrderStatusData($periodStart, $periodEnd, $selectedBrands);
 
@@ -90,6 +93,7 @@ class DashboardController extends Controller
             'salesOrderData',
             'salesData',
             'purchaseData',
+            'invoiceWorkflowData',
             'orderStatusData',
             'dispatchData',
             'deliveryData',
@@ -303,6 +307,67 @@ class DashboardController extends Controller
 
     }
 
+    private function getInvoiceWorkflowData($startDate, $endDate)
+    {
+        $invoiceDateRange = [$startDate->toDateString(), $endDate->toDateString()];
+
+        $appointmentCount = function ($column) use ($invoiceDateRange) {
+            return DB::table('appointments')
+                ->join('invoices', 'appointments.invoice_id', '=', 'invoices.id')
+                ->whereBetween('invoices.invoice_date', $invoiceDateRange)
+                ->whereNotNull("appointments.$column")
+                ->where("appointments.$column", '!=', '')
+                ->distinct('appointments.invoice_id')
+                ->count('appointments.invoice_id');
+        };
+
+        return [
+            'total_invoices' => DB::table('invoices')
+                ->whereBetween('invoice_date', $invoiceDateRange)
+                ->count(),
+            'appointment_date_added' => $appointmentCount('appointment_date'),
+            'pod' => $appointmentCount('pod'),
+            'grn' => $appointmentCount('grn'),
+            'grn_number' => $appointmentCount('grn_number'),
+            'dn_details' => DB::table('dns')
+                ->join('invoices', 'dns.invoice_id', '=', 'invoices.id')
+                ->whereBetween('invoices.invoice_date', $invoiceDateRange)
+                ->where(function ($query) {
+                    $query->whereNull('dns.dn_reason')
+                        ->orWhereRaw('LOWER(dns.dn_reason) != ?', ['cancel']);
+                })
+                ->where(function ($query) {
+                    $query->where(function ($fieldQuery) {
+                        $fieldQuery->whereNotNull('dns.dn_number')->where('dns.dn_number', '!=', '');
+                    })->orWhere(function ($fieldQuery) {
+                        $fieldQuery->whereNotNull('dns.dn_amount')->where('dns.dn_amount', '!=', '');
+                    })->orWhere(function ($fieldQuery) {
+                        $fieldQuery->whereNotNull('dns.dn_receipt')->where('dns.dn_receipt', '!=', '');
+                    });
+                })
+                ->distinct('dns.invoice_id')
+                ->count('dns.invoice_id'),
+            'payment_details' => DB::table('payments')
+                ->join('invoices', 'payments.invoice_id', '=', 'invoices.id')
+                ->whereBetween('invoices.invoice_date', $invoiceDateRange)
+                ->where(function ($query) {
+                    $query->whereNotNull('payments.id')
+                        ->orWhereNotNull('payments.invoice_id')
+                        ->orWhereNotNull('payments.amount')
+                        ->orWhere(function ($fieldQuery) {
+                            $fieldQuery->whereNotNull('payments.payment_utr_no')->where('payments.payment_utr_no', '!=', '');
+                        })
+                        ->orWhere(function ($fieldQuery) {
+                            $fieldQuery->whereNotNull('payments.payment_method')->where('payments.payment_method', '!=', '');
+                        })
+                        ->orWhere(function ($fieldQuery) {
+                            $fieldQuery->whereNotNull('payments.payment_status')->where('payments.payment_status', '!=', '');
+                        });
+                })
+                ->distinct('payments.invoice_id')
+                ->count('payments.invoice_id'),
+        ];
+    }
     // done
     private function getOrderStatusData($startDate, $endDate, $selectedBrands)
     {
