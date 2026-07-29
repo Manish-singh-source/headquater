@@ -125,6 +125,7 @@
 
 
                 <!-- Sales Order Count Summary Section -->
+                {{-- 
                 <div class="row mb-4">
                     <div class="col-12">
                         <div class="card">
@@ -190,8 +191,10 @@
                             </div>
                         </div>
                     </div>
-                </div>
+                </div> 
+                --}}
                 <!-- Sales Order Data Section -->
+                {{-- 
                 <div class="row mb-4">
                     <div class="col-12">
                         <div class="card">
@@ -245,7 +248,8 @@
                             </div>
                         </div>
                     </div>
-                </div>
+                </div> 
+                --}}
 
 
                 <!-- Sales Section -->
@@ -370,6 +374,7 @@
                         </div>
 
                         <!-- Invoice Workflow Summary Section -->
+                        {{-- 
                         <div class="row mb-4">
                             <div class="col-12">
                                 <div class="card">
@@ -423,7 +428,8 @@
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        </div> 
+                        --}}
 
                         <!-- Dispatch, Delivery, GRN, Payment Row -->
                         <div class="row mb-4">

@@ -1,0 +1,39 @@
+
+
+
+Sales Order Data:
+
+
+sales order                                     |                po qty                       |                update po_qty (final_dispatched_quantity)                 |                  send to packaging (final_dispatched_quantity + product_status = packaging)                   |                            packaged (final_final_dispatched_quantity + product_status = packaged)                        |        admin approval pending (approval_status = pending and product_status = approval_pending)                                                         |                                 admin approved                                                                                                    |                                          shipped                             |  invoice qty 
+
+get data from sales order table as order_number | get data from temp_orders table as 'po_qty' | get data from warehouse allocation table as 'final_dispatched_quantity'  | get data from warehouse allocation table as 'final_dispatched_quantity' and check product_status = packaging  |       get data from warehouse allocation table as 'final_final_dispatched_quantity' and check product_status = packaging | get data from warehouse allocation table as 'final_final_dispatched_quantity' and check approval_status = pending and product_status = approval_pending | get data from warehouse allocation table as 'final_final_dispatched_quantity' and check approval_status = approved and product_status = complete  | get data from warehouse_allocations table such as shipping_status = shipped  |       get data from invoice details table as quantity column
+
+
+
+
+Now display following table below the 'purchase analytics' section:
+
+total invoices | appointment date added | pod | grn | grn number | dn details | payment details |
+get count of total invoices generated from 'invoices' table 
+get count of total appointment date added from appointments and column is appointment_date
+get count of total pod file added from appointments and column is pod
+get count of total grn number added from appointments and column is grn_number
+get count of total grn file added from appointments and column is grn
+get count of total dn file added from dns and columns are dn_number, dn_amount, dn_receipt (any one column needed to fill) where dn_reason != cancel OR dn_reason != Cancel
+get count of total payments added from payments table and columns are id, invoice_id, amount, payment_utr_no, payment_method, payment_status (any one column needed to fill)	
+
+
+Updation of Reports for following changes:
+
+1. add column in sales order sku level report: po date, po expiry date, allocation quantity, allocation date, dispatch date. 
+
+These changes done 
+
+Updation of Dashboard UI for following changes. 
+
+1. Added Sales Order Counts summary table
+2. Added Sales Order Data table.
+3. Added invoice workflow summary.
+4. add sla breach for sales order.
+
+For above changes we need 
