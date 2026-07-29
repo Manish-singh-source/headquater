@@ -40,6 +40,9 @@ class DashboardController extends Controller
         // 1. SALES SECTION
         $salesData = $this->getSalesData($periodStart, $periodEnd, $selectedBrands);
 
+        // SALES ORDER DATA SECTION
+        $salesOrderData = $this->getSalesOrderData($periodStart, $periodEnd);
+
         // 2. PURCHASE SECTION
         $purchaseData = $this->getPurchaseData($periodStart, $periodEnd, $selectedBrands);
 
@@ -82,6 +85,7 @@ class DashboardController extends Controller
             'selectedBrands',
             'startDate',
             'endDate',
+            'salesOrderData',
             'salesData',
             'purchaseData',
             'orderStatusData',
@@ -527,6 +531,54 @@ class DashboardController extends Controller
         ];
     }
 
+    private function getSalesOrderData($startDate, $endDate)
+    {
+        $poQuantitySubquery = DB::table('sales_order_products')
+            ->leftJoin('temp_orders', 'sales_order_products.temp_order_id', '=', 'temp_orders.id')
+            ->select(
+                'sales_order_products.sales_order_id',
+                DB::raw('COALESCE(SUM(CAST(temp_orders.po_qty AS DECIMAL(15, 2))), 0) as po_qty')
+            )
+            ->groupBy('sales_order_products.sales_order_id');
+
+        $warehouseAllocationSubquery = DB::table('warehouse_allocations')
+            ->select(
+                'sales_order_id',
+                DB::raw('COALESCE(SUM(final_dispatched_quantity), 0) as final_dispatched_quantity'),
+                DB::raw('COALESCE(SUM(final_final_dispatched_quantity), 0) as final_final_dispatched_quantity')
+            )
+            ->groupBy('sales_order_id');
+
+        $invoiceQuantitySubquery = DB::table('invoice_details')
+            ->join('invoices', 'invoice_details.invoice_id', '=', 'invoices.id')
+            ->select(
+                'invoices.sales_order_id',
+                DB::raw('COALESCE(SUM(invoice_details.quantity), 0) as invoice_qty')
+            )
+            ->whereNotNull('invoices.sales_order_id')
+            ->groupBy('invoices.sales_order_id');
+
+        return SalesOrder::query()
+            ->leftJoinSub($poQuantitySubquery, 'po_quantities', function ($join) {
+                $join->on('sales_orders.id', '=', 'po_quantities.sales_order_id');
+            })
+            ->leftJoinSub($warehouseAllocationSubquery, 'warehouse_quantities', function ($join) {
+                $join->on('sales_orders.id', '=', 'warehouse_quantities.sales_order_id');
+            })
+            ->leftJoinSub($invoiceQuantitySubquery, 'invoice_quantities', function ($join) {
+                $join->on('sales_orders.id', '=', 'invoice_quantities.sales_order_id');
+            })
+            ->whereBetween('sales_orders.created_at', [$startDate, $endDate])
+            ->orderByDesc('sales_orders.created_at')
+            ->paginate(10, [
+                'sales_orders.order_number',
+                DB::raw('COALESCE(po_quantities.po_qty, 0) as po_qty'),
+                DB::raw('COALESCE(invoice_quantities.invoice_qty, 0) as invoice_qty'),
+                DB::raw('COALESCE(warehouse_quantities.final_dispatched_quantity, 0) as final_dispatched_quantity'),
+                DB::raw('COALESCE(warehouse_quantities.final_final_dispatched_quantity, 0) as final_final_dispatched_quantity'),
+            ], 'sales_order_page')
+            ->withQueryString();
+    }
     // done
     private function getWarehouseData($selectedBrands)
     {
@@ -556,3 +608,4 @@ class DashboardController extends Controller
         ];
     }
 }
+

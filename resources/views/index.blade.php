@@ -13,6 +13,22 @@
         .bg-primary {
             background-color: rgb(187 214 255) !important;
         }
+
+        .sales-order-pagination nav {
+            margin-bottom: 0;
+        }
+
+        .sales-order-pagination .pagination {
+            flex-wrap: wrap;
+            justify-content: flex-end;
+            gap: 4px;
+            margin-bottom: 0;
+        }
+
+        .sales-order-pagination .page-link {
+            padding: 0.375rem 0.65rem;
+            line-height: 1.25;
+        }
     </style>
 
     <!--start main wrapper-->
@@ -73,6 +89,51 @@
                     </div>
                 </div>
 
+
+                <!-- Sales Order Data Section -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header bg-primary text-white"
+                                style="background-color: rgb(187 214 255) !important;">
+                                <h5 class="mb-0"><i class="material-icons-outlined">receipt_long</i> Sales Order Data</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-striped table-bordered align-middle mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th>Sales Order</th>
+                                                <th>PO Qty</th>
+                                                <th>Invoice Qty</th>
+                                                <th>Send To Packaging</th>
+                                                <th>Packaged</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @forelse($salesOrderData as $salesOrder)
+                                                <tr>
+                                                    <td>{{ $salesOrder->order_number ?? '-' }}</td>
+                                                    <td>{{ number_format((float) $salesOrder->po_qty) }}</td>
+                                                    <td>{{ number_format((float) $salesOrder->invoice_qty) }}</td>
+                                                    <td>{{ number_format((float) $salesOrder->final_dispatched_quantity) }}</td>
+                                                    <td>{{ number_format((float) $salesOrder->final_final_dispatched_quantity) }}</td>
+                                                </tr>
+                                            @empty
+                                                <tr>
+                                                    <td colspan="5" class="text-center">No data available</td>
+                                                </tr>
+                                            @endforelse
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="sales-order-pagination mt-3">
+                                    {{ $salesOrderData->links('pagination::bootstrap-5') }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <!-- Sales Section -->
                 <div class="row mb-4">
                     <div class="col-12">
