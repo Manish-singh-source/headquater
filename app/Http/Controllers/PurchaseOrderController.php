@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
+use App\Models\ProductMapping;
 use App\Models\ProductIssue;
 use App\Models\PurchaseGrn;
 use App\Models\PurchaseInvoice;
@@ -39,12 +40,12 @@ class PurchaseOrderController extends Controller
 
         foreach ($rows as $record) {
             // Normalize the key
-            $skuKey = isset($record['SKU Code']) ? strtolower(trim($record['SKU Code'])) : null;
+            $skuKey = isset($record['Vendor SKU Code']) ? strtolower(trim($record['Vendor SKU Code'])) : null;
             if (empty($skuKey)) {
                 continue;
             }
             if (isset($seen[$skuKey])) {
-                $duplicates[] = $record['SKU Code'];
+                $duplicates[] = $record['Vendor SKU Code'];
             }
             $seen[$skuKey] = true;
         }
@@ -102,7 +103,17 @@ class PurchaseOrderController extends Controller
             // check for duplicate sku
             $rows = $reader->getRows()->toArray(); // convert to array so we can check duplicates easily
 
-            // 🔹 Step 1: Check for duplicates (Customer + SKU)
+            $requiredHeaders = ['Vendor Invoice No', 'Vendor SKU Code', 'Title', 'MRP', 'GST', 'HSN', 'PO Quantity', 'Purchase Rate Basic', 'Portal Code', 'Item Code'];
+            $fileHeaders = array_map('trim', array_keys($rows[0] ?? []));
+            $missingHeaders = array_diff($requiredHeaders, $fileHeaders);
+
+            if (! empty($missingHeaders)) {
+                DB::rollBack();
+
+                return redirect()->back()->with(['error' => 'Missing required columns: ' . implode(', ', $missingHeaders)]);
+            }
+
+            // Step 1: Check for duplicate Vendor SKU Code
             $duplicateCheck = $this->checkDuplicateSkuInExcel($rows);
             if ($duplicateCheck) {
                 DB::rollBack();
@@ -139,21 +150,45 @@ class PurchaseOrderController extends Controller
                 $purchaseOrder->status = 'pending';
                 $purchaseOrder->order_type = 'manual';
                 $purchaseOrder->save();
+            } else {
+                $purchaseOrder = PurchaseOrder::find($request->purchaseId);
+                if (! $purchaseOrder) {
+                    DB::rollBack();
+
+                    return redirect()->back()->with(['error' => 'Purchase Order not found']);
+                }
             }
 
-            foreach ($reader->getRows() as $record) {
-                if (empty($record['SKU Code'])) {
-                    continue;
+            foreach ($rows as $record) {
+                foreach ($requiredHeaders as $field) {
+                    if (! isset($record[$field]) || (is_string($record[$field]) && trim($record[$field]) === '')) {
+                        DB::rollBack();
+
+                        return redirect()->back()->with(['error' => "{$field} is required for all rows. Please check your CSV file."]);
+                    }
                 }
 
+                $vendorSkuCode = trim((string) Arr::get($record, 'Vendor SKU Code'));
+                $skuMapping = SkuMapping::where('vendor_sku', $vendorSkuCode)->first();
+                $productSku = $skuMapping?->product_sku ?? $vendorSkuCode;
+
+                $poQuantity = (float) Arr::get($record, 'PO Quantity', 0);
+                $mrp = (float) Arr::get($record, 'MRP', 0);
+                $purchaseRateBasic = (float) Arr::get($record, 'Purchase Rate Basic', 0);
+                $gst = (float) Arr::get($record, 'GST', 0);
+                $gstPercent = ($gst < 1 && $gst > 0) ? (int) round($gst * 100) : (int) $gst;
+                $netLandingRate = round($purchaseRateBasic * (1 + ($gstPercent / 100)), 2);
+                $portalCode = trim((string) Arr::get($record, 'Portal Code', ''));
+                $itemCode = trim((string) Arr::get($record, 'Item Code', ''));
+
                 // check if product is already added in purchase order
-                $product = Product::where('sku', $record['SKU Code'])->first();
+                $product = Product::where('sku', $productSku)->first();
                 if (! $product) {
                     $vendorProducts[] = [
-                        'purchase_order_id' => $purchaseOrder->id,
+                        'purchase_order_id' => $purchaseOrder->id ?? $request->purchaseId,
                         'vendor_code' => $vendor->vendor_code ?? null,
-                        'sku' => $record['SKU Code'],
-                        'ordered_quantity' => $record['PO Quantity'] ?? 0,
+                        'sku' => $productSku,
+                        'ordered_quantity' => $poQuantity,
                         'product_status' => 'not_found',
                         'created_at' => now(),
                         'updated_at' => now(),
@@ -162,29 +197,39 @@ class PurchaseOrderController extends Controller
                     continue;
                 }
 
+                $productMapping = ProductMapping::where('sku', $productSku)
+                    ->where('item_code', $itemCode)
+                    ->when($portalCode !== '', function ($query) use ($portalCode) {
+                        $query->where('portal_code', $portalCode);
+                    })
+                    ->first();
+
+                $productBasicRate = (float) ($productMapping->basic_rate ?? $product->basic_rate ?? 0);
+                $productNetLandingRate = (float) ($productMapping->net_landing_rate ?? $product->net_landing_rate ?? 0);
+                $productMrp = (float) ($productMapping->mrp ?? (float) $product->mrp ?? 0);
+                $tolerance = 0.5;
+
                 $tempSalesOrder = TempOrder::create([
-                    'po_number' => $record['PO Number'] ?? '',
-                    'sku' => $record['SKU Code'] ?? '',
-                    'hsn' => $record['HSN'] ?? '',
-                    'gst' => ($record['GST'] < 1 && $record['GST'] > 0)
-                        ? intval(round($record['GST'] * 100))  // convert decimals (0.18 -> 18)
-                        : intval($record['GST']),              // already integer (e.g., 18)
-                    'item_code' => $record['Item Code'] ?? '',
-                    'description' => $record['Title'] ?? '',
+                    'po_number' => '',
+                    'sku' => $productSku,
+                    'hsn' => Arr::get($record, 'HSN', ''),
+                    'portal_code' => $portalCode,
+                    'gst' => $gstPercent,
+                    'item_code' => $itemCode,
+                    'description' => Arr::get($record, 'Title', ''),
 
-                    'basic_rate' => $record['Basic Rate'] ?? 0,
-                    // 'product_basic_rate' => $record['Product Basic Rate'] ?? 0,
-                    // 'rate_confirmation' => $record['Basic Rate Confirmation'] ?? '',
+                    'basic_rate' => $purchaseRateBasic,
+                    'product_basic_rate' => $productBasicRate,
+                    'rate_confirmation' => abs($purchaseRateBasic - $productBasicRate) <= $tolerance ? 'Correct' : 'Incorrect',
 
-                    'net_landing_rate' => $record['Net Landing Rate'] ?? 0,
-                    // 'product_net_landing_rate' => $record['Product Net Landing Rate'] ?? 0,
-                    // 'net_landing_rate_confirmation' => $record['Net Landing Rate Confirmation'] ?? '',
+                    'net_landing_rate' => $netLandingRate,
+                    'product_net_landing_rate' => $productNetLandingRate,
+                    'net_landing_rate_confirmation' => abs($netLandingRate - $productNetLandingRate) <= $tolerance ? 'Correct' : 'Incorrect',
 
-                    'mrp' => $record['MRP'] ?? 0,
-                    // 'product_mrp' => $record['Product MRP'] ?? 0,
-                    // 'mrp_confirmation' => $record['MRP Confirmation'] ?? '',
-
-                    'purchase_order_quantity' => $record['PO Quantity'] ?? 0,
+                    'mrp' => $mrp,
+                    'product_mrp' => $productMrp,
+                    'mrp_confirmation' => abs($mrp - $productMrp) <= $tolerance ? 'Correct' : 'Incorrect',
+                    'purchase_order_quantity' => $poQuantity,
                     'vendor_code' => $vendor->vendor_code ?? '',
                     'customer_status' => 'Found',
                     'vendor_status' => 'Found',
@@ -193,19 +238,16 @@ class PurchaseOrderController extends Controller
 
                 $purchaseOrderProduct = new PurchaseOrderProduct;
                 $purchaseOrderProduct->temp_order_id = $tempSalesOrder->id;
-                if (isset($purchaseOrder->id)) {
-                    $purchaseOrderProduct->purchase_order_id = $purchaseOrder->id;
-                } else {
-                    $purchaseOrderProduct->purchase_order_id = $request->purchaseId;
-                }
-                $purchaseOrderProduct->ordered_quantity = $record['PO Quantity'] ?? 0;
-                $purchaseOrderProduct->sku = $record['SKU Code'];
+                $purchaseOrderProduct->purchase_order_id = $purchaseOrder->id;
+                $purchaseOrderProduct->ordered_quantity = $poQuantity;
+                $purchaseOrderProduct->sku = $productSku;
                 $purchaseOrderProduct->product_id = $product->id;
                 $purchaseOrderProduct->vendor_code = $vendor->vendor_code;
+                $purchaseOrderProduct->vendor_invoice_no = Arr::get($record, 'Vendor Invoice No.', '');
                 $purchaseOrderProduct->save();
 
                 // calculate total amount and insert in vendor pi
-                $total_amount += $record['PO Quantity'] * $record['MRP'];
+                $total_amount += $poQuantity * $mrp;
                 $purchaseOrder->total_amount = $total_amount;
                 $purchaseOrder->save();
 
@@ -1130,3 +1172,4 @@ class PurchaseOrderController extends Controller
         return back()->with('success', 'Payment added successfully.');
     }
 }
+
