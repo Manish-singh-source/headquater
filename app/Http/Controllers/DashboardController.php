@@ -459,23 +459,19 @@ class DashboardController extends Controller
     // done
     private function getDeliveryData($startDate, $endDate, $selectedBrands)
     {
-        // Count POD received from appointments
-        $podReceivedQuery = Invoice::whereHas('appointment', function ($query) {
-            $query->whereNotNull('pod');
-        })->whereBetween('created_at', [$startDate, $endDate]);
+        $invoiceDateRange = [$startDate->toDateString(), $endDate->toDateString()];
 
+        $totalPodQuery = Invoice::whereBetween('invoice_date', $invoiceDateRange);
+        $this->applyInvoiceBrandFilter($totalPodQuery, $selectedBrands);
+        $totalPodReceived = $totalPodQuery->count();
+
+        $podReceivedQuery = Invoice::whereBetween('invoice_date', $invoiceDateRange)
+            ->whereHas('appointment', function ($query) {
+                $query->whereNotNull('pod')
+                    ->where('pod', '!=', '');
+            });
         $this->applyInvoiceBrandFilter($podReceivedQuery, $selectedBrands);
-
         $podReceived = $podReceivedQuery->count();
-
-        // Count POD not received for ready to ship orders
-        $totalPodReceivedQuery = SalesOrder::
-            // where('status', 'ready_to_ship')
-            whereBetween('created_at', [$startDate, $endDate]);
-
-        $this->applySalesOrderBrandFilter($totalPodReceivedQuery, $selectedBrands);
-
-        $totalPodReceived = $totalPodReceivedQuery->count();
 
         $podNotReceived = max(0, $totalPodReceived - $podReceived);
 
@@ -489,34 +485,38 @@ class DashboardController extends Controller
     // done
     private function getGRNData($startDate, $endDate, $selectedBrands)
     {
-        // Total = Sales Orders with status complete
-        $totalQuery = SalesOrder::
-            // where('status', 'completed')
-            whereBetween('created_at', [$startDate, $endDate]);
+        $invoiceDateRange = [$startDate->toDateString(), $endDate->toDateString()];
 
-        $this->applySalesOrderBrandFilter($totalQuery, $selectedBrands);
-
+        $totalQuery = Invoice::whereBetween('invoice_date', $invoiceDateRange);
+        $this->applyInvoiceBrandFilter($totalQuery, $selectedBrands);
         $total = $totalQuery->count();
 
-        // GRN Complete = GRN uploaded in Appointment via Invoice
-        $grnDoneQuery = SalesOrder::
-            // where('status', 'completed')
-            whereHas('invoices.appointment', function ($query) {
-                $query->whereNotNull('grn');
-            })
-            ->whereBetween('created_at', [$startDate, $endDate]);
-
-        $this->applySalesOrderBrandFilter($grnDoneQuery, $selectedBrands);
-
+        $grnDoneQuery = Invoice::whereBetween('invoice_date', $invoiceDateRange)
+            ->whereHas('appointment', function ($query) {
+                $query->whereNotNull('grn')
+                    ->where('grn', '!=', '');
+            });
+        $this->applyInvoiceBrandFilter($grnDoneQuery, $selectedBrands);
         $grnDone = $grnDoneQuery->count();
 
-        // GRN Pending = Total - GRN Complete
-        $grnPending = $total - $grnDone;
+        $grnPending = max(0, $total - $grnDone);
+
+        $grnNumberDoneQuery = Invoice::whereBetween('invoice_date', $invoiceDateRange)
+            ->whereHas('appointment', function ($query) {
+                $query->whereNotNull('grn_number')
+                    ->where('grn_number', '!=', '');
+            });
+        $this->applyInvoiceBrandFilter($grnNumberDoneQuery, $selectedBrands);
+        $grnNumberDone = $grnNumberDoneQuery->count();
+
+        $grnNumberPending = max(0, $total - $grnNumberDone);
 
         return [
             'total' => $total,
             'grn_done' => $grnDone,
             'grn_not_done' => $grnPending,
+            'grn_number_done' => $grnNumberDone,
+            'grn_number_not_done' => $grnNumberPending,
         ];
     }
 
