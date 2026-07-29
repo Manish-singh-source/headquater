@@ -432,48 +432,43 @@
                                 <div class="card h-100">
                                     <div class="card-header bg-secondary text-white"
                                         style="background-color: rgb(187 214 255) !important;">
-                                        <h5 class="mb-0"><i class="material-icons-outlined">local_shipping</i> Dispatch
+                                        <h5 class="mb-0"><i class="material-icons-outlined">local_shipping</i> Appointments Date
                                             Status
                                         </h5>
                                     </div>
                                     <div class="card-body">
-                                        <div class="row mb-3">
-                                            <div class="col-6">
-                                                <div class="card bg-info text-white"
+                                        <div class="row g-3 mb-3">
+                                            <div class="col-12">
+                                                <div class="card bg-primary text-white mb-0"
                                                     style="background-color: rgb(187 214 255) !important;">
                                                     <div class="card-body text-center p-3">
-                                                        <h6 class="mb-1">LR Pending</h6>
+                                                        <h6 class="mb-1">Total Appointments</h6>
                                                         <h4 class="mb-0">
-                                                            {{ $dispatchData['lr_pending'] }}
+                                                            {{ $dispatchData['total_appointments'] }}
                                                         </h4>
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div class="col-6">
-                                                <div class="card bg-warning text-dark">
+                                            <div class="col-md-6">
+                                                <div class="card bg-success text-white mb-0 h-100">
                                                     <div class="card-body text-center p-3">
-                                                        <h6 class="mb-1">Appointment Received &amp; GRN Pending</h6>
+                                                        <h6 class="mb-1">Appointment Date Added</h6>
                                                         <h4 class="mb-0">
-                                                            {{ $dispatchData['appt_received_grn_pending'] }}
+                                                            {{ $dispatchData['appointment_date_added'] }}
                                                         </h4>
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div class="col-6">
-                                                <div class="card bg-danger text-white">
+                                            <div class="col-md-6">
+                                                <div class="card bg-danger text-white mb-0 h-100">
                                                     <div class="card-body text-center p-3">
-                                                        <h6 class="mb-1">Appointment Pending</h6>
+                                                        <h6 class="mb-1">Appointment Date Pending</h6>
                                                         <h4 class="mb-0">
-                                                            {{ $dispatchData['appt_pending'] }}
+                                                            {{ $dispatchData['appointment_date_pending'] }}
                                                         </h4>
                                                     </div>
                                                 </div>
                                             </div>
-                                            {{-- 
-                                            <div class="mt-3">
-                                                <canvas id="dispatchChart" height="200"></canvas>
-                                            </div> 
-                                            --}}
                                         </div>
                                     </div>
                                 </div>
@@ -485,8 +480,8 @@
                                     <div class="card-header bg-success text-white"
                                         style="background-color: rgb(187 214 255) !important;">
                                         <h5 class="mb-0"><i class="material-icons-outlined">check_circle</i>
-                                            Delivery
-                                            Confirmation</h5>
+                                            POD 
+                                            Status</h5>
                                     </div>
                                     <div class="card-body">
                                         <div class="row mb-3">
@@ -1040,3 +1035,4 @@
         </script>
     @endif
 @endsection
+

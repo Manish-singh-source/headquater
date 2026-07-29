@@ -402,57 +402,24 @@ class DashboardController extends Controller
     // done
     private function getDispatchData($startDate, $endDate, $selectedBrands)
     {
-        // Only consider sales orders with status 'ready_to_ship'
-        $orders = SalesOrder::with(['invoices.appointment'])
-            ->whereBetween('created_at', [$startDate, $endDate]);
-            // ->where('status', 'ready_to_ship');
+        $invoiceDateRange = [$startDate->toDateString(), $endDate->toDateString()];
 
-        $this->applySalesOrderBrandFilter($orders, $selectedBrands);
+        $totalAppointmentQuery = Invoice::whereBetween('invoice_date', $invoiceDateRange);
+        $this->applyInvoiceBrandFilter($totalAppointmentQuery, $selectedBrands);
+        $totalAppointments = $totalAppointmentQuery->count();
 
-        $orders = $orders->get();
-
-        $lrPending = 0;
-        $apptReceivedGrnPending = 0;
-        $apptPending = 0;
-
-        foreach ($orders as $order) {
-            // Get all related invoices with appointments
-            $invoices = $order->invoices;
-            $hasAppointment = false;
-            $hasGrn = false;
-            $hasLR = false;
-            foreach ($invoices as $invoice) {
-                $appt = $invoice->appointment;
-                if ($appt) {
-                    if (! empty($appt->appointment_date)) {
-                        $hasAppointment = true;
-                        if (! empty($appt->grn)) {
-                            $hasGrn = true;
-                        }
-                    }
-                }
-                // For LR Pending logic,
-                // If you have an LR doc/number column (update this logic as needed):
-                if (! empty($invoice->lr_number) || ! empty($invoice->lr_doc) || ! empty($invoice->lr_file)) {
-                    $hasLR = true;
-                }
-                // If LR is stored in appointment or invoice with file, update here as well
-            }
-            if (! $hasAppointment) {
-                $apptPending++;
-            } elseif ($hasAppointment && ! $hasGrn) {
-                $apptReceivedGrnPending++;
-            }
-            // LR Pending: if none of the invoices for this order have LR
-            if (! $hasLR) {
-                $lrPending++;
-            }
-        }
+        $appointmentDateAddedQuery = Invoice::whereBetween('invoice_date', $invoiceDateRange)
+            ->whereHas('appointment', function ($query) {
+                $query->whereNotNull('appointment_date')
+                    ->where('appointment_date', '!=', '');
+            });
+        $this->applyInvoiceBrandFilter($appointmentDateAddedQuery, $selectedBrands);
+        $appointmentDateAdded = $appointmentDateAddedQuery->count();
 
         return [
-            'lr_pending' => $lrPending,
-            'appt_received_grn_pending' => $apptReceivedGrnPending,
-            'appt_pending' => $apptPending,
+            'total_appointments' => $totalAppointments,
+            'appointment_date_added' => $appointmentDateAdded,
+            'appointment_date_pending' => max(0, $totalAppointments - $appointmentDateAdded),
         ];
     }
 
