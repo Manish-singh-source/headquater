@@ -148,6 +148,9 @@
                                                 <table id="example" class="table align-middle">
                                                     <thead class="table-light">
                                                         <tr>
+                                                            @if ($vendorPIs->purchaseOrder->order_type == 'manual')
+                                                                <th>Vendor&nbsp;Invoice&nbsp;No</th>
+                                                            @endif
                                                             <th>Purchase&nbsp;Order&nbsp;No</th>
                                                             <th>Vendor&nbsp;Code</th>
                                                             <th>Vendor&nbsp;SKU&nbsp;Code</th>
@@ -169,6 +172,9 @@
                                                     <tbody>
                                                         @foreach ($vendorPIs->products as $product)
                                                             <tr>
+                                                                @if ($vendorPIs->purchaseOrder->order_type == 'manual')
+                                                                    <td>{{ $product->vendor_invoice_no ? $product->vendor_invoice_no : 'NA' }}</td>
+                                                                @endif
                                                                 <td>{{ $vendorPIs->purchaseOrder->order_number }}</td>
                                                                 <td>{{ $vendorPIs->vendor_code }}</td>
                                                                 <td>{{ $product->vendor_sku_code }}</td>

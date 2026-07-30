@@ -691,6 +691,9 @@
                                         @isset($purchaseOrder->vendorPI[0]->sales_order_id)
                                             <th>Order&nbsp;No</th>
                                         @endisset
+                                        @if ($purchaseOrder->order_type == 'manual')
+                                            <th>Vendor&nbsp;Invoice&nbsp;No</th>
+                                        @endif
                                         <th>Purchase&nbsp;Order&nbsp;No</th>
                                         <th>Vendor&nbsp;Code</th>
                                         <th>Vendor&nbsp;SKU&nbsp;Code</th>
@@ -713,6 +716,9 @@
                                                 @isset($vendorPI->sales_order_id)
                                                     <td>{{ $vendorPI->salesOrder->order_number }}</td>
                                                 @endisset
+                                                @if ($purchaseOrder->order_type == 'manual')
+                                                    <td>{{ $product->vendor_invoice_no ? $product->vendor_invoice_no : 'NA' }}</td>
+                                                @endif
                                                 <td>{{ $vendorPI->purchaseOrder->order_number }}</td>
                                                 <td>{{ $vendorPI->vendor_code }}</td>
                                                 <td>{{ $product->vendor_sku_code }}</td>

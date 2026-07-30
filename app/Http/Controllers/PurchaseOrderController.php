@@ -56,6 +56,27 @@ class PurchaseOrderController extends Controller
         return null;
     }
 
+    protected function checkDuplicateSkuCustomInExcel($rows)
+    {
+        $seen = [];
+
+        foreach ($rows as $record) {
+            if (empty($record['Vendor Invoice No']) || empty($record['Vendor SKU Code']) || empty($record['Item Code']) || empty($record['Portal Code'])) {
+                continue;
+            }
+
+            $key = strtolower(trim($record['Vendor Invoice No'])) . '|' . strtolower(trim($record['Vendor SKU Code'])) . '|' . strtolower(trim($record['Portal Code'])) . '|' . strtolower(trim($record['Item Code']));
+
+            if (isset($seen[$key])) {
+                return 'Please check excel file: duplicate SKU (' . $record['Vendor SKU Code'] . ') found for same vendor invoice no (' . $record['Vendor Invoice No'] . ') and for same port code (' . $record['Portal Code'] . ') and for same item code (' . $record['Item Code'] . ').';
+            }
+
+            $seen[$key] = true;
+        }
+
+        return null;
+    }
+
     public function customPurchaseCreate($purchaseId = null)
     {
         $warehouses = Warehouse::all();
@@ -114,7 +135,7 @@ class PurchaseOrderController extends Controller
             }
 
             // Step 1: Check for duplicate Vendor SKU Code
-            $duplicateCheck = $this->checkDuplicateSkuInExcel($rows);
+            $duplicateCheck = $this->checkDuplicateSkuCustomInExcel($rows);
             if ($duplicateCheck) {
                 DB::rollBack();
 
@@ -254,16 +275,18 @@ class PurchaseOrderController extends Controller
                 $insertCount++;
             }
 
+            if (! empty($vendorProducts)) {
+                DB::rollBack();
+
+                $missingSkus = implode(', ', array_unique(array_column($vendorProducts, 'sku')));
+
+                return redirect()->back()->with(['error' => $missingSkus . ' Products not found in database.']);
+            }
+            
             if ($insertCount === 0) {
                 DB::rollBack();
 
                 return redirect()->back()->with(['purchase_excel' => 'No valid data found in the CSV file.']);
-            }
-
-            if (! empty($vendorProducts)) {
-                DB::rollBack();
-
-                return redirect()->back()->with(['error' => $vendorProducts[0]['sku'] . ' Product not found in database.']);
             }
 
             DB::commit();
@@ -343,9 +366,12 @@ class PurchaseOrderController extends Controller
                 ];
 
                 $vendorProducts[] = [
+                    'vendor_invoice_no' => Arr::get($record, 'Vendor Invoice No'),
                     'purchase_order_id' => $request->purchase_order_id,
                     'vendor_pi_id' => $vendorPi->id,
                     'vendor_sku_code' => $newSku ?? Arr::get($record, 'Vendor SKU Code'),
+                    'portal_code' => Arr::get($record, 'Portal Code'),
+                    'item_code' => Arr::get($record, 'Item Code'),
                     'title' => Arr::get($record, 'Title'),
                     'mrp' => Arr::get($record, 'MRP') ?? 0,
                     'quantity_requirement' => Arr::get($record, 'PO Quantity') ?? 0,
