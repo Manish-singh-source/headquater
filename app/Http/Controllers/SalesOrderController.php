@@ -2064,13 +2064,23 @@ class SalesOrderController extends Controller
                 }
 
                 $updateBlock = 0;
+                $newWarehouseSelected = false;
                 if ($salesOrderProductUpdate2->tempOrder->block < $blockQuantity) {
                     // check if available quantity present in warehouse stock 
                     $availableQty = WarehouseStock::find($salesOrderProductUpdate2->warehouse_stock_id);
                     if (! $availableQty) {
-                        DB::rollBack();
+                        // find in another warehouse stock with same sku and available quantity > 0
+                        $availableQty = WarehouseStock::where('sku', trim($record['SKU Code'] ?? ''))->where('available_quantity', '>', 0)->first();
+                        // dd($availableQty);
+                        $newWarehouseSelected = true;
+                        if (! $availableQty) {
+                            DB::rollBack();
 
-                        return redirect()->back()->with('error', 'Warehouse stock not found for SKU ' . trim($record['SKU Code'] ?? '') . '.')->withInput();
+                            return redirect()->back()->with('error', 'Warehouse stock not found for SKU ' . trim($record['SKU Code'] ?? '') . '.')->withInput();
+                        } else {
+                            // update salesOrderProductUpdate2->warehouse_stock_id to new warehouse stock id
+                            $salesOrderProductUpdate2->warehouse_stock_id = $availableQty->id;
+                        }
                     }
 
                     $qty = $blockQuantity - $availableQty->available_quantity;
@@ -2108,7 +2118,11 @@ class SalesOrderController extends Controller
                                         $newAllocation->warehouse_id = $availableQty->warehouse_id;
                                         $newAllocation->allocated_quantity = $allocationEntryDiff;
                                         $newAllocation->final_qty_blocked_at = now();
+                                        if($newWarehouseSelected) {
+                                            $newAllocation->warehouse_id = $availableQty->warehouse_id;
+                                        }
                                         $newAllocation->save();
+
                                     }
                                 }
                             }
@@ -2131,6 +2145,9 @@ class SalesOrderController extends Controller
                             foreach ($salesOrderProductUpdate2->warehouseAllocations as $allocation) {
                                 $allocation->allocated_quantity = $updateBlock;
                                 $allocation->final_qty_blocked_at = now();
+                                if($newWarehouseSelected) {
+                                    $allocation->warehouse_id = $availableQty->warehouse_id;
+                                }
                                 $allocation->save();
                             }
                         } else {
@@ -2146,6 +2163,9 @@ class SalesOrderController extends Controller
                                     $remainingQty = 0;
                                 }
                                 $allocation->final_qty_blocked_at = now();
+                                if($newWarehouseSelected) {
+                                    $allocation->warehouse_id = $availableQty->warehouse_id;
+                                }
                                 $allocation->save();
                             }
                         }
@@ -3438,10 +3458,3 @@ class SalesOrderController extends Controller
         }
     }
 }
-
-
-
-
-
-
-
