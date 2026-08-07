@@ -1917,6 +1917,7 @@ class SalesOrderController extends Controller
                 'Final Shipped Quantity' => (float) ($order->final_final_dispatched_quantity ?? 0),
                 'Available Quantity' => $this->getSkuWiseAvailableQuantity((string) ($order->tempOrder?->sku ?? ''), (float) ($order->ordered_quantity ?? 0), $productStockCache, $isAutoAllocation, $salesOrder->warehouse_id),
                 'Warehouse Allocation' => $this->sanitizeExcelValue($warehouseAllocation),
+                'Warehouse Preference' => 'Not Needed',
                 'Invoice Status' => ucfirst($order->invoice_status),
 
             ];
@@ -2067,7 +2068,51 @@ class SalesOrderController extends Controller
                 $newWarehouseSelected = false;
                 if ($salesOrderProductUpdate2->tempOrder->block < $blockQuantity) {
                     // check if available quantity present in warehouse stock 
-                    $availableQty = WarehouseStock::find($salesOrderProductUpdate2->warehouse_stock_id);
+
+                    $warehousePreference = trim((string) Arr::get($record, 'Warehouse Preference', ''));
+                    $availableQty = null;
+                    if ($warehousePreference !== 'Not Needed' && ! empty($warehousePreference)) {
+                        $availableQty = $this->findPreferredWarehouseStock($warehousePreference, trim($record['SKU Code'] ?? ''));
+                        if (! $availableQty) {
+                            dd($availableQty);
+                            DB::rollBack();
+
+                            return redirect()->back()->with('error', 'Preferred warehouse stock not found for warehouse ' .
+                                $warehousePreference . ' and SKU ' . trim($record['SKU Code'] ?? '') . '.')->withInput();
+                        }
+
+                        // Change sales order product warehouse 
+                        $clonedSalesOrderProduct = clone $salesOrderProductUpdate2;
+                        $clonedSalesOrderProduct->warehouse_stock_id !== $availableQty->id;
+
+                        $cloneAllocation = $clonedSalesOrderProduct->warehouseAllocations()->count();
+                        if ($cloneAllocation > 0) {
+                            // dd($clonedSalesOrderProduct->warehouseAllocations);
+                            if ($cloneAllocation == 1) {
+                                foreach ($clonedSalesOrderProduct->warehouseAllocations as $allocation) {
+                                    $allocation->warehouse_id = $availableQty->warehouse_id;
+                                    $allocation->save();
+                                }
+                            } else {
+                                foreach ($clonedSalesOrderProduct->warehouseAllocations as $allocation) {
+                                    // $allocation->warehouse_id = $availableQty->warehouse_id;
+                                    // $allocation->save();
+
+                                    $newAllocation = clone $allocation;
+                                    $newAllocation->warehouse_id = $availableQty->warehouse_id;
+                                    $newAllocation->save();
+                                }
+                            }
+                        }
+
+                        $clonedSalesOrderProduct->save();
+
+                        // Change allocation warehouse to new warehouse id
+                    } else {
+                        $availableQty = WarehouseStock::find($salesOrderProductUpdate2->warehouse_stock_id);
+                    }
+
+
                     if (! $availableQty) {
                         // find in another warehouse stock with same sku and available quantity > 0
                         $availableQty = WarehouseStock::where('sku', trim($record['SKU Code'] ?? ''))->where('available_quantity', '>', 0)->first();
@@ -2118,11 +2163,10 @@ class SalesOrderController extends Controller
                                         $newAllocation->warehouse_id = $availableQty->warehouse_id;
                                         $newAllocation->allocated_quantity = $allocationEntryDiff;
                                         $newAllocation->final_qty_blocked_at = now();
-                                        if($newWarehouseSelected) {
+                                        if ($newWarehouseSelected) {
                                             $newAllocation->warehouse_id = $availableQty->warehouse_id;
                                         }
                                         $newAllocation->save();
-
                                     }
                                 }
                             }
@@ -2145,7 +2189,7 @@ class SalesOrderController extends Controller
                             foreach ($salesOrderProductUpdate2->warehouseAllocations as $allocation) {
                                 $allocation->allocated_quantity = $updateBlock;
                                 $allocation->final_qty_blocked_at = now();
-                                if($newWarehouseSelected) {
+                                if ($newWarehouseSelected) {
                                     $allocation->warehouse_id = $availableQty->warehouse_id;
                                 }
                                 $allocation->save();
@@ -2163,7 +2207,7 @@ class SalesOrderController extends Controller
                                     $remainingQty = 0;
                                 }
                                 $allocation->final_qty_blocked_at = now();
-                                if($newWarehouseSelected) {
+                                if ($newWarehouseSelected) {
                                     $allocation->warehouse_id = $availableQty->warehouse_id;
                                 }
                                 $allocation->save();
@@ -3456,5 +3500,23 @@ class SalesOrderController extends Controller
                 'message' => 'Error: ' . $e->getMessage(),
             ], 500);
         }
+    }
+
+
+    private function findPreferredWarehouseStock(string $warehousePreference, string $sku): ?WarehouseStock
+    {
+        $warehousePreference = trim($warehousePreference);
+
+        if ($warehousePreference === '') {
+            return null;
+        }
+
+        return WarehouseStock::with('warehouse')
+            ->where('sku', trim($sku))
+            ->whereHas('warehouse', function ($query) use ($warehousePreference) {
+                $query->where('name', $warehousePreference)
+                    ->where('status', '1');
+            })
+            ->first();
     }
 }
