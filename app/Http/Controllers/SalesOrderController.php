@@ -2073,8 +2073,8 @@ class SalesOrderController extends Controller
                     $availableQty = null;
                     if ($warehousePreference !== 'Not Needed' && ! empty($warehousePreference)) {
                         $availableQty = $this->findPreferredWarehouseStock($warehousePreference, trim($record['SKU Code'] ?? ''));
+                        // dd($availableQty);
                         if (! $availableQty) {
-                            dd($availableQty);
                             DB::rollBack();
 
                             return redirect()->back()->with('error', 'Preferred warehouse stock not found for warehouse ' .
@@ -2085,22 +2085,55 @@ class SalesOrderController extends Controller
                         $clonedSalesOrderProduct = clone $salesOrderProductUpdate2;
                         $clonedSalesOrderProduct->warehouse_stock_id !== $availableQty->id;
 
-                        $cloneAllocation = $clonedSalesOrderProduct->warehouseAllocations()->count();
-                        if ($cloneAllocation > 0) {
-                            // dd($clonedSalesOrderProduct->warehouseAllocations);
-                            if ($cloneAllocation == 1) {
-                                foreach ($clonedSalesOrderProduct->warehouseAllocations as $allocation) {
-                                    $allocation->warehouse_id = $availableQty->warehouse_id;
-                                    $allocation->save();
-                                }
-                            } else {
-                                foreach ($clonedSalesOrderProduct->warehouseAllocations as $allocation) {
-                                    // $allocation->warehouse_id = $availableQty->warehouse_id;
-                                    // $allocation->save();
+                        $allocations = $clonedSalesOrderProduct->warehouseAllocations;
 
-                                    $newAllocation = clone $allocation;
-                                    $newAllocation->warehouse_id = $availableQty->warehouse_id;
-                                    $newAllocation->save();
+                        if ($allocations->count() > 0) {
+
+                            if ($allocations->count() == 1) {
+
+                                $allocation = $allocations->first();
+                                $allocation->warehouse_id = $availableQty->warehouse_id;
+                                $allocation->save();
+                            } else {
+
+                                $totalAllocatedQty = $allocations->sum('allocated_quantity');
+                                $totalFinalDispatchedQty = $allocations->sum('final_dispatched_quantity');
+
+                                // store ids of allocations to delete and also count of allocations to delete so it will be used to release blocked quantity for that warehouse release
+                                $checkStockRelease = $allocations->pluck('id')->toArray();
+
+                                // Take the first row as the base
+                                $newAllocation = $allocations->first()->replicate();
+
+                                $newAllocation->warehouse_id = $availableQty->warehouse_id;
+                                $newAllocation->allocated_quantity = $totalAllocatedQty;
+                                $newAllocation->final_dispatched_quantity = $totalFinalDispatchedQty;
+                                $newAllocation->sequence = 1;
+
+                                $newAllocation->save();
+
+                                // Remove old allocation rows if they are no longer needed
+                                foreach ($allocations as $allocation) {
+                                    // if($availableQty->warehouse_id == $allocation->warehouse_id) {
+                                    //     // If the warehouse is the same, we don't need to delete the allocation
+                                    //     continue;
+                                    // }
+
+                                    // $warehouseStock = WarehouseStock::find(
+                                    //     $allocation->salesOrderProduct->warehouse_stock_id
+                                    // );
+
+                                    // if ($warehouseStock) {
+
+                                    //     $releaseQty = $allocation->allocated_quantity;
+
+                                    //     if ($warehouseStock->block_quantity >= $releaseQty) {
+                                    //         $warehouseStock->decrement('block_quantity', $releaseQty);
+                                    //         $warehouseStock->increment('available_quantity', $releaseQty);
+                                    //     }
+                                    // }
+
+                                    $allocation->delete();
                                 }
                             }
                         }
