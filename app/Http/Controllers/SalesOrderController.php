@@ -169,6 +169,7 @@ class SalesOrderController extends Controller
             'warehouse',
             'orderedProducts.tempOrder.vendorPIProduct',
             'orderedProducts.warehouseStock',
+            'orderedProducts.warehouseAllocations.warehouse',
             'warehouseAllocations.warehouse',
             'warehouseAllocations.product',
         ])
@@ -384,61 +385,78 @@ class SalesOrderController extends Controller
                 $orderedQuantity = (float) ($salesOrderProduct->ordered_quantity ?? 0);
                 $dispatchedQuantity = (float) ($salesOrderProduct->final_final_dispatched_quantity ?? 0);
                 $releaseQuantity = max(0, $orderedQuantity - $dispatchedQuantity);
+                $releasedQuantity = 0;
 
                 if ($releaseQuantity <= 0) {
                     continue;
                 }
 
-                // $warehouseStock = $salesOrderProduct->warehouseStock;
+                if ($salesOrderProduct->warehouseAllocations->count() > 0) {
+                    foreach ($salesOrderProduct->warehouseAllocations as $allocation) {
+                        $allocatedQuantity = (float) ($allocation->allocated_quantity ?? 0);
+                        $allocationDispatchedQuantity = (float) ($allocation->final_final_dispatched_quantity ?? 0);
+                        $allocationReleaseQuantity = max(0, $allocatedQuantity - $allocationDispatchedQuantity);
 
-                // if ($warehouseStock) {
-                //     $warehouseStock->block_quantity = max(0, (float) ($warehouseStock->block_quantity ?? 0) - $releaseQuantity);
-                //     $warehouseStock->available_quantity = (float) ($warehouseStock->available_quantity ?? 0) + $releaseQuantity;
-                //     $warehouseStock->save();
+                        if ($allocationReleaseQuantity <= 0) {
+                            continue;
+                        }
 
-                //     WarehouseStockLog::create([
-                //         'warehouse_id' => $warehouseStock->warehouse_id,
-                //         'sales_order_id' => $salesOrder->id,
-                //         'customer_id' => $salesOrderProduct->customer_id ?? null,
-                //         'sku' => $salesOrderProduct->sku,
-                //         'block_quantity' => -$releaseQuantity,
-                //         'reason' => 'Released blocked quantity from sales order',
-                //     ]);
-                // }
+                        $allocationWarehouseStock = WarehouseStock::where('warehouse_id', $allocation->warehouse_id)
+                            ->where('sku', $allocation->sku)
+                            ->first();
 
-                foreach ($salesOrderProduct->warehouseAllocations as $allocation) {
-                    $allocatedQuantity = (float) ($allocation->allocated_quantity ?? 0);
-                    $allocationDispatchedQuantity = (float) ($allocation->final_final_dispatched_quantity ?? 0);
-                    $allocationReleaseQuantity = max(0, $allocatedQuantity - $allocationDispatchedQuantity);
+                        if ($allocationWarehouseStock) {
+                            $allocationWarehouseStock->block_quantity = max(0, (float) ($allocationWarehouseStock->block_quantity ?? 0) - $allocationReleaseQuantity);
+                            $allocationWarehouseStock->available_quantity = (float) ($allocationWarehouseStock->available_quantity ?? 0) + $allocationReleaseQuantity;
+                            $allocationWarehouseStock->save();
 
-                    if ($allocationReleaseQuantity <= 0) {
-                        continue;
+                            WarehouseStockLog::create([
+                                'warehouse_id' => $allocationWarehouseStock->warehouse_id,
+                                'sales_order_id' => $salesOrder->id,
+                                'customer_id' => $salesOrderProduct->customer_id ?? null,
+                                'sku' => $allocation->sku,
+                                'block_quantity' => -$allocationReleaseQuantity,
+                                'reason' => 'Released blocked quantity from warehouse allocation',
+                            ]);
+                        }
+
+                        $releasedQuantity += $allocationReleaseQuantity;
+
+                        $allocation->allocated_quantity = $allocationDispatchedQuantity;
+                        if ($allocationDispatchedQuantity <= 0) {
+                            $allocation->status = 'cancelled';
+                        }
+                        $allocation->save();
                     }
+                } else {
+                    $warehouseStock = $salesOrderProduct->warehouseStock;
 
-                    $allocationWarehouseStock = WarehouseStock::where('warehouse_id', $allocation->warehouse_id)
-                        ->where('sku', $allocation->sku)
-                        ->first();
-
-                    if ($allocationWarehouseStock) {
-                        $allocationWarehouseStock->block_quantity = max(0, (float) ($allocationWarehouseStock->block_quantity ?? 0) - $allocationReleaseQuantity);
-                        $allocationWarehouseStock->available_quantity = (float) ($allocationWarehouseStock->available_quantity ?? 0) + $allocationReleaseQuantity;
-                        $allocationWarehouseStock->save();
+                    if ($warehouseStock) {
+                        $warehouseStock->block_quantity = max(0, (float) ($warehouseStock->block_quantity ?? 0) - $releaseQuantity);
+                        $warehouseStock->available_quantity = (float) ($warehouseStock->available_quantity ?? 0) + $releaseQuantity;
+                        $warehouseStock->save();
 
                         WarehouseStockLog::create([
-                            'warehouse_id' => $allocationWarehouseStock->warehouse_id,
+                            'warehouse_id' => $warehouseStock->warehouse_id,
                             'sales_order_id' => $salesOrder->id,
                             'customer_id' => $salesOrderProduct->customer_id ?? null,
-                            'sku' => $allocation->sku,
-                            'block_quantity' => -$allocationReleaseQuantity,
-                            'reason' => 'Released blocked quantity from warehouse allocation',
+                            'sku' => $salesOrderProduct->sku,
+                            'block_quantity' => -$releaseQuantity,
+                            'reason' => 'Released blocked quantity from sales order',
                         ]);
                     }
 
-                    $allocation->allocated_quantity = $allocationDispatchedQuantity;
-                    if ($allocationDispatchedQuantity <= 0) {
-                        $allocation->status = 'released';
-                    }
-                    $allocation->save();
+                    $releasedQuantity = $releaseQuantity;
+                }
+
+                if ($releasedQuantity > 0 && $salesOrderProduct->tempOrder) {
+                    $remainingBlock = max(0, (float) ($salesOrderProduct->tempOrder->block ?? 0) - $releasedQuantity);
+                    $salesOrderProduct->tempOrder->block = $remainingBlock;
+                    $salesOrderProduct->tempOrder->available_quantity = $remainingBlock;
+                    $salesOrderProduct->tempOrder->available_quantity_track = $remainingBlock;
+                    $salesOrderProduct->tempOrder->unavailable_quantity = max(0, (float) ($salesOrderProduct->tempOrder->po_qty ?? 0) - $remainingBlock);
+                    $salesOrderProduct->tempOrder->unavailable_quantity_track = max(0, (float) ($salesOrderProduct->tempOrder->po_qty ?? 0) - $remainingBlock);
+                    $salesOrderProduct->tempOrder->save();
                 }
             }
 
@@ -1623,10 +1641,13 @@ class SalesOrderController extends Controller
                 $salesOrderProducts = SalesOrderProduct::where('sales_order_id', $salesOrder->id)->get();
 
                 foreach ($salesOrderProducts as $orderProduct) {
-                    // Auto allocation should follow blocked/dispatched quantity first.
+                    // Auto allocation should follow the uploaded block quantity.
                     $requiredAllocationQty = (int) ($orderProduct->dispatched_quantity ?? 0);
                     if ($requiredAllocationQty <= 0) {
-                        $requiredAllocationQty = (int) ($orderProduct->ordered_quantity ?? 0);
+                        $orderProduct->purchase_ordered_quantity = 0;
+                        $orderProduct->save();
+
+                        continue;
                     }
 
                     // Auto allocate stock for each product
@@ -2079,16 +2100,133 @@ class SalesOrderController extends Controller
 
                 $warehousePreference = trim((string) Arr::get($record, 'Warehouse Preference', ''));
                 $hasWarehousePreference = $warehousePreference !== '' && $warehousePreference !== 'Not Needed';
+                $isAutoAllocationOrder = is_null($salesOrderProductUpdate2->salesOrder->warehouse_id);
 
                 $updateBlock = 0;
                 $newWarehouseSelected = false;
-                if ($hasWarehousePreference) {
+                if ($isAutoAllocationOrder) {
+                    $allocationService = new \App\Services\WarehouseAllocationService;
+                    $skuForAllocation = trim($record['SKU Code'] ?? '');
+
+                    if ($hasWarehousePreference) {
+                        $preferredWarehouseStock = $this->findPreferredWarehouseStock($warehousePreference, $skuForAllocation);
+
+                        if (! $preferredWarehouseStock) {
+                            DB::rollBack();
+
+                            return redirect()->back()->with('error', 'Preferred warehouse not found for ' .
+                                $warehousePreference . ' and SKU ' . $skuForAllocation . '.')->withInput();
+                        }
+
+                        foreach ($salesOrderProductUpdate2->warehouseAllocations()->orderBy('sequence')->orderBy('id')->get() as $allocation) {
+                            $releaseQuantity = (float) ($allocation->allocated_quantity ?? 0);
+                            if ($releaseQuantity > 0) {
+                                $releaseWarehouseStock = WarehouseStock::where('warehouse_id', $allocation->warehouse_id)
+                                    ->where('sku', $allocation->sku)
+                                    ->first();
+
+                                if ($releaseWarehouseStock) {
+                                    $releaseWarehouseStock->block_quantity = max(0, (float) ($releaseWarehouseStock->block_quantity ?? 0) - $releaseQuantity);
+                                    $releaseWarehouseStock->available_quantity = (float) ($releaseWarehouseStock->available_quantity ?? 0) + $releaseQuantity;
+                                    $releaseWarehouseStock->save();
+                                }
+                            }
+
+                            $allocation->delete();
+                        }
+
+                        if ($blockQuantity > 0) {
+                            $allocationResult = $allocationService->autoAllocateStock(
+                                $skuForAllocation,
+                                $blockQuantity,
+                                $salesOrderProductUpdate2->sales_order_id,
+                                $salesOrderProductUpdate2->id,
+                                [$preferredWarehouseStock->warehouse_id]
+                            );
+
+                            if (! $allocationResult['success']) {
+                                DB::rollBack();
+
+                                return redirect()->back()->with('error', $allocationResult['error'] ?? ('Auto allocation failed for SKU ' . $skuForAllocation))->withInput();
+                            }
+                            if ((int) ($allocationResult['total_allocated'] ?? 0) < $blockQuantity) {
+                                DB::rollBack();
+
+                                return redirect()->back()->with('error', 'Warehouse does not have enough quantity for SKU ' . $skuForAllocation . '. Required: ' . $blockQuantity . ', Allocated: ' . (int) ($allocationResult['total_allocated'] ?? 0) . '.')->withInput();
+                            }
+                        } else {
+                            $salesOrderProductUpdate2->purchase_ordered_quantity = 0;
+                            $salesOrderProductUpdate2->warehouse_stock_id = null;
+                        }
+                    } elseif ($existingBlockedQuantity < $blockQuantity) {
+                        $requiredAdditionalBlock = $blockQuantity - $existingBlockedQuantity;
+                        $allocationResult = $allocationService->autoAllocateStock(
+                            $skuForAllocation,
+                            $requiredAdditionalBlock,
+                            $salesOrderProductUpdate2->sales_order_id,
+                            $salesOrderProductUpdate2->id
+                        );
+
+                        if (! $allocationResult['success']) {
+                            DB::rollBack();
+
+                            return redirect()->back()->with('error', $allocationResult['error'] ?? ('Auto allocation failed for SKU ' . $skuForAllocation))->withInput();
+                        }
+                        if ((int) ($allocationResult['total_allocated'] ?? 0) < $requiredAdditionalBlock) {
+                            DB::rollBack();
+
+                            return redirect()->back()->with('error', 'Warehouse does not have enough quantity for SKU ' . $skuForAllocation . '. Required: ' . $requiredAdditionalBlock . ', Allocated: ' . (int) ($allocationResult['total_allocated'] ?? 0) . '.')->withInput();
+                        }
+                    } elseif ($existingBlockedQuantity > $blockQuantity) {
+                        $remainingReleaseQuantity = $existingBlockedQuantity - $blockQuantity;
+                        $allocations = $salesOrderProductUpdate2->warehouseAllocations()->orderByDesc('sequence')->orderByDesc('id')->get();
+
+                        foreach ($allocations as $allocation) {
+                            if ($remainingReleaseQuantity <= 0) {
+                                break;
+                            }
+
+                            $allocatedQuantity = (float) ($allocation->allocated_quantity ?? 0);
+                            $releaseQuantity = min($allocatedQuantity, $remainingReleaseQuantity);
+
+                            if ($releaseQuantity <= 0) {
+                                continue;
+                            }
+
+                            $releaseWarehouseStock = WarehouseStock::where('warehouse_id', $allocation->warehouse_id)
+                                ->where('sku', $allocation->sku)
+                                ->first();
+
+                            if ($releaseWarehouseStock) {
+                                $releaseWarehouseStock->block_quantity = max(0, (float) ($releaseWarehouseStock->block_quantity ?? 0) - $releaseQuantity);
+                                $releaseWarehouseStock->available_quantity = (float) ($releaseWarehouseStock->available_quantity ?? 0) + $releaseQuantity;
+                                $releaseWarehouseStock->save();
+                            }
+
+                            $allocation->allocated_quantity = max(0, $allocatedQuantity - $releaseQuantity);
+                            if ($allocation->allocated_quantity <= 0) {
+                                $allocation->status = 'cancelled';
+                            }
+                            $allocation->final_qty_blocked_at = now();
+                            $allocation->save();
+
+                            $remainingReleaseQuantity -= $releaseQuantity;
+                        }
+                    }
+
+                    $updateBlock = $blockQuantity;
+                    $salesOrderProductUpdate2->tempOrder->block = $updateBlock;
+                    $salesOrderProductUpdate2->tempOrder->available_quantity = $updateBlock;
+                    $salesOrderProductUpdate2->tempOrder->available_quantity_track = $updateBlock;
+                    $salesOrderProductUpdate2->tempOrder->unavailable_quantity = max(0, (int) ($salesOrderProductUpdate2->tempOrder->po_qty ?? 0) - (int) $updateBlock);
+                    $salesOrderProductUpdate2->tempOrder->unavailable_quantity_track = max(0, (int) ($salesOrderProductUpdate2->tempOrder->po_qty ?? 0) - (int) $updateBlock);
+                } elseif ($hasWarehousePreference) {
                     $preferredWarehouseStock = $this->findPreferredWarehouseStock($warehousePreference, trim($record['SKU Code'] ?? ''));
 
                     if (! $preferredWarehouseStock) {
                         DB::rollBack();
 
-                        return redirect()->back()->with('error', 'Preferred warehouse stock not found for warehouse ' .
+                        return redirect()->back()->with('error', 'Preferred warehouse not found for ' .
                             $warehousePreference . ' and SKU ' . trim($record['SKU Code'] ?? '') . '.')->withInput();
                     }
 
@@ -2441,7 +2579,7 @@ class SalesOrderController extends Controller
                 $salesOrderProductUpdate->purchase_ordered_quantity = (int) ($record['Purchase Order Quantity'] ?? 0);
 
                 // 5. Update warehouse stock if PO quantity changed
-                if ($salesOrderProductUpdate->tempOrder && $salesOrderProductUpdate->tempOrder->purchase_order_quantity != $record['Purchase Order Quantity']) {
+                if (! $isAutoAllocationOrder && $salesOrderProductUpdate->tempOrder && $salesOrderProductUpdate->tempOrder->purchase_order_quantity != $record['Purchase Order Quantity']) {
                     $tempOrder = $salesOrderProductUpdate->tempOrder;
                     $purchaseOrderProduct = $tempOrder->purchaseOrderProduct;
                     $warehouseStockUpdate = WarehouseStock::find($salesOrderProductUpdate->warehouse_stock_id);
