@@ -473,6 +473,51 @@
                             <tbody>
                                 @forelse ($invoices as $salesOrder)
                                     @foreach ($salesOrder->orderedProducts as $product)
+                                    @if ($product->warehouseAllocations->isEmpty())
+                                        @php
+                                            $invoiceDetail = $product->invoiceDetails->first();
+                                            $invoice = $invoiceDetail?->invoice;
+                                        @endphp
+                                        <tr>
+                                            <td>{{ $salesOrder->order_number ?? 'N/A' }}</td>
+                                            <td>{{ $salesOrder->created_at?->format('d-m-Y') ?? 'N/A' }}</td>
+                                            <td>{{ $salesOrder->customerGroup->name ?? 'N/A' }}</td>
+                                            <td>N/A</td>
+                                            <td>{{ $product->customer->client_name ?? 'N/A' }}</td>
+                                            <td>{{ $invoice?->invoice_number ?? 'N/A' }}</td>
+                                            <td>{{ $invoice?->created_at?->format('d-m-Y') ?? 'N/A' }}</td>
+                                            <td>{{ $product->customer->contact_no ?? 'N/A' }}</td>
+                                            <td>{{ $product->customer->email ?? 'N/A' }}</td>
+                                            <td>{{ $product->customer->shipping_city ?? 'N/A' }}</td>
+                                            <td>{{ $product->customer->shipping_state ?? 'N/A' }}</td>
+                                            <td>{{ $product->tempOrder?->po_date ?? 'N/A' }}</td>
+                                            <td>{{ $product->tempOrder?->po_expiry_date ?? 'N/A' }}</td>
+                                            <td>{{ $product->tempOrder?->po_number ?? 'N/A' }}</td>
+                                            <td>{{ $product->tempOrder?->sku ?? 'N/A' }}</td>
+                                            <td>{{ $product->product->brand_title ?? 'N/A' }}</td>
+                                            <td>{{ $product->product->brand ?? 'N/A' }}</td>
+                                            <td>{{ $product->product->hsn ?? 'N/A' }}</td>
+                                            <td>{{ intval($product->tempOrder->po_qty ?? ($product->ordered_quantity ?? 0)) }}</td>
+                                            <td>0</td>
+                                            <td>0</td>
+                                            <td>N/A</td>
+                                            <td>0</td>
+                                            <td>0</td>
+                                            <td>{{ $product->tempOrder?->basic_rate ?? 0 }}</td>
+                                            <td>0</td>
+                                            <td>{{ $product->tempOrder->gst ?? 0 }}</td>
+                                            <td>0</td>
+                                            <td>0</td>
+                                            <td>{{ $product->purchase_ordered_quantity ?? 0 }}</td>
+                                            <td>{{ $product->vendorPIProduct?->purchase_rate ?? 0 }}</td>
+                                            <td>0</td>
+                                            <td>{{ $product->vendorPIProduct?->gst ?? 0 }}</td>
+                                            <td>0</td>
+                                            <td>0</td>
+                                            <td>N/A</td>
+                                            <td>N/A</td>
+                                        </tr>
+                                    @endif
                                         @if ($product->warehouseAllocations->count() > 0)
                                             @foreach ($product->warehouseAllocations as $allocation)
                                                 <tr>

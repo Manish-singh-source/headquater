@@ -1416,17 +1416,6 @@ class ReportController extends Controller
             //     });
             // }
 
-            // Invoice Number Filter
-            if ($request->filled('invoice_no')) {
-                $invoiceNos = (array) $request->invoice_no;
-
-                $query->whereHas('invoices', function ($q) use ($invoiceNos) {
-                    $q->whereIn('invoice_number', $invoiceNos);
-                })
-                    ->whereHas('orderedProducts.warehouseAllocations', function ($q) {
-                        $q->whereNotNull('id'); // ensures allocation exists
-                    });
-            }
 
             // PO Number Filter
             if ($request->filled('po_no')) {
@@ -1846,6 +1835,59 @@ class ReportController extends Controller
 
                 foreach ($salesOrder->orderedProducts as $product) {
                     $customer = $product->customer;
+                    $invoiceDetail = $product->invoiceDetails->first();
+                    $invoice = $invoiceDetail?->invoice;
+                    $invoiceNumber = $invoice->invoice_number ?? 'N/A';
+
+                    if ($product->warehouseAllocations->isEmpty()) {
+                        $subtotal = 0;
+                        $gstRate = $product->tempOrder->gst ?? 0;
+                        $total = 0;
+                        $gstAmount = 0;
+
+                        $exportData->push([
+                            'Sales Order No' => $salesOrder->order_number ?? 'N/A',
+                            'Sales Order Date' => $salesOrder->created_at?->format('d-m-Y') ?? 'N/A',
+                            'Customer Group Name' => $customerGroup->name ?? 'N/A',
+                            'Warehouse Name' => 'N/A',
+                            'Customer Name' => $customer->client_name ?? 'N/A',
+                            'Invoice No' => $invoiceNumber,
+                            'Invoice Date' => $invoice?->created_at?->format('d-m-Y') ?? 'N/A',
+                            'Customer Phone No' => $customer->contact_no ?? 'N/A',
+                            'Customer Email' => $customer->email ?? 'N/A',
+                            'Customer City' => $customer->shipping_city ?? 'N/A',
+                            'Customer State' => $customer->shipping_state ?? 'N/A',
+                            'PO Date' => $product->tempOrder->po_date ?? 'N/A',
+                            'PO Expiry Date' => $product->tempOrder->po_expiry_date ?? 'N/A',
+                            'PO No' => $product->tempOrder->po_number ?? 'N/A',
+                            'SKU Code' => $product->tempOrder->sku ?? 'N/A',
+                            'Item Code' => $product->tempOrder->item_code ?? 'N/A',
+                            'Title' => $product->tempOrder->description ?? $product->product->brand_title,
+                            'Brand' => $product->product->brand ?? 'N/A',
+                            'HSN' => $product->tempOrder->hsn ?? $product->product->hsn,
+                            'Orderd Quantity' => intval($product->tempOrder?->po_qty) ?? intval($product->ordered_quantity),
+                            'Allocation Quantity' => 0,
+                            'Dispatched Quantity' => 0,
+                            'Dispatched Date' => 'N/A',
+                            'Box Count' => 0,
+                            'Weight' => 0,
+                            'Unit Price' => $product->tempOrder?->basic_rate ?? 0,
+                            'Taxable Amount' => 0,
+                            'GST' => $product->tempOrder->gst ?? 0,
+                            'GST Amount' => 0,
+                            'Invoice Amount' => 0,
+                            'Purchase Order No' => $product->vendorPIProduct && $product->purchase_ordered_quantity > 0 ? $product->purchase_ordered_quantity : 0,
+                            'Purchase Rate' => $product->vendorPIProduct && $product->purchase_ordered_quantity > 0 ? $product->vendorPIProduct?->purchase_rate : 0,
+                            'Subtotal' => $product->vendorPIProduct && $product->purchase_ordered_quantity > 0 ? ($subtotal = ($product->purchase_ordered_quantity * ($product->vendorPIProduct?->purchase_rate ?? 0))) : 0,
+                            'GST' => $product->vendorPIProduct && $product->purchase_ordered_quantity > 0 ? $product->vendorPIProduct?->gst : 0,
+                            'GST Amount' => $product->vendorPIProduct && $product->purchase_ordered_quantity > 0 ? ($gstAmount = $subtotal * (($product->vendorPIProduct?->gst ?? 0) / 100)) : 0,
+                            'Total Amount' => $product->vendorPIProduct && $product->purchase_ordered_quantity > 0 ? ($subtotal + $gstAmount) : 0,
+                            'Product Status' => 'N/A',
+                            'Invoice Status' => 'N/A',
+                        ]);
+
+                        continue;
+                    }
 
                     if ($product->warehouseAllocations->count() > 0) {
                         // Loop through warehouse allocations (same as view)
