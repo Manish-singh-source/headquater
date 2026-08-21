@@ -7,6 +7,7 @@ use App\Models\Invoice;
 use App\Models\Payment;
 use App\Models\Product;
 use App\Models\SalesOrder;
+use App\Models\SalesOrderProduct;
 use App\Models\VendorPIProduct;
 use App\Models\WarehouseStock;
 use Carbon\Carbon;
@@ -39,10 +40,17 @@ class DashboardController extends Controller
         // 1. SALES SECTION
         $salesData = $this->getSalesData($periodStart, $periodEnd, $selectedBrands);
 
+        // SALES ORDER DATA SECTION
+        $salesOrderStatusCounts = $this->getSalesOrderStatusCounts($periodStart, $periodEnd);
+        $salesOrderData = $this->getSalesOrderData($periodStart, $periodEnd);
+
         // 2. PURCHASE SECTION
         $purchaseData = $this->getPurchaseData($periodStart, $periodEnd, $selectedBrands);
 
         // dd($purchaseData);
+        // INVOICE WORKFLOW SUMMARY SECTION
+        $invoiceWorkflowData = $this->getInvoiceWorkflowData($periodStart, $periodEnd);
+
         // 3. ORDER STATUS SECTION
         $orderStatusData = $this->getOrderStatusData($periodStart, $periodEnd, $selectedBrands);
 
@@ -63,7 +71,17 @@ class DashboardController extends Controller
         $warehouseData = $this->getWarehouseData($selectedBrands);
 
         $user = auth()->user();
+
+
+        // Sales Order Data
+        // $totalSalesOrders = SalesOrder::count();
         
+        // $totalSalesOrderProductsOrderedQuantity = SalesOrderProduct::sum('ordered_quantity');
+        // $totalSalesOrderProductsDispatchedQuantity = SalesOrderProduct::sum('dispatched_quantity');
+        // $totalSalesOrderProductsFinalDispatchedQuantity = SalesOrderProduct::sum('final_dispatched_quantity');
+        
+        // dd($totalSalesOrderProductsOrderedQuantity, $totalSalesOrderProductsDispatchedQuantity, $totalSalesOrderProductsFinalDispatchedQuantity);
+
         // dd($warehouseData);
         return view('index', compact(
             'user',
@@ -71,8 +89,11 @@ class DashboardController extends Controller
             'selectedBrands',
             'startDate',
             'endDate',
+            'salesOrderStatusCounts',
+            'salesOrderData',
             'salesData',
             'purchaseData',
+            'invoiceWorkflowData',
             'orderStatusData',
             'dispatchData',
             'deliveryData',
@@ -286,6 +307,67 @@ class DashboardController extends Controller
 
     }
 
+    private function getInvoiceWorkflowData($startDate, $endDate)
+    {
+        $invoiceDateRange = [$startDate->toDateString(), $endDate->toDateString()];
+
+        $appointmentCount = function ($column) use ($invoiceDateRange) {
+            return DB::table('appointments')
+                ->join('invoices', 'appointments.invoice_id', '=', 'invoices.id')
+                ->whereBetween('invoices.invoice_date', $invoiceDateRange)
+                ->whereNotNull("appointments.$column")
+                ->where("appointments.$column", '!=', '')
+                ->distinct('appointments.invoice_id')
+                ->count('appointments.invoice_id');
+        };
+
+        return [
+            'total_invoices' => DB::table('invoices')
+                ->whereBetween('invoice_date', $invoiceDateRange)
+                ->count(),
+            'appointment_date_added' => $appointmentCount('appointment_date'),
+            'pod' => $appointmentCount('pod'),
+            'grn' => $appointmentCount('grn'),
+            'grn_number' => $appointmentCount('grn_number'),
+            'dn_details' => DB::table('dns')
+                ->join('invoices', 'dns.invoice_id', '=', 'invoices.id')
+                ->whereBetween('invoices.invoice_date', $invoiceDateRange)
+                ->where(function ($query) {
+                    $query->whereNull('dns.dn_reason')
+                        ->orWhereRaw('LOWER(dns.dn_reason) != ?', ['cancel']);
+                })
+                ->where(function ($query) {
+                    $query->where(function ($fieldQuery) {
+                        $fieldQuery->whereNotNull('dns.dn_number')->where('dns.dn_number', '!=', '');
+                    })->orWhere(function ($fieldQuery) {
+                        $fieldQuery->whereNotNull('dns.dn_amount')->where('dns.dn_amount', '!=', '');
+                    })->orWhere(function ($fieldQuery) {
+                        $fieldQuery->whereNotNull('dns.dn_receipt')->where('dns.dn_receipt', '!=', '');
+                    });
+                })
+                ->distinct('dns.invoice_id')
+                ->count('dns.invoice_id'),
+            'payment_details' => DB::table('payments')
+                ->join('invoices', 'payments.invoice_id', '=', 'invoices.id')
+                ->whereBetween('invoices.invoice_date', $invoiceDateRange)
+                ->where(function ($query) {
+                    $query->whereNotNull('payments.id')
+                        ->orWhereNotNull('payments.invoice_id')
+                        ->orWhereNotNull('payments.amount')
+                        ->orWhere(function ($fieldQuery) {
+                            $fieldQuery->whereNotNull('payments.payment_utr_no')->where('payments.payment_utr_no', '!=', '');
+                        })
+                        ->orWhere(function ($fieldQuery) {
+                            $fieldQuery->whereNotNull('payments.payment_method')->where('payments.payment_method', '!=', '');
+                        })
+                        ->orWhere(function ($fieldQuery) {
+                            $fieldQuery->whereNotNull('payments.payment_status')->where('payments.payment_status', '!=', '');
+                        });
+                })
+                ->distinct('payments.invoice_id')
+                ->count('payments.invoice_id'),
+        ];
+    }
     // done
     private function getOrderStatusData($startDate, $endDate, $selectedBrands)
     {
@@ -320,80 +402,43 @@ class DashboardController extends Controller
     // done
     private function getDispatchData($startDate, $endDate, $selectedBrands)
     {
-        // Only consider sales orders with status 'ready_to_ship'
-        $orders = SalesOrder::with(['invoices.appointment'])
-            ->whereBetween('created_at', [$startDate, $endDate]);
-            // ->where('status', 'ready_to_ship');
+        $invoiceDateRange = [$startDate->toDateString(), $endDate->toDateString()];
 
-        $this->applySalesOrderBrandFilter($orders, $selectedBrands);
+        $totalAppointmentQuery = Invoice::whereBetween('invoice_date', $invoiceDateRange);
+        $this->applyInvoiceBrandFilter($totalAppointmentQuery, $selectedBrands);
+        $totalAppointments = $totalAppointmentQuery->count();
 
-        $orders = $orders->get();
-
-        $lrPending = 0;
-        $apptReceivedGrnPending = 0;
-        $apptPending = 0;
-
-        foreach ($orders as $order) {
-            // Get all related invoices with appointments
-            $invoices = $order->invoices;
-            $hasAppointment = false;
-            $hasGrn = false;
-            $hasLR = false;
-            foreach ($invoices as $invoice) {
-                $appt = $invoice->appointment;
-                if ($appt) {
-                    if (! empty($appt->appointment_date)) {
-                        $hasAppointment = true;
-                        if (! empty($appt->grn)) {
-                            $hasGrn = true;
-                        }
-                    }
-                }
-                // For LR Pending logic,
-                // If you have an LR doc/number column (update this logic as needed):
-                if (! empty($invoice->lr_number) || ! empty($invoice->lr_doc) || ! empty($invoice->lr_file)) {
-                    $hasLR = true;
-                }
-                // If LR is stored in appointment or invoice with file, update here as well
-            }
-            if (! $hasAppointment) {
-                $apptPending++;
-            } elseif ($hasAppointment && ! $hasGrn) {
-                $apptReceivedGrnPending++;
-            }
-            // LR Pending: if none of the invoices for this order have LR
-            if (! $hasLR) {
-                $lrPending++;
-            }
-        }
+        $appointmentDateAddedQuery = Invoice::whereBetween('invoice_date', $invoiceDateRange)
+            ->whereHas('appointment', function ($query) {
+                $query->whereNotNull('appointment_date')
+                    ->where('appointment_date', '!=', '');
+            });
+        $this->applyInvoiceBrandFilter($appointmentDateAddedQuery, $selectedBrands);
+        $appointmentDateAdded = $appointmentDateAddedQuery->count();
 
         return [
-            'lr_pending' => $lrPending,
-            'appt_received_grn_pending' => $apptReceivedGrnPending,
-            'appt_pending' => $apptPending,
+            'total_appointments' => $totalAppointments,
+            'appointment_date_added' => $appointmentDateAdded,
+            'appointment_date_pending' => max(0, $totalAppointments - $appointmentDateAdded),
         ];
     }
 
     // done
     private function getDeliveryData($startDate, $endDate, $selectedBrands)
     {
-        // Count POD received from appointments
-        $podReceivedQuery = Invoice::whereHas('appointment', function ($query) {
-            $query->whereNotNull('pod');
-        })->whereBetween('created_at', [$startDate, $endDate]);
+        $invoiceDateRange = [$startDate->toDateString(), $endDate->toDateString()];
 
+        $totalPodQuery = Invoice::whereBetween('invoice_date', $invoiceDateRange);
+        $this->applyInvoiceBrandFilter($totalPodQuery, $selectedBrands);
+        $totalPodReceived = $totalPodQuery->count();
+
+        $podReceivedQuery = Invoice::whereBetween('invoice_date', $invoiceDateRange)
+            ->whereHas('appointment', function ($query) {
+                $query->whereNotNull('pod')
+                    ->where('pod', '!=', '');
+            });
         $this->applyInvoiceBrandFilter($podReceivedQuery, $selectedBrands);
-
         $podReceived = $podReceivedQuery->count();
-
-        // Count POD not received for ready to ship orders
-        $totalPodReceivedQuery = SalesOrder::
-            // where('status', 'ready_to_ship')
-            whereBetween('created_at', [$startDate, $endDate]);
-
-        $this->applySalesOrderBrandFilter($totalPodReceivedQuery, $selectedBrands);
-
-        $totalPodReceived = $totalPodReceivedQuery->count();
 
         $podNotReceived = max(0, $totalPodReceived - $podReceived);
 
@@ -407,34 +452,38 @@ class DashboardController extends Controller
     // done
     private function getGRNData($startDate, $endDate, $selectedBrands)
     {
-        // Total = Sales Orders with status complete
-        $totalQuery = SalesOrder::
-            // where('status', 'completed')
-            whereBetween('created_at', [$startDate, $endDate]);
+        $invoiceDateRange = [$startDate->toDateString(), $endDate->toDateString()];
 
-        $this->applySalesOrderBrandFilter($totalQuery, $selectedBrands);
-
+        $totalQuery = Invoice::whereBetween('invoice_date', $invoiceDateRange);
+        $this->applyInvoiceBrandFilter($totalQuery, $selectedBrands);
         $total = $totalQuery->count();
 
-        // GRN Complete = GRN uploaded in Appointment via Invoice
-        $grnDoneQuery = SalesOrder::
-            // where('status', 'completed')
-            whereHas('invoices.appointment', function ($query) {
-                $query->whereNotNull('grn');
-            })
-            ->whereBetween('created_at', [$startDate, $endDate]);
-
-        $this->applySalesOrderBrandFilter($grnDoneQuery, $selectedBrands);
-
+        $grnDoneQuery = Invoice::whereBetween('invoice_date', $invoiceDateRange)
+            ->whereHas('appointment', function ($query) {
+                $query->whereNotNull('grn')
+                    ->where('grn', '!=', '');
+            });
+        $this->applyInvoiceBrandFilter($grnDoneQuery, $selectedBrands);
         $grnDone = $grnDoneQuery->count();
 
-        // GRN Pending = Total - GRN Complete
-        $grnPending = $total - $grnDone;
+        $grnPending = max(0, $total - $grnDone);
+
+        $grnNumberDoneQuery = Invoice::whereBetween('invoice_date', $invoiceDateRange)
+            ->whereHas('appointment', function ($query) {
+                $query->whereNotNull('grn_number')
+                    ->where('grn_number', '!=', '');
+            });
+        $this->applyInvoiceBrandFilter($grnNumberDoneQuery, $selectedBrands);
+        $grnNumberDone = $grnNumberDoneQuery->count();
+
+        $grnNumberPending = max(0, $total - $grnNumberDone);
 
         return [
             'total' => $total,
             'grn_done' => $grnDone,
             'grn_not_done' => $grnPending,
+            'grn_number_done' => $grnNumberDone,
+            'grn_number_not_done' => $grnNumberPending,
         ];
     }
 
@@ -449,6 +498,20 @@ class DashboardController extends Controller
         $this->applyInvoiceBrandFilter($invoiceQuery, $selectedBrands);
 
         $invoiceTotals = $invoiceQuery->get();
+
+        $totalPaymentInvoicesQuery = Invoice::whereBetween('invoice_date', [
+            $startDate->toDateString(),
+            $endDate->toDateString(),
+        ]);
+        $this->applyInvoiceBrandFilter($totalPaymentInvoicesQuery, $selectedBrands);
+        $totalPaymentInvoices = $totalPaymentInvoicesQuery->count();
+
+        $paymentDetailsAddedQuery = Invoice::whereBetween('invoice_date', [
+            $startDate->toDateString(),
+            $endDate->toDateString(),
+        ])->whereHas('payments');
+        $this->applyInvoiceBrandFilter($paymentDetailsAddedQuery, $selectedBrands);
+        $paymentDetailsAdded = $paymentDetailsAddedQuery->count();
 
         $totalInvoiceValue = $invoiceTotals->sum(function ($invoice) {
             return (float) $invoice->details->sum('total_price');
@@ -506,6 +569,9 @@ class DashboardController extends Controller
         }
 
         return [
+            'total_payment_invoices' => $totalPaymentInvoices,
+            'payment_details_added' => $paymentDetailsAdded,
+            'payment_details_pending' => max(0, $totalPaymentInvoices - $paymentDetailsAdded),
             'total_invoice_value' => $totalInvoiceValue,
             'total_paid_value' => $totalPaidValue,
             'total_unpaid_value' => $totalUnpaidValue,
@@ -516,6 +582,122 @@ class DashboardController extends Controller
         ];
     }
 
+    private function getSalesOrderStatusCounts($startDate, $endDate)
+    {
+        $totalSalesOrders = SalesOrder::whereBetween('created_at', [$startDate, $endDate])->count();
+
+        $warehouseOrderCount = function ($callback) use ($startDate, $endDate) {
+            $query = DB::table('warehouse_allocations')
+                ->join('sales_orders', 'warehouse_allocations.sales_order_id', '=', 'sales_orders.id')
+                ->whereBetween('sales_orders.created_at', [$startDate, $endDate]);
+
+            $callback($query);
+
+            return $query->distinct('warehouse_allocations.sales_order_id')
+                ->count('warehouse_allocations.sales_order_id');
+        };
+
+        $allocationUpdated = $warehouseOrderCount(function ($query) {
+            $query->where('warehouse_allocations.final_dispatched_quantity', '>', 0);
+        });
+
+        return [
+            'total_sales_orders' => $totalSalesOrders,
+            'pending' => max(0, $totalSalesOrders - $allocationUpdated),
+            'allocation_updated' => $allocationUpdated,
+            'send_to_packaging' => $warehouseOrderCount(function ($query) {
+                $query->where(function ($statusQuery) {
+                    $statusQuery->whereIn('warehouse_allocations.product_status', ['packaging', 'packaged', 'approval_pending', 'completed'])
+                        ->orWhere('warehouse_allocations.shipping_status', 'shipped');
+                });
+            }),
+            'packaged' => $warehouseOrderCount(function ($query) {
+                $query->where('warehouse_allocations.final_final_dispatched_quantity', '>', 0)
+                    ->where(function ($statusQuery) {
+                        $statusQuery->whereIn('warehouse_allocations.product_status', ['packaged', 'approval_pending', 'completed'])
+                            ->orWhere('warehouse_allocations.shipping_status', 'shipped');
+                    });
+            }),
+            'admin_approval_pending' => $warehouseOrderCount(function ($query) {
+                $query->where('warehouse_allocations.approval_status', 'pending')
+                    ->where('warehouse_allocations.product_status', 'approval_pending');
+            }),
+            'admin_approved' => $warehouseOrderCount(function ($query) {
+                $query->where('warehouse_allocations.approval_status', 'approved')
+                    ->whereIn('warehouse_allocations.product_status', ['completed', 'complete']);
+            }),
+            'shipped' => $warehouseOrderCount(function ($query) {
+                $query->where('warehouse_allocations.shipping_status', 'shipped');
+            }),
+            'invoiced' => DB::table('invoices')
+                ->join('invoice_details', 'invoices.id', '=', 'invoice_details.invoice_id')
+                ->join('sales_orders', 'invoices.sales_order_id', '=', 'sales_orders.id')
+                ->whereBetween('sales_orders.created_at', [$startDate, $endDate])
+                ->whereNotNull('invoices.sales_order_id')
+                ->where('invoice_details.quantity', '>', 0)
+                ->distinct('invoices.sales_order_id')
+                ->count('invoices.sales_order_id'),
+            'completed' => $warehouseOrderCount(function ($query) {
+                $query->whereIn('warehouse_allocations.product_status', ['completed', 'complete']);
+            }),
+        ];
+    }
+    private function getSalesOrderData($startDate, $endDate)
+    {
+        $poQuantitySubquery = DB::table('sales_order_products')
+            ->leftJoin('temp_orders', 'sales_order_products.temp_order_id', '=', 'temp_orders.id')
+            ->select(
+                'sales_order_products.sales_order_id',
+                DB::raw('COALESCE(SUM(CAST(temp_orders.po_qty AS DECIMAL(15, 2))), 0) as po_qty')
+            )
+            ->groupBy('sales_order_products.sales_order_id');
+
+        $warehouseAllocationSubquery = DB::table('warehouse_allocations')
+            ->select(
+                'sales_order_id',
+                DB::raw('COALESCE(SUM(final_dispatched_quantity), 0) as update_po_qty'),
+                DB::raw("COALESCE(SUM(CASE WHEN product_status IN ('packaging', 'packaged', 'approval_pending', 'completed') OR shipping_status = 'shipped' THEN final_dispatched_quantity ELSE 0 END), 0) as send_to_packaging_qty"),
+                DB::raw("COALESCE(SUM(CASE WHEN product_status IN ('packaged', 'approval_pending', 'completed') OR shipping_status = 'shipped' THEN final_final_dispatched_quantity ELSE 0 END), 0) as packaged_qty"),
+                DB::raw("COALESCE(SUM(CASE WHEN approval_status = 'pending' AND product_status = 'approval_pending' THEN final_final_dispatched_quantity ELSE 0 END), 0) as admin_approval_pending_qty"),
+                DB::raw("COALESCE(SUM(CASE WHEN approval_status = 'approved' AND product_status IN ('completed', 'complete') THEN final_final_dispatched_quantity ELSE 0 END), 0) as admin_approved_qty"),
+                DB::raw("COALESCE(SUM(CASE WHEN shipping_status = 'shipped' THEN final_final_dispatched_quantity ELSE 0 END), 0) as shipped_qty")
+            )
+            ->groupBy('sales_order_id');
+
+        $invoiceQuantitySubquery = DB::table('invoice_details')
+            ->join('invoices', 'invoice_details.invoice_id', '=', 'invoices.id')
+            ->select(
+                'invoices.sales_order_id',
+                DB::raw('COALESCE(SUM(invoice_details.quantity), 0) as invoice_qty')
+            )
+            ->whereNotNull('invoices.sales_order_id')
+            ->groupBy('invoices.sales_order_id');
+
+        return SalesOrder::query()
+            ->leftJoinSub($poQuantitySubquery, 'po_quantities', function ($join) {
+                $join->on('sales_orders.id', '=', 'po_quantities.sales_order_id');
+            })
+            ->leftJoinSub($warehouseAllocationSubquery, 'warehouse_quantities', function ($join) {
+                $join->on('sales_orders.id', '=', 'warehouse_quantities.sales_order_id');
+            })
+            ->leftJoinSub($invoiceQuantitySubquery, 'invoice_quantities', function ($join) {
+                $join->on('sales_orders.id', '=', 'invoice_quantities.sales_order_id');
+            })
+            ->whereBetween('sales_orders.created_at', [$startDate, $endDate])
+            ->orderByDesc('sales_orders.created_at')
+            ->paginate(10, [
+                'sales_orders.order_number',
+                DB::raw('COALESCE(po_quantities.po_qty, 0) as po_qty'),
+                DB::raw('COALESCE(warehouse_quantities.update_po_qty, 0) as update_po_qty'),
+                DB::raw('COALESCE(warehouse_quantities.send_to_packaging_qty, 0) as send_to_packaging_qty'),
+                DB::raw('COALESCE(warehouse_quantities.packaged_qty, 0) as packaged_qty'),
+                DB::raw('COALESCE(warehouse_quantities.admin_approval_pending_qty, 0) as admin_approval_pending_qty'),
+                DB::raw('COALESCE(warehouse_quantities.admin_approved_qty, 0) as admin_approved_qty'),
+                DB::raw('COALESCE(warehouse_quantities.shipped_qty, 0) as shipped_qty'),
+                DB::raw('COALESCE(invoice_quantities.invoice_qty, 0) as invoice_qty'),
+            ], 'sales_order_page')
+            ->withQueryString();
+    }
     // done
     private function getWarehouseData($selectedBrands)
     {
@@ -545,3 +727,4 @@ class DashboardController extends Controller
         ];
     }
 }
+

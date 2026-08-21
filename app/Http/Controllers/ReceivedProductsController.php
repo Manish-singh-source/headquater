@@ -114,7 +114,7 @@ class ReceivedProductsController extends Controller
         DB::beginTransaction();
 
         try {
-            $vendorPI = VendorPI::with('products')->find($request->vendor_pi_id);
+            $vendorPI = VendorPI::with('products', 'purchaseOrder')->find($request->vendor_pi_id);
 
             if (! $vendorPI) {
                 return redirect()->back()->with('error', 'Vendor PI not found.');
@@ -176,7 +176,7 @@ class ReceivedProductsController extends Controller
             $tempXlsxPath = storage_path('app/received_'.Str::random(8).'.xlsx');
             $writer = SimpleExcelWriter::create($tempXlsxPath);
 
-            $vendorPI = VendorPI::with('products.product')
+            $vendorPI = VendorPI::with('products.product', 'purchaseOrder')
                 ->where('purchase_order_id', $request->purchaseOrderId)
                 ->where('vendor_code', $request->vendorCode)
                 ->first();
@@ -187,10 +187,18 @@ class ReceivedProductsController extends Controller
 
             // Add data rows
             foreach ($vendorPI->products as $product) {
-                $writer->addRow([
+                $rowData = [];
+
+                if ($vendorPI->purchaseOrder?->order_type === 'manual') {
+                    $rowData['Vendor Invoice No'] = $product->vendor_invoice_no ?? '';
+                }
+
+                $writer->addRow(array_merge($rowData, [
                     // 'Order No' => $vendorPI->id ?? '',
                     'Purchase Order No' => $vendorPI->purchaseOrder->order_number ?? '',
                     'Vendor SKU Code' => $product->vendor_sku_code ?? '',
+                    'Portal Code' => $product->portal_code ?? '',
+                    'Item Code' => $product->item_code ?? '',
                     'Title' => $product->product?->brand_title ?? $product->title ?? '',
                     'MRP' => $product->mrp ?? '',
                     'PO Quantity' => $product->quantity_requirement ?? '',
@@ -198,7 +206,7 @@ class ReceivedProductsController extends Controller
                     'Quantity Received' => $product->quantity_received ?? 0,
                     'Issue Units' => '',
                     'Issue Description' => '',
-                ]);
+                ]));
             }
 
             $writer->close();
@@ -330,7 +338,7 @@ class ReceivedProductsController extends Controller
             $rows = $reader->getRows()->toArray();
 
             // Check Columns Headers 
-            $requiredHeaders = ['Purchase Order No', 'Vendor SKU Code', 'Title', 'MRP', 'PO Quantity', 'PI Quantity', 'Quantity Received', 'Issue Units', 'Issue Description'];
+            $requiredHeaders = ['Vendor Invoice No', 'Purchase Order No', 'Vendor SKU Code', 'Portal Code', 'Item Code', 'Title', 'MRP', 'PO Quantity', 'PI Quantity', 'Quantity Received', 'Issue Units', 'Issue Description'];
 
             $fileHeaders = array_map('trim', array_keys($rows[0] ?? []));
             $missingHeaders = array_diff($requiredHeaders, $fileHeaders);
@@ -343,7 +351,7 @@ class ReceivedProductsController extends Controller
 
             $insertCount = 0;
 
-            $vendorPI = VendorPI::with('products')->find($request->vendor_pi_id);
+            $vendorPI = VendorPI::with('products', 'purchaseOrder')->find($request->vendor_pi_id);
 
             if (! $vendorPI) {
                 return redirect()->back()->with('error', 'Vendor PI not found.');
@@ -356,7 +364,7 @@ class ReceivedProductsController extends Controller
                     ->with('error', 'This vendor PI has already been processed.');
             }
 
-            $mandatoryFields = ['Purchase Order No', 'Vendor SKU Code', 'Title', 'MRP', 'PO Quantity', 'PI Quantity', 'Quantity Received'];
+            $mandatoryFields = ['Vendor Invoice No', 'Purchase Order No', 'Vendor SKU Code', 'Portal Code', 'Item Code', 'Title', 'MRP', 'PO Quantity', 'PI Quantity', 'Quantity Received'];
 
             foreach ($rows as $record) {
                 // Validate all required fields are not empty
@@ -371,6 +379,9 @@ class ReceivedProductsController extends Controller
                 // }
 
                 $vendorSkuCode = trim($record['Vendor SKU Code']);
+                $portal_code = trim($record['Portal Code']);
+                $item_code = trim($record['Item Code']);
+                $vendorInvoiceNo = trim($record['Vendor Invoice No']);
                 $quantityReceived = (int) ($record['Quantity Received'] ?? 0);
                 $issueUnits = 0;
                 $issueDescription = trim($record['Issue Description'] ?? '');
@@ -379,9 +390,16 @@ class ReceivedProductsController extends Controller
                 $extraQuantity = 0;
                 $shortageQuantity = 0;
 
-                $productData = VendorPIProduct::with('tempOrder')->where('vendor_sku_code', $vendorSkuCode)
-                    ->where('vendor_pi_id', $vendorPI->id)
-                    ->first();
+                $productQuery = VendorPIProduct::with('tempOrder')->where('vendor_sku_code', $vendorSkuCode)
+                    ->where('portal_code', $portal_code)
+                    ->where('item_code', $item_code)
+                    ->where('vendor_pi_id', $vendorPI->id);
+
+                if ($vendorPI->purchaseOrder?->order_type === 'manual') {
+                    $productQuery->where('vendor_invoice_no', $vendorInvoiceNo);
+                }
+
+                $productData = $productQuery->first();
 
                 if (! $productData) {
                     continue;
