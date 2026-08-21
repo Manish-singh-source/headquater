@@ -1649,7 +1649,7 @@ class ReportController extends Controller
             'sales_order_no' => 'nullable|array',
             'sales_order_no.*' => 'string|exists:sales_orders,order_number',
             'appointment_date' => 'nullable|array',
-            'appointment_date.*' => 'date',
+            'appointment_date.*' => 'string',
         ]);
 
         if ($validator->fails()) {
@@ -1840,7 +1840,7 @@ class ReportController extends Controller
 
                     if ($product->warehouseAllocations->isEmpty()) {
                         $subtotal = 0;
-                        $gstRate = $product->tempOrder->gst ?? 0;
+                        $gstRate = $product->tempOrder?->gst ?? 0;
                         $total = 0;
                         $gstAmount = 0;
 
@@ -1849,37 +1849,38 @@ class ReportController extends Controller
                             'Sales Order Date' => $salesOrder->created_at?->format('d-m-Y') ?? 'N/A',
                             'Customer Group Name' => $customerGroup->name ?? 'N/A',
                             'Warehouse Name' => 'N/A',
-                            'Customer Name' => $customer->client_name ?? 'N/A',
+                            'Customer Name' => $customer?->client_name ?? 'N/A',
                             'Invoice No' => $invoiceNumber,
                             'Invoice Date' => $invoice?->created_at?->format('d-m-Y') ?? 'N/A',
-                            'Customer Phone No' => $customer->contact_no ?? 'N/A',
-                            'Customer Email' => $customer->email ?? 'N/A',
-                            'Customer City' => $customer->shipping_city ?? 'N/A',
-                            'Customer State' => $customer->shipping_state ?? 'N/A',
-                            'PO Date' => $product->tempOrder->po_date ?? 'N/A',
-                            'PO Expiry Date' => $product->tempOrder->po_expiry_date ?? 'N/A',
-                            'PO No' => $product->tempOrder->po_number ?? 'N/A',
-                            'SKU Code' => $product->tempOrder->sku ?? 'N/A',
-                            'Item Code' => $product->tempOrder->item_code ?? 'N/A',
-                            'Title' => $product->tempOrder->description ?? $product->product->brand_title,
-                            'Brand' => $product->product->brand ?? 'N/A',
-                            'HSN' => $product->tempOrder->hsn ?? $product->product->hsn,
-                            'Orderd Quantity' => intval($product->tempOrder?->po_qty) ?? intval($product->ordered_quantity),
+                            'Customer Phone No' => $customer?->contact_no ?? 'N/A',
+                            'Customer Email' => $customer?->email ?? 'N/A',
+                            'Customer City' => $customer?->shipping_city ?? 'N/A',
+                            'Customer State' => $customer?->shipping_state ?? 'N/A',
+                            'PO Date' => $product->tempOrder?->po_date ?? 'N/A',
+                            'PO Expiry Date' => $product->tempOrder?->po_expiry_date ?? 'N/A',
+                            'PO No' => $product->tempOrder?->po_number ?? 'N/A',
+                            'SKU Code' => $product->tempOrder?->sku ?? 'N/A',
+                            'Item Code' => $product->tempOrder?->item_code ?? 'N/A',
+                            'Title' => $product->tempOrder?->description ?? $product->product?->brand_title ?? 'N/A',
+                            'Brand' => $product->product?->brand ?? 'N/A',
+                            'HSN' => $product->tempOrder?->hsn ?? $product->product?->hsn ?? 'N/A',
+                            'Orderd Quantity' => intval($product->tempOrder?->po_qty ?? $product->ordered_quantity ?? 0),
                             'Allocation Quantity' => 0,
+                            'Allocation Date' => 'N/A',
                             'Dispatched Quantity' => 0,
                             'Dispatched Date' => 'N/A',
                             'Box Count' => 0,
                             'Weight' => 0,
                             'Unit Price' => $product->tempOrder?->basic_rate ?? 0,
                             'Taxable Amount' => 0,
-                            'GST' => $product->tempOrder->gst ?? 0,
+                            'GST' => $product->tempOrder?->gst ?? 0,
                             'GST Amount' => 0,
                             'Invoice Amount' => 0,
                             'Purchase Order No' => $product->vendorPIProduct && $product->purchase_ordered_quantity > 0 ? $product->purchase_ordered_quantity : 0,
                             'Purchase Rate' => $product->vendorPIProduct && $product->purchase_ordered_quantity > 0 ? $product->vendorPIProduct?->purchase_rate : 0,
                             'Subtotal' => $product->vendorPIProduct && $product->purchase_ordered_quantity > 0 ? ($subtotal = ($product->purchase_ordered_quantity * ($product->vendorPIProduct?->purchase_rate ?? 0))) : 0,
-                            'GST' => $product->vendorPIProduct && $product->purchase_ordered_quantity > 0 ? $product->vendorPIProduct?->gst : 0,
-                            'GST Amount' => $product->vendorPIProduct && $product->purchase_ordered_quantity > 0 ? ($gstAmount = $subtotal * (($product->vendorPIProduct?->gst ?? 0) / 100)) : 0,
+                            'Purchase GST' => $product->vendorPIProduct && $product->purchase_ordered_quantity > 0 ? $product->vendorPIProduct?->gst : 0,
+                            'GST Amount (Purchase)' => $product->vendorPIProduct && $product->purchase_ordered_quantity > 0 ? ($gstAmount = $subtotal * (($product->vendorPIProduct?->gst ?? 0) / 100)) : 0,
                             'Total Amount' => $product->vendorPIProduct && $product->purchase_ordered_quantity > 0 ? ($subtotal + $gstAmount) : 0,
                             'Product Status' => 'N/A',
                             'Invoice Status' => 'N/A',
@@ -1911,8 +1912,8 @@ class ReportController extends Controller
                             $payment = $invoice?->payments?->first();
 
                             // Calculate subtotal and total for this allocation
-                            $subtotal = $allocation->final_final_dispatched_quantity * $product->tempOrder?->basic_rate;
-                            $gstRate = $product->tempOrder->gst ?? 0;
+                            $subtotal = ($allocation->final_final_dispatched_quantity ?? 0) * ($product->tempOrder?->basic_rate ?? 0);
+                            $gstRate = $product->tempOrder?->gst ?? 0;
                             $total = $subtotal * (1 + $gstRate / 100);
                             $gstAmount = 0;
 
@@ -1934,31 +1935,31 @@ class ReportController extends Controller
                                 $dispatchDate = 'N/A';
                             }
 
-                            // dd($product->tempOrder->po_qty);
+                            // dd($product->tempOrder?->po_qty);
                             $exportData->push([
                                 'Sales Order No' => $salesOrder->order_number ?? 'N/A',
                                 'Sales Order Date' => $salesOrder->created_at?->format('d-m-Y') ?? 'N/A',
                                 'Customer Group Name' => $customerGroup->name ?? 'N/A',
-                                'Warehouse Name' => $allocation->warehouse->name ?? 'N/A',
-                                'Customer Name' => $customer->client_name ?? 'N/A',
+                                'Warehouse Name' => $allocation->warehouse?->name ?? 'N/A',
+                                'Customer Name' => $customer?->client_name ?? 'N/A',
                                 'Invoice No' => $invoiceNumber,
                                 'Invoice Date' => $invoice?->created_at?->format('d-m-Y') ?? 'N/A',
-                                'Customer Phone No' => $customer->contact_no ?? 'N/A',
-                                'Customer Email' => $customer->email ?? 'N/A',
-                                'Customer City' => $customer->shipping_city ?? 'N/A',
-                                'Customer State' => $customer->shipping_state ?? 'N/A',
-                                'PO Date' => $product->tempOrder->po_date ?? 'N/A',
-                                'PO Expiry Date' => $product->tempOrder->po_expiry_date ?? 'N/A',
-                                'PO No' => $product->tempOrder->po_number ?? 'N/A',
+                                'Customer Phone No' => $customer?->contact_no ?? 'N/A',
+                                'Customer Email' => $customer?->email ?? 'N/A',
+                                'Customer City' => $customer?->shipping_city ?? 'N/A',
+                                'Customer State' => $customer?->shipping_state ?? 'N/A',
+                                'PO Date' => $product->tempOrder?->po_date ?? 'N/A',
+                                'PO Expiry Date' => $product->tempOrder?->po_expiry_date ?? 'N/A',
+                                'PO No' => $product->tempOrder?->po_number ?? 'N/A',
                                 // Product details
-                                'SKU Code' => $product->tempOrder->sku ?? 'N/A',
-                                'Item Code' => $product->tempOrder->item_code ?? 'N/A',
-                                'Title' => $product->tempOrder->description ?? $product->product->brand_title,
-                                'Brand' => $product->product->brand ?? 'N/A',
-                                'HSN' => $product->tempOrder->hsn ?? $product->product->hsn,
+                                'SKU Code' => $product->tempOrder?->sku ?? 'N/A',
+                                'Item Code' => $product->tempOrder?->item_code ?? 'N/A',
+                                'Title' => $product->tempOrder?->description ?? $product->product?->brand_title ?? 'N/A',
+                                'Brand' => $product->product?->brand ?? 'N/A',
+                                'HSN' => $product->tempOrder?->hsn ?? $product->product?->hsn ?? 'N/A',
 
                                 // Order quantities
-                                'Orderd Quantity' => intval($product->tempOrder?->po_qty) ?? intval($product->ordered_quantity),
+                                'Orderd Quantity' => intval($product->tempOrder?->po_qty ?? $product->ordered_quantity ?? 0),
                                 'Allocation Quantity' => $allocation->final_dispatched_quantity ?? 0,
                                 'Allocation Date' => $allocation->send_to_pkg_at ? \Carbon\Carbon::parse($allocation->send_to_pkg_at)->format('d-m-Y') : 'N/A',
                                 'Dispatched Quantity' => $allocation->final_final_dispatched_quantity ?? 0,
@@ -1969,9 +1970,9 @@ class ReportController extends Controller
                                 // Sale price fields
                                 'Unit Price' => $product->tempOrder?->basic_rate ?? 0,
                                 'Taxable Amount' => $invoiceNumber === 'N/A' ? 0 : $allocation->final_final_dispatched_quantity * ($product->tempOrder?->basic_rate ?? 0),
-                                'GST' => $product->tempOrder->gst ?? 0,
-                                'GST Amount' => $invoiceNumber === 'N/A' ? 0 : $allocation->final_final_dispatched_quantity * ($product->tempOrder?->basic_rate ?? 0) * (($product->tempOrder->gst ?? 0) / 100),
-                                'Invoice Amount' => $invoiceNumber === 'N/A' ? 0 : $allocation->final_final_dispatched_quantity * ($product->tempOrder?->basic_rate ?? 0) * (1 + (($product->tempOrder->gst ?? 0) / 100)),
+                                'GST' => $product->tempOrder?->gst ?? 0,
+                                'GST Amount' => $invoiceNumber === 'N/A' ? 0 : $allocation->final_final_dispatched_quantity * ($product->tempOrder?->basic_rate ?? 0) * (($product->tempOrder?->gst ?? 0) / 100),
+                                'Invoice Amount' => $invoiceNumber === 'N/A' ? 0 : $allocation->final_final_dispatched_quantity * ($product->tempOrder?->basic_rate ?? 0) * (1 + (($product->tempOrder?->gst ?? 0) / 100)),
 
                                 // Purchase details
                                 'Purchase Order No' => $product->vendorPIProduct && $product->purchase_ordered_quantity > 0 ? $product->purchase_ordered_quantity : 0,
@@ -2702,7 +2703,15 @@ class ReportController extends Controller
 
             // 
             if ($request->filled('appointment_date')) {
-                $appointmentDates = (array) $request->appointment_date;
+                $appointmentDates = collect((array) $request->appointment_date)
+                    ->map(function ($date) {
+                        try {
+                            return \Carbon\Carbon::createFromFormat('d-m-Y', $date)->format('Y-m-d');
+                        } catch (\Exception $e) {
+                            return $date;
+                        }
+                    })
+                    ->all();
 
                 $query->with([
                     'invoices.appointment' => function ($q) use ($appointmentDates) {
@@ -3099,7 +3108,7 @@ class ReportController extends Controller
             'po_no' => 'nullable|array',
             'po_no.*' => 'string',
             'appointment_date' => 'nullable|array',
-            'appointment_date.*' => 'date',
+            'appointment_date.*' => 'string',
         ]);
 
         if ($validator->fails()) {
@@ -3229,7 +3238,16 @@ class ReportController extends Controller
 
             // Apply appointment date filter (supports single or multiple)
             if ($request->filled('appointment_date')) {
-                $appointmentDates = $request->input('appointment_date');
+                $appointmentDates = collect((array) $request->appointment_date)
+                    ->map(function ($date) {
+                        try {
+                            return \Carbon\Carbon::createFromFormat('d-m-Y', $date)->format('Y-m-d');
+                        } catch (\Exception $e) {
+                            return $date;
+                        }
+                    })
+                    ->all();
+
                 if (is_array($appointmentDates)) {
                     $query->whereHas('appointment', function ($q) use ($appointmentDates) {
                         $q->whereIn('appointment_date', $appointmentDates);

@@ -1,962 +1,985 @@
 @extends('layouts.master')
 @section('main-content')
-    @php
-        $statuses = [
-            'pending' => 'Pending',
-            'blocked' => 'Blocked',
-            'shipped' => 'Shipped',
-            'completed' => 'Complete',
-            'ready_to_ship' => 'Ready To Ship',
-            'ready_to_package' => 'Ready To Package',
-        ];
-    @endphp
-    <main class="main-wrapper">
-        <div class="main-content">
-            <!-- Breadcrumb Navigation -->
-            <div class="page-breadcrumb d-none d-sm-flex align-items-center mb-3">
-                <div class="">
-                    <nav aria-label="breadcrumb">
-                        <ol class="breadcrumb mb-0 p-0">
-                            <li class="breadcrumb-item"><a href="{{ route('index') }}"><i class="bx bx-home-alt"></i></a>
-                            </li>
-                            <li class="breadcrumb-item active" aria-current="page">Customer Sales SKU Level</li>
-                        </ol>
-                    </nav>
-                </div>
+@php
+    $statuses = [
+        'pending' => 'Pending',
+        'blocked' => 'Blocked',
+        'shipped' => 'Shipped',
+        'completed' => 'Complete',
+        'ready_to_ship' => 'Ready To Ship',
+        'ready_to_package' => 'Ready To Package',
+    ];
+@endphp
+
+<main class="main-wrapper">
+    <div class="main-content"> <!-- Breadcrumb Navigation -->
+        <div class="page-breadcrumb d-none d-sm-flex align-items-center mb-3">
+            <div class="">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0 p-0">
+                        <li class="breadcrumb-item"><a href="{{ route('index') }}"><i class="bx bx-home-alt"></i></a> </li>
+                        <li class="breadcrumb-item active" aria-current="page">Customer Sales SKU Level</li>
+                    </ol>
+                </nav>
             </div>
-
-            <!-- Success/Error Messages -->
-            @if (session('success'))
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    <i class="bx bx-check-circle me-2"></i>{{ session('success') }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            @endif
-
-            @if (session('error'))
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    <i class="bx bx-error-circle me-2"></i>{{ session('error') }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            @endif
-
-            @if (session('info'))
-                <div class="alert alert-info alert-dismissible fade show" role="alert">
-                    <i class="bx bx-info-circle me-2"></i>{{ session('info') }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            @endif
-
-            @if ($errors->any())
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    <i class="bx bx-error-circle me-2"></i>
-                    <ul class="mb-0">
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            @endif
-
-            {{-- Total Records  --}}
-            <div class="row">
-                {{-- Total Invoices --}}
-                <div class="col-xl-3 col-sm-6 col-12 d-flex">
-                    <div class="card bg-white sale-widget flex-fill">
-                        <div class="card-body d-flex align-items-center">
-                            <span class="sale-icon bg-white text-primary">
-                                <i class="ti ti-package fs-24"></i>
-                            </span>
-                            <div class="ms-2">
-                                <p class="text-dark mb-1">Total Invoices</p>
-                                <div class="d-inline-flex align-items-center flex-wrap gap-2">
-                                    <h4 class="mb-0 fw-bold">{{ $totalInvoices }}</h4>
-                                </div>
-                            </div>
+        </div> <!-- Success/Error Messages -->
+        @if (session('success'))
+            <div class="alert alert-success alert-dismissible fade show" role="alert"> <i
+                    class="bx bx-check-circle me-2"></i>{{ session('success') }} <button type="button"
+                    class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button> </div>
+            @endif @if (session('error'))
+                <div class="alert alert-danger alert-dismissible fade show" role="alert"> <i
+                        class="bx bx-error-circle me-2"></i>{{ session('error') }} <button type="button"
+                        class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button> </div>
+                @endif @if (session('info'))
+                    <div class="alert alert-info alert-dismissible fade show" role="alert"> <i
+                            class="bx bx-info-circle me-2"></i>{{ session('info') }} <button type="button"
+                            class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button> </div>
+                    @endif @if ($errors->any())
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert"> <i
+                                class="bx bx-error-circle me-2"></i>
+                            <ul class="mb-0">
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul> <button type="button" class="btn-close" data-bs-dismiss="alert"
+                                aria-label="Close"></button>
                         </div>
-                    </div>
-                </div>
-                {{-- Total Customer --}}
-                <div class="col-xl-3 col-sm-6 col-12 d-flex">
-                    <div class="card bg-white sale-widget flex-fill">
-                        <div class="card-body d-flex align-items-center">
-                            <span class="sale-icon bg-white text-primary">
-                                <i class="ti ti-package fs-24"></i>
-                            </span>
-                            <div class="ms-2">
-                                <p class="text-dark mb-1">Total Customers</p>
-                                <div class="d-inline-flex align-items-center flex-wrap gap-2">
-                                    <h4 class="mb-0 fw-bold">{{ $totalCustomers }}</h4>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                {{-- Total Taxable Amount --}}
-                <div class="col-xl-3 col-sm-6 col-12 d-flex">
-                    <div class="card bg-white sale-widget flex-fill">
-                        <div class="card-body d-flex align-items-center">
-                            <span class="sale-icon bg-white text-primary">
-                                <i class="ti ti-package fs-24"></i>
-                            </span>
-                            <div class="ms-2">
-                                <p class="text-dark mb-1">Total Taxable Amount</p>
-                                <div class="d-inline-flex align-items-center flex-wrap gap-2">
-                                    <h4 class="mb-0 fw-bold">₹{{ number_format($totalTaxableAmount, 2) }}</h4>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                {{-- Total Invoice Amount --}}
-                <div class="col-xl-3 col-sm-6 col-12 d-flex">
-                    <div class="card bg-white sale-widget flex-fill">
-                        <div class="card-body d-flex align-items-center">
-                            <span class="sale-icon bg-white text-primary">
-                                <i class="ti ti-package fs-24"></i>
-                            </span>
-                            <div class="ms-2">
-                                <p class="text-dark mb-1">Total Invoice Amount</p>
-                                <div class="d-inline-flex align-items-center flex-wrap gap-2">
-                                    <h4 class="mb-0 fw-bold">₹{{ number_format($total_sales_overall, 2) }}</h4>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                {{-- Total Purchase Order --}}
-                <div class="col-xl-3 col-sm-6 col-12 d-flex">
-                    <div class="card bg-white sale-widget flex-fill">
-                        <div class="card-body d-flex align-items-center">
-                            <span class="sale-icon bg-white text-primary">
-                                <i class="ti ti-package fs-24"></i>
-                            </span>
-                            <div class="ms-2">
-                                <p class="text-dark mb-1">Total Sales Order</p>
-                                <div class="d-inline-flex align-items-center flex-wrap gap-2">
-                                    <h4 class="mb-0 fw-bold">{{ $totalPurchaseOrder }}</h4>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                {{-- Total Purchase Order Quantity --}}
-                <div class="col-xl-3 col-sm-6 col-12 d-flex">
-                    <div class="card bg-white sale-widget flex-fill">
-                        <div class="card-body d-flex align-items-center">
-                            <span class="sale-icon bg-white text-primary">
-                                <i class="ti ti-package fs-24"></i>
-                            </span>
-                            <div class="ms-2">
-                                <p class="text-dark mb-1">Total Dispatched Quantity</p>
-                                <div class="d-inline-flex align-items-center flex-wrap gap-2">
-                                    <h4 class="mb-0 fw-bold"><span class="" id="summary-total-po-quantity">0</span>
-                                    </h4>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Filter Section -->
-            <div class="card">
-                <div class="card-body">
-                    <h6 class="mb-3 fw-bold"><i class="bx bx-filter-alt me-2"></i>Filter Options</h6>
-                    <form method="GET" action="{{ route('customer-sales-sku') }}" id="filterForm">
-                        <div class="row align-items-start">
-                            <div class="col-lg-10">
-                                <div class="row">
-                                    <!-- From Date Filter -->
-                                    <div class="col-md-2">
-                                        <div class="mb-3">
-                                            <label class="form-label">From Sales Order Date</label>
-                                            <input type="date" class="form-control" name="from_date" id="from_date"
-                                                value="{{ $filters['from_date'] ?? '' }}" placeholder="Select from date">
+                    @endif {{-- Total Records  --}} <div class="row"> {{-- Total Invoices --}} <div
+                            class="col-xl-3 col-sm-6 col-12 d-flex">
+                            <div class="card bg-white sale-widget flex-fill">
+                                <div class="card-body d-flex align-items-center"> <span
+                                        class="sale-icon bg-white text-primary"> <i class="ti ti-package fs-24"></i>
+                                    </span>
+                                    <div class="ms-2">
+                                        <p class="text-dark mb-1">Total Invoices</p>
+                                        <div class="d-inline-flex align-items-center flex-wrap gap-2">
+                                            <h4 class="mb-0 fw-bold">{{ $totalInvoices }}</h4>
                                         </div>
                                     </div>
-
-                                    <!-- To Date Filter -->
-                                    <div class="col-md-2">
-                                        <div class="mb-3">
-                                            <label class="form-label">To Sales Order Date</label>
-                                            <input type="date" class="form-control" name="to_date" id="to_date"
-                                                value="{{ $filters['to_date'] ?? '' }}" placeholder="Select to date">
+                                </div>
+                            </div>
+                        </div> {{-- Total Customer --}} <div class="col-xl-3 col-sm-6 col-12 d-flex">
+                            <div class="card bg-white sale-widget flex-fill">
+                                <div class="card-body d-flex align-items-center"> <span
+                                        class="sale-icon bg-white text-primary"> <i class="ti ti-package fs-24"></i>
+                                    </span>
+                                    <div class="ms-2">
+                                        <p class="text-dark mb-1">Total Customers</p>
+                                        <div class="d-inline-flex align-items-center flex-wrap gap-2">
+                                            <h4 class="mb-0 fw-bold">{{ $totalCustomers }}</h4>
                                         </div>
                                     </div>
-
-                                    <!-- Customer Name Filter -->
-                                    <div class="col-md-2">
-                                        <div class="mb-3">
-                                            <label class="form-label">Customer Name</label>
-                                            <div class="dropdown">
-                                                <button class="btn btn-outline-secondary dropdown-toggle w-100 text-start"
-                                                    type="button" id="customerDropdown" data-bs-toggle="dropdown">
-                                                    <i class="bx bx-filter-alt me-1"></i>
-                                                    <span id="customerDropdownText">
-                                                        @if (is_array($filters['customer_id'] ?? null) && count($filters['customer_id']) > 0)
-                                                            {{ count($filters['customer_id']) }} selected
-                                                        @else
-                                                            Select Customer
-                                                        @endif
-                                                    </span>
-                                                </button>
-                                                <ul class="dropdown-menu w-100" id="customerCheckboxList"
-                                                    style="max-height: 250px; overflow-y: auto;">
-                                                    @foreach ($customers as $customer)
-                                                        <li class="px-2 py-1">
-                                                            <div class="form-check">
-                                                                <input class="form-check-input customer-checkbox"
-                                                                    type="checkbox" name="customer_id[]"
-                                                                    value="{{ $customer['id'] }}"
-                                                                    id="customer_{{ $customer['id'] }}"
-                                                                    {{ in_array($customer['id'], (array) ($filters['customer_id'] ?? [])) ? 'checked' : '' }}>
-                                                                <label class="form-check-label w-100 cursor-pointer"
-                                                                    for="customer_{{ $customer['id'] }}">
-                                                                    {{ $customer['name'] }}
-                                                                </label>
-                                                            </div>
-                                                        </li>
-                                                    @endforeach
-                                                </ul>
+                                </div>
+                            </div>
+                        </div> {{-- Total Taxable Amount --}} <div class="col-xl-3 col-sm-6 col-12 d-flex">
+                            <div class="card bg-white sale-widget flex-fill">
+                                <div class="card-body d-flex align-items-center"> <span
+                                        class="sale-icon bg-white text-primary"> <i class="ti ti-package fs-24"></i>
+                                    </span>
+                                    <div class="ms-2">
+                                        <p class="text-dark mb-1">Total Taxable Amount</p>
+                                        <div class="d-inline-flex align-items-center flex-wrap gap-2">
+                                            <h4 class="mb-0 fw-bold">₹{{ number_format($totalTaxableAmount, 2) }}
+                                            </h4>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div> {{-- Total Invoice Amount --}} <div class="col-xl-3 col-sm-6 col-12 d-flex">
+                            <div class="card bg-white sale-widget flex-fill">
+                                <div class="card-body d-flex align-items-center"> <span
+                                        class="sale-icon bg-white text-primary"> <i class="ti ti-package fs-24"></i>
+                                    </span>
+                                    <div class="ms-2">
+                                        <p class="text-dark mb-1">Total Invoice Amount</p>
+                                        <div class="d-inline-flex align-items-center flex-wrap gap-2">
+                                            <h4 class="mb-0 fw-bold">₹{{ number_format($total_sales_overall, 2) }}
+                                            </h4>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div> {{-- Total Purchase Order --}} <div class="col-xl-3 col-sm-6 col-12 d-flex">
+                            <div class="card bg-white sale-widget flex-fill">
+                                <div class="card-body d-flex align-items-center"> <span
+                                        class="sale-icon bg-white text-primary"> <i class="ti ti-package fs-24"></i>
+                                    </span>
+                                    <div class="ms-2">
+                                        <p class="text-dark mb-1">Total Sales Order</p>
+                                        <div class="d-inline-flex align-items-center flex-wrap gap-2">
+                                            <h4 class="mb-0 fw-bold">{{ $totalPurchaseOrder }}</h4>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div> {{-- Total Purchase Order Quantity --}} <div class="col-xl-3 col-sm-6 col-12 d-flex">
+                            <div class="card bg-white sale-widget flex-fill">
+                                <div class="card-body d-flex align-items-center"> <span
+                                        class="sale-icon bg-white text-primary"> <i class="ti ti-package fs-24"></i>
+                                    </span>
+                                    <div class="ms-2">
+                                        <p class="text-dark mb-1">Total Dispatched Quantity</p>
+                                        <div class="d-inline-flex align-items-center flex-wrap gap-2">
+                                            <h4 class="mb-0 fw-bold"><span class=""
+                                                    id="summary-total-po-quantity">0</span> </h4>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div> <!-- Filter Section -->
+                    <div class="card">
+                        <div class="card-body">
+                            <h6 class="mb-3 fw-bold"><i class="bx bx-filter-alt me-2"></i>Filter Options</h6>
+                            <form method="GET" action="{{ route('customer-sales-sku') }}" id="filterForm">
+                                <div class="row align-items-start">
+                                    <div class="col-lg-10">
+                                        <div class="row"> <!-- From Date Filter -->
+                                            <div class="col-md-2">
+                                                <div class="mb-3"> <label class="form-label">From Sales Order
+                                                        Date</label> <input type="date" class="form-control"
+                                                        name="from_date" id="from_date"
+                                                        value="{{ $filters['from_date'] ?? '' }}"
+                                                        placeholder="Select from date"> </div>
+                                            </div> <!-- To Date Filter -->
+                                            <div class="col-md-2">
+                                                <div class="mb-3"> <label class="form-label">To Sales Order
+                                                        Date</label> <input type="date" class="form-control"
+                                                        name="to_date" id="to_date"
+                                                        value="{{ $filters['to_date'] ?? '' }}"
+                                                        placeholder="Select to date"> </div>
+                                            </div> <!-- Customer Name Filter -->
+                                            <div class="col-md-2">
+                                                <div class="mb-3"> <label class="form-label">Customer
+                                                        Name</label>
+                                                    <div class="dropdown"> <button
+                                                            class="btn btn-outline-secondary dropdown-toggle w-100 text-start"
+                                                            type="button" id="customerDropdown"
+                                                            data-bs-toggle="dropdown"> <i
+                                                                class="bx bx-filter-alt me-1"></i> <span
+                                                                id="customerDropdownText">
+                                                                @if (is_array($filters['customer_id'] ?? null) && count($filters['customer_id']) > 0)
+                                                                    {{ count($filters['customer_id']) }} selected
+                                                                @else
+                                                                    Select Customer
+                                                                @endif
+                                                            </span> </button>
+                                                        <ul class="dropdown-menu w-100" id="customerCheckboxList"
+                                                            style="max-height: 250px; overflow-y: auto;">
+                                                            @foreach ($customers as $customer)
+                                                                <li class="px-2 py-1">
+                                                                    <div class="form-check"> <input
+                                                                            class="form-check-input customer-checkbox"
+                                                                            type="checkbox" name="customer_id[]"
+                                                                            value="{{ $customer['id'] }}"
+                                                                            id="customer_{{ $customer['id'] }}"
+                                                                            {{ in_array($customer['id'], (array) ($filters['customer_id'] ?? [])) ? 'checked' : '' }}>
+                                                                        <label
+                                                                            class="form-check-label w-100 cursor-pointer"
+                                                                            for="customer_{{ $customer['id'] }}">
+                                                                            {{ $customer['name'] }} </label>
+                                                                    </div>
+                                                                </li>
+                                                            @endforeach
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                            </div> <!-- Warehouse Filter -->
+                                            <div class="col-md-2">
+                                                <div class="mb-3"> <label class="form-label">Warehouse</label>
+                                                    <div class="dropdown"> <button
+                                                            class="btn btn-outline-secondary dropdown-toggle w-100 text-start"
+                                                            type="button" id="warehouseDropdown"
+                                                            data-bs-toggle="dropdown"> <i
+                                                                class="bx bx-filter-alt me-1"></i> <span
+                                                                id="warehouseDropdownText">
+                                                                @if (is_array($filters['warehouse_id'] ?? null) && count($filters['warehouse_id']) > 0)
+                                                                    {{ count($filters['warehouse_id']) }} selected
+                                                                @else
+                                                                    Select Warehouse
+                                                                @endif
+                                                            </span> </button>
+                                                        <ul class="dropdown-menu w-100" id="warehouseCheckboxList"
+                                                            style="max-height: 250px; overflow-y: auto;">
+                                                            @foreach ($warehouses as $warehouse)
+                                                                <li class="px-2 py-1">
+                                                                    <div class="form-check"> <input
+                                                                            class="form-check-input warehouse-checkbox"
+                                                                            type="checkbox" name="warehouse_id[]"
+                                                                            value="{{ $warehouse->id }}"
+                                                                            id="warehouse_{{ $warehouse->id }}"
+                                                                            {{ in_array($warehouse->id, (array) ($filters['warehouse_id'] ?? [])) ? 'checked' : '' }}>
+                                                                        <label
+                                                                            class="form-check-label w-100 cursor-pointer"
+                                                                            for="warehouse_{{ $warehouse->id }}">
+                                                                            {{ $warehouse->name }} </label>
+                                                                    </div>
+                                                                </li>
+                                                            @endforeach
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                            </div> <!-- Customer Type Filter -->
+                                            <div class="col-md-2">
+                                                <div class="mb-3"> <label class="form-label">Customer
+                                                        Group</label>
+                                                    <div class="dropdown"> <button
+                                                            class="btn btn-outline-secondary dropdown-toggle w-100 text-start"
+                                                            type="button" id="customerTypeDropdown"
+                                                            data-bs-toggle="dropdown"> <i
+                                                                class="bx bx-filter-alt me-1"></i> <span
+                                                                id="customerTypeDropdownText">
+                                                                @if (is_array($filters['customer_type'] ?? null) && count($filters['customer_type']) > 0)
+                                                                    {{ count($filters['customer_type']) }} selected
+                                                                @else
+                                                                    Select Group Name
+                                                                @endif
+                                                            </span> </button>
+                                                        <ul class="dropdown-menu w-100" id="customerTypeCheckboxList"
+                                                            style="max-height: 250px; overflow-y: auto;">
+                                                            @foreach ($customerGroups as $group)
+                                                                <li class="px-2 py-1">
+                                                                    <div class="form-check"> <input
+                                                                            class="form-check-input customer-type-checkbox"
+                                                                            type="checkbox" name="customer_type[]"
+                                                                            value="{{ $group->id }}"
+                                                                            id="customer_type_{{ $group->id }}"
+                                                                            {{ in_array($group->id, (array) ($filters['customer_type'] ?? [])) ? 'checked' : '' }}>
+                                                                        <label
+                                                                            class="form-check-label w-100 cursor-pointer"
+                                                                            for="customer_type_{{ $group->id }}">
+                                                                            {{ $group->name }} </label>
+                                                                    </div>
+                                                                </li>
+                                                            @endforeach
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                            </div> <!-- PO No Filter -->
+                                            <div class="col-md-2">
+                                                <div class="mb-3"> <label class="form-label">PO No</label>
+                                                    <div class="dropdown"> <button
+                                                            class="btn btn-outline-secondary dropdown-toggle w-100 text-start"
+                                                            type="button" id="poNoDropdown"
+                                                            data-bs-toggle="dropdown"> <i
+                                                                class="bx bx-filter-alt me-1"></i> <span
+                                                                id="poNoDropdownText">
+                                                                @if (is_array($filters['po_no'] ?? null) && count($filters['po_no']) > 0)
+                                                                    {{ count($filters['po_no']) }} selected
+                                                                @else
+                                                                    Select PO
+                                                                @endif
+                                                            </span> </button>
+                                                        <ul class="dropdown-menu w-100" id="poNoCheckboxList"
+                                                            style="max-height: 250px; overflow-y: auto;">
+                                                            @foreach ($poNumbers as $poNo)
+                                                                <li class="px-2 py-1">
+                                                                    <div class="form-check"> <input
+                                                                            class="form-check-input po-no-checkbox"
+                                                                            type="checkbox" name="po_no[]"
+                                                                            value="{{ $poNo }}"
+                                                                            id="po_no_{{ $loop->index }}"
+                                                                            {{ in_array($poNo, (array) ($filters['po_no'] ?? [])) ? 'checked' : '' }}>
+                                                                        <label
+                                                                            class="form-check-label w-100 cursor-pointer"
+                                                                            for="po_no_{{ $loop->index }}">
+                                                                            {{ $poNo }} </label>
+                                                                    </div>
+                                                                </li>
+                                                            @endforeach
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                            </div> <!-- Sales Order No Filter -->
+                                            <div class="col-md-2">
+                                                <div class="mb-3"> <label class="form-label">Sales Order
+                                                        No</label>
+                                                    <div class="dropdown"> <button
+                                                            class="btn btn-outline-secondary dropdown-toggle w-100 text-start"
+                                                            type="button" id="salesOrderNoDropdown"
+                                                            data-bs-toggle="dropdown"> <i
+                                                                class="bx bx-filter-alt me-1"></i> <span
+                                                                id="salesOrderNoDropdownText">
+                                                                @if (is_array($filters['sales_order_no'] ?? null) && count($filters['sales_order_no']) > 0)
+                                                                    {{ count($filters['sales_order_no']) }}
+                                                                    selected
+                                                                @else
+                                                                    Select Sales Order No
+                                                                @endif
+                                                            </span> </button>
+                                                        <ul class="dropdown-menu w-100" id="salesOrderNoCheckboxList"
+                                                            style="max-height: 250px; overflow-y: auto;">
+                                                            @foreach ($salesOrderNumbers as $salesOrderNo)
+                                                                <li class="px-2 py-1">
+                                                                    <div class="form-check"> <input
+                                                                            class="form-check-input sales-order-no-checkbox"
+                                                                            type="checkbox" name="sales_order_no[]"
+                                                                            value="{{ $salesOrderNo }}"
+                                                                            id="sales_order_no_{{ $loop->index }}"
+                                                                            {{ in_array($salesOrderNo, (array) ($filters['sales_order_no'] ?? [])) ? 'checked' : '' }}>
+                                                                        <label
+                                                                            class="form-check-label w-100 cursor-pointer"
+                                                                            for="sales_order_no_{{ $loop->index }}">
+                                                                            {{ $salesOrderNo }} </label>
+                                                                    </div>
+                                                                </li>
+                                                            @endforeach
+                                                        </ul>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-
-                                    <!-- Warehouse Filter -->
-                                    <div class="col-md-2">
-                                        <div class="mb-3">
-                                            <label class="form-label">Warehouse</label>
-                                            <div class="dropdown">
-                                                <button class="btn btn-outline-secondary dropdown-toggle w-100 text-start"
-                                                    type="button" id="warehouseDropdown" data-bs-toggle="dropdown">
-                                                    <i class="bx bx-filter-alt me-1"></i>
-                                                    <span id="warehouseDropdownText">
-                                                        @if (is_array($filters['warehouse_id'] ?? null) && count($filters['warehouse_id']) > 0)
-                                                            {{ count($filters['warehouse_id']) }} selected
-                                                        @else
-                                                            Select Warehouse
-                                                        @endif
-                                                    </span>
-                                                </button>
-                                                <ul class="dropdown-menu w-100" id="warehouseCheckboxList"
-                                                    style="max-height: 250px; overflow-y: auto;">
-                                                    @foreach ($warehouses as $warehouse)
-                                                        <li class="px-2 py-1">
-                                                            <div class="form-check">
-                                                                <input class="form-check-input warehouse-checkbox"
-                                                                    type="checkbox" name="warehouse_id[]"
-                                                                    value="{{ $warehouse->id }}"
-                                                                    id="warehouse_{{ $warehouse->id }}"
-                                                                    {{ in_array($warehouse->id, (array) ($filters['warehouse_id'] ?? [])) ? 'checked' : '' }}>
-                                                                <label class="form-check-label w-100 cursor-pointer"
-                                                                    for="warehouse_{{ $warehouse->id }}">
-                                                                    {{ $warehouse->name }}
-                                                                </label>
-                                                            </div>
-                                                        </li>
-                                                    @endforeach
-                                                </ul>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- Customer Type Filter -->
-                                    <div class="col-md-2">
-                                        <div class="mb-3">
-                                            <label class="form-label">Customer Group</label>
-                                            <div class="dropdown">
-                                                <button class="btn btn-outline-secondary dropdown-toggle w-100 text-start"
-                                                    type="button" id="customerTypeDropdown" data-bs-toggle="dropdown">
-                                                    <i class="bx bx-filter-alt me-1"></i>
-                                                    <span id="customerTypeDropdownText">
-                                                        @if (is_array($filters['customer_type'] ?? null) && count($filters['customer_type']) > 0)
-                                                            {{ count($filters['customer_type']) }} selected
-                                                        @else
-                                                            Select Group Name
-                                                        @endif
-                                                    </span>
-                                                </button>
-                                                <ul class="dropdown-menu w-100" id="customerTypeCheckboxList"
-                                                    style="max-height: 250px; overflow-y: auto;">
-                                                    @foreach ($customerGroups as $group)
-                                                        <li class="px-2 py-1">
-                                                            <div class="form-check">
-                                                                <input class="form-check-input customer-type-checkbox"
-                                                                    type="checkbox" name="customer_type[]"
-                                                                    value="{{ $group->id }}"
-                                                                    id="customer_type_{{ $group->id }}"
-                                                                    {{ in_array($group->id, (array) ($filters['customer_type'] ?? [])) ? 'checked' : '' }}>
-                                                                <label class="form-check-label w-100 cursor-pointer"
-                                                                    for="customer_type_{{ $group->id }}">
-                                                                    {{ $group->name }}
-                                                                </label>
-                                                            </div>
-                                                        </li>
-                                                    @endforeach
-                                                </ul>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- PO No Filter -->
-                                    <div class="col-md-2">
-                                        <div class="mb-3">
-                                            <label class="form-label">PO No</label>
-                                            <div class="dropdown">
-                                                <button class="btn btn-outline-secondary dropdown-toggle w-100 text-start"
-                                                    type="button" id="poNoDropdown" data-bs-toggle="dropdown">
-                                                    <i class="bx bx-filter-alt me-1"></i>
-                                                    <span id="poNoDropdownText">
-                                                        @if (is_array($filters['po_no'] ?? null) && count($filters['po_no']) > 0)
-                                                            {{ count($filters['po_no']) }} selected
-                                                        @else
-                                                            Select PO
-                                                        @endif
-                                                    </span>
-                                                </button>
-                                                <ul class="dropdown-menu w-100" id="poNoCheckboxList"
-                                                    style="max-height: 250px; overflow-y: auto;">
-                                                    @foreach ($poNumbers as $poNo)
-                                                        <li class="px-2 py-1">
-                                                            <div class="form-check">
-                                                                <input class="form-check-input po-no-checkbox"
-                                                                    type="checkbox" name="po_no[]"
-                                                                    value="{{ $poNo }}"
-                                                                    id="po_no_{{ $loop->index }}"
-                                                                    {{ in_array($poNo, (array) ($filters['po_no'] ?? [])) ? 'checked' : '' }}>
-                                                                <label class="form-check-label w-100 cursor-pointer"
-                                                                    for="po_no_{{ $loop->index }}">
-                                                                    {{ $poNo }}
-                                                                </label>
-                                                            </div>
-                                                        </li>
-                                                    @endforeach
-                                                </ul>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- Sales Order No Filter -->
-                                    <div class="col-md-2">
-                                        <div class="mb-3">
-                                            <label class="form-label">Sales Order No</label>
-                                            <div class="dropdown">
-                                                <button class="btn btn-outline-secondary dropdown-toggle w-100 text-start"
-                                                    type="button" id="salesOrderNoDropdown" data-bs-toggle="dropdown">
-                                                    <i class="bx bx-filter-alt me-1"></i>
-                                                    <span id="salesOrderNoDropdownText">
-                                                        @if (is_array($filters['sales_order_no'] ?? null) && count($filters['sales_order_no']) > 0)
-                                                            {{ count($filters['sales_order_no']) }} selected
-                                                        @else
-                                                            Select Sales Order No
-                                                        @endif
-                                                    </span>
-                                                </button>
-                                                <ul class="dropdown-menu w-100" id="salesOrderNoCheckboxList"
-                                                    style="max-height: 250px; overflow-y: auto;">
-                                                    @foreach ($salesOrderNumbers as $salesOrderNo)
-                                                        <li class="px-2 py-1">
-                                                            <div class="form-check">
-                                                                <input class="form-check-input sales-order-no-checkbox"
-                                                                    type="checkbox" name="sales_order_no[]"
-                                                                    value="{{ $salesOrderNo }}"
-                                                                    id="sales_order_no_{{ $loop->index }}"
-                                                                    {{ in_array($salesOrderNo, (array) ($filters['sales_order_no'] ?? [])) ? 'checked' : '' }}>
-                                                                <label class="form-check-label w-100 cursor-pointer"
-                                                                    for="sales_order_no_{{ $loop->index }}">
-                                                                    {{ $salesOrderNo }}
-                                                                </label>
-                                                            </div>
-                                                        </li>
-                                                    @endforeach
-                                                </ul>
+                                    </div> <!-- Filter Buttons Column -->
+                                    <div class="col-lg-2">
+                                        <div class="row"> <!-- Apply Filter Button -->
+                                            <div class="col-md-12">
+                                                <div class="mb-2"> {{-- <label class="form-label">&nbsp;</label> --}} <button type="submit"
+                                                        id="filterData" class="btn btn-primary w-100"> <i
+                                                            class="bx bx-filter-alt me-1"></i>Apply Filter
+                                                    </button> </div>
+                                            </div> <!-- Reset Filter Button -->
+                                            <div class="col-md-12">
+                                                <div class="mb-2"> {{-- <label class="form-label">&nbsp;</label> --}} <button type="button"
+                                                        id="resetFilters" class="btn btn-secondary w-100"> <i
+                                                            class="bx bx-reset me-1"></i>Reset Filters </button>
+                                                </div>
+                                            </div> <!-- Action Buttons -->
+                                            <div class="col-md-12">
+                                                <div class="mb-2">
+                                                    <div class="d-flex gap-2"> <button type="button"
+                                                            id="generateExcelReport" class="btn btn-danger w-100">
+                                                            <i class="bx bx-download me-1"></i>Generate Report
+                                                        </button> </div>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-
-                            <!-- Filter Buttons Column -->
-                            <div class="col-lg-2">
-                                <div class="row">
-                                    <!-- Apply Filter Button -->
-                                    <div class="col-md-12">
-                                        <div class="mb-2">
-                                            {{-- <label class="form-label">&nbsp;</label> --}}
-                                            <button type="submit" id="filterData" class="btn btn-primary w-100">
-                                                <i class="bx bx-filter-alt me-1"></i>Apply Filter
-                                            </button>
-                                        </div>
-                                    </div>
-
-                                    <!-- Reset Filter Button -->
-                                    <div class="col-md-12">
-                                        <div class="mb-2">
-                                            {{-- <label class="form-label">&nbsp;</label> --}}
-                                            <button type="button" id="resetFilters" class="btn btn-secondary w-100">
-                                                <i class="bx bx-reset me-1"></i>Reset Filters
-                                            </button>
-                                        </div>
-                                    </div>
-
-                                    <!-- Action Buttons -->
-                                    <div class="col-md-12">
-                                        <div class="mb-2">
-                                            <div class="d-flex gap-2">
-                                                <button type="button" id="generateExcelReport"
-                                                    class="btn btn-danger w-100">
-                                                    <i class="bx bx-download me-1"></i>Generate Report
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                            </form>
                         </div>
-                    </form>
-                </div>
-            </div>
-
-            <!-- Customer Sales Summary Table -->
-            <div class="card mt-4">
-                <div class="card-header">
-                    <h5 class="mb-0">Customer Sales SKU Level</h5>
-                </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table id="customerSalesTable" class="table table-striped table-hover align-middle">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Sales&nbsp;Order&nbsp;No</th>
-                                    <th>Sales&nbsp;Order&nbsp;Date</th>
-                                    <th>Customer&nbsp;Group&nbsp;Name</th>
-                                    <th>Warehouse&nbsp;Name</th>
-                                    <th>Customer&nbsp;Name</th>
-                                    <th>Invoice&nbsp;No</th>
-                                    <th>Invoice&nbsp;Date</th>
-                                    <th>Customer&nbsp;Phone&nbsp;No</th>
-                                    <th>Customer&nbsp;Email</th>
-                                    <th>Customer&nbsp;City</th>
-                                    <th>Customer&nbsp;State</th>
-
-                                    <th>PO&nbsp;Date</th>
-                                    <th>PO&nbsp;Expiry&nbsp;Date</th>
-
-                                    <th>PO&nbsp;No</th>
-                                    <th>SKU&nbsp;Code</th>
-                                    <th>Title</th>
-                                    <th>Brand</th>
-                                    <th>HSN</th>
-                                    <th>Ordered&nbsp;Quantity</th>
-                                    <th>Allocation&nbsp;Quantity</th>
-                                    <th>Allocation&nbsp;Date</th>
-                                    <th>Dispatched&nbsp;Quantity</th>
-                                    <th>Dispatched&nbsp;Date</th>
-                                    <th>Box&nbsp;Count</th>
-                                    <th>Weight</th>
-                                    <th>Unit&nbsp;Price</th>
-                                    <th>Taxable&nbsp;Amount</th>
-                                    <th>GST</th>
-                                    <th>GST&nbsp;Amount</th>
-                                    <th>Invoice&nbsp;Amount</th>
-                                    <th>Purchase&nbsp;Order&nbsp;Quantity</th>
-                                    <th>Purchase&nbsp;Rate</th>
-                                    <th>Subtotal</th>
-                                    <th>GST</th>
-                                    <th>GST&nbsp;Amount</th>
-                                    <th>Total&nbsp;Amount</th>
-                                    <th>Product&nbsp;Status</th>
-                                    <th>Invoice&nbsp;Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @forelse ($invoices as $salesOrder)
-                                    @foreach ($salesOrder->orderedProducts as $product)
-                                    @if ($product->warehouseAllocations->isEmpty())
-                                        @php
-                                            $invoiceDetail = $product->invoiceDetails->first();
-                                            $invoice = $invoiceDetail?->invoice;
-                                        @endphp
+                    </div> <!-- Customer Sales Summary Table -->
+                    <div class="card mt-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">Customer Sales SKU Level</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table id="customerSalesTable" class="table table-striped table-hover align-middle">
+                                    <thead class="table-light">
                                         <tr>
-                                            <td>{{ $salesOrder->order_number ?? 'N/A' }}</td>
-                                            <td>{{ $salesOrder->created_at?->format('d-m-Y') ?? 'N/A' }}</td>
-                                            <td>{{ $salesOrder->customerGroup->name ?? 'N/A' }}</td>
-                                            <td>N/A</td>
-                                            <td>{{ $product->customer->client_name ?? 'N/A' }}</td>
-                                            <td>{{ $invoice?->invoice_number ?? 'N/A' }}</td>
-                                            <td>{{ $invoice?->created_at?->format('d-m-Y') ?? 'N/A' }}</td>
-                                            <td>{{ $product->customer->contact_no ?? 'N/A' }}</td>
-                                            <td>{{ $product->customer->email ?? 'N/A' }}</td>
-                                            <td>{{ $product->customer->shipping_city ?? 'N/A' }}</td>
-                                            <td>{{ $product->customer->shipping_state ?? 'N/A' }}</td>
-                                            <td>{{ $product->tempOrder?->po_date ?? 'N/A' }}</td>
-                                            <td>{{ $product->tempOrder?->po_expiry_date ?? 'N/A' }}</td>
-                                            <td>{{ $product->tempOrder?->po_number ?? 'N/A' }}</td>
-                                            <td>{{ $product->tempOrder?->sku ?? 'N/A' }}</td>
-                                            <td>{{ $product->product->brand_title ?? 'N/A' }}</td>
-                                            <td>{{ $product->product->brand ?? 'N/A' }}</td>
-                                            <td>{{ $product->product->hsn ?? 'N/A' }}</td>
-                                            <td>{{ intval($product->tempOrder->po_qty ?? ($product->ordered_quantity ?? 0)) }}</td>
-                                            <td>0</td>
-                                            <td>0</td>
-                                            <td>N/A</td>
-                                            <td>0</td>
-                                            <td>0</td>
-                                            <td>{{ $product->tempOrder?->basic_rate ?? 0 }}</td>
-                                            <td>0</td>
-                                            <td>{{ $product->tempOrder->gst ?? 0 }}</td>
-                                            <td>0</td>
-                                            <td>0</td>
-                                            <td>{{ $product->purchase_ordered_quantity ?? 0 }}</td>
-                                            <td>{{ $product->vendorPIProduct?->purchase_rate ?? 0 }}</td>
-                                            <td>0</td>
-                                            <td>{{ $product->vendorPIProduct?->gst ?? 0 }}</td>
-                                            <td>0</td>
-                                            <td>0</td>
-                                            <td>N/A</td>
-                                            <td>N/A</td>
+                                            <th>Sales&nbsp;Order&nbsp;No</th>
+                                            <th>Sales&nbsp;Order&nbsp;Date</th>
+                                            <th>Customer&nbsp;Group&nbsp;Name</th>
+                                            <th>Warehouse&nbsp;Name</th>
+                                            <th>Customer&nbsp;Name</th>
+                                            <th>Invoice&nbsp;No</th>
+                                            <th>Invoice&nbsp;Date</th>
+                                            <th>Customer&nbsp;Phone&nbsp;No</th>
+                                            <th>Customer&nbsp;Email</th>
+                                            <th>Customer&nbsp;City</th>
+                                            <th>Customer&nbsp;State</th>
+                                            <th>PO&nbsp;Date</th>
+                                            <th>PO&nbsp;Expiry&nbsp;Date</th>
+                                            <th>PO&nbsp;No</th>
+                                            <th>SKU&nbsp;Code</th>
+                                            <th>Title</th>
+                                            <th>Brand</th>
+                                            <th>HSN</th>
+                                            <th>Ordered&nbsp;Quantity</th>
+                                            <th>Allocation&nbsp;Quantity</th>
+                                            <th>Allocation&nbsp;Date</th>
+                                            <th>Dispatched&nbsp;Quantity</th>
+                                            <th>Dispatched&nbsp;Date</th>
+                                            <th>Box&nbsp;Count</th>
+                                            <th>Weight</th>
+                                            <th>Unit&nbsp;Price</th>
+                                            <th>Taxable&nbsp;Amount</th>
+                                            <th>GST</th>
+                                            <th>GST&nbsp;Amount</th>
+                                            <th>Invoice&nbsp;Amount</th>
+                                            <th>Purchase&nbsp;Order&nbsp;Quantity</th>
+                                            <th>Purchase&nbsp;Rate</th>
+                                            <th>Subtotal</th>
+                                            <th>GST</th>
+                                            <th>GST&nbsp;Amount</th>
+                                            <th>Total&nbsp;Amount</th>
+                                            <th>Product&nbsp;Status</th>
+                                            <th>Invoice&nbsp;Status</th>
                                         </tr>
-                                    @endif
-                                        @if ($product->warehouseAllocations->count() > 0)
-                                            @foreach ($product->warehouseAllocations as $allocation)
-                                                <tr>
-                                                    <td>{{ $salesOrder->order_number ?? 'N/A' }}</td>
-                                                    <td>{{ $salesOrder->created_at?->format('d-m-Y') ?? 'N/A' }}</td>
-                                                    <td>{{ $salesOrder->customerGroup->name ?? 'N/A' }}</td>
-                                                    <td>{{ $allocation->warehouse->name ?? 'N/A' }}</td>
-                                                    <td>{{ $product->customer->client_name ?? 'N/A' }}</td>
-                                                    <td>
-                                                        @php
-                                                            $invoiceNumber = 'N/A';
-                                                            $invoiceDetail = $product->invoiceDetails->first();
-                                                            $invoice = $invoiceDetail?->invoice;
-                                                            $invoiceNumber = $invoice->invoice_number ?? 'N/A';
-                                                        @endphp
-                                                        {{ $invoiceNumber }}
-                                                    </td>
-                                                    <td>{{ $invoice?->created_at?->format('d-m-Y') ?? 'N/A' }}</td>
-                                                    <td>{{ $product->customer->contact_no ?? 'N/A' }}</td>
-                                                    <td>{{ $product->customer->email ?? 'N/A' }}</td>
-                                                    <td>{{ $product->customer->shipping_city ?? 'N/A' }}</td>
-                                                    <td>{{ $product->customer->shipping_state ?? 'N/A' }}</td>
-                                                    <td>{{ $product->tempOrder->po_date ?? 'N/A' }}</td>
-                                                    <td>{{ $product->tempOrder->po_expiry_date ?? 'N/A' }}</td>
-                                                    <td>{{ $product->tempOrder->po_number ?? 'N/A' }}</td>
-                                                    <td>{{ $product->tempOrder->sku ?? 'N/A' }}</td>
-                                                    <td>{{ $product->product->brand_title }}</td>
-                                                    <td>{{ $product->product->brand }}</td>
-                                                    <td>{{ $product->product->hsn }}</td>
-                                                    <td>{{ intval($product->tempOrder->po_qty ?? ($product->ordered_quantity ?? 0)) }}
-                                                    </td>
-                                                    <td>{{ $allocation->final_dispatched_quantity ?? 0 }}</td>
-                                                    <td>
-                                                        {{ $allocation->send_to_pkg_at ? \Carbon\Carbon::parse($allocation->send_to_pkg_at)->format('d-m-Y') : 'N/A' }}
-                                                    </td>
-                                                    <td>{{ $allocation->final_final_dispatched_quantity ?? 0 }}</td>
-                                                    <td>
-                                                        @if ($allocation->send_to_pkg_at)
-                                                            @php
-                                                                $date = \Carbon\Carbon::parse(
-                                                                    $allocation->send_to_pkg_at,
-                                                                );
-                                                                $daysAdded = 0;
-
-                                                                while ($daysAdded < 4) {
-                                                                    $date->addDay();
-
-                                                                    if (!$date->isSunday()) {
-                                                                        $daysAdded++;
-                                                                    }
-                                                                }
-                                                            @endphp
-
-                                                            {{ $date->format('d-m-Y') }}
-                                                        @else
-                                                            N/A
-                                                        @endif
-                                                    </td>
-                                                    <td>{{ $allocation->box_count ?? 0 }}</td>
-                                                    <td>{{ $allocation->weight ?? 0 }}</td>
-                                                    <td>{{ $product->tempOrder?->basic_rate ?? 0 }}</td>
-                                                    <td>{{ $allocation->final_final_dispatched_quantity * $product->tempOrder?->basic_rate ?? 0 }}
-                                                    </td>
-                                                    <td>{{ $product->tempOrder->gst ?? 0 }}</td>
-                                                    <td>{{ $allocation->final_final_dispatched_quantity * $product->tempOrder?->basic_rate * (($product->tempOrder->gst ?? 0) / 100) ?? 0 }}
-                                                    </td>
-                                                    <td>{{ $allocation->final_final_dispatched_quantity * $product->tempOrder?->basic_rate * (1 + ($product->tempOrder->gst ?? 0) / 100) ?? 0 }}
-                                                    </td>
-                                                    <td>{{ $product->purchase_ordered_quantity ?? 0 }}</td>
-                                                    <td>{{ $product->vendorPIProduct?->purchase_rate ?? 0 }}</td>
-                                                    <td>
-                                                        {{ $subtotal = $product->purchase_ordered_quantity * ($product->vendorPIProduct?->purchase_rate ?? 0) }}
-                                                    </td>
-                                                    <td>{{ $product->vendorPIProduct?->gst ?? 0 }}</td>
-                                                    <td>
-                                                        {{ $gstAmount = $subtotal * (($product->vendorPIProduct?->gst ?? 0) / 100) }}
-                                                    </td>
-                                                    <td>
-                                                        {{ $subtotal + $gstAmount }}
-                                                    </td>
-                                                    <td>
-                                                        {{ $allocation->product_status == 'completed' ? 'Shipped' : ucwords(str_replace('_', ' ', $allocation->product_status) ?? 'Pending') }}
-                                                    </td>
-                                                    <td>
-                                                        {{ ucwords(str_replace('_', ' ', $allocation?->invoice_status ?? 'N/A')) }}
-                                                    </td>
-                                                </tr>
-                                            @endforeach
-                                        @endif
-                                    @endforeach
-                                @empty
-                                    <tr>
-                                        <td colspan="34" class="text-center text-muted py-4">
-                                            <i class="bx bx-info-circle fs-4 d-block mb-2"></i>
-                                            No customer sales records found for the selected criteria.
-                                        </td>
-                                    </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
+                                    </thead>
+                                    <tbody>
+                                        @forelse ($invoices as $salesOrder)
+                                            @foreach ($salesOrder->orderedProducts as $product)
+                                                @if ($product->warehouseAllocations->isEmpty())
+                                                    @php
+                                                        $invoiceDetail = $product->invoiceDetails->first();
+                                                        $invoice = $invoiceDetail?->invoice;
+                                                    @endphp <tr>
+                                                        <td>{{ $salesOrder->order_number ?? 'N/A' }}</td>
+                                                        <td>{{ $salesOrder->created_at?->format('d-m-Y') ?? 'N/A' }}
+                                                        </td>
+                                                        <td>{{ $salesOrder->customerGroup->name ?? 'N/A' }}</td>
+                                                        <td>N/A</td>
+                                                        <td>{{ $product->customer?->client_name ?? 'N/A' }}</td>
+                                                        <td>{{ $invoice?->invoice_number ?? 'N/A' }}</td>
+                                                        <td>{{ $invoice?->created_at?->format('d-m-Y') ?? 'N/A' }}
+                                                        </td>
+                                                        <td>{{ $product->customer?->contact_no ?? 'N/A' }}</td>
+                                                        <td>{{ $product->customer?->email ?? 'N/A' }}</td>
+                                                        <td>{{ $product->customer?->shipping_city ?? 'N/A' }}</td>
+                                                        <td>{{ $product->customer?->shipping_state ?? 'N/A' }}</td>
+                                                        <td>{{ $product->tempOrder?->po_date ?? 'N/A' }}</td>
+                                                        <td>{{ $product->tempOrder?->po_expiry_date ?? 'N/A' }}
+                                                        </td>
+                                                        <td>{{ $product->tempOrder?->po_number ?? 'N/A' }}</td>
+                                                        <td>{{ $product->tempOrder?->sku ?? 'N/A' }}</td>
+                                                        <td>{{ $product->product?->brand_title ?? 'N/A' }}</td>
+                                                        <td>{{ $product->product?->brand ?? 'N/A' }}</td>
+                                                        <td>{{ $product->product?->hsn ?? 'N/A' }}</td>
+                                                        <td>{{ intval($product->tempOrder?->po_qty ?? ($product->ordered_quantity ?? 0)) }}
+                                                        </td>
+                                                        <td>0</td>
+                                                        <td>N/A</td>
+                                                        <td>0</td>
+                                                        <td>N/A</td>
+                                                        <td>0</td>
+                                                        <td>0</td>
+                                                        <td>{{ $product->tempOrder?->basic_rate ?? 0 }}</td>
+                                                        <td>0</td>
+                                                        <td>{{ $product->tempOrder?->gst ?? 0 }}</td>
+                                                        <td>0</td>
+                                                        <td>0</td>
+                                                        <td>{{ $product->purchase_ordered_quantity ?? 0 }}</td>
+                                                        <td>{{ $product->vendorPIProduct?->purchase_rate ?? 0 }}
+                                                        </td>
+                                                        <td>0</td>
+                                                        <td>{{ $product->vendorPIProduct?->gst ?? 0 }}</td>
+                                                        <td>0</td>
+                                                        <td>0</td>
+                                                        <td>N/A</td>
+                                                        <td>N/A</td>
+                                                    </tr>
+                                                    @endif @if ($product->warehouseAllocations->count() > 0)
+                                                        @foreach ($product->warehouseAllocations as $allocation)
+                                                            <tr>
+                                                                <td>{{ $salesOrder->order_number ?? 'N/A' }}</td>
+                                                                <td>{{ $salesOrder->created_at?->format('d-m-Y') ?? 'N/A' }}
+                                                                </td>
+                                                                <td>{{ $salesOrder->customerGroup->name ?? 'N/A' }}
+                                                                </td>
+                                                                <td>{{ $allocation->warehouse?->name ?? 'N/A' }}
+                                                                </td>
+                                                                <td>{{ $product->customer?->client_name ?? 'N/A' }}
+                                                                </td>
+                                                                <td> @php
+                                                                    $invoiceNumber = 'N/A';
+                                                                    $invoiceDetail = $product->invoiceDetails->first();
+                                                                    $invoice = $invoiceDetail?->invoice;
+                                                                    $invoiceNumber = $invoice->invoice_number ?? 'N/A';
+                                                                @endphp {{ $invoiceNumber }} </td>
+                                                                <td>{{ $invoice?->created_at?->format('d-m-Y') ?? 'N/A' }}
+                                                                </td>
+                                                                <td>{{ $product->customer?->contact_no ?? 'N/A' }}
+                                                                </td>
+                                                                <td>{{ $product->customer?->email ?? 'N/A' }}</td>
+                                                                <td>{{ $product->customer?->shipping_city ?? 'N/A' }}
+                                                                </td>
+                                                                <td>{{ $product->customer?->shipping_state ?? 'N/A' }}
+                                                                </td>
+                                                                <td>{{ $product->tempOrder?->po_date ?? 'N/A' }}
+                                                                </td>
+                                                                <td>{{ $product->tempOrder?->po_expiry_date ?? 'N/A' }}
+                                                                </td>
+                                                                <td>{{ $product->tempOrder?->po_number ?? 'N/A' }}
+                                                                </td>
+                                                                <td>{{ $product->tempOrder?->sku ?? 'N/A' }}</td>
+                                                                <td>{{ $product->product?->brand_title }}</td>
+                                                                <td>{{ $product->product?->brand }}</td>
+                                                                <td>{{ $product->product?->hsn }}</td>
+                                                                <td>{{ intval($product->tempOrder?->po_qty ?? ($product->ordered_quantity ?? 0)) }}
+                                                                </td>
+                                                                <td>{{ $allocation->final_dispatched_quantity ?? 0 }}
+                                                                </td>
+                                                                <td> {{ $allocation->send_to_pkg_at ? \Carbon\Carbon::parse($allocation->send_to_pkg_at)->format('d-m-Y') : 'N/A' }}
+                                                                </td>
+                                                                <td>{{ $allocation->final_final_dispatched_quantity ?? 0 }}
+                                                                </td>
+                                                                <td>
+                                                                    @if ($allocation->send_to_pkg_at)
+                                                                        @php
+                                                                            $date = \Carbon\Carbon::parse(
+                                                                                $allocation->send_to_pkg_at,
+                                                                            );
+                                                                            $daysAdded = 0;
+                                                                            while ($daysAdded < 4) {
+                                                                                $date->addDay();
+                                                                                if (!$date->isSunday()) {
+                                                                                    $daysAdded++;
+                                                                                }
+                                                                            }
+                                                                        @endphp
+                                                                        {{ $date->format('d-m-Y') }}
+                                                                    @else
+                                                                        N/A
+                                                                    @endif
+                                                                </td>
+                                                                <td>{{ $allocation->box_count ?? 0 }}</td>
+                                                                <td>{{ $allocation->weight ?? 0 }}</td>
+                                                                <td>{{ $product->tempOrder?->basic_rate ?? 0 }}
+                                                                </td>
+                                                                <td>{{ $allocation->final_final_dispatched_quantity * $product->tempOrder?->basic_rate ?? 0 }}
+                                                                </td>
+                                                                <td>{{ $product->tempOrder?->gst ?? 0 }}</td>
+                                                                <td>{{ $allocation->final_final_dispatched_quantity * $product->tempOrder?->basic_rate * (($product->tempOrder?->gst ?? 0) / 100) ?? 0 }}
+                                                                </td>
+                                                                <td>{{ $allocation->final_final_dispatched_quantity * $product->tempOrder?->basic_rate * (1 + ($product->tempOrder?->gst ?? 0) / 100) ?? 0 }}
+                                                                </td>
+                                                                <td>{{ $product->purchase_ordered_quantity ?? 0 }}
+                                                                </td>
+                                                                <td>{{ $product->vendorPIProduct?->purchase_rate ?? 0 }}
+                                                                </td>
+                                                                <td> {{ $subtotal = $product->purchase_ordered_quantity * ($product->vendorPIProduct?->purchase_rate ?? 0) }}
+                                                                </td>
+                                                                <td>{{ $product->vendorPIProduct?->gst ?? 0 }}</td>
+                                                                <td> {{ $gstAmount = $subtotal * (($product->vendorPIProduct?->gst ?? 0) / 100) }}
+                                                                </td>
+                                                                <td> {{ $subtotal + $gstAmount }} </td>
+                                                                <td> {{ $allocation->product_status == 'completed' ? 'Shipped' : ucwords(str_replace('_', ' ', $allocation->product_status) ?? 'Pending') }}
+                                                                </td>
+                                                                <td> {{ ucwords(str_replace('_', ' ', $allocation?->invoice_status ?? 'N/A')) }}
+                                                                </td>
+                                                            </tr>
+                                                        @endforeach
+                                                    @endif
+                                                @endforeach
+                                            @empty
+                                            @endforelse
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
                     </div>
-                </div>
-            </div>
-
-        </div>
-    </main>
+    </div>
+</main>
 @endsection
-
 @section('script')
-    <script>
-        $(document).ready(function() {
-            /**
-             * Prevent dropdown from closing when clicking on checkboxes
-             */
-            $(document).on('click', '.dropdown-menu', function(e) {
-                e.stopPropagation();
-            });
-
-            /**
-             * Add cursor pointer styling to checkbox labels
-             */
-            $('.form-check-label').css('cursor', 'pointer');
-
-            // Initialize DataTable for customer sales table with custom sorting
-            // Initialize DataTable for customer sales table with custom sorting
-            var inventoryStockTable = $('#customerSalesTable').DataTable({
-                "columnDefs": [{
-                    "orderable": false,
-                    "targets": [0] // Disable sorting for checkbox column
-                }],
-                lengthChange: true,
-                pageLength: 10,
-                order: [
-                    [1, 'desc']
-                ], // Sort by sales order date in descending order
-                buttons: [{
-                    extend: 'excelHtml5',
-                    className: 'd-none', // hide the default button
-                }]
-            });
-
-            /**
-             * Helper function to update dropdown text
-             */
-            function updateDropdownText(checkboxClass, dropdownId, spanId, defaultText) {
-                var checkedBoxes = $(checkboxClass + ':checked');
-                var count = checkedBoxes.length;
-                var text = count > 0 ? count + ' selected' : defaultText;
-                $('#' + spanId).text(text);
-            }
-
-            /**
-             * Update dropdown button text when checkboxes change
-             */
-            $(document).on('change', '.customer-checkbox', function() {
-                updateDropdownText('.customer-checkbox', 'customerDropdown', 'customerDropdownText',
-                    'Select Customer');
-            });
-
-            $(document).on('change', '.warehouse-checkbox', function() {
-                updateDropdownText('.warehouse-checkbox', 'warehouseDropdown', 'warehouseDropdownText',
-                    'Select Warehouse');
-            });
-
-            // $(document).on('change', '.region-checkbox', function() {
-            //     updateDropdownText('.region-checkbox', 'regionDropdown', 'regionDropdownText',
-            //         'Select Region');
-            // });
-
-            $(document).on('change', '.payment-status-checkbox', function() {
-                updateDropdownText('.payment-status-checkbox', 'paymentStatusDropdown',
-                    'paymentStatusDropdownText', 'Select Status');
-            });
-
-            $(document).on('change', '.customer-type-checkbox', function() {
-                updateDropdownText('.customer-type-checkbox', 'customerTypeDropdown',
-                    'customerTypeDropdownText', 'Select Type');
-            });
-
-            $(document).on('change', '.invoice-no-checkbox', function() {
-                updateDropdownText('.invoice-no-checkbox', 'invoiceNoDropdown', 'invoiceNoDropdownText',
-                    'Select Invoice');
-            });
-
-            $(document).on('change', '.po-no-checkbox', function() {
-                updateDropdownText('.po-no-checkbox', 'poNoDropdown', 'poNoDropdownText', 'Select PO');
-            });
-
-            $(document).on('change', '.appointment-date-checkbox', function() {
-                updateDropdownText('.appointment-date-checkbox', 'appointmentDateDropdown',
-                    'appointmentDateDropdownText', 'Select Date');
-            });
-
-            $(document).on('change', '.sales-order-no-checkbox', function() {
-                updateDropdownText('.sales-order-no-checkbox', 'salesOrderNoDropdown',
-                    'salesOrderNoDropdownText', 'Select Sales Order No');
-            });
-
-            /**
-             * Reset Filter Button Click Handler
-             */
-            $(document).on('click', '#resetFilters', function(e) {
-                e.preventDefault();
-
-                // Clear all filter inputs
-                $('#from_date').val('');
-                $('#to_date').val('');
-                $('.customer-checkbox').prop('checked', false);
-                $('.warehouse-checkbox').prop('checked', false);
-                // $('.region-checkbox').prop('checked', false);
-                $('.payment-status-checkbox').prop('checked', false);
-                $('.customer-type-checkbox').prop('checked', false);
-                $('.invoice-no-checkbox').prop('checked', false);
-                $('.po-no-checkbox').prop('checked', false);
-                $('.appointment-date-checkbox').prop('checked', false);
-                $('.sales-order-no-checkbox').prop('checked', false);
-
-                // Redirect to base URL without filters
-                window.location.href = '{{ route('customer-sales-sku') }}';
-            });
-
-            /**
-             * Generate Excel Report Functionality
-             */
-            $('#generateExcelReport').on('click', function() {
-                // Get current filter values
-                var fromDate = $('#from_date').val();
-                var toDate = $('#to_date').val();
-                var customerId = $('input[name="customer_id[]"]:checked').map(function() {
-                    return this.value;
-                }).get();
-                var warehouseId = $('input[name="warehouse_id[]"]:checked').map(function() {
-                    return this.value;
-                }).get();
-                // var region = $('input[name="region[]"]:checked').map(function() {
-                //     return this.value;
-                // }).get();
-                var paymentStatus = $('input[name="payment_status[]"]:checked').map(function() {
-                    return this.value;
-                }).get();
-                var customerType = $('input[name="customer_type[]"]:checked').map(function() {
-                    return this.value;
-                }).get();
-                // var invoiceNo = $('input[name="invoice_no[]"]:checked').map(function() {
-                //     return this.value;
-                // }).get();
-                var poNo = $('input[name="po_no[]"]:checked').map(function() {
-                    return this.value;
-                }).get();
-                var salesOrderNo = $('input[name="sales_order_no[]"]:checked').map(function() {
-                    return this.value;
-                }).get();
-                var appointmentDate = $('input[name="appointment_date[]"]:checked').map(function() {
-                    return this.value;
-                }).get();
-
-                // Build query parameters array
-                var params = [];
-
-                if (fromDate) params.push('from_date=' + encodeURIComponent(fromDate));
-                if (toDate) params.push('to_date=' + encodeURIComponent(toDate));
-                if (customerId.length > 0) customerId.forEach(function(val) {
-                    params.push('customer_id[]=' + encodeURIComponent(val));
-                });
-                if (warehouseId.length > 0) warehouseId.forEach(function(val) {
-                    params.push('warehouse_id[]=' + encodeURIComponent(val));
-                });
-                // if (region.length > 0) region.forEach(function(val) {
-                //     params.push('region[]=' + encodeURIComponent(val));
-                // });
-                if (paymentStatus.length > 0) paymentStatus.forEach(function(val) {
-                    params.push('payment_status[]=' + encodeURIComponent(val));
-                });
-                if (customerType.length > 0) customerType.forEach(function(val) {
-                    params.push('customer_type[]=' + encodeURIComponent(val));
-                });
-                // if (invoiceNo.length > 0) invoiceNo.forEach(function(val) {
-                //     params.push('invoice_no[]=' + encodeURIComponent(val));
-                // });
-                if (poNo.length > 0) poNo.forEach(function(val) {
-                    params.push('po_no[]=' + encodeURIComponent(val));
-                });
-                if (salesOrderNo.length > 0) salesOrderNo.forEach(function(val) {
-                    params.push('sales_order_no[]=' + encodeURIComponent(val));
-                });
-                if (appointmentDate.length > 0) appointmentDate.forEach(function(val) {
-                    params.push('appointment_date[]=' + encodeURIComponent(val));
-                });
-
-                // Construct download URL with filter parameters
-                var queryString = params.length ? '?' + params.join('&') : '';
-                var downloadUrl = '{{ route('customer.sales.history.excel1') }}' + queryString;
-
-                // Show loading indicator
-                var originalText = $(this).html();
-                $(this).html('<i class="bx bx-loader-alt bx-spin me-1"></i>Generating...');
-                $(this).prop('disabled', true);
-
-                // Trigger browser download
-                window.location.href = downloadUrl;
-
-                // Reset button after a short delay
-                setTimeout(function() {
-                    $('#generateExcelReport').html(originalText);
-                    $('#generateExcelReport').prop('disabled', false);
-                }, 2000);
-            });
-
-            /**
-             * Generate PDF Report Functionality
-             */
-            $('#generatePdfReport').on('click', function() {
-                // Get current filter values
-                var fromDate = $('#from_date').val();
-                var toDate = $('#to_date').val();
-                var customerId = $('input[name="customer_id[]"]:checked').map(function() {
-                    return this.value;
-                }).get();
-                // var region = $('input[name="region[]"]:checked').map(function() {
-                //     return this.value;
-                // }).get();
-                var paymentStatus = $('input[name="payment_status[]"]:checked').map(function() {
-                    return this.value;
-                }).get();
-                var customerType = $('input[name="customer_type[]"]:checked').map(function() {
-                    return this.value;
-                }).get();
-                // var invoiceNo = $('input[name="invoice_no[]"]:checked').map(function() {
-                //     return this.value;
-                // }).get();
-                var poNo = $('input[name="po_no[]"]:checked').map(function() {
-                    return this.value;
-                }).get();
-                var appointmentDate = $('input[name="appointment_date[]"]:checked').map(function() {
-                    return this.value;
-                }).get();
-
-                // Build query parameters array
-                var params = [];
-
-                if (fromDate) params.push('from_date=' + encodeURIComponent(fromDate));
-                if (toDate) params.push('to_date=' + encodeURIComponent(toDate));
-                if (customerId.length > 0) customerId.forEach(function(val) {
-                    params.push('customer_id[]=' + encodeURIComponent(val));
-                });
-                // if (region.length > 0) region.forEach(function(val) {
-                //     params.push('region[]=' + encodeURIComponent(val));
-                // });
-                if (paymentStatus.length > 0) paymentStatus.forEach(function(val) {
-                    params.push('payment_status[]=' + encodeURIComponent(val));
-                });
-                if (customerType.length > 0) customerType.forEach(function(val) {
-                    params.push('customer_type[]=' + encodeURIComponent(val));
-                });
-                // if (invoiceNo.length > 0) invoiceNo.forEach(function(val) {
-                //     params.push('invoice_no[]=' + encodeURIComponent(val));
-                // });
-                if (poNo.length > 0) poNo.forEach(function(val) {
-                    params.push('po_no[]=' + encodeURIComponent(val));
-                });
-                if (appointmentDate.length > 0) appointmentDate.forEach(function(val) {
-                    params.push('appointment_date[]=' + encodeURIComponent(val));
-                });
-
-                // Construct download URL with filter parameters
-                var queryString = params.length ? '?' + params.join('&') : '';
-                var downloadUrl = '{{ route('customer.sales.history.pdf') }}' + queryString;
-
-                // Show loading indicator
-                var originalText = $(this).html();
-                $(this).html('<i class="bx bx-loader-alt bx-spin me-1"></i>Generating...');
-                $(this).prop('disabled', true);
-
-                // Trigger browser download
-                window.location.href = downloadUrl;
-
-                // Reset button after a short delay
-                setTimeout(function() {
-                    $('#generatePdfReport').html(originalText);
-                    $('#generatePdfReport').prop('disabled', false);
-                }, 2000);
-            });
-
-            /**
-             * Initialize Bootstrap Tooltips
-             */
-            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-            var tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {
-                return new bootstrap.Tooltip(tooltipTriggerEl);
-            });
-
-            /**
-             * Calculate and update summary totals from filtered table data
-             */
-            function updateSummary() {
-                var totalPOQuantity = 0;
-                var totalPOAmount = 0;
-
-                // Get all visible rows from the DataTable (respects current filter/search)
-                inventoryStockTable.rows({
-                    search: 'applied'
-                }).every(function() {
-                    var data = this.data();
-
-                    // Column index 23 is "Purchase Order Quantity"
-                    var poQuantityText = $(data[17]).text() || data[17];
-                    var poQuantity = parseFloat(poQuantityText.replace(/[,]/g, '')) || 0;
-                    totalPOQuantity += poQuantity;
-
-                    // Column index 28 is "Total Amount" (Purchase Order Amount)
-                    var poAmountText = $(data[28]).text() || data[28];
-                    var poAmount = parseFloat(poAmountText.replace(/[₹,]/g, '')) || 0;
-                    totalPOAmount += poAmount;
-                });
-
-                // Update the summary display
-                $('#summary-total-po-quantity').text(totalPOQuantity.toLocaleString('en-IN'));
-                $('#summary-total-po-amount').text('₹' + totalPOAmount.toLocaleString('en-IN', {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2
-                }));
-            }
-
-            // Update summary on table draw (filter, search, sort, paginate)
-            inventoryStockTable.on('draw.dt', function() {
-                updateSummary();
-            });
-
-            // Initial calculation
-            updateSummary();
+<script>
+    $(document).ready(function() {
+        /**
+         * Prevent dropdown from closing when clicking on checkboxes
+         */
+        $(document).on('click', '.dropdown-menu', function(e) {
+            e.stopPropagation();
         });
 
         /**
-         * View Customer Details Function
+         * Add cursor pointer styling to checkbox labels
          */
-        function viewCustomerDetails(customerId) {
-            // Open customer detail page in new tab
-            window.open('{{ route('customer.detail', ':id') }}'.replace(':id', customerId), '_blank');
+        $('.form-check-label').css('cursor', 'pointer');
+
+        // Initialize DataTable for customer sales table with custom sorting
+        var inventoryStockTable = null;
+
+        if ($.fn.DataTable && $('#customerSalesTable').length) {
+            try {
+                inventoryStockTable = $.fn.DataTable.isDataTable('#customerSalesTable')
+                    ? $('#customerSalesTable').DataTable()
+                    : $('#customerSalesTable').DataTable({
+                        lengthChange: true,
+                        pageLength: 10,
+                        scrollX: true,
+                        autoWidth: false,
+                        order: [[1, 'desc']], // Sort by sales order date in descending order
+                        language: {
+                            emptyTable: 'No customer sales records found for the selected criteria.',
+                        },
+                    });
+            } catch (error) {
+                console.error('Customer sales DataTable initialization failed:', error);
+            }
         }
-    </script>
+
+        /**
+         * Helper function to update dropdown text
+         */
+        function updateDropdownText(checkboxClass, dropdownId, spanId, defaultText) {
+            var checkedBoxes = $(checkboxClass + ':checked');
+            var count = checkedBoxes.length;
+            var text = count > 0 ? count + ' selected' : defaultText;
+            $('#' + spanId).text(text);
+        }
+
+        /**
+         * Update dropdown button text when checkboxes change
+         */
+        $(document).on('change', '.customer-checkbox', function() {
+            updateDropdownText(
+                '.customer-checkbox',
+                'customerDropdown',
+                'customerDropdownText',
+                'Select Customer'
+            );
+        });
+
+        $(document).on('change', '.warehouse-checkbox', function() {
+            updateDropdownText(
+                '.warehouse-checkbox',
+                'warehouseDropdown',
+                'warehouseDropdownText',
+                'Select Warehouse'
+            );
+        });
+
+        // $(document).on('change', '.region-checkbox', function() {
+        //     updateDropdownText(
+        //         '.region-checkbox',
+        //         'regionDropdown',
+        //         'regionDropdownText',
+        //         'Select Region'
+        //     );
+        // });
+
+        $(document).on('change', '.payment-status-checkbox', function() {
+            updateDropdownText(
+                '.payment-status-checkbox',
+                'paymentStatusDropdown',
+                'paymentStatusDropdownText',
+                'Select Status'
+            );
+        });
+
+        $(document).on('change', '.customer-type-checkbox', function() {
+            updateDropdownText(
+                '.customer-type-checkbox',
+                'customerTypeDropdown',
+                'customerTypeDropdownText',
+                'Select Type'
+            );
+        });
+
+        $(document).on('change', '.invoice-no-checkbox', function() {
+            updateDropdownText(
+                '.invoice-no-checkbox',
+                'invoiceNoDropdown',
+                'invoiceNoDropdownText',
+                'Select Invoice'
+            );
+        });
+
+        $(document).on('change', '.po-no-checkbox', function() {
+            updateDropdownText(
+                '.po-no-checkbox',
+                'poNoDropdown',
+                'poNoDropdownText',
+                'Select PO'
+            );
+        });
+
+        $(document).on('change', '.appointment-date-checkbox', function() {
+            updateDropdownText(
+                '.appointment-date-checkbox',
+                'appointmentDateDropdown',
+                'appointmentDateDropdownText',
+                'Select Date'
+            );
+        });
+
+        $(document).on('change', '.sales-order-no-checkbox', function() {
+            updateDropdownText(
+                '.sales-order-no-checkbox',
+                'salesOrderNoDropdown',
+                'salesOrderNoDropdownText',
+                'Select Sales Order No'
+            );
+        });
+
+        /**
+         * Reset Filter Button Click Handler
+         */
+        $(document).on('click', '#resetFilters', function(e) {
+            e.preventDefault();
+
+            // Clear all filter inputs
+            $('#from_date').val('');
+            $('#to_date').val('');
+            $('.customer-checkbox').prop('checked', false);
+            $('.warehouse-checkbox').prop('checked', false);
+            // $('.region-checkbox').prop('checked', false);
+            $('.payment-status-checkbox').prop('checked', false);
+            $('.customer-type-checkbox').prop('checked', false);
+            $('.invoice-no-checkbox').prop('checked', false);
+            $('.po-no-checkbox').prop('checked', false);
+            $('.appointment-date-checkbox').prop('checked', false);
+            $('.sales-order-no-checkbox').prop('checked', false);
+
+            // Redirect to base URL without filters
+            window.location.href = '{{ route('customer-sales-sku') }}';
+        });
+
+        /**
+         * Generate Excel Report Functionality
+         */
+        $('#generateExcelReport').on('click', function() {
+            // Get current filter values
+            var fromDate = $('#from_date').val();
+            var toDate = $('#to_date').val();
+            var customerId = $('input[name="customer_id[]"]:checked').map(function() {
+                return this.value;
+            }).get();
+            var warehouseId = $('input[name="warehouse_id[]"]:checked').map(function() {
+                return this.value;
+            }).get();
+            // var region = $('input[name="region[]"]:checked').map(function() {
+            //     return this.value;
+            // }).get();
+            var paymentStatus = $('input[name="payment_status[]"]:checked').map(function() {
+                return this.value;
+            }).get();
+            var customerType = $('input[name="customer_type[]"]:checked').map(function() {
+                return this.value;
+            }).get();
+            // var invoiceNo = $('input[name="invoice_no[]"]:checked').map(function() {
+            //     return this.value;
+            // }).get();
+            var poNo = $('input[name="po_no[]"]:checked').map(function() {
+                return this.value;
+            }).get();
+            var salesOrderNo = $('input[name="sales_order_no[]"]:checked').map(function() {
+                return this.value;
+            }).get();
+            var appointmentDate = $('input[name="appointment_date[]"]:checked').map(function() {
+                return this.value;
+            }).get();
+
+            // Build query parameters array
+            var params = [];
+            if (fromDate) params.push('from_date=' + encodeURIComponent(fromDate));
+            if (toDate) params.push('to_date=' + encodeURIComponent(toDate));
+            if (customerId.length > 0) {
+                customerId.forEach(function(val) {
+                    params.push('customer_id[]=' + encodeURIComponent(val));
+                });
+            }
+            if (warehouseId.length > 0) {
+                warehouseId.forEach(function(val) {
+                    params.push('warehouse_id[]=' + encodeURIComponent(val));
+                });
+            }
+            // if (region.length > 0) {
+            //     region.forEach(function(val) {
+            //         params.push('region[]=' + encodeURIComponent(val));
+            //     });
+            // }
+            if (paymentStatus.length > 0) {
+                paymentStatus.forEach(function(val) {
+                    params.push('payment_status[]=' + encodeURIComponent(val));
+                });
+            }
+            if (customerType.length > 0) {
+                customerType.forEach(function(val) {
+                    params.push('customer_type[]=' + encodeURIComponent(val));
+                });
+            }
+            // if (invoiceNo.length > 0) {
+            //     invoiceNo.forEach(function(val) {
+            //         params.push('invoice_no[]=' + encodeURIComponent(val));
+            //     });
+            // }
+            if (poNo.length > 0) {
+                poNo.forEach(function(val) {
+                    params.push('po_no[]=' + encodeURIComponent(val));
+                });
+            }
+            if (salesOrderNo.length > 0) {
+                salesOrderNo.forEach(function(val) {
+                    params.push('sales_order_no[]=' + encodeURIComponent(val));
+                });
+            }
+            if (appointmentDate.length > 0) {
+                appointmentDate.forEach(function(val) {
+                    params.push('appointment_date[]=' + encodeURIComponent(val));
+                });
+            }
+
+            // Construct download URL with filter parameters
+            var queryString = params.length ? '?' + params.join('&') : '';
+            var downloadUrl = '{{ route('customer.sales.history.excel1') }}' + queryString;
+
+            // Show loading indicator
+            var originalText = $(this).html();
+            $(this).html('<i class="bx bx-loader-alt bx-spin me-1"></i>Generating...');
+            $(this).prop('disabled', true);
+
+            // Trigger browser download
+            window.location.href = downloadUrl;
+
+            // Reset button after a short delay
+            setTimeout(function() {
+                $('#generateExcelReport').html(originalText);
+                $('#generateExcelReport').prop('disabled', false);
+            }, 2000);
+        });
+
+        /**
+         * Generate PDF Report Functionality
+         */
+        $('#generatePdfReport').on('click', function() {
+            // Get current filter values
+            var fromDate = $('#from_date').val();
+            var toDate = $('#to_date').val();
+            var customerId = $('input[name="customer_id[]"]:checked').map(function() {
+                return this.value;
+            }).get();
+            // var region = $('input[name="region[]"]:checked').map(function() {
+            //     return this.value;
+            // }).get();
+            var paymentStatus = $('input[name="payment_status[]"]:checked').map(function() {
+                return this.value;
+            }).get();
+            var customerType = $('input[name="customer_type[]"]:checked').map(function() {
+                return this.value;
+            }).get();
+            // var invoiceNo = $('input[name="invoice_no[]"]:checked').map(function() {
+            //     return this.value;
+            // }).get();
+            var poNo = $('input[name="po_no[]"]:checked').map(function() {
+                return this.value;
+            }).get();
+            var appointmentDate = $('input[name="appointment_date[]"]:checked').map(function() {
+                return this.value;
+            }).get();
+
+            // Build query parameters array
+            var params = [];
+            if (fromDate) params.push('from_date=' + encodeURIComponent(fromDate));
+            if (toDate) params.push('to_date=' + encodeURIComponent(toDate));
+            if (customerId.length > 0) {
+                customerId.forEach(function(val) {
+                    params.push('customer_id[]=' + encodeURIComponent(val));
+                });
+            }
+            // if (region.length > 0) {
+            //     region.forEach(function(val) {
+            //         params.push('region[]=' + encodeURIComponent(val));
+            //     });
+            // }
+            if (paymentStatus.length > 0) {
+                paymentStatus.forEach(function(val) {
+                    params.push('payment_status[]=' + encodeURIComponent(val));
+                });
+            }
+            if (customerType.length > 0) {
+                customerType.forEach(function(val) {
+                    params.push('customer_type[]=' + encodeURIComponent(val));
+                });
+            }
+            // if (invoiceNo.length > 0) {
+            //     invoiceNo.forEach(function(val) {
+            //         params.push('invoice_no[]=' + encodeURIComponent(val));
+            //     });
+            // }
+            if (poNo.length > 0) {
+                poNo.forEach(function(val) {
+                    params.push('po_no[]=' + encodeURIComponent(val));
+                });
+            }
+            if (appointmentDate.length > 0) {
+                appointmentDate.forEach(function(val) {
+                    params.push('appointment_date[]=' + encodeURIComponent(val));
+                });
+            }
+
+            // Construct download URL with filter parameters
+            var queryString = params.length ? '?' + params.join('&') : '';
+            var downloadUrl = '{{ route('customer.sales.history.pdf') }}' + queryString;
+
+            // Show loading indicator
+            var originalText = $(this).html();
+            $(this).html('<i class="bx bx-loader-alt bx-spin me-1"></i>Generating...');
+            $(this).prop('disabled', true);
+
+            // Trigger browser download
+            window.location.href = downloadUrl;
+
+            // Reset button after a short delay
+            setTimeout(function() {
+                $('#generatePdfReport').html(originalText);
+                $('#generatePdfReport').prop('disabled', false);
+            }, 2000);
+        });
+
+        /**
+         * Initialize Bootstrap Tooltips
+         */
+        var tooltipTriggerList = [].slice.call(
+            document.querySelectorAll('[data-bs-toggle="tooltip"]')
+        );
+        var tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+
+        /**
+         * Calculate and update summary totals from filtered table data
+         */
+        function updateSummary() {
+            var totalPOQuantity = 0;
+            var totalPOAmount = 0;
+
+            if (!inventoryStockTable) {
+                return;
+            }
+
+            // Get all visible rows from the DataTable (respects current filter/search)
+            inventoryStockTable.rows({
+                search: 'applied',
+            }).every(function() {
+                var data = this.data();
+
+                // Column index 30 is "Purchase Order Quantity"
+                var poQuantityText = $(data[30]).text() || data[30];
+                var poQuantity = parseFloat(poQuantityText.replace(/[,]/g, '')) || 0;
+                totalPOQuantity += poQuantity;
+
+                // Column index 35 is "Total Amount" (Purchase Order Amount)
+                var poAmountText = $(data[35]).text() || data[35];
+                var poAmount = parseFloat(poAmountText.replace(/[^\d.-]/g, '')) || 0;
+                totalPOAmount += poAmount;
+            });
+
+            // Update the summary display
+            $('#summary-total-po-quantity').text(totalPOQuantity.toLocaleString('en-IN'));
+            $('#summary-total-po-amount').text(
+                '\u20B9' +
+                    totalPOAmount.toLocaleString('en-IN', {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                    })
+            );
+        }
+
+        // Update summary on table draw (filter, search, sort, paginate)
+        if (inventoryStockTable) {
+            inventoryStockTable.on('draw.dt', function() {
+                updateSummary();
+            });
+        }
+
+        // Initial calculation
+        updateSummary();
+    });
+
+    /**
+     * View Customer Details Function
+     */
+    function viewCustomerDetails(customerId) {
+        // Open customer detail page in new tab
+        window.open(
+            '{{ route('customer.detail', ':id') }}'.replace(':id', customerId),
+            '_blank'
+        );
+    }
+</script>
 @endsection
+
+

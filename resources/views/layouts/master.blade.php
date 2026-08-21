@@ -43,7 +43,6 @@
       <link href="{{ asset('assets/css/bootstrap.min.css') }}" rel="stylesheet">
       {{-- <link href="{{ asset('assets/css/extra-icons.css') }}" rel="stylesheet"> --}}
       <link href="{{ asset('assets/plugins/datatable/css/dataTables.bootstrap5.min.css') }}" rel="stylesheet" />
-      <link href="https://cdn.datatables.net/2.3.2/css/dataTables.dataTables.css" rel="stylesheet" />
       <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@300;400;500;600&amp;display=swap"
           rel="stylesheet">
       <link href="https://fonts.googleapis.com/css?family=Material+Icons+Outlined" rel="stylesheet">
@@ -689,42 +688,43 @@
       <script src="{{ asset('assets/plugins/datatable/js/dataTables.bootstrap5.min.js') }}"></script>
       <script>
           $(document).ready(function() {
-              var table1 = $('#example').DataTable({
-                  "order": [],
-                  "stateSave": true,
-                  "columnDefs": [{
-                          "orderable": false,
-                          //   "targets": [0, -1],
-                      } // Disable sorting for the 4th column (index starts at 0)
-                  ],
+              if (!$('#example').length) {
+                  return;
+              }
+
+              var table1Options = {
+                  order: [],
+                  stateSave: true,
+                  columnDefs: [{
+                      orderable: false,
+                  }],
                   lengthChange: true,
-                  // buttons: ['excel', 'pdf', 'print']
-                  // buttons: ['excel']
-                  buttons: [{
+              };
+
+              if ($.fn.dataTable && $.fn.dataTable.Buttons) {
+                  table1Options.buttons = [{
                       extend: 'excelHtml5',
-                      className: 'd-none', // hide the default button
-                  }]
-              });
+                      className: 'd-none',
+                  }];
+              }
 
-              table1.buttons().container()
-                  .appendTo('#example_wrapper .col-md-6:eq(0)');
+              var table1 = $('#example').DataTable(table1Options);
 
-              // Trigger the hidden Excel button when your custom button is clicked
-              $('#customExcelBtn').on('click', function() {
-                  table1.button('.buttons-excel').trigger();
-              });
+              if ($.fn.dataTable && $.fn.dataTable.Buttons && table1.buttons) {
+                  table1.buttons().container().appendTo('#example_wrapper .col-md-6:eq(0)');
+
+                  $('#customExcelBtn').on('click', function() {
+                      table1.button('.buttons-excel').trigger();
+                  });
+              }
 
               $('#departmentFilter').on('change', function() {
                   var selected = $(this).val().trim();
-
-                  // Use regex for exact match
                   table1.column(1).search(selected ? '^' + selected + '$' : '', true, false).draw();
               });
 
               $('#vendorSelect').on('change', function() {
                   var selected = $(this).val().trim();
-
-                  // Use regex for exact match
                   table1.column(1).search(selected ? '^' + selected + '$' : '', true, false).draw();
               });
 
@@ -749,33 +749,38 @@
 
       <script>
           $(document).ready(function() {
-              var table2 = $('#example2').DataTable({
-                  "columnDefs": [{
-                          "orderable": false,
-                          //   "targets": [0, -1],
-                      } // Disable sorting for the 4th column (index starts at 0)
-                  ],
+              if (!$('#example2').length) {
+                  return;
+              }
+
+              var table2Options = {
+                  order: [],
+                  stateSave: true,
+                  columnDefs: [{
+                      orderable: false,
+                  }],
                   lengthChange: true,
-                  // buttons: ['excel', 'pdf', 'print']
-                  // buttons: ['excel']
-                  buttons: [{
+              };
+
+              if ($.fn.dataTable && $.fn.dataTable.Buttons) {
+                  table2Options.buttons = [{
                       extend: 'excelHtml5',
-                      className: 'd-none', // hide the default button
-                  }]
-              });
+                      className: 'd-none',
+                  }];
+              }
 
-              table2.buttons().container()
-                  .appendTo('#example2_wrapper .col-md-6:eq(0)');
+              var table2 = $('#example2').DataTable(table2Options);
 
-              // Trigger the hidden Excel button when your custom button is clicked
-              $('#customExcelBtn').on('click', function() {
-                  table2.button('.buttons-excel').trigger();
-              });
+              if ($.fn.dataTable && $.fn.dataTable.Buttons && table2.buttons) {
+                  table2.buttons().container().appendTo('#example2_wrapper .col-md-6:eq(0)');
+
+                  $('#customExcelBtn').on('click', function() {
+                      table2.button('.buttons-excel').trigger();
+                  });
+              }
 
               $('#departmentFilter').on('change', function() {
                   var selected = $(this).val();
-
-                  // Use regex for exact match
                   table2.column(1).search(selected ? '^' + selected + '$' : '', true, false).draw();
               });
 
@@ -804,6 +809,10 @@
           document.addEventListener('DOMContentLoaded', function() {
               const selectAll = document.getElementById('select-all');
               const checkboxes = document.querySelectorAll('.row-checkbox');
+
+              if (!selectAll || !checkboxes.length) {
+                  return;
+              }
 
               selectAll.addEventListener('change', function() {
                   checkboxes.forEach(cb => cb.checked = selectAll.checked);
@@ -987,6 +996,7 @@
   </body>
 
   </html>
+
 
 
 
