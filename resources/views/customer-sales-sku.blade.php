@@ -423,7 +423,11 @@
                                                         <td>N/A</td>
                                                         <td>{{ $product->customer?->client_name ?? 'N/A' }}</td>
                                                         <td>{{ $invoice?->invoice_number ?? 'N/A' }}</td>
-                                                        <td>{{ $invoice?->created_at?->format('d-m-Y') ?? 'N/A' }}
+                                                        @php
+                                                            $invoiceDate = $invoice?->invoice_date ?? $invoice?->created_at;
+                                                        @endphp
+                                                        <td data-order="{{ $invoiceDate?->format('Y-m-d') ?? '' }}">
+                                                            {{ $invoiceDate?->format('d-m-Y') ?? 'N/A' }}
                                                         </td>
                                                         <td>{{ $product->customer?->contact_no ?? 'N/A' }}</td>
                                                         <td>{{ $product->customer?->email ?? 'N/A' }}</td>
@@ -478,7 +482,11 @@
                                                                     $invoice = $invoiceDetail?->invoice;
                                                                     $invoiceNumber = $invoice->invoice_number ?? 'N/A';
                                                                 @endphp {{ $invoiceNumber }} </td>
-                                                                <td>{{ $invoice?->created_at?->format('d-m-Y') ?? 'N/A' }}
+                                                                @php
+                                                                    $invoiceDate = $invoice?->invoice_date ?? $invoice?->created_at;
+                                                                @endphp
+                                                                <td data-order="{{ $invoiceDate?->format('Y-m-d') ?? '' }}">
+                                                                    {{ $invoiceDate?->format('d-m-Y') ?? 'N/A' }}
                                                                 </td>
                                                                 <td>{{ $product->customer?->contact_no ?? 'N/A' }}
                                                                 </td>
@@ -590,7 +598,7 @@
                         pageLength: 10,
                         scrollX: true,
                         autoWidth: false,
-                        order: [[1, 'desc']], // Sort by sales order date in descending order
+                        order: [[6, 'asc']], // Sort by invoice date in ascending order
                         language: {
                             emptyTable: 'No customer sales records found for the selected criteria.',
                         },

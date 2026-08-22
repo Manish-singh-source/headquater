@@ -1455,7 +1455,15 @@ class ReportController extends Controller
             }
 
             // Final result
-            $salesOrders = $query->latest('created_at')->get();
+            $salesOrders = $query->get()
+                ->sortBy(function ($salesOrder) {
+                    $invoice = $salesOrder->invoices->sortBy(function ($invoice) {
+                        return $invoice->invoice_date ?? $invoice->created_at;
+                    })->first();
+
+                    return $invoice?->invoice_date ?? $invoice?->created_at ?? $salesOrder->created_at;
+                })
+                ->values();
 
             // dd($salesOrders);
 
@@ -1810,7 +1818,15 @@ class ReportController extends Controller
             }
 
             // Get all sales orders
-            $salesOrders = $query->latest('created_at')->get();
+            $salesOrders = $query->get()
+                ->sortBy(function ($salesOrder) {
+                    $invoice = $salesOrder->invoices->sortBy(function ($invoice) {
+                        return $invoice->invoice_date ?? $invoice->created_at;
+                    })->first();
+
+                    return $invoice?->invoice_date ?? $invoice?->created_at ?? $salesOrder->created_at;
+                })
+                ->values();
 
             if ($salesOrders->isEmpty()) {
                 return redirect()->back()->with('error', 'No customer sales records found for the selected criteria.');
@@ -1837,6 +1853,7 @@ class ReportController extends Controller
                     $invoiceDetail = $product->invoiceDetails->first();
                     $invoice = $invoiceDetail?->invoice;
                     $invoiceNumber = $invoice->invoice_number ?? 'N/A';
+                    $invoiceDate = $invoice?->invoice_date ?? $invoice?->created_at;
 
                     if ($product->warehouseAllocations->isEmpty()) {
                         $subtotal = 0;
@@ -1851,7 +1868,7 @@ class ReportController extends Controller
                             'Warehouse Name' => 'N/A',
                             'Customer Name' => $customer?->client_name ?? 'N/A',
                             'Invoice No' => $invoiceNumber,
-                            'Invoice Date' => $invoice?->created_at?->format('d-m-Y') ?? 'N/A',
+                            'Invoice Date' => $invoiceDate?->format('d-m-Y') ?? 'N/A',
                             'Customer Phone No' => $customer?->contact_no ?? 'N/A',
                             'Customer Email' => $customer?->email ?? 'N/A',
                             'Customer City' => $customer?->shipping_city ?? 'N/A',
@@ -1907,6 +1924,7 @@ class ReportController extends Controller
                             $invoiceDetail = $product->invoiceDetails->first();
                             $invoice = $invoiceDetail?->invoice;
                             $invoiceNumber = $invoice->invoice_number ?? 'N/A';
+                            $invoiceDate = $invoice?->invoice_date ?? $invoice?->created_at;
                             $appointment = $invoice?->appointment;
                             $dns = $invoice?->dns;
                             $payment = $invoice?->payments?->first();
@@ -1943,7 +1961,7 @@ class ReportController extends Controller
                                 'Warehouse Name' => $allocation->warehouse?->name ?? 'N/A',
                                 'Customer Name' => $customer?->client_name ?? 'N/A',
                                 'Invoice No' => $invoiceNumber,
-                                'Invoice Date' => $invoice?->created_at?->format('d-m-Y') ?? 'N/A',
+                                'Invoice Date' => $invoiceDate?->format('d-m-Y') ?? 'N/A',
                                 'Customer Phone No' => $customer?->contact_no ?? 'N/A',
                                 'Customer Email' => $customer?->email ?? 'N/A',
                                 'Customer City' => $customer?->shipping_city ?? 'N/A',
@@ -2047,6 +2065,16 @@ class ReportController extends Controller
                 'Product Status',
                 'Invoice Status',
             ]);
+
+            $exportData = $exportData->sortBy(function ($row) {
+                try {
+                    return ($row['Invoice Date'] ?? 'N/A') !== 'N/A'
+                        ? \Carbon\Carbon::createFromFormat('d-m-Y', $row['Invoice Date'])->timestamp
+                        : 0;
+                } catch (\Exception $e) {
+                    return 0;
+                }
+            })->values();
 
             // Add data rows
             foreach ($exportData as $row) {
