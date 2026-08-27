@@ -550,11 +550,11 @@
                     </td>
                     <td>
                         <input type="number" name="products[${rowIndex}][box_count]" class="form-control form-control-sm box-count-input"
-                            data-row="${rowIndex}" min="1" placeholder="0">
+                            data-row="${rowIndex}" min="0" placeholder="0">
                     </td>
                     <td>
                         <input type="number" name="products[${rowIndex}][weight]" class="form-control form-control-sm weight-input"
-                            data-row="${rowIndex}" min="1" placeholder="0">
+                            data-row="${rowIndex}" min="0" placeholder="0">
                     </td>
                     <td>
                         <input type="text" name="products[${rowIndex}][unit_price]" class="form-control form-control-sm price-input"
