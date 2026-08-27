@@ -3026,6 +3026,19 @@ class SalesOrderController extends Controller
 
 
     // ===================================== Generate Invoice Start ======================================
+    private function invoiceBusinessLineKey(SalesOrderProduct $detail, $warehouseId): string
+    {
+        $tempOrder = $detail->tempOrder;
+
+        return implode('|', [
+            (int) $detail->customer_id,
+            trim((string) $detail->sku),
+            trim((string) ($tempOrder?->item_code ?? '')),
+            trim((string) ($tempOrder?->po_number ?? '')),
+            trim((string) ($tempOrder?->facility_name ?? '')),
+            (int) $warehouseId,
+        ]);
+    }
     public function generateInvoice(Request $request)
     {
         try {
@@ -3066,16 +3079,33 @@ class SalesOrderController extends Controller
                 });
             }
 
-            // Execute query
-            $salesOrderDetails = $salesOrderDetails->get();
+            // Execute in line-id order so legacy duplicate rows resolve
+            // deterministically to the original line.
+            $salesOrderDetails = $salesOrderDetails->orderBy('id')->get();
 
             // Validate we have records to process
             if ($salesOrderDetails->isEmpty()) {
                 return redirect()->back()->with('error', 'No sales order details found matching the criteria.');
             }
 
+            DB::beginTransaction();
+
+            // A logical invoice line is identified by the same fields used by
+            // packaging: customer, SKU, item code, PO, facility, warehouse.
+            // This protects invoices from legacy duplicate sales-order rows.
+            $alreadyInvoicedLineKeys = [];
+            InvoiceDetails::whereHas('invoice', function ($query) use ($salesOrder) {
+                $query->where('sales_order_id', $salesOrder->id);
+            })->with(['salesOrderProduct.tempOrder'])->get()->each(function ($invoiceDetail) use (&$alreadyInvoicedLineKeys) {
+                $detail = $invoiceDetail->salesOrderProduct;
+                if ($detail && $detail->tempOrder) {
+                    $alreadyInvoicedLineKeys[$this->invoiceBusinessLineKey($detail, $invoiceDetail->warehouse_id)] = true;
+                }
+            });
+
             // Group by: po_number + facility_name + optional(brand) + optional(client_name)
             $invoicesGroup = [];
+            $seenInvoiceLineKeys = [];
 
             foreach ($salesOrderDetails as $detail) {
                 // Validate required relationships
@@ -3120,7 +3150,17 @@ class SalesOrderController extends Controller
                         $groupKey .= '|' . $clientName;
                     }
 
-                    // Store detail with allocation info
+                    $lineKey = $this->invoiceBusinessLineKey($detail, $allocation->warehouse_id);
+
+                    // Do not invoice an already invoiced logical line, even
+                    // when an old duplicate sales-order row has invoice_status
+                    // pending. Also keep only the first (oldest) duplicate in
+                    // the current generation.
+                    if (isset($alreadyInvoicedLineKeys[$lineKey]) || isset($seenInvoiceLineKeys[$lineKey])) {
+                        continue;
+                    }
+                    $seenInvoiceLineKeys[$lineKey] = true;
+
                     $invoicesGroup[$groupKey][] = [
                         'detail' => $detail,
                         'allocation' => $allocation,
@@ -3133,10 +3173,10 @@ class SalesOrderController extends Controller
 
             // Validate we have groups to process
             if (empty($invoicesGroup)) {
+                DB::rollBack();
+
                 return redirect()->back()->with('error', 'No valid records found to generate invoices.');
             }
-
-            DB::beginTransaction();
 
             $timestamp = time();
             $invoiceCounter = 0;
@@ -3171,6 +3211,7 @@ class SalesOrderController extends Controller
                 // $invoiceNumber = 'INV-' . $timestamp . '-' . $newNumber;
 
                 $lastInvoice = Invoice::where('invoice_number', 'LIKE', 'IIPL-%')
+                    ->lockForUpdate()
                     ->orderBy('id', 'desc')
                     ->first();
                 if ($lastInvoice) {
