@@ -80,7 +80,10 @@ class SalesOrderController extends Controller
                 continue;
             }
 
-            $key = strtolower(trim($record['PO Number'])) . '|' . strtolower(trim($record['SKU Code'])) . '|' . strtolower(trim($record['Item Code']));
+            $lineId = trim((string) Arr::get($record, 'Sales Order Product ID', ''));
+            $key = $lineId !== ''
+                ? 'line:' . $lineId
+                : strtolower(trim($record['PO Number'])) . '|' . strtolower(trim($record['SKU Code'])) . '|' . strtolower(trim($record['Item Code']));
 
             if (isset($seen[$key])) {
                 return 'Please check excel file: duplicate SKU (' . $record['SKU Code'] . ') found for same customer (' . $record['PO Number'] . ').';
@@ -92,6 +95,177 @@ class SalesOrderController extends Controller
         return null;
     }
 
+    protected function findSalesOrderProductForImport(int $salesOrderId, array $record, array $usedLineIds = []): ?SalesOrderProduct
+    {
+        $lineId = (int) Arr::get($record, 'Sales Order Product ID', 0);
+        $sku = trim((string) Arr::get($record, 'SKU Code', ''));
+        $poNumber = trim((string) Arr::get($record, 'PO Number', ''));
+        $itemCode = trim((string) Arr::get($record, 'Item Code', ''));
+        $facilityName = trim((string) Arr::get($record, 'Facility Name', ''));
+
+        $query = SalesOrderProduct::with([
+            'product', 'productMapping', 'tempOrder.purchaseOrderProduct', 'warehouseAllocations', 'salesOrder',
+        ])->where('sales_order_id', $salesOrderId);
+
+        if ($lineId > 0) {
+            $query->whereKey($lineId);
+        } else {
+            $query->where('sku', $sku)
+                ->whereHas('tempOrder', function ($query) use ($poNumber, $itemCode, $facilityName) {
+                    $query->where('po_number', $poNumber)
+                        ->where('item_code', $itemCode)
+                        ->where('facility_name', $facilityName);
+                });
+        }
+
+        $allProducts = $query->get();
+
+        if ($allProducts->isEmpty()) {
+            if ($lineId > 0) {
+                throw new \RuntimeException('Sales-order product ID "' . $lineId . '" was not found in the selected order.');
+            }
+
+            return null;
+        }
+
+        $products = $allProducts->reject(function (SalesOrderProduct $candidate) use ($usedLineIds) {
+            return isset($usedLineIds[$candidate->id]);
+        })->values();
+
+        if ($products->isEmpty()) {
+            throw new \RuntimeException('The same sales-order line was supplied more than once in the workbook. Re-export the order and keep one row per line.');
+        }
+
+        if ($products->count() > 1) {
+            $activeProducts = $products->filter(function (SalesOrderProduct $candidate) {
+                return (float) ($candidate->final_dispatched_quantity ?? 0) > 0
+                    || (float) ($candidate->tempOrder->block ?? 0) > 0
+                    || $candidate->warehouseAllocations->contains(function ($allocation) {
+                        return (float) ($allocation->final_dispatched_quantity ?? 0) > 0;
+                    });
+            })->values();
+
+            if ($activeProducts->count() === 1) {
+                return $activeProducts->first();
+            }
+
+            throw new \RuntimeException('Multiple sales-order lines match SKU "' . $sku .
+                '", item "' . $itemCode . '", PO "' . $poNumber .
+                '". Re-export the order so the Excel file contains Sales Order Product ID.');
+        }
+
+        $product = $products->first();
+        if ($lineId > 0 && (
+            trim((string) $product->sku) !== $sku ||
+            trim((string) $product->tempOrder?->po_number) !== $poNumber ||
+            trim((string) $product->tempOrder?->item_code) !== $itemCode ||
+            trim((string) $product->tempOrder?->facility_name) !== $facilityName
+        )) {
+            throw new \RuntimeException('Sales-order product ID "' . $lineId . '" does not match the workbook line identity.');
+        }
+
+        return $product;
+    }
+
+    protected function createSalesOrderProductForImport(int $salesOrderId, array $record): SalesOrderProduct
+    {
+        $facilityName = trim((string) Arr::get($record, 'Facility Name', ''));
+        $sku = trim((string) Arr::get($record, 'SKU Code', ''));
+        $customer = Customer::where('facility_name', $facilityName)->first();
+        $product = Product::where('sku', $sku)->first();
+
+        if (! $customer) {
+            throw new \RuntimeException('Customer/facility "' . $facilityName . '" was not found for the new sales-order line.');
+        }
+
+        if (! $product) {
+            throw new \RuntimeException('Product SKU "' . $sku . '" was not found for the new sales-order line.');
+        }
+
+        $salesOrder = SalesOrder::findOrFail($salesOrderId);
+        $isAutoAllocationOrder = is_null($salesOrder->warehouse_id);
+        $warehouseStock = $isAutoAllocationOrder
+            ? null
+            : WarehouseStock::where('warehouse_id', $salesOrder->warehouse_id)
+                ->where('sku', $sku)
+                ->first();
+
+        $poQuantity = $this->normalizeQuantityValue(Arr::get($record, 'PO Quantity', 0));
+        $purchaseOrderQuantity = $this->normalizeQuantityValue(Arr::get($record, 'Purchase Order Quantity', 0));
+
+        if (! $isAutoAllocationOrder && ! $warehouseStock && $poQuantity > 0) {
+            throw new \RuntimeException('Warehouse stock was not found for SKU "' . $sku . '" in the order warehouse.');
+        }
+
+        $tempOrder = TempOrder::create([
+            'customer_name' => Arr::get($record, 'Customer Name', ''),
+            'po_number' => Arr::get($record, 'PO Number', ''),
+            'sku' => $sku,
+            'facility_name' => $facilityName,
+            'facility_location' => Arr::get($record, 'Facility Location', ''),
+            'hsn' => Arr::get($record, 'HSN', $product->hsn ?? ''),
+            'gst' => Arr::get($record, 'GST', 0),
+            'item_code' => Arr::get($record, 'Item Code', ''),
+            'description' => Arr::get($record, 'Title', Arr::get($record, 'Description', '')),
+            'basic_rate' => Arr::get($record, 'Basic Rate', 0),
+            'product_basic_rate' => Arr::get($record, 'Product Basic Rate', 0),
+            'rate_confirmation' => Arr::get($record, 'Basic Rate Confirmation', ''),
+            'net_landing_rate' => Arr::get($record, 'Net Landing Rate', 0),
+            'product_net_landing_rate' => Arr::get($record, 'Product Net Landing Rate', 0),
+            'net_landing_rate_confirmation' => Arr::get($record, 'Net Landing Rate Confirmation', ''),
+            'mrp' => Arr::get($record, 'PO MRP', Arr::get($record, 'MRP', 0)),
+            'product_mrp' => Arr::get($record, 'Product MRP', 0),
+            'mrp_confirmation' => Arr::get($record, 'MRP Confirmation', ''),
+            'po_qty' => $poQuantity,
+            'available_quantity' => 0,
+            'available_quantity_track' => 0,
+            'unavailable_quantity' => $poQuantity,
+            'unavailable_quantity_track' => $poQuantity,
+            'block' => 0,
+            'purchase_order_quantity' => $purchaseOrderQuantity,
+            'vendor_pi_fulfillment_quantity' => Arr::get($record, 'Vendor PI Fulfillment Quantity', 0),
+            'vendor_pi_received_quantity' => Arr::get($record, 'Vendor PI Received Quantity', 0),
+            'customer_status' => 'Found',
+            'product_status' => 'Found',
+        ]);
+
+        $salesOrderProduct = SalesOrderProduct::create([
+            'sales_order_id' => $salesOrderId,
+            'temp_order_id' => $tempOrder->id,
+            'customer_id' => $customer->id,
+            'product_id' => $product->id,
+            'warehouse_stock_id' => $warehouseStock?->id,
+            'sku' => $sku,
+            'vendor_code' => null,
+            'ordered_quantity' => $poQuantity,
+            'purchase_ordered_quantity' => $purchaseOrderQuantity,
+            'dispatched_quantity' => 0,
+            'final_dispatched_quantity' => 0,
+            'price' => Arr::get($record, 'PO MRP', Arr::get($record, 'MRP', 0)),
+            'subtotal' => (float) Arr::get($record, 'Basic Rate', 0) * $poQuantity,
+            'status' => 'pending',
+        ]);
+
+        if (! $isAutoAllocationOrder && $warehouseStock) {
+            WarehouseAllocation::create([
+                'sales_order_id' => $salesOrderId,
+                'sales_order_product_id' => $salesOrderProduct->id,
+                'warehouse_id' => $salesOrder->warehouse_id,
+                'customer_id' => $customer->id,
+                'sku' => $sku,
+                'allocated_quantity' => 0,
+                'final_dispatched_quantity' => 0,
+                'sequence' => 1,
+                'box_count' => 0,
+                'status' => 'allocated',
+                'notes' => 'Created from sales-order update workbook',
+            ]);
+        }
+
+        return $salesOrderProduct->load([
+            'product', 'productMapping', 'tempOrder.purchaseOrderProduct', 'warehouseAllocations', 'salesOrder',
+        ]);
+    }
     protected function getSkuWiseAvailableQuantity(string $sku, float|int $requestedQuantity, array &$productStockCache, bool $isAutoAllocation, $warehouseId): float|int
     {
         $sku = trim($sku);
@@ -1915,6 +2089,7 @@ class SalesOrderController extends Controller
 
             // Sanitize and convert data for Excel
             $rowData = [
+                'Sales Order Product ID' => (int) $order->id,
                 'Order No' => $this->sanitizeExcelValue($salesOrder->order_number ?? ''),
                 'Customer Name' => $this->sanitizeExcelValue($order->tempOrder?->customer_name ?? ''),
                 'Facility Name' => $this->sanitizeExcelValue($order->tempOrder?->facility_name ?? ''),
@@ -1967,6 +2142,7 @@ class SalesOrderController extends Controller
     {
         $request->validate([
             'products_excel' => 'required|file|mimes:xlsx,csv,xls',
+            'sales_order_id' => 'required|integer|exists:sales_orders,id',
         ]);
 
         $file = $request->file('products_excel');
@@ -1980,6 +2156,8 @@ class SalesOrderController extends Controller
             $rows = $reader->getRows()->toArray(); // convert to array so we can check duplicates easily
 
             // Check Columns Headers
+
+            $salesOrder = SalesOrder::findOrFail((int) $request->sales_order_id);
             $requiredHeaders = ['Order No', 'Customer Name', 'Facility Name', 'Facility Location', 'HSN', 'GST', 'Item Code', 'SKU Code', 'Brand', 'Title', 'Basic Rate', 'Product Basic Rate', 'Basic Rate Confirmation', 'Net Landing Rate', 'Product Net Landing Rate', 'Net Landing Rate Confirmation', 'PO MRP', 'Product MRP', 'MRP Confirmation', 'PO Number', 'PO Quantity', 'Purchase Order Quantity', 'Vendor PI Fulfillment Quantity', 'Vendor PI Received Quantity', 'Block Quantity', 'Quantity Fulfilled', 'Final Fulfilled Quantity', 'Warehouse Allocation', 'Invoice Status'];
 
             $fileHeaders = array_map('trim', array_keys($rows[0] ?? []));
@@ -1992,14 +2170,11 @@ class SalesOrderController extends Controller
             }
 
             // 🔹 Step 1: Check for duplicates (Customer + SKU)
-            $seen = [];
-
-            // 🔹 Step 1: Check for duplicates (Customer + SKU)
-            $duplicateCheck = $this->checkDuplicateSkuInExcel($rows);
-            if ($duplicateCheck) {
-                return redirect()->back()->with('error', $duplicateCheck);
-            }
-
+            // Update workbooks may contain repeated business keys because
+            // older orders already have separate lines for that identity.
+            // Resolution is performed against database line IDs below.
+            $usedSalesOrderProductIds = [];
+            $newImportLineKeys = [];
             $products = [];
             $insertCount = 0;
             $mandatoryFields = ['Order No', 'Customer Name', 'Facility Name', 'Facility Location', 'HSN', 'GST', 'Item Code', 'SKU Code', 'Brand', 'Title', 'Basic Rate', 'Product Basic Rate', 'Basic Rate Confirmation', 'Net Landing Rate', 'Product Net Landing Rate', 'Net Landing Rate Confirmation', 'PO MRP', 'Product MRP', 'MRP Confirmation', 'PO Number', 'PO Quantity', 'Purchase Order Quantity', 'Vendor PI Fulfillment Quantity', 'Vendor PI Received Quantity', 'Block Quantity', 'Quantity Fulfilled', 'Final Fulfilled Quantity', 'Warehouse Allocation', 'Invoice Status'];
@@ -2018,26 +2193,37 @@ class SalesOrderController extends Controller
                 //     continue;
                 // }
 
-                // Find customer
-                $customerInfo = Customer::where('facility_name', $record['Facility Name'])->first();
-
-                if (! $customerInfo) {
-                    continue;
-                }
-
-                // Find sales order product 986 1037
-                $salesOrderProductUpdate = SalesOrderProduct::with('product', 'productMapping', 'tempOrder.purchaseOrderProduct')
-                    ->where('sku', trim($record['SKU Code'] ?? ''))
-                    ->where('sales_order_id', $request->sales_order_id)
-                    ->where('customer_id', $customerInfo->id)
-                    ->whereHas('tempOrder', function ($query) use ($record) {
-                        $query->where('po_number', trim($record['PO Number'] ?? ''));
-                    })
-                    ->first();
+                $isNewSalesOrderProduct = false;
+                $salesOrderProductUpdate = $this->findSalesOrderProductForImport(
+                    (int) $request->sales_order_id,
+                    $record,
+                    $usedSalesOrderProductIds
+                );
 
                 if (! $salesOrderProductUpdate) {
-                    continue;
+                    $salesOrderProductUpdate = $this->createSalesOrderProductForImport(
+                        (int) $request->sales_order_id,
+                        $record
+                    );
+                    $isNewSalesOrderProduct = true;
                 }
+
+                if ($isNewSalesOrderProduct) {
+                    $newImportLineKey = strtolower(trim((string) Arr::get($record, 'PO Number', '')))
+                        . '|' . strtolower(trim((string) Arr::get($record, 'SKU Code', '')))
+                        . '|' . strtolower(trim((string) Arr::get($record, 'Item Code', '')))
+                        . '|' . strtolower(trim((string) Arr::get($record, 'Facility Name', '')));
+
+                    if (isset($newImportLineKeys[$newImportLineKey])) {
+                        DB::rollBack();
+
+                        return redirect()->back()->with('error', 'The new sales-order line appears more than once in the workbook for SKU ' . trim((string) Arr::get($record, 'SKU Code', '')) . '.');
+                    }
+
+                    $newImportLineKeys[$newImportLineKey] = true;
+                }
+
+                $usedSalesOrderProductIds[$salesOrderProductUpdate->id] = true;
 
                 // Condition to check if block quantity is not 0 and not greater than po quantity
                 $blockQtyForCheck = (int) $record['Block Quantity'];
@@ -2076,14 +2262,7 @@ class SalesOrderController extends Controller
                 }
 
 
-                $salesOrderProductUpdate2 = SalesOrderProduct::with('product', 'productMapping', 'tempOrder.purchaseOrderProduct', 'salesOrder')
-                    ->where('sku', trim($record['SKU Code'] ?? ''))
-                    ->where('sales_order_id', $request->sales_order_id)
-                    ->where('customer_id', $customerInfo->id)
-                    ->whereHas('tempOrder', function ($query) use ($record) {
-                        $query->where('po_number', trim($record['PO Number'] ?? ''));
-                    })
-                    ->first();
+                $salesOrderProductUpdate2 = $salesOrderProductUpdate;
                 // Step 1: for update - check old block quantity
                 // Step 2: if block quantity is greater than db block
                 if (! $salesOrderProductUpdate2 || ! $salesOrderProductUpdate2->tempOrder) {
@@ -2102,7 +2281,7 @@ class SalesOrderController extends Controller
                 $hasWarehousePreference = $warehousePreference !== '' && $warehousePreference !== 'Not Needed';
                 $isAutoAllocationOrder = is_null($salesOrderProductUpdate2->salesOrder->warehouse_id);
 
-                $updateBlock = 0;
+                $updateBlock = $blockQuantity;
                 $newWarehouseSelected = false;
                 if ($isAutoAllocationOrder) {
                     $allocationService = new \App\Services\WarehouseAllocationService;
@@ -2386,7 +2565,12 @@ class SalesOrderController extends Controller
 
                     if (! $availableQty) {
                         // find in another warehouse stock with same sku and available quantity > 0
-                        $availableQty = WarehouseStock::where('sku', trim($record['SKU Code'] ?? ''))->where('available_quantity', '>', 0)->first();
+                        $availableQty = WarehouseStock::where('sku', trim($record['SKU Code'] ?? ''))
+                            ->when(! $isAutoAllocationOrder, function ($query) use ($salesOrderProductUpdate2) {
+                                $query->where('warehouse_id', $salesOrderProductUpdate2->salesOrder->warehouse_id);
+                            })
+                            ->where('available_quantity', '>', 0)
+                            ->first();
                         // dd($availableQty);
                         $newWarehouseSelected = true;
                         if (! $availableQty) {
@@ -2415,7 +2599,12 @@ class SalesOrderController extends Controller
                             DB::rollBack();
                             return redirect()->back()->with('error', "Warehouse Don't have quantity " . $requiredAdditionalBlock .  " for SKU " . trim($record['SKU Code'] ?? ''))->withInput();
                         } else {
-                            $availableQty = WarehouseStock::where('sku', trim($record['SKU Code'] ?? ''))->where('available_quantity', '>', 0)->first();
+                            $availableQty = WarehouseStock::where('sku', trim($record['SKU Code'] ?? ''))
+                            ->when(! $isAutoAllocationOrder, function ($query) use ($salesOrderProductUpdate2) {
+                                $query->where('warehouse_id', $salesOrderProductUpdate2->salesOrder->warehouse_id);
+                            })
+                            ->where('available_quantity', '>', 0)
+                            ->first();
                             if (! $availableQty) {
                                 DB::rollBack();
 
@@ -2547,6 +2736,15 @@ class SalesOrderController extends Controller
                         $salesOrderProductUpdate2->tempOrder->unavailable_quantity_track = max(0, (int) ($salesOrderProductUpdate2->tempOrder->po_qty ?? 0) - (int) $updateBlock);
                     }
                 }
+                // PO Quantity is the customer-order total. Keep derived
+                // quantities consistent when it changes.
+                $effectiveBlockQuantity = max(0, min($blockQuantity, $poQuantity));
+                $salesOrderProductUpdate2->tempOrder->po_qty = $poQuantity;
+                $salesOrderProductUpdate2->tempOrder->block = $effectiveBlockQuantity;
+                $salesOrderProductUpdate2->tempOrder->available_quantity = $effectiveBlockQuantity;
+                $salesOrderProductUpdate2->tempOrder->available_quantity_track = $effectiveBlockQuantity;
+                $salesOrderProductUpdate2->tempOrder->unavailable_quantity = max(0, $poQuantity - $effectiveBlockQuantity);
+                $salesOrderProductUpdate2->tempOrder->unavailable_quantity_track = max(0, $poQuantity - $effectiveBlockQuantity);
                 $salesOrderProductUpdate2->final_qty_blocked_at = now();
                 $salesOrderProductUpdate2->tempOrder->save();
                 $salesOrderProductUpdate2->save();
@@ -2654,6 +2852,42 @@ class SalesOrderController extends Controller
                     }
                 }
 
+                if (! $isAutoAllocationOrder && $blockQuantity > 0) {
+                    $allocations = $salesOrderProductUpdate2->warehouseAllocations()
+                        ->orderBy('sequence')->orderBy('id')->get();
+
+                    if ($allocations->isEmpty()) {
+                        WarehouseAllocation::create([
+                            'sales_order_id' => $salesOrderProductUpdate2->sales_order_id,
+                            'sales_order_product_id' => $salesOrderProductUpdate2->id,
+                            'warehouse_id' => $salesOrderProductUpdate2->salesOrder->warehouse_id,
+                            'customer_id' => $salesOrderProductUpdate2->customer_id,
+                            'sku' => $salesOrderProductUpdate2->sku,
+                            'allocated_quantity' => $updateBlock,
+                            'final_dispatched_quantity' => 0,
+                            'sequence' => 1,
+                            'box_count' => 0,
+                            'status' => 'allocated',
+                            'notes' => 'Created while importing sales-order update',
+                        ]);
+                    } else {
+                        $allocatedTotal = (int) $allocations->sum('allocated_quantity');
+                        $primaryAllocation = $allocations->first();
+
+                        if ($allocatedTotal < $updateBlock) {
+                            $primaryAllocation->allocated_quantity += $updateBlock - $allocatedTotal;
+                        }
+
+                        foreach ($allocations as $allocation) {
+                            if ((int) $allocation->allocated_quantity > 0) {
+                                $allocation->status = 'allocated';
+                            }
+                            $allocation->save();
+                        }
+                    }
+                }
+
+                $salesOrderProductUpdate->load('warehouseAllocations');
                 $quantityFulfilledQty = $this->normalizeQuantityValue($record['Quantity Fulfilled'] ?? 0);
                 $salesOrderProductUpdate->dispatched_quantity = $quantityFulfilledQty;
 
@@ -2743,7 +2977,12 @@ class SalesOrderController extends Controller
             }
 
             foreach ($salesOrderProducts as $order) {
-                if ($order->final_dispatched_quantity > 0) {
+                $allocationFinalQuantity = (float) $order->warehouseAllocations
+                    ->sum('final_dispatched_quantity');
+                $hasPackagingQuantity = (float) ($order->final_dispatched_quantity ?? 0) > 0
+                    || $allocationFinalQuantity > 0;
+
+                if ($hasPackagingQuantity) {
                     $order->status = 'packaging';
                     $order->product_status = 'packaging';
                     $order->send_to_pkg_at = now();
