@@ -591,8 +591,18 @@
                 onWarehouseChange(this);
             });
 
-            row.querySelector('.product-select').addEventListener('change', function() {
+            const productSelect = row.querySelector('.product-select');
+
+            productSelect.addEventListener('change', function() {
                 onProductChange(this);
+            });
+
+            // Enhance the dynamically-added product dropdown with SKU search.
+            $(productSelect).select2({
+                width: '100%',
+                placeholder: 'Search SKU',
+                allowClear: true,
+                dropdownParent: $(document.body)
             });
 
             row.querySelectorAll('.quantity-input, .price-input, .discount-input, .tax-input').forEach(input => {
@@ -608,7 +618,8 @@
             // Reset product selection, stock and HSN when warehouse changes
             if (productSelect.value) {
                 productSelect.value = '';
-                document.getElementById(`stock_${rowId}`).value = '0';
+                const stockElement = document.getElementById(`stock_${rowId}`);
+                if (stockElement) stockElement.value = '0';
                 document.querySelector(`input[name="products[${rowId}][hsn]"]`).value = '';
             }
         }
@@ -947,6 +958,18 @@
 
 
 @section('script')
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <style>
+        #productsTable .select2-container { width: 100% !important; }
+        #productsTable .select2-selection--single {
+            height: 31px;
+            padding: 2px 8px;
+            border: 1px solid #ced4da;
+            border-radius: .25rem;
+        }
+        #productsTable .select2-selection__rendered { line-height: 25px; }
+        #productsTable .select2-selection__arrow { height: 29px; }
+    </style>
     <script>
         $(document).ready(function() {
             $('#po_number').on('input', function() {
