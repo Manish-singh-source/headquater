@@ -6,6 +6,7 @@ use App\Models\Customer;
 use App\Models\Product;
 use App\Models\SalesOrder;
 use App\Models\SalesOrderProduct;
+use App\Models\TempOrder;
 use App\Models\User;
 use App\Models\WarehouseAllocation;
 use App\Models\WarehouseProductIssue;
@@ -613,9 +614,160 @@ class PackagingController extends Controller
     }
 
     /**
-     * Update packaging products from uploaded Excel file
+     * Resolve a packaging workbook row to its exact sales-order line.
+     */
+    private function findPackagingSalesOrderProduct(int $salesOrderId, array $record, bool $isAdmin, ?int $userWarehouseId): ?SalesOrderProduct
+    {
+        $facility = trim((string) ($record['Facility Name'] ?? ''));
+        $sku = trim((string) ($record['SKU Code'] ?? ''));
+        $po = trim((string) ($record['Purchase Order No'] ?? ''));
+        $item = trim((string) ($record['Item Code'] ?? ''));
+        $customer = Customer::where('facility_name', $facility)->first();
+
+        if (! $customer) {
+            return null;
+        }
+
+        $query = SalesOrderProduct::with(['tempOrder', 'warehouseAllocations'])
+            ->where('sales_order_id', $salesOrderId)
+            ->where('customer_id', $customer->id)
+            ->where('sku', $sku)
+            ->whereHas('tempOrder', function ($q) use ($facility, $po, $item) {
+                $q->where('facility_name', $facility)
+                    ->where('po_number', $po)
+                    ->where('item_code', $item);
+            });
+
+        if (! $isAdmin && $userWarehouseId) {
+            $query->whereHas('warehouseAllocations', function ($q) use ($userWarehouseId) {
+                $q->where('warehouse_id', $userWarehouseId);
+            });
+        }
+
+        $candidates = $query->orderByDesc('id')->get();
+        if ($candidates->isEmpty()) {
+            return null;
+        }
+
+        $allocated = $candidates->filter(function ($line) use ($userWarehouseId) {
+            return $line->warehouseAllocations->contains(function ($allocation) use ($userWarehouseId) {
+                return ! $userWarehouseId || (int) $allocation->warehouse_id === (int) $userWarehouseId;
+            });
+        })->values();
+
+        if ($allocated->count() === 1) {
+            return $allocated->first();
+        }
+
+        if ($allocated->isNotEmpty()) {
+            $editable = $allocated->filter(function ($line) use ($userWarehouseId) {
+                $allocations = $line->warehouseAllocations;
+                if ($userWarehouseId) {
+                    $allocations = $allocations->where('warehouse_id', $userWarehouseId);
+                }
+
+                return $allocations->contains(function ($allocation) {
+                    return $allocation->approval_status !== 'approved'
+                        && $allocation->shipping_status !== 'shipped'
+                        && ! in_array((string) $allocation->product_status, ['completed', 'cancelled'], true);
+                });
+            })->values();
+
+            return $editable->first() ?: $allocated->first();
+        }
+
+        if ($candidates->count() === 1) {
+            return $candidates->first();
+        }
+
+        throw new \RuntimeException('Multiple packaging lines matched SKU "' . $sku . '", item code "' . $item . '", and PO "' . $po . '".');
+    }
+
+    private function createPackagingSalesOrderProduct(SalesOrder $salesOrder, array $record, ?int $userWarehouseId): SalesOrderProduct
+    {
+        $facility = trim((string) ($record['Facility Name'] ?? ''));
+        $sku = trim((string) ($record['SKU Code'] ?? ''));
+        $customer = Customer::where('facility_name', $facility)->first();
+        $product = Product::where('sku', $sku)->first();
+
+        if (! $customer || ! $product) {
+            throw new \RuntimeException('Customer/facility or product SKU "' . $sku . '" was not found.');
+        }
+
+        $poQty = (int) ($record['PO Quantity'] ?? 0);
+        $dispatchQty = (int) ($record['Total Dispatch Qty'] ?? 0);
+        $warehouseId = $salesOrder->warehouse_id ?: $userWarehouseId;
+        if (! $warehouseId) {
+            throw new \RuntimeException('No warehouse found for new packaging line SKU "' . $sku . '".');
+        }
+
+        $temp = TempOrder::create([
+            'customer_name' => $record['Customer Name'] ?? '',
+            'po_number' => $record['Purchase Order No'] ?? '',
+            'sku' => $sku,
+            'facility_name' => $facility,
+            'facility_location' => $record['Facility Location'] ?? '',
+            'po_date' => $record['PO Date'] ?? '',
+            'po_expiry_date' => $record['PO Expiry Date'] ?? '',
+            'hsn' => $record['HSN'] ?? ($product->hsn ?? ''),
+            'gst' => $record['GST'] ?? 0,
+            'item_code' => $record['Item Code'] ?? '',
+            'description' => $record['Description'] ?? '',
+            'basic_rate' => $record['Basic Rate'] ?? 0,
+            'product_basic_rate' => $record['Basic Rate'] ?? 0,
+            'mrp' => $record['MRP'] ?? 0,
+            'product_mrp' => (float) ($record['MRP'] ?? 0),
+            'po_qty' => $poQty,
+            'available_quantity' => 0,
+            'unavailable_quantity' => 0,
+            'block' => $dispatchQty,
+            'case_pack_quantity' => $record['Case Pack Quantity'] ?? '',
+            'purchase_order_quantity' => $poQty,
+            'customer_status' => 'Found',
+            'product_status' => 'Found',
+        ]);
+
+        $order = SalesOrderProduct::create([
+            'sales_order_id' => $salesOrder->id,
+            'temp_order_id' => $temp->id,
+            'customer_id' => $customer->id,
+            'product_id' => $product->id,
+            'sku' => $sku,
+            'ordered_quantity' => $poQty,
+            'purchase_ordered_quantity' => $poQty,
+            'dispatched_quantity' => $dispatchQty,
+            'final_dispatched_quantity' => $dispatchQty,
+            'final_final_dispatched_quantity' => 0,
+            'price' => (float) ($record['Basic Rate'] ?? 0),
+            'subtotal' => (float) ($record['Basic Rate'] ?? 0) * $poQty,
+            'status' => 'packaging',
+            'product_status' => 'packaging',
+        ]);
+
+        WarehouseAllocation::create([
+            'sales_order_id' => $salesOrder->id,
+            'sales_order_product_id' => $order->id,
+            'warehouse_id' => $warehouseId,
+            'customer_id' => $customer->id,
+            'sku' => $sku,
+            'allocated_quantity' => $dispatchQty,
+            'final_dispatched_quantity' => $dispatchQty,
+            'final_final_dispatched_quantity' => 0,
+            'box_count' => 0,
+            'weight' => 0,
+            'sequence' => 1,
+            'status' => 'allocated',
+            'approval_status' => 'draft',
+            'product_status' => 'packaging',
+        ]);
+
+        return $order->load(['tempOrder', 'warehouseAllocations']);
+    }
+
+    /**
+     * Update packaging products from uploaded Excel file.
      *
-     * @return \Illuminate\Http\RedirectResponse
+     * @return IlluminateHttpRedirectResponse
      */
     public function updatePackagingProducts(Request $request)
     {
@@ -674,6 +826,7 @@ class PackagingController extends Controller
 
             $insertCount = 0;
             $skippedApprovedRows = 0;
+            $processedPackagingLineIdentities = [];
             $batchId = DB::table('packaging_upload_batches')->insertGetId([
                 'sales_order_id' => $request->salesOrderId,
                 'uploaded_by' => $user->id,
@@ -799,34 +952,29 @@ class PackagingController extends Controller
                 //     continue;
                 // }
 
-                // Find customer by facility name
-                $customer = Customer::where('facility_name', $record['Facility Name'] ?? '')
-                    ->first();
+                $lineIdentity = implode("|", [
+                    trim((string) ($record['Facility Name'] ?? '')),
+                    trim((string) ($record['SKU Code'] ?? '')),
+                    trim((string) ($record['Item Code'] ?? '')),
+                    trim((string) ($record['Purchase Order No'] ?? '')),
+                ]);
 
-                if (! $customer) {
-                    continue;
+                if (isset($processedPackagingLineIdentities[$lineIdentity])) {
+                    DB::rollBack();
+
+                    return redirect()->back()->with('error', 'The same packaging line appears more than once in row ' . ($rowIndex + 2) . '.')->withInput();
                 }
+                $processedPackagingLineIdentities[$lineIdentity] = true;
 
-                // Find the sales order product
-                $order = SalesOrderProduct::with(['tempOrder', 'warehouseAllocations'])
-                    ->where('customer_id', $customer->id)
-                    ->where('sales_order_id', $request->salesOrderId)
-                    ->where('sku', $record['SKU Code'])
-                    ->when(! $isAdmin && $userWarehouseId, function ($query) use ($userWarehouseId) {
-                        $query->whereHas('warehouseAllocations', function ($allocationQuery) use ($userWarehouseId) {
-                            $allocationQuery->where('warehouse_id', $userWarehouseId);
-                        });
-                    })
-                    ->with(['tempOrder' => function ($query) use ($record) {
-                        $query->where('po_number', $record['Purchase Order No']);
-                    }])
-                    ->whereHas('tempOrder', function ($query) use ($record) {
-                        $query->where('po_number', $record['Purchase Order No']);
-                    })
-                    ->first();
+                $order = $this->findPackagingSalesOrderProduct(
+                    (int) $request->salesOrderId,
+                    $record,
+                    $isAdmin,
+                    $userWarehouseId
+                );
 
                 if (! $order) {
-                    continue;
+                    $order = $this->createPackagingSalesOrderProduct($salesOrder, $record, $userWarehouseId);
                 }
 
                 if ($uploadMode === 'admin_correction' && $adminAllocationValues !== null && $order->warehouseAllocations->count() > 0) {

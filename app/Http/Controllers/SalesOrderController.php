@@ -151,7 +151,7 @@ class SalesOrderController extends Controller
 
             throw new \RuntimeException('Multiple sales-order lines match SKU "' . $sku .
                 '", item "' . $itemCode . '", PO "' . $poNumber .
-                '". Re-export the order so the Excel file contains Sales Order Product ID.');
+                '". Ensure each uploaded line has the correct PO Number, Item Code, and SKU combination.');
         }
 
         $product = $products->first();
@@ -2089,7 +2089,7 @@ class SalesOrderController extends Controller
 
             // Sanitize and convert data for Excel
             $rowData = [
-                'Sales Order Product ID' => (int) $order->id,
+
                 'Order No' => $this->sanitizeExcelValue($salesOrder->order_number ?? ''),
                 'Customer Name' => $this->sanitizeExcelValue($order->tempOrder?->customer_name ?? ''),
                 'Facility Name' => $this->sanitizeExcelValue($order->tempOrder?->facility_name ?? ''),
