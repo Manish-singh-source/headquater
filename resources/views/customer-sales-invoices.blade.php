@@ -171,6 +171,9 @@
                                                 </button>
                                                 <ul class="dropdown-menu w-100" id="customerCheckboxList"
                                                     style="max-height: 250px; overflow-y: auto;">
+                                                    <li class="dropdown-search px-2 py-1">
+                                                        <input type="search" class="form-control form-control-sm dropdown-search-input" placeholder="Search customers..." aria-label="Search customers">
+                                                    </li>
                                                     @foreach ($customers as $customer)
                                                         <li class="px-2 py-1">
                                                             <div class="form-check">
@@ -269,6 +272,9 @@
                                                 </button>
                                                 <ul class="dropdown-menu w-100" id="customerTypeCheckboxList"
                                                     style="max-height: 250px; overflow-y: auto;">
+                                                    <li class="dropdown-search px-2 py-1">
+                                                        <input type="search" class="form-control form-control-sm dropdown-search-input" placeholder="Search customer groups..." aria-label="Search customer groups">
+                                                    </li>
                                                     @foreach ($customerGroups as $group)
                                                         <li class="px-2 py-1">
                                                             <div class="form-check">
@@ -308,6 +314,9 @@
                                                 </button>
                                                 <ul class="dropdown-menu w-100" id="invoiceNoCheckboxList"
                                                     style="max-height: 250px; overflow-y: auto;">
+                                                    <li class="dropdown-search px-2 py-1">
+                                                        <input type="search" class="form-control form-control-sm dropdown-search-input" placeholder="Search invoice numbers..." aria-label="Search invoice numbers">
+                                                    </li>
                                                     @foreach ($invoiceNumbers as $invoiceNo)
                                                         <li class="px-2 py-1">
                                                             <div class="form-check">
@@ -346,6 +355,9 @@
                                                 </button>
                                                 <ul class="dropdown-menu w-100" id="poNoCheckboxList"
                                                     style="max-height: 250px; overflow-y: auto;">
+                                                    <li class="dropdown-search px-2 py-1">
+                                                        <input type="search" class="form-control form-control-sm dropdown-search-input" placeholder="Search PO numbers..." aria-label="Search PO numbers">
+                                                    </li>
                                                     @foreach ($poNumbers as $poNo)
                                                         <li class="px-2 py-1">
                                                             <div class="form-check">
@@ -384,6 +396,9 @@
                                                 </button>
                                                 <ul class="dropdown-menu w-100" id="salesOrderNoCheckboxList"
                                                     style="max-height: 250px; overflow-y: auto;">
+                                                    <li class="dropdown-search px-2 py-1">
+                                                        <input type="search" class="form-control form-control-sm dropdown-search-input" placeholder="Search sales orders..." aria-label="Search sales orders">
+                                                    </li>
                                                     @foreach ($salesOrderNumbers as $salesOrderNo)
                                                         <li class="px-2 py-1">
                                                             <div class="form-check">
@@ -424,6 +439,9 @@
                                                 </button>
                                                 <ul class="dropdown-menu w-100" id="appointmentDateCheckboxList"
                                                     style="max-height: 250px; overflow-y: auto;">
+                                                    <li class="dropdown-search px-2 py-1">
+                                                        <input type="search" class="form-control form-control-sm dropdown-search-input" placeholder="Search appointment dates..." aria-label="Search appointment dates">
+                                                    </li>
                                                     @foreach ($appointmentDates as $date)
                                                         <li class="px-2 py-1">
                                                             <div class="form-check">
@@ -699,6 +717,23 @@
              */
             $(document).on('click', '.dropdown-menu', function(e) {
                 e.stopPropagation();
+            });
+
+            // Filter every multi-select dropdown while preserving checked options.
+            $(document).on('input', '.dropdown-search-input', function() {
+                var search = $.trim($(this).val()).toLowerCase();
+                $(this).closest('.dropdown-menu').find('li').not('.dropdown-search').each(function() {
+                    $(this).toggle($(this).text().toLowerCase().indexOf(search) !== -1);
+                });
+            });
+
+            $('.dropdown').on('shown.bs.dropdown', function() {
+                $(this).find('.dropdown-search-input').trigger('focus');
+            });
+
+            $('.dropdown').on('hide.bs.dropdown', function() {
+                var searchInput = $(this).find('.dropdown-search-input');
+                searchInput.val('').trigger('input');
             });
 
             /**
