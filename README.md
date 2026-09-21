@@ -1,9 +1,9 @@
-﻿# Project Setup Steps
+# Project Setup Steps
 
 ## Prerequisites
 Make sure you have the following installed:
 
-- PHP ≥ 8.1
+- PHP ≥ 8.2
 - Composer
 - MySQL or SQLite for database
 - Xampp
@@ -36,10 +36,17 @@ php artisan migrate
 
 This command applies the database migrations and sets up the necessary database structure.
 
-## Step 5: Serve the application:
+## Step 5: Fill dummy data (optional):
+```
+php artisan db:seed
+```
+
+## Step 6: Serve the application:
 ```
 php artisan serve
 ```
+
+## Step 7: Access the application:
 
 Starts the application on a local server (usually at http://localhost:8000).
 
