@@ -353,6 +353,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/inventory-stock-history-excel', 'inventoryStockHistoryExcel')->name('inventory.stock.history.excel');
 
         Route::get('/customer-sales-invoices', 'customerSalesHistory')->name('customer-sales-invoices');
+        Route::post('/customer-sales-invoices', 'customerSalesHistory')->name('customer-sales-invoices.data');
         Route::get('/customer-sales-sku', 'customerSalesHistory1')->name('customer-sales-sku');
         Route::post('/customer-sales-sku', 'customerSalesHistory1')->name('customer-sales-sku.data');
 

@@ -2624,39 +2624,27 @@ class ReportController extends Controller
 
         $query->whereHas('invoices', $salesOrderInvoiceFilter);
 
-        // Final result
-        $salesOrders = $query->latest('created_at')->get();
+        $invoiceQuery = Invoice::where('invoice_type', 'sales_order')
+            ->whereIn('invoices.sales_order_id', (clone $query)->select('sales_orders.id'));
+        $this->filterCustomerSalesInvoiceRows($invoiceQuery, $request);
 
-        // dd($salesOrders[0]->invoices[0]);
-
-        // Stats
-        $statsQuery = clone $query;
-        $allSalesOrders = $statsQuery->get();
-
-        // Calculate all required statistics
-        $totalInvoices = 0;
-        $totalTaxableAmount = 0;
-        $totalAmount = 0;
-        $totalAmountPaid = 0;
-        $totalBalanceAmount = 0;
-        $uniqueCustomers = [];
-
-        foreach ($allSalesOrders as $salesOrder) {
-            foreach ($salesOrder->invoices as $invoice) {
-                $totalInvoices++;
-                $totalTaxableAmount += $invoice->taxable_amount ?? 0;
-                $totalAmount += $invoice->total_amount ?? 0;
-                $totalAmountPaid += $invoice->paid_amount ?? 0;
-                $totalBalanceAmount += $invoice->balance_due ?? 0;
-
-                // Track unique customers
-                if ($invoice->customer_id && !in_array($invoice->customer_id, $uniqueCustomers)) {
-                    $uniqueCustomers[] = $invoice->customer_id;
-                }
-            }
+        if ($request->has('draw')) {
+            return $this->customerSalesInvoicePage($invoiceQuery, $request);
         }
 
-        $totalCustomers = count($uniqueCustomers);
+        $totals = (clone $invoiceQuery)->selectRaw(
+            'COUNT(*) as invoice_count, COUNT(DISTINCT customer_id) as customer_count, '
+            . 'COALESCE(SUM(taxable_amount), 0) as taxable_amount, '
+            . 'COALESCE(SUM(total_amount), 0) as total_amount, '
+            . 'COALESCE(SUM(paid_amount), 0) as paid_amount, '
+            . 'COALESCE(SUM(balance_due), 0) as balance_due'
+        )->first();
+        $totalInvoices = $totals->invoice_count;
+        $totalCustomers = $totals->customer_count;
+        $totalTaxableAmount = $totals->taxable_amount;
+        $totalAmount = $totals->total_amount;
+        $totalAmountPaid = $totals->paid_amount;
+        $totalBalanceAmount = $totals->balance_due;
 
         // Legacy variables for backward compatibility
         $totalRevenue = $totalAmount;
@@ -2738,22 +2726,17 @@ class ReportController extends Controller
             'appointment_date' => $request->input('appointment_date', []),
         ];
 
-        $invoicesData = Invoice::with('details.product')
-            ->where('invoice_type', 'sales_order')
-            ->get();
-
-        $total_sales_overall = $invoicesData->sum(function ($invoice) {
-            return $invoice->details->sum('total_price');
-        });
-
-        $paid_amount_overall = $invoicesData->sum('paid_amount');
+        $total_sales_overall = DB::table('invoice_details')
+            ->join('invoices', 'invoices.id', '=', 'invoice_details.invoice_id')
+            ->where('invoices.invoice_type', 'sales_order')
+            ->sum('invoice_details.total_price');
+        $paid_amount_overall = Invoice::where('invoice_type', 'sales_order')->sum('paid_amount');
         $balance_due_overall = $total_sales_overall - $paid_amount_overall;
 
         return view('customer-sales-invoices', compact(
             'total_sales_overall',
             'paid_amount_overall',
             'balance_due_overall',
-            'salesOrders',
             'customerGroups',
             'customers',
             'warehouses',
@@ -2775,6 +2758,119 @@ class ReportController extends Controller
         ));
     }
 
+    private function filterCustomerSalesInvoiceRows($query, Request $request): void
+    {
+        if ($request->filled('from_date')) {
+            $query->whereDate('invoices.created_at', '>=', $request->from_date);
+        }
+        if ($request->filled('to_date')) {
+            $query->whereDate('invoices.created_at', '<=', $request->to_date);
+        }
+        if ($request->filled('invoice_no')) {
+            $query->whereIn('invoices.invoice_number', (array) $request->invoice_no);
+        }
+        if ($request->filled('customer_id')) {
+            $query->whereIn('invoices.customer_id', (array) $request->customer_id);
+        }
+        if ($request->filled('appointment_date')) {
+            $dates = collect((array) $request->appointment_date)->map(function ($date) {
+                try {
+                    return \Carbon\Carbon::parse($date)->format('Y-m-d');
+                } catch (\Exception $e) {
+                    return $date;
+                }
+            })->all();
+            $query->whereHas('appointment', function ($appointment) use ($dates) {
+                $appointment->whereIn('appointment_date', $dates);
+            });
+        }
+        if ($request->filled('po_no')) {
+            $poNos = (array) $request->po_no;
+            $query->where(function ($poQuery) use ($poNos) {
+                $poQuery->whereIn('invoices.po_number', $poNos)
+                    ->orWhereHas('details', function ($details) use ($poNos) {
+                        $details->whereIn('po_number', $poNos)
+                            ->orWhereHas('tempOrder', function ($tempOrder) use ($poNos) {
+                                $tempOrder->whereIn('po_number', $poNos);
+                            })
+                            ->orWhereHas('salesOrderProduct.tempOrder', function ($tempOrder) use ($poNos) {
+                                $tempOrder->whereIn('po_number', $poNos);
+                            });
+                    });
+            });
+        }
+    }
+
+    private function customerSalesInvoicePage($invoiceQuery, Request $request)
+    {
+        $recordsTotal = (clone $invoiceQuery)->count();
+        $search = trim((string) $request->input('search.value', ''));
+        if ($search !== '') {
+            $like = '%' . addcslashes(substr($search, 0, 100), '%_\\') . '%';
+            $invoiceQuery->where(function ($query) use ($like) {
+                $query->where('invoices.invoice_number', 'like', $like)
+                    ->orWhere('invoices.po_number', 'like', $like)
+                    ->orWhereHas('salesOrder', function ($order) use ($like) {
+                        $order->where('order_number', 'like', $like)
+                            ->orWhereHas('customerGroup', function ($group) use ($like) {
+                                $group->where('name', 'like', $like);
+                            });
+                    })
+                    ->orWhereHas('customer', function ($customer) use ($like) {
+                        $customer->where('client_name', 'like', $like)
+                            ->orWhere('gstin', 'like', $like)
+                            ->orWhere('contact_no', 'like', $like);
+                    });
+            });
+        }
+        $recordsFiltered = (clone $invoiceQuery)->count();
+
+        $sortColumns = [
+            0 => 'sales_orders.order_number',
+            1 => 'customer_groups.name',
+            2 => 'customers.client_name',
+            3 => 'customers.gstin',
+            4 => 'invoices.invoice_number',
+            5 => 'invoices.created_at',
+            6 => 'customers.contact_no',
+            7 => 'customers.email',
+            8 => 'customers.shipping_city',
+            9 => 'customers.shipping_state',
+            10 => 'invoices.po_number',
+            27 => 'invoices.taxable_amount',
+            30 => 'invoices.total_amount',
+            31 => 'invoices.payment_status',
+            32 => 'invoices.paid_amount',
+            33 => 'invoices.balance_due',
+        ];
+        $column = (int) $request->input('order.0.column', 5);
+        $direction = strtolower((string) $request->input('order.0.dir', 'desc')) === 'asc' ? 'asc' : 'desc';
+        $sort = $sortColumns[$column] ?? 'invoices.created_at';
+        $start = max(0, (int) $request->input('start', 0));
+        $length = max(1, min(100, (int) $request->input('length', 10)));
+
+        $ids = (clone $invoiceQuery)
+            ->join('sales_orders', 'sales_orders.id', '=', 'invoices.sales_order_id')
+            ->leftJoin('customer_groups', 'customer_groups.id', '=', 'sales_orders.customer_group_id')
+            ->leftJoin('customers', 'customers.id', '=', 'invoices.customer_id')
+            ->orderBy($sort, $direction)->orderBy('invoices.id', 'desc')
+            ->select('invoices.id')->offset($start)->limit($length)->pluck('invoices.id');
+
+        $invoices = Invoice::with([
+            'salesOrder.customerGroup', 'payments', 'details.tempOrder',
+            'details.salesOrderProduct.tempOrder', 'details.product',
+            'appointment', 'customer', 'dns', 'warehouse',
+        ])->whereIn('id', $ids)->get()->sortBy(function ($invoice) use ($ids) {
+            return $ids->search($invoice->id);
+        });
+
+        return response()->json([
+            'draw' => (int) $request->input('draw'),
+            'recordsTotal' => $recordsTotal,
+            'recordsFiltered' => $recordsFiltered,
+            'html' => view('partials.customer-sales-invoice-rows', compact('invoices'))->render(),
+        ]);
+    }
     /**
      * Download customer sales history as Excel
      *
