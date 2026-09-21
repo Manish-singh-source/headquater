@@ -8,6 +8,7 @@ use App\Models\Product;
 use App\Models\PurchaseOrder;
 use App\Models\PurchaseOrderProduct;
 use App\Models\SalesOrder;
+use App\Models\SalesOrderProduct;
 use App\Models\TempOrder;
 use App\Models\VendorPI;
 use App\Models\Warehouse;
@@ -1453,58 +1454,28 @@ class ReportController extends Controller
                     });
                 });
             }
-
-            // Final result
-            $salesOrders = $query->get()
-                ->sortBy(function ($salesOrder) {
-                    $invoice = $salesOrder->invoices->sortBy(function ($invoice) {
-                        return $invoice->invoice_date ?? $invoice->created_at;
-                    })->first();
-
-                    return $invoice?->invoice_date ?? $invoice?->created_at ?? $salesOrder->created_at;
-                })
-                ->values();
-
-            // dd($salesOrders);
-
-            // Stats
-            $statsQuery = clone $query;
-            $allSalesOrders = $statsQuery->get();
-
-            // Calculate all required statistics for SKU level
-            $totalInvoices = 0;
-            $totalTaxableAmount = 0;
-            $totalInvoiceAmount = 0;
-            $totalPurchaseOrder = 0;
-            $totalPurchaseOrderAmount = 0;
-            $uniqueCustomers = [];
-
-            foreach ($allSalesOrders as $salesOrder) {
-                // Count purchase orders
-                $totalPurchaseOrder++;
-                $totalPurchaseOrderAmount += $salesOrder->total_amount ?? 0;
-
-                foreach ($salesOrder->invoices as $invoice) {
-                    $totalInvoices++;
-                    $totalTaxableAmount += $invoice->taxable_amount ?? 0;
-                    $totalInvoiceAmount += $invoice->total_amount ?? 0;
-
-                    // Track unique customers
-                    if ($invoice->customer_id && !in_array($invoice->customer_id, $uniqueCustomers)) {
-                        $uniqueCustomers[] = $invoice->customer_id;
-                    }
-                }
+            if ($request->ajax() && $request->has('draw')) {
+                return $this->customerSalesSkuPage($query, $request);
             }
 
-            $totalCustomers = count($uniqueCustomers);
-
-            // Legacy variables for backward compatibility
+            $orderIds = (clone $query)->select('sales_orders.id');
+            $orderTotals = SalesOrder::whereIn('id', $orderIds)
+                ->selectRaw('COUNT(*) as order_count')
+                ->first();
+            $invoiceTotals = Invoice::whereIn('sales_order_id', $orderIds)
+                ->selectRaw('COUNT(*) as invoice_count, COUNT(DISTINCT customer_id) as customer_count, COALESCE(SUM(taxable_amount), 0) as taxable_amount, COALESCE(SUM(total_amount), 0) as invoice_amount')
+                ->first();
+            $totalInvoices = $invoiceTotals->invoice_count;
+            $totalCustomers = $invoiceTotals->customer_count;
+            $totalTaxableAmount = $invoiceTotals->taxable_amount;
+            $totalInvoiceAmount = $invoiceTotals->invoice_amount;
+            $totalPurchaseOrder = $orderTotals->order_count;
+            $totalPurchaseOrderAmount = 0;
             $totalRevenue = $totalInvoiceAmount;
-            $totalPaid = $allSalesOrders->sum(function ($salesOrder) {
-                return $salesOrder->invoices->sum(function ($invoice) {
-                    return $invoice->payments->sum('amount');
-                });
-            });
+            $totalPaid = DB::table('payments')
+                ->join('invoices', 'invoices.id', '=', 'payments.invoice_id')
+                ->whereIn('invoices.sales_order_id', $orderIds)
+                ->sum('payments.amount');
             $totalPendingPayments = $totalRevenue - $totalPaid;
 
             // Get filter dropdown data
@@ -1567,22 +1538,17 @@ class ReportController extends Controller
                 ->sort()
                 ->values();
 
-            // dd($salesOrders);
 
-            $invoicesData = Invoice::with('details.product')
-                ->where('invoice_type', 'sales_order')
-                ->get();
-
-            $total_sales_overall = $invoicesData->sum(function ($invoice) {
-                return $invoice->details->sum('total_price');
-            });
+            $total_sales_overall = DB::table('invoice_details')
+                ->join('invoices', 'invoices.id', '=', 'invoice_details.invoice_id')
+                ->where('invoices.invoice_type', 'sales_order')
+                ->sum('invoice_details.total_price');
 
 
             $data = [
                 'total_sales_overall' => $total_sales_overall,
                 'title' => 'Customer Sales Summary',
                 'warehouses' => $warehouses,
-                'invoices' => $salesOrders, // Keep variable name for view compatibility
                 'totalRevenue' => $totalRevenue,
                 'totalPendingPayments' => $totalPendingPayments,
                 'customers' => $customers,
@@ -1619,6 +1585,123 @@ class ReportController extends Controller
 
             return redirect()->back()->with('error', 'Error retrieving sales history: ' . $e->getMessage());
         }
+    }
+    private function customerSalesSkuPage($orderQuery, Request $request)
+    {
+        $rows = DB::table('sales_order_products as sop')
+            ->join('sales_orders as so', 'so.id', '=', 'sop.sales_order_id')
+            ->leftJoin('warehouse_allocations as wa', 'wa.sales_order_product_id', '=', 'sop.id')
+            ->leftJoin('customers as c', 'c.id', '=', 'sop.customer_id')
+            ->leftJoin('temp_orders as t', 't.id', '=', 'sop.temp_order_id')
+            ->leftJoin('warehouses as w', 'w.id', '=', 'wa.warehouse_id')
+            ->leftJoin('customer_groups as cg', 'cg.id', '=', 'so.customer_group_id')
+            ->whereIn('sop.sales_order_id', (clone $orderQuery)->select('sales_orders.id'));
+
+        if ($request->filled('warehouse_id')) {
+            $rows->whereIn('wa.warehouse_id', (array) $request->warehouse_id);
+        }
+        if ($request->filled('customer_id')) {
+            $rows->whereIn('sop.customer_id', (array) $request->customer_id);
+        }
+        if ($request->filled('po_no')) {
+            $rows->whereIn('t.po_number', (array) $request->po_no);
+        }
+        if ($request->filled('region')) {
+            $regions = (array) $request->region;
+            $rows->where(function ($query) use ($regions) {
+                $query->whereIn('c.billing_state', $regions)->orWhereIn('c.shipping_state', $regions);
+            });
+        }
+
+        $recordsTotal = (clone $rows)->count();
+        $invoiceDate = '(SELECT COALESCE(i.invoice_date, i.created_at) FROM invoice_details d JOIN invoices i ON i.id = d.invoice_id WHERE d.sales_order_product_id = CAST(sop.id AS CHAR) ORDER BY d.id LIMIT 1)';
+        $invoiceNumber = '(SELECT i.invoice_number FROM invoice_details d JOIN invoices i ON i.id = d.invoice_id WHERE d.sales_order_product_id = CAST(sop.id AS CHAR) ORDER BY d.id LIMIT 1)';
+        $productField = fn ($field) => "(SELECT p.{$field} FROM products p WHERE p.sku = sop.sku LIMIT 1)";
+        $vendorField = fn ($field) => "(SELECT v.{$field} FROM vendor_p_i_products v WHERE v.vendor_sku_code = sop.sku LIMIT 1)";
+        $purchaseSubtotal = 'COALESCE(sop.purchase_ordered_quantity, 0) * COALESCE(' . $vendorField('purchase_rate') . ', 0)';
+        $purchaseTax = "({$purchaseSubtotal}) * COALESCE(" . $vendorField('gst') . ', 0) / 100';
+        $sortColumns = [
+            'so.order_number', 'so.created_at', 'cg.name', 'w.name', 'c.client_name',
+            $invoiceNumber, $invoiceDate, 'c.contact_no', 'c.email', 'c.shipping_city',
+            'c.shipping_state', 't.po_date', 't.po_expiry_date', 't.po_number', 'sop.sku',
+            $productField('brand_title'), $productField('brand'), $productField('hsn'),
+            'COALESCE(CAST(t.po_qty AS DECIMAL(15, 2)), sop.ordered_quantity)', 'wa.final_dispatched_quantity',
+            'wa.send_to_pkg_at', 'wa.final_final_dispatched_quantity', 'wa.send_to_pkg_at',
+            'wa.box_count', 'wa.weight', 'CAST(t.basic_rate AS DECIMAL(15, 2))',
+            'COALESCE(wa.final_final_dispatched_quantity, 0) * COALESCE(t.basic_rate, 0)',
+            'CAST(t.gst AS DECIMAL(15, 2))',
+            'COALESCE(wa.final_final_dispatched_quantity, 0) * COALESCE(t.basic_rate, 0) * COALESCE(t.gst, 0) / 100',
+            'COALESCE(wa.final_final_dispatched_quantity, 0) * COALESCE(t.basic_rate, 0) * (1 + COALESCE(t.gst, 0) / 100)',
+            'sop.purchase_ordered_quantity', 'CAST(' . $vendorField('purchase_rate') . ' AS DECIMAL(15, 2))', $purchaseSubtotal,
+            'CAST(' . $vendorField('gst') . ' AS DECIMAL(15, 2))', $purchaseTax, "({$purchaseSubtotal}) + ({$purchaseTax})",
+            'wa.product_status', 'wa.invoice_status',
+        ];
+
+        $search = trim((string) $request->input('search.value', ''));
+        if ($search !== '') {
+            $like = '%' . addcslashes(substr($search, 0, 100), '%_\\') . '%';
+            $invoiceProductIds = DB::table('invoice_details as d')
+                ->join('invoices as i', 'i.id', '=', 'd.invoice_id')
+                ->where('i.invoice_number', 'like', $like)
+                ->whereRaw('d.id = (SELECT MIN(d2.id) FROM invoice_details d2 WHERE d2.sales_order_product_id = d.sales_order_product_id)')
+                ->pluck('d.sales_order_product_id')->filter()->all();
+            $productSkus = DB::table('products')
+                ->where('brand_title', 'like', $like)
+                ->orWhere('brand', 'like', $like)
+                ->pluck('sku')->filter()->all();
+
+            $rows->where(function ($query) use ($like, $invoiceProductIds, $productSkus) {
+                $query->where('so.order_number', 'like', $like)
+                    ->orWhere('c.client_name', 'like', $like)
+                    ->orWhere('w.name', 'like', $like)
+                    ->orWhere('t.po_number', 'like', $like)
+                    ->orWhere('sop.sku', 'like', $like)
+                    ->orWhereIn('sop.id', $invoiceProductIds)
+                    ->orWhereIn('sop.sku', $productSkus);
+            });
+        }
+
+        $recordsFiltered = (clone $rows)->count();
+        $summary = (clone $rows)->selectRaw('COALESCE(SUM(sop.purchase_ordered_quantity), 0) as po_quantity')->first();
+
+        $column = (int) $request->input('order.0.column', 6);
+        $direction = strtolower((string) $request->input('order.0.dir', 'asc')) === 'desc' ? 'desc' : 'asc';
+        $rows->orderByRaw(($sortColumns[$column] ?? $invoiceDate) . ' ' . $direction)
+            ->orderBy('sop.id')->orderBy('wa.id');
+
+        $start = max(0, (int) $request->input('start', 0));
+        $length = max(1, min(100, (int) $request->input('length', 10)));
+        $pageKeys = $rows->select('sop.id as product_id', 'wa.id as allocation_id')
+            ->offset($start)->limit($length)->get();
+        $products = SalesOrderProduct::with([
+            'salesOrder.customerGroup', 'tempOrder', 'customer', 'product',
+            'vendorPIProduct', 'invoiceDetails.invoice', 'warehouseAllocations.warehouse',
+        ])->whereIn('id', $pageKeys->pluck('product_id')->unique())->get()->keyBy('id');
+
+        $reportRows = $pageKeys->map(function ($key) use ($products) {
+            $product = $products->get($key->product_id);
+            if (! $product) {
+                return null;
+            }
+
+            return [
+                'salesOrder' => $product->salesOrder,
+                'product' => $product,
+                'allocation' => $key->allocation_id
+                    ? $product->warehouseAllocations->firstWhere('id', $key->allocation_id)
+                    : null,
+            ];
+        })->filter()->values();
+
+        return response()->json([
+            'draw' => (int) $request->input('draw'),
+            'recordsTotal' => $recordsTotal,
+            'recordsFiltered' => $recordsFiltered,
+            'html' => view('reports.partials.customer-sales-sku-rows', compact('reportRows'))->render(),
+            'summary' => [
+                'po_quantity' => (float) $summary->po_quantity,
+            ],
+        ]);
     }
 
     /**

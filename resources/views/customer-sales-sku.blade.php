@@ -424,160 +424,6 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @forelse ($invoices as $salesOrder)
-                                            @foreach ($salesOrder->orderedProducts as $product)
-                                                @if ($product->warehouseAllocations->isEmpty())
-                                                    @php
-                                                        $invoiceDetail = $product->invoiceDetails->first();
-                                                        $invoice = $invoiceDetail?->invoice;
-                                                    @endphp <tr>
-                                                        <td>{{ $salesOrder->order_number ?? 'N/A' }}</td>
-                                                        <td>{{ $salesOrder->created_at?->format('d-m-Y') ?? 'N/A' }}
-                                                        </td>
-                                                        <td>{{ $salesOrder->customerGroup->name ?? 'N/A' }}</td>
-                                                        <td>N/A</td>
-                                                        <td>{{ $product->customer?->client_name ?? 'N/A' }}</td>
-                                                        <td>{{ $invoice?->invoice_number ?? 'N/A' }}</td>
-                                                        @php
-                                                            $invoiceDate = $invoice?->invoice_date ?? $invoice?->created_at;
-                                                        @endphp
-                                                        <td data-order="{{ $invoiceDate?->format('Y-m-d') ?? '' }}">
-                                                            {{ $invoiceDate?->format('d-m-Y') ?? 'N/A' }}
-                                                        </td>
-                                                        <td>{{ $product->customer?->contact_no ?? 'N/A' }}</td>
-                                                        <td>{{ $product->customer?->email ?? 'N/A' }}</td>
-                                                        <td>{{ $product->customer?->shipping_city ?? 'N/A' }}</td>
-                                                        <td>{{ $product->customer?->shipping_state ?? 'N/A' }}</td>
-                                                        <td>{{ $product->tempOrder?->po_date ?? 'N/A' }}</td>
-                                                        <td>{{ $product->tempOrder?->po_expiry_date ?? 'N/A' }}
-                                                        </td>
-                                                        <td>{{ $product->tempOrder?->po_number ?? 'N/A' }}</td>
-                                                        <td>{{ $product->tempOrder?->sku ?? 'N/A' }}</td>
-                                                        <td>{{ $product->product?->brand_title ?? 'N/A' }}</td>
-                                                        <td>{{ $product->product?->brand ?? 'N/A' }}</td>
-                                                        <td>{{ $product->product?->hsn ?? 'N/A' }}</td>
-                                                        <td>{{ intval($product->tempOrder?->po_qty ?? ($product->ordered_quantity ?? 0)) }}
-                                                        </td>
-                                                        <td>0</td>
-                                                        <td>N/A</td>
-                                                        <td>0</td>
-                                                        <td>N/A</td>
-                                                        <td>0</td>
-                                                        <td>0</td>
-                                                        <td>{{ $product->tempOrder?->basic_rate ?? 0 }}</td>
-                                                        <td>0</td>
-                                                        <td>{{ $product->tempOrder?->gst ?? 0 }}</td>
-                                                        <td>0</td>
-                                                        <td>0</td>
-                                                        <td>{{ $product->purchase_ordered_quantity ?? 0 }}</td>
-                                                        <td>{{ $product->vendorPIProduct?->purchase_rate ?? 0 }}
-                                                        </td>
-                                                        <td>0</td>
-                                                        <td>{{ $product->vendorPIProduct?->gst ?? 0 }}</td>
-                                                        <td>0</td>
-                                                        <td>0</td>
-                                                        <td>N/A</td>
-                                                        <td>N/A</td>
-                                                    </tr>
-                                                    @endif @if ($product->warehouseAllocations->count() > 0)
-                                                        @foreach ($product->warehouseAllocations as $allocation)
-                                                            <tr>
-                                                                <td>{{ $salesOrder->order_number ?? 'N/A' }}</td>
-                                                                <td>{{ $salesOrder->created_at?->format('d-m-Y') ?? 'N/A' }}
-                                                                </td>
-                                                                <td>{{ $salesOrder->customerGroup->name ?? 'N/A' }}
-                                                                </td>
-                                                                <td>{{ $allocation->warehouse?->name ?? 'N/A' }}
-                                                                </td>
-                                                                <td>{{ $product->customer?->client_name ?? 'N/A' }}
-                                                                </td>
-                                                                <td> @php
-                                                                    $invoiceNumber = 'N/A';
-                                                                    $invoiceDetail = $product->invoiceDetails->first();
-                                                                    $invoice = $invoiceDetail?->invoice;
-                                                                    $invoiceNumber = $invoice->invoice_number ?? 'N/A';
-                                                                @endphp {{ $invoiceNumber }} </td>
-                                                                @php
-                                                                    $invoiceDate = $invoice?->invoice_date ?? $invoice?->created_at;
-                                                                @endphp
-                                                                <td data-order="{{ $invoiceDate?->format('Y-m-d') ?? '' }}">
-                                                                    {{ $invoiceDate?->format('d-m-Y') ?? 'N/A' }}
-                                                                </td>
-                                                                <td>{{ $product->customer?->contact_no ?? 'N/A' }}
-                                                                </td>
-                                                                <td>{{ $product->customer?->email ?? 'N/A' }}</td>
-                                                                <td>{{ $product->customer?->shipping_city ?? 'N/A' }}
-                                                                </td>
-                                                                <td>{{ $product->customer?->shipping_state ?? 'N/A' }}
-                                                                </td>
-                                                                <td>{{ $product->tempOrder?->po_date ?? 'N/A' }}
-                                                                </td>
-                                                                <td>{{ $product->tempOrder?->po_expiry_date ?? 'N/A' }}
-                                                                </td>
-                                                                <td>{{ $product->tempOrder?->po_number ?? 'N/A' }}
-                                                                </td>
-                                                                <td>{{ $product->tempOrder?->sku ?? 'N/A' }}</td>
-                                                                <td>{{ $product->product?->brand_title }}</td>
-                                                                <td>{{ $product->product?->brand }}</td>
-                                                                <td>{{ $product->product?->hsn }}</td>
-                                                                <td>{{ intval($product->tempOrder?->po_qty ?? ($product->ordered_quantity ?? 0)) }}
-                                                                </td>
-                                                                <td>{{ $allocation->final_dispatched_quantity ?? 0 }}
-                                                                </td>
-                                                                <td> {{ $allocation->send_to_pkg_at ? \Carbon\Carbon::parse($allocation->send_to_pkg_at)->format('d-m-Y') : 'N/A' }}
-                                                                </td>
-                                                                <td>{{ $allocation->final_final_dispatched_quantity ?? 0 }}
-                                                                </td>
-                                                                <td>
-                                                                    @if ($allocation->send_to_pkg_at)
-                                                                        @php
-                                                                            $date = \Carbon\Carbon::parse(
-                                                                                $allocation->send_to_pkg_at,
-                                                                            );
-                                                                            $daysAdded = 0;
-                                                                            while ($daysAdded < 4) {
-                                                                                $date->addDay();
-                                                                                if (!$date->isSunday()) {
-                                                                                    $daysAdded++;
-                                                                                }
-                                                                            }
-                                                                        @endphp
-                                                                        {{ $date->format('d-m-Y') }}
-                                                                    @else
-                                                                        N/A
-                                                                    @endif
-                                                                </td>
-                                                                <td>{{ $allocation->box_count ?? 0 }}</td>
-                                                                <td>{{ $allocation->weight ?? 0 }}</td>
-                                                                <td>{{ $product->tempOrder?->basic_rate ?? 0 }}
-                                                                </td>
-                                                                <td>{{ $allocation->final_final_dispatched_quantity * $product->tempOrder?->basic_rate ?? 0 }}
-                                                                </td>
-                                                                <td>{{ $product->tempOrder?->gst ?? 0 }}</td>
-                                                                <td>{{ $allocation->final_final_dispatched_quantity * $product->tempOrder?->basic_rate * (($product->tempOrder?->gst ?? 0) / 100) ?? 0 }}
-                                                                </td>
-                                                                <td>{{ $allocation->final_final_dispatched_quantity * $product->tempOrder?->basic_rate * (1 + ($product->tempOrder?->gst ?? 0) / 100) ?? 0 }}
-                                                                </td>
-                                                                <td>{{ $product->purchase_ordered_quantity ?? 0 }}
-                                                                </td>
-                                                                <td>{{ $product->vendorPIProduct?->purchase_rate ?? 0 }}
-                                                                </td>
-                                                                <td> {{ $subtotal = $product->purchase_ordered_quantity * ($product->vendorPIProduct?->purchase_rate ?? 0) }}
-                                                                </td>
-                                                                <td>{{ $product->vendorPIProduct?->gst ?? 0 }}</td>
-                                                                <td> {{ $gstAmount = $subtotal * (($product->vendorPIProduct?->gst ?? 0) / 100) }}
-                                                                </td>
-                                                                <td> {{ $subtotal + $gstAmount }} </td>
-                                                                <td> {{ $allocation->product_status == 'completed' ? 'Shipped' : ucwords(str_replace('_', ' ', $allocation->product_status) ?? 'Pending') }}
-                                                                </td>
-                                                                <td> {{ ucwords(str_replace('_', ' ', $allocation?->invoice_status ?? 'N/A')) }}
-                                                                </td>
-                                                            </tr>
-                                                        @endforeach
-                                                    @endif
-                                                @endforeach
-                                            @empty
-                                            @endforelse
                                     </tbody>
                                 </table>
                             </div>
@@ -618,26 +464,36 @@
          */
         $('.form-check-label').css('cursor', 'pointer');
 
-        // Initialize DataTable for customer sales table with custom sorting
-        var inventoryStockTable = null;
-
+        // DataTables requests one SKU/allocation page at a time.
         if ($.fn.DataTable && $('#customerSalesTable').length) {
-            try {
-                inventoryStockTable = $.fn.DataTable.isDataTable('#customerSalesTable')
-                    ? $('#customerSalesTable').DataTable()
-                    : $('#customerSalesTable').DataTable({
-                        lengthChange: true,
-                        pageLength: 10,
-                        scrollX: true,
-                        autoWidth: false,
-                        order: [[6, 'asc']], // Sort by invoice date in ascending order
-                        language: {
-                            emptyTable: 'No customer sales records found for the selected criteria.',
-                        },
-                    });
-            } catch (error) {
-                console.error('Customer sales DataTable initialization failed:', error);
-            }
+            $('#customerSalesTable').DataTable({
+                processing: true,
+                serverSide: true,
+                searchDelay: 350,
+                lengthChange: true,
+                pageLength: 10,
+                scrollX: true,
+                autoWidth: false,
+                order: [[6, 'asc']],
+                ajax: {
+                    url: '{{ route('customer-sales-sku') }}' + window.location.search,
+                    dataSrc: function(response) {
+                        const table = document.createElement('table');
+                        table.innerHTML = '<tbody>' + response.html + '</tbody>';
+                        $('#summary-total-po-quantity').text(
+                            Number(response.summary.po_quantity).toLocaleString('en-IN')
+                        );
+                        return Array.from(table.tBodies[0].rows, function(row) {
+                            return Array.from(row.cells, function(cell) {
+                                return cell.innerHTML;
+                            });
+                        });
+                    },
+                },
+                language: {
+                    emptyTable: 'No customer sales records found for the selected criteria.',
+                },
+            });
         }
 
         /**
@@ -958,55 +814,6 @@
         var tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {
             return new bootstrap.Tooltip(tooltipTriggerEl);
         });
-
-        /**
-         * Calculate and update summary totals from filtered table data
-         */
-        function updateSummary() {
-            var totalPOQuantity = 0;
-            var totalPOAmount = 0;
-
-            if (!inventoryStockTable) {
-                return;
-            }
-
-            // Get all visible rows from the DataTable (respects current filter/search)
-            inventoryStockTable.rows({
-                search: 'applied',
-            }).every(function() {
-                var data = this.data();
-
-                // Column index 30 is "Purchase Order Quantity"
-                var poQuantityText = $(data[30]).text() || data[30];
-                var poQuantity = parseFloat(poQuantityText.replace(/[,]/g, '')) || 0;
-                totalPOQuantity += poQuantity;
-
-                // Column index 35 is "Total Amount" (Purchase Order Amount)
-                var poAmountText = $(data[35]).text() || data[35];
-                var poAmount = parseFloat(poAmountText.replace(/[^\d.-]/g, '')) || 0;
-                totalPOAmount += poAmount;
-            });
-
-            // Update the summary display
-            $('#summary-total-po-quantity').text(totalPOQuantity.toLocaleString('en-IN'));
-            $('#summary-total-po-amount').text(
-                '\u20B9' +
-                    totalPOAmount.toLocaleString('en-IN', {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2,
-                    })
-            );
-        }
-
-        // Update summary on table draw (filter, search, sort, paginate)
-        if (inventoryStockTable) {
-            inventoryStockTable.on('draw.dt', function() {
-                updateSummary();
-            });
-        }
-
-        // Initial calculation
-        updateSummary();
     });
 
     /**
