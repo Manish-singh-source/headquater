@@ -477,8 +477,16 @@
                 order: [[6, 'asc']],
                 ajax: function(requestData, callback) {
                     $.ajax({
-                        url: window.location.pathname + window.location.search,
-                        data: requestData,
+                        url: window.location.pathname,
+                        type: 'POST',
+                        headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+                        data: $.param({
+                            draw: requestData.draw,
+                            start: requestData.start,
+                            length: requestData.length,
+                            order: requestData.order,
+                            search: { value: requestData.search.value },
+                        }) + (window.location.search ? '&' + window.location.search.substring(1) : ''),
                         dataType: 'json',
                     }).done(function(response) {
                         $('#customerSalesError').remove();
