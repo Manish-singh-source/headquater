@@ -1454,7 +1454,7 @@ class ReportController extends Controller
                     });
                 });
             }
-            if ($request->ajax() && $request->has('draw')) {
+            if ($request->has('draw')) {
                 return $this->customerSalesSkuPage($query, $request);
             }
 
@@ -1580,8 +1580,18 @@ class ReportController extends Controller
             ];
 
             return view('customer-sales-sku', $data);
-        } catch (\Exception $e) {
-            Log::error('Error retrieving customer sales history: ' . $e->getMessage());
+        } catch (\Throwable $e) {
+            $reference = (string) Str::uuid();
+            Log::error('Error retrieving customer sales history', [
+                'reference' => $reference,
+                'exception' => $e,
+            ]);
+
+            if ($request->has('draw')) {
+                return response()->json([
+                    'message' => 'Customer sales report could not load. Reference: ' . $reference,
+                ], 500);
+            }
 
             return redirect()->back()->with('error', 'Error retrieving sales history: ' . $e->getMessage());
         }

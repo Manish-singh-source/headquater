@@ -475,20 +475,46 @@
                 scrollX: true,
                 autoWidth: false,
                 order: [[6, 'asc']],
-                ajax: {
-                    url: '{{ route('customer-sales-sku') }}' + window.location.search,
-                    dataSrc: function(response) {
+                ajax: function(requestData, callback) {
+                    $.ajax({
+                        url: window.location.pathname + window.location.search,
+                        data: requestData,
+                        dataType: 'json',
+                    }).done(function(response) {
+                        $('#customerSalesError').remove();
                         const table = document.createElement('table');
                         table.innerHTML = '<tbody>' + response.html + '</tbody>';
                         $('#summary-total-po-quantity').text(
                             Number(response.summary.po_quantity).toLocaleString('en-IN')
                         );
-                        return Array.from(table.tBodies[0].rows, function(row) {
+                        const rows = Array.from(table.tBodies[0].rows, function(row) {
                             return Array.from(row.cells, function(cell) {
                                 return cell.innerHTML;
                             });
                         });
-                    },
+                        callback({
+                            draw: response.draw,
+                            recordsTotal: response.recordsTotal,
+                            recordsFiltered: response.recordsFiltered,
+                            data: rows,
+                        });
+                    }).fail(function(xhr) {
+                        const status = xhr.status ? ' (HTTP ' + xhr.status + ')' : '';
+                        const message = xhr.responseJSON?.message ||
+                            'Customer sales report could not load' + status + '. Please reload the page or contact support.';
+                        if (!$('#customerSalesError').length) {
+                            $('#customerSalesTable').before(
+                                '<div id="customerSalesError" class="alert alert-danger" role="alert"></div>'
+                            );
+                        }
+                        $('#customerSalesError').text(message);
+                        callback({
+                            draw: requestData.draw,
+                            recordsTotal: 0,
+                            recordsFiltered: 0,
+                            data: [],
+                        });
+                    });
                 },
                 language: {
                     emptyTable: 'No customer sales records found for the selected criteria.',
