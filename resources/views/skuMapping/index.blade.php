@@ -91,7 +91,7 @@
                 <div class="card-body">
                     <div class="product-table">
                         <div class="table-responsive white-space-nowrap">
-                            <table id="example" class="table align-middle">
+                            <table id="skuMappingTable" class="table align-middle">
                                 <thead class="table-light">
                                     <tr>
                                         <th>
@@ -106,81 +106,7 @@
                                         <th>Action</th>
                                     </tr>
                                 </thead>
-                                <tbody>
-                                    @forelse($productMapping as $product)
-                                        <tr>
-                                            <td>
-                                                <input class="form-check-input row-checkbox" type="checkbox"
-                                                    name="ids[]" value="{{ $product->id }}">
-                                            </td>
-                                            <td>
-                                                {{ $product->sku }}
-                                            </td>
-                                            <td>
-                                                {{ $product->portal_code }}
-                                            </td>
-                                            <td>
-                                                {{ $product->item_code }}
-                                            </td>
-                                            <td>
-                                                {{ $product->basic_rate ?? 0 }}
-                                            </td>
-                                            <td>
-                                                {{ $product->net_landing_rate ?? 0 }}
-                                            </td>
-                                            <td>
-                                                {{ $product->mrp ?? 0 }}
-                                            </td>
-                                            <td>
-                                                <div class="d-flex">
-                                                    <a aria-label="anchor"
-                                                        href="{{ route('sku.mapping.edit', $product->id) }}"
-                                                        class="btn btn-icon btn-sm bg-warning-subtle me-1"
-                                                        data-bs-toggle="tooltip" data-bs-original-title="Edit">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="13"
-                                                            height="13" viewBox="0 0 24 24" fill="none"
-                                                            stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                                            stroke-linejoin="round"
-                                                            class="feather feather-edit text-warning">
-                                                            <path
-                                                                d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7">
-                                                            </path>
-                                                            <path
-                                                                d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z">
-                                                            </path>
-                                                        </svg>
-                                                    </a>
-                                                    <form action="{{ route('sku.mapping.destroy', $product->id) }}"
-                                                        method="POST" onsubmit="return confirm('Are you sure?')">
-                                                        @csrf
-                                                        @method('DELETE')
-                                                        <button type="submit"
-                                                            class="btn btn-icon btn-sm bg-danger-subtle delete-row">
-                                                            <svg xmlns="http://www.w3.org/2000/svg" width="13"
-                                                                height="13" viewBox="0 0 24 24" fill="none"
-                                                                stroke="currentColor" stroke-width="2"
-                                                                stroke-linecap="round" stroke-linejoin="round"
-                                                                class="feather feather-trash-2 text-danger">
-                                                                <polyline points="3 6 5 6 21 6"></polyline>
-                                                                <path
-                                                                    d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
-                                                                </path>
-                                                                <line x1="10" y1="11" x2="10"
-                                                                    y2="17"></line>
-                                                                <line x1="14" y1="11" x2="14"
-                                                                    y2="17"></line>
-                                                            </svg>
-                                                        </button>
-                                                    </form>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    @empty
-                                        <tr>
-                                            <td class="text-center" colspan="7">None SKU Mapping Found</td>
-                                        </tr>
-                                    @endforelse
-                                </tbody>
+                                <tbody></tbody>
                             </table>
                         </div>
                     </div>
@@ -189,13 +115,70 @@
         </div>
     </main>
 
+@endsection
+
+@section('script')
     <script>
         $(document).ready(function() {
-            var table2 = $('#example2').DataTable({
-                "columnDefs": [{
-                    "orderable": false,
-                    "targets": [0, -1],
+            $('#skuMappingTable').DataTable({
+                processing: true,
+                serverSide: true,
+                columnDefs: [{
+                    orderable: false,
+                    targets: [0, -1],
                 }],
+                searchDelay: 350,
+                lengthChange: true,
+                pageLength: 10,
+                ajax: function(requestData, callback) {
+                    $.ajax({
+                        url: window.location.pathname,
+                        type: 'GET',
+                        data: {
+                            draw: requestData.draw,
+                            start: requestData.start,
+                            length: requestData.length,
+                            order: requestData.order,
+                            search: {
+                                value: requestData.search.value
+                            },
+                        },
+                        dataType: 'json',
+                    }).done(function(response) {
+                        if (response.recordsFiltered === 0) {
+                            callback({
+                                draw: response.draw,
+                                recordsTotal: response.recordsTotal,
+                                recordsFiltered: response.recordsFiltered,
+                                data: [],
+                            });
+                            return;
+                        }
+                        const table = document.createElement('table');
+                        table.innerHTML = '<tbody>' + response.html + '</tbody>';
+                        const rows = Array.from(table.tBodies[0].rows, function(row) {
+                            return Array.from(row.cells, function(cell) {
+                                return cell.innerHTML;
+                            });
+                        });
+                        callback({
+                            draw: response.draw,
+                            recordsTotal: response.recordsTotal,
+                            recordsFiltered: response.recordsFiltered,
+                            data: rows,
+                        });
+                    }).fail(function() {
+                        callback({
+                            draw: requestData.draw,
+                            recordsTotal: 0,
+                            recordsFiltered: 0,
+                            data: [],
+                        });
+                    });
+                },
+                language: {
+                    emptyTable: 'None SKU Mapping Found',
+                },
             });
         });
     </script>

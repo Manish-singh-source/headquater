@@ -336,8 +336,69 @@
 @section('script')
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Initialize DataTable if not already initialized
-            var table = $('#productTable').DataTable ? $('#productTable').DataTable() : null;
+            var table = $('#productTable').DataTable({
+                processing: true,
+                serverSide: true,
+                columnDefs: [{
+                    orderable: false,
+                    targets: [0, -1],
+                }],
+                searchDelay: 350,
+                lengthChange: true,
+                pageLength: 10,
+                scrollX: true,
+                autoWidth: false,
+                order: [[23, 'desc']],
+                ajax: function(requestData, callback) {
+                    $.ajax({
+                        url: window.location.pathname + window.location.search,
+                        type: 'GET',
+                        data: {
+                            draw: requestData.draw,
+                            start: requestData.start,
+                            length: requestData.length,
+                            order: requestData.order,
+                            search: {
+                                value: requestData.search.value
+                            },
+                        },
+                        dataType: 'json',
+                    }).done(function(response) {
+                        if (response.recordsFiltered === 0) {
+                            callback({
+                                draw: response.draw,
+                                recordsTotal: response.recordsTotal,
+                                recordsFiltered: response.recordsFiltered,
+                                data: [],
+                            });
+                            return;
+                        }
+                        const table = document.createElement('table');
+                        table.innerHTML = '<tbody>' + response.html + '</tbody>';
+                        const rows = Array.from(table.tBodies[0].rows, function(row) {
+                            return Array.from(row.cells, function(cell) {
+                                return cell.innerHTML;
+                            });
+                        });
+                        callback({
+                            draw: response.draw,
+                            recordsTotal: response.recordsTotal,
+                            recordsFiltered: response.recordsFiltered,
+                            data: rows,
+                        });
+                    }).fail(function() {
+                        callback({
+                            draw: requestData.draw,
+                            recordsTotal: 0,
+                            recordsFiltered: 0,
+                            data: [],
+                        });
+                    });
+                },
+                language: {
+                    emptyTable: 'No products found.',
+                },
+            });
 
             // Select All functionality (across all pages)
             const selectAll = document.getElementById('select-all');

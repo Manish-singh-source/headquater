@@ -29,56 +29,159 @@ class ProductController extends Controller
         try {
             $brand = trim((string) $request->query('brand', ''));
 
-            $productsQuery = WarehouseStock::with('product', 'warehouse');
+            $productsQuery = WarehouseStock::with('warehouse')
+                ->whereExists(function ($query) {
+                    $query->select(DB::raw(1))
+                        ->from('products')
+                        ->whereColumn('products.sku', 'warehouse_stocks.sku')
+                        ->whereColumn('products.warehouse_id', 'warehouse_stocks.warehouse_id');
+                });
 
             if ($brand !== '') {
-                $productsQuery->whereHas('product', function ($query) use ($brand) {
-                    $query->where('brand', $brand);
+                $productsQuery->whereExists(function ($query) use ($brand) {
+                    $query->select(DB::raw(1))
+                        ->from('products')
+                        ->whereColumn('products.sku', 'warehouse_stocks.sku')
+                        ->whereColumn('products.warehouse_id', 'warehouse_stocks.warehouse_id')
+                        ->where('products.brand', $brand);
                 });
             }
 
-            $products = $productsQuery->latest('updated_at')->get();
+            if ($request->ajax()) {
+                $recordsTotal = (clone $productsQuery)->count();
+                $search = trim((string) $request->input('search.value', ''));
 
-            // Get all warehouse allocations grouped by SKU and warehouse
-            $allocations = DB::table('warehouse_allocations')
-                ->select('sku', 'warehouse_id', DB::raw('SUM(allocated_quantity) as total_allocated'))
-                ->where('status', '!=', 'cancelled')
-                ->groupBy('sku', 'warehouse_id')
-                ->get()
-                ->groupBy('sku');
-
-            // Get all sales order products with pending purchase orders grouped by SKU
-            $purchaseOrderRequirements = DB::table('sales_order_products')
-                ->select('sku', DB::raw('SUM(purchase_ordered_quantity) as total_po_required'))
-                ->whereNotNull('purchase_ordered_quantity')
-                ->where('purchase_ordered_quantity', '>', 0)
-                ->groupBy('sku')
-                ->get()
-                ->keyBy('sku');
-
-            // Attach allocation and PO data to products
-            foreach ($products as $product) {
-                $sku = $product->sku;
-
-                // Get allocations for this SKU and warehouse
-                if (isset($allocations[$sku])) {
-                    $warehouseAllocation = $allocations[$sku]->firstWhere('warehouse_id', $product->warehouse_id);
-                    $product->allocated_quantity = $warehouseAllocation ? $warehouseAllocation->total_allocated : 0;
-                } else {
-                    $product->allocated_quantity = 0;
+                if ($search !== '') {
+                    $productsQuery->where(function ($query) use ($search) {
+                        $query->where('sku', 'like', "%{$search}%")
+                            ->orWhereHas('warehouse', function ($warehouseQuery) use ($search) {
+                                $warehouseQuery->where('name', 'like', "%{$search}%");
+                            })
+                            ->orWhereExists(function ($productQuery) use ($search) {
+                                $productQuery->select(DB::raw(1))
+                                    ->from('products')
+                                    ->whereColumn('products.sku', 'warehouse_stocks.sku')
+                                    ->whereColumn('products.warehouse_id', 'warehouse_stocks.warehouse_id')
+                                    ->where(function ($productSearchQuery) use ($search) {
+                                        $productSearchQuery->where('products.sku', 'like', "%{$search}%")
+                                            ->orWhere('products.ean_code', 'like', "%{$search}%")
+                                            ->orWhere('products.brand', 'like', "%{$search}%")
+                                            ->orWhere('products.brand_title', 'like', "%{$search}%")
+                                            ->orWhere('products.category', 'like', "%{$search}%")
+                                            ->orWhere('products.vendor_code', 'like', "%{$search}%")
+                                            ->orWhere('products.vendor_name', 'like', "%{$search}%")
+                                            ->orWhere('products.hsn', 'like', "%{$search}%");
+                                    });
+                            });
+                    });
                 }
 
-                // Get PO requirements for this SKU
-                if (isset($purchaseOrderRequirements[$sku])) {
-                    $product->po_required = $purchaseOrderRequirements[$sku]->total_po_required;
-                } else {
-                    $product->po_required = 0;
-                }
+                $recordsFiltered = (clone $productsQuery)->count();
+                $sortColumns = [
+                    18 => 'original_quantity',
+                    19 => 'available_quantity',
+                    20 => 'block_quantity',
+                    23 => 'created_at',
+                ];
+                $column = (int) $request->input('order.0.column', 23);
+                $direction = strtolower((string) $request->input('order.0.dir', 'desc')) === 'asc' ? 'asc' : 'desc';
+                $sort = $sortColumns[$column] ?? 'updated_at';
+                $start = max(0, (int) $request->input('start', 0));
+                $length = max(1, min(100, (int) $request->input('length', 10)));
+
+                $products = $productsQuery->orderBy($sort, $direction)
+                    ->orderBy('id', 'desc')
+                    ->offset($start)
+                    ->limit($length)
+                    ->get();
+
+                $this->attachProductMasterData($products);
+                $this->attachProductListTotals($products);
+
+                return response()->json([
+                    'draw' => (int) $request->input('draw'),
+                    'recordsTotal' => $recordsTotal,
+                    'recordsFiltered' => $recordsFiltered,
+                    'html' => view('partials.product-rows', compact('products'))->render(),
+                ]);
             }
+
+            $products = collect();
 
             return view('products.index', compact('products'));
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Error retrieving products: ' . $e->getMessage());
+        }
+    }
+
+    private function attachProductListTotals($products): void
+    {
+        if ($products->isEmpty()) {
+            return;
+        }
+
+        $skus = $products->pluck('sku')->filter()->unique()->values();
+
+        $warehouseIds = $products->pluck('warehouse_id')->filter()->unique()->values();
+
+        // Get all warehouse allocations grouped by SKU and warehouse
+        $allocations = DB::table('warehouse_allocations')
+            ->select('sku', 'warehouse_id', DB::raw('SUM(allocated_quantity) as total_allocated'))
+            ->where('status', '!=', 'cancelled')
+            ->whereIn('sku', $skus)
+            ->whereIn('warehouse_id', $warehouseIds)
+            ->groupBy('sku', 'warehouse_id')
+            ->get()
+            ->groupBy('sku');
+
+        // Get all sales order products with pending purchase orders grouped by SKU
+        $purchaseOrderRequirements = DB::table('sales_order_products')
+            ->select('sku', DB::raw('SUM(purchase_ordered_quantity) as total_po_required'))
+            ->whereNotNull('purchase_ordered_quantity')
+            ->where('purchase_ordered_quantity', '>', 0)
+            ->whereIn('sku', $skus)
+            ->groupBy('sku')
+            ->get()
+            ->keyBy('sku');
+
+        // Attach allocation and PO data to products
+        foreach ($products as $product) {
+            $sku = $product->sku;
+
+            // Get allocations for this SKU and warehouse
+            if (isset($allocations[$sku])) {
+                $warehouseAllocation = $allocations[$sku]->firstWhere('warehouse_id', $product->warehouse_id);
+                $product->allocated_quantity = $warehouseAllocation ? $warehouseAllocation->total_allocated : 0;
+            } else {
+                $product->allocated_quantity = 0;
+            }
+
+            // Get PO requirements for this SKU
+            if (isset($purchaseOrderRequirements[$sku])) {
+                $product->po_required = $purchaseOrderRequirements[$sku]->total_po_required;
+            } else {
+                $product->po_required = 0;
+            }
+        }
+    }
+
+    private function attachProductMasterData($products): void
+    {
+        if ($products->isEmpty()) {
+            return;
+        }
+
+        $skus = $products->pluck('sku')->filter()->unique()->values();
+        $warehouseIds = $products->pluck('warehouse_id')->filter()->unique()->values();
+        $productData = Product::whereIn('sku', $skus)
+            ->whereIn('warehouse_id', $warehouseIds)
+            ->get()
+            ->keyBy(function ($product) {
+                return $product->warehouse_id . '|' . $product->sku;
+            });
+
+        foreach ($products as $product) {
+            $product->setRelation('productData', $productData->get($product->warehouse_id . '|' . $product->sku));
         }
     }
 

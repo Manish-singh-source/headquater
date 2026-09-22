@@ -19,11 +19,55 @@ class ProductMappingController extends Controller
      *
      * @return \Illuminate\View\View
      */
-    public function index()
+    public function index(Request $request)
     {
         try {
-            $productMapping = ProductMapping::orderBy('updated_at', 'desc')
-                ->get();
+            if ($request->ajax()) {
+                $query = ProductMapping::query();
+                $recordsTotal = (clone $query)->count();
+
+                $search = trim((string) $request->input('search.value', ''));
+                if ($search !== '') {
+                    $query->where(function ($q) use ($search) {
+                        $q->where('sku', 'like', "%{$search}%")
+                            ->orWhere('portal_code', 'like', "%{$search}%")
+                            ->orWhere('item_code', 'like', "%{$search}%")
+                            ->orWhere('basic_rate', 'like', "%{$search}%")
+                            ->orWhere('net_landing_rate', 'like', "%{$search}%")
+                            ->orWhere('mrp', 'like', "%{$search}%");
+                    });
+                }
+
+                $recordsFiltered = (clone $query)->count();
+                $sortColumns = [
+                    1 => 'sku',
+                    2 => 'portal_code',
+                    3 => 'item_code',
+                    4 => 'basic_rate',
+                    5 => 'net_landing_rate',
+                    6 => 'mrp',
+                ];
+                $column = (int) $request->input('order.0.column', 0);
+                $direction = strtolower((string) $request->input('order.0.dir', 'desc')) === 'asc' ? 'asc' : 'desc';
+                $sort = $sortColumns[$column] ?? 'updated_at';
+                $start = max(0, (int) $request->input('start', 0));
+                $length = max(1, min(100, (int) $request->input('length', 10)));
+
+                $productMapping = $query->orderBy($sort, $direction)
+                    ->orderBy('id', 'desc')
+                    ->offset($start)
+                    ->limit($length)
+                    ->get();
+
+                return response()->json([
+                    'draw' => (int) $request->input('draw'),
+                    'recordsTotal' => $recordsTotal,
+                    'recordsFiltered' => $recordsFiltered,
+                    'html' => view('partials.sku-mapping-rows', compact('productMapping'))->render(),
+                ]);
+            }
+
+            $productMapping = collect();
             return view('skuMapping.index', compact('productMapping'));
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Error retrieving SKU mappings: ' . $e->getMessage());
