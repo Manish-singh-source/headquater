@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
-use App\Models\ProductMapping;
 use App\Models\ProductIssue;
+use App\Models\ProductMapping;
 use App\Models\PurchaseGrn;
 use App\Models\PurchaseInvoice;
 use App\Models\PurchaseOrder;
@@ -50,7 +50,7 @@ class PurchaseOrderController extends Controller
             $seen[$skuKey] = true;
         }
         if (! empty($duplicates)) {
-            return 'Please check excel file: duplicate SKUs found: ' . implode(', ', $duplicates);
+            return 'Please check excel file: duplicate SKUs found: '.implode(', ', $duplicates);
         }
 
         return null;
@@ -65,13 +65,61 @@ class PurchaseOrderController extends Controller
                 continue;
             }
 
-            $key = strtolower(trim($record['Vendor Invoice No'])) . '|' . strtolower(trim($record['Vendor SKU Code'])) . '|' . strtolower(trim($record['Portal Code'])) . '|' . strtolower(trim($record['Item Code']));
+            $key = strtolower(trim($record['Vendor Invoice No'])).'|'.strtolower(trim($record['Vendor SKU Code'])).'|'.strtolower(trim($record['Portal Code'])).'|'.strtolower(trim($record['Item Code']));
 
             if (isset($seen[$key])) {
-                return 'Please check excel file: duplicate SKU (' . $record['Vendor SKU Code'] . ') found for same vendor invoice no (' . $record['Vendor Invoice No'] . ') and for same port code (' . $record['Portal Code'] . ') and for same item code (' . $record['Item Code'] . ').';
+                return 'Please check excel file: duplicate SKU ('.$record['Vendor SKU Code'].') found for same vendor invoice no ('.$record['Vendor Invoice No'].') and for same port code ('.$record['Portal Code'].') and for same item code ('.$record['Item Code'].').';
             }
 
             $seen[$key] = true;
+        }
+
+        return null;
+    }
+
+    protected function getMappedVendorSku(?string $vendorSku): ?string
+    {
+        $vendorSku = trim((string) $vendorSku);
+
+        if ($vendorSku === '') {
+            return null;
+        }
+
+        return SkuMapping::where('vendor_sku', $vendorSku)->value('product_sku') ?: $vendorSku;
+    }
+
+    protected function validateDuplicateVendorPIProducts(array $rows, int $purchaseOrderId): ?string
+    {
+        $seen = [];
+
+        foreach ($rows as $index => $record) {
+            $portalCode = trim((string) Arr::get($record, 'Portal Code', ''));
+            $itemCode = trim((string) Arr::get($record, 'Item Code', ''));
+            $vendorInvoiceNo = trim((string) Arr::get($record, 'Vendor Invoice No', ''));
+            $vendorSkuCode = $this->getMappedVendorSku(Arr::get($record, 'Vendor SKU Code'));
+
+            if ($portalCode === '' || $itemCode === '' || $vendorInvoiceNo === '' || empty($vendorSkuCode)) {
+                continue;
+            }
+
+            $key = strtolower($portalCode).'|'.strtolower($itemCode).'|'.strtolower($vendorInvoiceNo).'|'.strtolower($vendorSkuCode);
+
+            if (isset($seen[$key])) {
+                return 'Please check excel file: duplicate Vendor PI item found on rows '.$seen[$key].' and '.($index + 2).' for invoice '.$vendorInvoiceNo.', portal '.$portalCode.', item '.$itemCode.', SKU '.$vendorSkuCode.'.';
+            }
+
+            $seen[$key] = $index + 2;
+
+            $existingProduct = VendorPIProduct::where('portal_code', $portalCode)
+                ->where('item_code', $itemCode)
+                ->where('vendor_invoice_no', $vendorInvoiceNo)
+                ->where('vendor_sku_code', $vendorSkuCode)
+                ->where('purchase_order_id', $purchaseOrderId)
+                ->first(['id', 'purchase_order_id', 'vendor_pi_id']);
+
+            if ($existingProduct) {
+                return 'This Vendor PI item is already uploaded in Purchase Order #'.$existingProduct->purchase_order_id.' (Vendor PI #'.$existingProduct->vendor_pi_id.'): invoice '.$vendorInvoiceNo.', portal '.$portalCode.', item '.$itemCode.', SKU '.$vendorSkuCode.'.';
+            }
         }
 
         return null;
@@ -131,7 +179,7 @@ class PurchaseOrderController extends Controller
             if (! empty($missingHeaders)) {
                 DB::rollBack();
 
-                return redirect()->back()->with(['error' => 'Missing required columns: ' . implode(', ', $missingHeaders)]);
+                return redirect()->back()->with(['error' => 'Missing required columns: '.implode(', ', $missingHeaders)]);
             }
 
             // Step 1: Check for duplicate Vendor SKU Code
@@ -150,18 +198,18 @@ class PurchaseOrderController extends Controller
 
             if (! $request->has('purchaseId')) {
 
-                // add prefix for purchase order 
+                // add prefix for purchase order
                 $lastPurchaseOrder = PurchaseOrder::where('order_type', 'manual')->orderBy('id', 'desc')->first();
                 if ($lastPurchaseOrder && $lastPurchaseOrder->order_number) {
-                    $prefix = $lastPurchaseOrder ? 'POM-' . date('Ym', strtotime($lastPurchaseOrder->created_at)) . '-' : 'POM-' . date('Ym') . '-';
+                    $prefix = $lastPurchaseOrder ? 'POM-'.date('Ym', strtotime($lastPurchaseOrder->created_at)).'-' : 'POM-'.date('Ym').'-';
                     $lastPurchaseOrderNumber = $lastPurchaseOrder ? intval(explode('-', $lastPurchaseOrder->order_number)[2]) : 0;
                 } else {
-                    $prefix = 'POM-' . date('Ym') . '-';
+                    $prefix = 'POM-'.date('Ym').'-';
                     $lastPurchaseOrderNumber = 0;
                 }
                 $nextPurchaseOrderNumber = $lastPurchaseOrderNumber + 1;
                 $nextPurchaseOrderNumber = str_pad($nextPurchaseOrderNumber, 4, '0', STR_PAD_LEFT);
-                $nextPurchaseOrderNumber = $prefix . $nextPurchaseOrderNumber;
+                $nextPurchaseOrderNumber = $prefix.$nextPurchaseOrderNumber;
 
                 $purchaseOrder = new PurchaseOrder;
                 $purchaseOrder->order_number = $nextPurchaseOrderNumber;
@@ -280,9 +328,9 @@ class PurchaseOrderController extends Controller
 
                 $missingSkus = implode(', ', array_unique(array_column($vendorProducts, 'sku')));
 
-                return redirect()->back()->with(['error' => $missingSkus . ' Products not found in database.']);
+                return redirect()->back()->with(['error' => $missingSkus.' Products not found in database.']);
             }
-            
+
             if ($insertCount === 0) {
                 DB::rollBack();
 
@@ -294,11 +342,11 @@ class PurchaseOrderController extends Controller
             // Create notification
             NotificationService::orderCreated('purchase', $purchaseOrder->id);
 
-            return redirect()->route('purchase.order.index')->with('success', 'Purchase Order created successfully! Order ID: ' . $purchaseOrder->id);
+            return redirect()->route('purchase.order.index')->with('success', 'Purchase Order created successfully! Order ID: '.$purchaseOrder->id);
         } catch (\Exception $e) {
             DB::rollBack();
 
-            return redirect()->back()->with(['error' => 'Something went wrong: ' . $e->getMessage()]);
+            return redirect()->back()->with(['error' => 'Something went wrong: '.$e->getMessage()]);
         }
     }
 
@@ -323,7 +371,7 @@ class PurchaseOrderController extends Controller
         $purchaseOrder->received_warehouse_id = $request->warehouse_id;
         $purchaseOrder->save();
 
-        if (!$purchaseOrder) {
+        if (! $purchaseOrder) {
             return redirect()->back()->with('error', 'Please Select Warehouse Name First.');
         }
 
@@ -331,7 +379,14 @@ class PurchaseOrderController extends Controller
 
         try {
             $reader = SimpleExcelReader::create($filepath, $extension);
-            $rows = $reader->getRows();
+            $rows = $reader->getRows()->toArray();
+
+            if ($duplicateError = $this->validateDuplicateVendorPIProducts($rows, (int) $request->purchase_order_id)) {
+                DB::rollBack();
+
+                return redirect()->back()->with(['error' => $duplicateError])->withInput();
+            }
+
             $vendorProducts = [];
             $insertCount = 0;
 
@@ -395,11 +450,11 @@ class PurchaseOrderController extends Controller
             VendorPIProduct::insert($vendorProducts);
             DB::commit();
 
-            return redirect()->back()->with('success', 'Purchase Order products imported successfully! Vendor PI ID: ' . $vendorPi->id);
+            return redirect()->back()->with('success', 'Purchase Order products imported successfully! Vendor PI ID: '.$vendorPi->id);
         } catch (\Exception $e) {
             DB::rollBack();
 
-            return redirect()->back()->with(['error' => 'Something went wrong: ' . $e->getMessage()]);
+            return redirect()->back()->with(['error' => 'Something went wrong: '.$e->getMessage()]);
         }
     }
 
@@ -408,6 +463,7 @@ class PurchaseOrderController extends Controller
         $purchaseOrders = PurchaseOrder::with(['purchaseOrderProducts', 'vendorPI', 'salesOrder'])
             ->withSum('purchaseOrderProducts', 'ordered_quantity')
             ->withCount('purchaseOrderProducts')->latest()->get();
+
         // dd($purchaseOrders);
         return view('purchaseOrder.index', compact('purchaseOrders'));
     }
@@ -437,7 +493,7 @@ class PurchaseOrderController extends Controller
             $reader = SimpleExcelReader::create($filepath, $extension);
             $rows = $reader->getRows()->toArray();
 
-            // Check Columns Headers 
+            // Check Columns Headers
             $requiredHeaders = ['Sales Order No', 'Purchase Order No', 'Vendor Code', 'Portal Code', 'Item Code', 'Vendor SKU Code', 'Title', 'MRP', 'GST', 'HSN', 'PO Quantity', 'PI Quantity', 'Purchase Rate Basic'];
 
             $fileHeaders = array_map('trim', array_keys($rows[0] ?? []));
@@ -446,7 +502,13 @@ class PurchaseOrderController extends Controller
             if (! empty($missingHeaders)) {
                 DB::rollBack();
 
-                return redirect()->back()->with(['error' => 'Missing required columns: ' . implode(', ', $missingHeaders)]);
+                return redirect()->back()->with(['error' => 'Missing required columns: '.implode(', ', $missingHeaders)]);
+            }
+
+            if ($duplicateError = $this->validateDuplicateVendorPIProducts($rows, (int) $request->purchase_order_id)) {
+                DB::rollBack();
+
+                return redirect()->back()->with(['error' => $duplicateError])->withInput();
             }
 
             $vendorProducts = [];
@@ -456,7 +518,7 @@ class PurchaseOrderController extends Controller
             $purchaseOrder->received_warehouse_id = $request->warehouse_id;
             $purchaseOrder->save();
 
-            if (!$purchaseOrder) {
+            if (! $purchaseOrder) {
                 return redirect()->back()->with('error', 'Please Select Warehouse Name First.');
             }
 
@@ -475,6 +537,7 @@ class PurchaseOrderController extends Controller
                 foreach ($mandatoryFields as $field) {
                     if (! isset($record[$field]) || (is_string($record[$field]) && trim($record[$field]) === '')) {
                         DB::rollBack();
+
                         return redirect()->back()->with(['error' => "{$field} is required for all rows. Please check your CSV file."])->withInput();
                     }
                 }
@@ -584,22 +647,23 @@ class PurchaseOrderController extends Controller
 
             if (count($vendorProducts) <= 0) {
                 DB::rollBack();
+
                 return redirect()->back()->with(['error' => 'Please Upload at least one product with greater than 0 PI Quantity.']);
             }
             VendorPIProduct::insert($vendorProducts);
             DB::commit();
 
-            return redirect()->back()->with('success', 'Purchase Order products imported successfully! Vendor PI ID: ' . $vendorPi->id);
+            return redirect()->back()->with('success', 'Purchase Order products imported successfully! Vendor PI ID: '.$vendorPi->id);
         } catch (\Exception $e) {
             DB::rollBack();
 
-            return redirect()->back()->with(['error' => 'Something went wrong: ' . $e->getMessage()]);
+            return redirect()->back()->with(['error' => 'Something went wrong: '.$e->getMessage()]);
         }
     }
 
     public function view($id)
     {
-        $purchaseOrder = PurchaseOrder::with('vendor', 'purchaseOrderProducts.tempOrder', 'vendorPI.products.purchaseOrder.purchaseOrderProducts.tempOrder', 'vendorPI.products.product', 'vendorPI.products.tempOrder',  'vendorPI.purchaseOrder', 'vendorPI.salesOrder')
+        $purchaseOrder = PurchaseOrder::with('vendor', 'purchaseOrderProducts.tempOrder', 'vendorPI.products.purchaseOrder.purchaseOrderProducts.tempOrder', 'vendorPI.products.product', 'vendorPI.products.tempOrder', 'vendorPI.purchaseOrder', 'vendorPI.salesOrder')
             ->withCount('purchaseOrderProducts')
             ->findOrFail($id);
 
@@ -622,7 +686,8 @@ class PurchaseOrderController extends Controller
         $warehouses = Warehouse::where('status', '1')
             ->orderBy('name')
             ->get();
-        // dd($purchaseOrder); 
+
+        // dd($purchaseOrder);
         return view('purchaseOrder.view', compact('purchaseOrder', 'facilityNames', 'purchaseOrderProducts', 'uploadedPIOfVendors', 'vendorPIs', 'purchaseInvoice', 'purchaseGrn', 'warehouses'));
     }
 
@@ -698,7 +763,7 @@ class PurchaseOrderController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
 
-            return redirect()->back()->with(['error' => 'Something went wrong: ' . $e->getMessage()]);
+            return redirect()->back()->with(['error' => 'Something went wrong: '.$e->getMessage()]);
         }
     }
 
@@ -718,7 +783,7 @@ class PurchaseOrderController extends Controller
 
             return redirect()->back()->with('success', 'Purchase Orders deleted successfully.');
         } catch (\Exception $e) {
-            return redirect()->back()->with(['error' => 'Something went wrong: ' . $e->getMessage()]);
+            return redirect()->back()->with(['error' => 'Something went wrong: '.$e->getMessage()]);
         }
     }
 
@@ -880,7 +945,7 @@ class PurchaseOrderController extends Controller
                                         'allocated_quantity' => $allocatedQty,
                                         'sequence' => $maxSequence + 1,
                                         'status' => 'allocated',
-                                        'notes' => 'Allocated from received products (Vendor PI: ' . $vendorPI->id . ')',
+                                        'notes' => 'Allocated from received products (Vendor PI: '.$vendorPI->id.')',
                                     ]);
 
                                     Log::info('Created new WarehouseAllocation', [
@@ -914,7 +979,7 @@ class PurchaseOrderController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
 
-            return redirect()->back()->with(['error' => 'Something went wrong: ' . $e->getMessage()]);
+            return redirect()->back()->with(['error' => 'Something went wrong: '.$e->getMessage()]);
         }
     }
 
@@ -937,7 +1002,7 @@ class PurchaseOrderController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
 
-            return redirect()->back()->with(['error' => 'Something went wrong: ' . $e->getMessage()]);
+            return redirect()->back()->with(['error' => 'Something went wrong: '.$e->getMessage()]);
         }
     }
 
@@ -969,7 +1034,7 @@ class PurchaseOrderController extends Controller
 
             $invoice_file = $request->file('invoice_file');
             $ext = $invoice_file->getClientOriginalExtension();
-            $invoiceFileName = strtotime('now') . '-' . $request->purchase_order_id . '.' . $ext;
+            $invoiceFileName = strtotime('now').'-'.$request->purchase_order_id.'.'.$ext;
             $invoice_file->move(public_path('uploads/invoices'), $invoiceFileName);
 
             $purchaseInvoice = new PurchaseInvoice;
@@ -986,7 +1051,7 @@ class PurchaseOrderController extends Controller
 
             return redirect()->route('purchase.order.view', $request->purchase_order_id)->with('success', 'Invoice imported successfully.');
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Something went wrong: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Something went wrong: '.$e->getMessage());
         }
     }
 
@@ -1005,7 +1070,7 @@ class PurchaseOrderController extends Controller
 
         $grn_file = $request->file('grn_file');
         $ext = $grn_file->getClientOriginalExtension();
-        $grnFileName = strtotime('now') . '-' . $request->purchase_order_id . '.' . $ext;
+        $grnFileName = strtotime('now').'-'.$request->purchase_order_id.'.'.$ext;
         $grn_file->move(public_path('uploads/invoices'), $grnFileName);
 
         $purchaseGRN = new PurchaseGrn;
@@ -1028,7 +1093,7 @@ class PurchaseOrderController extends Controller
         }
 
         // Create temporary .xlsx file path
-        $tempXlsxPath = storage_path('app/blocked_' . Str::random(8) . '.xlsx');
+        $tempXlsxPath = storage_path('app/blocked_'.Str::random(8).'.xlsx');
 
         // Create writer
         $writer = SimpleExcelWriter::create($tempXlsxPath);
@@ -1072,7 +1137,7 @@ class PurchaseOrderController extends Controller
         // Close the writer
         $writer->close();
 
-        return response()->download($tempXlsxPath, $order->purchaseOrder->order_number . '-' . $request->vendorCode . '-PO.xlsx', [
+        return response()->download($tempXlsxPath, $order->purchaseOrder->order_number.'-'.$request->vendorCode.'-PO.xlsx', [
             'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         ])->deleteFileAfterSend(true);
     }
@@ -1128,7 +1193,7 @@ class PurchaseOrderController extends Controller
             DB::rollBack();
             Log::error($e->getMessage());
 
-            return back()->with('error', 'Something went wrong: ' . $e->getMessage());
+            return back()->with('error', 'Something went wrong: '.$e->getMessage());
         }
     }
 
@@ -1148,7 +1213,7 @@ class PurchaseOrderController extends Controller
             // Create status change notification
             NotificationService::statusChanged('purchase', $purchaseOrder->id, $oldStatus, $purchaseOrder->status);
 
-            return redirect()->back()->with('success', 'Purchase Order status changed to "' . ucfirst(str_replace('_', ' ', $request->status)) . '" successfully! Order ID: ' . $purchaseOrder->id);
+            return redirect()->back()->with('success', 'Purchase Order status changed to "'.ucfirst(str_replace('_', ' ', $request->status)).'" successfully! Order ID: '.$purchaseOrder->id);
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Status Not Changed. Please Try Again.');
         }
@@ -1204,7 +1269,7 @@ class PurchaseOrderController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
 
-            return back()->with('error', 'Failed to add payment: ' . $e->getMessage());
+            return back()->with('error', 'Failed to add payment: '.$e->getMessage());
         }
 
         return back()->with('success', 'Payment added successfully.');
