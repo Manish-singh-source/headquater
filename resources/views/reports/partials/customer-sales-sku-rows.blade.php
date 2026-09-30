@@ -5,7 +5,7 @@
                                             @endphp
                                                 @if (! $row['allocation'])
                                                     @php
-                                                        $invoiceDetail = $product->invoiceDetails->first();
+                                                        $invoiceDetail = $row['invoiceDetail'] ?? $product->invoiceDetails->first();
                                                         $invoice = $invoiceDetail?->invoice;
                                                     @endphp <tr>
                                                         <td>{{ $salesOrder->order_number ?? 'N/A' }}</td>
@@ -16,7 +16,7 @@
                                                         <td>{{ $product->customer?->client_name ?? 'N/A' }}</td>
                                                         <td>{{ $invoice?->invoice_number ?? 'N/A' }}</td>
                                                         @php
-                                                            $invoiceDate = $invoice?->invoice_date ?? $invoice?->created_at;
+                                                            $invoiceDate = $invoice?->created_at;
                                                         @endphp
                                                         <td data-order="{{ $invoiceDate?->format('Y-m-d') ?? '' }}">
                                                             {{ $invoiceDate?->format('d-m-Y') ?? 'N/A' }}
@@ -70,12 +70,12 @@
                                                                 </td>
                                                                 <td> @php
                                                                     $invoiceNumber = 'N/A';
-                                                                    $invoiceDetail = $product->invoiceDetails->first();
+                                                                    $invoiceDetail = $row['invoiceDetail'] ?? $product->invoiceDetails->first();
                                                                     $invoice = $invoiceDetail?->invoice;
                                                                     $invoiceNumber = $invoice->invoice_number ?? 'N/A';
                                                                 @endphp {{ $invoiceNumber }} </td>
                                                                 @php
-                                                                    $invoiceDate = $invoice?->invoice_date ?? $invoice?->created_at;
+                                                                    $invoiceDate = $invoice?->created_at;
                                                                 @endphp
                                                                 <td data-order="{{ $invoiceDate?->format('Y-m-d') ?? '' }}">
                                                                     {{ $invoiceDate?->format('d-m-Y') ?? 'N/A' }}

@@ -149,6 +149,20 @@
                                                         name="to_date" id="to_date"
                                                         value="{{ $filters['to_date'] ?? '' }}"
                                                         placeholder="Select to date"> </div>
+                                            </div>
+                                            <div class="col-md-2">
+                                                <div class="mb-3"> <label class="form-label">From Invoice
+                                                        Date</label> <input type="date" class="form-control"
+                                                        name="invoice_from_date" id="invoice_from_date"
+                                                        value="{{ $filters['invoice_from_date'] ?? '' }}"
+                                                        placeholder="Select invoice from date"> </div>
+                                            </div>
+                                            <div class="col-md-2">
+                                                <div class="mb-3"> <label class="form-label">To Invoice
+                                                        Date</label> <input type="date" class="form-control"
+                                                        name="invoice_to_date" id="invoice_to_date"
+                                                        value="{{ $filters['invoice_to_date'] ?? '' }}"
+                                                        placeholder="Select invoice to date"> </div>
                                             </div> <!-- Customer Name Filter -->
                                             <div class="col-md-2">
                                                 <div class="mb-3"> <label class="form-label">Customer
@@ -633,6 +647,8 @@
             // Clear all filter inputs
             $('#from_date').val('');
             $('#to_date').val('');
+            $('#invoice_from_date').val('');
+            $('#invoice_to_date').val('');
             $('.customer-checkbox').prop('checked', false);
             $('.warehouse-checkbox').prop('checked', false);
             // $('.region-checkbox').prop('checked', false);
@@ -654,6 +670,8 @@
             // Get current filter values
             var fromDate = $('#from_date').val();
             var toDate = $('#to_date').val();
+            var invoiceFromDate = $('#invoice_from_date').val();
+            var invoiceToDate = $('#invoice_to_date').val();
             var customerId = $('input[name="customer_id[]"]:checked').map(function() {
                 return this.value;
             }).get();
@@ -686,6 +704,8 @@
             var params = [];
             if (fromDate) params.push('from_date=' + encodeURIComponent(fromDate));
             if (toDate) params.push('to_date=' + encodeURIComponent(toDate));
+            if (invoiceFromDate) params.push('invoice_from_date=' + encodeURIComponent(invoiceFromDate));
+            if (invoiceToDate) params.push('invoice_to_date=' + encodeURIComponent(invoiceToDate));
             if (customerId.length > 0) {
                 customerId.forEach(function(val) {
                     params.push('customer_id[]=' + encodeURIComponent(val));
@@ -758,6 +778,8 @@
             // Get current filter values
             var fromDate = $('#from_date').val();
             var toDate = $('#to_date').val();
+            var invoiceFromDate = $('#invoice_from_date').val();
+            var invoiceToDate = $('#invoice_to_date').val();
             var customerId = $('input[name="customer_id[]"]:checked').map(function() {
                 return this.value;
             }).get();
@@ -784,6 +806,8 @@
             var params = [];
             if (fromDate) params.push('from_date=' + encodeURIComponent(fromDate));
             if (toDate) params.push('to_date=' + encodeURIComponent(toDate));
+            if (invoiceFromDate) params.push('invoice_from_date=' + encodeURIComponent(invoiceFromDate));
+            if (invoiceToDate) params.push('invoice_to_date=' + encodeURIComponent(invoiceToDate));
             if (customerId.length > 0) {
                 customerId.forEach(function(val) {
                     params.push('customer_id[]=' + encodeURIComponent(val));

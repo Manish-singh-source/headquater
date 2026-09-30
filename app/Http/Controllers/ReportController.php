@@ -1284,6 +1284,55 @@ class ReportController extends Controller
             ->with(['orderedProducts' => $productFilter]);
     }
 
+    private function applyCustomerSalesSkuInvoiceDateFilter($query, Request $request): void
+    {
+        if (! $request->filled('invoice_from_date') && ! $request->filled('invoice_to_date')) {
+            return;
+        }
+
+        $invoiceProductQuery = DB::table('invoice_details as invoice_date_details')
+            ->join('invoices as invoice_date_invoices', 'invoice_date_invoices.id', '=', 'invoice_date_details.invoice_id')
+            ->join('sales_order_products as invoice_date_products', 'invoice_date_products.id', '=', 'invoice_date_details.sales_order_product_id')
+            ->select('invoice_date_products.sales_order_id')
+            ->distinct();
+
+        if ($request->filled('invoice_from_date')) {
+            $invoiceProductQuery->where('invoice_date_invoices.created_at', '>=', $request->invoice_from_date . ' 00:00:00');
+        }
+
+        if ($request->filled('invoice_to_date')) {
+            $invoiceProductQuery->where('invoice_date_invoices.created_at', '<=', $request->invoice_to_date . ' 23:59:59');
+        }
+
+        $query->whereIn('sales_orders.id', $invoiceProductQuery);
+    }
+
+    private function customerSalesSkuMatchingInvoiceDetail($product, Request $request)
+    {
+        if (! $request->filled('invoice_from_date') && ! $request->filled('invoice_to_date')) {
+            return $product->invoiceDetails->first();
+        }
+
+        return $product->invoiceDetails->first(function ($detail) use ($request) {
+            $invoice = $detail->invoice;
+            if (! $invoice || ! $invoice->created_at) {
+                return false;
+            }
+
+            $createdAt = $invoice->created_at;
+
+            if ($request->filled('invoice_from_date') && $createdAt->lt(\Carbon\Carbon::parse($request->invoice_from_date)->startOfDay())) {
+                return false;
+            }
+
+            if ($request->filled('invoice_to_date') && $createdAt->gt(\Carbon\Carbon::parse($request->invoice_to_date)->endOfDay())) {
+                return false;
+            }
+
+            return true;
+        });
+    }
+
     /**
      * Display customer sales history with detailed invoice information
      *
@@ -1431,6 +1480,7 @@ class ReportController extends Controller
             }
 
             $this->applyCustomerSalesSkuProductFilters($query, $request);
+            $this->applyCustomerSalesSkuInvoiceDateFilter($query, $request);
 
             // Appointment Date Filter
             if ($request->filled('appointment_date')) {
@@ -1567,6 +1617,8 @@ class ReportController extends Controller
                 'filters' => [
                     'from_date' => $request->from_date,
                     'to_date' => $request->to_date,
+                    'invoice_from_date' => $request->invoice_from_date,
+                    'invoice_to_date' => $request->invoice_to_date,
                     'customer_id' => $request->customer_id,
                     'warehouse_id' => $request->warehouse_id,
                     'region' => $request->region,
@@ -1616,6 +1668,26 @@ class ReportController extends Controller
         if ($request->filled('po_no')) {
             $rows->whereIn('t.po_number', (array) $request->po_no);
         }
+        $hasInvoiceDateFilter = $request->filled('invoice_from_date') || $request->filled('invoice_to_date');
+
+        if ($hasInvoiceDateFilter) {
+            $invoiceProductQuery = DB::table('invoice_details as filter_invoice_details')
+                ->join('invoices as filter_invoices', 'filter_invoices.id', '=', 'filter_invoice_details.invoice_id')
+                ->selectRaw('filter_invoice_details.sales_order_product_id, MIN(filter_invoice_details.id) as invoice_detail_id')
+                ->groupBy('filter_invoice_details.sales_order_product_id');
+
+            if ($request->filled('invoice_from_date')) {
+                $invoiceProductQuery->where('filter_invoices.created_at', '>=', $request->invoice_from_date . ' 00:00:00');
+            }
+
+            if ($request->filled('invoice_to_date')) {
+                $invoiceProductQuery->where('filter_invoices.created_at', '<=', $request->invoice_to_date . ' 23:59:59');
+            }
+
+            $rows->joinSub($invoiceProductQuery, 'filtered_invoice_products', function ($join) {
+                $join->on('filtered_invoice_products.sales_order_product_id', '=', DB::raw('CAST(sop.id AS CHAR)'));
+            });
+        }
         if ($request->filled('region')) {
             $regions = (array) $request->region;
             $rows->where(function ($query) use ($regions) {
@@ -1624,7 +1696,7 @@ class ReportController extends Controller
         }
 
         $recordsTotal = (clone $rows)->count();
-        $invoiceDate = '(SELECT COALESCE(i.invoice_date, i.created_at) FROM invoice_details d JOIN invoices i ON i.id = d.invoice_id WHERE d.sales_order_product_id = CAST(sop.id AS CHAR) ORDER BY d.id LIMIT 1)';
+        $invoiceDate = '(SELECT i.created_at FROM invoice_details d JOIN invoices i ON i.id = d.invoice_id WHERE d.sales_order_product_id = CAST(sop.id AS CHAR) ORDER BY d.id LIMIT 1)';
         $invoiceNumber = '(SELECT i.invoice_number FROM invoice_details d JOIN invoices i ON i.id = d.invoice_id WHERE d.sales_order_product_id = CAST(sop.id AS CHAR) ORDER BY d.id LIMIT 1)';
         $productField = fn ($field) => "(SELECT p.{$field} FROM products p WHERE p.sku = sop.sku LIMIT 1)";
         $vendorField = fn ($field) => "(SELECT v.{$field} FROM vendor_p_i_products v WHERE v.vendor_sku_code = sop.sku LIMIT 1)";
@@ -1682,6 +1754,11 @@ class ReportController extends Controller
         $start = max(0, (int) $request->input('start', 0));
         $length = max(1, min(100, (int) $request->input('length', 10)));
         $pageKeys = $rows->select('sop.id as product_id', 'wa.id as allocation_id')
+            ->when($hasInvoiceDateFilter, function ($query) {
+                $query->addSelect('filtered_invoice_products.invoice_detail_id');
+            }, function ($query) {
+                $query->addSelect(DB::raw('NULL as invoice_detail_id'));
+            })
             ->offset($start)->limit($length)->get();
         $products = SalesOrderProduct::with([
             'salesOrder.customerGroup', 'tempOrder', 'customer', 'product',
@@ -1697,6 +1774,9 @@ class ReportController extends Controller
             return [
                 'salesOrder' => $product->salesOrder,
                 'product' => $product,
+                'invoiceDetail' => $key->invoice_detail_id
+                    ? $product->invoiceDetails->firstWhere('id', $key->invoice_detail_id)
+                    : $product->invoiceDetails->first(),
                 'allocation' => $key->allocation_id
                     ? $product->warehouseAllocations->firstWhere('id', $key->allocation_id)
                     : null,
@@ -1888,6 +1968,7 @@ class ReportController extends Controller
             }
 
             $this->applyCustomerSalesSkuProductFilters($query, $request);
+            $this->applyCustomerSalesSkuInvoiceDateFilter($query, $request);
 
             // Apply appointment date filter
             if ($request->filled('appointment_date')) {
@@ -1917,7 +1998,7 @@ class ReportController extends Controller
                         return $invoice->invoice_date ?? $invoice->created_at;
                     })->first();
 
-                    return $invoice?->invoice_date ?? $invoice?->created_at ?? $salesOrder->created_at;
+                    return $invoice?->created_at ?? $salesOrder->created_at;
                 })
                 ->values();
 
@@ -1943,10 +2024,13 @@ class ReportController extends Controller
 
                 foreach ($salesOrder->orderedProducts as $product) {
                     $customer = $product->customer;
-                    $invoiceDetail = $product->invoiceDetails->first();
+                    $invoiceDetail = $this->customerSalesSkuMatchingInvoiceDetail($product, $request);
+                    if (($request->filled('invoice_from_date') || $request->filled('invoice_to_date')) && ! $invoiceDetail) {
+                        continue;
+                    }
                     $invoice = $invoiceDetail?->invoice;
                     $invoiceNumber = $invoice->invoice_number ?? 'N/A';
-                    $invoiceDate = $invoice?->invoice_date ?? $invoice?->created_at;
+                    $invoiceDate = $invoice?->created_at;
 
                     if ($product->warehouseAllocations->isEmpty()) {
                         $subtotal = 0;
@@ -2014,10 +2098,13 @@ class ReportController extends Controller
                             // }
 
                             // Get invoice details
-                            $invoiceDetail = $product->invoiceDetails->first();
+                            $invoiceDetail = $this->customerSalesSkuMatchingInvoiceDetail($product, $request);
+                            if (($request->filled('invoice_from_date') || $request->filled('invoice_to_date')) && ! $invoiceDetail) {
+                                continue;
+                            }
                             $invoice = $invoiceDetail?->invoice;
                             $invoiceNumber = $invoice->invoice_number ?? 'N/A';
-                            $invoiceDate = $invoice?->invoice_date ?? $invoice?->created_at;
+                            $invoiceDate = $invoice?->created_at;
                             $appointment = $invoice?->appointment;
                             $dns = $invoice?->dns;
                             $payment = $invoice?->payments?->first();
