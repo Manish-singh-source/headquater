@@ -42,12 +42,21 @@
                             @endif
                         </div>
 
-                        @if (request()->filled('invoice_no'))
-                            <a href="{{ route('invoices.view', ['id' => request()->route('id')]) }}"
-                                class="btn btn-outline-secondary btn-sm">
-                                Clear
-                            </a>
-                        @endif
+                        <div class="d-flex align-items-center gap-2">
+                            <form id="bulkInvoiceDownloadForm" action="{{ route('invoice.bulkDownload', request()->route('id')) }}" method="POST">
+                                @csrf
+                                <div id="selectedInvoiceIds"></div>
+                                <button id="bulkInvoiceDownload" type="submit" class="btn btn-primary btn-sm" disabled>
+                                    <i class="bx bx-download me-1"></i>Bulk Invoice Download
+                                </button>
+                            </form>
+                            @if (request()->filled('invoice_no'))
+                                <a href="{{ route('invoices.view', ['id' => request()->route('id')]) }}"
+                                    class="btn btn-outline-secondary btn-sm">
+                                    Clear
+                                </a>
+                            @endif
+                        </div>
 
                     </div>
                     {{-- 
@@ -102,7 +111,8 @@
                                         
                                     @endphp --}}
                                         <tr>
-                                            <td><input class="form-check-input" type="checkbox"></td>
+                                                <td><input class="form-check-input invoice-select" type="checkbox"
+                                                    value="{{ $invoice->id }}" aria-label="Select invoice {{ $invoice->invoice_number }}"></td>
                                             <td>{{ $invoice->salesOrder->order_number }}</td>
                                             <td>{{ $invoice->invoice_number }}</td>
                                             <td>{{ $invoice->po_number ?? 'N/A' }}</td>
@@ -254,18 +264,37 @@
                 table.button('.buttons-excel').trigger();
             });
 
-            // Select All checkbox functionality
-            $('#selectAll').on('click', function() {
+            function updateBulkDownloadButton() {
+                var selectedCount = $('#invoicesList tbody .invoice-select:checked').length;
+                $('#bulkInvoiceDownload').prop('disabled', selectedCount === 0);
+            }
+
+            $('#selectAll').on('change', function() {
                 var isChecked = $(this).prop('checked');
-                $('.form-check-input[type="checkbox"]').not('#selectAll').prop('checked', isChecked);
+                $('#invoicesList tbody .invoice-select').prop('checked', isChecked);
+                updateBulkDownloadButton();
             });
 
-            // Individual checkbox click
-            $('.form-check-input[type="checkbox"]').not('#selectAll').on('click', function() {
-                var totalCheckboxes = $('.form-check-input[type="checkbox"]').not('#selectAll').length;
-                var checkedCheckboxes = $('.form-check-input[type="checkbox"]:checked').not('#selectAll')
-                    .length;
-                $('#selectAll').prop('checked', totalCheckboxes === checkedCheckboxes);
+            $('#invoicesList tbody').on('change', '.invoice-select', function() {
+                var totalCheckboxes = $('#invoicesList tbody .invoice-select').length;
+                var checkedCheckboxes = $('#invoicesList tbody .invoice-select:checked').length;
+                $('#selectAll').prop('checked', totalCheckboxes > 0 && totalCheckboxes === checkedCheckboxes);
+                updateBulkDownloadButton();
+            });
+
+            $('#bulkInvoiceDownloadForm').on('submit', function() {
+                var selectedIds = $('#invoicesList tbody .invoice-select:checked').map(function() {
+                    return this.value;
+                }).get();
+                var inputContainer = $('#selectedInvoiceIds').empty();
+
+                selectedIds.forEach(function(id) {
+                    $('<input>', { type: 'hidden', name: 'invoice_ids[]', value: id }).appendTo(inputContainer);
+                });
+
+                if (selectedIds.length === 0) {
+                    return false;
+                }
             });
         });
     </script>

@@ -123,6 +123,69 @@ class InvoiceController extends Controller
 
     public function downloadPdf($id)
     {
+        $invoice = Invoice::with(['warehouse', 'customer', 'salesOrder'])->findOrFail($id);
+
+        return $this->buildInvoicePdf($invoice)->stream('Invoice-' . $invoice->invoice_number . '.pdf');
+    }
+
+    public function downloadBulkPdfs(Request $request, int $id)
+    {
+        $validated = $request->validate([
+            'invoice_ids' => ['required', 'array', 'min:1', 'max:50'],
+            'invoice_ids.*' => ['required', 'integer', 'distinct', 'exists:invoices,id'],
+        ]);
+
+        $user = Auth::user();
+        $isSuperAdmin = $user->hasRole('Super Admin');
+        $isAdmin = $user->hasRole(['Super Admin', 'Admin']) || ! $user->warehouse_id;
+
+        $invoiceQuery = Invoice::with(['warehouse', 'customer', 'salesOrder'])
+            ->where('sales_order_id', $id)
+            ->whereIn('id', $validated['invoice_ids']);
+
+        if (! $isSuperAdmin && ! $isAdmin && $user->warehouse_id) {
+            $invoiceQuery->where('warehouse_id', $user->warehouse_id);
+        }
+
+        $invoices = $invoiceQuery->get();
+        abort_unless($invoices->count() === count($validated['invoice_ids']), 403);
+
+        if ($invoices->count() === 1) {
+            $invoice = $invoices->first();
+
+            return $this->buildInvoicePdf($invoice)->download('Invoice-'.$invoice->invoice_number.'.pdf');
+        }
+
+        $zipPath = tempnam(sys_get_temp_dir(), 'invoice-zip-');
+        abort_if($zipPath === false, 500, 'Unable to create invoice archive.');
+
+        $zip = new \ZipArchive;
+        if ($zip->open($zipPath, \ZipArchive::OVERWRITE) !== true) {
+            unlink($zipPath);
+            abort(500, 'Unable to create invoice archive.');
+        }
+
+        try {
+            foreach ($invoices as $invoice) {
+                $fileName = 'Invoice-'.$invoice->invoice_number.'-'.$invoice->id.'.pdf';
+                if (! $zip->addFromString($fileName, $this->buildInvoicePdf($invoice)->output())) {
+                    throw new \RuntimeException('Unable to add an invoice PDF to the archive.');
+                }
+            }
+
+            $zip->close();
+        } catch (\Throwable $exception) {
+            $zip->close();
+            unlink($zipPath);
+
+            throw $exception;
+        }
+
+        return response()->download($zipPath, 'Invoices-'.$id.'.zip')->deleteFileAfterSend(true);
+    }
+
+    private function buildInvoicePdf(Invoice $invoice): \Barryvdh\DomPDF\PDF
+    {
         $data = [
             'title' => 'Welcome to Headquaters',
             'date' => date('m/d/Y'),
@@ -139,8 +202,9 @@ class InvoiceController extends Controller
         $base642 = base64_encode(file_get_contents($path1));
         $base643Image = 'data:image/png;base64,' . $base642;
 
-        $invoice = Invoice::with(['warehouse', 'customer', 'salesOrder'])->findOrFail($id);
-        $invoiceDetails = InvoiceDetails::with('product', 'tempOrder', 'salesOrderProduct')->where('invoice_id', $id)->get();
+        $invoiceDetails = InvoiceDetails::with('product', 'tempOrder', 'salesOrderProduct')
+            ->where('invoice_id', $invoice->id)
+            ->get();
 
         // Determine GST type: CGST/SGST if intra-state, IGST if inter-state
         $igstStatus = ($invoice->customer->shipping_state === 'Maharashtra');
@@ -176,7 +240,7 @@ class InvoiceController extends Controller
         $pdf = \PDF::loadView('invoice/invoice-pdf', ['image' => $base64Image, 'image1' => $base643Image, 'sign64Image' => $sign64Image] + $data);
         $pdf->setPaper('a4');
 
-        return $pdf->stream('Invoice-' . $invoice->invoice_number . '.pdf');
+        return $pdf;
     }
 
     public function downloadEInvoicePdf($id)
@@ -460,7 +524,6 @@ class InvoiceController extends Controller
         }
     }
 
-
     public function downloadBulkInvoiceTemplate()
     {
         $headers = [
@@ -486,7 +549,6 @@ class InvoiceController extends Controller
             'Content-Type' => 'text/csv',
         ]);
     }
-
 
     public function bulkUpdateFromExcel(Request $request)
     {
@@ -688,7 +750,6 @@ class InvoiceController extends Controller
         }
     }
 
-    
     public function invoiceDetails($id)
     {
         $invoiceDetails = Invoice::with([
@@ -710,6 +771,7 @@ class InvoiceController extends Controller
         // count total active einvoices
         $total_einvoices = $invoiceDetails->einvoices->where('einvoice_status', 'ACT')->count();
         $total_ewaybills = $invoiceDetails->ewaybills->count();
+
         return view('invoice.invoice-details', compact('invoiceDetails', 'total_einvoices', 'total_ewaybills'));
     }
 
@@ -2451,7 +2513,6 @@ class InvoiceController extends Controller
         ];
     }
 
-
     public function einvoicesList()
     {
         $eInvoice = EInvoice::with('invoice', 'invoice.salesOrder', 'invoice.customer')
@@ -2460,6 +2521,7 @@ class InvoiceController extends Controller
                 return $eInvoice->invoice->invoice_number ?? '';
             })
             ->values();
+
         return view('einvoice.index', compact('eInvoice'));
     }
 
@@ -2471,6 +2533,7 @@ class InvoiceController extends Controller
                 return $eWayBill->invoice->invoice_number ?? '';
             })
             ->values();
+
         return view('ewaybill.index', compact('eWayBill'));
     }
 }

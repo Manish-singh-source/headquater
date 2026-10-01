@@ -372,6 +372,7 @@ Route::middleware(['auth'])->group(function () {
     Route::controller(InvoiceController::class)->group(function () {
         Route::get('/invoices', 'index')->name('invoices');
         Route::get('/invoices/{id}', 'view')->name('invoices.view');
+        Route::post('/invoices/{id}/bulk-download', 'downloadBulkPdfs')->name('invoice.bulkDownload');
         Route::get('/download-invoice-pdf/{id}', 'downloadPdf')->name('invoice.downloadPdf');
         Route::get('/download-einvoice-pdf/{id}', 'downloadEInvoicePdf')->name('invoice.downloadEInvoicePdf');
 
