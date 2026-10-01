@@ -520,6 +520,8 @@
                                     <th>Customer&nbsp;Name</th>
                                     <th>GSTIN/UIN&nbsp;of&nbsp;Recipient</th>
                                     <th>Invoice&nbsp;No</th>
+                                    <th>E-Invoice&nbsp;Generated</th>
+                                    <th>E-Way&nbsp;Bill&nbsp;Generated</th>
                                     <th>Invoice&nbsp;Date</th>
                                     <th>Customer&nbsp;Phone&nbsp;No</th>
                                     <th>Customer&nbsp;Email</th>
@@ -607,14 +609,14 @@
                 serverSide: true,
                 columnDefs: [{
                     orderable: false,
-                    targets: [11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 28, 29, 34, 35, 36, 37, 38, 39],
+                    targets: [5, 6, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 30, 31, 36, 37, 38, 39, 40, 41],
                 }],
                 searchDelay: 350,
                 lengthChange: true,
                 pageLength: 10,
                 scrollX: true,
                 autoWidth: false,
-                order: [[5, 'desc']],
+                order: [[7, 'desc']],
                 ajax: function(requestData, callback) {
                     $.ajax({
                         url: window.location.pathname,

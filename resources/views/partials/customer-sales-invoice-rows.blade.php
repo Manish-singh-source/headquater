@@ -79,6 +79,13 @@
                                                     }
                                                 }
                                             }
+
+                                            $hasEInvoice = $invoice->einvoices->contains(function ($einvoice) {
+                                                return $einvoice->einvoice_status === 'ACT' || !empty($einvoice->irn);
+                                            });
+                                            $hasEWayBill = $invoice->ewaybills->contains(function ($ewaybill) {
+                                                return $ewaybill->ewaybill_status === 'ACT' || !empty($ewaybill->ewb_no);
+                                            });
                                         @endphp
                                         <tr>
                                             <td>{{ $salesOrder->order_number ?? 'N/A' }}</td>
@@ -86,6 +93,8 @@
                                             <td>{{ $invoice->customer->client_name ?? 'N/A' }}</td>
                                             <td>{{ $invoice->customer->gstin ?? 'N/A' }}</td>
                                             <td>{{ $invoice->invoice_number ?? 'N/A' }}</td>
+                                            <td>{{ $hasEInvoice ? 'Yes' : 'No' }}</td>
+                                            <td>{{ $hasEWayBill ? 'Yes' : 'No' }}</td>
                                             <td>{{ $invoice->created_at?->format('d-m-Y') ?? 'N/A' }}</td>
                                             <td>{{ $invoice->customer->contact_no ?? 'N/A' }}</td>
                                             <td>{{ $invoice->customer->email ?? 'N/A' }}</td>

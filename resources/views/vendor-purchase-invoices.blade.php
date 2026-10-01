@@ -418,13 +418,19 @@
                                 <tbody>
                                     @forelse($vendorPIProducts as $purchaseOrder)
                                         @php
+                                            $toNumber = fn($value) => (float) str_replace(',', '', (string) ($value ?? 0));
                                             $totalTaxableValue = 0;
                                             $totalGstAmount = 0;
                                             foreach ($purchaseOrder->vendorPI[0]->products as $product) {
-                                                $totalTaxableValue += $product->purchase_rate * $product->quantity_received;
-                                                $totalGstAmount +=
-                                                    $product->purchase_rate * $product->quantity_received * ($product->gst / 100);
+                                                $purchaseRate = $toNumber($product->purchase_rate);
+                                                $quantityReceived = $toNumber($product->quantity_received);
+                                                $gst = $toNumber($product->gst);
+                                                $totalTaxableValue += $purchaseRate * $quantityReceived;
+                                                $totalGstAmount += $purchaseRate * $quantityReceived * ($gst / 100);
                                             }
+                                            $gstRate = $purchaseOrder->vendorPI[0]->products->sum(
+                                                fn($product) => $toNumber($product->gst),
+                                            );
                                         @endphp
                                         <tr>
                                             <td>
@@ -452,13 +458,13 @@
                                             <td>{{ number_format($purchaseOrder->vendorPI[0]->products->sum('quantity_received')) }}
                                             </td>
                                             <td>{{ number_format($totalTaxableValue, 2) }}</td>
-                                            <td>{{ number_format($purchaseOrder->vendorPI[0]->products->sum('gst'), 2) }}%
+                                            <td>{{ number_format($gstRate, 2) }}%
                                             </td>
-                                            <td>{{ number_format($purchaseOrder->vendorPI[0]->products->sum('gst'), 2) / 2 }}%
+                                            <td>{{ number_format($gstRate / 2, 2) }}%
                                             </td>
-                                            <td>{{ number_format($purchaseOrder->vendorPI[0]->products->sum('gst'), 2) / 2 }}%
+                                            <td>{{ number_format($gstRate / 2, 2) }}%
                                             </td>
-                                            <td>{{ number_format($purchaseOrder->vendorPI[0]->products->sum('gst'), 2) }}%
+                                            <td>{{ number_format($gstRate, 2) }}%
                                             </td>
                                             <td>₹{{ number_format($totalGstAmount, 2) }}</td>
                                             <td>₹{{ number_format($totalGstAmount + $totalTaxableValue, 2) }}

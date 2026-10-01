@@ -2591,6 +2591,8 @@ class ReportController extends Controller
                     'customer',
                     'dns',
                     'warehouse',
+                    'einvoices',
+                    'ewaybills',
                 ]);
             },
             'orderedProducts',
@@ -2635,6 +2637,8 @@ class ReportController extends Controller
                         'customer',
                         'dns',
                         'warehouse',
+                        'einvoices',
+                        'ewaybills',
                     ]);
                 },
             ]);
@@ -2918,17 +2922,17 @@ class ReportController extends Controller
             2 => 'customers.client_name',
             3 => 'customers.gstin',
             4 => 'invoices.invoice_number',
-            5 => 'invoices.created_at',
-            6 => 'customers.contact_no',
-            7 => 'customers.email',
-            8 => 'customers.shipping_city',
-            9 => 'customers.shipping_state',
-            10 => 'invoices.po_number',
-            27 => 'invoices.taxable_amount',
-            30 => 'invoices.total_amount',
-            31 => 'invoices.payment_status',
-            32 => 'invoices.paid_amount',
-            33 => 'invoices.balance_due',
+            7 => 'invoices.created_at',
+            8 => 'customers.contact_no',
+            9 => 'customers.email',
+            10 => 'customers.shipping_city',
+            11 => 'customers.shipping_state',
+            12 => 'invoices.po_number',
+            29 => 'invoices.taxable_amount',
+            32 => 'invoices.total_amount',
+            33 => 'invoices.payment_status',
+            34 => 'invoices.paid_amount',
+            35 => 'invoices.balance_due',
         ];
         $column = (int) $request->input('order.0.column', 5);
         $direction = strtolower((string) $request->input('order.0.dir', 'desc')) === 'asc' ? 'asc' : 'desc';
@@ -2947,6 +2951,7 @@ class ReportController extends Controller
             'salesOrder.customerGroup', 'payments', 'details.tempOrder',
             'details.salesOrderProduct.tempOrder', 'details.product',
             'appointment', 'customer', 'dns', 'warehouse',
+            'einvoices', 'ewaybills',
         ])->whereIn('id', $ids)->get()->sortBy(function ($invoice) use ($ids) {
             return $ids->search($invoice->id);
         });
@@ -2984,6 +2989,8 @@ class ReportController extends Controller
                 'invoices.customer',
                 'invoices.dns',
                 'invoices.warehouse',
+                'invoices.einvoices',
+                'invoices.ewaybills',
                 'orderedProducts',
                 'orderedProducts.tempOrder',
             ]);
@@ -3238,12 +3245,21 @@ class ReportController extends Controller
                         }
                     }
 
+                    $hasEInvoice = $invoice->einvoices->contains(function ($einvoice) {
+                        return $einvoice->einvoice_status === 'ACT' || !empty($einvoice->irn);
+                    });
+                    $hasEWayBill = $invoice->ewaybills->contains(function ($ewaybill) {
+                        return $ewaybill->ewaybill_status === 'ACT' || !empty($ewaybill->ewb_no);
+                    });
+
                     $exportData->push([
                         'Sales Order No' => $salesOrder->order_number ?? 'N/A',
                         'Customer Group Name' => $salesOrder->customerGroup->name ?? 'N/A',
                         'Customer Name' => $invoice->customer->client_name ?? 'N/A',
                         'GSTIN/UIN of Recipient' => $invoice->customer->gstin ?? 'N/A',
                         'Invoice No' => $invoice->invoice_number,
+                        'E-Invoice Generated' => $hasEInvoice ? 'Yes' : 'No',
+                        'E-Way Bill Generated' => $hasEWayBill ? 'Yes' : 'No',
                         'Invoice Date' => $invoice->created_at?->format('d-m-Y') ?? 'N/A',
                         'Customer Phone No' => $invoice->customer->contact_no ?? 'N/A',
                         'Customer Email' => $invoice->customer->email ?? 'N/A',
@@ -3299,6 +3315,8 @@ class ReportController extends Controller
                 'Customer Name',
                 'GSTIN/UIN of Recipient',
                 'Invoice No',
+                'E-Invoice Generated',
+                'E-Way Bill Generated',
                 'Invoice Date',
                 'Customer Phone No',
                 'Customer Email',
