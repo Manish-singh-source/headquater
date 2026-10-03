@@ -55,6 +55,7 @@
                                                         <td>0</td>
                                                         <td>N/A</td>
                                                         <td>N/A</td>
+                                                        <td>{{ $row['remark'] ?? 'N/A' }}</td>
                                                     </tr>
                                                     @else
                                                         @php $allocation = $row['allocation']; @endphp
@@ -149,6 +150,7 @@
                                                                 </td>
                                                                 <td> {{ ucwords(str_replace('_', ' ', $allocation?->invoice_status ?? 'N/A')) }}
                                                                 </td>
+                                                                <td>{{ $row['remark'] ?? 'N/A' }}</td>
                                                             </tr>
                                                     @endif
                                         @endforeach

@@ -435,6 +435,7 @@
                                             <th>Total&nbsp;Amount</th>
                                             <th>Product&nbsp;Status</th>
                                             <th>Invoice&nbsp;Status</th>
+                                            <th>Remark</th>
                                         </tr>
                                     </thead>
                                     <tbody>

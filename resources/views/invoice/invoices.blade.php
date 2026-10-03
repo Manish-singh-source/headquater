@@ -158,7 +158,6 @@
                                                             </path>
                                                         </svg>
                                                     </a>
-                                                    <!--
                                                     <form action="{{ route('invoice.delete', $invoice->id) }}"
                                                         method="POST" class="d-inline"
                                                         onsubmit="return confirm('Are you sure you want to delete this invoice? This will remove linked appointment, DN, payments and invoice lines.');">
@@ -183,7 +182,6 @@
                                                             </svg>
                                                         </button>
                                                     </form>
-                                                    -->
                                                     @if (
                                                         !$invoice->appointment ||
                                                             !$invoice->appointment->appointment_date ||

@@ -38,7 +38,7 @@ Route::controller(RegisterController::class)->group(function () {
 
     Route::get('/login', 'showLoginForm')->name('login');
     Route::post('/login', 'login')->name('login.auth.check');
-    
+
     Route::get('/forgot-password', 'showForgotPasswordForm')->name('password.request');
     Route::post('/forgot-password', 'sendResetLinkEmail')->name('password.email');
     Route::get('/reset-password/{token}', 'showResetPasswordForm')->name('password.reset');
@@ -210,18 +210,18 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/create-order', 'create')->name('sales.order.create');
         // Sales Orders Create/Check Availibility Form Page
         Route::get('/view-order/{id}', 'view')->name('sales.order.view');
-        // Delete Sales Order 
+        // Delete Sales Order
         Route::delete('/delete-order/{id}', 'destroy')->name('sales.order.delete');
         // Delete Sales Order Products
         Route::delete('/order/delete-selected', 'deleteSelected')->name('delete.selected.order');
 
-        // Step 1: Check availibility 
+        // Step 1: Check availibility
         Route::post('/check-products-stock', 'checkProductsStock')->name('check.sales.order.stock');
         Route::get('/download-block-order-csv', 'downloadBlockedCSV')->name('download.sales.order.excel');
 
-        // Step 2: Block Order / Create Sales Order 
+        // Step 2: Block Order / Create Sales Order
         Route::post('/store-order', 'store')->name('sales.order.store');
-        
+
         // Step 3: download excel and update final quantity fulfilled
         Route::post('/products-download-po-excel', 'downloadPoExcel')->name('products.download.po.excel');
         Route::put('/update-order', 'update')->name('sales.order.update');
@@ -242,7 +242,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/download-not-found-sku/{id}', 'downloadNotFoundSku')->name('download.not.found.sku.excel');
         Route::get('/download-not-found-customer/{id}', 'downloadNotFoundCustomer')->name('download.not.found.customer.excel');
         Route::get('/download-not-found-vendor/{id}', 'downloadNotFoundVendor')->name('download.not.found.vendor.excel');
-        
+
         // Multi-warehouse auto allocation routes
         Route::post('/auto-allocate-stock/{id}', 'autoAllocateStock')->name('sales.order.auto.allocate');
         Route::get('/allocation-breakdown/{id}', 'getAllocationBreakdown')->name('sales.order.allocation.breakdown');
@@ -288,7 +288,7 @@ Route::middleware(['auth'])->group(function () {
 
     // After send to packaging step (from step 4 in sales order controller)
     Route::controller(PackagingController::class)->group(function () {
-        // List sales orders which send to packaging 
+        // List sales orders which send to packaging
         Route::get('/packaging-list', 'index')->name('packaging.list.index');
         // View sales order to see packaging products
         Route::get('/packing-products-list/{id}', 'view')->name('packing.products.view');
@@ -301,7 +301,6 @@ Route::middleware(['auth'])->group(function () {
         // 2. Admin approves these products and change status to ready to ship
         Route::put('/change-packaging-status-to-ready-to-ship', 'changeStatusToReadyToShip')->name('change.packaging.status.ready.to.ship');
 
-
         // Route::post('/approve-warehouse-allocation/{id}', 'approveWarehouseAllocation')->name('approve.warehouse.allocation');
         // Route::post('/reject-warehouse-allocation/{id}', 'rejectWarehouseAllocation')->name('reject.warehouse.allocation');
     });
@@ -312,14 +311,14 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/ready-to-ship', 'index')->name('readyToShip.index');
         // List sales orders clients with batch no which are shipped
         Route::get('/ready-to-ship-detail/{id}', 'view')->name('readyToShip.view');
-        // List sales order products 
+        // List sales order products
         Route::get('/ready-to-ship-detail-view/{id}/{c_id}/{rts_count_id}', 'viewDetail')->name('readyToShip.view.detail');
         // Change status to shipped (this will not required)
         Route::put('/change-status-shipped', 'changeStatusShipped')->name('change.status.shipped');
 
         // Route::get('/ready-to-ship-detail-view/{id}/{c_id}', 'viewDetail')->name('readyToShip.view.detail');
         Route::get('/generate-warehouse-invoice/{orderId}/{customerId}/{warehouseId}', 'generateWarehouseInvoice')->name('ready.to.ship.generate.warehouse.invoice');
-        
+
         Route::get('/product-issues', 'issuesProducts')->name('exceed.shortage.products');
         Route::get('/return-accept', 'returnAccept')->name('return.accept');
         Route::get('/accept-vendor-products/{id}', 'acceptVendorProducts')->name('accept.vendor.products');
@@ -382,6 +381,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/invoices-details/{id}', 'invoiceDetails')->name('invoices-details');
         Route::get('/invoice-edit/{id}', 'editInvoice')->name('invoice.edit');
         Route::put('/invoice-update/{id}', 'updateInvoice')->name('invoice.update');
+        Route::delete('/invoice-edit/{id}/details/{detailId}/return-stock', 'returnInvoiceDetailToWarehouse')->name('invoice.details.return-stock');
         Route::delete('/invoice-delete/{id}', 'deleteInvoice')->name('invoice.delete');
 
         // Manual Invoice Routes
@@ -484,9 +484,3 @@ Route::get('/test-notification-delete', function () {
         }),
     ]);
 })->name('test.notification.delete');
-
-
-
-
-
-

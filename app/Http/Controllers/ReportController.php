@@ -9,11 +9,11 @@ use App\Models\PurchaseOrder;
 use App\Models\PurchaseOrderProduct;
 use App\Models\SalesOrder;
 use App\Models\SalesOrderProduct;
+use App\Models\State;
 use App\Models\TempOrder;
 use App\Models\VendorPI;
 use App\Models\Warehouse;
 use App\Models\WarehouseStock;
-use App\Models\State;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -139,7 +139,7 @@ class ReportController extends Controller
                 ->with('vendor')
                 ->get()
                 ->filter(function ($po) {
-                    return !empty($po->vendor?->vendor_code);
+                    return ! empty($po->vendor?->vendor_code);
                 })
                 ->unique(function ($po) {
                     return $po->vendor->vendor_code;
@@ -172,9 +172,9 @@ class ReportController extends Controller
                 'totalDueInvoiceAmount'
             ));
         } catch (\Exception $e) {
-            Log::error('Error retrieving vendor purchase history: ' . $e->getMessage());
+            Log::error('Error retrieving vendor purchase history: '.$e->getMessage());
 
-            return redirect()->back()->with('error', 'Error retrieving vendor purchase history: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Error retrieving vendor purchase history: '.$e->getMessage());
         }
     }
 
@@ -238,7 +238,6 @@ class ReportController extends Controller
                 });
             }
 
-
             // Apply sku filter if sku is provided (supports single or multiple)
             // if ($request->filled('sku')) {
             //     $sku = $request->input('sku');
@@ -286,11 +285,11 @@ class ReportController extends Controller
             }
 
             // Create temporary CSV file
-            $tempCsvPath = storage_path('app/vendor_purchase_history_' . Str::random(8) . '.csv');
+            $tempCsvPath = storage_path('app/vendor_purchase_history_'.Str::random(8).'.csv');
             $file = fopen($tempCsvPath, 'w');
 
             // Add UTF-8 BOM for proper Excel encoding
-            fprintf($file, chr(0xEF) . chr(0xBB) . chr(0xBF));
+            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
 
             // Add header row - matching all table columns
             fputcsv($file, [
@@ -407,19 +406,19 @@ class ReportController extends Controller
             }
 
             $fileName = $vendorPart
-                ? 'Vendor-Purchase-Invoices-' . $vendorPart . '-' . date('d-m-Y') . '.csv'
-                : 'Vendor-Purchase-Invoices-' . date('d-m-Y') . '.csv';
+                ? 'Vendor-Purchase-Invoices-'.$vendorPart.'-'.date('d-m-Y').'.csv'
+                : 'Vendor-Purchase-Invoices-'.date('d-m-Y').'.csv';
 
             // Return CSV file as download and delete after sending
             return response()->download($tempCsvPath, $fileName, [
                 'Content-Type' => 'text/csv',
-                'Content-Disposition' => 'attachment; filename="' . $fileName . '"',
+                'Content-Disposition' => 'attachment; filename="'.$fileName.'"',
             ])->deleteFileAfterSend(true);
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error generating vendor purchase CSV report: ' . $e->getMessage());
+            Log::error('Error generating vendor purchase CSV report: '.$e->getMessage());
 
-            return redirect()->back()->with('error', 'Error generating report: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Error generating report: '.$e->getMessage());
         }
     }
 
@@ -514,7 +513,7 @@ class ReportController extends Controller
             foreach ($allPurchaseOrders as $po) {
                 // Count unique SKUs
                 foreach ($po->purchaseOrderProducts as $product) {
-                    if (!in_array($product->sku, $skuSet)) {
+                    if (! in_array($product->sku, $skuSet)) {
                         $skuSet[] = $product->sku;
                     }
                     $totalPOQuantity += $product->ordered_quantity ?? 0;
@@ -572,9 +571,9 @@ class ReportController extends Controller
                 'totalTaxableAmount'
             ));
         } catch (\Exception $e) {
-            Log::error('Error retrieving vendor purchase history: ' . $e->getMessage());
+            Log::error('Error retrieving vendor purchase history: '.$e->getMessage());
 
-            return redirect()->back()->with('error', 'Error retrieving vendor purchase history: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Error retrieving vendor purchase history: '.$e->getMessage());
         }
     }
 
@@ -675,13 +674,12 @@ class ReportController extends Controller
                 $q->where('status', 'completed');
             })->distinct('sku')->orderBy('sku')->pluck('sku');
 
-
             // Create temporary CSV file
-            $tempCsvPath = storage_path('app/vendor_purchase_history_' . Str::random(8) . '.csv');
+            $tempCsvPath = storage_path('app/vendor_purchase_history_'.Str::random(8).'.csv');
             $file = fopen($tempCsvPath, 'w');
 
             // Add UTF-8 BOM for proper Excel encoding
-            fprintf($file, chr(0xEF) . chr(0xBB) . chr(0xBF));
+            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
 
             // Add header row - matching all table columns
             fputcsv($file, [
@@ -738,6 +736,7 @@ class ReportController extends Controller
                             }
 
                             $cleaned = preg_replace('/[^0-9.\-]/', '', $cleaned);
+
                             return is_numeric($cleaned) ? (float) $cleaned : 0.0;
                         }
 
@@ -760,7 +759,6 @@ class ReportController extends Controller
                     $cgst = $gstRate / 2;
                     $sgst = $gstRate / 2;
                     $igst = 0;
-
 
                     fputcsv($file, [
                         $purchaseOrder->order_number ?? 'N/A',
@@ -825,19 +823,19 @@ class ReportController extends Controller
             }
 
             $fileName = $vendorPart
-                ? 'Vendor-Purchase-SKU-' . $vendorPart . '-' . date('d-m-Y') . '.csv'
-                : 'Vendor-Purchase-SKU-' . date('d-m-Y') . '.csv';
+                ? 'Vendor-Purchase-SKU-'.$vendorPart.'-'.date('d-m-Y').'.csv'
+                : 'Vendor-Purchase-SKU-'.date('d-m-Y').'.csv';
 
             // Return CSV file as download and delete after sending
             return response()->download($tempCsvPath, $fileName, [
                 'Content-Type' => 'text/csv',
-                'Content-Disposition' => 'attachment; filename="' . $fileName . '"',
+                'Content-Disposition' => 'attachment; filename="'.$fileName.'"',
             ])->deleteFileAfterSend(true);
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error generating vendor purchase CSV report: ' . $e->getMessage());
+            Log::error('Error generating vendor purchase CSV report: '.$e->getMessage());
 
-            return redirect()->back()->with('error', 'Error generating report: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Error generating report: '.$e->getMessage());
         }
     }
 
@@ -946,8 +944,10 @@ class ReportController extends Controller
                         return (float) $cleaned;
                     }
                     $cleaned = preg_replace('/[^0-9.\-]/', '', $cleaned);
+
                     return is_numeric($cleaned) ? (float) $cleaned : 0.0;
                 }
+
                 return 0.0;
             };
 
@@ -956,6 +956,7 @@ class ReportController extends Controller
             $blockProductsSum = $products->sum('block_quantity');
             $totalStockValue = $products->sum(function ($record) use ($toNumber) {
                 $baseRate = $toNumber($record->productMapping?->basic_rate) ?: $toNumber($record->product?->basic_rate);
+
                 return $toNumber($record->available_quantity) * $baseRate;
             });
 
@@ -997,9 +998,9 @@ class ReportController extends Controller
                 'outOfStockCount'
             ));
         } catch (\Exception $e) {
-            Log::error('Error retrieving inventory: ' . $e->getMessage());
+            Log::error('Error retrieving inventory: '.$e->getMessage());
 
-            return redirect()->back()->with('error', 'Error retrieving inventory: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Error retrieving inventory: '.$e->getMessage());
         }
     }
 
@@ -1137,11 +1138,11 @@ class ReportController extends Controller
             }
 
             // Create temporary CSV file
-            $tempCsvPath = storage_path('app/inventory_stock_history_' . Str::random(8) . '.csv');
+            $tempCsvPath = storage_path('app/inventory_stock_history_'.Str::random(8).'.csv');
             $file = fopen($tempCsvPath, 'w');
 
             // Add UTF-8 BOM for proper Excel encoding
-            fprintf($file, chr(0xEF) . chr(0xBB) . chr(0xBF));
+            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
 
             // Add header row
             fputcsv($file, [
@@ -1181,6 +1182,7 @@ class ReportController extends Controller
 
                         // Handles values like "18%" or "Rs 1,250.50"
                         $cleaned = preg_replace('/[^0-9.\-]/', '', $cleaned);
+
                         return is_numeric($cleaned) ? (float) $cleaned : 0.0;
                     }
 
@@ -1245,18 +1247,18 @@ class ReportController extends Controller
             DB::commit();
 
             // Generate filename
-            $fileName = 'Inventory-Stock-History-' . date('d-m-Y') . '.csv';
+            $fileName = 'Inventory-Stock-History-'.date('d-m-Y').'.csv';
 
             // Return CSV file as download and delete after sending
             return response()->download($tempCsvPath, $fileName, [
                 'Content-Type' => 'text/csv',
-                'Content-Disposition' => 'attachment; filename="' . $fileName . '"',
+                'Content-Disposition' => 'attachment; filename="'.$fileName.'"',
             ])->deleteFileAfterSend(true);
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error generating inventory CSV report: ' . $e->getMessage());
+            Log::error('Error generating inventory CSV report: '.$e->getMessage());
 
-            return redirect()->back()->with('error', 'Error generating inventory report: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Error generating inventory report: '.$e->getMessage());
         }
     }
 
@@ -1297,11 +1299,11 @@ class ReportController extends Controller
             ->distinct();
 
         if ($request->filled('invoice_from_date')) {
-            $invoiceProductQuery->where('invoice_date_invoices.created_at', '>=', $request->invoice_from_date . ' 00:00:00');
+            $invoiceProductQuery->where('invoice_date_invoices.created_at', '>=', $request->invoice_from_date.' 00:00:00');
         }
 
         if ($request->filled('invoice_to_date')) {
-            $invoiceProductQuery->where('invoice_date_invoices.created_at', '<=', $request->invoice_to_date . ' 23:59:59');
+            $invoiceProductQuery->where('invoice_date_invoices.created_at', '<=', $request->invoice_to_date.' 23:59:59');
         }
 
         $query->whereIn('sales_orders.id', $invoiceProductQuery);
@@ -1362,10 +1364,8 @@ class ReportController extends Controller
                 'orderedProducts.invoiceDetails.invoice',
                 'orderedProducts.invoiceDetails.invoice.appointment',
                 'orderedProducts.warehouseAllocations.warehouse',
-                'orderedProducts.vendorPIProduct'
+                'orderedProducts.vendorPIProduct',
             ]);
-
-
 
             if ($request->filled('from_date')) {
                 $query->whereDate('created_at', '>=', $request->from_date);
@@ -1464,7 +1464,6 @@ class ReportController extends Controller
             //         });
             //     });
             // }
-
 
             // PO Number Filter
             if ($request->filled('po_no')) {
@@ -1588,12 +1587,10 @@ class ReportController extends Controller
                 ->sort()
                 ->values();
 
-
             $total_sales_overall = DB::table('invoice_details')
                 ->join('invoices', 'invoices.id', '=', 'invoice_details.invoice_id')
                 ->where('invoices.invoice_type', 'sales_order')
                 ->sum('invoice_details.total_price');
-
 
             $data = [
                 'total_sales_overall' => $total_sales_overall,
@@ -1641,13 +1638,14 @@ class ReportController extends Controller
 
             if ($request->has('draw')) {
                 return response()->json([
-                    'message' => 'Customer sales report could not load. Reference: ' . $reference,
+                    'message' => 'Customer sales report could not load. Reference: '.$reference,
                 ], 500);
             }
 
-            return redirect()->back()->with('error', 'Error retrieving sales history: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Error retrieving sales history: '.$e->getMessage());
         }
     }
+
     private function customerSalesSkuPage($orderQuery, Request $request)
     {
         $rows = DB::table('sales_order_products as sop')
@@ -1677,11 +1675,11 @@ class ReportController extends Controller
                 ->groupBy('filter_invoice_details.sales_order_product_id');
 
             if ($request->filled('invoice_from_date')) {
-                $invoiceProductQuery->where('filter_invoices.created_at', '>=', $request->invoice_from_date . ' 00:00:00');
+                $invoiceProductQuery->where('filter_invoices.created_at', '>=', $request->invoice_from_date.' 00:00:00');
             }
 
             if ($request->filled('invoice_to_date')) {
-                $invoiceProductQuery->where('filter_invoices.created_at', '<=', $request->invoice_to_date . ' 23:59:59');
+                $invoiceProductQuery->where('filter_invoices.created_at', '<=', $request->invoice_to_date.' 23:59:59');
             }
 
             $rows->joinSub($invoiceProductQuery, 'filtered_invoice_products', function ($join) {
@@ -1700,8 +1698,9 @@ class ReportController extends Controller
         $invoiceNumber = '(SELECT i.invoice_number FROM invoice_details d JOIN invoices i ON i.id = d.invoice_id WHERE d.sales_order_product_id = CAST(sop.id AS CHAR) ORDER BY d.id LIMIT 1)';
         $productField = fn ($field) => "(SELECT p.{$field} FROM products p WHERE p.sku = sop.sku LIMIT 1)";
         $vendorField = fn ($field) => "(SELECT v.{$field} FROM vendor_p_i_products v WHERE v.vendor_sku_code = sop.sku LIMIT 1)";
-        $purchaseSubtotal = 'COALESCE(sop.purchase_ordered_quantity, 0) * COALESCE(' . $vendorField('purchase_rate') . ', 0)';
-        $purchaseTax = "({$purchaseSubtotal}) * COALESCE(" . $vendorField('gst') . ', 0) / 100';
+        $purchaseSubtotal = 'COALESCE(sop.purchase_ordered_quantity, 0) * COALESCE('.$vendorField('purchase_rate').', 0)';
+        $purchaseTax = "({$purchaseSubtotal}) * COALESCE(".$vendorField('gst').', 0) / 100';
+        $latestRemark = "(SELECT wsl.remark FROM warehouse_stock_logs wsl WHERE wsl.sales_order_id = sop.sales_order_id AND wsl.sku = sop.sku AND wsl.remark IS NOT NULL AND wsl.remark <> '' ORDER BY wsl.id DESC LIMIT 1)";
         $sortColumns = [
             'so.order_number', 'so.created_at', 'cg.name', 'w.name', 'c.client_name',
             $invoiceNumber, $invoiceDate, 'c.contact_no', 'c.email', 'c.shipping_city',
@@ -1714,14 +1713,14 @@ class ReportController extends Controller
             'CAST(t.gst AS DECIMAL(15, 2))',
             'COALESCE(wa.final_final_dispatched_quantity, 0) * COALESCE(t.basic_rate, 0) * COALESCE(t.gst, 0) / 100',
             'COALESCE(wa.final_final_dispatched_quantity, 0) * COALESCE(t.basic_rate, 0) * (1 + COALESCE(t.gst, 0) / 100)',
-            'sop.purchase_ordered_quantity', 'CAST(' . $vendorField('purchase_rate') . ' AS DECIMAL(15, 2))', $purchaseSubtotal,
-            'CAST(' . $vendorField('gst') . ' AS DECIMAL(15, 2))', $purchaseTax, "({$purchaseSubtotal}) + ({$purchaseTax})",
-            'wa.product_status', 'wa.invoice_status',
+            'sop.purchase_ordered_quantity', 'CAST('.$vendorField('purchase_rate').' AS DECIMAL(15, 2))', $purchaseSubtotal,
+            'CAST('.$vendorField('gst').' AS DECIMAL(15, 2))', $purchaseTax, "({$purchaseSubtotal}) + ({$purchaseTax})",
+            'wa.product_status', 'wa.invoice_status', $latestRemark,
         ];
 
         $search = trim((string) $request->input('search.value', ''));
         if ($search !== '') {
-            $like = '%' . addcslashes(substr($search, 0, 100), '%_\\') . '%';
+            $like = '%'.addcslashes(substr($search, 0, 100), '%_\\').'%';
             $invoiceProductIds = DB::table('invoice_details as d')
                 ->join('invoices as i', 'i.id', '=', 'd.invoice_id')
                 ->where('i.invoice_number', 'like', $like)
@@ -1731,7 +1730,6 @@ class ReportController extends Controller
                 ->where('brand_title', 'like', $like)
                 ->orWhere('brand', 'like', $like)
                 ->pluck('sku')->filter()->all();
-
             $rows->where(function ($query) use ($like, $invoiceProductIds, $productSkus) {
                 $query->where('so.order_number', 'like', $like)
                     ->orWhere('c.client_name', 'like', $like)
@@ -1739,7 +1737,15 @@ class ReportController extends Controller
                     ->orWhere('t.po_number', 'like', $like)
                     ->orWhere('sop.sku', 'like', $like)
                     ->orWhereIn('sop.id', $invoiceProductIds)
-                    ->orWhereIn('sop.sku', $productSkus);
+                    ->orWhereIn('sop.sku', $productSkus)
+                    ->orWhereExists(function ($remarkQuery) use ($like) {
+                        $remarkQuery->selectRaw('1')
+                            ->from('warehouse_stock_logs as remark_logs')
+                            ->whereColumn('remark_logs.sales_order_id', 'sop.sales_order_id')
+                            ->whereColumn('remark_logs.sku', 'sop.sku')
+                            ->whereNotNull('remark_logs.remark')
+                            ->where('remark_logs.remark', 'like', $like);
+                    });
             });
         }
 
@@ -1748,12 +1754,22 @@ class ReportController extends Controller
 
         $column = (int) $request->input('order.0.column', 6);
         $direction = strtolower((string) $request->input('order.0.dir', 'asc')) === 'desc' ? 'desc' : 'asc';
-        $rows->orderByRaw(($sortColumns[$column] ?? $invoiceDate) . ' ' . $direction)
+        $rows->orderByRaw(($sortColumns[$column] ?? $invoiceDate).' '.$direction)
             ->orderBy('sop.id')->orderBy('wa.id');
 
         $start = max(0, (int) $request->input('start', 0));
         $length = max(1, min(100, (int) $request->input('length', 10)));
         $pageKeys = $rows->select('sop.id as product_id', 'wa.id as allocation_id')
+            ->addSelect([
+                'remark' => DB::table('warehouse_stock_logs as wsl')
+                    ->select('wsl.remark')
+                    ->whereColumn('wsl.sales_order_id', 'sop.sales_order_id')
+                    ->whereColumn('wsl.sku', 'sop.sku')
+                    ->whereNotNull('wsl.remark')
+                    ->where('wsl.remark', '<>', '')
+                    ->orderByDesc('wsl.id')
+                    ->limit(1),
+            ])
             ->when($hasInvoiceDateFilter, function ($query) {
                 $query->addSelect('filtered_invoice_products.invoice_detail_id');
             }, function ($query) {
@@ -1780,6 +1796,7 @@ class ReportController extends Controller
                 'allocation' => $key->allocation_id
                     ? $product->warehouseAllocations->firstWhere('id', $key->allocation_id)
                     : null,
+                'remark' => $key->remark,
             ];
         })->filter()->values();
 
@@ -1853,7 +1870,7 @@ class ReportController extends Controller
                 'orderedProducts.customer',
                 'orderedProducts.invoiceDetails.invoice.appointment',
                 'orderedProducts.warehouseAllocations.warehouse',
-                'orderedProducts.vendorPIProduct'
+                'orderedProducts.vendorPIProduct',
             ]);
 
             if ($request->filled('from_date')) {
@@ -2122,7 +2139,7 @@ class ReportController extends Controller
                                 while ($daysAdded < 4) {
                                     $date->addDay();
 
-                                    if (!$date->isSunday()) {
+                                    if (! $date->isSunday()) {
                                         $daysAdded++;
                                     }
                                 }
@@ -2188,7 +2205,7 @@ class ReportController extends Controller
                                 // Total Purchase Amount
                                 'Total Amount' => $product->vendorPIProduct && $product->purchase_ordered_quantity > 0 ? ($subtotal + $gstAmount) : 0,
                                 'Product Status' => ucwords(str_replace('_', ' ', (($allocation->product_status == 'completed') ? 'Shipped' : $allocation->product_status) ?? 'Pending')) ?? 'N/A',
-                                'Invoice Status' => ucwords(str_replace('_', ' ', $allocation?->invoice_status ?? 'N/A'))
+                                'Invoice Status' => ucwords(str_replace('_', ' ', $allocation?->invoice_status ?? 'N/A')),
                             ]);
                         }
                     }
@@ -2196,7 +2213,7 @@ class ReportController extends Controller
             }
 
             // Create temporary Excel file
-            $tempXlsxPath = storage_path('app/customer_sales_history_' . Str::random(8) . '.xlsx');
+            $tempXlsxPath = storage_path('app/customer_sales_history_'.Str::random(8).'.xlsx');
 
             // Create writer
             $writer = \Spatie\SimpleExcel\SimpleExcelWriter::create($tempXlsxPath);
@@ -2285,7 +2302,7 @@ class ReportController extends Controller
             DB::commit();
 
             // Generate filename
-            $fileName = 'Customer-Sales-SKU-' . date('d-m-Y') . '.xlsx';
+            $fileName = 'Customer-Sales-SKU-'.date('d-m-Y').'.xlsx';
 
             // Return Excel file as download and delete after sending
             return response()->download($tempXlsxPath, $fileName, [
@@ -2293,9 +2310,9 @@ class ReportController extends Controller
             ])->deleteFileAfterSend(true);
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error generating customer sales Excel report: ' . $e->getMessage());
+            Log::error('Error generating customer sales Excel report: '.$e->getMessage());
 
-            return redirect()->back()->with('error', 'Error generating sales report: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Error generating sales report: '.$e->getMessage());
         }
     }
 
@@ -2482,7 +2499,7 @@ class ReportController extends Controller
         $state = State::whereRaw('LOWER(name) = ?', [mb_strtolower(trim($stateName))])->first();
 
         if ($state && ! empty($state->code)) {
-            return str_pad((string) $state->code, 2, '0', STR_PAD_LEFT) . '-' . strtoupper($stateName);
+            return str_pad((string) $state->code, 2, '0', STR_PAD_LEFT).'-'.strtoupper($stateName);
         }
 
         return $stateName;
@@ -2510,9 +2527,9 @@ class ReportController extends Controller
                 'filters' => $request->only(['from_date', 'to_date', 'invoice_no']),
             ]);
         } catch (\Exception $e) {
-            Log::error('Error retrieving GST report: ' . $e->getMessage());
+            Log::error('Error retrieving GST report: '.$e->getMessage());
 
-            return redirect()->back()->with('error', 'Error retrieving GST report: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Error retrieving GST report: '.$e->getMessage());
         }
     }
 
@@ -2532,7 +2549,7 @@ class ReportController extends Controller
                 return redirect()->back()->with('error', 'No GST report records found for the selected criteria.');
             }
 
-            $tempXlsxPath = storage_path('app/gst_report_' . Str::random(8) . '.xlsx');
+            $tempXlsxPath = storage_path('app/gst_report_'.Str::random(8).'.xlsx');
             $writer = \Spatie\SimpleExcel\SimpleExcelWriter::create($tempXlsxPath);
             $writer->noHeaderRow();
 
@@ -2560,16 +2577,16 @@ class ReportController extends Controller
 
             DB::commit();
 
-            $fileName = 'GST-Report-' . date('d-m-Y') . '.xlsx';
+            $fileName = 'GST-Report-'.date('d-m-Y').'.xlsx';
 
             return response()->download($tempXlsxPath, $fileName, [
                 'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
             ])->deleteFileAfterSend(true);
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error generating GST report: ' . $e->getMessage());
+            Log::error('Error generating GST report: '.$e->getMessage());
 
-            return redirect()->back()->with('error', 'Error generating GST report: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Error generating GST report: '.$e->getMessage());
         }
     }
 
@@ -2609,7 +2626,7 @@ class ReportController extends Controller
                 'invoices' => function ($q) use ($invoiceNos, $salesOrderInvoiceFilter) {
                     $salesOrderInvoiceFilter($q);
                     $q->whereIn('invoice_number', $invoiceNos);
-                }
+                },
             ]);
 
             $query->whereHas('invoices', function ($q) use ($invoiceNos, $salesOrderInvoiceFilter) {
@@ -2618,7 +2635,7 @@ class ReportController extends Controller
             });
         }
 
-        // 
+        //
         if ($request->filled('appointment_date')) {
             $appointmentDates = (array) $request->appointment_date;
 
@@ -2657,7 +2674,7 @@ class ReportController extends Controller
             $query->with([
                 'orderedProducts.tempOrder' => function ($q) use ($poNos) {
                     $q->whereIn('po_number', $poNos);
-                }
+                },
             ]);
 
             $query->whereHas('orderedProducts.tempOrder', function ($q) use ($poNos) {
@@ -2672,7 +2689,7 @@ class ReportController extends Controller
             $query->with([
                 'orderedProducts.customer' => function ($q) use ($customerIds) {
                     $q->whereIn('id', $customerIds);
-                }
+                },
             ]);
 
             $query->whereHas('orderedProducts.customer', function ($q) use ($customerIds) {
@@ -2687,14 +2704,13 @@ class ReportController extends Controller
             $query->with([
                 'orderedProducts.warehouseAllocations' => function ($q) use ($warehouseIds) {
                     $q->whereIn('warehouse_id', $warehouseIds);
-                }
+                },
             ]);
 
             $query->whereHas('orderedProducts.warehouseAllocations', function ($q) use ($warehouseIds) {
                 $q->whereIn('warehouse_id', $warehouseIds);
             });
         }
-
 
         // Customer Group Filter
         if ($request->filled('customer_type')) {
@@ -2703,7 +2719,7 @@ class ReportController extends Controller
             $query->with([
                 'customerGroup' => function ($q) use ($customerTypes) {
                     $q->whereIn('id', $customerTypes);
-                }
+                },
             ]);
 
             $query->whereHas('customerGroup', function ($q) use ($customerTypes) {
@@ -2725,10 +2741,10 @@ class ReportController extends Controller
 
         $totals = (clone $invoiceQuery)->selectRaw(
             'COUNT(*) as invoice_count, COUNT(DISTINCT customer_id) as customer_count, '
-            . 'COALESCE(SUM(taxable_amount), 0) as taxable_amount, '
-            . 'COALESCE(SUM(total_amount), 0) as total_amount, '
-            . 'COALESCE(SUM(paid_amount), 0) as paid_amount, '
-            . 'COALESCE(SUM(balance_due), 0) as balance_due'
+            .'COALESCE(SUM(taxable_amount), 0) as taxable_amount, '
+            .'COALESCE(SUM(total_amount), 0) as total_amount, '
+            .'COALESCE(SUM(paid_amount), 0) as paid_amount, '
+            .'COALESCE(SUM(balance_due), 0) as balance_due'
         )->first();
         $totalInvoices = $totals->invoice_count;
         $totalCustomers = $totals->customer_count;
@@ -2897,7 +2913,7 @@ class ReportController extends Controller
         $recordsTotal = (clone $invoiceQuery)->count();
         $search = trim((string) $request->input('search.value', ''));
         if ($search !== '') {
-            $like = '%' . addcslashes(substr($search, 0, 100), '%_\\') . '%';
+            $like = '%'.addcslashes(substr($search, 0, 100), '%_\\').'%';
             $invoiceQuery->where(function ($query) use ($like) {
                 $query->where('invoices.invoice_number', 'like', $like)
                     ->orWhere('invoices.po_number', 'like', $like)
@@ -2963,6 +2979,7 @@ class ReportController extends Controller
             'html' => view('partials.customer-sales-invoice-rows', compact('invoices'))->render(),
         ]);
     }
+
     /**
      * Download customer sales history as Excel
      *
@@ -3004,7 +3021,7 @@ class ReportController extends Controller
                 $query->with([
                     'invoices' => function ($q) use ($invoiceNos) {
                         $q->whereIn('invoice_number', $invoiceNos);
-                    }
+                    },
                 ]);
 
                 $query->whereHas('invoices', function ($q) use ($invoiceNos) {
@@ -3012,7 +3029,7 @@ class ReportController extends Controller
                 });
             }
 
-            // 
+            //
             if ($request->filled('appointment_date')) {
                 $appointmentDates = collect((array) $request->appointment_date)
                     ->map(function ($date) {
@@ -3027,7 +3044,7 @@ class ReportController extends Controller
                 $query->with([
                     'invoices.appointment' => function ($q) use ($appointmentDates) {
                         $q->whereIn('appointment_date', $appointmentDates);
-                    }
+                    },
                 ]);
 
                 $query->whereHas('invoices.appointment', function ($q) use ($appointmentDates) {
@@ -3041,7 +3058,7 @@ class ReportController extends Controller
                 $query->with([
                     'orderedProducts.tempOrder' => function ($q) use ($poNos) {
                         $q->whereIn('po_number', $poNos);
-                    }
+                    },
                 ]);
 
                 $query->whereHas('orderedProducts.tempOrder', function ($q) use ($poNos) {
@@ -3056,7 +3073,7 @@ class ReportController extends Controller
                 $query->with([
                     'orderedProducts.customer' => function ($q) use ($customerIds) {
                         $q->whereIn('id', $customerIds);
-                    }
+                    },
                 ]);
 
                 $query->whereHas('orderedProducts.customer', function ($q) use ($customerIds) {
@@ -3071,7 +3088,7 @@ class ReportController extends Controller
                 $query->with([
                     'orderedProducts.warehouseAllocations' => function ($q) use ($warehouseIds) {
                         $q->whereIn('warehouse_id', $warehouseIds);
-                    }
+                    },
                 ]);
 
                 $query->whereHas('orderedProducts.warehouseAllocations', function ($q) use ($warehouseIds) {
@@ -3086,7 +3103,7 @@ class ReportController extends Controller
                 $query->with([
                     'customerGroup' => function ($q) use ($customerTypes) {
                         $q->whereIn('id', $customerTypes);
-                    }
+                    },
                 ]);
 
                 $query->whereHas('customerGroup', function ($q) use ($customerTypes) {
@@ -3246,10 +3263,10 @@ class ReportController extends Controller
                     }
 
                     $hasEInvoice = $invoice->einvoices->contains(function ($einvoice) {
-                        return $einvoice->einvoice_status === 'ACT' || !empty($einvoice->irn);
+                        return $einvoice->einvoice_status === 'ACT' || ! empty($einvoice->irn);
                     });
                     $hasEWayBill = $invoice->ewaybills->contains(function ($ewaybill) {
-                        return $ewaybill->ewaybill_status === 'ACT' || !empty($ewaybill->ewb_no);
+                        return $ewaybill->ewaybill_status === 'ACT' || ! empty($ewaybill->ewb_no);
                     });
 
                     $exportData->push([
@@ -3301,7 +3318,7 @@ class ReportController extends Controller
             }
 
             // Create temporary Excel file
-            $tempXlsxPath = storage_path('app/customer_sales_history_' . Str::random(8) . '.xlsx');
+            $tempXlsxPath = storage_path('app/customer_sales_history_'.Str::random(8).'.xlsx');
 
             // Create writer
             $writer = \Spatie\SimpleExcel\SimpleExcelWriter::create($tempXlsxPath);
@@ -3384,7 +3401,7 @@ class ReportController extends Controller
             DB::commit();
 
             // Generate filename
-            $fileName = 'Customer-Sales-Invoices-' . date('d-m-Y') . '.xlsx';
+            $fileName = 'Customer-Sales-Invoices-'.date('d-m-Y').'.xlsx';
 
             // Return Excel file as download and delete after sending
             return response()->download($tempXlsxPath, $fileName, [
@@ -3392,9 +3409,9 @@ class ReportController extends Controller
             ])->deleteFileAfterSend(true);
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error generating customer sales Excel report: ' . $e->getMessage());
+            Log::error('Error generating customer sales Excel report: '.$e->getMessage());
 
-            return redirect()->back()->with('error', 'Error generating sales report: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Error generating sales report: '.$e->getMessage());
         }
     }
 
@@ -3692,7 +3709,7 @@ class ReportController extends Controller
                     'total_pending_payments' => $totalPendingPayments,
                     'total_customers' => $customers->count(),
                     'top_customer' => $invoiceData->groupBy('customer_name')
-                        ->map(fn($rows) => $rows->sum('total'))
+                        ->map(fn ($rows) => $rows->sum('total'))
                         ->sortDesc()
                         ->keys()
                         ->first() ?? 'N/A',
@@ -3720,14 +3737,14 @@ class ReportController extends Controller
                 ->log('Customer sales history PDF report generated');
 
             // Generate filename
-            $fileName = 'Customer-Sales-Summary-' . date('d-m-Y') . '.pdf';
+            $fileName = 'Customer-Sales-Summary-'.date('d-m-Y').'.pdf';
 
             // Return PDF as download
             return $pdf->download($fileName);
         } catch (\Exception $e) {
-            Log::error('Error generating customer sales PDF report: ' . $e->getMessage());
+            Log::error('Error generating customer sales PDF report: '.$e->getMessage());
 
-            return redirect()->back()->with('error', 'Error generating PDF report: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Error generating PDF report: '.$e->getMessage());
         }
     }
 }

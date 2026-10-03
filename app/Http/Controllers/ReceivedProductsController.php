@@ -211,7 +211,7 @@ class ReceivedProductsController extends Controller
 
             $writer->close();
 
-            return response()->download($tempXlsxPath, 'Received-Products-'. $vendorPI->purchaseOrder->order_number . '-' .$request->vendorCode.'.xlsx', [
+            return response()->download($tempXlsxPath, 'Received-Products-'.$vendorPI->purchaseOrder->order_number.'-'.$request->vendorCode.'.xlsx', [
                 'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
             ])->deleteFileAfterSend(true);
         } catch (\Exception $e) {
@@ -311,6 +311,48 @@ class ReceivedProductsController extends Controller
         }
     }
 
+    protected function getRequiredReceivedProductHeaders(?PurchaseOrder $purchaseOrder = null): array
+    {
+        $headers = [
+            'Purchase Order No',
+            'Vendor SKU Code',
+            'Portal Code',
+            'Item Code',
+            'Title',
+            'MRP',
+            'PO Quantity',
+            'PI Quantity',
+            'Quantity Received',
+            'Issue Units',
+            'Issue Description',
+        ];
+
+        if (($purchaseOrder?->order_type ?? null) === 'manual') {
+            array_unshift($headers, 'Vendor Invoice No');
+        }
+
+        return $headers;
+    }
+
+    protected function getMandatoryReceivedProductFields(?PurchaseOrder $purchaseOrder = null): array
+    {
+        $fields = [
+            'Purchase Order No',
+            'Vendor SKU Code',
+            'Title',
+            'MRP',
+            'PO Quantity',
+            'PI Quantity',
+            'Quantity Received',
+        ];
+
+        if (($purchaseOrder?->order_type ?? null) === 'manual') {
+            array_unshift($fields, 'Vendor Invoice No');
+        }
+
+        return $fields;
+    }
+
     /**
      * Update received products from Excel file
      *
@@ -327,6 +369,12 @@ class ReceivedProductsController extends Controller
             return redirect()->back()->with('error', $validated->errors()->first())->withInput();
         }
 
+        $vendorPI = VendorPI::with('products', 'purchaseOrder')->find($request->vendor_pi_id);
+
+        if (! $vendorPI) {
+            return redirect()->back()->with('error', 'Vendor PI not found.');
+        }
+
         $file = $request->file('pi_excel');
         $filepath = $file->getPathname();
         $extension = $file->getClientOriginalExtension();
@@ -337,25 +385,18 @@ class ReceivedProductsController extends Controller
             $reader = SimpleExcelReader::create($filepath, $extension);
             $rows = $reader->getRows()->toArray();
 
-            // Check Columns Headers 
-            $requiredHeaders = ['Vendor Invoice No', 'Purchase Order No', 'Vendor SKU Code', 'Portal Code', 'Item Code', 'Title', 'MRP', 'PO Quantity', 'PI Quantity', 'Quantity Received', 'Issue Units', 'Issue Description'];
-
+            // Check Columns Headers
+            $requiredHeaders = $this->getRequiredReceivedProductHeaders($vendorPI->purchaseOrder);
             $fileHeaders = array_map('trim', array_keys($rows[0] ?? []));
             $missingHeaders = array_diff($requiredHeaders, $fileHeaders);
 
             if (! empty($missingHeaders)) {
                 DB::rollBack();
 
-                return redirect()->back()->with(['error' => 'Missing required columns: ' . implode(', ', $missingHeaders)]);
+                return redirect()->back()->with(['error' => 'Missing required columns: '.implode(', ', $missingHeaders)]);
             }
 
             $insertCount = 0;
-
-            $vendorPI = VendorPI::with('products', 'purchaseOrder')->find($request->vendor_pi_id);
-
-            if (! $vendorPI) {
-                return redirect()->back()->with('error', 'Vendor PI not found.');
-            }
 
             if ($vendorPI->status !== 'pending' && $vendorPI->status !== 'approve') {
                 DB::rollBack();
@@ -364,13 +405,14 @@ class ReceivedProductsController extends Controller
                     ->with('error', 'This vendor PI has already been processed.');
             }
 
-            $mandatoryFields = ['Vendor Invoice No', 'Purchase Order No', 'Vendor SKU Code', 'Portal Code', 'Item Code', 'Title', 'MRP', 'PO Quantity', 'PI Quantity', 'Quantity Received'];
+            $mandatoryFields = $this->getMandatoryReceivedProductFields($vendorPI->purchaseOrder);
 
             foreach ($rows as $record) {
                 // Validate all required fields are not empty
                 foreach ($mandatoryFields as $field) {
                     if (! isset($record[$field]) || (is_string($record[$field]) && trim($record[$field]) === '')) {
                         DB::rollBack();
+
                         return redirect()->back()->with(['error' => "{$field} is required for all rows. Please check your CSV file."])->withInput();
                     }
                 }
@@ -378,22 +420,33 @@ class ReceivedProductsController extends Controller
                 //     continue;
                 // }
 
-                $vendorSkuCode = trim($record['Vendor SKU Code']);
-                $portal_code = trim($record['Portal Code']);
-                $item_code = trim($record['Item Code']);
-                $vendorInvoiceNo = trim($record['Vendor Invoice No']);
+                $vendorSkuCode = trim((string) ($record['Vendor SKU Code'] ?? ''));
+                $portal_code = trim((string) ($record['Portal Code'] ?? ''));
+                $item_code = trim((string) ($record['Item Code'] ?? ''));
+                $vendorInvoiceNo = '';
+                if (($vendorPI->purchaseOrder?->order_type ?? null) === 'manual') {
+                    $vendorInvoiceNo = trim((string) ($record['Vendor Invoice No'] ?? ''));
+                }
                 $quantityReceived = (int) ($record['Quantity Received'] ?? 0);
                 $issueUnits = 0;
-                $issueDescription = trim($record['Issue Description'] ?? '');
+                $issueDescription = trim((string) ($record['Issue Description'] ?? ''));
 
                 // Initialize variables
                 $extraQuantity = 0;
                 $shortageQuantity = 0;
 
                 $productQuery = VendorPIProduct::with('tempOrder')->where('vendor_sku_code', $vendorSkuCode)
-                    ->where('portal_code', $portal_code)
-                    ->where('item_code', $item_code)
                     ->where('vendor_pi_id', $vendorPI->id);
+
+                foreach (['portal_code' => $portal_code, 'item_code' => $item_code] as $column => $value) {
+                    $productQuery->where(function ($query) use ($column, $value) {
+                        if ($value === '') {
+                            $query->whereNull($column)->orWhere($column, '');
+                        } else {
+                            $query->where($column, $value);
+                        }
+                    });
+                }
 
                 if ($vendorPI->purchaseOrder?->order_type === 'manual') {
                     $productQuery->where('vendor_invoice_no', $vendorInvoiceNo);

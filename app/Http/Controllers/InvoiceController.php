@@ -19,6 +19,7 @@ use App\Models\State;
 use App\Models\Warehouse;
 use App\Models\WarehouseAllocation;
 use App\Models\WarehouseStock;
+use App\Services\InvoiceStockReturnService;
 use Endroid\QrCode\QrCode;
 use Endroid\QrCode\Writer\PngWriter;
 use Illuminate\Http\Request;
@@ -52,7 +53,7 @@ class InvoiceController extends Controller
             }
 
             if ($filters['invoice_no'] !== '') {
-                $invoiceQuery->where('invoice_number', 'like', '%' . $filters['invoice_no'] . '%');
+                $invoiceQuery->where('invoice_number', 'like', '%'.$filters['invoice_no'].'%');
             }
         };
 
@@ -125,7 +126,7 @@ class InvoiceController extends Controller
     {
         $invoice = Invoice::with(['warehouse', 'customer', 'salesOrder'])->findOrFail($id);
 
-        return $this->buildInvoicePdf($invoice)->stream('Invoice-' . $invoice->invoice_number . '.pdf');
+        return $this->buildInvoicePdf($invoice)->stream('Invoice-'.$invoice->invoice_number.'.pdf');
     }
 
     public function downloadBulkPdfs(Request $request, int $id)
@@ -192,15 +193,15 @@ class InvoiceController extends Controller
         ];
         $path = public_path('assets/images/logo-icon.png');
         $base64 = base64_encode(file_get_contents($path));
-        $base64Image = 'data:image/png;base64,' . $base64;
+        $base64Image = 'data:image/png;base64,'.$base64;
 
         $sign = public_path('assets/images/sign-transparent.png');
         $sign64 = base64_encode(file_get_contents($sign));
-        $sign64Image = 'data:image/png;base64,' . $sign64;
+        $sign64Image = 'data:image/png;base64,'.$sign64;
 
         $path1 = public_path('assets/images/e-inv.png');
         $base642 = base64_encode(file_get_contents($path1));
-        $base643Image = 'data:image/png;base64,' . $base642;
+        $base643Image = 'data:image/png;base64,'.$base642;
 
         $invoiceDetails = InvoiceDetails::with('product', 'tempOrder', 'salesOrderProduct')
             ->where('invoice_id', $invoice->id)
@@ -254,15 +255,15 @@ class InvoiceController extends Controller
         ];
         $path = public_path('assets/images/logo-icon.png');
         $base64 = base64_encode(file_get_contents($path));
-        $base64Image = 'data:image/png;base64,' . $base64;
+        $base64Image = 'data:image/png;base64,'.$base64;
 
         $sign = public_path('assets/images/sign-transparent.png');
         $sign64 = base64_encode(file_get_contents($sign));
-        $sign64Image = 'data:image/png;base64,' . $sign64;
+        $sign64Image = 'data:image/png;base64,'.$sign64;
 
         $path1 = public_path('assets/images/e-inv.png');
         $base642 = base64_encode(file_get_contents($path1));
-        $base643Image = 'data:image/png;base64,' . $base642;
+        $base643Image = 'data:image/png;base64,'.$base642;
         $invoice = Invoice::with(['warehouse', 'customer', 'salesOrder'])->findOrFail($id);
         $invoiceDetails = InvoiceDetails::with('product', 'tempOrder', 'salesOrderProduct')->where('invoice_id', $id)->get();
 
@@ -308,7 +309,7 @@ class InvoiceController extends Controller
         $pdf = \PDF::loadView('invoice/einvoice-pdf', ['image' => $base64Image, 'image1' => $base643Image] + $data);
         $pdf->setPaper('a4');
 
-        return $pdf->stream('E-Invoice-' . $invoice->invoice_number . '.pdf');
+        return $pdf->stream('E-Invoice-'.$invoice->invoice_number.'.pdf');
     }
 
     public function downloadEWayBillPdf($id)
@@ -329,7 +330,7 @@ class InvoiceController extends Controller
         // Return the PDF with proper headers for download
         return response($response->body(), 200, [
             'Content-Type' => 'application/pdf',
-            'Content-Disposition' => 'attachment; filename="E-Way-Bill-' . $ewaybill->invoice->invoice_number . '.pdf"',
+            'Content-Disposition' => 'attachment; filename="E-Way-Bill-'.$ewaybill->invoice->invoice_number.'.pdf"',
         ]);
     }
 
@@ -378,7 +379,7 @@ class InvoiceController extends Controller
             if ($request->hasFile('pod')) {
                 $pod = $request->file('pod');
                 $ext = $pod->getClientOriginalExtension();
-                $podName = time() . '_pod.' . $ext;
+                $podName = time().'_pod.'.$ext;
 
                 // Store original image
                 $pod->move(public_path('uploads/pod'), $podName);
@@ -388,7 +389,7 @@ class InvoiceController extends Controller
             if ($request->hasFile('grn')) {
                 $grn = $request->file('grn');
                 $ext = $grn->getClientOriginalExtension();
-                $grnName = time() . '_grn.' . $ext;
+                $grnName = time().'_grn.'.$ext;
 
                 // Store original image
                 $grn->move(public_path('uploads/grn'), $grnName);
@@ -401,7 +402,7 @@ class InvoiceController extends Controller
 
             $appointment->save();
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Failed to update invoice: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Failed to update invoice: '.$e->getMessage());
         }
 
         return redirect()->back()->with('success', 'Invoice updated successfully.');
@@ -411,7 +412,7 @@ class InvoiceController extends Controller
     {
         // Logic to update invoice DN details
         $validated = Validator::make($request->all(), [
-            'dn_number' => 'nullable|string|max:255|unique:dns,dn_number,' . $id . ',invoice_id',
+            'dn_number' => 'nullable|string|max:255|unique:dns,dn_number,'.$id.',invoice_id',
             'dn_amount' => 'nullable|numeric|min:0',
             'dn_reason' => 'nullable|string|max:255',
             'dn_receipt' => 'nullable|file|mimes:jpg,jpeg,png,pdf',
@@ -434,7 +435,7 @@ class InvoiceController extends Controller
             if ($request->hasFile('dn_receipt')) {
                 $dnReceipt = $request->file('dn_receipt');
                 $ext = $dnReceipt->getClientOriginalExtension();
-                $dnReceiptName = time() . '.' . $ext;
+                $dnReceiptName = time().'.'.$ext;
 
                 // Store original image
                 $dnReceipt->move(public_path('uploads/dn_receipts'), $dnReceiptName);
@@ -443,7 +444,7 @@ class InvoiceController extends Controller
 
             $dn->save();
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Failed to update invoice: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Failed to update invoice: '.$e->getMessage());
         }
 
         return redirect()->back()->with('success', 'Invoice updated successfully.');
@@ -481,7 +482,7 @@ class InvoiceController extends Controller
             if ($request->input('pay_amount') > $currentDueAmount) {
                 DB::rollBack();
 
-                return redirect()->back()->with('error', 'Payment amount (₹' . number_format($request->input('pay_amount'), 2) . ') is greater than due amount (₹' . number_format($currentDueAmount, 2) . ').')->withInput();
+                return redirect()->back()->with('error', 'Payment amount (₹'.number_format($request->input('pay_amount'), 2).') is greater than due amount (₹'.number_format($currentDueAmount, 2).').')->withInput();
             }
 
             // Create payment record
@@ -513,14 +514,14 @@ class InvoiceController extends Controller
             $invoice->save();
 
             DB::commit();
-            activity()->performedOn($invoice)->causedBy(Auth::user())->log('Payment added: ₹' . number_format($request->input('pay_amount'), 2));
+            activity()->performedOn($invoice)->causedBy(Auth::user())->log('Payment added: ₹'.number_format($request->input('pay_amount'), 2));
 
-            return redirect()->back()->with('success', 'Payment added successfully. Paid: ₹' . number_format($newPaidAmount, 2) . ', Due: ₹' . number_format($newBalanceDue, 2));
+            return redirect()->back()->with('success', 'Payment added successfully. Paid: ₹'.number_format($newPaidAmount, 2).', Due: ₹'.number_format($newBalanceDue, 2));
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Invoice Payment Update Error: ' . $e->getMessage());
+            Log::error('Invoice Payment Update Error: '.$e->getMessage());
 
-            return redirect()->back()->with('error', 'Error: ' . $e->getMessage())->withInput();
+            return redirect()->back()->with('error', 'Error: '.$e->getMessage())->withInput();
         }
     }
 
@@ -583,7 +584,7 @@ class InvoiceController extends Controller
 
         try {
             $rows = collect(SimpleExcelReader::create($filepath, $extension)->getRows()->toArray())
-                ->map(fn($row) => array_change_key_case($row, CASE_LOWER))
+                ->map(fn ($row) => array_change_key_case($row, CASE_LOWER))
                 ->values()
                 ->toArray();
 
@@ -599,7 +600,7 @@ class InvoiceController extends Controller
             if (! empty($missingHeaders)) {
                 DB::rollBack();
 
-                return redirect()->back()->with('error', 'Missing required columns: ' . implode(', ', $missingHeaders))->withInput();
+                return redirect()->back()->with('error', 'Missing required columns: '.implode(', ', $missingHeaders))->withInput();
             }
 
             foreach ($rows as $index => $row) {
@@ -609,7 +610,7 @@ class InvoiceController extends Controller
                 if ($invoiceNumber === '') {
                     DB::rollBack();
 
-                    return redirect()->back()->with('error', 'invoice_number is required on row ' . $rowNumber . '.')->withInput();
+                    return redirect()->back()->with('error', 'invoice_number is required on row '.$rowNumber.'.')->withInput();
                 }
 
                 $invoice = Invoice::with(['appointment', 'payments'])->where('invoice_number', $invoiceNumber)->first();
@@ -617,7 +618,7 @@ class InvoiceController extends Controller
                 if (! $invoice) {
                     DB::rollBack();
 
-                    return redirect()->back()->with('error', 'Invoice not found for invoice_number ' . $invoiceNumber . ' on row ' . $rowNumber . '.')->withInput();
+                    return redirect()->back()->with('error', 'Invoice not found for invoice_number '.$invoiceNumber.' on row '.$rowNumber.'.')->withInput();
                 }
 
                 $hasAppointmentData = trim((string) ($row['appointment_date'] ?? '')) !== '' || trim((string) ($row['grn_date'] ?? '')) !== '' || trim((string) ($row['pod_file'] ?? '')) !== '' || trim((string) ($row['grn_file'] ?? '')) !== '';
@@ -636,24 +637,24 @@ class InvoiceController extends Controller
                     }
 
                     if (trim((string) ($row['pod_file'] ?? '')) !== '') {
-                        $podFile = public_path('uploads/pod/' . trim((string) $row['pod_file']));
+                        $podFile = public_path('uploads/pod/'.trim((string) $row['pod_file']));
 
                         if (! file_exists($podFile)) {
                             DB::rollBack();
 
-                            return redirect()->back()->with('error', 'POD file not found for invoice ' . $invoiceNumber . ' on row ' . $rowNumber . '.')->withInput();
+                            return redirect()->back()->with('error', 'POD file not found for invoice '.$invoiceNumber.' on row '.$rowNumber.'.')->withInput();
                         }
 
                         $appointment->pod = basename($podFile);
                     }
 
                     if (trim((string) ($row['grn_file'] ?? '')) !== '') {
-                        $grnFile = public_path('uploads/grn/' . trim((string) $row['grn_file']));
+                        $grnFile = public_path('uploads/grn/'.trim((string) $row['grn_file']));
 
                         if (! file_exists($grnFile)) {
                             DB::rollBack();
 
-                            return redirect()->back()->with('error', 'GRN file not found for invoice ' . $invoiceNumber . ' on row ' . $rowNumber . '.')->withInput();
+                            return redirect()->back()->with('error', 'GRN file not found for invoice '.$invoiceNumber.' on row '.$rowNumber.'.')->withInput();
                         }
 
                         $appointment->grn = basename($grnFile);
@@ -669,19 +670,19 @@ class InvoiceController extends Controller
                     if ($dnReceipt === '') {
                         DB::rollBack();
 
-                        return redirect()->back()->with('error', 'dn_receipt_file is required when DN data is provided on row ' . $rowNumber . '.')->withInput();
+                        return redirect()->back()->with('error', 'dn_receipt_file is required when DN data is provided on row '.$rowNumber.'.')->withInput();
                     }
 
-                    $dnPath = public_path('uploads/dn_receipts/' . $dnReceipt);
+                    $dnPath = public_path('uploads/dn_receipts/'.$dnReceipt);
 
                     if (! file_exists($dnPath)) {
                         DB::rollBack();
 
-                        return redirect()->back()->with('error', 'DN receipt file not found for invoice ' . $invoiceNumber . ' on row ' . $rowNumber . '.')->withInput();
+                        return redirect()->back()->with('error', 'DN receipt file not found for invoice '.$invoiceNumber.' on row '.$rowNumber.'.')->withInput();
                     }
 
                     $existingDn = Dn::where('invoice_id', $invoice->id)->first();
-                    $dn = $existingDn ?: new Dn();
+                    $dn = $existingDn ?: new Dn;
                     $dn->invoice_id = $invoice->id;
                     $dn->dn_number = trim((string) ($row['dn_number'] ?? ''));
                     $dn->dn_amount = (float) ($row['dn_amount'] ?? 0);
@@ -698,7 +699,7 @@ class InvoiceController extends Controller
                     if ($utrNo === '' || $payAmount <= 0 || $paymentMethod === '') {
                         DB::rollBack();
 
-                        return redirect()->back()->with('error', 'utr_no, pay_amount, and payment_method are required when payment data is provided on row ' . $rowNumber . '.')->withInput();
+                        return redirect()->back()->with('error', 'utr_no, pay_amount, and payment_method are required when payment data is provided on row '.$rowNumber.'.')->withInput();
                     }
 
                     $currentPaidAmount = (float) $invoice->payments->sum('amount');
@@ -707,22 +708,22 @@ class InvoiceController extends Controller
                     if ($currentDueAmount <= 0) {
                         DB::rollBack();
 
-                        return redirect()->back()->with('error', 'Invoice ' . $invoiceNumber . ' is already fully paid.')->withInput();
+                        return redirect()->back()->with('error', 'Invoice '.$invoiceNumber.' is already fully paid.')->withInput();
                     }
 
                     if ($payAmount > $currentDueAmount) {
                         DB::rollBack();
 
-                        return redirect()->back()->with('error', 'Payment amount is greater than due amount for invoice ' . $invoiceNumber . ' on row ' . $rowNumber . '.')->withInput();
+                        return redirect()->back()->with('error', 'Payment amount is greater than due amount for invoice '.$invoiceNumber.' on row '.$rowNumber.'.')->withInput();
                     }
 
                     if (Payment::where('payment_utr_no', $utrNo)->exists()) {
                         DB::rollBack();
 
-                        return redirect()->back()->with('error', 'UTR number already exists for invoice ' . $invoiceNumber . ' on row ' . $rowNumber . '.')->withInput();
+                        return redirect()->back()->with('error', 'UTR number already exists for invoice '.$invoiceNumber.' on row '.$rowNumber.'.')->withInput();
                     }
 
-                    $payment = new Payment();
+                    $payment = new Payment;
                     $payment->invoice_id = $invoice->id;
                     $payment->payment_utr_no = $utrNo;
                     $payment->amount = $payAmount;
@@ -744,9 +745,9 @@ class InvoiceController extends Controller
             return redirect()->back()->with('success', 'Invoice bulk update completed successfully.');
         } catch (\Throwable $e) {
             DB::rollBack();
-            Log::error('Invoice bulk import error: ' . $e->getMessage());
+            Log::error('Invoice bulk import error: '.$e->getMessage());
 
-            return redirect()->back()->with('error', 'Something went wrong: ' . $e->getMessage())->withInput();
+            return redirect()->back()->with('error', 'Something went wrong: '.$e->getMessage())->withInput();
         }
     }
 
@@ -765,7 +766,7 @@ class InvoiceController extends Controller
             // 'ewaybills' => function ($query) {
             //     $query->where('ewaybill_status', 'ACT');
             // }
-            'ewaybills'
+            'ewaybills',
         ])->find($id);
         // dd($invoiceDetails);
         // count total active einvoices
@@ -782,7 +783,7 @@ class InvoiceController extends Controller
         $isAdmin = $user->hasRole(['Super Admin', 'Admin']) || ! $user->warehouse_id;
         $userWarehouseId = $user->warehouse_id;
 
-        $query = Invoice::with(['details.product', 'details.tempOrder', 'customer', 'warehouse', 'salesOrder', 'payments'])
+        $query = Invoice::with(['details.product', 'details.tempOrder', 'details.salesOrderProduct', 'customer', 'warehouse', 'salesOrder', 'payments'])
             ->where('id', $id);
 
         if (! $isSuperAdmin && ! $isAdmin && $userWarehouseId) {
@@ -790,8 +791,15 @@ class InvoiceController extends Controller
         }
 
         $invoice = $query->firstOrFail();
+        $warehousesQuery = Warehouse::active()->orderBy('name');
 
-        return view('invoice.edit', compact('invoice'));
+        if (! $isAdmin && $userWarehouseId) {
+            $warehousesQuery->where('id', $userWarehouseId);
+        }
+
+        $warehouses = $warehousesQuery->get(['id', 'name']);
+
+        return view('invoice.edit', compact('invoice', 'warehouses'));
     }
 
     public function updateInvoice(Request $request, $id)
@@ -812,6 +820,8 @@ class InvoiceController extends Controller
             'details.*.discount' => 'nullable|numeric|min:0',
             'details.*.tax' => 'nullable|numeric|min:0',
             'details.*.description' => 'nullable|string|max:1000',
+            'return_warehouse_id' => 'nullable|integer|exists:warehouses,id',
+            'return_remark' => 'nullable|string|max:1000',
         ]);
 
         if ($validator->fails()) {
@@ -820,8 +830,8 @@ class InvoiceController extends Controller
 
         DB::beginTransaction();
         try {
-            $invoice = Invoice::with(['details', 'payments'])->findOrFail($id);
-            $detailIds = collect($request->details)->pluck('id')->map(fn($detailId) => (int) $detailId)->all();
+            $invoice = Invoice::with(['details', 'payments'])->lockForUpdate()->findOrFail($id);
+            $detailIds = collect($request->details)->pluck('id')->map(fn ($detailId) => (int) $detailId)->all();
 
             $details = InvoiceDetails::where('invoice_id', $invoice->id)
                 ->whereIn('id', $detailIds)
@@ -832,6 +842,48 @@ class InvoiceController extends Controller
                 DB::rollBack();
 
                 return redirect()->back()->with('error', 'One or more invoice lines are invalid.')->withInput();
+            }
+
+            $salesOrderProductIdsWithQuantityChanges = collect();
+            $hasSalesOrderQuantityReduction = false;
+
+            foreach ($request->details as $line) {
+                $detail = $details[(int) $line['id']];
+                $newQuantity = (float) $line['quantity'];
+                $currentQuantity = (float) $detail->quantity;
+
+                if ($invoice->sales_order_id && $newQuantity > $currentQuantity) {
+                    throw new \DomainException('Sales order invoice quantity cannot be increased from this page.');
+                }
+
+                if ($invoice->sales_order_id && $newQuantity < $currentQuantity) {
+                    $hasSalesOrderQuantityReduction = true;
+                    $salesOrderProductIdsWithQuantityChanges->push((int) $detail->sales_order_product_id);
+                }
+            }
+
+            $returnWarehouse = null;
+
+            if ($hasSalesOrderQuantityReduction) {
+                if ($invoice->payments()->exists() || (float) $invoice->paid_amount > 0) {
+                    throw new \DomainException('Invoice quantity cannot be reduced after a payment has been recorded.');
+                }
+
+                if ($invoice->einvoices()->exists() || $invoice->ewaybills()->exists()) {
+                    throw new \DomainException('Invoice quantity cannot be reduced after an E-Invoice or E-Way Bill record exists.');
+                }
+
+                $user = Auth::user();
+                $isAdmin = $user->hasRole(['Super Admin', 'Admin']) || ! $user->warehouse_id;
+                $returnWarehouse = Warehouse::active()->find($request->return_warehouse_id);
+
+                if (! $returnWarehouse) {
+                    throw new \DomainException('Select an active warehouse for the returned quantity.');
+                }
+
+                if (! $isAdmin && $user->warehouse_id && (int) $returnWarehouse->id !== (int) $user->warehouse_id) {
+                    throw new \DomainException('You can only return stock to your assigned warehouse.');
+                }
             }
 
             $subtotal = 0;
@@ -856,6 +908,16 @@ class InvoiceController extends Controller
                 $totalDiscount += $discount;
                 $totalTax += $taxAmount;
 
+                if ($invoice->sales_order_id && $quantity < (float) $detail->quantity) {
+                    app(InvoiceStockReturnService::class)->returnQuantity(
+                        $invoice,
+                        $detail,
+                        (float) $detail->quantity - $quantity,
+                        $returnWarehouse,
+                        $request->input('return_remark'),
+                    );
+                }
+
                 $detail->update([
                     'hsn' => $line['hsn'] ?? $detail->hsn,
                     'quantity' => $quantity,
@@ -868,6 +930,10 @@ class InvoiceController extends Controller
                     'total_price' => $totalPrice,
                     'description' => $line['description'] ?? $detail->description,
                 ]);
+            }
+
+            foreach ($salesOrderProductIdsWithQuantityChanges->unique() as $salesOrderProductId) {
+                $this->syncSalesOrderInvoiceStatuses((int) $salesOrderProductId);
             }
 
             $roundOff = (float) ($request->round_off ?? 0);
@@ -903,11 +969,152 @@ class InvoiceController extends Controller
             activity()->performedOn($invoice)->causedBy(Auth::user())->log('Invoice updated');
 
             return redirect()->route('invoices-details', $invoice->id)->with('success', 'Invoice updated successfully.');
+        } catch (\DomainException $e) {
+            DB::rollBack();
+
+            return redirect()->back()->with('error', $e->getMessage())->withInput();
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Invoice Update Error: ' . $e->getMessage());
+            Log::error('Invoice Update Error: '.$e->getMessage());
 
-            return redirect()->back()->with('error', 'Failed to update invoice: ' . $e->getMessage())->withInput();
+            return redirect()->back()->with('error', 'Failed to update invoice: '.$e->getMessage())->withInput();
+        }
+    }
+
+    public function returnInvoiceDetailToWarehouse(Request $request, int $id, int $detailId)
+    {
+        $validator = Validator::make($request->all(), [
+            'warehouse_id' => 'required|integer|exists:warehouses,id',
+            'remark' => 'nullable|string|max:1000',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator);
+        }
+
+        DB::beginTransaction();
+
+        try {
+            $user = Auth::user();
+            $isAdmin = $user->hasRole(['Super Admin', 'Admin']) || ! $user->warehouse_id;
+            $invoiceQuery = Invoice::whereKey($id);
+
+            if (! $isAdmin && $user->warehouse_id) {
+                $invoiceQuery->where('warehouse_id', $user->warehouse_id);
+            }
+
+            $invoice = $invoiceQuery->lockForUpdate()->firstOrFail();
+            $destinationWarehouse = Warehouse::active()->find($request->warehouse_id);
+
+            if (! $destinationWarehouse) {
+                throw new \DomainException('Please select an active warehouse.');
+            }
+
+            if (! $isAdmin && $user->warehouse_id && (int) $destinationWarehouse->id !== (int) $user->warehouse_id) {
+                throw new \DomainException('You can only return stock to your assigned warehouse.');
+            }
+
+            $detail = InvoiceDetails::where('invoice_id', $invoice->id)
+                ->lockForUpdate()
+                ->findOrFail($detailId);
+
+            if ($invoice->payments()->exists() || (float) $invoice->paid_amount > 0) {
+                throw new \DomainException('Invoice lines cannot be removed after a payment has been recorded.');
+            }
+
+            if ($invoice->einvoices()->exists() || $invoice->ewaybills()->exists()) {
+                throw new \DomainException('Invoice lines cannot be removed after an E-Invoice or E-Way Bill record exists.');
+            }
+
+            $salesOrderProduct = app(InvoiceStockReturnService::class)->returnQuantity(
+                $invoice,
+                $detail,
+                (float) $detail->quantity,
+                $destinationWarehouse,
+                $request->input('remark'),
+            );
+
+            $detail->delete();
+            $this->syncSalesOrderInvoiceStatuses((int) $salesOrderProduct->id);
+
+            if (! InvoiceDetails::where('invoice_id', $invoice->id)->exists()) {
+                Dn::where('invoice_id', $invoice->id)->delete();
+                Appointment::where('invoice_id', $invoice->id)->delete();
+                activity()->performedOn($invoice)->causedBy($user)->log('Invoice removed after returning its final line to stock');
+                $invoice->delete();
+
+                DB::commit();
+
+                return redirect()->route('invoices')->with('success', 'Final invoice line returned to stock and the empty invoice was removed.');
+            }
+
+            $subtotal = 0;
+            $taxableAmount = 0;
+            $totalDiscount = 0;
+            $totalTax = 0;
+
+            foreach ($invoice->details()->get() as $remainingDetail) {
+                $amount = (float) $remainingDetail->quantity * (float) $remainingDetail->unit_price;
+                $discount = (float) ($remainingDetail->discount ?? 0);
+                $lineTaxable = max($amount - $discount, 0);
+                $subtotal += $amount;
+                $taxableAmount += $lineTaxable;
+                $totalDiscount += $discount;
+                $totalTax += ($lineTaxable * (float) ($remainingDetail->tax ?? 0)) / 100;
+            }
+
+            $roundOff = (float) ($invoice->round_off ?? 0);
+            $totalAmount = $taxableAmount + $totalTax + $roundOff;
+            $invoice->update([
+                'subtotal' => $subtotal,
+                'taxable_amount' => $taxableAmount,
+                'tax_amount' => $totalTax,
+                'discount_amount' => $totalDiscount,
+                'total_amount' => $totalAmount,
+                'paid_amount' => 0,
+                'balance_due' => $totalAmount,
+                'payment_status' => 'unpaid',
+            ]);
+
+            DB::commit();
+            activity()->performedOn($invoice)->causedBy($user)->log('Invoice line removed and returned to warehouse stock');
+
+            return redirect()->route('invoice.edit', $invoice->id)->with('success', 'Invoice line removed and quantity returned to the selected warehouse.');
+        } catch (\DomainException $e) {
+            DB::rollBack();
+
+            return redirect()->back()->with('error', $e->getMessage());
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            Log::error('Invoice line stock return failed: '.$e->getMessage());
+
+            return redirect()->back()->with('error', 'Could not remove the invoice line or return its stock. No changes were saved.');
+        }
+    }
+
+    private function syncSalesOrderInvoiceStatuses(int $salesOrderProductId): void
+    {
+        $salesOrderProduct = SalesOrderProduct::lockForUpdate()->findOrFail($salesOrderProductId);
+        $remainingInvoiceQuantity = (float) InvoiceDetails::where('sales_order_product_id', $salesOrderProductId)->sum('quantity');
+        $dispatchedQuantity = (float) ($salesOrderProduct->final_final_dispatched_quantity ?? 0);
+        $salesOrderProduct->invoice_status = $dispatchedQuantity > 0 && $remainingInvoiceQuantity >= $dispatchedQuantity
+            ? 'completed'
+            : 'pending';
+        $salesOrderProduct->save();
+
+        $allocations = WarehouseAllocation::where('sales_order_product_id', $salesOrderProductId)
+            ->lockForUpdate()
+            ->get();
+
+        foreach ($allocations as $allocation) {
+            $remainingAllocationInvoiceQuantity = (float) InvoiceDetails::where('sales_order_product_id', $salesOrderProductId)
+                ->where('warehouse_id', $allocation->warehouse_id)
+                ->sum('quantity');
+            $allocationDispatchedQuantity = (float) ($allocation->final_final_dispatched_quantity ?? 0);
+            $allocation->invoice_status = $allocationDispatchedQuantity > 0 && $remainingAllocationInvoiceQuantity >= $allocationDispatchedQuantity
+                ? 'completed'
+                : 'pending';
+            $allocation->save();
         }
     }
 
@@ -1010,9 +1217,9 @@ class InvoiceController extends Controller
             return redirect()->back()->with('success', 'Invoice deleted successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Invoice Delete Error: ' . $e->getMessage());
+            Log::error('Invoice Delete Error: '.$e->getMessage());
 
-            return redirect()->back()->with('error', 'Failed to delete invoice: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Failed to delete invoice: '.$e->getMessage());
         }
     }
 
@@ -1046,7 +1253,7 @@ class InvoiceController extends Controller
 
             return response()->json(['success' => true, 'products' => $products]);
         } catch (\Exception $e) {
-            Log::error('Get Products Error: ' . $e->getMessage());
+            Log::error('Get Products Error: '.$e->getMessage());
 
             return response()->json(['success' => false, 'message' => 'Failed to fetch products'], 500);
         }
@@ -1077,7 +1284,7 @@ class InvoiceController extends Controller
                 'product' => $product,
             ]);
         } catch (\Exception $e) {
-            Log::error('Check Stock Error: ' . $e->getMessage());
+            Log::error('Check Stock Error: '.$e->getMessage());
 
             return response()->json(['success' => false, 'message' => 'Failed to check stock'], 500);
         }
@@ -1174,7 +1381,7 @@ class InvoiceController extends Controller
                 $newNumber = '7056'; // start from here if no invoices exist
             }
 
-            $invoiceNumber = 'IIPL-' . $newNumber;
+            $invoiceNumber = 'IIPL-'.$newNumber;
 
             // Calculate totals based on invoice type
             $subtotal = 0;
@@ -1356,9 +1563,9 @@ class InvoiceController extends Controller
             return redirect()->route('invoices-details', $invoice->id)->with('success', 'Invoice created successfully!');
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Manual Invoice Creation Error: ' . $e->getMessage());
+            Log::error('Manual Invoice Creation Error: '.$e->getMessage());
 
-            return redirect()->back()->with('error', 'Error: ' . $e->getMessage())->withInput();
+            return redirect()->back()->with('error', 'Error: '.$e->getMessage())->withInput();
         }
     }
 
@@ -1385,7 +1592,7 @@ class InvoiceController extends Controller
                 return response()->json(['success' => true, 'message' => 'PO Number is available']);
             }
         } catch (\Exception $e) {
-            Log::error('Check PO Number Error: ' . $e->getMessage());
+            Log::error('Check PO Number Error: '.$e->getMessage());
 
             return response()->json(['success' => false, 'message' => 'Failed to check PO Number'], 500);
         }
@@ -1443,7 +1650,7 @@ class InvoiceController extends Controller
             }
 
             if (! isset($response['results'])) {
-                Log::error('E-Invoice API Invalid Response Structure: ' . json_encode($response));
+                Log::error('E-Invoice API Invalid Response Structure: '.json_encode($response));
 
                 return redirect()->back()->with('error', 'Invalid response from e-invoice API. Please contact support with the error details.');
             }
@@ -1453,26 +1660,26 @@ class InvoiceController extends Controller
             if (! isset($results['status']) || $results['status'] !== 'Success' || ! isset($results['message'])) {
                 $errorMessage = $results['errorMessage'] ?? $results['InfoDtls'] ?? 'Unknown API error occurred';
                 $status = $results['status'] ?? 'Unknown';
-                Log::error('E-Invoice API Error Response: ' . json_encode($response));
+                Log::error('E-Invoice API Error Response: '.json_encode($response));
 
                 if (str_contains(strtolower((string) $errorMessage), 'einvoice username or password is missing')) {
                     return redirect()->back()->with('error', 'Masters India production account is missing e-invoice credentials or GSTIN mapping for this user. Please verify the GSTIN onboarding in Masters India.');
                 }
 
-                return redirect()->back()->with('error', 'Failed to generate e-invoice (Status: ' . $status . '): ' . $errorMessage . '. Please check the invoice data and try again.');
+                return redirect()->back()->with('error', 'Failed to generate e-invoice (Status: '.$status.'): '.$errorMessage.'. Please check the invoice data and try again.');
             }
 
             $message = $results['message'];
             // dd($message);
             if (isset($message['Status']) && $message['Status'] === 'CAN') {
-                Log::error('E-Invoice API returned cancelled status on generation: ' . json_encode($response));
+                Log::error('E-Invoice API returned cancelled status on generation: '.json_encode($response));
 
                 return redirect()->back()->with('error', 'E-Invoice generation returned a cancelled status. Please verify the invoice details and try again.');
             }
 
             // Validate required response data
             if (! isset($message['Irn'])) {
-                Log::error('E-Invoice API Missing IRN: ' . json_encode($response));
+                Log::error('E-Invoice API Missing IRN: '.json_encode($response));
 
                 return redirect()->back()->with('error', 'E-Invoice generated but IRN not received. Please contact support.');
             }
@@ -1492,18 +1699,18 @@ class InvoiceController extends Controller
                     'created_by' => Auth::id(),
                 ]);
             } catch (\Exception $e) {
-                Log::error('E-Invoice Database Save Error: ' . $e->getMessage());
+                Log::error('E-Invoice Database Save Error: '.$e->getMessage());
 
-                return redirect()->back()->with('error', 'E-Invoice generated successfully, but failed to save details to database. IRN: ' . ($message['Irn'] ?? 'N/A') . '. Please contact support.');
+                return redirect()->back()->with('error', 'E-Invoice generated successfully, but failed to save details to database. IRN: '.($message['Irn'] ?? 'N/A').'. Please contact support.');
             }
 
             $irn = $message['Irn'] ?? 'N/A';
 
-            return redirect()->back()->with('success', 'E-Invoice generated successfully. IRN: ' . $irn);
+            return redirect()->back()->with('success', 'E-Invoice generated successfully. IRN: '.$irn);
         } catch (\Exception $e) {
-            Log::error('E-Invoice Generation Error: ' . $e->getMessage());
+            Log::error('E-Invoice Generation Error: '.$e->getMessage());
 
-            return redirect()->back()->with('error', 'An error occurred while generating e-invoice: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'An error occurred while generating e-invoice: '.$e->getMessage());
         }
     }
 
@@ -1656,7 +1863,7 @@ class InvoiceController extends Controller
     private function callEInvoiceAPI($token, $data)
     {
         try {
-            $einvoiceUrl = $this->getEInvoiceApiBaseUrl() . '/einvoice/';
+            $einvoiceUrl = $this->getEInvoiceApiBaseUrl().'/einvoice/';
 
             Log::debug('E-Invoice API Request Payload', [
                 'url' => $einvoiceUrl,
@@ -1674,7 +1881,7 @@ class InvoiceController extends Controller
 
             return $response->json();
         } catch (\Exception $e) {
-            Log::error('E-Invoice API Call Error: ' . $e->getMessage());
+            Log::error('E-Invoice API Call Error: '.$e->getMessage());
 
             return null;
         }
@@ -1720,12 +1927,12 @@ class InvoiceController extends Controller
             // Make API call with JSON body
             $response = Http::withHeaders($this->getEInvoiceAuthHeaders($token))
                 ->asJson()
-                ->post($this->getEInvoiceApiBaseUrl() . '/cancel-einvoice/', $requestData);
+                ->post($this->getEInvoiceApiBaseUrl().'/cancel-einvoice/', $requestData);
 
             $data = $response->json();
 
             Log::debug('E-Invoice Cancel API Response', [
-                'url' => $this->getEInvoiceApiBaseUrl() . '/cancel-einvoice/',
+                'url' => $this->getEInvoiceApiBaseUrl().'/cancel-einvoice/',
                 'status' => $response->status(),
                 'body' => $response->body(),
                 'request' => $requestData,
@@ -1745,24 +1952,24 @@ class InvoiceController extends Controller
                         // Keep other fields as they are, or clear them if needed
                     ]);
 
-                    activity()->performedOn($invoice)->causedBy(Auth::user())->log('E-Invoice cancelled: IRN ' . $invoice->irn);
+                    activity()->performedOn($invoice)->causedBy(Auth::user())->log('E-Invoice cancelled: IRN '.$invoice->irn);
 
                     return redirect()->back()->with('success', 'E-Invoice cancelled successfully.');
                 } else {
                     $errorMessage = $results['errorMessage'] ?? $results['InfoDtls'] ?? 'Unknown error occurred';
-                    Log::error('E-Invoice Cancel API Error Response: ' . json_encode($data));
+                    Log::error('E-Invoice Cancel API Error Response: '.json_encode($data));
 
-                    return redirect()->back()->with('error', 'Failed to cancel e-invoice: ' . $errorMessage);
+                    return redirect()->back()->with('error', 'Failed to cancel e-invoice: '.$errorMessage);
                 }
             } else {
-                Log::error('E-Invoice Cancel API Invalid Response: ' . json_encode($data));
+                Log::error('E-Invoice Cancel API Invalid Response: '.json_encode($data));
 
                 return redirect()->back()->with('error', 'Invalid response from e-invoice API');
             }
         } catch (\Exception $e) {
-            Log::error('E-Invoice Cancellation Error: ' . $e->getMessage());
+            Log::error('E-Invoice Cancellation Error: '.$e->getMessage());
 
-            return redirect()->back()->with('error', 'An error occurred while cancelling e-invoice: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'An error occurred while cancelling e-invoice: '.$e->getMessage());
         }
     }
 
@@ -1799,7 +2006,7 @@ class InvoiceController extends Controller
                 ->first();
 
             if ($existingEwaybill) {
-                return redirect()->back()->with('error', 'E-Way Bill already exists. EWB No: ' . $existingEwaybill->ewb_no);
+                return redirect()->back()->with('error', 'E-Way Bill already exists. EWB No: '.$existingEwaybill->ewb_no);
             }
 
             // Validate request data
@@ -1889,19 +2096,19 @@ class InvoiceController extends Controller
 
             if ($isSamePincodeMove) {
                 $requestData['distance'] = '54';
-            } else if (isset($validated['distance']) && $validated['distance'] > 0) {
+            } elseif (isset($validated['distance']) && $validated['distance'] > 0) {
                 $requestData['distance'] = $validated['distance'];
             }
 
             // Make API call with JSON body
             $response = Http::withHeaders($this->getEInvoiceAuthHeaders($token))
                 ->asJson()
-                ->post($this->getEInvoiceApiBaseUrl() . '/gen-ewb-by-irn/', $requestData);
+                ->post($this->getEInvoiceApiBaseUrl().'/gen-ewb-by-irn/', $requestData);
 
             $data = $response->json();
 
             Log::debug('E-Way Bill API Response', [
-                'url' => $this->getEInvoiceApiBaseUrl() . '/gen-ewb-by-irn/',
+                'url' => $this->getEInvoiceApiBaseUrl().'/gen-ewb-by-irn/',
                 'status' => $response->status(),
                 'body' => $response->body(),
                 'request' => $requestData,
@@ -1914,12 +2121,12 @@ class InvoiceController extends Controller
 
                 $response = Http::withHeaders($this->getEInvoiceAuthHeaders($token))
                     ->asJson()
-                    ->post($this->getEInvoiceApiBaseUrl() . '/gen-ewb-by-irn/', $requestData);
+                    ->post($this->getEInvoiceApiBaseUrl().'/gen-ewb-by-irn/', $requestData);
 
                 $data = $response->json();
 
                 Log::debug('E-Way Bill API Response After Distance Retry', [
-                    'url' => $this->getEInvoiceApiBaseUrl() . '/gen-ewb-by-irn/',
+                    'url' => $this->getEInvoiceApiBaseUrl().'/gen-ewb-by-irn/',
                     'status' => $response->status(),
                     'body' => $response->body(),
                     'request' => $requestData,
@@ -1929,7 +2136,7 @@ class InvoiceController extends Controller
             if ($response->successful() && isset($data['results'])) {
                 $results = $data['results'];
                 // dd($results);
-                Log::error('E-Way Bill API Response: ' . json_encode($results));
+                Log::error('E-Way Bill API Response: '.json_encode($results));
 
                 if (isset($results['status']) && $results['status'] === 'Success' && isset($results['message'])) {
                     $message = $results['message'];
@@ -1973,12 +2180,12 @@ class InvoiceController extends Controller
                     DB::commit();
 
                     $ewbNo = $message['EwbNo'] ?? 'N/A';
-                    activity()->performedOn($invoice)->causedBy(Auth::user())->log('E-Way Bill generated: ' . $ewbNo);
+                    activity()->performedOn($invoice)->causedBy(Auth::user())->log('E-Way Bill generated: '.$ewbNo);
 
-                    return redirect()->back()->with('success', 'E-Way Bill generated successfully. EWB No: ' . $ewbNo);
+                    return redirect()->back()->with('success', 'E-Way Bill generated successfully. EWB No: '.$ewbNo);
                 } else {
                     $errorMessage = $results['errorMessage'] ?? $results['InfoDtls'] ?? 'Unknown error occurred';
-                    Log::error('E-Way Bill API Error Response: ' . json_encode($data));
+                    Log::error('E-Way Bill API Error Response: '.json_encode($data));
                     // Show detailed error for debugging
                     $debugInfo = isset($results['errorMessage']) ? $results['errorMessage'] : (isset($results['InfoDtls']) ? $results['InfoDtls'] : json_encode($results));
 
@@ -1987,7 +2194,7 @@ class InvoiceController extends Controller
                         $ewaybillDetails = [];
 
                         $ewaybillDataResponse = Http::withHeaders($this->getEInvoiceAuthHeaders($token))
-                            ->get($this->getEInvoiceApiBaseUrl() . '/getEwayBillData/', [
+                            ->get($this->getEInvoiceApiBaseUrl().'/getEwayBillData/', [
                                 'action' => 'GetEwayBill',
                                 'gstin' => $sellerGstin,
                                 'eway_bill_number' => $ewbNo,
@@ -1996,7 +2203,7 @@ class InvoiceController extends Controller
                         $ewaybillData = $ewaybillDataResponse->json();
 
                         Log::debug('E-Way Bill Duplicate Recovery API Response', [
-                            'url' => $this->getEInvoiceApiBaseUrl() . '/getEwayBillData/',
+                            'url' => $this->getEInvoiceApiBaseUrl().'/getEwayBillData/',
                             'status' => $ewaybillDataResponse->status(),
                             'body' => $ewaybillDataResponse->body(),
                             'request' => [
@@ -2037,20 +2244,20 @@ class InvoiceController extends Controller
                             ]
                         );
 
-                        return redirect()->back()->with('success', 'E-Way Bill already exists on GST portal. Local record updated. EWB No: ' . $ewbNo);
+                        return redirect()->back()->with('success', 'E-Way Bill already exists on GST portal. Local record updated. EWB No: '.$ewbNo);
                     }
 
-                    return redirect()->back()->with('error', 'Failed to generate e-way bill: ' . $debugInfo);
+                    return redirect()->back()->with('error', 'Failed to generate e-way bill: '.$debugInfo);
                 }
             } else {
-                Log::error('E-Way Bill API Invalid Response: ' . json_encode($data));
+                Log::error('E-Way Bill API Invalid Response: '.json_encode($data));
 
                 return redirect()->back()->with('error', 'Invalid response from e-way bill API');
             }
         } catch (\Exception $e) {
-            Log::error('E-Way Bill Generation Error: ' . $e->getMessage());
+            Log::error('E-Way Bill Generation Error: '.$e->getMessage());
 
-            return redirect()->back()->with('error', 'An error occurred while generating e-way bill: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'An error occurred while generating e-way bill: '.$e->getMessage());
         }
     }
 
@@ -2102,14 +2309,14 @@ class InvoiceController extends Controller
 
             // Get JWT token
             Log::info('E-Way Bill cancel token request starting', [
-                'token_url' => $this->getEInvoiceApiBaseUrl() . '/token-auth',
+                'token_url' => $this->getEInvoiceApiBaseUrl().'/token-auth',
                 'username_present' => filled(config('services.einvoice.username')),
                 'password_present' => filled(config('services.einvoice.password')),
             ]);
 
-            $tokenUrl = $this->getEInvoiceApiBaseUrl() . '/token-auth';
-            $username = trim((string) "support@technofra.com");
-            $password = trim((string) "Support@0987#!");
+            $tokenUrl = $this->getEInvoiceApiBaseUrl().'/token-auth';
+            $username = trim((string) 'support@technofra.com');
+            $password = trim((string) 'Support@0987#!');
 
             if ($username === '' || $password === '') {
                 Log::error('E-Way Bill Cancel Token Configuration Missing', [
@@ -2170,12 +2377,12 @@ class InvoiceController extends Controller
             // Make API call with JSON body
             $response = Http::withHeaders($this->getEInvoiceAuthHeaders($token))
                 ->asJson()
-                ->post($this->getEInvoiceApiBaseUrl() . '/ewayBillCancel/', $requestData);
+                ->post($this->getEInvoiceApiBaseUrl().'/ewayBillCancel/', $requestData);
 
             $data = $response->json();
 
             Log::debug('E-Way Bill Cancel API Response', [
-                'url' => $this->getEInvoiceApiBaseUrl() . '/ewayBillCancel/',
+                'url' => $this->getEInvoiceApiBaseUrl().'/ewayBillCancel/',
                 'status' => $response->status(),
                 'body' => $response->body(),
                 'request' => $requestData,
@@ -2195,11 +2402,11 @@ class InvoiceController extends Controller
             if (isset($data['success']) && $data['success'] === false) {
                 // Handle error response with 'success' field
                 $errorMessage = $data['message'] ?? 'Invalid response from e-way bill API';
-                Log::error('E-Way Bill Cancel API Invalid Response: ' . json_encode($data));
+                Log::error('E-Way Bill Cancel API Invalid Response: '.json_encode($data));
                 DB::rollBack();
 
                 return redirect()->back()
-                    ->with('error', 'Failed to cancel e-way bill: ' . $errorMessage);
+                    ->with('error', 'Failed to cancel e-way bill: '.$errorMessage);
             }
 
             $results = (array) data_get($data, 'results', []);
@@ -2232,31 +2439,31 @@ class InvoiceController extends Controller
                 ]);
 
                 DB::commit();
-                activity()->performedOn($ewaybill)->causedBy(Auth::user())->log('E-Way Bill cancelled: ' . $ewaybill->ewb_no);
+                activity()->performedOn($ewaybill)->causedBy(Auth::user())->log('E-Way Bill cancelled: '.$ewaybill->ewb_no);
 
                 return redirect()->back()
                     ->with('success', $apiMessage ?: 'E-Way Bill cancelled successfully.');
             }
 
             if ($response->successful()) {
-                Log::error('E-Way Bill Cancel API Unexpected Success Response: ' . json_encode($data));
+                Log::error('E-Way Bill Cancel API Unexpected Success Response: '.json_encode($data));
                 DB::rollBack();
 
                 return redirect()->back()
                     ->with('error', 'E-Way bill API returned an unexpected success response. Please check the logs.');
             }
 
-            Log::error('E-Way Bill Cancel API Invalid Response: ' . json_encode($data));
+            Log::error('E-Way Bill Cancel API Invalid Response: '.json_encode($data));
             DB::rollBack();
 
             return redirect()->back()
                 ->with('error', 'Invalid response from e-way bill API');
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('E-Way Bill Cancellation Error: ' . $e->getMessage());
+            Log::error('E-Way Bill Cancellation Error: '.$e->getMessage());
 
             return redirect()->back()
-                ->with('error', 'An error occurred while cancelling e-way bill: ' . $e->getMessage());
+                ->with('error', 'An error occurred while cancelling e-way bill: '.$e->getMessage());
         }
     }
 
@@ -2294,12 +2501,12 @@ class InvoiceController extends Controller
             // Make API call to get ewaybill details with JSON body
             $response = Http::withHeaders($this->getEInvoiceAuthHeaders($token))
                 ->asJson()
-                ->post($this->getEInvoiceApiBaseUrl() . '/getEwayBillData/', $requestData);
+                ->post($this->getEInvoiceApiBaseUrl().'/getEwayBillData/', $requestData);
 
             $data = $response->json();
 
             Log::debug('E-Way Bill Check API Response', [
-                'url' => $this->getEInvoiceApiBaseUrl() . '/getEwayBillData/',
+                'url' => $this->getEInvoiceApiBaseUrl().'/getEwayBillData/',
                 'status' => $response->status(),
                 'body' => $response->body(),
                 'request' => $requestData,
@@ -2309,10 +2516,10 @@ class InvoiceController extends Controller
             if (isset($data['success']) && $data['success'] === false) {
                 // Handle error response with 'success' field
                 $errorMessage = $data['message'] ?? 'Invalid response from e-way bill API';
-                Log::error('E-Way Bill Check API Invalid Response: ' . json_encode($data));
+                Log::error('E-Way Bill Check API Invalid Response: '.json_encode($data));
                 DB::rollBack();
 
-                return redirect()->back()->with('error', 'Failed to check e-way bill status: ' . $errorMessage);
+                return redirect()->back()->with('error', 'Failed to check e-way bill status: '.$errorMessage);
             }
 
             if ($response->successful() && isset($data['results'])) {
@@ -2329,27 +2536,27 @@ class InvoiceController extends Controller
                     ]);
 
                     DB::commit();
-                    activity()->performedOn($invoice)->causedBy(Auth::user())->log('E-Way Bill status updated: ' . $invoice->ewb_no);
+                    activity()->performedOn($invoice)->causedBy(Auth::user())->log('E-Way Bill status updated: '.$invoice->ewb_no);
 
                     return redirect()->back()->with('success', 'E-Way Bill status updated successfully.');
                 } else {
                     $errorMessage = $results['errorMessage'] ?? $results['InfoDtls'] ?? 'Unknown error occurred';
-                    Log::error('E-Way Bill Check API Error Response: ' . json_encode($data));
+                    Log::error('E-Way Bill Check API Error Response: '.json_encode($data));
                     DB::rollBack();
 
-                    return redirect()->back()->with('error', 'Failed to check e-way bill status: ' . $errorMessage);
+                    return redirect()->back()->with('error', 'Failed to check e-way bill status: '.$errorMessage);
                 }
             } else {
-                Log::error('E-Way Bill Check API Invalid Response: ' . json_encode($data));
+                Log::error('E-Way Bill Check API Invalid Response: '.json_encode($data));
                 DB::rollBack();
 
                 return redirect()->back()->with('error', 'Invalid response from e-way bill API');
             }
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('E-Way Bill Check/Update Error: ' . $e->getMessage());
+            Log::error('E-Way Bill Check/Update Error: '.$e->getMessage());
 
-            return redirect()->back()->with('error', 'An error occurred while checking e-way bill status: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'An error occurred while checking e-way bill status: '.$e->getMessage());
         }
     }
 
@@ -2361,9 +2568,9 @@ class InvoiceController extends Controller
             $result = $writer->write($qrCode);
 
             // Return as base64 encoded data URL
-            return 'data:image/png;base64,' . base64_encode($result->getString());
+            return 'data:image/png;base64,'.base64_encode($result->getString());
         } catch (\Exception $e) {
-            Log::error('QR Code Generation Error: ' . $e->getMessage());
+            Log::error('QR Code Generation Error: '.$e->getMessage());
 
             return null;
         }
@@ -2438,13 +2645,13 @@ class InvoiceController extends Controller
     {
         try {
             $response = Http::withHeaders($this->getEInvoiceAuthHeaders($token))
-                ->get($this->getEInvoiceApiBaseUrl() . '/distance/?fromPincode=' . $source . '&toPincode=' . $destination);
+                ->get($this->getEInvoiceApiBaseUrl().'/distance/?fromPincode='.$source.'&toPincode='.$destination);
 
             $data = $response->json();
 
             return (int) round((float) data_get($data, 'results.distance', 0));
         } catch (\Exception $e) {
-            Log::error('E-Invoice API Call Error: ' . $e->getMessage());
+            Log::error('E-Invoice API Call Error: '.$e->getMessage());
 
             return null;
         }
@@ -2453,7 +2660,7 @@ class InvoiceController extends Controller
     private function getEInvoiceToken()
     {
         try {
-            $tokenUrl = $this->getEInvoiceApiBaseUrl() . '/token-auth';
+            $tokenUrl = $this->getEInvoiceApiBaseUrl().'/token-auth';
             $username = trim((string) config('services.einvoice.username', ''));
             $password = trim((string) config('services.einvoice.password', ''));
 
@@ -2493,7 +2700,7 @@ class InvoiceController extends Controller
 
             return $data['token'] ?? null;
         } catch (\Exception $e) {
-            Log::error('E-Invoice Token Error: ' . $e->getMessage());
+            Log::error('E-Invoice Token Error: '.$e->getMessage());
 
             return null;
         }
@@ -2507,7 +2714,7 @@ class InvoiceController extends Controller
     private function getEInvoiceAuthHeaders($token)
     {
         return [
-            'Authorization' => 'JWT ' . $token,
+            'Authorization' => 'JWT '.$token,
             'Content-Type' => 'application/json',
             'Accept' => 'application/json',
         ];
