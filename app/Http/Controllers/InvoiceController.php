@@ -246,9 +246,15 @@ class InvoiceController extends Controller
 
     public function downloadEInvoicePdf($id)
     {
-        $eInvoice = EInvoice::find($id);
-        $id = $eInvoice->invoice_id;
+        $eInvoice = EInvoice::findOrFail($id);
+        $invoice = Invoice::findOrFail($eInvoice->invoice_id);
 
+        return $this->buildEInvoicePdf($eInvoice)->stream('E-Invoice-'.$invoice->invoice_number.'.pdf');
+    }
+
+    private function buildEInvoicePdf(EInvoice $eInvoice): \Barryvdh\DomPDF\PDF
+    {
+        $id = $eInvoice->invoice_id;
         $data = [
             'title' => 'E-Invoice',
             'date' => date('m/d/Y'),
@@ -309,7 +315,51 @@ class InvoiceController extends Controller
         $pdf = \PDF::loadView('invoice/einvoice-pdf', ['image' => $base64Image, 'image1' => $base643Image] + $data);
         $pdf->setPaper('a4');
 
-        return $pdf->stream('E-Invoice-'.$invoice->invoice_number.'.pdf');
+        return $pdf;
+    }
+
+    public function downloadBulkEInvoicePdfs(Request $request)
+    {
+        $validated = $request->validate([
+            'einvoice_ids' => ['required', 'array', 'min:1', 'max:50'],
+            'einvoice_ids.*' => ['required', 'integer', 'distinct', 'exists:e_invoices,id'],
+        ]);
+
+        $eInvoices = EInvoice::with('invoice')
+            ->whereIn('id', $validated['einvoice_ids'])
+            ->where('einvoice_status', 'ACT')
+            ->get();
+
+        abort_if($eInvoices->count() !== count($validated['einvoice_ids']), 403);
+
+        $zipPath = tempnam(sys_get_temp_dir(), 'einvoice-zip-');
+        abort_if($zipPath === false, 500, 'Unable to create e-invoice archive.');
+
+        $zip = new \ZipArchive;
+        if ($zip->open($zipPath, \ZipArchive::OVERWRITE) !== true) {
+            unlink($zipPath);
+            abort(500, 'Unable to create e-invoice archive.');
+        }
+
+        try {
+            foreach ($eInvoices as $eInvoice) {
+                $invoiceNo = $eInvoice->invoice->invoice_number ?? $eInvoice->id;
+                $fileName = 'E-Invoice-'.$invoiceNo.'-'.$eInvoice->id.'.pdf';
+
+                if (! $zip->addFromString($fileName, $this->buildEInvoicePdf($eInvoice)->output())) {
+                    throw new \RuntimeException('Unable to add an e-invoice PDF to the archive.');
+                }
+            }
+
+            $zip->close();
+        } catch (\Throwable $exception) {
+            $zip->close();
+            unlink($zipPath);
+
+            throw $exception;
+        }
+
+        return response()->download($zipPath, 'E-Invoices-'.now()->format('YmdHis').'.zip')->deleteFileAfterSend(true);
     }
 
     public function downloadEWayBillPdf($id)
@@ -332,6 +382,59 @@ class InvoiceController extends Controller
             'Content-Type' => 'application/pdf',
             'Content-Disposition' => 'attachment; filename="E-Way-Bill-'.$ewaybill->invoice->invoice_number.'.pdf"',
         ]);
+    }
+
+    public function downloadBulkEWayBillPdfs(Request $request)
+    {
+        $validated = $request->validate([
+            'ewaybill_ids' => ['required', 'array', 'min:1', 'max:50'],
+            'ewaybill_ids.*' => ['required', 'integer', 'distinct', 'exists:ewaybills,id'],
+        ]);
+
+        $ewaybills = Ewaybill::with('invoice')
+            ->whereIn('id', $validated['ewaybill_ids'])
+            ->where('ewaybill_status', 'ACT')
+            ->get();
+
+        abort_if($ewaybills->count() !== count($validated['ewaybill_ids']), 403);
+
+        $zipPath = tempnam(sys_get_temp_dir(), 'ewaybill-zip-');
+        abort_if($zipPath === false, 500, 'Unable to create e-way bill archive.');
+
+        $zip = new \ZipArchive;
+        if ($zip->open($zipPath, \ZipArchive::OVERWRITE) !== true) {
+            unlink($zipPath);
+            abort(500, 'Unable to create e-way bill archive.');
+        }
+
+        try {
+            foreach ($ewaybills as $ewaybill) {
+                if (! $ewaybill->ewaybill_pdf) {
+                    throw new \RuntimeException('E-Way Bill PDF not available.');
+                }
+
+                $response = Http::get($ewaybill->ewaybill_pdf);
+                if ($response->failed()) {
+                    throw new \RuntimeException('Failed to download an E-Way Bill PDF.');
+                }
+
+                $invoiceNo = $ewaybill->invoice->invoice_number ?? $ewaybill->id;
+                $fileName = 'E-Way-Bill-'.$invoiceNo.'-'.$ewaybill->id.'.pdf';
+
+                if (! $zip->addFromString($fileName, $response->body())) {
+                    throw new \RuntimeException('Unable to add an e-way bill PDF to the archive.');
+                }
+            }
+
+            $zip->close();
+        } catch (\Throwable $exception) {
+            $zip->close();
+            unlink($zipPath);
+
+            throw $exception;
+        }
+
+        return response()->download($zipPath, 'E-Way-Bills-'.now()->format('YmdHis').'.zip')->deleteFileAfterSend(true);
     }
 
     public function invoiceAppointmentUpdate(Request $request, $id)

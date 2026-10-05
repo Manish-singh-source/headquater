@@ -30,6 +30,16 @@
 
             <div class="card mt-4">
                 <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0">E-Way Bill List</h5>
+                        <form id="bulkEWayBillDownloadForm" action="{{ route('ewaybill.bulkDownload') }}" method="POST">
+                            @csrf
+                            <div id="selectedEWayBillIds"></div>
+                            <button id="bulkEWayBillDownload" type="submit" class="btn btn-primary btn-sm" disabled>
+                                <i class="bx bx-download me-1"></i>Download Selected in ZIP
+                            </button>
+                        </form>
+                    </div>
                     <div class="tab-content">
                         <div class="tab-pane fade show active" id="sales-order" role="tabpanel" aria-labelledby="sales-order-tab">
                             <div class="table-responsive white-space-nowrap">
@@ -48,14 +58,19 @@
                                     <tbody>
                                         @forelse ($eWayBill as $ewaybill)
                                             <tr>
-                                                <td><input class="form-check-input" type="checkbox"></td>
-                                                <td>{{ $ewaybill->invoice->salesOrder->order_number }}</td>
+                                                <td>
+                                                    @if ($ewaybill->ewaybill_status === 'ACT' && $ewaybill->ewaybill_pdf)
+                                                        <input class="form-check-input ewaybill-select" type="checkbox"
+                                                            value="{{ $ewaybill->id }}" aria-label="Select e-way bill {{ $ewaybill->ewb_no ?? $ewaybill->id }}">
+                                                    @endif
+                                                </td>
+                                                <td>{{ $ewaybill->invoice->salesOrder->order_number ?? 'N/A' }}</td>
                                                 <td>{{ $ewaybill->invoice->customer->client_name ?? 'N/A' }}</td>
                                                 <td>{{ $ewaybill->invoice->invoice_number ?? 'N/A' }}</td>
                                                 <td>{{ $ewaybill->ewb_no ?? 'N/A' }}</td>
                                                 <td>
                                                     @if ($ewaybill->ewaybill_status === 'ACT')
-                                                        <a href="{{ $ewaybill->ewaybill_pdf }}"
+                                                        <a href="{{ route('invoice.downloadEWayBillPdf', $ewaybill->id) }}"
                                                             target="_blank"
                                                             class="btn btn-icon btn-sm bg-primary-subtle me-1">Download</a>
                                                     @else
@@ -74,7 +89,7 @@
                                             </tr>
                                         @empty
                                             <tr>
-                                                <td colspan="6" class="text-center text-muted py-4">No sales order invoices found</td>
+                                                <td colspan="7" class="text-center text-muted py-4">No sales order invoices found</td>
                                             </tr>
                                         @endforelse
                                     </tbody>
@@ -86,4 +101,46 @@
             </div>
         </div>
     </main>
+@endsection
+
+@section('script')
+    <script>
+        $(document).ready(function() {
+            var table = $('#example').DataTable();
+
+            function updateBulkDownloadButton() {
+                $('#bulkEWayBillDownload').prop('disabled', $('#example tbody .ewaybill-select:checked').length === 0);
+            }
+
+            $('#selectAllSales').on('change', function() {
+                $('#example tbody .ewaybill-select').prop('checked', $(this).prop('checked'));
+                updateBulkDownloadButton();
+            });
+
+            $('#example tbody').on('change', '.ewaybill-select', function() {
+                var totalCheckboxes = $('#example tbody .ewaybill-select').length;
+                var checkedCheckboxes = $('#example tbody .ewaybill-select:checked').length;
+                $('#selectAllSales').prop('checked', totalCheckboxes > 0 && totalCheckboxes === checkedCheckboxes);
+                updateBulkDownloadButton();
+            });
+
+            table.on('draw', function() {
+                $('#selectAllSales').prop('checked', false);
+                updateBulkDownloadButton();
+            });
+
+            $('#bulkEWayBillDownloadForm').on('submit', function() {
+                var selectedIds = $('#example tbody .ewaybill-select:checked').map(function() {
+                    return this.value;
+                }).get();
+                var inputContainer = $('#selectedEWayBillIds').empty();
+
+                selectedIds.forEach(function(id) {
+                    $('<input>', { type: 'hidden', name: 'ewaybill_ids[]', value: id }).appendTo(inputContainer);
+                });
+
+                return selectedIds.length > 0;
+            });
+        });
+    </script>
 @endsection

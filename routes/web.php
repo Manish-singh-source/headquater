@@ -420,7 +420,9 @@ Route::middleware(['auth'])->group(function () {
 
         // E-Invoices List
         Route::get('/e-invoices', 'einvoicesList')->name('einvoices.index');
+        Route::post('/e-invoices/bulk-download', 'downloadBulkEInvoicePdfs')->name('einvoices.bulkDownload');
         Route::get('/e-way-bills', 'eWayBillList')->name('ewaybill.index');
+        Route::post('/e-way-bills/bulk-download', 'downloadBulkEWayBillPdfs')->name('ewaybill.bulkDownload');
     });
 
     Route::view('/excel-file-formats', 'excel-file-formats')->name('excel-file-formats');
