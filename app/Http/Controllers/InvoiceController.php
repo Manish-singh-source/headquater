@@ -916,7 +916,7 @@ class InvoiceController extends Controller
             'details' => 'required|array|min:1',
             'details.*.id' => 'required|integer|exists:invoice_details,id',
             'details.*.hsn' => 'nullable|string|max:255',
-            'details.*.quantity' => 'required|numeric|min:0.01',
+            'details.*.quantity' => 'required|numeric|min:0',
             'details.*.box_count' => 'nullable|numeric|min:0',
             'details.*.weight' => 'nullable|numeric|min:0',
             'details.*.unit_price' => 'required|numeric|min:0',

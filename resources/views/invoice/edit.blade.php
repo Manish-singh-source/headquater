@@ -111,7 +111,7 @@
                                                     value="{{ old("details.$index.hsn", $detail->hsn ?? $detail->tempOrder?->hsn) }}">
                                             </td>
                                             <td>
-                                                <input type="number" step="0.01" min="0.01" class="form-control"
+                                                <input type="number" step="0.01" min="0" class="form-control"
                                                     name="details[{{ $index }}][quantity]"
                                                     value="{{ old("details.$index.quantity", $detail->quantity) }}"
                                                     data-initial-quantity="{{ $detail->quantity }}" required>
