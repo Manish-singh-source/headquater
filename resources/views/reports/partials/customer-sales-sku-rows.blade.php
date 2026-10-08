@@ -58,15 +58,7 @@
                                                         <td>{{ $row['remark'] ?? 'N/A' }}</td>
                                                     </tr>
                                                     @else
-                                                        @php
-                                                            $allocation = $row['allocation'];
-                                                            $invoiceDetail = $row['invoiceDetail'] ?? $product->invoiceDetails->first();
-                                                            $invoice = $invoiceDetail?->invoice;
-                                                            $invoiceNumber = $invoice->invoice_number ?? 'N/A';
-                                                            $dispatchedQuantity = $invoiceDetail?->quantity ?? $allocation->final_final_dispatched_quantity ?? 0;
-                                                            $unitPrice = $product->tempOrder?->basic_rate ?? 0;
-                                                            $gstRate = $product->tempOrder?->gst ?? 0;
-                                                        @endphp
+                                                        @php $allocation = $row['allocation']; @endphp
                                                             <tr>
                                                                 <td>{{ $salesOrder->order_number ?? 'N/A' }}</td>
                                                                 <td>{{ $salesOrder->created_at?->format('d-m-Y') ?? 'N/A' }}
@@ -77,7 +69,12 @@
                                                                 </td>
                                                                 <td>{{ $product->customer?->client_name ?? 'N/A' }}
                                                                 </td>
-                                                                <td>{{ $invoiceNumber }}</td>
+                                                                <td> @php
+                                                                    $invoiceNumber = 'N/A';
+                                                                    $invoiceDetail = $row['invoiceDetail'] ?? $product->invoiceDetails->first();
+                                                                    $invoice = $invoiceDetail?->invoice;
+                                                                    $invoiceNumber = $invoice->invoice_number ?? 'N/A';
+                                                                @endphp {{ $invoiceNumber }} </td>
                                                                 @php
                                                                     $invoiceDate = $invoice?->created_at;
                                                                 @endphp
@@ -107,7 +104,7 @@
                                                                 </td>
                                                                 <td> {{ $allocation->send_to_pkg_at ? \Carbon\Carbon::parse($allocation->send_to_pkg_at)->format('d-m-Y') : 'N/A' }}
                                                                 </td>
-                                                                <td>{{ $dispatchedQuantity }}
+                                                                <td>{{ $allocation->final_final_dispatched_quantity ?? 0 }}
                                                                 </td>
                                                                 <td>
                                                                     @if ($allocation->send_to_pkg_at)
@@ -130,14 +127,14 @@
                                                                 </td>
                                                                 <td>{{ $allocation->box_count ?? 0 }}</td>
                                                                 <td>{{ $allocation->weight ?? 0 }}</td>
-                                                                <td>{{ $unitPrice }}
+                                                                <td>{{ $product->tempOrder?->basic_rate ?? 0 }}
                                                                 </td>
-                                                                <td>{{ $dispatchedQuantity * $unitPrice }}
+                                                                <td>{{ $allocation->final_final_dispatched_quantity * $product->tempOrder?->basic_rate ?? 0 }}
                                                                 </td>
-                                                                <td>{{ $gstRate }}</td>
-                                                                <td>{{ $dispatchedQuantity * $unitPrice * ($gstRate / 100) }}
+                                                                <td>{{ $product->tempOrder?->gst ?? 0 }}</td>
+                                                                <td>{{ $allocation->final_final_dispatched_quantity * $product->tempOrder?->basic_rate * (($product->tempOrder?->gst ?? 0) / 100) ?? 0 }}
                                                                 </td>
-                                                                <td>{{ $dispatchedQuantity * $unitPrice * (1 + $gstRate / 100) }}
+                                                                <td>{{ $allocation->final_final_dispatched_quantity * $product->tempOrder?->basic_rate * (1 + ($product->tempOrder?->gst ?? 0) / 100) ?? 0 }}
                                                                 </td>
                                                                 <td>{{ $product->purchase_ordered_quantity ?? 0 }}
                                                                 </td>
