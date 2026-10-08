@@ -972,7 +972,14 @@ class InvoiceController extends Controller
                     throw new \DomainException('Invoice quantity cannot be reduced after a payment has been recorded.');
                 }
 
-                if ($invoice->einvoices()->exists() || $invoice->ewaybills()->exists()) {
+                $hasActiveStatutoryRecord = $invoice->einvoices()
+                    ->where('einvoice_status', '!=', 'CAN')
+                    ->exists()
+                    || $invoice->ewaybills()
+                    ->where('ewaybill_status', '!=', 'CAN')
+                    ->exists();
+
+                if ($hasActiveStatutoryRecord) {
                     throw new \DomainException('Invoice quantity cannot be reduced after an E-Invoice or E-Way Bill record exists.');
                 }
 

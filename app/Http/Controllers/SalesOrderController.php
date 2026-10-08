@@ -2894,6 +2894,9 @@ class SalesOrderController extends Controller
                 $finalFulfilledQty = $this->normalizeQuantityValue($record['Final Fulfilled Quantity'] ?? 0);
                 $salesOrderProductUpdate->final_dispatched_quantity = $finalFulfilledQty;
 
+                $this->createMissingPackagingAllocations($salesOrderProductUpdate, $salesOrderProductUpdate->salesOrder);
+                $salesOrderProductUpdate->load('warehouseAllocations');
+
                 $allocationsCount = $salesOrderProductUpdate->warehouseAllocations()->count();
                 if ($allocationsCount > 0) {
                     if ($allocationsCount == 1) {
@@ -2977,6 +2980,9 @@ class SalesOrderController extends Controller
             }
 
             foreach ($salesOrderProducts as $order) {
+                $this->createMissingPackagingAllocations($order, $salesOrder);
+                $order->load('warehouseAllocations');
+
                 $allocationFinalQuantity = (float) $order->warehouseAllocations
                     ->sum('final_dispatched_quantity');
                 $hasPackagingQuantity = (float) ($order->final_dispatched_quantity ?? 0) > 0
@@ -3572,44 +3578,8 @@ class SalesOrderController extends Controller
                 $salesOrderUpdate = SalesOrder::with([
                     'customerGroup',
                     'warehouse',
-                    'orderedProducts.product',
-                    'orderedProducts.customer',
-                    'orderedProducts.tempOrder',
-                    'orderedProducts.warehouseStock',
                 ])
                     ->find($request->order_id);
-                foreach ($salesOrderUpdate->orderedProducts as $order) {
-
-                    // if ($order->tempOrder?->vendor_pi_received_quantity > 0) {
-                    //     if ($order->tempOrder?->po_qty <= ($order->tempOrder?->block ?? 0)) {
-                    //         $order->dispatched_quantity = $order->tempOrder->po_qty;
-                    //     } else {
-                    //         $order->dispatched_quantity = $order->tempOrder->block ?? 0;
-                    //     }
-                    // } elseif ($order->tempOrder?->vendor_pi_fulfillment_quantity > 0) {
-                    //     if ($order->tempOrder?->po_qty <= ($order->tempOrder?->block ?? 0) + ($order->tempOrder?->vendor_pi_fulfillment_quantity ?? 0)) {
-                    //         $order->dispatched_quantity = $order->tempOrder->po_qty;
-                    //     } else {
-                    //         $order->dispatched_quantity = ($order->tempOrder?->block ?? 0) + ($order->tempOrder?->vendor_pi_fulfillment_quantity ?? 0);
-                    //     }
-                    // } else {
-                    //     if ($order->tempOrder?->po_qty <= ($order->tempOrder?->block ?? 0)) {
-                    //         $order->dispatched_quantity = $order->tempOrder->po_qty;
-                    //     } else {
-                    //         $order->dispatched_quantity = $order->tempOrder->block ?? 0;
-                    //     }
-                    // }
-                    $order->status = 'packaging';
-                    $order->product_status = 'packaging';
-
-                    if ($order->warehouseAllocations->count() > 0) {
-                        foreach ($order->warehouseAllocations as $allocation) {
-                            $allocation->product_status = 'packaging';
-                            $allocation->save();
-                        }
-                    }
-                    $order->save();
-                }
                 $oldStatus = $salesOrderUpdate->status;
                 $salesOrderUpdate->status = $request->status;
                 $salesOrderUpdate->save();
@@ -4072,5 +4042,74 @@ class SalesOrderController extends Controller
                     ->where('status', '1');
             })
             ->first();
+    }
+
+    private function createMissingPackagingAllocations(SalesOrderProduct $orderProduct, SalesOrder $salesOrder): void
+    {
+        if ($orderProduct->warehouseAllocations()->exists()) {
+            return;
+        }
+
+        $finalQuantity = (float) ($orderProduct->final_dispatched_quantity ?? 0);
+        if ($finalQuantity <= 0) {
+            return;
+        }
+
+        $remainingQuantity = $finalQuantity;
+        $sequence = 1;
+
+        $stockQuery = WarehouseStock::with('warehouse')
+            ->where('sku', $orderProduct->sku)
+            ->whereHas('warehouse', function ($query) {
+                $query->where('status', '1');
+            })
+            ->orderBy('warehouse_id');
+
+        if ($salesOrder->warehouse_id) {
+            $stockQuery->where('warehouse_id', $salesOrder->warehouse_id);
+        }
+
+        foreach ($stockQuery->get() as $warehouseStock) {
+            if ($remainingQuantity <= 0) {
+                break;
+            }
+
+            $capacity = max(
+                (float) ($warehouseStock->block_quantity ?? 0),
+                (float) ($warehouseStock->available_quantity ?? 0),
+                (float) ($warehouseStock->original_quantity ?? 0)
+            );
+
+            if ($capacity <= 0) {
+                continue;
+            }
+
+            $allocationQuantity = min($capacity, $remainingQuantity);
+
+            WarehouseAllocation::create([
+                'sales_order_id' => $salesOrder->id,
+                'sales_order_product_id' => $orderProduct->id,
+                'warehouse_id' => $warehouseStock->warehouse_id,
+                'customer_id' => $orderProduct->customer_id,
+                'sku' => $orderProduct->sku,
+                'allocated_quantity' => $allocationQuantity,
+                'final_dispatched_quantity' => $allocationQuantity,
+                'box_count' => 0,
+                'sequence' => $sequence,
+                'status' => 'allocated',
+                'approval_status' => 'draft',
+                'product_status' => $orderProduct->product_status,
+                'send_to_pkg_at' => $orderProduct->send_to_pkg_at,
+                'notes' => 'Created to repair missing warehouse allocation for packaging',
+            ]);
+
+            if (! $orderProduct->warehouse_stock_id) {
+                $orderProduct->warehouse_stock_id = $warehouseStock->id;
+                $orderProduct->save();
+            }
+
+            $remainingQuantity -= $allocationQuantity;
+            $sequence++;
+        }
     }
 }
