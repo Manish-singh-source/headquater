@@ -2125,9 +2125,10 @@ class ReportController extends Controller
                             $appointment = $invoice?->appointment;
                             $dns = $invoice?->dns;
                             $payment = $invoice?->payments?->first();
+                            $dispatchedQuantity = $invoiceDetail?->quantity ?? $allocation->final_final_dispatched_quantity ?? 0;
 
                             // Calculate subtotal and total for this allocation
-                            $subtotal = ($allocation->final_final_dispatched_quantity ?? 0) * ($product->tempOrder?->basic_rate ?? 0);
+                            $subtotal = $dispatchedQuantity * ($product->tempOrder?->basic_rate ?? 0);
                             $gstRate = $product->tempOrder?->gst ?? 0;
                             $total = $subtotal * (1 + $gstRate / 100);
                             $gstAmount = 0;
@@ -2177,17 +2178,17 @@ class ReportController extends Controller
                                 'Orderd Quantity' => intval($product->tempOrder?->po_qty ?? $product->ordered_quantity ?? 0),
                                 'Allocation Quantity' => $allocation->final_dispatched_quantity ?? 0,
                                 'Allocation Date' => $allocation->send_to_pkg_at ? \Carbon\Carbon::parse($allocation->send_to_pkg_at)->format('d-m-Y') : 'N/A',
-                                'Dispatched Quantity' => $allocation->final_final_dispatched_quantity ?? 0,
+                                'Dispatched Quantity' => $dispatchedQuantity,
                                 'Dispatched Date' => $dispatchDate ?? 'N/A',
                                 'Box Count' => $allocation->box_count ?? 0,
                                 'Weight' => $allocation->weight ?? 0,
 
                                 // Sale price fields
                                 'Unit Price' => $product->tempOrder?->basic_rate ?? 0,
-                                'Taxable Amount' => $invoiceNumber === 'N/A' ? 0 : $allocation->final_final_dispatched_quantity * ($product->tempOrder?->basic_rate ?? 0),
+                                'Taxable Amount' => $invoiceNumber === 'N/A' ? 0 : $subtotal,
                                 'GST' => $product->tempOrder?->gst ?? 0,
-                                'GST Amount' => $invoiceNumber === 'N/A' ? 0 : $allocation->final_final_dispatched_quantity * ($product->tempOrder?->basic_rate ?? 0) * (($product->tempOrder?->gst ?? 0) / 100),
-                                'Invoice Amount' => $invoiceNumber === 'N/A' ? 0 : $allocation->final_final_dispatched_quantity * ($product->tempOrder?->basic_rate ?? 0) * (1 + (($product->tempOrder?->gst ?? 0) / 100)),
+                                'GST Amount' => $invoiceNumber === 'N/A' ? 0 : ($subtotal * ($gstRate / 100)),
+                                'Invoice Amount' => $invoiceNumber === 'N/A' ? 0 : $total,
 
                                 // Purchase details
                                 'Purchase Order No' => $product->vendorPIProduct && $product->purchase_ordered_quantity > 0 ? $product->purchase_ordered_quantity : 0,
