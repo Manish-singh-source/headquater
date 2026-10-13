@@ -42,6 +42,31 @@
                 <div class="card-body">
                     <h5 class="mb-3">Edit Invoice: {{ $invoice->invoice_number }}</h5>
 
+                    @if ($invoice->sales_order_id)
+                        <div class="border rounded p-3 mb-4">
+                            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+                                <div>
+                                    <h6 class="mb-1">Add Products After Invoice Creation</h6>
+                                    <small class="text-muted">Upload SKU lines with quantity, warehouse, price, and remark.</small>
+                                </div>
+                                <a href="{{ route('invoice.add-products.template', $invoice->id) }}"
+                                    class="btn btn-sm btn-outline-primary">Download Template</a>
+                            </div>
+                            <form action="{{ route('invoice.add-products', $invoice->id) }}" method="POST"
+                                enctype="multipart/form-data" class="row g-2 align-items-end">
+                                @csrf
+                                <div class="col-md-8">
+                                    <label for="invoice_products_excel" class="form-label">Excel File</label>
+                                    <input type="file" name="invoice_products_excel" id="invoice_products_excel"
+                                        accept=".xlsx,.xls,.csv" class="form-control" required>
+                                </div>
+                                <div class="col-md-4">
+                                    <button type="submit" class="btn btn-primary w-100">Add Products</button>
+                                </div>
+                            </form>
+                        </div>
+                    @endif
+
                     <form id="invoiceUpdateForm" action="{{ route('invoice.update', $invoice->id) }}" method="POST">
                         @csrf
                         @method('PUT')

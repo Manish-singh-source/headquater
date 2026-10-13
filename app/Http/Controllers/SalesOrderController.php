@@ -418,10 +418,12 @@ class SalesOrderController extends Controller
                             'order' => $order,
                             'warehouse_name' => $allocation->warehouse->name ?? 'N/A',
                             'allocated_quantity' => $allocation->allocated_quantity,
-                            'warehouse_allocation_display' => $allocation->warehouse->name . ': ' . $allocation->allocated_quantity,
+                            'warehouse_allocation_display' => ($allocation->warehouse->name ?? 'N/A') . ': ' . $allocation->allocated_quantity,
                             'allocation_id' => $allocation->id,
                         ];
-                        $facilityNames[] = $order->tempOrder->facility_name;
+                        if ($order->tempOrder?->facility_name) {
+                            $facilityNames[] = $order->tempOrder->facility_name;
+                        }
                     }
                 } else {
                     // Fallback: No allocation record (legacy data)
@@ -434,7 +436,9 @@ class SalesOrderController extends Controller
                         'warehouse_allocation_display' => $warehouseName . ': ' . $allocatedQty,
                         'allocation_id' => null,
                     ];
-                    $facilityNames[] = $order->tempOrder->facility_name;
+                    if ($order->tempOrder?->facility_name) {
+                        $facilityNames[] = $order->tempOrder->facility_name;
+                    }
                 }
             }
         } else {
@@ -446,7 +450,7 @@ class SalesOrderController extends Controller
                     // Build warehouse allocation display string
                     $allocationDisplay = [];
                     foreach ($order->warehouseAllocations as $allocation) {
-                        $allocationDisplay[] = $allocation->warehouse->name . ': ' . $allocation->allocated_quantity;
+                        $allocationDisplay[] = ($allocation->warehouse->name ?? 'N/A') . ': ' . $allocation->allocated_quantity;
                     }
                     $displayProducts[] = [
                         'order' => $order,
@@ -465,7 +469,9 @@ class SalesOrderController extends Controller
                         'allocation_id' => null,
                     ];
                 }
-                $facilityNames[] = $order->tempOrder->facility_name;
+                if ($order->tempOrder?->facility_name) {
+                    $facilityNames[] = $order->tempOrder->facility_name;
+                }
             }
         }
 

@@ -16,9 +16,11 @@ use App\Models\ProductMapping;
 use App\Models\SalesOrder;
 use App\Models\SalesOrderProduct;
 use App\Models\State;
+use App\Models\TempOrder;
 use App\Models\Warehouse;
 use App\Models\WarehouseAllocation;
 use App\Models\WarehouseStock;
+use App\Models\WarehouseStockLog;
 use App\Services\InvoiceStockReturnService;
 use Endroid\QrCode\QrCode;
 use Endroid\QrCode\Writer\PngWriter;
@@ -29,6 +31,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Spatie\SimpleExcel\SimpleExcelReader;
+use Spatie\SimpleExcel\SimpleExcelWriter;
 
 class InvoiceController extends Controller
 {
@@ -905,6 +908,323 @@ class InvoiceController extends Controller
         return view('invoice.edit', compact('invoice', 'warehouses'));
     }
 
+    public function downloadInvoiceAddProductsTemplate(int $id)
+    {
+        Invoice::findOrFail($id);
+
+        $tempXlsxPath = storage_path('app/invoice_add_products_'.uniqid().'.xlsx');
+        $writer = SimpleExcelWriter::create($tempXlsxPath);
+        $writer->addRow([
+            'sku' => 'SKU-001',
+            'quantity' => 1,
+            'warehouse_id' => 1,
+            'unit_price' => 100,
+            'discount' => 0,
+            'tax' => 18,
+            'box_count' => 0,
+            'weight' => 0,
+            'hsn' => '',
+            'item_code' => '',
+            'description' => '',
+            'remark' => 'Extra added after invoice creation',
+        ]);
+        $writer->close();
+
+        return response()->download($tempXlsxPath, 'invoice-add-products-template.xlsx', [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ])->deleteFileAfterSend(true);
+    }
+
+    public function addInvoiceProductsFromExcel(Request $request, int $id)
+    {
+        $validator = Validator::make($request->all(), [
+            'invoice_products_excel' => 'required|file|mimes:xlsx,xls,csv',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator)->withInput();
+        }
+
+        $file = $request->file('invoice_products_excel');
+        $filepath = $file->getPathname();
+        $extension = $file->getClientOriginalExtension();
+        $requiredHeaders = ['sku', 'quantity', 'warehouse_id', 'unit_price'];
+
+        DB::beginTransaction();
+
+        try {
+            $user = Auth::user();
+            $isAdmin = $user->hasRole(['Super Admin', 'Admin']) || ! $user->warehouse_id;
+
+            $invoiceQuery = Invoice::with(['payments'])->whereKey($id);
+            if (! $isAdmin && $user->warehouse_id) {
+                $invoiceQuery->where('warehouse_id', $user->warehouse_id);
+            }
+
+            $invoice = $invoiceQuery->lockForUpdate()->firstOrFail();
+
+            if (! $invoice->sales_order_id) {
+                throw new \DomainException('Products can be added by Excel only for sales order invoices.');
+            }
+
+            if ($invoice->payments()->exists() || (float) $invoice->paid_amount > 0) {
+                throw new \DomainException('Products cannot be added after a payment has been recorded.');
+            }
+
+            $hasActiveStatutoryRecord = $invoice->einvoices()
+                ->where('einvoice_status', '!=', 'CAN')
+                ->exists()
+                || $invoice->ewaybills()
+                    ->where('ewaybill_status', '!=', 'CAN')
+                    ->exists();
+
+            if ($hasActiveStatutoryRecord) {
+                throw new \DomainException('Products cannot be added after an E-Invoice or E-Way Bill record exists.');
+            }
+
+            $rows = collect(SimpleExcelReader::create($filepath, $extension)->getRows()->toArray())
+                ->map(fn ($row) => array_change_key_case($row, CASE_LOWER))
+                ->values();
+
+            if ($rows->isEmpty()) {
+                throw new \DomainException('The uploaded file does not contain any data rows.');
+            }
+
+            $fileHeaders = array_keys($rows->first() ?? []);
+            $missingHeaders = array_diff($requiredHeaders, $fileHeaders);
+            if (! empty($missingHeaders)) {
+                throw new \DomainException('Missing required columns: '.implode(', ', $missingHeaders));
+            }
+
+            $changedSalesOrderProductIds = collect();
+            $addedCount = 0;
+
+            foreach ($rows as $index => $row) {
+                $rowNumber = $index + 2;
+                $sku = trim((string) ($row['sku'] ?? ''));
+                $quantity = (float) ($row['quantity'] ?? 0);
+                $warehouseId = (int) ($row['warehouse_id'] ?? 0);
+                $unitPrice = (float) ($row['unit_price'] ?? 0);
+                $discount = (float) ($row['discount'] ?? 0);
+                $taxPercent = (float) ($row['tax'] ?? 0);
+                $boxCount = (float) ($row['box_count'] ?? 0);
+                $weight = (float) ($row['weight'] ?? 0);
+                $remark = trim((string) ($row['remark'] ?? ''));
+
+                if ($sku === '') {
+                    throw new \DomainException("sku is required on row {$rowNumber}.");
+                }
+
+                if ($quantity <= 0) {
+                    throw new \DomainException("quantity must be greater than 0 on row {$rowNumber}.");
+                }
+
+                if ($warehouseId <= 0) {
+                    throw new \DomainException("warehouse_id is required on row {$rowNumber}.");
+                }
+
+                if ($unitPrice < 0 || $discount < 0 || $taxPercent < 0) {
+                    throw new \DomainException("unit_price, discount, and tax cannot be negative on row {$rowNumber}.");
+                }
+
+                if (! $isAdmin && $user->warehouse_id && $warehouseId !== (int) $user->warehouse_id) {
+                    throw new \DomainException("You can only add stock from your assigned warehouse. Check row {$rowNumber}.");
+                }
+
+                $product = Product::where('sku', $sku)->first();
+                if (! $product) {
+                    throw new \DomainException("Product not found for SKU {$sku} on row {$rowNumber}.");
+                }
+
+                $warehouse = Warehouse::active()->find($warehouseId);
+                if (! $warehouse) {
+                    throw new \DomainException("Active warehouse not found for warehouse_id {$warehouseId} on row {$rowNumber}.");
+                }
+
+                $stock = WarehouseStock::where('warehouse_id', $warehouseId)
+                    ->where('sku', $sku)
+                    ->lockForUpdate()
+                    ->first();
+
+                if (! $stock || (float) $stock->available_quantity < $quantity) {
+                    $available = $stock ? (float) $stock->available_quantity : 0;
+                    throw new \DomainException("Insufficient available stock for SKU {$sku} in warehouse {$warehouseId} on row {$rowNumber}. Available: {$available}.");
+                }
+
+                $salesOrderProduct = SalesOrderProduct::where('sales_order_id', $invoice->sales_order_id)
+                    ->where('customer_id', $invoice->customer_id)
+                    ->where('sku', $sku)
+                    ->lockForUpdate()
+                    ->first();
+
+                $createdSalesOrderLine = false;
+                if (! $salesOrderProduct) {
+                    $customer = $invoice->customer;
+                    $tempOrder = TempOrder::create([
+                        'customer_name' => $customer?->client_name,
+                        'po_number' => $invoice->po_number,
+                        'sku' => $sku,
+                        'facility_name' => $customer?->facility_name,
+                        'facility_location' => $customer?->shipping_city,
+                        'po_date' => optional($invoice->po_date)->format('Y-m-d'),
+                        'hsn' => trim((string) ($row['hsn'] ?? '')) ?: ($product->hsn ?? null),
+                        'gst' => $taxPercent,
+                        'item_code' => trim((string) ($row['item_code'] ?? '')) ?: ($product->item_code ?? null),
+                        'description' => trim((string) ($row['description'] ?? '')) ?: ($product->brand_title ?? null),
+                        'basic_rate' => $unitPrice,
+                        'product_basic_rate' => $unitPrice,
+                        'mrp' => $unitPrice,
+                        'product_mrp' => $unitPrice,
+                        'po_qty' => $quantity,
+                        'available_quantity' => $quantity,
+                        'available_quantity_track' => $quantity,
+                        'unavailable_quantity' => 0,
+                        'unavailable_quantity_track' => 0,
+                        'block' => $quantity,
+                        'case_pack_quantity' => 0,
+                        'purchase_order_quantity' => 0,
+                        'vendor_pi_fulfillment_quantity' => 0,
+                        'vendor_pi_received_quantity' => 0,
+                        'customer_status' => 'available',
+                        'vendor_status' => 'available',
+                        'product_status' => 'available',
+                    ]);
+
+                    $salesOrderProduct = SalesOrderProduct::create([
+                        'warehouse_stock_id' => $stock->id,
+                        'temp_order_id' => $tempOrder->id,
+                        'sales_order_id' => $invoice->sales_order_id,
+                        'customer_id' => $invoice->customer_id,
+                        'product_id' => $product->id,
+                        'sku' => $sku,
+                        'ordered_quantity' => $quantity,
+                        'purchase_ordered_quantity' => 0,
+                        'dispatched_quantity' => $quantity,
+                        'final_dispatched_quantity' => $quantity,
+                        'final_final_dispatched_quantity' => $quantity,
+                        'box_count' => $boxCount,
+                        'weight' => $weight,
+                        'price' => $unitPrice,
+                        'subtotal' => $quantity * $unitPrice,
+                        'status' => 'dispatched',
+                        'invoice_status' => 'completed',
+                        'product_status' => 'completed',
+                    ]);
+                    $createdSalesOrderLine = true;
+                } else {
+                    $salesOrderProduct->warehouse_stock_id = $salesOrderProduct->warehouse_stock_id ?: $stock->id;
+                    $salesOrderProduct->product_id = $salesOrderProduct->product_id ?: $product->id;
+                    $salesOrderProduct->ordered_quantity = (float) ($salesOrderProduct->ordered_quantity ?? 0) + $quantity;
+                    $salesOrderProduct->dispatched_quantity = (float) ($salesOrderProduct->dispatched_quantity ?? 0) + $quantity;
+                    $salesOrderProduct->final_dispatched_quantity = (float) ($salesOrderProduct->final_dispatched_quantity ?? 0) + $quantity;
+                    $salesOrderProduct->final_final_dispatched_quantity = (float) ($salesOrderProduct->final_final_dispatched_quantity ?? 0) + $quantity;
+                    $salesOrderProduct->box_count = (float) ($salesOrderProduct->box_count ?? 0) + $boxCount;
+                    $salesOrderProduct->weight = (float) ($salesOrderProduct->weight ?? 0) + $weight;
+                    $salesOrderProduct->price = $salesOrderProduct->price ?: $unitPrice;
+                    $salesOrderProduct->subtotal = (float) ($salesOrderProduct->subtotal ?? 0) + ($quantity * $unitPrice);
+                    $salesOrderProduct->status = 'dispatched';
+                    $salesOrderProduct->save();
+                }
+
+                if ($salesOrderProduct->tempOrder && ! $createdSalesOrderLine) {
+                    $salesOrderProduct->tempOrder->block = (float) ($salesOrderProduct->tempOrder->block ?? 0) + $quantity;
+                    $salesOrderProduct->tempOrder->available_quantity = (float) ($salesOrderProduct->tempOrder->available_quantity ?? 0) + $quantity;
+                    $salesOrderProduct->tempOrder->available_quantity_track = (float) ($salesOrderProduct->tempOrder->available_quantity_track ?? 0) + $quantity;
+                    $salesOrderProduct->tempOrder->unavailable_quantity = max(0, (float) ($salesOrderProduct->tempOrder->po_qty ?? 0) - (float) $salesOrderProduct->tempOrder->block);
+                    $salesOrderProduct->tempOrder->unavailable_quantity_track = max(0, (float) ($salesOrderProduct->tempOrder->po_qty ?? 0) - (float) $salesOrderProduct->tempOrder->block);
+                    $salesOrderProduct->tempOrder->save();
+                }
+
+                $stock->available_quantity = max(0, (float) $stock->available_quantity - $quantity);
+                $stock->block_quantity = (float) $stock->block_quantity + $quantity;
+                $stock->save();
+
+                $rtsCountId = WarehouseAllocation::where('sales_order_id', $invoice->sales_order_id)
+                    ->whereNotNull('rts_count_id')
+                    ->max('rts_count_id') ?: 1;
+
+                WarehouseAllocation::create([
+                    'sales_order_id' => $invoice->sales_order_id,
+                    'sales_order_product_id' => $salesOrderProduct->id,
+                    'warehouse_id' => $warehouseId,
+                    'sku' => $sku,
+                    'rts_count_id' => $rtsCountId,
+                    'allocated_quantity' => $quantity,
+                    'final_dispatched_quantity' => $quantity,
+                    'final_final_dispatched_quantity' => $quantity,
+                    'box_count' => $boxCount,
+                    'weight' => $weight,
+                    'sequence' => ((int) WarehouseAllocation::where('sales_order_product_id', $salesOrderProduct->id)->max('sequence')) + 1,
+                    'status' => 'fulfilled',
+                    'approval_status' => 'approved',
+                    'product_status' => 'completed',
+                    'shipping_status' => 'shipped',
+                    'invoice_status' => 'completed',
+                    'approved_by' => $user->id,
+                    'approved_at' => now(),
+                    'notes' => $remark ?: 'Extra added after invoice creation',
+                ]);
+
+                $amount = $quantity * $unitPrice;
+                $lineTaxable = max($amount - $discount, 0);
+                $taxAmount = ($lineTaxable * $taxPercent) / 100;
+
+                InvoiceDetails::create([
+                    'invoice_id' => $invoice->id,
+                    'warehouse_id' => $warehouseId,
+                    'product_id' => $product->id,
+                    'sales_order_product_id' => $salesOrderProduct->id,
+                    'temp_order_id' => $salesOrderProduct->temp_order_id,
+                    'hsn' => trim((string) ($row['hsn'] ?? '')) ?: ($product->hsn ?? null),
+                    'quantity' => $quantity,
+                    'box_count' => $boxCount,
+                    'weight' => $weight,
+                    'unit_price' => $unitPrice,
+                    'discount' => $discount,
+                    'amount' => $amount,
+                    'tax' => $taxPercent,
+                    'total_price' => $lineTaxable + $taxAmount,
+                    'description' => trim((string) ($row['description'] ?? '')) ?: ($product->brand_title ?? null),
+                    'po_number' => $invoice->po_number,
+                    'item_code' => trim((string) ($row['item_code'] ?? '')) ?: ($product->item_code ?? null),
+                ]);
+
+                WarehouseStockLog::create([
+                    'warehouse_id' => $warehouseId,
+                    'sales_order_id' => $invoice->sales_order_id,
+                    'customer_id' => $invoice->customer_id,
+                    'sku' => $sku,
+                    'block_quantity' => $quantity,
+                    'reason' => 'Extra invoice product added after invoice creation',
+                    'remark' => ($remark ?: 'Extra added after invoice creation').($createdSalesOrderLine ? ' (new sales order line)' : ''),
+                ]);
+
+                $changedSalesOrderProductIds->push($salesOrderProduct->id);
+                $addedCount++;
+            }
+
+            foreach ($changedSalesOrderProductIds->unique() as $salesOrderProductId) {
+                $this->syncSalesOrderInvoiceStatuses((int) $salesOrderProductId);
+            }
+
+            $this->recalculateInvoiceTotals($invoice->fresh(['payments']));
+
+            DB::commit();
+            activity()->performedOn($invoice)->causedBy($user)->log("Invoice products added from Excel: {$addedCount} line(s)");
+
+            return redirect()->route('invoice.edit', $invoice->id)->with('success', "{$addedCount} product line(s) added to invoice successfully.");
+        } catch (\DomainException $e) {
+            DB::rollBack();
+
+            return redirect()->back()->with('error', $e->getMessage())->withInput();
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            Log::error('Invoice product Excel add failed: '.$e->getMessage());
+
+            return redirect()->back()->with('error', 'Could not add products to invoice: '.$e->getMessage())->withInput();
+        }
+    }
+
     public function updateInvoice(Request $request, $id)
     {
         $validator = Validator::make($request->all(), [
@@ -948,6 +1268,7 @@ class InvoiceController extends Controller
             }
 
             $salesOrderProductIdsWithQuantityChanges = collect();
+            $hasSalesOrderQuantityChange = false;
             $hasSalesOrderQuantityReduction = false;
 
             foreach ($request->details as $line) {
@@ -955,21 +1276,21 @@ class InvoiceController extends Controller
                 $newQuantity = (float) $line['quantity'];
                 $currentQuantity = (float) $detail->quantity;
 
-                if ($invoice->sales_order_id && $newQuantity > $currentQuantity) {
-                    throw new \DomainException('Sales order invoice quantity cannot be increased from this page.');
-                }
-
-                if ($invoice->sales_order_id && $newQuantity < $currentQuantity) {
-                    $hasSalesOrderQuantityReduction = true;
+                if ($invoice->sales_order_id && $newQuantity !== $currentQuantity) {
+                    $hasSalesOrderQuantityChange = true;
                     $salesOrderProductIdsWithQuantityChanges->push((int) $detail->sales_order_product_id);
+
+                    if ($newQuantity < $currentQuantity) {
+                        $hasSalesOrderQuantityReduction = true;
+                    }
                 }
             }
 
             $returnWarehouse = null;
 
-            if ($hasSalesOrderQuantityReduction) {
+            if ($hasSalesOrderQuantityChange) {
                 if ($invoice->payments()->exists() || (float) $invoice->paid_amount > 0) {
-                    throw new \DomainException('Invoice quantity cannot be reduced after a payment has been recorded.');
+                    throw new \DomainException('Invoice quantity cannot be changed after a payment has been recorded.');
                 }
 
                 $hasActiveStatutoryRecord = $invoice->einvoices()
@@ -980,8 +1301,11 @@ class InvoiceController extends Controller
                     ->exists();
 
                 if ($hasActiveStatutoryRecord) {
-                    throw new \DomainException('Invoice quantity cannot be reduced after an E-Invoice or E-Way Bill record exists.');
+                    throw new \DomainException('Invoice quantity cannot be changed after an E-Invoice or E-Way Bill record exists.');
                 }
+            }
+
+            if ($hasSalesOrderQuantityReduction) {
 
                 $user = Auth::user();
                 $isAdmin = $user->hasRole(['Super Admin', 'Admin']) || ! $user->warehouse_id;
@@ -1019,12 +1343,30 @@ class InvoiceController extends Controller
                 $totalTax += $taxAmount;
 
                 if ($invoice->sales_order_id && $quantity < (float) $detail->quantity) {
+                    $releasedQuantity = (float) $detail->quantity - $quantity;
+                    $sku = $detail->product?->sku ?? $detail->salesOrderProduct?->sku ?? 'SKU';
+                    $autoRemark = "Invoice {$invoice->invoice_number} {$sku} qty updated from {$detail->quantity} to {$quantity}; released {$releasedQuantity}.";
+                    $returnRemark = trim((string) $request->input('return_remark', ''));
+                    $returnRemark = $returnRemark !== ''
+                        ? $autoRemark.' '.$returnRemark
+                        : $autoRemark;
+
                     app(InvoiceStockReturnService::class)->returnQuantity(
                         $invoice,
                         $detail,
-                        (float) $detail->quantity - $quantity,
+                        $releasedQuantity,
                         $returnWarehouse,
-                        $request->input('return_remark'),
+                        $returnRemark,
+                    );
+                }
+
+                if ($invoice->sales_order_id && $quantity > (float) $detail->quantity) {
+                    $addedQuantity = $quantity - (float) $detail->quantity;
+                    $this->addQuantityToInvoiceDetail(
+                        $invoice,
+                        $detail,
+                        $addedQuantity,
+                        "Invoice {$invoice->invoice_number} ".($detail->product?->sku ?? $detail->salesOrderProduct?->sku ?? 'SKU')." qty updated from {$detail->quantity} to {$quantity}; added {$addedQuantity} from warehouse stock.",
                     );
                 }
 
@@ -1226,6 +1568,209 @@ class InvoiceController extends Controller
                 : 'pending';
             $allocation->save();
         }
+    }
+
+    private function addQuantityToInvoiceDetail(
+        Invoice $invoice,
+        InvoiceDetails $detail,
+        float $quantity,
+        string $remark
+    ): SalesOrderProduct {
+        if (! $invoice->sales_order_id || ! $detail->sales_order_product_id || ! $detail->product_id) {
+            throw new \DomainException('Only sales order product lines can be increased from this page.');
+        }
+
+        if ($quantity <= 0) {
+            throw new \DomainException('Add quantity must be greater than zero.');
+        }
+
+        $user = Auth::user();
+        $isAdmin = $user->hasRole(['Super Admin', 'Admin']) || ! $user->warehouse_id;
+        $warehouseId = (int) ($detail->warehouse_id ?: $invoice->warehouse_id);
+
+        if (! $warehouseId) {
+            throw new \DomainException('Could not find the warehouse for this invoice line.');
+        }
+
+        if (! $isAdmin && $user->warehouse_id && $warehouseId !== (int) $user->warehouse_id) {
+            throw new \DomainException('You can only add stock from your assigned warehouse.');
+        }
+
+        $product = Product::findOrFail($detail->product_id);
+        $salesOrderProduct = SalesOrderProduct::with('tempOrder')
+            ->lockForUpdate()
+            ->findOrFail($detail->sales_order_product_id);
+
+        $stock = WarehouseStock::where('warehouse_id', $warehouseId)
+            ->where('sku', $product->sku)
+            ->lockForUpdate()
+            ->first();
+
+        if (! $stock || (float) $stock->available_quantity < $quantity) {
+            $available = $stock ? (float) $stock->available_quantity : 0;
+            $shortQuantity = $quantity - $available;
+
+            if (! $isAdmin) {
+                throw new \DomainException("Insufficient available stock for {$product->sku}. Available: {$available}, required: {$quantity}.");
+            }
+
+            $sourceStock = WarehouseStock::where('sku', $product->sku)
+                ->where('warehouse_id', '!=', $warehouseId)
+                ->where('available_quantity', '>=', $shortQuantity)
+                ->lockForUpdate()
+                ->orderByDesc('available_quantity')
+                ->first();
+
+            if (! $sourceStock) {
+                throw new \DomainException("Insufficient available stock for {$product->sku}. Available in invoice warehouse: {$available}, required: {$quantity}.");
+            }
+
+            if (! $stock) {
+                $stock = WarehouseStock::create([
+                    'warehouse_id' => $warehouseId,
+                    'sku' => $product->sku,
+                    'original_quantity' => 0,
+                    'available_quantity' => 0,
+                    'block_quantity' => 0,
+                ]);
+            }
+
+            $sourceStock->available_quantity = (float) $sourceStock->available_quantity - $shortQuantity;
+            $sourceStock->original_quantity = max(0, (float) $sourceStock->original_quantity - $shortQuantity);
+            $sourceStock->save();
+
+            $stock->original_quantity = (float) $stock->original_quantity + $shortQuantity;
+            $stock->available_quantity = (float) $stock->available_quantity + $shortQuantity;
+            $stock->save();
+
+            WarehouseStockLog::create([
+                'warehouse_id' => $sourceStock->warehouse_id,
+                'sales_order_id' => $invoice->sales_order_id,
+                'customer_id' => $salesOrderProduct->customer_id,
+                'sku' => $product->sku,
+                'block_quantity' => 0,
+                'reason' => 'Stock transferred for invoice quantity increase',
+                'remark' => $remark,
+            ]);
+        }
+
+        $stock->available_quantity = max(0, (float) $stock->available_quantity - $quantity);
+        $stock->block_quantity = (float) $stock->block_quantity + $quantity;
+        $stock->save();
+
+        $allocation = WarehouseAllocation::where('sales_order_product_id', $salesOrderProduct->id)
+            ->where('warehouse_id', $warehouseId)
+            ->where('shipping_status', 'shipped')
+            ->lockForUpdate()
+            ->orderByDesc('id')
+            ->first();
+
+        if ($allocation) {
+            $allocation->allocated_quantity = (float) ($allocation->allocated_quantity ?? 0) + $quantity;
+            $allocation->final_dispatched_quantity = (float) ($allocation->final_dispatched_quantity ?? 0) + $quantity;
+            $allocation->final_final_dispatched_quantity = (float) ($allocation->final_final_dispatched_quantity ?? 0) + $quantity;
+            $allocation->status = 'fulfilled';
+            $allocation->product_status = 'completed';
+            $allocation->invoice_status = 'completed';
+            $allocation->save();
+        } else {
+            $rtsCountId = WarehouseAllocation::where('sales_order_id', $invoice->sales_order_id)
+                ->whereNotNull('rts_count_id')
+                ->max('rts_count_id') ?: 1;
+
+            $allocation = WarehouseAllocation::create([
+                'sales_order_id' => $invoice->sales_order_id,
+                'sales_order_product_id' => $salesOrderProduct->id,
+                'warehouse_id' => $warehouseId,
+                'sku' => $product->sku,
+                'rts_count_id' => $rtsCountId,
+                'allocated_quantity' => $quantity,
+                'final_dispatched_quantity' => $quantity,
+                'final_final_dispatched_quantity' => $quantity,
+                'box_count' => 0,
+                'weight' => 0,
+                'sequence' => ((int) WarehouseAllocation::where('sales_order_product_id', $salesOrderProduct->id)->max('sequence')) + 1,
+                'status' => 'fulfilled',
+                'approval_status' => 'approved',
+                'product_status' => 'completed',
+                'shipping_status' => 'shipped',
+                'invoice_status' => 'completed',
+                'approved_by' => $user->id,
+                'approved_at' => now(),
+                'notes' => $remark,
+            ]);
+        }
+
+        $newFinalDispatchedQuantity = (float) ($salesOrderProduct->final_final_dispatched_quantity ?? 0) + $quantity;
+        $salesOrderProduct->ordered_quantity = max((float) ($salesOrderProduct->ordered_quantity ?? 0), $newFinalDispatchedQuantity);
+        $salesOrderProduct->dispatched_quantity = (float) ($salesOrderProduct->dispatched_quantity ?? 0) + $quantity;
+        $salesOrderProduct->final_dispatched_quantity = (float) ($salesOrderProduct->final_dispatched_quantity ?? 0) + $quantity;
+        $salesOrderProduct->final_final_dispatched_quantity = $newFinalDispatchedQuantity;
+        $salesOrderProduct->status = 'dispatched';
+        $salesOrderProduct->save();
+
+        if ($salesOrderProduct->tempOrder) {
+            $salesOrderProduct->tempOrder->po_qty = max((float) ($salesOrderProduct->tempOrder->po_qty ?? 0), $newFinalDispatchedQuantity);
+            $salesOrderProduct->tempOrder->block = (float) ($salesOrderProduct->tempOrder->block ?? 0) + $quantity;
+            $salesOrderProduct->tempOrder->available_quantity = (float) ($salesOrderProduct->tempOrder->available_quantity ?? 0) + $quantity;
+            $salesOrderProduct->tempOrder->available_quantity_track = (float) ($salesOrderProduct->tempOrder->available_quantity_track ?? 0) + $quantity;
+            $salesOrderProduct->tempOrder->unavailable_quantity = max(0, (float) ($salesOrderProduct->tempOrder->po_qty ?? 0) - (float) $salesOrderProduct->tempOrder->block);
+            $salesOrderProduct->tempOrder->unavailable_quantity_track = max(0, (float) ($salesOrderProduct->tempOrder->po_qty ?? 0) - (float) $salesOrderProduct->tempOrder->block);
+            $salesOrderProduct->tempOrder->save();
+        }
+
+        WarehouseStockLog::create([
+            'warehouse_id' => $warehouseId,
+            'sales_order_id' => $invoice->sales_order_id,
+            'customer_id' => $salesOrderProduct->customer_id,
+            'sku' => $product->sku,
+            'block_quantity' => $quantity,
+            'reason' => 'Invoice quantity increased from available stock',
+            'remark' => $remark,
+        ]);
+
+        return $salesOrderProduct;
+    }
+
+    private function recalculateInvoiceTotals(Invoice $invoice): void
+    {
+        $subtotal = 0;
+        $taxableAmount = 0;
+        $totalDiscount = 0;
+        $totalTax = 0;
+
+        foreach ($invoice->details()->get() as $detail) {
+            $amount = (float) $detail->quantity * (float) $detail->unit_price;
+            $discount = (float) ($detail->discount ?? 0);
+            $lineTaxable = max($amount - $discount, 0);
+            $taxAmount = ($lineTaxable * (float) ($detail->tax ?? 0)) / 100;
+
+            $subtotal += $amount;
+            $taxableAmount += $lineTaxable;
+            $totalDiscount += $discount;
+            $totalTax += $taxAmount;
+
+            $detail->update([
+                'amount' => $amount,
+                'total_price' => $lineTaxable + $taxAmount,
+            ]);
+        }
+
+        $roundOff = (float) ($invoice->round_off ?? 0);
+        $totalAmount = $taxableAmount + $totalTax + $roundOff;
+        $paidAmount = (float) $invoice->payments()->sum('amount');
+        $balanceDue = $totalAmount - $paidAmount;
+
+        $invoice->update([
+            'subtotal' => $subtotal,
+            'taxable_amount' => $taxableAmount,
+            'tax_amount' => $totalTax,
+            'discount_amount' => $totalDiscount,
+            'total_amount' => $totalAmount,
+            'paid_amount' => $paidAmount,
+            'balance_due' => $balanceDue,
+            'payment_status' => $balanceDue <= 0 ? 'paid' : ($paidAmount > 0 ? 'partial' : 'unpaid'),
+        ]);
     }
 
     public function deleteInvoice($id)

@@ -381,6 +381,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/invoices-details/{id}', 'invoiceDetails')->name('invoices-details');
         Route::get('/invoice-edit/{id}', 'editInvoice')->name('invoice.edit');
         Route::put('/invoice-update/{id}', 'updateInvoice')->name('invoice.update');
+        Route::get('/invoice-edit/{id}/add-products-template', 'downloadInvoiceAddProductsTemplate')->name('invoice.add-products.template');
+        Route::post('/invoice-edit/{id}/add-products', 'addInvoiceProductsFromExcel')->name('invoice.add-products');
         Route::delete('/invoice-edit/{id}/details/{detailId}/return-stock', 'returnInvoiceDetailToWarehouse')->name('invoice.details.return-stock');
         Route::delete('/invoice-delete/{id}', 'deleteInvoice')->name('invoice.delete');
 
