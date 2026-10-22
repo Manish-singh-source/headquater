@@ -1749,7 +1749,9 @@ class ReportController extends Controller
             });
         }
 
-        $recordsFiltered = (clone $rows)->count();
+        // Without a search term this is exactly the same query as recordsTotal.
+        // Reusing it avoids one expensive grouped count for each date-filtered request.
+        $recordsFiltered = $search === '' ? $recordsTotal : (clone $rows)->count();
         $summary = (clone $rows)->selectRaw('COALESCE(SUM(sop.purchase_ordered_quantity), 0) as po_quantity')->first();
 
         $column = (int) $request->input('order.0.column', 6);

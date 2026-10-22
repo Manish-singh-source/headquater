@@ -136,6 +136,8 @@
                                 <div class="row align-items-start">
                                     <div class="col-lg-10">
                                         <div class="row"> <!-- From Date Filter -->
+                                            {{-- Sales order date filters temporarily disabled. --}}
+                                            {{--
                                             <div class="col-md-2">
                                                 <div class="mb-3"> <label class="form-label">From Sales Order
                                                         Date</label> <input type="date" class="form-control"
@@ -150,6 +152,7 @@
                                                         value="{{ $filters['to_date'] ?? '' }}"
                                                         placeholder="Select to date"> </div>
                                             </div>
+                                            --}}
                                             <div class="col-md-2">
                                                 <div class="mb-3"> <label class="form-label">From Invoice
                                                         Date</label> <input type="date" class="form-control"
