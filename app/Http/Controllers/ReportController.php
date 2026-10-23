@@ -1479,7 +1479,13 @@ class ReportController extends Controller
             }
 
             $this->applyCustomerSalesSkuProductFilters($query, $request);
-            $this->applyCustomerSalesSkuInvoiceDateFilter($query, $request);
+
+            // DataTables applies the invoice-date constraint directly to SKU rows in
+            // customerSalesSkuPage(). Applying it here as well made every Ajax request
+            // run the same expensive invoice-details subquery twice.
+            if (! $request->has('draw')) {
+                $this->applyCustomerSalesSkuInvoiceDateFilter($query, $request);
+            }
 
             // Appointment Date Filter
             if ($request->filled('appointment_date')) {
@@ -1654,8 +1660,21 @@ class ReportController extends Controller
             ->leftJoin('customers as c', 'c.id', '=', 'sop.customer_id')
             ->leftJoin('temp_orders as t', 't.id', '=', 'sop.temp_order_id')
             ->leftJoin('warehouses as w', 'w.id', '=', 'wa.warehouse_id')
-            ->leftJoin('customer_groups as cg', 'cg.id', '=', 'so.customer_group_id')
-            ->whereIn('sop.sales_order_id', (clone $orderQuery)->select('sales_orders.id'));
+            ->leftJoin('customer_groups as cg', 'cg.id', '=', 'so.customer_group_id');
+
+        // An invoice-date-only request already constrains the SKU rows below. Avoid
+        // adding an unfiltered `sales_order_id IN (SELECT ...)` predicate, which made
+        // MySQL scan the full sales-order table before applying the invoice filter.
+        $hasNonInvoiceOrderFilter = $request->filled('from_date')
+            || $request->filled('to_date')
+            || $request->filled('sales_order_no')
+            || $request->filled('payment_status')
+            || $request->filled('customer_type')
+            || $request->filled('appointment_date');
+
+        if ($hasNonInvoiceOrderFilter) {
+            $rows->whereIn('sop.sales_order_id', (clone $orderQuery)->select('sales_orders.id'));
+        }
 
         if ($request->filled('warehouse_id')) {
             $rows->whereIn('wa.warehouse_id', (array) $request->warehouse_id);
@@ -1671,7 +1690,7 @@ class ReportController extends Controller
         if ($hasInvoiceDateFilter) {
             $invoiceProductQuery = DB::table('invoice_details as filter_invoice_details')
                 ->join('invoices as filter_invoices', 'filter_invoices.id', '=', 'filter_invoice_details.invoice_id')
-                ->selectRaw('filter_invoice_details.sales_order_product_id, MIN(filter_invoice_details.id) as invoice_detail_id')
+                ->selectRaw('filter_invoice_details.sales_order_product_id, MIN(filter_invoice_details.id) as invoice_detail_id, MIN(filter_invoices.created_at) as invoice_date')
                 ->groupBy('filter_invoice_details.sales_order_product_id');
 
             if ($request->filled('invoice_from_date')) {
@@ -1683,7 +1702,7 @@ class ReportController extends Controller
             }
 
             $rows->joinSub($invoiceProductQuery, 'filtered_invoice_products', function ($join) {
-                $join->on('filtered_invoice_products.sales_order_product_id', '=', DB::raw('CAST(sop.id AS CHAR)'));
+                $join->on('filtered_invoice_products.sales_order_product_id', '=', 'sop.id');
             });
         }
         if ($request->filled('region')) {
@@ -1694,7 +1713,9 @@ class ReportController extends Controller
         }
 
         $recordsTotal = (clone $rows)->count();
-        $invoiceDate = '(SELECT i.created_at FROM invoice_details d JOIN invoices i ON i.id = d.invoice_id WHERE d.sales_order_product_id = CAST(sop.id AS CHAR) ORDER BY d.id LIMIT 1)';
+        $invoiceDate = $hasInvoiceDateFilter
+            ? 'filtered_invoice_products.invoice_date'
+            : '(SELECT i.created_at FROM invoice_details d JOIN invoices i ON i.id = d.invoice_id WHERE d.sales_order_product_id = CAST(sop.id AS CHAR) ORDER BY d.id LIMIT 1)';
         $invoiceNumber = '(SELECT i.invoice_number FROM invoice_details d JOIN invoices i ON i.id = d.invoice_id WHERE d.sales_order_product_id = CAST(sop.id AS CHAR) ORDER BY d.id LIMIT 1)';
         $productField = fn ($field) => "(SELECT p.{$field} FROM products p WHERE p.sku = sop.sku LIMIT 1)";
         $vendorField = fn ($field) => "(SELECT v.{$field} FROM vendor_p_i_products v WHERE v.vendor_sku_code = sop.sku LIMIT 1)";
